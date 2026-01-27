@@ -1,3 +1,61 @@
+## 2.3.0
+
+-  Removes comments associated with a node when `remove` is called.
+    - `v2.2.3` and earlier.
+      ```yaml
+      ## Before edit
+      ---
+      key: value # These
+            # dangling
+              # should be
+                # removed.
+
+      # Safe
+      next:
+        - value # These
+                # should be
+                # removed.
+
+        # Safe
+        - next
+      ```
+
+      ```yaml
+      # After edit:
+      #   1. YamlEditor.remove(['key'])
+      #   2. YamlEditor.remove(['next', 0])
+      ---
+            # dangling
+              # should be
+                # removed.
+
+      # Ignored
+      next:
+                # should be
+                # removed.
+
+        # Safe
+        - next
+      ```
+
+    - `v2.3.0` and later (same string as above)
+
+      ```yaml
+      # After edit:
+      #   1. YamlEditor.remove(['key'])
+      #   2. YamlEditor.remove(['next', 0])
+      ---
+      # Ignored
+      next:
+        # Safe
+        - next
+      ```
+
+## 2.2.3
+
+- Fix alphabetical ordering when inserting into a single-element maps.
+  ([#2258](https://github.com/dart-lang/tools/issues/2258))
+
 ## 2.2.2
 
 - Suppress warnings previously printed to `stdout` when parsing YAML internally.

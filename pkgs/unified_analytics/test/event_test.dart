@@ -11,15 +11,58 @@ import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
   test('Event.analysisStatistics constructed', () {
-    Event generateEvent() =>
-        Event.analysisStatistics(workingDuration: 'workingDuration');
+    Event generateEvent() => Event.analysisStatistics(
+          workingDuration: 'workingDuration',
+          withFineDependencies: false,
+          changedFileEventCount: 1,
+          removedFileEventCount: 2,
+          changedFileUniqueCount: 3,
+          removedFileUniqueCount: 4,
+          immediateFileCountPercentiles: 'immediateFileCountPercentiles',
+          immediateFileLineCountPercentiles:
+              'immediateFileLineCountPercentiles',
+          transitiveFileCountPercentiles: 'transitiveFileCountPercentiles',
+          transitiveFileLineCountPercentiles:
+              'transitiveFileLineCountPercentiles',
+          produceErrorsPotentialFileCount: 10,
+          produceErrorsPotentialFileLineCount: 11,
+          produceErrorsActualFileCount: 12,
+          produceErrorsActualFileLineCount: 13,
+          produceErrorsDurationMs: 14,
+          produceErrorsElementsDurationMs: 15,
+          libraryDiagnosticsBundleFailures: 'id1:1,id2:2',
+        );
 
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.analysisStatistics);
     expect(constructedEvent.eventData['workingDuration'], 'workingDuration');
-    expect(constructedEvent.eventData.length, 1);
+    expect(constructedEvent.eventData['withFineDependencies'], false);
+    expect(constructedEvent.eventData['changedFileEventCount'], 1);
+    expect(constructedEvent.eventData['removedFileEventCount'], 2);
+    expect(constructedEvent.eventData['changedFileUniqueCount'], 3);
+    expect(constructedEvent.eventData['removedFileUniqueCount'], 4);
+    expect(constructedEvent.eventData['immediateFileCountPercentiles'],
+        'immediateFileCountPercentiles');
+    expect(constructedEvent.eventData['immediateFileLineCountPercentiles'],
+        'immediateFileLineCountPercentiles');
+    expect(constructedEvent.eventData['transitiveFileCountPercentiles'],
+        'transitiveFileCountPercentiles');
+    expect(constructedEvent.eventData['transitiveFileLineCountPercentiles'],
+        'transitiveFileLineCountPercentiles');
+    expect(constructedEvent.eventData['produceErrorsPotentialFileCount'], 10);
+    expect(
+        constructedEvent.eventData['produceErrorsPotentialFileLineCount'], 11);
+    expect(constructedEvent.eventData['produceErrorsActualFileCount'], 12);
+    expect(constructedEvent.eventData['produceErrorsActualFileLineCount'], 13);
+    expect(constructedEvent.eventData['produceErrorsDurationMs'], 14);
+    expect(constructedEvent.eventData['produceErrorsElementsDurationMs'], 15);
+    expect(
+      constructedEvent.eventData['libraryDiagnosticsBundleFailures'],
+      'id1:1,id2:2',
+    );
+    expect(constructedEvent.eventData.length, 17);
   });
 
   test('Event.analyticsCollectionEnabled constructed', () {
@@ -227,6 +270,28 @@ void main() {
     expect(constructedEvent.eventData.length, 3);
   });
 
+  test('Event.plugins constructed', () {
+    Event generateEvent() => Event.plugins(
+          count: 5,
+          lintRuleCounts: 'lintRuleCounts',
+          warningRuleCounts: 'warningRuleCounts',
+          fixCounts: 'fixCounts',
+          assistCounts: 'assistCounts',
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.plugins);
+    expect(constructedEvent.eventData['count'], 5);
+    expect(constructedEvent.eventData['lintRuleCounts'], 'lintRuleCounts');
+    expect(
+        constructedEvent.eventData['warningRuleCounts'], 'warningRuleCounts');
+    expect(constructedEvent.eventData['fixCounts'], 'fixCounts');
+    expect(constructedEvent.eventData['assistCounts'], 'assistCounts');
+    expect(constructedEvent.eventData, hasLength(5));
+  });
+
   test('Event.pluginUse constructed', () {
     Event generateEvent() => Event.pluginUse(
           count: 5,
@@ -412,45 +477,24 @@ void main() {
     expect(constructedEvent.eventData.length, 4);
   });
 
-  test('Event.flutterWasmDryRun constructed', () {
-    Event generateEventNoFindings() => Event.flutterWasmDryRun(
-          result: 'success',
-          exitCode: 123,
-        );
+  test('Event.flutterWasmDryRunPackage constructed', () {
+    Event generateEvent() => Event.flutterWasmDryRunPackage(
+            result: 'success',
+            exitCode: 123,
+            findingsInfo: {
+              '0': '-ph,pkg1:1.2.3,pkg2:5.4.3',
+              '1': '-p,pkg3:9.2.44,pkg4:6.4.3',
+            });
 
-    final constructedEvent1 = generateEventNoFindings();
+    final constructedEvent1 = generateEvent();
 
-    expect(generateEventNoFindings, returnsNormally);
-    expect(constructedEvent1.eventName, DashEvent.flutterWasmDryRun);
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent1.eventName, DashEvent.flutterWasmDryRunPackage);
     expect(constructedEvent1.eventData['result'], 'success');
     expect(constructedEvent1.eventData['exitCode'], 123);
-    expect(constructedEvent1.eventData.length, 2);
-  });
-  test('Event.flutterWasmDryRun constructed', () {
-    Event generateEventNoFindings() => Event.flutterWasmDryRun(
-          result: 'success',
-          exitCode: 123,
-        );
-
-    final constructedEvent1 = generateEventNoFindings();
-
-    expect(generateEventNoFindings, returnsNormally);
-    expect(constructedEvent1.eventName, DashEvent.flutterWasmDryRun);
-    expect(constructedEvent1.eventData['result'], 'success');
-    expect(constructedEvent1.eventData['exitCode'], 123);
-    expect(constructedEvent1.eventData.length, 2);
-
-    Event generateEventFindings() => Event.flutterWasmDryRun(
-        result: 'success', exitCode: 123, findingsSummary: '1,2,3');
-
-    final constructedEvent2 = generateEventFindings();
-
-    expect(generateEventFindings, returnsNormally);
-    expect(constructedEvent2.eventName, DashEvent.flutterWasmDryRun);
-    expect(constructedEvent2.eventData['result'], 'success');
-    expect(constructedEvent2.eventData['exitCode'], 123);
-    expect(constructedEvent2.eventData['findings'], '1,2,3');
-    expect(constructedEvent2.eventData.length, 3);
+    expect(constructedEvent1.eventData['0'], '-ph,pkg1:1.2.3,pkg2:5.4.3');
+    expect(constructedEvent1.eventData['1'], '-p,pkg3:9.2.44,pkg4:6.4.3');
+    expect(constructedEvent1.eventData.length, 4);
   });
 
   test('Event.flutterInjectDarwinPlugins constructed', () {
@@ -741,7 +785,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 31;
+    final eventsAccountedForInTests = 33;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '

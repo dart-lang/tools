@@ -52,8 +52,9 @@ class Document {
     this.encodeHtml = true,
     this.withDefaultBlockSyntaxes = true,
     this.withDefaultInlineSyntaxes = true,
-  }) : hasCustomInlineSyntaxes = (inlineSyntaxes?.isNotEmpty ?? false) ||
-            (extensionSet?.inlineSyntaxes.isNotEmpty ?? false) {
+  }) : hasCustomInlineSyntaxes =
+           (inlineSyntaxes?.isNotEmpty ?? false) ||
+           (extensionSet?.inlineSyntaxes.isNotEmpty ?? false) {
     if (blockSyntaxes != null) {
       _blockSyntaxes.addAll(blockSyntaxes);
     }
@@ -157,8 +158,8 @@ class Document {
     final refs = [
       for (var i = 0; i < count; i++) ...[
         Text(' '),
-        _ElementExt.footnoteAnchor(ref, i)
-      ]
+        _ElementExt.footnoteAnchor(ref, i),
+      ],
     ];
     if (children.isEmpty) {
       children.addAll(refs);
@@ -180,10 +181,10 @@ extension _ElementExt on Element {
     final e = Element.empty('tag');
     e.match;
     return Element('a', [
-      Text('\u21a9'),
-      if (i > 0)
-        Element('sup', [Text(num)])..attributes['class'] = 'footnote-ref',
-    ])
+        Text('\u21a9'),
+        if (i > 0)
+          Element('sup', [Text(num)])..attributes['class'] = 'footnote-ref',
+      ])
       // Ignore GFM's attributes:
       // <data-footnote-backref aria-label="Back to content">.
       ..attributes['href'] = '#fnref-$ref$suffix'

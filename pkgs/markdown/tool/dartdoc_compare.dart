@@ -25,11 +25,7 @@ void main(List<String> arguments) {
       defaultsTo: 'HEAD',
       help: "Markdown package 'after' ref (or 'local')",
     )
-    ..addFlag(
-      _sdk,
-      negatable: false,
-      help: 'Is the package the SDK?',
-    )
+    ..addFlag(_sdk, negatable: false, help: 'Is the package the SDK?')
     ..addFlag(_help, abbr: 'h', hide: true);
 
   final options = parser.parse(arguments);
@@ -120,8 +116,9 @@ class DartdocCompare {
       if (!sdk) {
         _system('pub', ['upgrade']);
       }
-      final out = Directory.systemTemp
-          .createTempSync('dartdoc-compare-${markdownRef}__');
+      final out = Directory.systemTemp.createTempSync(
+        'dartdoc-compare-${markdownRef}__',
+      );
       const cmd = 'dart';
       final args = [dartdocBin, '--output=${out.path}'];
 
@@ -150,15 +147,13 @@ class DartdocCompare {
     final dependencies = dartdocPubspec['dependencies'] as Map;
 
     if (markdownRef == 'local') {
-      dependencies['markdown'] = {
-        'path': markdownPath,
-      };
+      dependencies['markdown'] = {'path': markdownPath};
     } else {
       dependencies['markdown'] = {
         'git': {
           'url': 'git://github.com/dart-lang/markdown.git',
-          'ref': markdownRef
-        }
+          'ref': markdownRef,
+        },
       };
     }
 

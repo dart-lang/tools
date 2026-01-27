@@ -1,0 +1,12 @@
+? map
+: k1: 1
+  k2: 2
+  k3: 3
+? list
+: - 1
+  - 2
+  - 3
+? inlineMap
+: {k1: 1, k2: 2, k3: 3}
+? inlineList
+: [1, 2, 3]

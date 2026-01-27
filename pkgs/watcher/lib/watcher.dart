@@ -10,7 +10,7 @@ import 'src/watch_event.dart';
 
 export 'src/custom_watcher_factory.dart' show registerCustomWatcher;
 export 'src/directory_watcher.dart';
-export 'src/directory_watcher/polling.dart';
+export 'src/directory_watcher/polling/polling_directory_watcher.dart';
 export 'src/file_watcher.dart';
 export 'src/file_watcher/polling.dart';
 export 'src/watch_event.dart';

@@ -13,10 +13,12 @@ import '../watch_event.dart';
 /// Periodically polls a file for changes.
 class PollingFileWatcher extends ResubscribableWatcher implements FileWatcher {
   PollingFileWatcher(String path, {Duration? pollingDelay})
-      : super(path, () {
-          return _PollingFileWatcher(
-              path, pollingDelay ?? const Duration(seconds: 1));
-        });
+    : super(path, (path) {
+        return _PollingFileWatcher(
+          path,
+          pollingDelay ?? const Duration(seconds: 1),
+        );
+      });
 }
 
 class _PollingFileWatcher implements FileWatcher, ManuallyClosedWatcher {

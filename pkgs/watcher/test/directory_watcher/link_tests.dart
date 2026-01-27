@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:io';
-
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -22,13 +20,15 @@ void _linkTests({required bool isNative}) {
     await startWatcher(path: 'links');
 
     writeLink(
-        link: 'links/a.link', target: 'targets/a.target', unawaitedAsync: true);
+      link: 'links/a.link',
+      target: 'targets/a.target',
+      unawaitedAsync: true,
+    );
 
     await expectAddEvent('links/a.link');
   });
 
-  test(
-      'notifies when a link is replaced with a link to a different target '
+  test('notifies when a link is replaced with a link to a different target '
       'with the same contents', () async {
     createDir('targets');
     createDir('links');
@@ -44,8 +44,7 @@ void _linkTests({required bool isNative}) {
     await expectModifyEvent('links/a.link');
   });
 
-  test(
-      'notifies when a link is replaced with a link to a different target '
+  test('notifies when a link is replaced with a link to a different target '
       'with different contents', () async {
     writeFile('targets/a.target', contents: 'a');
     writeFile('targets/b.target', contents: 'ab');
@@ -66,7 +65,7 @@ void _linkTests({required bool isNative}) {
     await startWatcher(path: 'links');
     writeFile('targets/a.target', contents: 'modified');
 
-    // TODO(davidmorgan): reconcile differences.
+    // Native watchers treat links as files, polling watcher polls through them.
     if (isNative) {
       await expectNoEvents();
     } else {
@@ -83,7 +82,7 @@ void _linkTests({required bool isNative}) {
 
     deleteFile('targets/a.target');
 
-    // TODO(davidmorgan): reconcile differences.
+    // Native watchers treat links as files, polling watcher polls through them.
     if (isNative) {
       await expectNoEvents();
     } else {
@@ -100,8 +99,10 @@ void _linkTests({required bool isNative}) {
 
     renameLink('links/a.link', 'links/b.link');
 
-    await inAnyOrder(
-        [isAddEvent('links/b.link'), isRemoveEvent('links/a.link')]);
+    await inAnyOrder([
+      isAddEvent('links/b.link'),
+      isRemoveEvent('links/a.link'),
+    ]);
   });
 
   test('notifies when a link to an empty directory is added', () async {
@@ -111,11 +112,12 @@ void _linkTests({required bool isNative}) {
     await startWatcher(path: 'links');
 
     writeLink(
-        link: 'links/a.link',
-        target: 'targets/a.targetdir',
-        unawaitedAsync: true);
+      link: 'links/a.link',
+      target: 'targets/a.targetdir',
+      unawaitedAsync: true,
+    );
 
-    // TODO(davidmorgan): reconcile differences.
+    // Native watchers treat links as files, polling watcher polls through them.
     if (isNative) {
       await expectAddEvent('links/a.link');
     } else {
@@ -123,8 +125,7 @@ void _linkTests({required bool isNative}) {
     }
   });
 
-  test(
-      'does not notify about directory contents '
+  test('does not notify about directory contents '
       'when a link to a directory is added', () async {
     createDir('targets');
     createDir('links');
@@ -133,11 +134,12 @@ void _linkTests({required bool isNative}) {
     await startWatcher(path: 'links');
 
     writeLink(
-        link: 'links/a.link',
-        target: 'targets/a.targetdir',
-        unawaitedAsync: true);
+      link: 'links/a.link',
+      target: 'targets/a.targetdir',
+      unawaitedAsync: true,
+    );
 
-    // TODO(davidmorgan): reconcile differences.
+    // Native watchers treat links as files, polling watcher polls through them.
     if (isNative) {
       await expectAddEvent('links/a.link');
     } else {
@@ -154,17 +156,33 @@ void _linkTests({required bool isNative}) {
 
     writeFile('targets/a.targetdir/a.txt');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (!isNative || Platform.isLinux) {
+    // Native watchers treat links as files, polling watcher polls through them.
+    if (isNative) {
+      await expectNoEvents();
+    } else {
       await expectAddEvent('links/a.link/a.txt');
-    } else {
-      await expectNoEvents();
     }
   });
 
-  test(
-      'notifies about linked directory contents when a directory with a linked '
-      'subdirectory is moved in', () async {
+  test('notifies when a file is added to a newly linked directory', () async {
+    createDir('targets');
+    createDir('links');
+    createDir('targets/a.targetdir');
+    await startWatcher(path: 'links');
+
+    writeLink(link: 'links/a.link', target: 'targets/a.targetdir');
+    writeFile('targets/a.targetdir/a.txt');
+
+    // Native watchers treat links as files, polling watcher polls through them.
+    if (isNative) {
+      await expectAddEvent('links/a.link');
+    } else {
+      await expectAddEvent('links/a.link/a.txt');
+    }
+  });
+
+  test('notifies about linked directory contents when a directory with a '
+      'linked subdirectory is moved in', () async {
     createDir('targets');
     createDir('links');
     createDir('targets/a.targetdir');
@@ -175,12 +193,16 @@ void _linkTests({required bool isNative}) {
 
     renameDir('links', 'watched/links');
 
-    await expectAddEvent('watched/links/a.link/a.txt');
+    // Native watchers treat links as files, polling watcher polls through them.
+    if (isNative) {
+      await expectAddEvent('watched/links/a.link');
+    } else {
+      await expectAddEvent('watched/links/a.link/a.txt');
+    }
   });
 
-  test(
-      'notifies about linked directory contents when a directory with a linked '
-      'subdirectory containing a link loop is moved in', () async {
+  test('notifies about linked directory contents when a directory with a '
+      'linked subdirectory containing a link loop is moved in', () async {
     createDir('targets');
     createDir('links');
     createDir('targets/a.targetdir');
@@ -188,43 +210,24 @@ void _linkTests({required bool isNative}) {
     writeFile('targets/a.targetdir/a.txt');
     writeLink(link: 'links/a.link', target: 'targets/a.targetdir');
     writeLink(
-        link: 'targets/a.targetdir/cycle.link', target: 'targets/a.targetdir');
+      link: 'targets/a.targetdir/cycle.link',
+      target: 'targets/a.targetdir',
+    );
     await startWatcher(path: 'watched');
 
     renameDir('links', 'watched/links');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (isNative && (Platform.isLinux || Platform.isMacOS)) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle.link/cycle.link'),
-      ]);
-      await expectNoEvents();
-    } else if (isNative && Platform.isWindows) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle.link'),
-      ]);
-      await expectNoEvents();
-    } else if (!isNative && Platform.isWindows) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-      ]);
-      await expectNoEvents();
+    // Native watchers treat links as files, polling watcher polls through them.
+    if (isNative) {
+      await expectAddEvent('watched/links/a.link');
     } else {
-      assert(!isNative);
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle.link/a.txt'),
-      ]);
-      await expectNoEvents();
+      await expectAddEvent('watched/links/a.link/a.txt');
     }
+    await expectNoEvents();
   });
 
-  test(
-      'notifies about linked directory contents when a directory with a linked '
-      'subdirectory containing two link loops is moved in', () async {
+  test('notifies about linked directory contents when a directory with a '
+      'linked subdirectory containing two link loops is moved in', () async {
     createDir('targets');
     createDir('links');
     createDir('targets/a.targetdir');
@@ -232,51 +235,38 @@ void _linkTests({required bool isNative}) {
     writeFile('targets/a.targetdir/a.txt');
     writeLink(link: 'links/a.link', target: 'targets/a.targetdir');
     writeLink(
-        link: 'targets/a.targetdir/cycle1.link', target: 'targets/a.targetdir');
+      link: 'targets/a.targetdir/cycle1.link',
+      target: 'targets/a.targetdir',
+    );
     writeLink(
-        link: 'targets/a.targetdir/cycle2.link', target: 'targets/a.targetdir');
+      link: 'targets/a.targetdir/cycle2.link',
+      target: 'targets/a.targetdir',
+    );
     await startWatcher(path: 'watched');
 
     renameDir('links', 'watched/links');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (isNative && (Platform.isLinux || Platform.isMacOS)) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link/cycle1.link'),
-        isAddEvent('watched/links/a.link/cycle1.link/cycle2.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link/cycle2.link/cycle1.link'),
-        isAddEvent('watched/links/a.link/cycle1.link/cycle2.link/cycle2.link'),
-        isAddEvent('watched/links/a.link/cycle2.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle2.link/cycle1.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle2.link/cycle1.link/cycle1.link'),
-        isAddEvent('watched/links/a.link/cycle2.link/cycle1.link/cycle2.link'),
-        isAddEvent('watched/links/a.link/cycle2.link/cycle2.link'),
-      ]);
-      await expectNoEvents();
-    } else if (isNative && Platform.isWindows) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link'),
-        isAddEvent('watched/links/a.link/cycle2.link'),
-      ]);
-      await expectNoEvents();
-    } else if (!isNative && Platform.isWindows) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-      ]);
-      await expectNoEvents();
+    // Native watchers treat links as files, polling watcher polls through them.
+    if (isNative) {
+      await expectAddEvent('watched/links/a.link');
     } else {
-      assert(!isNative);
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link/cycle2.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle2.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle2.link/cycle1.link/a.txt'),
-      ]);
-      await expectNoEvents();
+      await expectAddEvent('watched/links/a.link/a.txt');
     }
+    await expectNoEvents();
+  });
+
+  test('is not slow in a directory with many link loops', () async {
+    createDir('links');
+    writeLink(link: 'links/a/cycle1.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle2.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle3.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle4.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle5.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle6.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle7.link', target: 'links/a');
+
+    final stopwatch = Stopwatch()..start();
+    await startWatcher(path: 'links');
+    expect(stopwatch.elapsedMilliseconds, lessThan(500));
   });
 }

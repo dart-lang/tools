@@ -15,12 +15,9 @@ final _oneOrMoreWhitespacePattern = RegExp('[ \n\r\t]+');
 
 /// Escapes (`"`), (`<`), (`>`) and (`&`) characters.
 /// Escapes (`'`) if [escapeApos] is `true`.
-String escapeHtml(String html, {bool escapeApos = true}) =>
-    HtmlEscape(HtmlEscapeMode(
-      escapeApos: escapeApos,
-      escapeLtGt: true,
-      escapeQuot: true,
-    )).convert(html);
+String escapeHtml(String html, {bool escapeApos = true}) => HtmlEscape(
+  HtmlEscapeMode(escapeApos: escapeApos, escapeLtGt: true, escapeQuot: true),
+).convert(html);
 
 /// Escapes (`"`), (`<`) and (`>`) characters.
 String escapeHtmlAttribute(String text) =>
@@ -92,7 +89,6 @@ String decodeHtmlCharacterFromMatch(Match match) {
   if (entity != null) {
     return htmlEntitiesMap[text] ?? text;
   }
-
   // Decimal numeric character references, see
   // https://spec.commonmark.org/0.30/#decimal-numeric-character-references.
   else if (decimalNumber != null) {
@@ -106,7 +102,6 @@ String decodeHtmlCharacterFromMatch(Match match) {
 
     return String.fromCharCode(hexValue);
   }
-
   // Hexadecimal numeric character references, see
   // https://spec.commonmark.org/0.30/#hexadecimal-numeric-character-references.
   else if (hexadecimalNumber != null) {

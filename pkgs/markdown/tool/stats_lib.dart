@@ -36,7 +36,8 @@ File getStatsFile(String prefix) =>
     File(p.join(toolDir, '${prefix}_stats.json'));
 
 Map<String, List<CommonMarkTestCase>> loadCommonMarkSections(
-    String testPrefix) {
+  String testPrefix,
+) {
   final testFile = File(p.join(toolDir, '${testPrefix}_tests.json'));
   final testsJson = testFile.readAsStringSync();
 
@@ -45,11 +46,14 @@ Map<String, List<CommonMarkTestCase>> loadCommonMarkSections(
   final sections = <String, List<CommonMarkTestCase>>{};
 
   for (final exampleMap in testArray) {
-    final exampleTest =
-        CommonMarkTestCase.fromJson(exampleMap as Map<String, dynamic>);
+    final exampleTest = CommonMarkTestCase.fromJson(
+      exampleMap as Map<String, dynamic>,
+    );
 
-    final sectionList =
-        sections.putIfAbsent(exampleTest.section, () => <CommonMarkTestCase>[]);
+    final sectionList = sections.putIfAbsent(
+      exampleTest.section,
+      () => <CommonMarkTestCase>[],
+    );
 
     sectionList.add(exampleTest);
   }
@@ -209,8 +213,10 @@ void _printVerboseFailure(
   CommonMarkTestCase testCase,
   String actual,
 ) {
-  print('$message: $baseUrl#example-${testCase.example} '
-      '@ ${testCase.section}');
+  print(
+    '$message: $baseUrl#example-${testCase.example} '
+    '@ ${testCase.section}',
+  );
   print('input:');
   print(_indent(testCase.markdown));
   print('expected:');

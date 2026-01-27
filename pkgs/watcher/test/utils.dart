@@ -30,8 +30,12 @@ late WatcherFactory _watcherFactory;
 /// Creates a new [Watcher] that watches a temporary file or directory.
 ///
 /// If [path] is provided, watches a subdirectory in the sandbox with that name.
-Watcher createWatcher({String? path}) {
-  if (path == null) {
+/// Or, pass [exactPath] to watch an exact relative or absolute path without
+/// modifying it to add the sandbox path.
+Watcher createWatcher({String? exactPath, String? path}) {
+  if (exactPath != null) {
+    path = exactPath;
+  } else if (path == null) {
     path = d.sandbox;
   } else {
     path = p.join(d.sandbox, path);
@@ -70,8 +74,9 @@ var _hasClosedStream = true;
 /// than other platforms, at 1s.
 void enableSleepUntilNewModificationTime() {
   if (_waitForModificationTimesDirectory != null) return;
-  _waitForModificationTimesDirectory =
-      Directory.systemTemp.createTempSync('dart_test_');
+  _waitForModificationTimesDirectory = Directory.systemTemp.createTempSync(
+    'dart_test_',
+  );
   addTearDown(() {
     _waitForModificationTimesDirectory!.deleteSync(recursive: true);
     _waitForModificationTimesDirectory = null;
@@ -103,10 +108,11 @@ void sleepUntilNewModificationTime() {
 /// starts monitoring it for events.
 ///
 /// If [path] is provided, watches a path in the sandbox with that name.
-Future<void> startWatcher({String? path}) async {
+/// /// Or, pass [exactPath] to watch an exact path irrespective of the sandbox.
+Future<void> startWatcher({String? exactPath, String? path}) async {
   // We want to wait until we're ready *after* we subscribe to the watcher's
   // events.
-  var watcher = createWatcher(path: path);
+  var watcher = createWatcher(exactPath: exactPath, path: path);
   _watcherEvents = StreamQueue(watcher.events);
   // Forces a subscription to the underlying stream.
   unawaited(_watcherEvents.hasNext);
@@ -145,24 +151,30 @@ Future inAnyOrder(Iterable matchers) =>
 
 /// Returns a StreamMatcher that matches a [WatchEvent] with the given [type]
 /// and [path].
-Matcher isWatchEvent(ChangeType type, String path) {
+Matcher isWatchEvent(ChangeType type, String path, {bool ignoreCase = false}) {
+  var normalizedPath = p.join(d.sandbox, p.normalize(path));
+  if (ignoreCase) normalizedPath = normalizedPath.toLowerCase();
   return predicate((e) {
-    return e is WatchEvent &&
-        e.type == type &&
-        e.path == p.join(d.sandbox, p.normalize(path));
+    if (e is! WatchEvent) return false;
+    var eventPath = e.path;
+    if (ignoreCase) eventPath = eventPath.toLowerCase();
+    return e.type == type && eventPath == normalizedPath;
   }, 'is $type $path');
 }
 
 /// Returns a [Matcher] that matches a [WatchEvent] for an add event for [path].
-Matcher isAddEvent(String path) => isWatchEvent(ChangeType.ADD, path);
+Matcher isAddEvent(String path, {bool ignoreCase = false}) =>
+    isWatchEvent(ChangeType.ADD, path, ignoreCase: ignoreCase);
 
 /// Returns a [Matcher] that matches a [WatchEvent] for a modification event for
 /// [path].
-Matcher isModifyEvent(String path) => isWatchEvent(ChangeType.MODIFY, path);
+Matcher isModifyEvent(String path, {bool ignoreCase = false}) =>
+    isWatchEvent(ChangeType.MODIFY, path, ignoreCase: ignoreCase);
 
 /// Returns a [Matcher] that matches a [WatchEvent] for a removal event for
 /// [path].
-Matcher isRemoveEvent(String path) => isWatchEvent(ChangeType.REMOVE, path);
+Matcher isRemoveEvent(String path, {bool ignoreCase = false}) =>
+    isWatchEvent(ChangeType.REMOVE, path, ignoreCase: ignoreCase);
 
 /// Takes the first event emitted during [duration], or returns `null` if there
 /// is none.
@@ -192,6 +204,21 @@ Future<List<WatchEvent>> takeEvents({required Duration duration}) async {
     }
   }
   return result;
+}
+
+/// Returns a copy of [events] without events about paths that have a REMOVE
+/// event as the last event.
+///
+/// For example, drops all events for a path with an ADD then a MODIFY then a
+/// REMOVE; keeps all events for a path with ADD, REMOVE, ADD.
+///
+/// This allows tests to avoid flakes due to equivalent but different events
+/// about transient files.
+List<WatchEvent> foldDeletes(List<WatchEvent> events) {
+  final lastEventByPath = {for (final event in events) event.path: event};
+  return events
+      .where((event) => lastEventByPath[event.path]!.type != ChangeType.REMOVE)
+      .toList();
 }
 
 /// Expects that the next event emitted will be for an add event for [path].
@@ -266,16 +293,20 @@ void writeLink({
 /// Deletes a file in the sandbox at [path].
 void deleteFile(String path) {
   final fullPath = p.join(d.sandbox, path);
-  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
-      FileSystemEntityType.file);
+  expect(
+    FileSystemEntity.typeSync(fullPath, followLinks: false),
+    FileSystemEntityType.file,
+  );
   File(fullPath).deleteSync();
 }
 
 /// Deletes a link in the sandbox at [path].
 void deleteLink(String path) {
   final fullPath = p.join(d.sandbox, path);
-  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
-      FileSystemEntityType.link);
+  expect(
+    FileSystemEntity.typeSync(fullPath, followLinks: false),
+    FileSystemEntityType.link,
+  );
   Link(fullPath).deleteSync();
 }
 
@@ -283,8 +314,10 @@ void deleteLink(String path) {
 void renameFile(String from, String to) {
   var absoluteTo = p.join(d.sandbox, to);
   File(p.join(d.sandbox, from)).renameSync(absoluteTo);
-  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
-      FileSystemEntityType.file);
+  expect(
+    FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+    FileSystemEntityType.file,
+  );
 }
 
 /// Renames a link in the sandbox from [from] to [to].
@@ -294,8 +327,10 @@ void renameFile(String from, String to) {
 void renameLink(String from, String to) {
   var absoluteTo = p.join(d.sandbox, to);
   Link(p.join(d.sandbox, from)).renameSync(absoluteTo);
-  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
-      FileSystemEntityType.link);
+  expect(
+    FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+    FileSystemEntityType.link,
+  );
 }
 
 /// Creates a directory in the sandbox at [path].
@@ -306,16 +341,23 @@ void createDir(String path) {
 /// Renames a directory in the sandbox from [from] to [to].
 void renameDir(String from, String to) {
   var absoluteTo = p.join(d.sandbox, to);
-  Directory(p.join(d.sandbox, from)).renameSync(absoluteTo);
-  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
-      FileSystemEntityType.directory);
+  // Fails sometimes on Windows, so guard+retry.
+  retryForPathAccessException(
+    () => Directory(p.join(d.sandbox, from)).renameSync(absoluteTo),
+  );
+  expect(
+    FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+    FileSystemEntityType.directory,
+  );
 }
 
 /// Deletes a directory in the sandbox at [path].
 void deleteDir(String path) {
   final fullPath = p.join(d.sandbox, path);
-  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
-      FileSystemEntityType.directory);
+  expect(
+    FileSystemEntity.typeSync(fullPath, followLinks: false),
+    FileSystemEntityType.directory,
+  );
   Directory(fullPath).deleteSync(recursive: true);
 }
 
@@ -337,3 +379,19 @@ Set<S> withPermutations<S>(S Function(int, int, int) callback, {int? limit}) {
   }
   return results;
 }
+
+/// Retries [action] until it does not throw [PathAccessException].
+void retryForPathAccessException(void Function() action) {
+  while (true) {
+    try {
+      action();
+      return;
+    } on PathAccessException catch (e) {
+      stderr.writeln('Temporary failure, retrying: $e');
+    }
+  }
+}
+
+/// Returns the union of all elements in each set in [sets].
+Set<T> unionAll<T>(Iterable<Set<T>> sets) =>
+    sets.fold(<T>{}, (union, set) => union.union(set));

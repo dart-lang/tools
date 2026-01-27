@@ -35,10 +35,12 @@ class CodeBlockSyntax extends BlockSyntax {
         break;
       }
 
-      childLines.add(Line(
-        parser.current.content.dedent().text,
-        tabRemaining: parser.current.tabRemaining,
-      ));
+      childLines.add(
+        Line(
+          parser.current.content.dedent().text,
+          tabRemaining: parser.current.tabRemaining,
+        ),
+      );
 
       parser.advance();
     }

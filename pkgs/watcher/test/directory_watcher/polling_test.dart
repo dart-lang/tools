@@ -9,13 +9,16 @@ import 'package:test/test.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
+import 'end_to_end_tests.dart';
 import 'file_tests.dart';
 import 'link_tests.dart';
 
 void main() {
   // Use a short delay to make the tests run quickly.
-  watcherFactory = (dir) => PollingDirectoryWatcher(dir,
-      pollingDelay: const Duration(milliseconds: 10));
+  watcherFactory = (dir) => PollingDirectoryWatcher(
+    dir,
+    pollingDelay: const Duration(milliseconds: 10),
+  );
 
   /// See [enableSleepUntilNewModificationTime] for a note about the "polling"
   /// tests.
@@ -23,6 +26,7 @@ void main() {
 
   fileTests(isNative: false);
   linkTests(isNative: false);
+  endToEndTests();
 
   // A poll does an async directory list that runs "stat" on each file. Check
   // handling of a file that is deleted between the two.
@@ -39,8 +43,9 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 1));
     }
 
-    final events =
-        await takeEvents(duration: const Duration(milliseconds: 500));
+    final events = await takeEvents(
+      duration: const Duration(milliseconds: 500),
+    );
 
     // Events should be adds and removes that pair up, with no modify events.
     final adds = <String>{};

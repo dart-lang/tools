@@ -19,29 +19,26 @@ import '../patterns.dart';
 /// TODO(srawlins): improve accuracy while ensuring performance, once
 /// Markdown benchmarking is more mature.
 class InlineHtmlSyntax extends TextSyntax {
-  static const _pattern = '(?:$namedTagDefinition)'
+  static const _pattern =
+      '(?:$namedTagDefinition)'
       // Or
       '|'
-
       // HTML comment, see
       // https://spec.commonmark.org/0.30/#html-comment.
       r'<!--(?!-?>)[^\-]*-(?:[^\-]+-)*?->'
       '|'
-
       // Processing-instruction, see
       // https://spec.commonmark.org/0.30/#processing-instruction
       r'<\?[^]*?\?>'
       '|'
-
       // Declaration, see
       // https://spec.commonmark.org/0.30/#declaration.
       r'(<![a-zA-Z]+[^]*?>)'
       '|'
-
       // CDATA section, see
       // https://spec.commonmark.org/0.30/#cdata-section.
       r'(<!\[CDATA\[[^]*?\]\]>)';
 
   InlineHtmlSyntax()
-      : super(_pattern, startCharacter: $lt, caseSensitive: true);
+    : super(_pattern, startCharacter: $lt, caseSensitive: true);
 }

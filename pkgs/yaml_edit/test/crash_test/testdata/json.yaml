@@ -1,0 +1,12 @@
+{
+  "string": "hello world",
+  "map": {
+    "foo": 42,
+    "bar": "baz"
+  },
+  "list": [
+    1,
+    2,
+    3
+  ]
+}

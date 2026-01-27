@@ -6,13 +6,14 @@
 library;
 
 import 'package:test/test.dart';
-import 'package:watcher/src/directory_watcher/mac_os.dart';
+import 'package:watcher/src/directory_watcher/recursive/recursive_directory_watcher.dart';
 
 import '../utils.dart';
 import 'shared.dart';
 
 void main() {
-  watcherFactory = MacOSDirectoryWatcher.new;
+  watcherFactory = (directory) =>
+      RecursiveDirectoryWatcher(directory, runInIsolate: false);
 
   sharedTests();
 }
