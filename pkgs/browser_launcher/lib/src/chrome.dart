@@ -118,6 +118,9 @@ class Chrome {
       // credentials. This uses a mock keychain to avoid that dialog from
       // blocking.
       '--use-mock-keychain',
+      // Prevent warnings for using flags that are disrecommended for general
+      // browsing but applicable for use in dev focused workflows.
+      '--test-type',
     ];
     if (headless) {
       args.add('--headless');
