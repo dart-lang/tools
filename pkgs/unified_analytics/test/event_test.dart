@@ -813,7 +813,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 33;
+    final eventsAccountedForInTests = 34;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '
