@@ -778,7 +778,7 @@ final class Event {
   ///
   /// * [jdkVersion] - the JDK version used by the project.
   ///
-  /// * [gradleVersion] - the Android Gradle plugin version used by the project.
+  /// * [gradleVersion] - the Gradle version used by the project.
   Event.flutterTrackAndroidDependencies({
     required bool isModule,
     required String agpVersion,
