@@ -530,6 +530,32 @@ void main() {
     expect(constructedEvent.eventData.length, 9);
   });
 
+  test('Event.flutterTrackAndroidDependencies constructed', () {
+    Event generateEvent() => Event.flutterTrackAndroidDependencies(
+          isModule: true,
+          agpVersion: '8.2.2',
+          minSDK: 24,
+          targetSDK: 36,
+          compileSDK: 36,
+          jdkVersion: 24,
+          gradleVersion: '8.10.2',
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(
+        constructedEvent.eventName, DashEvent.flutterTrackAndroidDependencies);
+    expect(constructedEvent.eventData['isModule'], isTrue);
+    expect(constructedEvent.eventData['agpVersion'], '8.2.2');
+    expect(constructedEvent.eventData['minSDK'], 24);
+    expect(constructedEvent.eventData['targetSDK'], 36);
+    expect(constructedEvent.eventData['compileSDK'], 36);
+    expect(constructedEvent.eventData['JDKVersion'], 24);
+    expect(constructedEvent.eventData['gradleVersion'], '8.10.2');
+    expect(constructedEvent.eventData.length, 7);
+  });
+
   test('Event.codeSizeAnalysis constructed', () {
     Event generateEvent() => Event.codeSizeAnalysis(platform: 'platform');
 
