@@ -786,6 +786,7 @@ final class Event {
     required int targetSDK,
     required int compileSDK,
     required int jdkVersion,
+    required String ndkVersion,
     required String gradleVersion,
   }) : this._(
           eventName: DashEvent.flutterTrackAndroidDependencies,
@@ -796,6 +797,7 @@ final class Event {
             'targetSDK': targetSDK,
             'compileSDK': compileSDK,
             'jdkVersion': jdkVersion,
+            'ndkVersion': ndkVersion,
             'gradleVersion': gradleVersion,
           },
         );

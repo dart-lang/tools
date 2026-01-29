@@ -538,6 +538,7 @@ void main() {
           targetSDK: 36,
           compileSDK: 36,
           jdkVersion: 24,
+          ndkVersion: '28.0.13004108',
           gradleVersion: '8.10.2',
         );
 
@@ -551,9 +552,10 @@ void main() {
     expect(constructedEvent.eventData['minSDK'], 24);
     expect(constructedEvent.eventData['targetSDK'], 36);
     expect(constructedEvent.eventData['compileSDK'], 36);
-    expect(constructedEvent.eventData['JDKVersion'], 24);
+    expect(constructedEvent.eventData['jdkVersion'], 24);
+    expect(constructedEvent.eventData['ndkVersion'], '28.0.13004108');
     expect(constructedEvent.eventData['gradleVersion'], '8.10.2');
-    expect(constructedEvent.eventData.length, 7);
+    expect(constructedEvent.eventData.length, 8);
   });
 
   test('Event.codeSizeAnalysis constructed', () {
