@@ -768,7 +768,7 @@ final class Event {
   ///
   /// * [isModule] - whether the project is an add-to-app Flutter module.
   ///
-  /// * [agpVersion] - the Android Grdale plugin of the project.
+  /// * [agpVersion] - the Android Gradle plugin of the project.
   ///
   /// * [minSDK] - the minimum SDK version supported by the project.
   ///
