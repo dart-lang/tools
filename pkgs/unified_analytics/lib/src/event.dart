@@ -795,7 +795,7 @@ final class Event {
             'minSDK': minSDK,
             'targetSDK': targetSDK,
             'compileSDK': compileSDK,
-            'JDKVersion': jdkVersion,
+            'jdkVersion': jdkVersion,
             'gradleVersion': gradleVersion,
           },
         );
