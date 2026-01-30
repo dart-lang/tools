@@ -9,6 +9,7 @@
 
 import 'package:test/test.dart';
 import 'package:yaml/src/error_listener.dart';
+import 'package:yaml/src/token.dart';
 import 'package:yaml/yaml.dart';
 
 import 'utils.dart';
@@ -992,21 +993,33 @@ void main() {
   });
 
   group('6.8: Directives', () {
-    // TODO(nweiz): assert that this produces a warning
     test('[Example 6.13]', () {
-      expectYamlLoads('foo', '''
+      expect(
+        () => expectYamlLoads(
+          'foo',
+          '''
         %FOO  bar baz # Should be ignored
                       # with a warning.
-        --- "foo"''');
+        --- "foo"''',
+        ),
+        prints(contains('Warning: unknown directive')),
+      );
     });
 
-    // TODO(nweiz): assert that this produces a warning.
     test('[Example 6.14]', () {
-      expectYamlLoads('foo', '''
+      expect(
+        () => expectYamlLoads(
+          'foo',
+          '''
         %YAML 1.3 # Attempt parsing
                    # with a warning
         ---
-        "foo"''');
+        "foo"''',
+        ),
+        prints(
+          contains('Warning: this parser only supports YAML 1.1 and 1.2.'),
+        ),
+      );
     });
 
     test('[Example 6.15]', () {
@@ -1030,8 +1043,95 @@ void main() {
         bar''');
     });
 
-    // Examples 6.18 through 6.22 test custom tag URIs, which this
-    // implementation currently doesn't plan to support.
+    // Examples 6.18 through 6.22 test custom tag URIs. Inspect the lower level
+    // event generator to check correctness of the tag directives we parse
+    // (and ignore?)
+    test('[Example 6.18]', () {
+      const source = '''
+# Global
+%TAG ! tag:example.com,2000:app/
+---
+!foo "bar"
+''';
+
+      expect(
+        generateTokens(source),
+        anyElement(isATagDirective('!', 'tag:example.com,2000:app/')),
+      );
+
+      expectYamlLoads('bar', source.asIndented());
+    });
+
+    test('[Example 6.19]', () {
+      const source = '''
+%TAG !! tag:example.com,2000:app/
+---
+!!int 1 - 3 # Interval, not integer
+''';
+
+      expect(
+        generateTokens(source),
+        anyElement(isATagDirective('!!', 'tag:example.com,2000:app/')),
+      );
+
+      expectYamlLoads('1 - 3', source.asIndented());
+    });
+
+    test('[Example 6.20]', () {
+      const source = '''
+%TAG !e! tag:example.com,2000:app/
+---
+!e!foo "bar"
+''';
+
+      expect(
+        generateTokens(source),
+        anyElement(isATagDirective('!e!', 'tag:example.com,2000:app/')),
+      );
+
+      expectYamlLoads('bar', source.asIndented());
+    });
+
+    test('[Example 6.21]', () {
+      const source = '''
+%TAG !m! !my-
+--- # Bulb here
+!m!light fluorescent
+...
+%TAG !m! !my-
+--- # Color here
+!m!light green
+''';
+
+      expect(
+        generateTokens(source).whereType<TagDirectiveToken>(),
+
+        // Two different documents. Same directive
+        everyElement(isATagDirective('!m!', '!my-')),
+      );
+
+      expectYamlStreamLoads(['fluorescent', 'green'], source.asIndented());
+    });
+
+    test('[Example 6.22]', () {
+      const source = '''
+%TAG !e! tag:example.com,2000:app/
+---
+- !e!foo "bar"
+''';
+
+      expect(
+        generateTokens(source),
+        anyElement(isATagDirective('!e!', 'tag:example.com,2000:app/')),
+      );
+
+      expectYamlLoads(['bar'], source.asIndented());
+    });
+
+    test('Throws for invalid global tag handles', () {
+      expectYamlFails('%TAG !not-allowed !birdbox');
+      expectYamlFails('%TAG uri:not-allowed !birdbox');
+    });
   });
 
   group('6.9: Node Properties', () {
@@ -1048,16 +1148,39 @@ void main() {
         &a2 baz : *a1''');
     });
 
-    // Example 6.24 tests custom tag URIs, which this implementation currently
-    // doesn't plan to support.
+    test('[Example 6.24]', () {
+      expectYamlLoads({'foo': 'baz'}, '''
+        !<tag:yaml.org,2002:str> foo :
+          !<!bar> baz''');
+    });
 
     test('[Example 6.25]', () {
       expectYamlFails('- !<!> foo');
       expectYamlFails('- !<\$:?> foo');
+      expectYamlFails('- !<tag:>'); // Incomplete verbatim tag uri
+      expectYamlFails('- !<improvised:tag>');
     });
 
-    // Examples 6.26 and 6.27 test custom tag URIs, which this implementation
-    // currently doesn't plan to support.
+    test('[Example 6.26]', () {
+      expectYamlLoads(['foo', 'bar', 'baz'], '''
+        %TAG !e! tag:example.com,2000:app/
+        ---
+        - !local foo
+        - !!str bar
+        - !e!tag%21 baz''');
+    });
+
+    test('[Example 6.27]', () {
+      expectYamlFails('''
+        %TAG !e! tag:example,2000:app/
+        ---
+        - !e! foo''');
+
+      expectYamlFails('''
+        %TAG !e! tag:example,2000:app/
+        ---
+        - !h!bar foo''');
+    });
 
     test('[Example 6.28]', () {
       expectYamlLoads(['12', 12, '12'], '''
@@ -1072,6 +1195,33 @@ void main() {
           {'First occurrence': 'Value', 'Second occurrence': 'Value'}, '''
         First occurrence: &anchor Value
         Second occurrence: *anchor''');
+    });
+
+    // Custom & verbatim tags should nudge parser to a load node as a generic
+    // kind.
+    test('Represents scalars partially as strings', () {
+      expectYamlLoads(['3', 'false', '3.10'], '''
+        %TAG !! !no-type
+        %TAG !isA! !generic-kind
+        ---
+        - !!int 3
+        - !isA!bool false
+        - !<!generic> 3.10''');
+    });
+
+    test('Composes collections completely', () {
+      expectYamlLoads([
+        <Object?, Object?>{},
+        <Object?>[],
+        ['list']
+      ], '''
+        %TAG !! !no-type
+        %TAG !isA! !generic-kind
+        ---
+        - !!map {}
+        - !isA!list []
+        - !<!generic>
+          - list''');
     });
   });
 
