@@ -117,11 +117,11 @@ dependency_overrides:
 
   test('dart pub global run coverage:test_with_coverage', () async {
     final globalPub =
-        await _run(['pub', 'global', 'activate', '-s', 'path', _pkgDir]);
+        await _run(['dart', 'pub', 'global', 'activate', '-s', 'path', _pkgDir]);
     await globalPub.shouldExit(0);
 
     await _runTest(
-      ['pub', 'global', 'run', 'coverage:test_with_coverage'],
+      ['dart', 'pub', 'global', 'run', 'coverage:test_with_coverage'],
     );
   });
 
