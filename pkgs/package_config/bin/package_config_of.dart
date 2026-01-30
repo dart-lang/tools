@@ -147,30 +147,23 @@ Future<ConfigInfo> _resolvePackageConfig(
 }
 
 /// Gathered package configuration information for [path].
-final class ConfigInfo {
+final class ConfigInfo(
   /// Original path being resolved.
-  final String path;
+  final String path,
 
   /// Path to package configuration file, if any.
-  final String? configPath;
+  final String? configPath,
 
   /// Package that path belongs to, if any.
-  final Package? package;
+  final Package? package,
 
   /// Package URI for [path], if it has one.
   /// Always `null` if [package] is `null`.
-  final Uri? packageUri;
+  final Uri? packageUri,
 
   /// Language version override in file, if any.
-  final LanguageVersion? languageVersionOverride;
-
-  ConfigInfo(
-    this.path,
-    this.configPath,
-    this.package,
-    this.packageUri,
-    this.languageVersionOverride,
-  );
+  final LanguageVersion? languageVersionOverride,
+) {
 
   Map<String, Object?> toJson() {
     return {
@@ -338,12 +331,13 @@ final leadRegExp = RegExp(
 // --------------------------------------------------------------------
 // Find and load (and cache) package configurations
 
-class PackageConfigLoader {
+class PackageConfigLoader({
   /// Stop searching at the current working directory.
-  final bool noParent;
+  final bool noParent = false,
 
   /// Stop searching if finding a `pubspec.yaml` with no package configuration.
-  final bool stopAtPubspec;
+  final bool stopAtPubspec = false,
+}) {
 
   /// Cache lookup results in case someone does more lookups on the same path.
   final Map<
@@ -351,8 +345,6 @@ class PackageConfigLoader {
     (String? configPath, PackageConfig? config)
   >
   _packageConfigCache = {};
-
-  PackageConfigLoader({this.stopAtPubspec = false, this.noParent = false});
 
   /// Finds a package configuration relative to [path].
   ///
