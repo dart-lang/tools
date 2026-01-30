@@ -1,6 +1,8 @@
 ## 0.15.7-wip
 
 - Require Dart `3.6`
+- Added new `textContent` method to `Node` class that returns the text content of
+  the node.
 
 ## 0.15.6
 
