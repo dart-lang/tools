@@ -1,3 +1,6 @@
+## 8.0.14
+- Added `Event.flutterTrackAndroidDependencies` to track android dependencies.
+
 ## 8.0.13
 - Deprecated `Event.flutterWasmDryRun` in favor of `Event.flutterWasmDryRunPackage`.
 
