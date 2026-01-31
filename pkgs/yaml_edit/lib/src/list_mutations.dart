@@ -134,7 +134,7 @@ SourceEdit _appendToBlockList(
 }
 
 /// Formats [item] into a new node for block lists.
-(int indentSize, String valueStringToIndent) _formatNewBlock(
+({int entryIndent, String lineEnding, String formattedEntry}) _formatNewBlock(
     YamlEditor yamlEdit, YamlList list, YamlNode item) {
   final yaml = yamlEdit.toString();
   final listIndentation = getListIndentation(yaml, list);
@@ -146,7 +146,11 @@ SourceEdit _appendToBlockList(
     valueString = valueString.substring(newIndentation);
   }
 
-  return (listIndentation, '- $valueString$lineEnding');
+  return (
+    entryIndent: listIndentation,
+    lineEnding: lineEnding,
+    formattedEntry: '- $valueString$lineEnding'
+  );
 }
 
 /// Formats [item] into a new node for flow lists.
@@ -174,7 +178,11 @@ SourceEdit _insertInBlockList(
 
   if (index == list.length) return _appendToBlockList(yamlEdit, list, item);
 
-  var (indentSize, formattedValue) = _formatNewBlock(yamlEdit, list, item);
+  var (:entryIndent, :formattedEntry, lineEnding: _) = _formatNewBlock(
+    yamlEdit,
+    list,
+    item,
+  );
 
   final currNode = list.nodes[index];
   final currNodeStart = currNode.span.start.offset;
@@ -206,16 +214,16 @@ SourceEdit _insertInBlockList(
     final leftPad = currSequenceOffset - offset;
     final padding = ' ' * leftPad;
 
-    final indent = ' ' * (indentSize - leftPad);
+    final indent = ' ' * (entryIndent - leftPad);
 
     // Give the indent to the first element
-    formattedValue = '$padding${formattedValue.trimLeft()}$indent';
+    formattedEntry = '$padding${formattedEntry.trimLeft()}$indent';
   } else {
-    final indent = ' ' * indentSize; // Calculate indent normally
-    formattedValue = '$indent$formattedValue';
+    final indent = ' ' * entryIndent; // Calculate indent normally
+    formattedEntry = '$indent$formattedEntry';
   }
 
-  return SourceEdit(offset, 0, formattedValue);
+  return SourceEdit(offset, 0, formattedEntry);
 }
 
 /// Determines if the list containing an element is nested within another list.
