@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:math';
+
 import 'package:yaml/yaml.dart';
 
 import 'editor.dart';
@@ -112,25 +114,31 @@ SourceEdit _appendToFlowList(
 /// block list.
 SourceEdit _appendToBlockList(
     YamlEditor yamlEdit, YamlList list, YamlNode item) {
-  var (indentSize, valueToIndent) = _formatNewBlock(yamlEdit, list, item);
-  var formattedValue = '${' ' * indentSize}$valueToIndent';
+  // A block list can/should never be empty. A "-" must be seen for it be a
+  // block list. This guarantees that this edit will be applied at the tail
+  // after the existing content.
+  //
+  // It's just a flow list if it's empty.
+  assert(list.isNotEmpty, 'Expected a non-empty block list');
+
+  final entry = _formatNewBlock(yamlEdit, list, item);
+  var formattedValue = '${' ' * entry.entryIndent}${entry.formattedEntry}';
 
   final yaml = yamlEdit.toString();
-  var offset = list.span.end.offset;
+  final maxLength = yaml.length;
 
-  // Adjusts offset to after the trailing newline of the last entry, if it
-  // exists
-  if (list.isNotEmpty) {
-    final lastValueSpanEnd = list.nodes.last.span.end.offset;
-    final nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd - 1);
-    if (nextNewLineIndex == -1) {
-      formattedValue = getLineEnding(yaml) + formattedValue;
-    } else {
-      offset = nextNewLineIndex + 1;
-    }
+  var endOffset = indexOfLastLineEnding(
+    yaml,
+    offset: yaml.indexOf('\n', list.nodes.last.span.end.offset - 1),
+    blockIndent: entry.entryIndent, // Equal to the list's indent.
+  );
+
+  if (endOffset >= (maxLength - 1) && !yaml.endsWith('\n')) {
+    formattedValue = entry.lineEnding + formattedValue;
   }
 
-  return SourceEdit(offset, 0, formattedValue);
+  endOffset = min(maxLength, endOffset + 1);
+  return SourceEdit(endOffset, 0, formattedValue);
 }
 
 /// Formats [item] into a new node for block lists.
