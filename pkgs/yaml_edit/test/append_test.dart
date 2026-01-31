@@ -218,7 +218,7 @@ b:
 '''));
     });
 
-    test('block append nested and with comments', () {
+    test('block append nested and with comments (1)', () {
       final yamlEditor = YamlEditor('''
 a:
   b:
@@ -241,6 +241,46 @@ a:
                 'g': {'e': 3, 'f': 4}
               }),
           returnsNormally);
+    });
+
+    test('block append with a single trailing comment (no EOF)', () {
+      final yamlEditor = YamlEditor('- value # comment')
+        ..appendToList([], 'next');
+
+      expect(yamlEditor.toString(), equals('''
+- value # comment
+- next
+'''));
+    });
+
+    test('block append with multiple trailing comments', () {
+      final yamlEditor = YamlEditor('''
+- value # comment
+        # comment
+''')
+        ..appendToList([], 'next');
+
+      expect(yamlEditor.toString(), equals('''
+- value # comment
+        # comment
+- next
+'''));
+    });
+
+    test('block append nested with multiple comments', () {
+      final yamlEditor = YamlEditor('''
+- - value # comment
+      # comment
+        # comment
+''')
+        ..appendToList([0], 'next');
+
+      expect(yamlEditor.toString(), equals('''
+- - value # comment
+      # comment
+        # comment
+  - next
+'''));
     });
   });
 

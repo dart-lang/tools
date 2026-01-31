@@ -121,8 +121,9 @@ SourceEdit _appendToBlockList(
   // It's just a flow list if it's empty.
   assert(list.isNotEmpty, 'Expected a non-empty block list');
 
-  final entry = _formatNewBlock(yamlEdit, list, item);
-  var formattedValue = '${' ' * entry.entryIndent}${entry.formattedEntry}';
+  var (:entryIndent, :formattedEntry, :lineEnding) =
+      _formatNewBlock(yamlEdit, list, item);
+  formattedEntry = '${' ' * entryIndent}$formattedEntry';
 
   final yaml = yamlEdit.toString();
   final maxLength = yaml.length;
@@ -130,15 +131,15 @@ SourceEdit _appendToBlockList(
   var endOffset = indexOfLastLineEnding(
     yaml,
     offset: yaml.indexOf('\n', list.nodes.last.span.end.offset - 1),
-    blockIndent: entry.entryIndent, // Equal to the list's indent.
+    blockIndent: entryIndent, // Equal to the list's indent.
   );
 
   if (endOffset >= (maxLength - 1) && !yaml.endsWith('\n')) {
-    formattedValue = entry.lineEnding + formattedValue;
+    formattedEntry = lineEnding + formattedEntry;
   }
 
   endOffset = min(maxLength, endOffset + 1);
-  return SourceEdit(endOffset, 0, formattedValue);
+  return SourceEdit(endOffset, 0, formattedEntry);
 }
 
 /// Formats [item] into a new node for block lists.
