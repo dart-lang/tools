@@ -20,43 +20,61 @@ SourceEdit updateInList(
   RangeError.checkValueInInterval(index, 0, list.length - 1);
 
   final currValue = list.nodes[index];
-  var offset = currValue.span.start.offset;
+  var start = currValue.span.start.offset;
   final yaml = yamlEdit.toString();
-  String valueString;
+
+  if (list.style != CollectionStyle.BLOCK) {
+    return SourceEdit(start, currValue.span.length, yamlEncodeFlow(newValue));
+  }
+
+  final listIndentation = getListIndentation(yaml, list);
+  final indentation = listIndentation + getIndentation(yamlEdit);
+  final lineEnding = getLineEnding(yaml);
 
   /// We do not use [_formatNewBlock] since we want to only replace the contents
   /// of this node while preserving comments/whitespace, while [_formatNewBlock]
   /// produces a string representation of a new node.
-  if (list.style == CollectionStyle.BLOCK) {
-    final listIndentation = getListIndentation(yaml, list);
-    final indentation = listIndentation + getIndentation(yamlEdit);
-    final lineEnding = getLineEnding(yaml);
-    valueString =
-        yamlEncodeBlock(wrapAsYamlNode(newValue), indentation, lineEnding);
+  var formattedValue =
+      yamlEncodeBlock(wrapAsYamlNode(newValue), indentation, lineEnding);
 
-    /// We prefer the compact nested notation for collections.
-    ///
-    /// By virtue of [yamlEncodeBlockString], collections automatically
-    /// have the necessary line endings.
-    if ((newValue is List && (newValue as List).isNotEmpty) ||
-        (newValue is Map && (newValue as Map).isNotEmpty)) {
-      valueString = valueString.substring(indentation);
-    } else if (currValue.collectionStyle == CollectionStyle.BLOCK) {
-      valueString += lineEnding;
-    }
-
-    var end = getContentSensitiveEnd(currValue);
-    if (end <= offset) {
-      offset++;
-      end = offset;
-      valueString = ' $valueString';
-    }
-
-    return SourceEdit(offset, end - offset, valueString);
-  } else {
-    valueString = yamlEncodeFlow(newValue);
-    return SourceEdit(offset, currValue.span.length, valueString);
+  /// We prefer the compact nested notation for collections.
+  ///
+  /// By virtue of [yamlEncodeBlockString], collections automatically
+  /// have the necessary line endings.
+  if ((newValue is List && (newValue as List).isNotEmpty) ||
+      (newValue is Map && (newValue as Map).isNotEmpty)) {
+    formattedValue = formattedValue.substring(indentation);
+  } else if (currValue.collectionStyle == CollectionStyle.BLOCK &&
+      !formattedValue.endsWith('\n')) {
+    formattedValue += lineEnding;
   }
+
+  var end = getContentSensitiveEnd(currValue);
+
+  // `package:yaml` quirk when the value is empty.
+  if (end <= start) {
+    start++;
+    end = start;
+    formattedValue = ' $formattedValue';
+  }
+
+  end = indexOfLastLineEnding(
+    yaml,
+    offset: yaml.indexOf('\n', end),
+    blockIndent: listIndentation,
+  );
+
+  // Consume the line ending to prevent any dangling line breaks. Update
+  // replaces the existing value when sandwiched or trailing. We may need to
+  // preserve the line ending whenever possible.
+  if (formattedValue.endsWith('\n') ||
+      (end >= yaml.length - 1 && !yaml.endsWith('\n'))) {
+    end = min(yaml.length, ++end);
+  } else if (lineEnding == '\r\n') {
+    --end;
+  }
+
+  return SourceEdit(start, end - start, formattedValue);
 }
 
 /// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to

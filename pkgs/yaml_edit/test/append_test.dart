@@ -257,8 +257,7 @@ a:
       final yamlEditor = YamlEditor('''
 - value # comment
         # comment
-''')
-        ..appendToList([], 'next');
+''')..appendToList([], 'next');
 
       expect(yamlEditor.toString(), equals('''
 - value # comment
@@ -272,8 +271,7 @@ a:
 - - value # comment
       # comment
         # comment
-''')
-        ..appendToList([0], 'next');
+''')..appendToList([0], 'next');
 
       expect(yamlEditor.toString(), equals('''
 - - value # comment
