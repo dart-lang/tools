@@ -1,3 +1,7 @@
+## 1.2.0-wip
+
+- Add `--test-type` flag when launching chrome to prevent some warnings.
+
 ## 1.1.3
 
 - Move to `dart-lang/tools` monorepo.
