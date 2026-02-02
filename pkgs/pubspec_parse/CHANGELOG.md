@@ -2,6 +2,7 @@
 
 - Added `toJson` method to `Pubspec` to serialize the object back to a `Map`.
 - Require Dart 3.8
+- Fix analysis issues caused by new lints.
 
 ## 1.5.0
 
