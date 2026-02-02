@@ -42,12 +42,13 @@ Future<AnalysisContextCollection> get analysisContextCollection async {
   return collection;
 }
 
-Future<Iterable<Uri>> findImports(Uri from, Source source) async =>
-    source.unit.directives
-        .whereType<UriBasedDirective>()
-        .map((d) => d.uri.stringValue!)
-        .where((uri) => !uri.startsWith('dart:'))
-        .map((import) => resolveImport(import, from));
+Future<Iterable<Uri>> findImports(Uri from, Source source) async => source
+    .unit
+    .directives
+    .whereType<UriBasedDirective>()
+    .map((d) => d.uri.stringValue!)
+    .where((uri) => !uri.startsWith('dart:'))
+    .map((import) => resolveImport(import, from));
 
 Future<CompilationUnit> parseUri(Uri uri) async {
   final path = await pathForUri(uri);

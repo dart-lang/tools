@@ -143,44 +143,35 @@ void main() {
 
       test('with single edges', () {
         expect(
-          _topologicalSort(
-            {
-              1: [2],
-              2: [3],
-              3: [4],
-              4: [],
-            },
-            secondarySort: true,
-          ),
+          _topologicalSort({
+            1: [2],
+            2: [3],
+            3: [4],
+            4: [],
+          }, secondarySort: true),
           equals([1, 2, 3, 4]),
         );
       });
 
       test('with many edges from one node', () {
-        final result = _topologicalSort(
-          {
-            1: [2, 3, 4],
-            2: [],
-            3: [],
-            4: [],
-          },
-          secondarySort: true,
-        );
+        final result = _topologicalSort({
+          1: [2, 3, 4],
+          2: [],
+          3: [],
+          4: [],
+        }, secondarySort: true);
         expect(result.indexOf(1), lessThan(result.indexOf(2)));
         expect(result.indexOf(1), lessThan(result.indexOf(3)));
         expect(result.indexOf(1), lessThan(result.indexOf(4)));
       });
 
       test('with transitive edges', () {
-        final result = _topologicalSort(
-          {
-            1: [2, 4],
-            2: [],
-            3: [],
-            4: [3],
-          },
-          secondarySort: true,
-        );
+        final result = _topologicalSort({
+          1: [2, 4],
+          2: [],
+          3: [],
+          4: [3],
+        }, secondarySort: true);
         expect(result.indexOf(1), lessThan(result.indexOf(2)));
         expect(result.indexOf(1), lessThan(result.indexOf(3)));
         expect(result.indexOf(1), lessThan(result.indexOf(4)));
@@ -188,15 +179,12 @@ void main() {
       });
 
       test('with diamond edges', () {
-        final result = _topologicalSort(
-          {
-            1: [2, 3],
-            2: [4],
-            3: [4],
-            4: [],
-          },
-          secondarySort: true,
-        );
+        final result = _topologicalSort({
+          1: [2, 3],
+          2: [4],
+          3: [4],
+          4: [],
+        }, secondarySort: true);
         expect(result.indexOf(1), lessThan(result.indexOf(2)));
         expect(result.indexOf(1), lessThan(result.indexOf(3)));
         expect(result.indexOf(1), lessThan(result.indexOf(4)));
@@ -207,21 +195,22 @@ void main() {
 
     group('lexically sorts a graph where possible', () {
       test('with no edges', () {
-        final result =
-            _topologicalSort({4: [], 3: [], 1: [], 2: []}, secondarySort: true);
+        final result = _topologicalSort({
+          4: [],
+          3: [],
+          1: [],
+          2: [],
+        }, secondarySort: true);
         expect(result, equals([1, 2, 3, 4]));
       });
 
       test('with one non-lexical edge', () {
-        final result = _topologicalSort(
-          {
-            4: [],
-            3: [1],
-            1: [],
-            2: [],
-          },
-          secondarySort: true,
-        );
+        final result = _topologicalSort({
+          4: [],
+          3: [1],
+          1: [],
+          2: [],
+        }, secondarySort: true);
         expect(
           result,
           equals(
@@ -234,46 +223,37 @@ void main() {
       });
 
       test('with a non-lexical topolgical order', () {
-        final result = _topologicalSort(
-          {
-            4: [3],
-            3: [2],
-            2: [1],
-            1: [],
-          },
-          secondarySort: true,
-        );
+        final result = _topologicalSort({
+          4: [3],
+          3: [2],
+          2: [1],
+          1: [],
+        }, secondarySort: true);
         expect(result, equals([4, 3, 2, 1]));
       });
 
       group('with multiple layers', () {
         test('in lexical order', () {
-          final result = _topologicalSort(
-            {
-              1: [2],
-              2: [3],
-              3: [],
-              4: [5],
-              5: [6],
-              6: [],
-            },
-            secondarySort: true,
-          );
+          final result = _topologicalSort({
+            1: [2],
+            2: [3],
+            3: [],
+            4: [5],
+            5: [6],
+            6: [],
+          }, secondarySort: true);
           expect(result, equals([1, 2, 3, 4, 5, 6]));
         });
 
         test('in non-lexical order', () {
-          final result = _topologicalSort(
-            {
-              1: [3],
-              3: [5],
-              4: [2],
-              2: [6],
-              5: [],
-              6: [],
-            },
-            secondarySort: true,
-          );
+          final result = _topologicalSort({
+            1: [3],
+            3: [5],
+            4: [2],
+            2: [6],
+            5: [],
+            6: [],
+          }, secondarySort: true);
           expect(
             result,
             anyOf([
@@ -310,27 +290,21 @@ void main() {
     group('throws a CycleException for a graph with', () {
       test('a one-node cycle', () {
         expect(
-          () => _topologicalSort(
-            {
-              1: [1],
-            },
-            secondarySort: true,
-          ),
+          () => _topologicalSort({
+            1: [1],
+          }, secondarySort: true),
           throwsCycleException([1]),
         );
       });
 
       test('a multi-node cycle', () {
         expect(
-          () => _topologicalSort(
-            {
-              1: [2],
-              2: [3],
-              3: [4],
-              4: [1],
-            },
-            secondarySort: true,
-          ),
+          () => _topologicalSort({
+            1: [2],
+            2: [3],
+            3: [4],
+            4: [1],
+          }, secondarySort: true),
           throwsCycleException([4, 1, 2, 3]),
         );
       });
@@ -356,7 +330,8 @@ List<T> _topologicalSort<T>(
     },
     equals: equals,
     hashCode: hashCode,
-    secondarySort:
-        secondarySort ? (a, b) => (a as Comparable<T>).compareTo(b) : null,
+    secondarySort: secondarySort
+        ? (a, b) => (a as Comparable<T>).compareTo(b)
+        : null,
   );
 }

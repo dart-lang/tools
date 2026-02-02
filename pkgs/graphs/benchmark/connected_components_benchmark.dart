@@ -26,14 +26,15 @@ void main() {
 
   const duration = Duration(milliseconds: 100);
 
-  for (var i = 1;; i++) {
+  for (var i = 1; ; i++) {
     var count = 0;
     final watch = Stopwatch()..start();
     while (watch.elapsed < duration) {
       count++;
-      final length =
-          stronglyConnectedComponents(graph.keys, (e) => graph[e] ?? <Never>[])
-              .length;
+      final length = stronglyConnectedComponents(
+        graph.keys,
+        (e) => graph[e] ?? <Never>[],
+      ).length;
       assert(length == 244, '$length');
     }
 
@@ -43,8 +44,10 @@ void main() {
     }
 
     if (maxIteration == i || (i - maxIteration) % 20 == 0) {
-      print('max iterations in ${duration.inMilliseconds}ms: $maxCount\t'
-          'after $maxIteration of $i iterations');
+      print(
+        'max iterations in ${duration.inMilliseconds}ms: $maxCount\t'
+        'after $maxIteration of $i iterations',
+      );
     }
   }
 }
