@@ -1,3 +1,7 @@
+## 1.10.2
+
+* Speedup of the `SourceFile.fromString` constructor.
+
 ## 1.10.1
 
 * Require Dart 3.1
