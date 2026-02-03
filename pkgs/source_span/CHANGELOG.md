@@ -1,6 +1,6 @@
 ## 1.10.2
 
-* Speedup of `SourceFile.fromString` and `SourceFile.decoded` constructors.
+* Speedup of the `SourceFile.fromString` constructor.
 
 ## 1.10.1
 
