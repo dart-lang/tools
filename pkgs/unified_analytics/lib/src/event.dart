@@ -768,19 +768,19 @@ final class Event {
   ///
   /// * [isModule] - whether the project is an add-to-app Flutter module.
   ///
-  /// * [agpVersion] - the Android Gradle plugin of the project.
+  /// * [agpVersion] - the Android Gradle plugin of the build target.
   ///
-  /// * [minSDK] - the minimum SDK version supported by the project.
+  /// * [minSDK] - the minimum SDK version supported by the build target.
   ///
-  /// * [targetSDK] - the target SDK version the project is built against.
+  /// * [targetSDK] - the target SDK version the build target is built against.
   ///
-  /// * [compileSDK] - the compile SDK version the project is built against.
+  /// * [compileSDK] - the compile SDK version the build target is built against.
   ///
-  /// * [jdkVersion] - the JDK version used by the project.
+  /// * [jdkVersion] - the JDK version used by the build target.
   ///
-  /// * [ndkVersion] - the NDK version used by the project.
+  /// * [ndkVersion] - the NDK version used by the build target.
   ///
-  /// * [gradleVersion] - the Gradle version used by the project.
+  /// * [gradleVersion] - the Gradle version used by the build target.
   Event.flutterTrackAndroidDependencies({
     required bool? isModule,
     required String? agpVersion,
