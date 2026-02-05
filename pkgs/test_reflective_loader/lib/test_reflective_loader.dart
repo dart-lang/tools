@@ -145,6 +145,8 @@ void _addTestsIfTopLevelSuite() {
               // ignore: deprecated_member_use, invalid_use_of_do_not_submit_member
               solo: group.solo,
               () {
+                // If this group is a class, it may have class-wide
+                // setUp/tearDown.
                 if (group.classMirror != null) {
                   test_package.setUpAll(group.ensureSetUpClass);
                   test_package.tearDownAll(group.tearDownClass);
@@ -364,10 +366,11 @@ class _Group extends _GroupEntry {
   /// completes before any test of the group runs
   Future<Object?> ensureSetUpClass() {
     if (classMirror == null) return Future.value();
-    return _setUpCompletion ??= _invokeSymbolIfExists(classMirror!, #setUpClass);
+    return _setUpCompletion ??=
+        _invokeSymbolIfExists(classMirror!, #setUpClass);
   }
 
-  /// Runs group-wide tear down iff [ensureSetUpClass] was called at least once.
+  /// Runs group-wide tear down if [ensureSetUpClass] was called at least once.
   /// Must be called once and only called after all tests of the group have
   /// completed
   Future<Object?>? tearDownClass() {
