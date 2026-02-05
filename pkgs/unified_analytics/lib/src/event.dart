@@ -782,25 +782,25 @@ final class Event {
   ///
   /// * [gradleVersion] - the Gradle version used by the project.
   Event.flutterTrackAndroidDependencies({
-    required bool isModule,
-    required String agpVersion,
-    required int minSDK,
-    required int targetSDK,
-    required int compileSDK,
-    required int jdkVersion,
-    required String ndkVersion,
-    required String gradleVersion,
+    required bool? isModule,
+    required String? agpVersion,
+    required int? minSDK,
+    required int? targetSDK,
+    required int? compileSDK,
+    required int? jdkVersion,
+    required String? ndkVersion,
+    required String? gradleVersion,
   }) : this._(
           eventName: DashEvent.flutterTrackAndroidDependencies,
           eventData: {
-            'isModule': isModule,
-            'agpVersion': agpVersion,
-            'minSDK': minSDK,
-            'targetSDK': targetSDK,
-            'compileSDK': compileSDK,
-            'jdkVersion': jdkVersion,
-            'ndkVersion': ndkVersion,
-            'gradleVersion': gradleVersion,
+            if (isModule != null) 'isModule': isModule,
+            if (agpVersion != null) 'agpVersion': agpVersion,
+            if (minSDK != null) 'minSDK': minSDK,
+            if (targetSDK != null) 'targetSDK': targetSDK,
+            if (compileSDK != null) 'compileSDK': compileSDK,
+            if (jdkVersion != null) 'jdkVersion': jdkVersion,
+            if (ndkVersion != null) 'ndkVersion': ndkVersion,
+            if (gradleVersion != null) 'gradleVersion': gradleVersion,
           },
         );
 
