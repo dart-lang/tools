@@ -774,7 +774,7 @@ final class Event {
   ///
   /// * [targetSDK] - the target SDK version the build target is built against.
   ///
-  /// * [compileSDK] - the compile SDK version the build target is built against.
+  /// * [compileSDK] - the compile SDK version the build target is built against
   ///
   /// * [jdkVersion] - the JDK version used by the build target.
   ///
@@ -782,14 +782,14 @@ final class Event {
   ///
   /// * [gradleVersion] - the Gradle version used by the build target.
   Event.flutterTrackAndroidDependencies({
-    required bool? isModule,
-    required String? agpVersion,
-    required int? minSDK,
-    required int? targetSDK,
-    required int? compileSDK,
-    required int? jdkVersion,
-    required String? ndkVersion,
-    required String? gradleVersion,
+    bool? isModule,
+    String? agpVersion,
+    int? minSDK,
+    int? targetSDK,
+    int? compileSDK,
+    int? jdkVersion,
+    String? ndkVersion,
+    String? gradleVersion,
   }) : this._(
           eventName: DashEvent.flutterTrackAndroidDependencies,
           eventData: {
