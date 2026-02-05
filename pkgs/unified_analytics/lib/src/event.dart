@@ -774,7 +774,7 @@ final class Event {
   ///
   /// * [targetSDK] - the target SDK version the build target is built against.
   ///
-  /// * [compileSDK] - the compile SDK version the build target is built against
+  /// * [compileSDK] - the compile SDK version the build target is built against.
   ///
   /// * [jdkVersion] - the JDK version used by the build target.
   ///
