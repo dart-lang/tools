@@ -18,7 +18,7 @@ import 'util.dart';
 /// so classes outside of this package must not implement [PackageConfig]
 /// or any subclass of it.
 @sealed
-abstract class PackageConfig {
+abstract interface class PackageConfig {
   /// The lowest configuration version currently supported.
   static const int minVersion = 2;
 
@@ -56,7 +56,7 @@ abstract class PackageConfig {
   /// [PackageConfig.extraData] of the created configuration.
   ///
   /// The version of the resulting configuration is always [maxVersion].
-  factory PackageConfig(Iterable<Package> packages, {Object? extraData}) =>
+  factory(Iterable<Package> packages, {Object? extraData}) =>
       SimplePackageConfig(maxVersion, packages, extraData);
 
   /// Parses a package configuration file.
@@ -230,7 +230,7 @@ abstract class PackageConfig {
 
 /// Configuration data for a single package.
 @sealed
-abstract class Package {
+abstract interface class Package {
   /// Creates a package with the provided properties.
   ///
   /// The [name] must be a valid package name.
@@ -251,7 +251,7 @@ abstract class Package {
   ///
   /// If [extraData] is supplied, it will be available as the
   /// [Package.extraData] of the created package.
-  factory Package(
+  factory(
     String name,
     Uri root, {
     Uri? packageUriRoot,
@@ -329,7 +329,8 @@ abstract class Package {
 /// then an *invalid* language version may be represented by an
 /// [InvalidLanguageVersion] object.
 @sealed
-abstract class LanguageVersion implements Comparable<LanguageVersion> {
+abstract interface class LanguageVersion
+    implements Comparable<LanguageVersion> {
   /// The maximal value allowed by [major] and [minor] values;
   static const int maxValue = 0x7FFFFFFF;
 
@@ -338,7 +339,7 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   ///
   /// Both [major] and [minor] must be greater than or equal to 0
   /// and less than or equal to [maxValue].
-  factory LanguageVersion(int major, int minor) => SimpleLanguageVersion(
+  factory(int major, int minor) => SimpleLanguageVersion(
     RangeError.checkValueInInterval(major, 0, maxValue, 'major'),
     RangeError.checkValueInInterval(minor, 0, maxValue, 'minor'),
     null,
@@ -424,7 +425,7 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
 /// The caller which provided the non-throwing `onError` handler
 /// should be prepared to encounter invalid values.
 @sealed
-abstract class InvalidLanguageVersion implements LanguageVersion {
+abstract interface class InvalidLanguageVersion implements LanguageVersion {
   /// The value -1 for an invalid language version.
   @override
   int get major;
@@ -526,7 +527,13 @@ const bool _disallowPackagesInsidePackageUriRoot = false;
 // Implementations of the main data types exposed by the API of this package.
 
 @sealed
-class SimplePackageConfig implements PackageConfig {
+class SimplePackageConfig._(
+  this.version,
+  this._packageTree,
+  this._packages,
+  this.extraData,
+) implements PackageConfig {
+
   @override
   final int version;
   final Map<String, Package> _packages;
@@ -534,7 +541,7 @@ class SimplePackageConfig implements PackageConfig {
   @override
   final Object? extraData;
 
-  factory SimplePackageConfig(
+  factory(
     int version,
     Iterable<Package> packages, [
     Object? extraData,
@@ -548,13 +555,6 @@ class SimplePackageConfig implements PackageConfig {
       for (var p in packageTree.allPackages) p.name: p,
     }, extraData);
   }
-
-  SimplePackageConfig._(
-    this.version,
-    this._packageTree,
-    this._packages,
-    this.extraData,
-  );
 
   /// Creates empty configuration.
   ///
@@ -738,28 +738,20 @@ class SimplePackageConfig implements PackageConfig {
 
 /// Configuration data for a single package.
 @sealed
-class SimplePackage implements Package {
+class SimplePackage._(
   @override
-  final String name;
+  final String name,
   @override
-  final Uri root;
+  final Uri root,
   @override
-  final Uri packageUriRoot;
+  final Uri packageUriRoot,
   @override
-  final LanguageVersion? languageVersion;
+  final LanguageVersion? languageVersion,
   @override
-  final Object? extraData;
+  final Object? extraData,
   @override
-  final bool relativeRoot;
-
-  SimplePackage._(
-    this.name,
-    this.root,
-    this.packageUriRoot,
-    this.languageVersion,
-    this.extraData,
-    this.relativeRoot,
-  );
+  final bool relativeRoot,
+) implements Package {
 
   /// Creates a [SimplePackage] with the provided content.
   ///
@@ -941,19 +933,17 @@ LanguageVersion parseLanguageVersion(
 }
 
 @sealed
-class SimpleLanguageVersion implements LanguageVersion {
+class SimpleLanguageVersion(
   @override
-  final int major;
+  final int major,
   @override
-  final int minor;
-
+  final int minor,
   /// A cache for `toString`, pre-filled with source if created by parsing.
   ///
   /// Also used by [SimpleInvalidLanguageVersion] for its invalid source
   /// or a suitably invalid `toString` value.
-  String? _source;
-
-  SimpleLanguageVersion(this.major, this.minor, this._source);
+  String? _source,
+) implements LanguageVersion {
 
   @override
   bool operator ==(Object other) =>
@@ -974,9 +964,9 @@ class SimpleLanguageVersion implements LanguageVersion {
 }
 
 @sealed
-class SimpleInvalidLanguageVersion extends SimpleLanguageVersion
+class SimpleInvalidLanguageVersion(String source)
+    extends SimpleLanguageVersion(-1, -1, source)
     implements InvalidLanguageVersion {
-  SimpleInvalidLanguageVersion(String source) : super(-1, -1, source);
 
   @override
   int get hashCode => identityHashCode(this);
@@ -984,12 +974,12 @@ class SimpleInvalidLanguageVersion extends SimpleLanguageVersion
   bool operator ==(Object other) => identical(this, other);
 }
 
-abstract class PackageTree {
+abstract interface class PackageTree {
   Iterable<Package> get allPackages;
   SimplePackage? packageOf(Uri file);
 }
 
-class _PackageTrieNode {
+class _PackageTrieNode() {
   SimplePackage? package;
 
   /// Indexed by path segment.
@@ -1008,7 +998,7 @@ class _PackageTrieNode {
 /// The package root path of a package must not be inside another package's
 /// root path.
 /// Entire other packages are allowed inside a package's root.
-class TriePackageTree implements PackageTree {
+class TriePackageTree() implements PackageTree {
   /// Indexed by URI scheme.
   final Map<String, _PackageTrieNode> _map = {};
 
@@ -1155,9 +1145,7 @@ class TriePackageTree implements PackageTree {
   }
 }
 
-class EmptyPackageTree implements PackageTree {
-  const EmptyPackageTree();
-
+class const EmptyPackageTree() implements PackageTree {
   @override
   Iterable<Package> get allPackages => const Iterable<Package>.empty();
 
@@ -1184,18 +1172,16 @@ enum ConflictType { sameRoots, interleaving, insidePackageRoot }
 /// The [package] conflicts with [existingPackage] if it has
 /// the same root path or the package URI root path
 /// of [existingPackage] is inside the root path of [package].
-class ConflictException {
+class ConflictException(
   /// The existing package that [package] conflicts with.
-  final SimplePackage existingPackage;
-
+  final SimplePackage existingPackage,
   /// The package that could not be added without a conflict.
-  final SimplePackage package;
-
+  final SimplePackage package,
   /// Whether the conflict is with the package URI root of [existingPackage].
-  final ConflictType conflictType;
-
+  final ConflictType conflictType,
+) {
   /// Creates a root conflict between [package] and [existingPackage].
-  ConflictException(this.package, this.existingPackage, this.conflictType);
+  this;
 }
 
 /// Used for sorting packages by root path.

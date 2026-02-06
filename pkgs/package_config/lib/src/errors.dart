@@ -6,32 +6,30 @@
 ///
 /// Only covers errors thrown while parsing package configuration files.
 /// Programming errors and I/O exceptions are not covered.
-abstract class PackageConfigError {
-  PackageConfigError._();
-}
+abstract interface class PackageConfigError {}
 
 class PackageConfigArgumentError extends ArgumentError
-    implements PackageConfigError {
-  PackageConfigArgumentError(
+  implements PackageConfigError {
+ 
+  new( // Cannot be primary, `.from` cannot redirect to these types.
     Object? super.value,
     String super.name,
     String super.message,
-  ) : super.value();
-
-  PackageConfigArgumentError.from(ArgumentError error)
+  ) : super.value(); 
+    
+  new from(ArgumentError error)
     : super.value(error.invalidValue, error.name, error.message);
 }
 
-class PackageConfigFormatException extends FormatException
-    implements PackageConfigError {
-  PackageConfigFormatException(
+class PackageConfigFormatException(
     super.message,
     Object? super.source, [
     super.offset,
-  ]);
+  ]) extends FormatException
+     implements PackageConfigError {
 
-  PackageConfigFormatException.from(FormatException exception)
-    : super(exception.message, exception.source, exception.offset);
+  new from(FormatException exception)
+    : super.value(exception.message, exception.source, exception.offset);
 }
 
 /// The default `onError` handler.
