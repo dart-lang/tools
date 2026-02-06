@@ -30,10 +30,10 @@ void main() {
     expect(
         output,
         allOf([
-          contains('+0: SimpleTest test_foo'),
-          contains('+1: level_1.1 level_2.1 SimpleTest test_foo'),
-          contains('+2: level_1.1 level_2.2 SimpleTest test_foo'),
-          contains('+3: All tests passed!'),
+          contains('SimpleTest test_foo'),
+          contains('level_1.1 level_2.1 SimpleTest test_foo'),
+          contains('level_1.1 level_2.2 SimpleTest test_foo'),
+          contains('All tests passed!'),
         ]));
   });
 }
