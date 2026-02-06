@@ -122,6 +122,12 @@ enum DashEvent {
     description: 'Information on plugins injected into an iOS/macOS project',
     toolOwner: DashTool.flutterTool,
   ),
+  flutterTrackAndroidDependencies(
+    label: 'flutter_android_dependencies',
+    description:
+        'Information related to min/target/compile SDK, JDK, NDK, Gradle version',
+    toolOwner: DashTool.flutterTool,
+  ),
   hotReloadTime(
     label: 'hot_reload_time',
     description: 'Hot reload duration',

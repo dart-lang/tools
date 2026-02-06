@@ -764,6 +764,47 @@ final class Event {
           },
         );
 
+  /// Provides information about the android dependencies of a project.
+  ///
+  /// * [isModule] - whether the project is an add-to-app Flutter module.
+  ///
+  /// * [agpVersion] - the Android Gradle plugin of the build target.
+  ///
+  /// * [minSDK] - the minimum SDK version supported by the build target.
+  ///
+  /// * [targetSDK] - the target SDK version the build target is built against.
+  ///
+  /// * [compileSDK] - the compile SDK version the build target is built
+  /// against.
+  ///
+  /// * [jdkVersion] - the JDK version used by the build target.
+  ///
+  /// * [ndkVersion] - the NDK version used by the build target.
+  ///
+  /// * [gradleVersion] - the Gradle version used by the build target.
+  Event.flutterTrackAndroidDependencies({
+    bool? isModule,
+    String? agpVersion,
+    int? minSDK,
+    int? targetSDK,
+    int? compileSDK,
+    int? jdkVersion,
+    String? ndkVersion,
+    String? gradleVersion,
+  }) : this._(
+          eventName: DashEvent.flutterTrackAndroidDependencies,
+          eventData: {
+            if (isModule != null) 'isModule': isModule,
+            if (agpVersion != null) 'agpVersion': agpVersion,
+            if (minSDK != null) 'minSDK': minSDK,
+            if (targetSDK != null) 'targetSDK': targetSDK,
+            if (compileSDK != null) 'compileSDK': compileSDK,
+            if (jdkVersion != null) 'jdkVersion': jdkVersion,
+            if (ndkVersion != null) 'ndkVersion': ndkVersion,
+            if (gradleVersion != null) 'gradleVersion': gradleVersion,
+          },
+        );
+
   // TODO: eliasyishak, remove this or replace once we have a generic
   //  timing event that can be used by potentially more than one DashTool.
   Event.hotReloadTime({required int timeMs})
