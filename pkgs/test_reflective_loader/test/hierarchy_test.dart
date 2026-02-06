@@ -15,8 +15,13 @@ void main() {
         .toFilePath();
     var testFilePath = path.normalize(
         path.join(testPackagePath, '..', 'test', 'hierarchy_test.data.dart'));
-    var result =
-        await Process.run(Platform.resolvedExecutable, ['test', testFilePath]);
+    var result = await Process.run(Platform.resolvedExecutable, [
+      'test',
+      // Force the expanded reporter because otherwise the test output will
+      // differ slightly when the tests run on GitHub (it uses a GitHub
+      // reporter).
+      '-r', 'expanded', testFilePath
+    ]);
 
     var error = result.stderr.toString().trim();
     var output = result.stdout.toString().trim();
