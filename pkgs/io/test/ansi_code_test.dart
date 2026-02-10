@@ -113,7 +113,7 @@ void main() {
           expect(blue.wrap(null, forScript: forScript), isNull);
         });
 
-        test('rgb', () {
+        _test('rgb', () {
           final rgbCode = rgb(128, 64, 32);
           final expected =
               '$escapeLiteral[38;2;128;64;32m$sampleInput$escapeLiteral[0m';
