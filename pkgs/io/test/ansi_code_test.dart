@@ -160,7 +160,7 @@ void main() {
 
         _test('multi', () {
           final expected =
-              '$escapeLiteral[1;4;34;107m$sampleInput$escapeLiteral[0m';
+              '$escapeLiteral[34;107;1;4m$sampleInput$escapeLiteral[0m';
 
           expect(
               wrapWith(sampleInput,

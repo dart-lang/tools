@@ -60,7 +60,16 @@ class AnsiCodeType {
 /// [Source](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors)
 class AnsiCode {
   /// The numeric value associated with this code.
+  ///
+  /// `-1` if this code is a composite code with multiple integer values.
+  /// See [codes].
   final int code;
+
+  /// The numeric values associated with this code.
+  ///
+  /// A composite code may have more than one integer value, in which case the
+  /// [code] property will be `-1`.
+  Iterable<int> get codes => [code];
 
   /// The [AnsiCode] that resets this value, if one exists.
   ///
@@ -129,11 +138,13 @@ class AnsiRgbCode extends AnsiCode {
   int get _prefix => type == AnsiCodeType.background ? 48 : 38;
 
   @override
-  String get escape => '$_ansiEscapeLiteral[$_prefix;2;$red;$green;${blue}m';
+  Iterable<int> get codes => [_prefix, 2, red, green, blue];
 
   @override
-  String get escapeForScript =>
-      '$_ansiEscapeForScript[$_prefix;2;$red;$green;${blue}m';
+  String get escape => '$_ansiEscapeLiteral[${codes.join(';')}m';
+
+  @override
+  String get escapeForScript => '$_ansiEscapeForScript[${codes.join(';')}m';
 }
 
 /// Returns a [String] formatted with [codes].
@@ -154,13 +165,9 @@ String? wrapWith(String? value, Iterable<AnsiCode> codes,
     {bool forScript = false}) {
   // Eliminate duplicates
   final myCodes = codes.toSet();
-
   if (_isNoop(myCodes.isEmpty, value, forScript)) {
     return value;
   }
-
-  final numericCodes = <int>[];
-  AnsiRgbCode? ansiRgbCode;
 
   var foreground = 0, background = 0;
   for (var code in myCodes) {
@@ -184,24 +191,9 @@ String? wrapWith(String? value, Iterable<AnsiCode> codes,
         // Ignore.
         break;
     }
-
-    if (code is AnsiRgbCode) {
-      ansiRgbCode = code;
-    } else if (code.code != -1) {
-      numericCodes.add(code.code);
-    }
   }
-
-  numericCodes.sort();
-  final codeParts = numericCodes.map((c) => c.toString()).toList();
-
-  if (ansiRgbCode != null) {
-    final prefix = ansiRgbCode.type == AnsiCodeType.background ? 48 : 38;
-    codeParts.add(
-      '$prefix;2;${ansiRgbCode.red};'
-      '${ansiRgbCode.green};${ansiRgbCode.blue}',
-    );
-  }
+  // myCodes.sort((a, b) => a.code.compareTo(b.code));
+  final codeParts = myCodes.expand((c) => c.codes).map((c) => c.toString());
 
   final escapeValue = forScript ? _ansiEscapeForScript : _ansiEscapeLiteral;
 
