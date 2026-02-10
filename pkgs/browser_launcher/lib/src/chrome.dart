@@ -122,7 +122,7 @@ class Chrome {
       // browsing but are applicable for use in dev-focused workflows.
       '--test-type',
       // Dev runs of the browser should be considered independent of one
-      // anothers, don't announce when the previous session crashed.
+      // another, don't announce when the previous session crashed.
       '--disable-session-crashed-bubble',
     ];
     if (headless) {
