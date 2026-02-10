@@ -85,10 +85,10 @@ class AnsiCode {
   const AnsiCode._(this.name, this.type, this.code, this.reset);
 
   /// Represents the value escaped for use in terminal output.
-  String get escape => '$_ansiEscapeLiteral[${code}m';
+  String get escape => '$_ansiEscapeLiteral[${codes.join(';')}m';
 
   /// Represents the value as an unescaped literal suitable for scripts.
-  String get escapeForScript => '$_ansiEscapeForScript[${code}m';
+  String get escapeForScript => '$_ansiEscapeForScript[${codes.join(';')}m';
 
   String _escapeValue({bool forScript = false}) =>
       forScript ? escapeForScript : escape;
@@ -139,12 +139,6 @@ class AnsiRgbCode extends AnsiCode {
 
   @override
   Iterable<int> get codes => [_prefix, 2, red, green, blue];
-
-  @override
-  String get escape => '$_ansiEscapeLiteral[${codes.join(';')}m';
-
-  @override
-  String get escapeForScript => '$_ansiEscapeForScript[${codes.join(';')}m';
 }
 
 /// Returns a [String] formatted with [codes].
@@ -165,6 +159,7 @@ String? wrapWith(String? value, Iterable<AnsiCode> codes,
     {bool forScript = false}) {
   // Eliminate duplicates
   final myCodes = codes.toSet();
+
   if (_isNoop(myCodes.isEmpty, value, forScript)) {
     return value;
   }
@@ -192,7 +187,6 @@ String? wrapWith(String? value, Iterable<AnsiCode> codes,
         break;
     }
   }
-  // myCodes.sort((a, b) => a.code.compareTo(b.code));
   final codeParts = myCodes.expand((c) => c.codes).map((c) => c.toString());
 
   final escapeValue = forScript ? _ansiEscapeForScript : _ansiEscapeLiteral;
