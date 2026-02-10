@@ -67,7 +67,7 @@ class SourceFile {
   ///
   /// [url] may be either a [String], a [Uri], or `null`.
   SourceFile.fromString(String text, {Object? url})
-      : this.decoded(text.codeUnits, url: url);
+      : this._fromList(text.codeUnits, url: url);
 
   /// Creates a new source file from a list of decoded code units.
   ///
@@ -79,14 +79,17 @@ class SourceFile {
   /// forwards-compatibility, callers should only pass in characters less than
   /// or equal to `0xFFFF`.
   SourceFile.decoded(Iterable<int> decodedChars, {Object? url})
+      : this._fromList(decodedChars.toList(), url: url);
+
+  SourceFile._fromList(List<int> decodedChars, {Object? url})
       : url = url is String ? Uri.parse(url) : url as Uri?,
-        _decodedChars = Uint32List.fromList(decodedChars.toList()) {
+        _decodedChars = Uint32List(decodedChars.length) {
     for (var i = 0; i < _decodedChars.length; i++) {
-      var c = _decodedChars[i];
+      var c = _decodedChars[i] = decodedChars[i];
       if (c == _cr) {
         // Return not followed by newline is treated as a newline
         final j = i + 1;
-        if (j >= _decodedChars.length || _decodedChars[j] != _lf) c = _lf;
+        if (j >= decodedChars.length || decodedChars[j] != _lf) c = _lf;
       }
       if (c == _lf) _lineStarts.add(i + 1);
     }

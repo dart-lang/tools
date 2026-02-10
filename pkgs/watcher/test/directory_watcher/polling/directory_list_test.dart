@@ -42,21 +42,14 @@ void main() {
     test('reports broken link as a link', () async {
       writeLink(link: '1', target: '0');
 
-      expect(await list(''), {
-        'l:1',
-      });
+      expect(await list(''), {'l:1'});
     });
 
     test('follows a link to a file', () async {
       writeFile('a/1');
       writeLink(link: 'b/1', target: 'a/1');
 
-      expect(await list(''), {
-        'd:a',
-        'd:b',
-        'f:a/1',
-        'f:b/1',
-      });
+      expect(await list(''), {'d:a', 'd:b', 'f:a/1', 'f:b/1'});
     });
 
     test('follows a link to a link of a file', () async {
@@ -64,36 +57,21 @@ void main() {
       writeLink(link: 'b/1', target: 'a/1');
       writeLink(link: 'c/1', target: 'b/1');
 
-      expect(await list(''), {
-        'd:a',
-        'd:b',
-        'd:c',
-        'f:a/1',
-        'f:b/1',
-        'f:c/1',
-      });
+      expect(await list(''), {'d:a', 'd:b', 'd:c', 'f:a/1', 'f:b/1', 'f:c/1'});
     });
 
     test('follows a link to a peer directory', () async {
       writeFile('a/1');
       writeLink(link: 'b', target: 'a');
 
-      expect(await list(''), {
-        'd:a',
-        'd:b',
-        'f:a/1',
-        'f:b/1',
-      });
+      expect(await list(''), {'d:a', 'd:b', 'f:a/1', 'f:b/1'});
     });
 
     test('ignores a link to a parent directory within the list root', () async {
       writeFile('a/1');
       writeLink(link: 'a/b', target: 'a');
 
-      expect(await list(''), {
-        'd:a',
-        'f:a/1',
-      });
+      expect(await list(''), {'d:a', 'f:a/1'});
     });
 
     test('correctly reports a two link loop', () async {
@@ -103,11 +81,7 @@ void main() {
       writeLink(link: 'b/a', target: 'a');
 
       // Listing from within the loop, all files are found once.
-      expect(await list('a'), {
-        'd:b',
-        'f:1',
-        'f:b/2',
-      });
+      expect(await list('a'), {'d:b', 'f:1', 'f:b/2'});
 
       // Listing from outside the loop each file is found twice, once via each
       // entrypoint into the loop.
@@ -133,13 +107,7 @@ void main() {
     writeLink(link: 'c/a', target: 'a');
 
     // Listing from within the loop, all files are found once.
-    expect(await list('a'), {
-      'd:b',
-      'd:b/c',
-      'f:1',
-      'f:b/2',
-      'f:b/c/3',
-    });
+    expect(await list('a'), {'d:b', 'd:b/c', 'f:1', 'f:b/2', 'f:b/c/3'});
 
     // Listing from outside the loop each file is found three times, once via
     // each entrypoint into the loop.
@@ -173,13 +141,7 @@ void main() {
 
     // Linking to above the list root finds `1`, which is above the list root,
     // but does not enter the root again. So each file is listed once.
-    expect(await list('a'), {
-      'd:b',
-      'd:b/c',
-      'f:2',
-      'f:b/3',
-      'f:b/c/1',
-    });
+    expect(await list('a'), {'d:b', 'd:b/c', 'f:2', 'f:b/3', 'f:b/c/1'});
   });
 
   test('correctly reports with double links to parent directories', () async {
@@ -216,8 +178,9 @@ Future<Set<String>> list(String directory) async {
     return path.substring(directory.length + 1).replaceAll('\\', '/');
   }
 
-  final fileSystemEntities =
-      await Directory(directory).listRecursively().toList();
+  final fileSystemEntities = await Directory(
+    directory,
+  ).listRecursively().toList();
   final result = <String>[];
   for (final entity in fileSystemEntities) {
     final path = normalizePath(entity.path);
@@ -239,8 +202,10 @@ Future<Set<String>> list(String directory) async {
   // If on Linux, run `find -L` and compare.
   if (Platform.isLinux) {
     Iterable<String> listForType(String type) {
-      final result = Process.runSync(
-          'bash', ['-c', 'find -L $directory -type $type -mindepth 1']);
+      final result = Process.runSync('bash', [
+        '-c',
+        'find -L $directory -type $type -mindepth 1',
+      ]);
       return (result.stdout as String).split('\n').where((l) => l.isNotEmpty);
     }
 

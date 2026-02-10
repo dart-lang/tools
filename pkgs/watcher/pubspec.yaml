@@ -1,5 +1,5 @@
 name: watcher
-version: 1.2.0
+version: 1.2.2-wip
 description: >-
   A file system watcher. It monitors changes to contents of directories and
   sends notifications when files have been added, removed, or modified.
@@ -7,7 +7,7 @@ repository: https://github.com/dart-lang/tools/tree/main/pkgs/watcher
 issue_tracker: https://github.com/dart-lang/tools/labels/package%3Awatcher
 
 environment:
-  sdk: ^3.4.0
+  sdk: ^3.8.0
 
 dependencies:
   async: ^2.5.0

@@ -6,7 +6,7 @@
 /// and vice-versa.
 ///
 /// This package provides functionality to find, read and write package
-/// configurations in the [specified format](https://github.com/dart-lang/language/blob/master/accepted/future-releases/language-versioning/package-config-file-v2.md).
+/// configurations in the [specified format](https://github.com/dart-lang/language/blob/main/accepted/2.8/language-versioning/package-config-file-v2.md).
 library;
 
 import 'dart:io' show Directory, File;

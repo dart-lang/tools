@@ -1,4 +1,7 @@
 ## 8.0.11
+- Added `Event.flutterTrackAndroidDependencies` to track android dependencies.
+- Deprecated `Event.flutterWasmDryRun` in favor of `Event.flutterWasmDryRunPackage`.
+- Added `Event.plugins` to track new analyzer plugins
 - Added `DashEvent.ideEvent` to track IDE reported events.
 
 ## 8.0.10

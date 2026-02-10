@@ -42,8 +42,11 @@ abstract class DirectoryWatcher implements Watcher {
   ///
   /// On Windows, pass [runInIsolateOnWindows] `false` to not run the watcher
   /// in a separate isolate to reduce buffer exhaustion failures.
-  factory DirectoryWatcher(String directory,
-      {Duration? pollingDelay, bool runInIsolateOnWindows = true}) {
+  factory DirectoryWatcher(
+    String directory, {
+    Duration? pollingDelay,
+    bool runInIsolateOnWindows = true,
+  }) {
     if (FileSystemEntity.isWatchSupported) {
       var customWatcher = createCustomDirectoryWatcher(
         directory,
@@ -55,8 +58,10 @@ abstract class DirectoryWatcher implements Watcher {
         return RecursiveDirectoryWatcher(directory, runInIsolate: false);
       }
       if (Platform.isWindows) {
-        return RecursiveDirectoryWatcher(directory,
-            runInIsolate: runInIsolateOnWindows);
+        return RecursiveDirectoryWatcher(
+          directory,
+          runInIsolate: runInIsolateOnWindows,
+        );
       }
     }
     return PollingDirectoryWatcher(directory, pollingDelay: pollingDelay);

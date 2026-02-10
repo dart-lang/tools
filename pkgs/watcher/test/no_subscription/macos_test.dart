@@ -12,8 +12,8 @@ import '../utils.dart';
 import 'shared.dart';
 
 void main() {
-  watcherFactory =
-      (directory) => RecursiveDirectoryWatcher(directory, runInIsolate: false);
+  watcherFactory = (directory) =>
+      RecursiveDirectoryWatcher(directory, runInIsolate: false);
 
   sharedTests();
 }

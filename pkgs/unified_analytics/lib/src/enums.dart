@@ -103,6 +103,8 @@ enum DashEvent {
     description: 'Provides information about flutter commands that ran',
     toolOwner: DashTool.flutterTool,
   ),
+  @Deprecated("Use 'flutterWasmDryRunPackage' instead. This will be removed in "
+      'a future version.')
   flutterWasmDryRun(
     label: 'wasm_dry_run',
     description: 'Information for a dart2wasm dry run invoked from Flutter',
@@ -118,6 +120,12 @@ enum DashEvent {
   flutterInjectDarwinPlugins(
     label: 'flutter_inject_darwin_plugins',
     description: 'Information on plugins injected into an iOS/macOS project',
+    toolOwner: DashTool.flutterTool,
+  ),
+  flutterTrackAndroidDependencies(
+    label: 'flutter_android_dependencies',
+    description:
+        'Information related to min/target/compile SDK, JDK, NDK, Gradle version',
     toolOwner: DashTool.flutterTool,
   ),
   hotReloadTime(
@@ -170,11 +178,17 @@ enum DashEvent {
   ),
   pluginRequest(
     label: 'plugin_request',
-    description: 'Request responses from plugins',
+    description:
+        'Analyzer plugin performance information regarding server requests',
+  ),
+  plugins(
+    label: 'plugins',
+    description: 'Information about how often _new_ analyzer plugins were used',
   ),
   pluginUse(
     label: 'plugin_use',
-    description: 'Information about how often a plugin was used',
+    description:
+        'Information about how often a _legacy_ analyzer plugin was used',
   ),
   serverSession(
     label: 'server_session',

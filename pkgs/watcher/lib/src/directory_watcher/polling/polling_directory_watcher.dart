@@ -28,10 +28,12 @@ class PollingDirectoryWatcher extends ResubscribableWatcher
   /// shorter will give more immediate feedback at the expense of doing more IO
   /// and higher CPU usage. Defaults to one second.
   PollingDirectoryWatcher(String directory, {Duration? pollingDelay})
-      : super(directory, () {
-          return _PollingDirectoryWatcher(
-              directory, pollingDelay ?? const Duration(seconds: 1));
-        });
+    : super(directory, (path) {
+        return _PollingDirectoryWatcher(
+          path,
+          pollingDelay ?? const Duration(seconds: 1),
+        );
+      });
 }
 
 class _PollingDirectoryWatcher
@@ -70,10 +72,12 @@ class _PollingDirectoryWatcher
   /// queue exists to let each of those proceed at their own rate. The lister
   /// will enqueue files as quickly as it can. Meanwhile, files are dequeued
   /// and processed sequentially.
-  late final AsyncQueue<String?> _filesToProcess =
-      AsyncQueue<String?>(_processFile, onError: (error, stackTrace) {
-    if (!_events.isClosed) _events.addError(error, stackTrace);
-  });
+  late final AsyncQueue<String?> _filesToProcess = AsyncQueue<String?>(
+    _processFile,
+    onError: (error, stackTrace) {
+      if (!_events.isClosed) _events.addError(error, stackTrace);
+    },
+  );
 
   /// The set of files that have been seen in the current directory listing.
   ///
@@ -114,27 +118,32 @@ class _PollingDirectoryWatcher
     }
 
     var stream = Directory(path).listRecursivelyIgnoringErrors();
-    _listSubscription = stream.listen((entity) {
-      assert(!_events.isClosed);
+    _listSubscription = stream.listen(
+      (entity) {
+        assert(!_events.isClosed);
 
-      if (entity is! File) return;
-      _filesToProcess.add(entity.path);
-    }, onError: (Object error, StackTrace stackTrace) {
-      // Guarantee that ready always completes.
-      if (!isReady) {
-        _readyCompleter.complete();
-      }
-      if (!isDirectoryNotFoundException(error)) {
-        // It's some unknown error. Pipe it over to the event stream so the
-        // user can see it.
-        _events.addError(error, stackTrace);
-      }
+        if (entity is! File) return;
+        _filesToProcess.add(entity.path);
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        // Guarantee that ready always completes.
+        if (!isReady) {
+          _readyCompleter.complete();
+        }
+        if (!isDirectoryNotFoundException(error)) {
+          // It's some unknown error. Pipe it over to the event stream so the
+          // user can see it.
+          _events.addError(error, stackTrace);
+        }
 
-      // When an error occurs, we end the listing normally, which has the
-      // desired effect of marking all files that were in the directory as
-      // being removed.
-      endListing();
-    }, onDone: endListing, cancelOnError: true);
+        // When an error occurs, we end the listing normally, which has the
+        // desired effect of marking all files that were in the directory as
+        // being removed.
+        endListing();
+      },
+      onDone: endListing,
+      cancelOnError: true,
+    );
   }
 
   /// Processes [file] to determine if it has been modified since the last
@@ -181,8 +190,9 @@ class _PollingDirectoryWatcher
   Future<void> _completePoll() async {
     // Any files that were not seen in the last poll but that we have a
     // status for must have been removed.
-    var removedFiles =
-        _previousPollResults.keys.toSet().difference(_polledFiles);
+    var removedFiles = _previousPollResults.keys.toSet().difference(
+      _polledFiles,
+    );
     for (var removed in removedFiles) {
       if (isReady) _events.add(WatchEvent(ChangeType.REMOVE, removed));
       _previousPollResults.remove(removed);

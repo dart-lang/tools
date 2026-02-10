@@ -112,6 +112,26 @@ void _fileTests({required bool isNative}) {
     expect(await queue3HasNext, false);
   });
 
+  // Regression test for https://github.com/dart-lang/tools/issues/2293.
+  test('works with trailing path separator', () async {
+    await startWatcher(exactPath: '${d.sandbox}${Platform.pathSeparator}');
+
+    writeFile('a.txt');
+    await expectAddEvent('a.txt');
+  });
+
+  test('normalizes many adjacent separators and ..', () async {
+    createDir('a');
+    final separator = Platform.pathSeparator;
+    await startWatcher(
+      exactPath:
+          '${d.sandbox}${separator * 5}a${separator * 4}b${separator * 3}..',
+    );
+
+    writeFile('a/a.txt');
+    await expectAddEvent('a/a.txt');
+  });
+
   test('does not notify for files that already exist when started', () async {
     // Make some pre-existing files.
     writeFile('a.txt');
@@ -189,8 +209,7 @@ void _fileTests({required bool isNative}) {
   });
 
   // Regression test for b/30768513.
-  test(
-      "doesn't crash when the directory is moved immediately after a subdir "
+  test("doesn't crash when the directory is moved immediately after a subdir "
       'is added', () async {
     writeFile('dir/a.txt');
     writeFile('dir/b.txt');
@@ -204,33 +223,39 @@ void _fileTests({required bool isNative}) {
   });
 
   group('moves', () {
-    test('notifies when a file is moved within the watched directory',
-        () async {
-      writeFile('old.txt');
-      await startWatcher();
-      renameFile('old.txt', 'new.txt');
+    test(
+      'notifies when a file is moved within the watched directory',
+      () async {
+        writeFile('old.txt');
+        await startWatcher();
+        renameFile('old.txt', 'new.txt');
 
-      await inAnyOrder([isAddEvent('new.txt'), isRemoveEvent('old.txt')]);
-    });
+        await inAnyOrder([isAddEvent('new.txt'), isRemoveEvent('old.txt')]);
+      },
+    );
 
-    test('notifies when a file is moved from outside the watched directory',
-        () async {
-      writeFile('old.txt');
-      createDir('dir');
-      await startWatcher(path: 'dir');
+    test(
+      'notifies when a file is moved from outside the watched directory',
+      () async {
+        writeFile('old.txt');
+        createDir('dir');
+        await startWatcher(path: 'dir');
 
-      renameFile('old.txt', 'dir/new.txt');
-      await expectAddEvent('dir/new.txt');
-    });
+        renameFile('old.txt', 'dir/new.txt');
+        await expectAddEvent('dir/new.txt');
+      },
+    );
 
-    test('notifies when a file is moved outside the watched directory',
-        () async {
-      writeFile('dir/old.txt');
-      await startWatcher(path: 'dir');
+    test(
+      'notifies when a file is moved outside the watched directory',
+      () async {
+        writeFile('dir/old.txt');
+        await startWatcher(path: 'dir');
 
-      renameFile('dir/old.txt', 'new.txt');
-      await expectRemoveEvent('dir/old.txt');
-    });
+        renameFile('dir/old.txt', 'new.txt');
+        await expectRemoveEvent('dir/old.txt');
+      },
+    );
 
     test('notifies when a file is moved onto an existing one', () async {
       writeFile('from.txt');
@@ -243,28 +268,32 @@ void _fileTests({required bool isNative}) {
   });
 
   group('clustered changes', () {
-    test("doesn't notify when a file is created and then immediately removed",
-        () async {
-      writeFile('test.txt');
-      await startWatcher();
-      writeFile('file.txt');
-      deleteFile('file.txt');
-    });
+    test(
+      "doesn't notify when a file is created and then immediately removed",
+      () async {
+        writeFile('test.txt');
+        await startWatcher();
+        writeFile('file.txt');
+        deleteFile('file.txt');
+      },
+    );
 
-    test('reports when a file is moved between directories then deleted',
-        () async {
-      writeFile('a/test.txt');
-      createDir('b');
-      await startWatcher(path: 'b');
+    test(
+      'reports when a file is moved between directories then deleted',
+      () async {
+        writeFile('a/test.txt');
+        createDir('b');
+        await startWatcher(path: 'b');
 
-      renameFile('a/test.txt', 'b/test.txt');
-      deleteFile('b/test.txt');
+        renameFile('a/test.txt', 'b/test.txt');
+        deleteFile('b/test.txt');
 
-      final events =
-          await takeEvents(duration: const Duration(milliseconds: 500));
+        final events = await takeEvents(
+          duration: const Duration(milliseconds: 500),
+        );
 
-      // It's correct to report either nothing or an add+remove.
-      expect(
+        // It's correct to report either nothing or an add+remove.
+        expect(
           events,
           anyOf([
             isEmpty,
@@ -272,12 +301,13 @@ void _fileTests({required bool isNative}) {
               isAddEvent('b/test.txt'),
               isRemoveEvent('b/test.txt'),
             ]),
-          ]));
-      expect(events, isNot(contains(isModifyEvent('b/test.txt'))));
-    });
+          ]),
+        );
+        expect(events, isNot(contains(isModifyEvent('b/test.txt'))));
+      },
+    );
 
-    test(
-        'reports a modification when a file is deleted and then immediately '
+    test('reports a modification when a file is deleted and then immediately '
         'recreated', () async {
       writeFile('file.txt');
       await startWatcher();
@@ -288,8 +318,7 @@ void _fileTests({required bool isNative}) {
       await expectModifyEvent('file.txt');
     });
 
-    test(
-        'reports a modification when a file is moved and then immediately '
+    test('reports a modification when a file is moved and then immediately '
         'recreated', () async {
       writeFile('old.txt');
       await startWatcher();
@@ -300,8 +329,7 @@ void _fileTests({required bool isNative}) {
       await inAnyOrder([isModifyEvent('old.txt'), isAddEvent('new.txt')]);
     });
 
-    test(
-        'reports a removal when a file is modified and then immediately '
+    test('reports a removal when a file is modified and then immediately '
         'removed', () async {
       writeFile('file.txt');
       await startWatcher();
@@ -312,15 +340,17 @@ void _fileTests({required bool isNative}) {
       await expectRemoveEvent('file.txt');
     });
 
-    test('reports an add when a file is added and then immediately modified',
-        () async {
-      await startWatcher();
+    test(
+      'reports an add when a file is added and then immediately modified',
+      () async {
+        await startWatcher();
 
-      writeFile('file.txt');
-      writeFile('file.txt', contents: 'modified');
+        writeFile('file.txt');
+        writeFile('file.txt', contents: 'modified');
 
-      await expectAddEvent('file.txt');
-    });
+        await expectAddEvent('file.txt');
+      },
+    );
   });
 
   group('subdirectories', () {
@@ -330,15 +360,16 @@ void _fileTests({required bool isNative}) {
       await expectAddEvent('a/b/c/d/file.txt');
     });
 
-    test(
-        'notifies when a subdirectory is moved within the watched directory '
+    test('notifies when a subdirectory is moved within the watched directory '
         'and then its contents are modified', () async {
       writeFile('old/file.txt');
       await startWatcher();
 
       renameDir('old', 'new');
-      await inAnyOrder(
-          [isRemoveEvent('old/file.txt'), isAddEvent('new/file.txt')]);
+      await inAnyOrder([
+        isRemoveEvent('old/file.txt'),
+        isAddEvent('new/file.txt'),
+      ]);
 
       writeFile('new/file.txt', contents: 'modified');
       await expectModifyEvent('new/file.txt');
@@ -354,7 +385,7 @@ void _fileTests({required bool isNative}) {
       await inAnyOrder([
         isRemoveEvent('new'),
         isRemoveEvent('old/file.txt'),
-        isAddEvent('new/file.txt')
+        isAddEvent('new/file.txt'),
       ]);
     });
 
@@ -369,7 +400,7 @@ void _fileTests({required bool isNative}) {
         isRemoveEvent('new/file.txt'),
         isAddEvent('newer/file.txt'),
         isRemoveEvent('old'),
-        isAddEvent('new')
+        isAddEvent('new'),
       ]);
     });
 
@@ -380,13 +411,17 @@ void _fileTests({required bool isNative}) {
       await startWatcher(path: 'dir');
       renameDir('sub', 'dir/sub');
 
-      await inAnyOrder(withPermutations(
-          (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+      await inAnyOrder(
+        withPermutations(
+          (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt'),
+        ),
+      );
     });
 
     test('emits events for many nested files removed at once', () async {
       withPermutations(
-          (i, j, k) => writeFile('dir/sub/sub-$i/sub-$j/file-$k.txt'));
+        (i, j, k) => writeFile('dir/sub/sub-$i/sub-$j/file-$k.txt'),
+      );
 
       createDir('dir');
       await startWatcher(path: 'dir');
@@ -397,57 +432,75 @@ void _fileTests({required bool isNative}) {
       // directory.
       renameDir('dir/sub', 'sub');
 
-      await inAnyOrder(withPermutations(
-          (i, j, k) => isRemoveEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+      await inAnyOrder(
+        withPermutations(
+          (i, j, k) => isRemoveEvent('dir/sub/sub-$i/sub-$j/file-$k.txt'),
+        ),
+      );
     });
 
     test('emits events for many nested files moved at once', () async {
       withPermutations(
-          (i, j, k) => writeFile('dir/old/sub-$i/sub-$j/file-$k.txt'));
+        (i, j, k) => writeFile('dir/old/sub-$i/sub-$j/file-$k.txt'),
+      );
 
       createDir('dir');
       await startWatcher(path: 'dir');
       renameDir('dir/old', 'dir/new');
 
-      await inAnyOrder(unionAll(withPermutations((i, j, k) {
-        return {
-          isRemoveEvent('dir/old/sub-$i/sub-$j/file-$k.txt'),
-          isAddEvent('dir/new/sub-$i/sub-$j/file-$k.txt')
-        };
-      })));
+      await inAnyOrder(
+        unionAll(
+          withPermutations((i, j, k) {
+            return {
+              isRemoveEvent('dir/old/sub-$i/sub-$j/file-$k.txt'),
+              isAddEvent('dir/new/sub-$i/sub-$j/file-$k.txt'),
+            };
+          }),
+        ),
+      );
     });
 
     test(
-        'emits events for many nested files moved out then immediately back in',
-        () async {
-      withPermutations(
-          (i, j, k) => writeFile('dir/sub/sub-$i/sub-$j/file-$k.txt'));
+      'emits events for many nested files moved out then immediately back in',
+      () async {
+        withPermutations(
+          (i, j, k) => writeFile('dir/sub/sub-$i/sub-$j/file-$k.txt'),
+        );
 
-      await startWatcher(path: 'dir');
+        await startWatcher(path: 'dir');
 
-      renameDir('dir/sub', 'sub');
-      renameDir('sub', 'dir/sub');
+        renameDir('dir/sub', 'sub');
+        renameDir('sub', 'dir/sub');
 
-      if (isNative) {
-        if (Platform.isMacOS || Platform.isWindows) {
-          // MacOS/Windows watcher reports as "modify" instead of remove then add.
-          await inAnyOrder(withPermutations(
-              (i, j, k) => isModifyEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+        if (isNative) {
+          if (Platform.isMacOS || Platform.isWindows) {
+            // MacOS/Windows watcher reports as "modify" instead of remove then add.
+            await inAnyOrder(
+              withPermutations(
+                (i, j, k) => isModifyEvent('dir/sub/sub-$i/sub-$j/file-$k.txt'),
+              ),
+            );
+          } else {
+            await inAnyOrder(
+              withPermutations(
+                (i, j, k) => isRemoveEvent('dir/sub/sub-$i/sub-$j/file-$k.txt'),
+              ),
+            );
+            await inAnyOrder(
+              withPermutations(
+                (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt'),
+              ),
+            );
+          }
         } else {
-          await inAnyOrder(withPermutations(
-              (i, j, k) => isRemoveEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
-          await inAnyOrder(withPermutations(
-              (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+          // Polling watchers can't detect this as directory contents mtimes
+          // aren't updated when the directory is moved.
+          await expectNoEvents();
         }
-      } else {
-        // Polling watchers can't detect this as directory contents mtimes
-        // aren't updated when the directory is moved.
-        await expectNoEvents();
-      }
-    });
+      },
+    );
 
-    test(
-        'emits events for many files added at once in a subdirectory with the '
+    test('emits events for many files added at once in a subdirectory with the '
         'same name as a removed file', () async {
       writeFile('dir/sub');
       withPermutations((i, j, k) => writeFile('old/sub-$i/sub-$j/file-$k.txt'));
@@ -457,7 +510,8 @@ void _fileTests({required bool isNative}) {
       renameDir('old', 'dir/sub');
 
       var events = withPermutations(
-          (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt'));
+        (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt'),
+      );
       events.add(isRemoveEvent('dir/sub'));
       await inAnyOrder(events);
     });
@@ -469,8 +523,10 @@ void _fileTests({required bool isNative}) {
       await expectAddEvent('a/b/file.txt');
 
       renameDir('a', 'c');
-      await inAnyOrder(
-          [isRemoveEvent('a/b/file.txt'), isAddEvent('c/b/file.txt')]);
+      await inAnyOrder([
+        isRemoveEvent('a/b/file.txt'),
+        isAddEvent('c/b/file.txt'),
+      ]);
 
       writeFile('c/b/file2.txt');
       await expectAddEvent('c/b/file2.txt');
@@ -494,8 +550,9 @@ void _fileTests({required bool isNative}) {
       renameDir('watched/x', 'b');
 
       expect(
-          foldDeletes(await takeEvents(duration: const Duration(seconds: 1))),
-          isEmpty);
+        foldDeletes(await takeEvents(duration: const Duration(seconds: 1))),
+        isEmpty,
+      );
     });
 
     test('subdirectory watching is robust against races', () async {
@@ -520,8 +577,7 @@ void _fileTests({required bool isNative}) {
     });
   });
 
-  test(
-      'does not notify about the watched directory being deleted and '
+  test('does not notify about the watched directory being deleted and '
       'recreated immediately before watching', () async {
     createDir('dir');
     writeFile('dir/old.txt');
@@ -544,7 +600,7 @@ void _fileTests({required bool isNative}) {
 
     await inAnyOrder([
       isAddEvent('some_name/some_name.txt'),
-      isRemoveEvent('some_name.txt')
+      isRemoveEvent('some_name.txt'),
     ]);
   });
 
@@ -557,8 +613,9 @@ void _fileTests({required bool isNative}) {
     return result;
   }
 
-  group('on case-insensitive filesystem', skip: filesystemIsCaseSensitive(),
-      () {
+  final skipCaseInsensitiveTests = filesystemIsCaseSensitive();
+
+  group('on case-insensitive filesystem', skip: skipCaseInsensitiveTests, () {
     test('events with case-only changes', () async {
       if (filesystemIsCaseSensitive()) return;
 
