@@ -5,7 +5,7 @@ description: >-
 # LINT.IfChange
 # When updating this, keep the version consistent with the changelog and the
 # value in lib/src/constants.dart.
-version: 8.1.0
+version: 8.0.12-wip
 # LINT.ThenChange(lib/src/constants.dart)
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/unified_analytics
 issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aunified_analytics
