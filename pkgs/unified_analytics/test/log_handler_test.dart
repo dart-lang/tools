@@ -23,15 +23,17 @@ void main() {
 
   final testEvent = Event.hotReloadTime(timeMs: 10);
   final propertyEditorEvent = Event.devtoolsEvent(
-      label: devtoolsEventLabel,
-      screen: propertyEditorId,
-      eventCategory: 'test',
-      value: 1);
+    label: devtoolsEventLabel,
+    screen: propertyEditorId,
+    eventCategory: 'test',
+    value: 1,
+  );
   final devToolsEvent = Event.devtoolsEvent(
-      label: devtoolsEventLabel,
-      screen: 'inspector',
-      eventCategory: 'test',
-      value: 1);
+    label: devtoolsEventLabel,
+    screen: 'inspector',
+    eventCategory: 'test',
+    value: 1,
+  );
 
   setUp(() {
     fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
@@ -93,12 +95,18 @@ void main() {
     }
 
     expect(analytics.logFileStats(), isNotNull);
-    expect(logFile.readAsLinesSync().length,
-        countOfPropertyEditorEventsToSend + countOfDevToolsEventsToSend);
-    expect(analytics.logFileStats()!.eventCount['property_editor'],
-        countOfPropertyEditorEventsToSend);
-    expect(analytics.logFileStats()!.eventCount['devtools_event'],
-        countOfDevToolsEventsToSend);
+    expect(
+      logFile.readAsLinesSync().length,
+      countOfPropertyEditorEventsToSend + countOfDevToolsEventsToSend,
+    );
+    expect(
+      analytics.logFileStats()!.eventCount['property_editor'],
+      countOfPropertyEditorEventsToSend,
+    );
+    expect(
+      analytics.logFileStats()!.eventCount['devtools_event'],
+      countOfDevToolsEventsToSend,
+    );
   });
 
   test('The only record in the log file is malformed', () async {
@@ -107,20 +115,25 @@ void main() {
 
     expect(logFile.readAsLinesSync().length, 1);
     final logFileStats = analytics.logFileStats();
-    expect(logFileStats, isNull,
-        reason: 'Null should be returned since only '
-            'one record is in there and it is malformed');
+    expect(
+      logFileStats,
+      isNull,
+      reason:
+          'Null should be returned since only '
+          'one record is in there and it is malformed',
+    );
 
     analytics.sendPendingErrorEvents();
     expect(
-        analytics.sentEvents,
-        contains(
-          Event.analyticsException(
-            workflow: 'LogFileStats.logFileStats',
-            error: 'FormatException',
-            description: 'message: Unexpected character\nsource: {{',
-          ),
-        ));
+      analytics.sentEvents,
+      contains(
+        Event.analyticsException(
+          workflow: 'LogFileStats.logFileStats',
+          error: 'FormatException',
+          description: 'message: Unexpected character\nsource: {{',
+        ),
+      ),
+    );
   });
 
   test('The first record is malformed, but rest are valid', () async {
@@ -152,15 +165,18 @@ void main() {
       analytics.send(testEvent);
     }
 
-    expect(logFile.readAsLinesSync().length,
-        countOfEventsToSend + countOfMalformedRecords);
+    expect(
+      logFile.readAsLinesSync().length,
+      countOfEventsToSend + countOfMalformedRecords,
+    );
     final logFileStats = analytics.logFileStats();
 
     analytics.sendPendingErrorEvents();
-    expect(logFile.readAsLinesSync().length,
-        countOfEventsToSend + countOfMalformedRecords + 1,
-        reason:
-            'There should have been on error event sent when getting stats');
+    expect(
+      logFile.readAsLinesSync().length,
+      countOfEventsToSend + countOfMalformedRecords + 1,
+      reason: 'There should have been on error event sent when getting stats',
+    );
 
     expect(logFileStats, isNotNull);
     expect(logFileStats!.recordCount, countOfEventsToSend);
@@ -204,12 +220,18 @@ void main() {
     }
     final logFileStats = analytics.logFileStats();
     analytics.sendPendingErrorEvents();
-    expect(analytics.sentEvents.last.eventName, DashEvent.analyticsException,
-        reason: 'Calling for the stats should have caused an error');
+    expect(
+      analytics.sentEvents.last.eventName,
+      DashEvent.analyticsException,
+      reason: 'Calling for the stats should have caused an error',
+    );
     expect(logFile.readAsLinesSync().length, kLogFileLength);
     expect(logFileStats, isNotNull);
-    expect(logFileStats!.recordCount, recordsToSendInitially,
-        reason: 'The first record should be malformed');
+    expect(
+      logFileStats!.recordCount,
+      recordsToSendInitially,
+      reason: 'The first record should be malformed',
+    );
     expect(logFile.readAsLinesSync()[0].trim(), '{{');
 
     // Sending one more event should flush out the malformed record
@@ -222,19 +244,20 @@ void main() {
     expect(logFile.readAsLinesSync()[0].trim(), isNot('{{'));
   });
 
-  test(
-      'Catches and discards any FileSystemException raised from attempting '
+  test('Catches and discards any FileSystemException raised from attempting '
       'to write to the log file', () async {
     final logFilePath = 'log.txt';
-    final fs = MemoryFileSystem.test(opHandle: (context, operation) {
-      if (context == logFilePath && operation == FileSystemOp.write) {
-        throw FileSystemException(
-          'writeFrom failed',
-          logFilePath,
-          const OSError('No space left on device', 28),
-        );
-      }
-    });
+    final fs = MemoryFileSystem.test(
+      opHandle: (context, operation) {
+        if (context == logFilePath && operation == FileSystemOp.write) {
+          throw FileSystemException(
+            'writeFrom failed',
+            logFilePath,
+            const OSError('No space left on device', 28),
+          );
+        }
+      },
+    );
     final logFile = fs.file(logFilePath);
     logFile.createSync();
     final logHandler = LogHandler(logFile: logFile);
@@ -266,9 +289,10 @@ void main() {
     var wroteDataToLogFile = false;
     const data = <String, Object?>{};
     final logFile = _FakeFile('log.txt')
-      .._deleteSyncImpl =
-          (() => fail('called logFile.deleteSync() when file was less than '
-              'kMaxLogFileSize'))
+      .._deleteSyncImpl = (() => fail(
+        'called logFile.deleteSync() when file was less than '
+        'kMaxLogFileSize',
+      ))
       .._createSyncImpl = () {}
       .._readAsLinesSyncImpl = (() => ['three', 'previous', 'lines'])
       .._statSyncImpl = (() => _FakeFileStat(kMaxLogFileSize - 1))
@@ -300,13 +324,16 @@ void main() {
     final secondLogFileStats = analytics.logFileStats();
 
     expect(secondLogFileStats, isNotNull);
-    expect(secondLogFileStats!.recordCount, countOfEventsToSend + 1,
-        reason: 'Plus one for the error event that is sent '
-            'from the first logFileStats call');
+    expect(
+      secondLogFileStats!.recordCount,
+      countOfEventsToSend + 1,
+      reason:
+          'Plus one for the error event that is sent '
+          'from the first logFileStats call',
+    );
   });
 
-  test(
-      'truncateStringToLength returns same string when '
+  test('truncateStringToLength returns same string when '
       'max length greater than string length', () {
     final testString = 'Version 14.1 (Build 23B74)';
     final maxLength = 100;
@@ -321,8 +348,7 @@ void main() {
     expect(newString, testString);
   });
 
-  test(
-      'truncateStringToLength returns truncated string when '
+  test('truncateStringToLength returns truncated string when '
       'max length less than string length', () {
     final testString = 'Version 14.1 (Build 23B74)';
     final maxLength = 10;
@@ -406,6 +432,5 @@ class _FakeFile extends Fake implements File {
     FileMode mode = FileMode.write,
     Encoding encoding = utf8,
     bool flush = false,
-  }) =>
-      _writeAsStringSync!(contents, mode: mode);
+  }) => _writeAsStringSync!(contents, mode: mode);
 }
