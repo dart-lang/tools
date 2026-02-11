@@ -850,98 +850,102 @@ void main() {
       });
     });
 
-    test('Snoozing survey is successful with snooze timeout from survey', () async {
-      expect(
-        dismissedSurveyFile.readAsStringSync(),
-        '{}',
-        reason: 'Should be an empty object',
-      );
-
-      // Initialize the survey class that we will use for this test
-      final minutesToSnooze = 30;
-      final surveyToLoad = Survey(
-        uniqueId: 'uniqueId',
-        startDate: DateTime(2023, 1, 1),
-        endDate: DateTime(2023, 12, 31),
-        description: 'description',
-        snoozeForMinutes:
-            minutesToSnooze, // Initialized survey with `minutesToSnooze`
-        samplingRate: 1.0,
-        excludeDashToolList: [],
-        conditionList: <Condition>[],
-        buttonList: [],
-      );
-
-      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
-        analytics = Analytics.fake(
-          tool: DashTool.flutterTool,
-          homeDirectory: homeDirectory,
-          dartVersion: 'dartVersion',
-          fs: fs,
-          platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromList(
-            dismissedSurveyFile: dismissedSurveyFile,
-            initializedSurveys: <Survey>[surveyToLoad],
-          ),
-        );
-
-        final fetchedSurveys = await analytics.fetchAvailableSurveys();
-        expect(fetchedSurveys.length, 1);
-
-        final survey = fetchedSurveys.first;
-        expect(survey.snoozeForMinutes, minutesToSnooze);
-
-        // We will snooze the survey now and it should not show up
-        // if we fetch surveys again before the minutes to snooze time
-        // has finished
-        analytics.surveyShown(survey);
-      });
-
-      // This analytics instance will be simulated to be shortly after the first
-      // snooze, but before the snooze period has elapsed
-      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 15)), () async {
-        analytics = Analytics.fake(
-          tool: DashTool.flutterTool,
-          homeDirectory: homeDirectory,
-          dartVersion: 'dartVersion',
-          fs: fs,
-          platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromList(
-            dismissedSurveyFile: dismissedSurveyFile,
-            initializedSurveys: <Survey>[surveyToLoad],
-          ),
-        );
-
-        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+    test(
+      'Snoozing survey is successful with snooze timeout from survey',
+      () async {
         expect(
-          fetchedSurveys.length,
-          0,
-          reason: 'The snooze period has not elapsed yet',
-        );
-      });
-
-      // This analytics instance will be simulated to be after the snooze period
-      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 35)), () async {
-        analytics = Analytics.fake(
-          tool: DashTool.flutterTool,
-          homeDirectory: homeDirectory,
-          dartVersion: 'dartVersion',
-          fs: fs,
-          platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromList(
-            dismissedSurveyFile: dismissedSurveyFile,
-            initializedSurveys: <Survey>[surveyToLoad],
-          ),
+          dismissedSurveyFile.readAsStringSync(),
+          '{}',
+          reason: 'Should be an empty object',
         );
 
-        final fetchedSurveys = await analytics.fetchAvailableSurveys();
-        expect(
-          fetchedSurveys.length,
-          1,
-          reason: 'The snooze period has elapsed',
+        // Initialize the survey class that we will use for this test
+        final minutesToSnooze = 30;
+        final surveyToLoad = Survey(
+          uniqueId: 'uniqueId',
+          startDate: DateTime(2023, 1, 1),
+          endDate: DateTime(2023, 12, 31),
+          description: 'description',
+          snoozeForMinutes:
+              minutesToSnooze, // Initialized survey with `minutesToSnooze`
+          samplingRate: 1.0,
+          excludeDashToolList: [],
+          conditionList: <Condition>[],
+          buttonList: [],
         );
-      });
-    });
+
+        await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
+          analytics = Analytics.fake(
+            tool: DashTool.flutterTool,
+            homeDirectory: homeDirectory,
+            dartVersion: 'dartVersion',
+            fs: fs,
+            platform: DevicePlatform.macos,
+            surveyHandler: FakeSurveyHandler.fromList(
+              dismissedSurveyFile: dismissedSurveyFile,
+              initializedSurveys: <Survey>[surveyToLoad],
+            ),
+          );
+
+          final fetchedSurveys = await analytics.fetchAvailableSurveys();
+          expect(fetchedSurveys.length, 1);
+
+          final survey = fetchedSurveys.first;
+          expect(survey.snoozeForMinutes, minutesToSnooze);
+
+          // We will snooze the survey now and it should not show up
+          // if we fetch surveys again before the minutes to snooze time
+          // has finished
+          analytics.surveyShown(survey);
+        });
+
+        // This analytics instance will be simulated to be shortly after the
+        // first snooze, but before the snooze period has elapsed
+        await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 15)), () async {
+          analytics = Analytics.fake(
+            tool: DashTool.flutterTool,
+            homeDirectory: homeDirectory,
+            dartVersion: 'dartVersion',
+            fs: fs,
+            platform: DevicePlatform.macos,
+            surveyHandler: FakeSurveyHandler.fromList(
+              dismissedSurveyFile: dismissedSurveyFile,
+              initializedSurveys: <Survey>[surveyToLoad],
+            ),
+          );
+
+          final fetchedSurveys = await analytics.fetchAvailableSurveys();
+          expect(
+            fetchedSurveys.length,
+            0,
+            reason: 'The snooze period has not elapsed yet',
+          );
+        });
+
+        // This analytics instance will be simulated to be after the snooze
+        // period
+        await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 35)), () async {
+          analytics = Analytics.fake(
+            tool: DashTool.flutterTool,
+            homeDirectory: homeDirectory,
+            dartVersion: 'dartVersion',
+            fs: fs,
+            platform: DevicePlatform.macos,
+            surveyHandler: FakeSurveyHandler.fromList(
+              dismissedSurveyFile: dismissedSurveyFile,
+              initializedSurveys: <Survey>[surveyToLoad],
+            ),
+          );
+
+          final fetchedSurveys = await analytics.fetchAvailableSurveys();
+          expect(
+            fetchedSurveys.length,
+            1,
+            reason: 'The snooze period has elapsed',
+          );
+        });
+      },
+    );
 
     test('Dimissing permanently is successful', () async {
       final minutesToSnooze = 10;
