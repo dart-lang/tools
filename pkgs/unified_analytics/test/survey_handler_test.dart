@@ -35,14 +35,7 @@ void main() {
     });
 
     test('Simulating with various sample rates', () {
-      final sampleRateToTestList = [
-        0.10,
-        0.25,
-        0.50,
-        0.75,
-        0.80,
-        0.95,
-      ];
+      final sampleRateToTestList = [0.10, 0.25, 0.50, 0.75, 0.80, 0.95];
       for (final sampleRateToTest in sampleRateToTestList) {
         var count = 0;
         for (var i = 0; i < iterations; i++) {
@@ -55,13 +48,17 @@ void main() {
         }
 
         final actualSampledRate = count / iterations;
-        final actualMarginOfError =
-            (sampleRateToTest - actualSampledRate).abs();
+        final actualMarginOfError = (sampleRateToTest - actualSampledRate)
+            .abs();
 
-        expect(actualMarginOfError < marginOfError, true,
-            reason: 'Failed on sample rate = $sampleRateToTest with'
-                ' actual rate $actualMarginOfError '
-                'and a margin of error = $marginOfError');
+        expect(
+          actualMarginOfError < marginOfError,
+          true,
+          reason:
+              'Failed on sample rate = $sampleRateToTest with'
+              ' actual rate $actualMarginOfError '
+              'and a margin of error = $marginOfError',
+        );
       }
     });
   });
@@ -214,7 +211,8 @@ void main() {
     test('valid json', () {
       withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
         final parsedSurveys = SurveyHandler.parseSurveysFromJson(
-            jsonDecode(validContents) as List);
+          jsonDecode(validContents) as List,
+        );
 
         expect(parsedSurveys.length, 1);
         expect(parsedSurveys.first.conditionList.length, 2);
@@ -232,29 +230,41 @@ void main() {
 
         expect(parsedSurveys.first.buttonList.length, 1);
         expect(
-            parsedSurveys.first.buttonList.first.promptRemainsVisible, false);
+          parsedSurveys.first.buttonList.first.promptRemainsVisible,
+          false,
+        );
       });
     });
 
     test('invalid condition json', () {
       withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
         final parsedSurveys = SurveyHandler.parseSurveysFromJson(
-            jsonDecode(invalidConditionValueContents) as List);
+          jsonDecode(invalidConditionValueContents) as List,
+        );
 
-        expect(parsedSurveys.length, 0,
-            reason: 'The condition value is not a '
-                'proper integer so it should error returning no surveys');
+        expect(
+          parsedSurveys.length,
+          0,
+          reason:
+              'The condition value is not a '
+              'proper integer so it should error returning no surveys',
+        );
       });
     });
 
     test('invalid dash tool json', () {
       withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
         final parsedSurveys = SurveyHandler.parseSurveysFromJson(
-            jsonDecode(invalidDashToolContents) as List);
+          jsonDecode(invalidDashToolContents) as List,
+        );
 
-        expect(parsedSurveys.length, 0,
-            reason: 'The dash tool in the exclude array is not valid '
-                'so it should error returning no surveys');
+        expect(
+          parsedSurveys.length,
+          0,
+          reason:
+              'The dash tool in the exclude array is not valid '
+              'so it should error returning no surveys',
+        );
       });
     });
   });
@@ -451,7 +461,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromString(
-              dismissedSurveyFile: dismissedSurveyFile, content: '''
+            dismissedSurveyFile: dismissedSurveyFile,
+            content: '''
 [
     {
         "uniqueId": "uniqueId123",
@@ -490,7 +501,8 @@ void main() {
         ]
     }
 ]
-'''),
+''',
+          ),
         );
 
         // Simulate 60 events to send so that the first condition is satisified
@@ -524,8 +536,10 @@ void main() {
         expect(buttonList.length, 3);
         expect(buttonList.first.buttonText, 'Take Survey');
         expect(buttonList.first.action, 'accept');
-        expect(buttonList.first.url,
-            'https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2');
+        expect(
+          buttonList.first.url,
+          'https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2',
+        );
         expect(buttonList.first.promptRemainsVisible, false);
 
         expect(buttonList.elementAt(1).buttonText, 'Dismiss');
@@ -535,8 +549,10 @@ void main() {
 
         expect(buttonList.last.buttonText, 'More Info');
         expect(buttonList.last.action, 'snooze');
-        expect(buttonList.last.url,
-            'https://docs.flutter.dev/reference/crash-reporting');
+        expect(
+          buttonList.last.url,
+          'https://docs.flutter.dev/reference/crash-reporting',
+        );
         expect(buttonList.last.promptRemainsVisible, true);
       });
     });
@@ -551,7 +567,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromString(
-              dismissedSurveyFile: dismissedSurveyFile, content: '''
+            dismissedSurveyFile: dismissedSurveyFile,
+            content: '''
 [
     {
         "uniqueId": "uniqueId123",
@@ -590,7 +607,8 @@ void main() {
         ]
     }
 ]
-'''),
+''',
+          ),
         );
 
         // Simulate 60 events to send so that the first condition is satisified
@@ -613,7 +631,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromString(
-              dismissedSurveyFile: dismissedSurveyFile, content: '''
+            dismissedSurveyFile: dismissedSurveyFile,
+            content: '''
 [
     {
         "uniqueId": "12345",
@@ -657,7 +676,8 @@ void main() {
         ]
     }
 ]
-'''),
+''',
+          ),
         );
 
         // Simulate 60 events to send so that the first condition is satisified
@@ -679,8 +699,10 @@ void main() {
         expect(secondSurveyButtons.length, 1);
         expect(secondSurveyButtons.first.buttonText, 'More Info');
         expect(secondSurveyButtons.first.action, 'snooze');
-        expect(secondSurveyButtons.first.url,
-            'https://docs.flutter.dev/reference/crash-reporting');
+        expect(
+          secondSurveyButtons.first.url,
+          'https://docs.flutter.dev/reference/crash-reporting',
+        );
         expect(secondSurveyButtons.first.promptRemainsVisible, true);
       });
     });
@@ -828,90 +850,102 @@ void main() {
       });
     });
 
-    test('Snoozing survey is successful with snooze timeout from survey',
-        () async {
-      expect(dismissedSurveyFile.readAsStringSync(), '{}',
-          reason: 'Should be an empty object');
-
-      // Initialize the survey class that we will use for this test
-      final minutesToSnooze = 30;
-      final surveyToLoad = Survey(
-        uniqueId: 'uniqueId',
-        startDate: DateTime(2023, 1, 1),
-        endDate: DateTime(2023, 12, 31),
-        description: 'description',
-        snoozeForMinutes:
-            minutesToSnooze, // Initialized survey with `minutesToSnooze`
-        samplingRate: 1.0,
-        excludeDashToolList: [],
-        conditionList: <Condition>[],
-        buttonList: [],
-      );
-
-      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
-        analytics = Analytics.fake(
-          tool: DashTool.flutterTool,
-          homeDirectory: homeDirectory,
-          dartVersion: 'dartVersion',
-          fs: fs,
-          platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromList(
-            dismissedSurveyFile: dismissedSurveyFile,
-            initializedSurveys: <Survey>[surveyToLoad],
-          ),
+    test(
+      'Snoozing survey is successful with snooze timeout from survey',
+      () async {
+        expect(
+          dismissedSurveyFile.readAsStringSync(),
+          '{}',
+          reason: 'Should be an empty object',
         );
 
-        final fetchedSurveys = await analytics.fetchAvailableSurveys();
-        expect(fetchedSurveys.length, 1);
-
-        final survey = fetchedSurveys.first;
-        expect(survey.snoozeForMinutes, minutesToSnooze);
-
-        // We will snooze the survey now and it should not show up
-        // if we fetch surveys again before the minutes to snooze time
-        // has finished
-        analytics.surveyShown(survey);
-      });
-
-      // This analytics instance will be simulated to be shortly after the first
-      // snooze, but before the snooze period has elapsed
-      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 15)), () async {
-        analytics = Analytics.fake(
-          tool: DashTool.flutterTool,
-          homeDirectory: homeDirectory,
-          dartVersion: 'dartVersion',
-          fs: fs,
-          platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromList(
-            dismissedSurveyFile: dismissedSurveyFile,
-            initializedSurveys: <Survey>[surveyToLoad],
-          ),
+        // Initialize the survey class that we will use for this test
+        final minutesToSnooze = 30;
+        final surveyToLoad = Survey(
+          uniqueId: 'uniqueId',
+          startDate: DateTime(2023, 1, 1),
+          endDate: DateTime(2023, 12, 31),
+          description: 'description',
+          snoozeForMinutes:
+              minutesToSnooze, // Initialized survey with `minutesToSnooze`
+          samplingRate: 1.0,
+          excludeDashToolList: [],
+          conditionList: <Condition>[],
+          buttonList: [],
         );
 
-        final fetchedSurveys = await analytics.fetchAvailableSurveys();
-        expect(fetchedSurveys.length, 0,
-            reason: 'The snooze period has not elapsed yet');
-      });
+        await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
+          analytics = Analytics.fake(
+            tool: DashTool.flutterTool,
+            homeDirectory: homeDirectory,
+            dartVersion: 'dartVersion',
+            fs: fs,
+            platform: DevicePlatform.macos,
+            surveyHandler: FakeSurveyHandler.fromList(
+              dismissedSurveyFile: dismissedSurveyFile,
+              initializedSurveys: <Survey>[surveyToLoad],
+            ),
+          );
 
-      // This analytics instance will be simulated to be after the snooze period
-      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 35)), () async {
-        analytics = Analytics.fake(
-          tool: DashTool.flutterTool,
-          homeDirectory: homeDirectory,
-          dartVersion: 'dartVersion',
-          fs: fs,
-          platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromList(
-            dismissedSurveyFile: dismissedSurveyFile,
-            initializedSurveys: <Survey>[surveyToLoad],
-          ),
-        );
+          final fetchedSurveys = await analytics.fetchAvailableSurveys();
+          expect(fetchedSurveys.length, 1);
 
-        final fetchedSurveys = await analytics.fetchAvailableSurveys();
-        expect(fetchedSurveys.length, 1,
-            reason: 'The snooze period has elapsed');
-      });
-    });
+          final survey = fetchedSurveys.first;
+          expect(survey.snoozeForMinutes, minutesToSnooze);
+
+          // We will snooze the survey now and it should not show up
+          // if we fetch surveys again before the minutes to snooze time
+          // has finished
+          analytics.surveyShown(survey);
+        });
+
+        // This analytics instance will be simulated to be shortly after the
+        // first snooze, but before the snooze period has elapsed
+        await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 15)), () async {
+          analytics = Analytics.fake(
+            tool: DashTool.flutterTool,
+            homeDirectory: homeDirectory,
+            dartVersion: 'dartVersion',
+            fs: fs,
+            platform: DevicePlatform.macos,
+            surveyHandler: FakeSurveyHandler.fromList(
+              dismissedSurveyFile: dismissedSurveyFile,
+              initializedSurveys: <Survey>[surveyToLoad],
+            ),
+          );
+
+          final fetchedSurveys = await analytics.fetchAvailableSurveys();
+          expect(
+            fetchedSurveys.length,
+            0,
+            reason: 'The snooze period has not elapsed yet',
+          );
+        });
+
+        // This analytics instance will be simulated to be after the snooze
+        // period
+        await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 35)), () async {
+          analytics = Analytics.fake(
+            tool: DashTool.flutterTool,
+            homeDirectory: homeDirectory,
+            dartVersion: 'dartVersion',
+            fs: fs,
+            platform: DevicePlatform.macos,
+            surveyHandler: FakeSurveyHandler.fromList(
+              dismissedSurveyFile: dismissedSurveyFile,
+              initializedSurveys: <Survey>[surveyToLoad],
+            ),
+          );
+
+          final fetchedSurveys = await analytics.fetchAvailableSurveys();
+          expect(
+            fetchedSurveys.length,
+            1,
+            reason: 'The snooze period has elapsed',
+          );
+        });
+      },
+    );
 
     test('Dimissing permanently is successful', () async {
       final minutesToSnooze = 10;
@@ -1154,9 +1188,7 @@ void main() {
                 samplingRate: 1.0,
                 // This should be the same as the tool in the
                 // Analytics constructor above
-                excludeDashToolList: [
-                  DashTool.flutterTool,
-                ],
+                excludeDashToolList: [DashTool.flutterTool],
                 conditionList: [],
                 buttonList: [
                   SurveyButton(
@@ -1177,8 +1209,7 @@ void main() {
       });
     });
 
-    test(
-        'Filter from excludeDashTool array does not '
+    test('Filter from excludeDashTool array does not '
         'apply for different tool', () async {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
         analytics = Analytics.fake(
@@ -1199,9 +1230,7 @@ void main() {
                 samplingRate: 1.0,
                 // This should be different from the tool in the
                 // Analytics constructor above
-                excludeDashToolList: [
-                  DashTool.devtools,
-                ],
+                excludeDashToolList: [DashTool.devtools],
                 conditionList: [],
                 buttonList: [
                   SurveyButton(

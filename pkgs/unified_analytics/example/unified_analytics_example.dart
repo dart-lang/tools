@@ -44,8 +44,10 @@ void main() async {
     analytics.clientShowedMessage();
   }
 
-  print('Current user ${analytics.clientId} '
-      'is opted in: ${analytics.telemetryEnabled}');
+  print(
+    'Current user ${analytics.clientId} '
+    'is opted in: ${analytics.telemetryEnabled}',
+  );
 
   // Example of long running process
   await Future<void>.delayed(const Duration(milliseconds: 100));

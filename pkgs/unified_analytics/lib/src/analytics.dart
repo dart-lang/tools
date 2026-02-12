@@ -126,8 +126,10 @@ abstract class Analytics {
     // Ensure that the home directory has permissions enabled to write
     final homeDirectory = getHomeDirectory(fs);
     if (homeDirectory == null) {
-      throw Exception('Unable to determine the home directory, '
-          'ensure it is available in the environment');
+      throw Exception(
+        'Unable to determine the home directory, '
+        'ensure it is available in the environment',
+      );
     }
     if (!checkDirectoryForWritePermissions(homeDirectory)) {
       throw Exception('Permissions error on the home directory!');
@@ -313,7 +315,8 @@ abstract class Analytics {
       dartVersion: dartVersion,
       platform: platform,
       fs: fs,
-      surveyHandler: surveyHandler ??
+      surveyHandler:
+          surveyHandler ??
           FakeSurveyHandler.fromList(
             dismissedSurveyFile: homeDirectory
                 .childDirectory(kDartToolDirectoryName)
@@ -386,40 +389,42 @@ class AnalyticsImpl implements Analytics {
     required SurveyHandler surveyHandler,
     required bool enableAsserts,
     required bool firstRun,
-  })  : _gaClient = gaClient,
-        _surveyHandler = surveyHandler,
-        _enableAsserts = enableAsserts,
-        _clientIdFile = homeDirectory
-            .childDirectory(kDartToolDirectoryName)
-            .childFile(kClientIdFileName),
-        _userProperty = UserProperty(
-          sessionFile: homeDirectory
-              .childDirectory(kDartToolDirectoryName)
-              .childFile(kSessionFileName),
-          flutterChannel: flutterChannel,
-          host: platform.label,
-          flutterVersion: flutterVersion,
-          dartVersion: dartVersion,
-          tool: tool.label,
-          // We truncate this to a maximum of 36 characters since this can
-          // a very long string for some operating systems
-          hostOsVersion:
-              truncateStringToLength(io.Platform.operatingSystemVersion, 36),
-          locale: io.Platform.localeName,
-          clientIde: clientIde,
-        ),
-        _enabledFeatures = enabledFeatures,
-        _configHandler = ConfigHandler(
-          homeDirectory: homeDirectory,
-          configFile: homeDirectory
-              .childDirectory(kDartToolDirectoryName)
-              .childFile(kConfigFileName),
-        ),
-        _logHandler = LogHandler(
-          logFile: homeDirectory
-              .childDirectory(kDartToolDirectoryName)
-              .childFile(kLogFileName),
-        ) {
+  }) : _gaClient = gaClient,
+       _surveyHandler = surveyHandler,
+       _enableAsserts = enableAsserts,
+       _clientIdFile = homeDirectory
+           .childDirectory(kDartToolDirectoryName)
+           .childFile(kClientIdFileName),
+       _userProperty = UserProperty(
+         sessionFile: homeDirectory
+             .childDirectory(kDartToolDirectoryName)
+             .childFile(kSessionFileName),
+         flutterChannel: flutterChannel,
+         host: platform.label,
+         flutterVersion: flutterVersion,
+         dartVersion: dartVersion,
+         tool: tool.label,
+         // We truncate this to a maximum of 36 characters since this can
+         // a very long string for some operating systems
+         hostOsVersion: truncateStringToLength(
+           io.Platform.operatingSystemVersion,
+           36,
+         ),
+         locale: io.Platform.localeName,
+         clientIde: clientIde,
+       ),
+       _enabledFeatures = enabledFeatures,
+       _configHandler = ConfigHandler(
+         homeDirectory: homeDirectory,
+         configFile: homeDirectory
+             .childDirectory(kDartToolDirectoryName)
+             .childFile(kConfigFileName),
+       ),
+       _logHandler = LogHandler(
+         logFile: homeDirectory
+             .childDirectory(kDartToolDirectoryName)
+             .childFile(kLogFileName),
+       ) {
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
     // on the first run
@@ -464,8 +469,8 @@ class AnalyticsImpl implements Analytics {
     // The command to swap in the consent message
     final commandString =
         tool == DashTool.flutterTool || tool == DashTool.devtools
-            ? 'flutter'
-            : 'dart';
+        ? 'flutter'
+        : 'dart';
 
     return kToolsMessage
         .replaceAll('{{ toolDescription }}', tool.description)
@@ -529,10 +534,9 @@ class AnalyticsImpl implements Analytics {
     // Collect any errors encountered and send
     _sendPendingErrorEvents();
 
-    await Future.wait(_futures).timeout(
-      Duration(milliseconds: delayDuration),
-      onTimeout: () => [],
-    );
+    await Future.wait(
+      _futures,
+    ).timeout(Duration(milliseconds: delayDuration), onTimeout: () => []);
     _gaClient.close();
   }
 
@@ -571,8 +575,9 @@ class AnalyticsImpl implements Analytics {
         for (final condition in survey.conditionList) {
           // Retrieve the value from the [LogFileStats] with
           // the label provided in the condtion
-          final logFileStatsValue =
-              logFileStats.getValueByString(condition.field);
+          final logFileStatsValue = logFileStats.getValueByString(
+            condition.field,
+          );
 
           if (logFileStatsValue == null) continue;
 
@@ -631,8 +636,9 @@ class AnalyticsImpl implements Analytics {
     _configHandler.setTelemetry(reportingBool);
 
     // Creation of the [Event] for opting out
-    final collectionEvent =
-        Event.analyticsCollectionEnabled(status: reportingBool);
+    final collectionEvent = Event.analyticsCollectionEnabled(
+      status: reportingBool,
+    );
 
     // The body of the request that will be sent to GA4
     final Map<String, Object?> body;
@@ -681,7 +687,9 @@ class AnalyticsImpl implements Analytics {
 
     // Pass to the google analytics client to send with a
     // timeout incase http clients hang
-    return _gaClient.sendData(body).timeout(
+    return _gaClient
+        .sendData(body)
+        .timeout(
           const Duration(milliseconds: kDelayDuration),
           onTimeout: () => Response('', 200),
         );
@@ -698,10 +706,12 @@ class AnalyticsImpl implements Analytics {
     // Any action, except for 'snooze' will permanently dismiss a given survey
     final permanentlyDismissed = surveyButton.action == 'snooze' ? false : true;
     _surveyHandler.dismiss(survey, permanentlyDismissed);
-    send(Event.surveyAction(
-      surveyId: survey.uniqueId,
-      status: surveyButton.action,
-    ));
+    send(
+      Event.surveyAction(
+        surveyId: survey.uniqueId,
+        status: surveyButton.action,
+      ),
+    );
   }
 
   @override
@@ -721,9 +731,11 @@ class AnalyticsImpl implements Analytics {
     // Collect any errors encountered and send
     final errorEvents = {..._userProperty.errorSet, ..._logHandler.errorSet};
     errorEvents
-        .where((event) =>
-            event.eventName == DashEvent.analyticsException &&
-            !_sentErrorEvents.contains(event))
+        .where(
+          (event) =>
+              event.eventName == DashEvent.analyticsException &&
+              !_sentErrorEvents.contains(event),
+        )
         .forEach(send);
 
     // Ensure the same event doesn't get sent again

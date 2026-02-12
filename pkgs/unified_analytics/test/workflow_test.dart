@@ -36,8 +36,9 @@ void main() {
 
   setUp(() {
     // Setup the filesystem with the home directory
-    final fsStyle =
-        io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
+    final fsStyle = io.Platform.isWindows
+        ? FileSystemStyle.windows
+        : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
     dartToolDirectory = home.childDirectory(kDartToolDirectoryName);
@@ -46,12 +47,15 @@ void main() {
     clientIdFile = home
         .childDirectory(kDartToolDirectoryName)
         .childFile(kClientIdFileName);
-    sessionFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kSessionFileName);
-    configFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kConfigFileName);
-    logFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kLogFileName);
+    sessionFile = home
+        .childDirectory(kDartToolDirectoryName)
+        .childFile(kSessionFileName);
+    configFile = home
+        .childDirectory(kDartToolDirectoryName)
+        .childFile(kConfigFileName);
+    logFile = home
+        .childDirectory(kDartToolDirectoryName)
+        .childFile(kLogFileName);
     dismissedSurveyFile = home
         .childDirectory(kDartToolDirectoryName)
         .childFile(kDismissedSurveyFileName);
@@ -75,9 +79,13 @@ void main() {
 
     firstAnalytics.clientShowedMessage();
     expect(firstAnalytics.shouldShowMessage, false);
-    expect(firstAnalytics.okToSend, false,
-        reason: 'On the first run, we should not be ok '
-            'to send any events, even if the user accepts');
+    expect(
+      firstAnalytics.okToSend,
+      false,
+      reason:
+          'On the first run, we should not be ok '
+          'to send any events, even if the user accepts',
+    );
   });
 
   test('Confirm workflow for updated tools message version + new tool', () {
@@ -88,9 +96,13 @@ void main() {
 
       instance.clientShowedMessage();
       expect(instance.shouldShowMessage, false);
-      expect(instance.okToSend, false,
-          reason: 'On the first run, we should not be ok '
-              'to send any events, even if the user accepts');
+      expect(
+        instance.okToSend,
+        false,
+        reason:
+            'On the first run, we should not be ok '
+            'to send any events, even if the user accepts',
+      );
     }
 
     final firstAnalytics = Analytics.fake(
@@ -157,22 +169,41 @@ void main() {
 
     // Host of assertions to ensure all required artifacts
     // are created
-    expect(dartToolDirectory.existsSync(), true,
-        reason: 'The directory should have been created');
-    expect(clientIdFile.existsSync(), true,
-        reason: 'The $kClientIdFileName file was not found');
-    expect(sessionFile.existsSync(), true,
-        reason: 'The $kSessionFileName file was not found');
-    expect(configFile.existsSync(), true,
-        reason: 'The $kConfigFileName was not found');
-    expect(logFile.existsSync(), true,
-        reason: 'The $kLogFileName file was not found');
-    expect(dismissedSurveyFile.existsSync(), true,
-        reason: 'The $dismissedSurveyFile file was not found');
+    expect(
+      dartToolDirectory.existsSync(),
+      true,
+      reason: 'The directory should have been created',
+    );
+    expect(
+      clientIdFile.existsSync(),
+      true,
+      reason: 'The $kClientIdFileName file was not found',
+    );
+    expect(
+      sessionFile.existsSync(),
+      true,
+      reason: 'The $kSessionFileName file was not found',
+    );
+    expect(
+      configFile.existsSync(),
+      true,
+      reason: 'The $kConfigFileName was not found',
+    );
+    expect(
+      logFile.existsSync(),
+      true,
+      reason: 'The $kLogFileName file was not found',
+    );
+    expect(
+      dismissedSurveyFile.existsSync(),
+      true,
+      reason: 'The $dismissedSurveyFile file was not found',
+    );
     expect(
       dartToolDirectory.listSync().length,
       equals(5),
-      reason: 'There should only be 5 files in the $kDartToolDirectoryName '
+      reason:
+          'There should only be 5 files in the $kDartToolDirectoryName '
           'directory',
     );
     expect(configFile.readAsStringSync(), kConfigString);
@@ -212,9 +243,13 @@ void main() {
 
     expect(secondAnalytics.shouldShowMessage, false);
     secondAnalytics.send(testEvent);
-    expect(logFile.readAsLinesSync().length, 1,
-        reason: 'Events will be blocked until invoking method '
-            'ensuring client has seen message');
+    expect(
+      logFile.readAsLinesSync().length,
+      1,
+      reason:
+          'Events will be blocked until invoking method '
+          'ensuring client has seen message',
+    );
 
     secondAnalytics.send(testEvent);
     secondAnalytics.send(testEvent);
@@ -241,10 +276,16 @@ void main() {
       platform: platform,
     );
 
-    expect(logFile.existsSync(), true,
-        reason: 'The $kLogFileName file was not found');
-    expect(thirdAnalytics.shouldShowMessage, true,
-        reason: 'New version number should require showing message');
+    expect(
+      logFile.existsSync(),
+      true,
+      reason: 'The $kLogFileName file was not found',
+    );
+    expect(
+      thirdAnalytics.shouldShowMessage,
+      true,
+      reason: 'New version number should require showing message',
+    );
     thirdAnalytics.send(testEvent);
     expect(logFile.readAsLinesSync().length, 0);
     thirdAnalytics.clientShowedMessage();
@@ -272,9 +313,13 @@ void main() {
 
     expect(fourthAnalytics.shouldShowMessage, false);
     fourthAnalytics.send(testEvent);
-    expect(logFile.readAsLinesSync().length, 1,
-        reason: 'Events will be blocked until invoking method '
-            'ensuring client has seen message');
+    expect(
+      logFile.readAsLinesSync().length,
+      1,
+      reason:
+          'Events will be blocked until invoking method '
+          'ensuring client has seen message',
+    );
 
     fourthAnalytics.send(testEvent);
     fourthAnalytics.send(testEvent);
@@ -343,10 +388,11 @@ void main() {
     secondAnalytics.clientShowedMessage();
 
     expect(
-        configFile
-            .readAsStringSync()
-            .endsWith('${secondTool.label}=$dateStamp,$firstVersion\n'),
-        true);
+      configFile.readAsStringSync().endsWith(
+        '${secondTool.label}=$dateStamp,$firstVersion\n',
+      ),
+      true,
+    );
 
     // Create a new instane of the secondTool with an even
     // bigger version
@@ -364,19 +410,21 @@ void main() {
     );
 
     expect(
-        configFile
-            .readAsStringSync()
-            .endsWith('${secondTool.label}=$dateStamp,$firstVersion\n'),
-        true);
+      configFile.readAsStringSync().endsWith(
+        '${secondTool.label}=$dateStamp,$firstVersion\n',
+      ),
+      true,
+    );
 
     // After invoking this method, it will get updated
     // in the config with the next version
     thirdAnalytics.clientShowedMessage();
 
     expect(
-        configFile
-            .readAsStringSync()
-            .endsWith('${secondTool.label}=$dateStamp,$secondVersion\n'),
-        true);
+      configFile.readAsStringSync().endsWith(
+        '${secondTool.label}=$dateStamp,$secondVersion\n',
+      ),
+      true,
+    );
   });
 }

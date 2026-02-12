@@ -27,8 +27,10 @@ const String toolPattern =
 
 class ConfigHandler {
   /// Regex pattern implementation for matching a line in the config file.
-  static RegExp telemetryFlagRegex =
-      RegExp(telemetryFlagPattern, multiLine: true);
+  static RegExp telemetryFlagRegex = RegExp(
+    telemetryFlagPattern,
+    multiLine: true,
+  );
   static RegExp toolRegex = RegExp(toolPattern, multiLine: true);
 
   final Directory homeDirectory;
@@ -41,10 +43,8 @@ class ConfigHandler {
   /// Reporting enabled unless specified by user
   bool _telemetryEnabled = true;
 
-  ConfigHandler({
-    required this.homeDirectory,
-    required this.configFile,
-  }) : configFileLastModified = configFile.lastModifiedSync() {
+  ConfigHandler({required this.homeDirectory, required this.configFile})
+    : configFileLastModified = configFile.lastModifiedSync() {
     // Call the method to parse the contents of the config file when
     // this class is initialized
     parseConfig();
@@ -67,10 +67,7 @@ class ConfigHandler {
   /// Responsibe for the creation of the configuration line
   /// for the tool being passed in by the user and adding a
   /// [ToolInfo] object.
-  void addTool({
-    required String tool,
-    required int versionNumber,
-  }) {
+  void addTool({required String tool, required int versionNumber}) {
     // Create the new instance of [ToolInfo] to be added
     // to the [parsedTools] map
     parsedTools[tool] = ToolInfo(
@@ -171,10 +168,7 @@ class ConfigHandler {
   /// This will reset the configuration file and clear the
   /// [parsedTools] map and trigger parsing the config again.
   void resetConfig() {
-    createConfigFile(
-      configFile: configFile,
-      homeDirectory: homeDirectory,
-    );
+    createConfigFile(configFile: configFile, homeDirectory: homeDirectory);
     parsedTools.clear();
     parseConfig();
   }
@@ -195,8 +189,10 @@ class ConfigHandler {
 
     final newTelemetryString = 'reporting=$flag';
 
-    final newConfigString =
-        configString.replaceAll(telemetryFlagRegex, newTelemetryString);
+    final newConfigString = configString.replaceAll(
+      telemetryFlagRegex,
+      newTelemetryString,
+    );
 
     await configFile.writeAsString(newConfigString);
     configFileLastModified = configFile.lastModifiedSync();
@@ -209,10 +205,7 @@ class ToolInfo {
   DateTime lastRun;
   int versionNumber;
 
-  ToolInfo({
-    required this.lastRun,
-    required this.versionNumber,
-  });
+  ToolInfo({required this.lastRun, required this.versionNumber});
 
   @override
   String toString() {

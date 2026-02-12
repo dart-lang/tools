@@ -1,3 +1,6 @@
+## 8.0.12-wip
+- Require Dart 3.10
+
 ## 8.0.11
 - Added `Event.flutterTrackAndroidDependencies` to track android dependencies.
 - Deprecated `Event.flutterWasmDryRun` in favor of `Event.flutterWasmDryRunPackage`.
