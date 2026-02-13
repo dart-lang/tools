@@ -21,12 +21,8 @@ bool get ansiOutputEnabled =>
     Zone.current[AnsiCode] as bool? ??
     (io.stdout.supportsAnsiEscapes && io.stderr.supportsAnsiEscapes);
 
-/// Returns `true` no formatting is required for [input].
-bool _isNoop(bool skip, String? input, bool? forScript) =>
-    skip ||
-    input == null ||
-    input.isEmpty ||
-    !((forScript ?? false) || ansiOutputEnabled);
+/// Whether no formatting is required for an input.
+bool _isNoop(bool forScript) => !ansiOutputEnabled && !forScript;
 
 /// Allows overriding [ansiOutputEnabled] to [enableAnsiOutput] for the code run
 /// within [body].
@@ -34,25 +30,18 @@ T overrideAnsiOutput<T>(bool enableAnsiOutput, T Function() body) =>
     runZoned(body, zoneValues: <Object, Object>{AnsiCode: enableAnsiOutput});
 
 /// The type of code represented by [AnsiCode].
-class AnsiCodeType {
-  final String _name;
+enum AnsiCodeType {
+  /// A background color.
+  background,
 
   /// A foreground color.
-  static const AnsiCodeType foreground = AnsiCodeType._('foreground');
-
-  /// A style.
-  static const AnsiCodeType style = AnsiCodeType._('style');
-
-  /// A background color.
-  static const AnsiCodeType background = AnsiCodeType._('background');
+  foreground,
 
   /// A reset value.
-  static const AnsiCodeType reset = AnsiCodeType._('reset');
+  reset,
 
-  const AnsiCodeType._(this._name);
-
-  @override
-  String toString() => 'AnsiType.$_name';
+  /// A style.
+  style,
 }
 
 /// Standard ANSI escape code for customizing terminal text output.
@@ -73,13 +62,17 @@ class AnsiCode {
   /// The type of code that is represented.
   final AnsiCodeType type;
 
-  const AnsiCode._(this.name, this.type, this.code, this.reset);
+  const AnsiCode._(this.name, this.type, this.code, this.reset)
+      : assert(identical(type, AnsiCodeType.reset) == (reset == null),
+            'Reset codes cannot have a reset, non-reset codes must.');
+
+  String get _codes => '$code';
 
   /// Represents the value escaped for use in terminal output.
-  String get escape => '$_ansiEscapeLiteral[${code}m';
+  String get escape => '$_ansiEscapeLiteral[${_codes}m';
 
   /// Represents the value as an unescaped literal suitable for scripts.
-  String get escapeForScript => '$_ansiEscapeForScript[${code}m';
+  String get escapeForScript => '$_ansiEscapeForScript[${_codes}m';
 
   String _escapeValue({bool forScript = false}) =>
       forScript ? escapeForScript : escape;
@@ -94,14 +87,25 @@ class AnsiCode {
   ///   * [value] is `null` or empty
   ///   * both [ansiOutputEnabled] and [forScript] are `false`.
   ///   * [type] is [AnsiCodeType.reset]
-  String? wrap(String? value, {bool forScript = false}) =>
-      _isNoop(type == AnsiCodeType.reset, value, forScript)
-          ? value
-          : '${_escapeValue(forScript: forScript)}$value'
-              '${reset!._escapeValue(forScript: forScript)}';
+  String? wrap(String? value, {bool forScript = false}) {
+    if (value == null || value.isEmpty) return value;
 
+    if (type == AnsiCodeType.reset || _isNoop(forScript)) {
+      return value;
+    }
+    assert(type != AnsiCodeType.reset);
+    return '${_escapeValue(forScript: forScript)}$value'
+        '${reset!._escapeValue(forScript: forScript)}';
+  }
+
+  /// The [escape] sequence.
+  ///
+  /// Allows a code to be used directly in a string literal
+  /// ```dart
+  /// print("I ${red}love ${brown}pie!${resetAll}");
+  /// ```
   @override
-  String toString() => '$name ${type._name} ($code)';
+  String toString() => escape;
 }
 
 /// Returns a [String] formatted with [codes].
@@ -120,10 +124,11 @@ class AnsiCode {
 ///   * [codes] contains any value of type [AnsiCodeType.reset].
 String? wrapWith(String? value, Iterable<AnsiCode> codes,
     {bool forScript = false}) {
+  if (value == null || value.isEmpty) return value;
   // Eliminate duplicates
   final myCodes = codes.toSet();
 
-  if (_isNoop(myCodes.isEmpty, value, forScript)) {
+  if (myCodes.isEmpty || _isNoop(forScript)) {
     return value;
   }
 
@@ -146,16 +151,37 @@ String? wrapWith(String? value, Iterable<AnsiCode> codes,
         throw ArgumentError.value(
             codes, 'codes', 'Cannot contain reset codes.');
       case AnsiCodeType.style:
-        // Ignore.
-        break;
+      // Ignore.
     }
   }
 
-  final sortedCodes = myCodes.map((ac) => ac.code).toList()..sort();
+  final sortedCodes = myCodes.toList()
+    ..sort((a, b) => a.code.compareTo(b.code));
+  final resets = <AnsiCode>{}; // Include each reset only once.
+  for (var code in sortedCodes.reversed) {
+    final resetCode = code.reset!;
+    if (!identical(resetCode, resetAll)) {
+      resets.add(resetCode);
+    } else {
+      resets
+        ..clear()
+        ..add(resetAll);
+      break;
+    }
+  }
   final escapeValue = forScript ? _ansiEscapeForScript : _ansiEscapeLiteral;
-
-  return "$escapeValue[${sortedCodes.join(';')}m$value"
-      '${resetAll._escapeValue(forScript: forScript)}';
+  final buffer = StringBuffer();
+  buffer
+    ..write(escapeValue)
+    ..write('[')
+    ..writeAll(sortedCodes.map((c) => c._codes), ';')
+    ..write('m')
+    ..write(value)
+    ..write(escapeValue)
+    ..write('[')
+    ..writeAll(resets.map((c) => c._codes), ';')
+    ..write('m');
+  return buffer.toString();
 }
 
 //
@@ -183,7 +209,8 @@ const styleCrossedOut =
 
 const resetAll = AnsiCode._('all', AnsiCodeType.reset, 0, null);
 
-// NOTE: bold is weird. The reset code seems to be 22 sometimes – not 21
+// NOTE: Bold and dim(/faint) are both reset using code 22.
+// Code 21 is "double underline" in some specifications.
 // See https://gitlab.com/gnachman/iterm2/issues/3208
 const resetBold = AnsiCode._('bold', AnsiCodeType.reset, 22, null);
 const resetDim = AnsiCode._('dim', AnsiCodeType.reset, 22, null);
