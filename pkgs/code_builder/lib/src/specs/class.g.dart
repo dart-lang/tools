@@ -37,7 +37,7 @@ class _$Class extends Class {
   final String name;
 
   factory _$Class([void Function(ClassBuilder)? updates]) =>
-      (new ClassBuilder()..update(updates)).build() as _$Class;
+      (ClassBuilder()..update(updates)).build() as _$Class;
 
   _$Class._({
     required this.abstract,
@@ -54,31 +54,13 @@ class _$Class extends Class {
     required this.methods,
     required this.fields,
     required this.name,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(abstract, r'Class', 'abstract');
-    BuiltValueNullFieldError.checkNotNull(sealed, r'Class', 'sealed');
-    BuiltValueNullFieldError.checkNotNull(mixin, r'Class', 'mixin');
-    BuiltValueNullFieldError.checkNotNull(annotations, r'Class', 'annotations');
-    BuiltValueNullFieldError.checkNotNull(docs, r'Class', 'docs');
-    BuiltValueNullFieldError.checkNotNull(implements, r'Class', 'implements');
-    BuiltValueNullFieldError.checkNotNull(mixins, r'Class', 'mixins');
-    BuiltValueNullFieldError.checkNotNull(types, r'Class', 'types');
-    BuiltValueNullFieldError.checkNotNull(
-      constructors,
-      r'Class',
-      'constructors',
-    );
-    BuiltValueNullFieldError.checkNotNull(methods, r'Class', 'methods');
-    BuiltValueNullFieldError.checkNotNull(fields, r'Class', 'fields');
-    BuiltValueNullFieldError.checkNotNull(name, r'Class', 'name');
-  }
-
+  }) : super._();
   @override
   Class rebuild(void Function(ClassBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$ClassBuilder toBuilder() => new _$ClassBuilder()..replace(this);
+  _$ClassBuilder toBuilder() => _$ClassBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -339,7 +321,6 @@ class _$ClassBuilder extends ClassBuilder {
 
   @override
   void replace(Class other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Class;
   }
 
@@ -356,7 +337,7 @@ class _$ClassBuilder extends ClassBuilder {
     try {
       _$result =
           _$v ??
-          new _$Class._(
+          _$Class._(
             abstract: BuiltValueNullFieldError.checkNotNull(
               abstract,
               r'Class',
@@ -405,11 +386,7 @@ class _$ClassBuilder extends ClassBuilder {
         _$failedField = 'fields';
         fields.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-          r'Class',
-          _$failedField,
-          e.toString(),
-        );
+        throw BuiltValueNestedFieldError(r'Class', _$failedField, e.toString());
       }
       rethrow;
     }

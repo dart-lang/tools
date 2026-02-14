@@ -11,18 +11,15 @@ class _$Block extends Block {
   final BuiltList<Code> statements;
 
   factory _$Block([void Function(BlockBuilder)? updates]) =>
-      (new BlockBuilder()..update(updates)).build() as _$Block;
+      (BlockBuilder()..update(updates)).build() as _$Block;
 
-  _$Block._({required this.statements}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(statements, r'Block', 'statements');
-  }
-
+  _$Block._({required this.statements}) : super._();
   @override
   Block rebuild(void Function(BlockBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$BlockBuilder toBuilder() => new _$BlockBuilder()..replace(this);
+  _$BlockBuilder toBuilder() => _$BlockBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -73,7 +70,6 @@ class _$BlockBuilder extends BlockBuilder {
 
   @override
   void replace(Block other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Block;
   }
 
@@ -88,18 +84,14 @@ class _$BlockBuilder extends BlockBuilder {
   _$Block _build() {
     _$Block _$result;
     try {
-      _$result = _$v ?? new _$Block._(statements: statements.build());
+      _$result = _$v ?? _$Block._(statements: statements.build());
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'statements';
         statements.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-          r'Block',
-          _$failedField,
-          e.toString(),
-        );
+        throw BuiltValueNestedFieldError(r'Block', _$failedField, e.toString());
       }
       rethrow;
     }

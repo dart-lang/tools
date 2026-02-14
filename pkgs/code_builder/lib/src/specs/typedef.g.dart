@@ -19,7 +19,7 @@ class _$TypeDef extends TypeDef {
   final BuiltList<Reference> types;
 
   factory _$TypeDef([void Function(TypeDefBuilder)? updates]) =>
-      (new TypeDefBuilder()..update(updates)).build() as _$TypeDef;
+      (TypeDefBuilder()..update(updates)).build() as _$TypeDef;
 
   _$TypeDef._({
     required this.name,
@@ -27,24 +27,13 @@ class _$TypeDef extends TypeDef {
     required this.annotations,
     required this.docs,
     required this.types,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(name, r'TypeDef', 'name');
-    BuiltValueNullFieldError.checkNotNull(definition, r'TypeDef', 'definition');
-    BuiltValueNullFieldError.checkNotNull(
-      annotations,
-      r'TypeDef',
-      'annotations',
-    );
-    BuiltValueNullFieldError.checkNotNull(docs, r'TypeDef', 'docs');
-    BuiltValueNullFieldError.checkNotNull(types, r'TypeDef', 'types');
-  }
-
+  }) : super._();
   @override
   TypeDef rebuild(void Function(TypeDefBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$TypeDefBuilder toBuilder() => new _$TypeDefBuilder()..replace(this);
+  _$TypeDefBuilder toBuilder() => _$TypeDefBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -161,7 +150,6 @@ class _$TypeDefBuilder extends TypeDefBuilder {
 
   @override
   void replace(TypeDef other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$TypeDef;
   }
 
@@ -178,7 +166,7 @@ class _$TypeDefBuilder extends TypeDefBuilder {
     try {
       _$result =
           _$v ??
-          new _$TypeDef._(
+          _$TypeDef._(
             name: BuiltValueNullFieldError.checkNotNull(
               name,
               r'TypeDef',
@@ -203,7 +191,7 @@ class _$TypeDefBuilder extends TypeDefBuilder {
         _$failedField = 'types';
         types.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'TypeDef',
           _$failedField,
           e.toString(),
