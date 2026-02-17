@@ -268,11 +268,13 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
   });
 
   test('Element.text', () {
-    final doc = parseFragment('<div>foo<div>bar</div>baz</div>');
+    final doc = parseFragment('<div>foo<div><br>bar</div>baz<br></div>');
     final e = doc.firstChild!;
     final text = e.firstChild!;
     expect((text as Text).data, 'foo');
     expect(e.text, 'foobarbaz');
+    expect(e.textContent(convertBRsToNewlines: true), 'foo\nbarbaz\n');
+    expect(e.textContent(convertBRsToNewlines: false), 'foobarbaz');
 
     e.text = 'FOO';
     expect(e.nodes.length, 1);
@@ -282,7 +284,7 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
   });
 
   test('Text.text', () {
-    final doc = parseFragment('<div>foo<div>bar</div>baz</div>');
+    final doc = parseFragment('<div>foo<div>bar</div><br>baz</div>');
     final e = doc.firstChild!;
     final text = e.firstChild as Text;
     expect(text.data, 'foo');
@@ -291,6 +293,8 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
     text.text = 'FOO';
     expect(text.data, 'FOO');
     expect(e.text, 'FOObarbaz');
+    expect(e.textContent(convertBRsToNewlines: true), 'FOObar\nbaz');
+    expect(e.textContent(convertBRsToNewlines: false), 'FOObarbaz');
     expect(text.text, 'FOO');
   });
 

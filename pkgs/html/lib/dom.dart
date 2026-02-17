@@ -214,6 +214,9 @@ abstract class Node {
   }
 
   // Implemented per: http://dom.spec.whatwg.org/#dom-node-textcontent
+  String? textContent({bool convertBRsToNewlines = false}) =>
+      _getTextContent(this, convertBRsToNewlines: convertBRsToNewlines);
+
   String? get text => null;
 
   set text(String? value) {}
@@ -1099,8 +1102,36 @@ class FilteredElementList extends IterableBase<Element>
 }
 
 // http://dom.spec.whatwg.org/#dom-node-textcontent
-// For Element and DocumentFragment
-String _getText(Node node) => (_ConcatTextVisitor()..visit(node)).toString();
+String? _getTextContent(Node node, {bool convertBRsToNewlines = false}) {
+  // DocumentFragment or Element: return descendant text content
+  if (node is DocumentFragment || node is Element) {
+    return _getText(node, convertBRsToNewlines: convertBRsToNewlines);
+  }
+  // CharacterData (Text, Comment): return data
+  if (node is Text) {
+    return node.data;
+  }
+  if (node is Comment) {
+    return node.data;
+  }
+  // Otherwise: return null
+  return null;
+}
+
+/// Returns true if the element is an HTML <br> element.
+/// Checks both the local name and namespace to ensure it's a proper HTML br element.
+/// Note: null namespace is treated as HTML namespace for elements created by the HTML parser.
+bool _isElementBr(Element element) {
+  if (element.localName != 'br') return false;
+  final ns = element.namespaceUri;
+  return ns == null || ns == Namespaces.html;
+}
+
+// For Element and DocumentFragment (legacy helper)
+String _getText(Node node, {bool convertBRsToNewlines = false}) =>
+    (_ConcatTextVisitor(convertBRsToNewlines: convertBRsToNewlines)
+          ..visit(node))
+        .toString();
 
 void _setText(Node node, String? value) {
   node.nodes.clear();
@@ -1109,6 +1140,9 @@ void _setText(Node node, String? value) {
 
 class _ConcatTextVisitor extends TreeVisitor {
   final _str = StringBuffer();
+  final bool convertBRsToNewlines;
+
+  _ConcatTextVisitor({this.convertBRsToNewlines = false});
 
   @override
   String toString() => _str.toString();
@@ -1116,5 +1150,14 @@ class _ConcatTextVisitor extends TreeVisitor {
   @override
   void visitText(Text node) {
     _str.write(node.data);
+  }
+
+  @override
+  void visitElement(Element node) {
+    if (convertBRsToNewlines && _isElementBr(node)) {
+      _str.write('\n');
+      return;
+    }
+    super.visitElement(node);
   }
 }
