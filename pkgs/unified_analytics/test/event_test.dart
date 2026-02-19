@@ -573,7 +573,7 @@ void main() {
     test('constructor arguments default to null if not specified', () {
       Event generateEvent() => Event.flutterTrackAndroidDependencies(
         success: false,
-        label: 'failed do download gradle from ...',
+        label: 'failed to download gradle from ...',
         isModule: true,
         agpVersion: '8.2.2',
         targetSDK: 36,
@@ -591,7 +591,7 @@ void main() {
       expect(constructedEvent.eventData['success'], isFalse);
       expect(
         constructedEvent.eventData['label'],
-        'failed do download gradle from ...',
+        'failed to download gradle from ...',
       );
       expect(constructedEvent.eventData['isModule'], isTrue);
       expect(constructedEvent.eventData['agpVersion'], '8.2.2');

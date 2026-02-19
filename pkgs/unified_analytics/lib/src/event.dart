@@ -733,6 +733,10 @@ final class Event {
 
   /// Provides information about the android dependencies of a project.
   ///
+  /// * [success] - whether the build succeded.
+  ///
+  /// * [label] - the error label if the build fails.
+  ///
   /// * [isModule] - whether the project is an add-to-app Flutter module.
   ///
   /// * [agpVersion] - the Android Gradle plugin of the build target.
