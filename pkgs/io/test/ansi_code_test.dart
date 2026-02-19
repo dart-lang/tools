@@ -33,7 +33,7 @@ void main() {
       });
     });
 
-    test('forScript variaents ignore `ansiOutputEnabled`', () {
+    test('forScript variants ignore `ansiOutputEnabled`', () {
       const expected =
           '$_ansiEscapeForScript[34m$sampleInput$_ansiEscapeForScript[0m';
 
@@ -112,6 +112,14 @@ void main() {
         test(null, () {
           expect(blue.wrap(null, forScript: forScript), isNull);
         });
+
+        _test('rgb', () {
+          final rgbCode = rgb(128, 64, 32);
+          final expected =
+              '$escapeLiteral[38;2;128;64;32m$sampleInput$escapeLiteral[0m';
+
+          expect(rgbCode.wrap(sampleInput, forScript: forScript), expected);
+        });
       });
 
       group('wrapWith', () {
@@ -152,7 +160,7 @@ void main() {
 
         _test('multi', () {
           final expected =
-              '$escapeLiteral[1;4;34;107m$sampleInput$escapeLiteral[0m';
+              '$escapeLiteral[34;107;1;4m$sampleInput$escapeLiteral[0m';
 
           expect(
               wrapWith(sampleInput,
@@ -177,6 +185,18 @@ void main() {
               wrapWith(null, [blue, backgroundWhite, styleBold],
                   forScript: forScript),
               isNull);
+        });
+
+        _test('rgb', () {
+          final rgbCode = rgb(128, 64, 32);
+          final expected =
+              '$escapeLiteral[4;38;2;128;64;32m$sampleInput$escapeLiteral[0m';
+
+          expect(
+            wrapWith(sampleInput, [styleUnderlined, rgbCode],
+                forScript: forScript),
+            expected,
+          );
         });
       });
     });
