@@ -750,6 +750,8 @@ final class Event {
   ///
   /// * [gradleVersion] - the Gradle version used by the build target.
   Event.flutterTrackAndroidDependencies({
+    required bool success,
+    String? label,
     bool? isModule,
     String? agpVersion,
     int? minSDK,
@@ -761,6 +763,8 @@ final class Event {
   }) : this._(
          eventName: DashEvent.flutterTrackAndroidDependencies,
          eventData: {
+           'success': success,
+           'label': ?label,
            'isModule': ?isModule,
            'agpVersion': ?agpVersion,
            'minSDK': ?minSDK,
