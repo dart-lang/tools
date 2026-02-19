@@ -539,6 +539,7 @@ void main() {
   group('Event.flutterTrackAndroidDependencies', () {
     test('constructed', () {
       Event generateEvent() => Event.flutterTrackAndroidDependencies(
+        success: true,
         isModule: true,
         agpVersion: '8.2.2',
         minSDK: 24,
@@ -556,6 +557,8 @@ void main() {
         constructedEvent.eventName,
         DashEvent.flutterTrackAndroidDependencies,
       );
+      expect(constructedEvent.eventData['success'], isTrue);
+      expect(constructedEvent.eventData['label'], isNull);
       expect(constructedEvent.eventData['isModule'], isTrue);
       expect(constructedEvent.eventData['agpVersion'], '8.2.2');
       expect(constructedEvent.eventData['minSDK'], 24);
@@ -564,11 +567,13 @@ void main() {
       expect(constructedEvent.eventData['jdkVersion'], 24);
       expect(constructedEvent.eventData['ndkVersion'], '28.0.13004108');
       expect(constructedEvent.eventData['gradleVersion'], '8.10.2');
-      expect(constructedEvent.eventData.length, 8);
+      expect(constructedEvent.eventData.length, 9);
     });
 
     test('constructor arguments default to null if not specified', () {
       Event generateEvent() => Event.flutterTrackAndroidDependencies(
+        success: false,
+        label: 'failed to download gradle from ...',
         isModule: true,
         agpVersion: '8.2.2',
         targetSDK: 36,
@@ -583,6 +588,11 @@ void main() {
         constructedEvent.eventName,
         DashEvent.flutterTrackAndroidDependencies,
       );
+      expect(constructedEvent.eventData['success'], isFalse);
+      expect(
+        constructedEvent.eventData['label'],
+        'failed to download gradle from ...',
+      );
       expect(constructedEvent.eventData['isModule'], isTrue);
       expect(constructedEvent.eventData['agpVersion'], '8.2.2');
       expect(constructedEvent.eventData['minSDK'], null);
@@ -591,7 +601,7 @@ void main() {
       expect(constructedEvent.eventData['jdkVersion'], 24);
       expect(constructedEvent.eventData['ndkVersion'], null);
       expect(constructedEvent.eventData['gradleVersion'], '8.10.2');
-      expect(constructedEvent.eventData.length, 5);
+      expect(constructedEvent.eventData.length, 7);
     });
   });
   test('Event.codeSizeAnalysis constructed', () {
