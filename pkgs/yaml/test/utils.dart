@@ -7,6 +7,8 @@
 
 import 'package:test/test.dart';
 import 'package:yaml/src/equality.dart' as equality;
+import 'package:yaml/src/scanner.dart';
+import 'package:yaml/src/token.dart';
 import 'package:yaml/yaml.dart';
 
 /// A matcher that validates that a closure or Future throws a [YamlException].
@@ -92,4 +94,35 @@ String indentLiteral(String text) {
   }
 
   return lines.join('\n');
+}
+
+/// Generates tokens that can be consumed by a yaml parser.
+Iterable<Token> generateTokens(String source) sync* {
+  final scanner = Scanner(source);
+
+  do {
+    if (scanner.peek() case Token token) {
+      yield token;
+      scanner.advance();
+      continue;
+    }
+
+    break;
+  } while (true);
+}
+
+/// Matches a [TagDirectiveToken] emitted by a [Scanner]
+Matcher isATagDirective(String handle, String prefix) =>
+    isA<TagDirectiveToken>()
+        .having((t) => t.handle, 'handle', equals(handle))
+        .having((t) => t.prefix, 'prefix', equals(prefix));
+
+extension PadUtil on String {
+  /// Applies an indent of 8 spaces to a multiline string to ensure strings
+  /// are compatible with existing matchers.
+  ///
+  /// See [cleanUpLiteral].
+  String asIndented() => split('\n')
+      .map((line) => line.isEmpty ? line : '${' ' * 8}$line')
+      .join('\n');
 }
