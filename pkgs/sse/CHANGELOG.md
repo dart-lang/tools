@@ -1,3 +1,7 @@
+## 4.2.0
+
+- Update the minimum Dart SDK version to `3.11.0`.
+
 ## 4.1.8
 
 - Simplify the format of client ID strings.

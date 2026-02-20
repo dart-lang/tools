@@ -1,5 +1,5 @@
 name: sse
-version: 4.1.8
+version: 4.2.0-wip
 description: >-
   Provides client and server functionality for setting up bi-directional
   communication through Server Sent Events (SSE) and corresponding POST
@@ -8,7 +8,7 @@ repository: https://github.com/dart-lang/tools/tree/main/pkgs/sse
 issue_tracker: https://github.com/dart-lang/tools/labels/package%3Asse
 
 environment:
-  sdk: ^3.3.0
+  sdk: ^3.11.0
 
 dependencies:
   async: ^2.0.8

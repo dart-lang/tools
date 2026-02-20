@@ -13,7 +13,8 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:stream_channel/stream_channel.dart';
 
 // RFC 2616 requires carriage return delimiters.
-String _sseHeaders(String? origin) => 'HTTP/1.1 200 OK\r\n'
+String _sseHeaders(String? origin) =>
+    'HTTP/1.1 200 OK\r\n'
     'Content-Type: text/event-stream\r\n'
     'Cache-Control: no-cache\r\n'
     'Connection: keep-alive\r\n'
@@ -50,8 +51,9 @@ class SseConnection extends StreamChannelMixin<String> {
   int _lastProcessedId = -1;
 
   /// Incoming messages that have yet to be processed.
-  final _pendingMessages =
-      HeapPriorityQueue<_SseMessage>((a, b) => a.id.compareTo(b.id));
+  final _pendingMessages = HeapPriorityQueue<_SseMessage>(
+    (a, b) => a.id.compareTo(b.id),
+  );
 
   final _closedCompleter = Completer<void>();
 
@@ -76,8 +78,8 @@ class SseConnection extends StreamChannelMixin<String> {
   }
 
   Future<void> _setUpListener() async {
-    while (
-        !_outgoingController.isClosed && await _outgoingStreamQueue.hasNext) {
+    while (!_outgoingController.isClosed &&
+        await _outgoingStreamQueue.hasNext) {
       // If we're in a KeepAlive timeout, there's nowhere to send messages so
       // wait a short period and check again.
       if (isInKeepAlivePeriod) {
@@ -231,18 +233,23 @@ class SseHandler {
       } else {
         var connection = SseConnection(sink, keepAlive: _keepAlive);
         _connections[clientId] = connection;
-        unawaited(connection._closedCompleter.future.then((_) {
-          _connections.remove(clientId);
-        }));
+        unawaited(
+          connection._closedCompleter.future.then((_) {
+            _connections.remove(clientId);
+          }),
+        );
         _connectionController.add(connection);
       }
       // Remove connection when it is remotely closed or the stream is
       // cancelled.
-      channel.stream.listen((_) {
-        // SSE is unidirectional. Responses are handled through POST requests.
-      }, onDone: () {
-        _connections[clientId]?._handleDisconnect();
-      });
+      channel.stream.listen(
+        (_) {
+          // SSE is unidirectional. Responses are handled through POST requests.
+        },
+        onDone: () {
+          _connections[clientId]?._handleDisconnect();
+        },
+      );
     });
   }
 
@@ -266,7 +273,9 @@ class SseHandler {
   }
 
   Future<shelf.Response> _handleIncomingMessage(
-      shelf.Request req, String path) async {
+    shelf.Request req,
+    String path,
+  ) async {
     String? clientId;
     try {
       clientId = req.url.queryParameters['sseClientId'];
@@ -277,10 +286,13 @@ class SseHandler {
     } catch (e, st) {
       _logger.fine('[$clientId] Failed to handle incoming message. $e $st');
     }
-    return shelf.Response.ok('', headers: {
-      'access-control-allow-credentials': 'true',
-      'access-control-allow-origin': _originFor(req),
-    });
+    return shelf.Response.ok(
+      '',
+      headers: {
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-origin': _originFor(req),
+      },
+    );
   }
 
   String _originFor(shelf.Request req) =>
