@@ -12,13 +12,11 @@ Future<void> main() async {
     return;
   }
 
-  final result = await processManager.run(<Object>[executable, '--version']);
+  final result = await processManager.run([executable, '--version']);
+  stdout.write(result.stdout);
   if (result.exitCode != 0) {
     stderr.writeln('Command failed with exit code ${result.exitCode}.');
     stderr.write(result.stderr);
     exitCode = result.exitCode;
-    return;
   }
-
-  stdout.write(result.stdout);
 }
