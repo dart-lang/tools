@@ -5,6 +5,7 @@
   - Allow a debounce period after connections to ignore disconnects which may be
     from prior connections.
   - Add logging when messages are received out of order.
+- Update the minimum Dart SDK version to `3.11.0`.
 
 ## 4.1.8
 

@@ -25,11 +25,14 @@ void main() {
 
   setUpAll(() async {
     try {
-      chromeDriver = await Process.start(
-          'chromedriver', ['--port=4444', '--url-base=wd/hub']);
+      chromeDriver = await Process.start('chromedriver', [
+        '--port=4444',
+        '--url-base=wd/hub',
+      ]);
     } catch (e) {
       throw StateError(
-          'Could not start ChromeDriver. Is it installed?\nError: $e');
+        'Could not start ChromeDriver. Is it installed?\nError: $e',
+      );
     }
   });
 
@@ -44,15 +47,20 @@ void main() {
       var cascade = shelf.Cascade()
           .add(handler.handler)
           .add(_faviconHandler)
-          .add(createStaticHandler('test/web',
-              listDirectories: true, defaultDocument: 'index.html'));
+          .add(
+            createStaticHandler(
+              'test/web',
+              listDirectories: true,
+              defaultDocument: 'index.html',
+            ),
+          );
 
       server = await io.serve(cascade.handler, 'localhost', 0);
       var capabilities = Capabilities.chrome
         ..addAll({
           Capabilities.chromeOptions: {
-            'args': ['--headless']
-          }
+            'args': ['--headless'],
+          },
         });
       webdriver = await createDriver(desired: capabilities);
     });
@@ -165,32 +173,43 @@ void main() {
       expect(handler.numberOfClients, 0);
     });
 
-    test('disconnects when navigating away', () async {
-      await webdriver.get('http://localhost:${server.port}');
-      expect(handler.numberOfClients, 1);
+    test(
+      'disconnects when navigating away',
+      () async {
+        await webdriver.get('http://localhost:${server.port}');
+        expect(handler.numberOfClients, 1);
 
-      await webdriver.get('chrome://version/');
-      expect(handler.numberOfClients, 0);
-    }, skip: 'https://github.com/dart-lang/tools/issues/2006');
+        await webdriver.get('chrome://version/');
+        expect(handler.numberOfClients, 0);
+      },
+      skip: 'https://github.com/dart-lang/tools/issues/2006',
+    );
   });
 
   group('SSE with server keep-alive', () {
     setUp(() async {
-      handler =
-          SseHandler(Uri.parse('/test'), keepAlive: const Duration(seconds: 5));
+      handler = SseHandler(
+        Uri.parse('/test'),
+        keepAlive: const Duration(seconds: 5),
+      );
 
       var cascade = shelf.Cascade()
           .add(handler.handler)
           .add(_faviconHandler)
-          .add(createStaticHandler('test/web',
-              listDirectories: true, defaultDocument: 'index.html'));
+          .add(
+            createStaticHandler(
+              'test/web',
+              listDirectories: true,
+              defaultDocument: 'index.html',
+            ),
+          );
 
       server = await io.serve(cascade.handler, 'localhost', 0);
       var capabilities = Capabilities.chrome
         ..addAll({
           Capabilities.chromeOptions: {
-            'args': ['--headless']
-          }
+            'args': ['--headless'],
+          },
         });
       webdriver = await createDriver(desired: capabilities);
     });

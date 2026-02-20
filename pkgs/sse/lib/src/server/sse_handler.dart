@@ -13,7 +13,8 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:stream_channel/stream_channel.dart';
 
 // RFC 2616 requires carriage return delimiters.
-String _sseHeaders(String? origin) => 'HTTP/1.1 200 OK\r\n'
+String _sseHeaders(String? origin) =>
+    'HTTP/1.1 200 OK\r\n'
     'Content-Type: text/event-stream\r\n'
     'Cache-Control: no-cache\r\n'
     'Connection: keep-alive\r\n'
@@ -92,8 +93,8 @@ class SseConnection extends StreamChannelMixin<String> {
   }
 
   Future<void> _setUpListener() async {
-    while (
-        !_outgoingController.isClosed && await _outgoingStreamQueue.hasNext) {
+    while (!_outgoingController.isClosed &&
+        await _outgoingStreamQueue.hasNext) {
       // If we're in a KeepAlive timeout, there's nowhere to send messages so
       // wait a short period and check again.
       if (isInKeepAlivePeriod) {
