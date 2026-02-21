@@ -35,6 +35,7 @@ The information section is meant for a brief description of your test, and other
 - [update, [ path ], newValue]
 - [remove, [ path ], keyOrIndex]
 - [append, [ collectionPath ], newValue]
+- [updateComment, [ path ], commentOrNull]
 
 An example of what an input file might look like is:
 
