@@ -84,8 +84,8 @@ class SseConnection extends StreamChannelMixin<String> {
   /// reconnection. This is useful as the SSE disconnection event may arrive
   /// after the new connection is established.
   SseConnection(this._sink, {Duration? keepAlive, Duration? ignoreDisconnect})
-      : _keepAlive = keepAlive,
-        _ignoreDisconnect = ignoreDisconnect {
+    : _keepAlive = keepAlive,
+      _ignoreDisconnect = ignoreDisconnect {
     _outgoingStreamQueue = StreamQueue(_outgoingController.stream);
     unawaited(_setUpListener());
     _outgoingController.onCancel = _close;
@@ -263,8 +263,8 @@ class SseHandler {
   /// [SseConnection]. The SseHandler will also use it as a signal to reuse
   /// open SSE connections that are not in a keep alive period.
   SseHandler(this._uri, {Duration? keepAlive, Duration? ignoreDisconnect})
-      : _keepAlive = keepAlive,
-        _ignoreDisconnect = ignoreDisconnect;
+    : _keepAlive = keepAlive,
+      _ignoreDisconnect = ignoreDisconnect;
 
   StreamQueue<SseConnection> get connections =>
       _connectionsStream ??= StreamQueue(_connectionController.stream);
