@@ -128,6 +128,9 @@ class _TestCase {
       case YamlModificationMethod.update:
         yamlBuilder.update(mod.path, mod.value);
         return;
+      case YamlModificationMethod.updateComment:
+        yamlBuilder.updateComment(mod.path, mod.value as String?);
+        return;
       case YamlModificationMethod.remove:
         yamlBuilder.remove(mod.path);
         return;
@@ -238,7 +241,8 @@ List<_YamlModification> _parseModifications(List<dynamic> modifications) {
 
     if (method == YamlModificationMethod.appendTo ||
         method == YamlModificationMethod.update ||
-        method == YamlModificationMethod.prependTo) {
+        method == YamlModificationMethod.prependTo ||
+        method == YamlModificationMethod.updateComment) {
       value = mod[2];
     } else if (method == YamlModificationMethod.insert) {
       index = mod[2] as int;
@@ -263,6 +267,9 @@ YamlModificationMethod _getModificationMethod(String method) {
   switch (method) {
     case 'update':
       return YamlModificationMethod.update;
+    case 'updateComment':
+    case 'comment':
+      return YamlModificationMethod.updateComment;
     case 'remove':
       return YamlModificationMethod.remove;
     case 'append':

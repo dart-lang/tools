@@ -177,8 +177,16 @@ class _Generator {
       }
 
       if (node is YamlList) {
-        final methodIndex = nextInt(YamlModificationMethod.values.length);
-        method = YamlModificationMethod.values[methodIndex];
+        const listMutationMethods = [
+          YamlModificationMethod.remove,
+          YamlModificationMethod.update,
+          YamlModificationMethod.appendTo,
+          YamlModificationMethod.prependTo,
+          YamlModificationMethod.insert,
+          YamlModificationMethod.splice,
+        ];
+        final methodIndex = nextInt(listMutationMethods.length);
+        method = listMutationMethods[methodIndex];
 
         switch (method) {
           case YamlModificationMethod.remove:
@@ -210,6 +218,10 @@ class _Generator {
             args.add(nextYamlList(0));
             editor.spliceList(
                 path, args[0] as int, args[1] as int, args[2] as List);
+            break;
+          case YamlModificationMethod.updateComment:
+            // updateComment is intentionally scoped and not part of this
+            // mutation fuzzer's random operation set.
             break;
         }
         return;

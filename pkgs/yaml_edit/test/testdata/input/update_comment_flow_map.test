@@ -1,0 +1,6 @@
+UPDATE COMMENT - flow map value with existing comment handling.
+---
+a: {b: 1} # old
+---
+- [updateComment, [a], flow]
+- [updateComment, [a], null]

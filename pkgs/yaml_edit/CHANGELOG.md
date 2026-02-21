@@ -1,3 +1,9 @@
+## 2.2.5-wip
+
+- Add `YamlEditor.updateComment(path, comment)` to add, update, or remove
+  inline end-of-line comments.
+  ([#1941](https://github.com/dart-lang/tools/issues/1941))
+
 ## 2.2.4
 
 -  Removes comments associated with a node when `remove` is called.

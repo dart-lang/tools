@@ -447,6 +447,112 @@ class YamlEditor {
     return nodeToRemove;
   }
 
+  /// Adds, updates, or removes an inline end-of-line comment at [path].
+  ///
+  /// When [comment] is non-empty, this method ensures there is a trailing
+  /// inline comment on the same line as the value at [path].
+  ///
+  /// If [comment] is `null` or empty/whitespace-only, any existing inline
+  /// comment at [path] is removed.
+  ///
+  /// This method currently supports values whose textual representation lives
+  /// on a single line. In particular, comments for non-empty block collections
+  /// are not supported.
+  ///
+  /// Throws an [ArgumentError] if [path] is invalid or empty.
+  ///
+  /// Throws an [UnsupportedError] when [path] points to a non-empty block
+  /// collection.
+  ///
+  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  void updateComment(Iterable<Object?> path, String? comment) {
+    if (path.isEmpty) {
+      throw ArgumentError.value(path, 'path', 'Path cannot be empty.');
+    }
+
+    final pathAsList = path.toList(growable: false);
+    final collectionPath = pathAsList.take(pathAsList.length - 1);
+    final keyOrIndex = pathAsList.last;
+
+    final parentNode = _traverse(collectionPath, checkAlias: true);
+
+    late YamlNode targetNode;
+    late int contentEndOffset;
+
+    if (parentNode is YamlMap) {
+      if (!containsKey(parentNode, keyOrIndex)) {
+        throw PathError(path, path, parentNode);
+      }
+
+      final keyNode = getKeyNode(parentNode, keyOrIndex);
+      targetNode = parentNode.nodes[keyNode]!;
+
+      if (targetNode.span.length == 0) {
+        contentEndOffset = keyNode.span.end.offset + 1;
+      } else {
+        contentEndOffset = getContentSensitiveEnd(targetNode);
+      }
+    } else if (parentNode is YamlList) {
+      if (!isValidIndex(keyOrIndex, parentNode.length)) {
+        throw PathError(path, path, parentNode);
+      }
+
+      targetNode = parentNode.nodes[keyOrIndex as int];
+      contentEndOffset = getContentSensitiveEnd(targetNode);
+    } else {
+      throw PathError.unexpected(path,
+          'Scalar $parentNode does not have key/index $keyOrIndex');
+    }
+
+    if (isBlockNode(targetNode) && isCollection(targetNode) && !isEmpty(targetNode)) {
+      throw UnsupportedError(
+          'Adding inline comments to non-empty block collections is not supported.');
+    }
+
+    final yaml = _yaml;
+    final endOfLine = yaml.indexOf('\n', contentEndOffset);
+    final lineEndOffset = endOfLine == -1 ? yaml.length : endOfLine;
+
+    var editStart = contentEndOffset;
+    while (editStart < lineEndOffset &&
+        (yaml[editStart] == ' ' || yaml[editStart] == '\t')) {
+      editStart++;
+    }
+
+    final hasComment = editStart < lineEndOffset && yaml[editStart] == '#';
+    final normalizedComment = _normalizeInlineComment(comment);
+
+    if (normalizedComment == null) {
+      if (!hasComment) {
+        return;
+      }
+
+      final edit = SourceEdit(contentEndOffset, lineEndOffset - contentEndOffset, '');
+      return _performEdit(edit, path, targetNode);
+    }
+
+    final edit = SourceEdit(
+      contentEndOffset,
+      lineEndOffset - contentEndOffset,
+      normalizedComment,
+    );
+
+    _performEdit(edit, path, targetNode);
+  }
+
+  String? _normalizeInlineComment(String? comment) {
+    if (comment == null) return null;
+
+    var normalized = comment.trim();
+    if (normalized.isEmpty) return null;
+
+    if (normalized.startsWith('#')) {
+      normalized = normalized.substring(1).trimLeft();
+    }
+
+    return normalized.isEmpty ? ' #' : ' # $normalized';
+  }
+
   /// Traverses down [path] to return the [YamlNode] at [path] if successful.
   ///
   /// If no [YamlNode]s exist at [path], the result of invoking the [orElse]
