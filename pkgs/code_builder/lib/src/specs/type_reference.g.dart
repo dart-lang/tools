@@ -19,7 +19,7 @@ class _$TypeReference extends TypeReference {
   final bool? isNullable;
 
   factory _$TypeReference([void Function(TypeReferenceBuilder)? updates]) =>
-      (new TypeReferenceBuilder()..update(updates)).build() as _$TypeReference;
+      (TypeReferenceBuilder()..update(updates)).build() as _$TypeReference;
 
   _$TypeReference._({
     required this.symbol,
@@ -27,18 +27,13 @@ class _$TypeReference extends TypeReference {
     this.bound,
     required this.types,
     this.isNullable,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(symbol, r'TypeReference', 'symbol');
-    BuiltValueNullFieldError.checkNotNull(types, r'TypeReference', 'types');
-  }
-
+  }) : super._();
   @override
   TypeReference rebuild(void Function(TypeReferenceBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$TypeReferenceBuilder toBuilder() =>
-      new _$TypeReferenceBuilder()..replace(this);
+  _$TypeReferenceBuilder toBuilder() => _$TypeReferenceBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -155,7 +150,6 @@ class _$TypeReferenceBuilder extends TypeReferenceBuilder {
 
   @override
   void replace(TypeReference other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$TypeReference;
   }
 
@@ -172,7 +166,7 @@ class _$TypeReferenceBuilder extends TypeReferenceBuilder {
     try {
       _$result =
           _$v ??
-          new _$TypeReference._(
+          _$TypeReference._(
             symbol: BuiltValueNullFieldError.checkNotNull(
               symbol,
               r'TypeReference',
@@ -189,7 +183,7 @@ class _$TypeReferenceBuilder extends TypeReferenceBuilder {
         _$failedField = 'types';
         types.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'TypeReference',
           _$failedField,
           e.toString(),

@@ -27,7 +27,7 @@ class _$Field extends Field {
   final FieldModifier modifier;
 
   factory _$Field([void Function(FieldBuilder)? updates]) =>
-      (new FieldBuilder()..update(updates)).build() as _$Field;
+      (FieldBuilder()..update(updates)).build() as _$Field;
 
   _$Field._({
     required this.annotations,
@@ -39,22 +39,13 @@ class _$Field extends Field {
     required this.name,
     this.type,
     required this.modifier,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(annotations, r'Field', 'annotations');
-    BuiltValueNullFieldError.checkNotNull(docs, r'Field', 'docs');
-    BuiltValueNullFieldError.checkNotNull(static, r'Field', 'static');
-    BuiltValueNullFieldError.checkNotNull(late, r'Field', 'late');
-    BuiltValueNullFieldError.checkNotNull(external, r'Field', 'external');
-    BuiltValueNullFieldError.checkNotNull(name, r'Field', 'name');
-    BuiltValueNullFieldError.checkNotNull(modifier, r'Field', 'modifier');
-  }
-
+  }) : super._();
   @override
   Field rebuild(void Function(FieldBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$FieldBuilder toBuilder() => new _$FieldBuilder()..replace(this);
+  _$FieldBuilder toBuilder() => _$FieldBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -235,7 +226,6 @@ class _$FieldBuilder extends FieldBuilder {
 
   @override
   void replace(Field other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Field;
   }
 
@@ -252,7 +242,7 @@ class _$FieldBuilder extends FieldBuilder {
     try {
       _$result =
           _$v ??
-          new _$Field._(
+          _$Field._(
             annotations: annotations.build(),
             docs: docs.build(),
             assignment: assignment,
@@ -283,11 +273,7 @@ class _$FieldBuilder extends FieldBuilder {
         _$failedField = 'docs';
         docs.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-          r'Field',
-          _$failedField,
-          e.toString(),
-        );
+        throw BuiltValueNestedFieldError(r'Field', _$failedField, e.toString());
       }
       rethrow;
     }

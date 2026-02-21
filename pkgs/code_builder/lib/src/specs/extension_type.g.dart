@@ -31,7 +31,7 @@ class _$ExtensionType extends ExtensionType {
   final BuiltList<Method> methods;
 
   factory _$ExtensionType([void Function(ExtensionTypeBuilder)? updates]) =>
-      (new ExtensionTypeBuilder()..update(updates)).build() as _$ExtensionType;
+      (ExtensionTypeBuilder()..update(updates)).build() as _$ExtensionType;
 
   _$ExtensionType._({
     required this.annotations,
@@ -45,51 +45,13 @@ class _$ExtensionType extends ExtensionType {
     required this.constructors,
     required this.fields,
     required this.methods,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      annotations,
-      r'ExtensionType',
-      'annotations',
-    );
-    BuiltValueNullFieldError.checkNotNull(docs, r'ExtensionType', 'docs');
-    BuiltValueNullFieldError.checkNotNull(
-      constant,
-      r'ExtensionType',
-      'constant',
-    );
-    BuiltValueNullFieldError.checkNotNull(name, r'ExtensionType', 'name');
-    BuiltValueNullFieldError.checkNotNull(types, r'ExtensionType', 'types');
-    BuiltValueNullFieldError.checkNotNull(
-      primaryConstructorName,
-      r'ExtensionType',
-      'primaryConstructorName',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      representationDeclaration,
-      r'ExtensionType',
-      'representationDeclaration',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      implements,
-      r'ExtensionType',
-      'implements',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      constructors,
-      r'ExtensionType',
-      'constructors',
-    );
-    BuiltValueNullFieldError.checkNotNull(fields, r'ExtensionType', 'fields');
-    BuiltValueNullFieldError.checkNotNull(methods, r'ExtensionType', 'methods');
-  }
-
+  }) : super._();
   @override
   ExtensionType rebuild(void Function(ExtensionTypeBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$ExtensionTypeBuilder toBuilder() =>
-      new _$ExtensionTypeBuilder()..replace(this);
+  _$ExtensionTypeBuilder toBuilder() => _$ExtensionTypeBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -304,7 +266,6 @@ class _$ExtensionTypeBuilder extends ExtensionTypeBuilder {
 
   @override
   void replace(ExtensionType other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ExtensionType;
   }
 
@@ -321,7 +282,7 @@ class _$ExtensionTypeBuilder extends ExtensionTypeBuilder {
     try {
       _$result =
           _$v ??
-          new _$ExtensionType._(
+          _$ExtensionType._(
             annotations: annotations.build(),
             docs: docs.build(),
             constant: BuiltValueNullFieldError.checkNotNull(
@@ -370,7 +331,7 @@ class _$ExtensionTypeBuilder extends ExtensionTypeBuilder {
         _$failedField = 'methods';
         methods.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'ExtensionType',
           _$failedField,
           e.toString(),
@@ -396,7 +357,7 @@ class _$RepresentationDeclaration extends RepresentationDeclaration {
   factory _$RepresentationDeclaration([
     void Function(RepresentationDeclarationBuilder)? updates,
   ]) =>
-      (new RepresentationDeclarationBuilder()..update(updates)).build()
+      (RepresentationDeclarationBuilder()..update(updates)).build()
           as _$RepresentationDeclaration;
 
   _$RepresentationDeclaration._({
@@ -404,29 +365,7 @@ class _$RepresentationDeclaration extends RepresentationDeclaration {
     required this.docs,
     required this.declaredRepresentationType,
     required this.name,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      annotations,
-      r'RepresentationDeclaration',
-      'annotations',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      docs,
-      r'RepresentationDeclaration',
-      'docs',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      declaredRepresentationType,
-      r'RepresentationDeclaration',
-      'declaredRepresentationType',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      name,
-      r'RepresentationDeclaration',
-      'name',
-    );
-  }
-
+  }) : super._();
   @override
   RepresentationDeclaration rebuild(
     void Function(RepresentationDeclarationBuilder) updates,
@@ -434,7 +373,7 @@ class _$RepresentationDeclaration extends RepresentationDeclaration {
 
   @override
   _$RepresentationDeclarationBuilder toBuilder() =>
-      new _$RepresentationDeclarationBuilder()..replace(this);
+      _$RepresentationDeclarationBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -536,7 +475,6 @@ class _$RepresentationDeclarationBuilder
 
   @override
   void replace(RepresentationDeclaration other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$RepresentationDeclaration;
   }
 
@@ -553,7 +491,7 @@ class _$RepresentationDeclarationBuilder
     try {
       _$result =
           _$v ??
-          new _$RepresentationDeclaration._(
+          _$RepresentationDeclaration._(
             annotations: annotations.build(),
             docs: docs.build(),
             declaredRepresentationType: BuiltValueNullFieldError.checkNotNull(
@@ -575,7 +513,7 @@ class _$RepresentationDeclarationBuilder
         _$failedField = 'docs';
         docs.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'RepresentationDeclaration',
           _$failedField,
           e.toString(),

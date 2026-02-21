@@ -29,7 +29,7 @@ class _$Enum extends Enum {
   final BuiltList<Field> fields;
 
   factory _$Enum([void Function(EnumBuilder)? updates]) =>
-      (new EnumBuilder()..update(updates)).build() as _$Enum;
+      (EnumBuilder()..update(updates)).build() as _$Enum;
 
   _$Enum._({
     required this.name,
@@ -42,29 +42,13 @@ class _$Enum extends Enum {
     required this.constructors,
     required this.methods,
     required this.fields,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(name, r'Enum', 'name');
-    BuiltValueNullFieldError.checkNotNull(values, r'Enum', 'values');
-    BuiltValueNullFieldError.checkNotNull(annotations, r'Enum', 'annotations');
-    BuiltValueNullFieldError.checkNotNull(docs, r'Enum', 'docs');
-    BuiltValueNullFieldError.checkNotNull(implements, r'Enum', 'implements');
-    BuiltValueNullFieldError.checkNotNull(mixins, r'Enum', 'mixins');
-    BuiltValueNullFieldError.checkNotNull(types, r'Enum', 'types');
-    BuiltValueNullFieldError.checkNotNull(
-      constructors,
-      r'Enum',
-      'constructors',
-    );
-    BuiltValueNullFieldError.checkNotNull(methods, r'Enum', 'methods');
-    BuiltValueNullFieldError.checkNotNull(fields, r'Enum', 'fields');
-  }
-
+  }) : super._();
   @override
   Enum rebuild(void Function(EnumBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$EnumBuilder toBuilder() => new _$EnumBuilder()..replace(this);
+  _$EnumBuilder toBuilder() => _$EnumBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -261,7 +245,6 @@ class _$EnumBuilder extends EnumBuilder {
 
   @override
   void replace(Enum other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Enum;
   }
 
@@ -278,7 +261,7 @@ class _$EnumBuilder extends EnumBuilder {
     try {
       _$result =
           _$v ??
-          new _$Enum._(
+          _$Enum._(
             name: BuiltValueNullFieldError.checkNotNull(name, r'Enum', 'name'),
             values: values.build(),
             annotations: annotations.build(),
@@ -312,11 +295,7 @@ class _$EnumBuilder extends EnumBuilder {
         _$failedField = 'fields';
         fields.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-          r'Enum',
-          _$failedField,
-          e.toString(),
-        );
+        throw BuiltValueNestedFieldError(r'Enum', _$failedField, e.toString());
       }
       rethrow;
     }
@@ -342,7 +321,7 @@ class _$EnumValue extends EnumValue {
   final BuiltMap<String, Expression> namedArguments;
 
   factory _$EnumValue([void Function(EnumValueBuilder)? updates]) =>
-      (new EnumValueBuilder()..update(updates)).build() as _$EnumValue;
+      (EnumValueBuilder()..update(updates)).build() as _$EnumValue;
 
   _$EnumValue._({
     required this.name,
@@ -352,29 +331,13 @@ class _$EnumValue extends EnumValue {
     required this.types,
     required this.arguments,
     required this.namedArguments,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(name, r'EnumValue', 'name');
-    BuiltValueNullFieldError.checkNotNull(
-      annotations,
-      r'EnumValue',
-      'annotations',
-    );
-    BuiltValueNullFieldError.checkNotNull(docs, r'EnumValue', 'docs');
-    BuiltValueNullFieldError.checkNotNull(types, r'EnumValue', 'types');
-    BuiltValueNullFieldError.checkNotNull(arguments, r'EnumValue', 'arguments');
-    BuiltValueNullFieldError.checkNotNull(
-      namedArguments,
-      r'EnumValue',
-      'namedArguments',
-    );
-  }
-
+  }) : super._();
   @override
   EnumValue rebuild(void Function(EnumValueBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$EnumValueBuilder toBuilder() => new _$EnumValueBuilder()..replace(this);
+  _$EnumValueBuilder toBuilder() => _$EnumValueBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -523,7 +486,6 @@ class _$EnumValueBuilder extends EnumValueBuilder {
 
   @override
   void replace(EnumValue other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$EnumValue;
   }
 
@@ -540,7 +502,7 @@ class _$EnumValueBuilder extends EnumValueBuilder {
     try {
       _$result =
           _$v ??
-          new _$EnumValue._(
+          _$EnumValue._(
             name: BuiltValueNullFieldError.checkNotNull(
               name,
               r'EnumValue',
@@ -568,7 +530,7 @@ class _$EnumValueBuilder extends EnumValueBuilder {
         _$failedField = 'namedArguments';
         namedArguments.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'EnumValue',
           _$failedField,
           e.toString(),
