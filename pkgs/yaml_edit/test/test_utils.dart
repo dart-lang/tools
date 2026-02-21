@@ -41,5 +41,6 @@ enum YamlModificationMethod {
   prependTo,
   remove,
   splice,
+  updateComment,
   update,
 }

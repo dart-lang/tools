@@ -21,6 +21,18 @@ void main() {
 }
 ```
 
+### Example: adding or updating inline comments
+
+```dart
+void main() {
+  final yamlEditor = YamlEditor('dependencies:\n  foo: ^1.0.0\n');
+  yamlEditor.updateComment(['dependencies', 'foo'], 'Auto-generated. Do not edit.');
+  print(yamlEditor.toString());
+  // dependencies:
+  //   foo: ^1.0.0 # Auto-generated. Do not edit.
+}
+```
+
 ### Example: Converting JSON to YAML (block formatted)
 
 ```dart
@@ -59,3 +71,5 @@ These tests are automatically run with `pub run test`.
 
 1. Users are not allowed to define tags in the modifications.
 2. Map keys will always be added in the flow style.
+3. `updateComment` only supports inline comments for nodes rendered on a
+  single line. Non-empty block collections are not supported.

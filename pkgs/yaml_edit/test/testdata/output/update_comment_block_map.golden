@@ -1,0 +1,15 @@
+a: 1
+b:
+  c: 2 # old
+---
+a: 1 # generated
+b:
+  c: 2 # old
+---
+a: 1 # generated
+b:
+  c: 2 # new
+---
+a: 1 # generated
+b:
+  c: 2

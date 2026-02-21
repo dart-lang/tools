@@ -1,0 +1,9 @@
+UPDATE COMMENT - block map scalars with replace/remove semantics.
+---
+a: 1
+b:
+  c: 2 # old
+---
+- [updateComment, [a], generated]
+- [updateComment, [b, c], "# new"]
+- [updateComment, [b, c], null]
