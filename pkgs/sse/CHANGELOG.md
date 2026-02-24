@@ -1,6 +1,11 @@
 ## 4.2.0
 
 - Update the minimum Dart SDK version to `3.11.0`.
+- Handle out of order disconnects and reconnects.
+  - Allow SSE connections to be reused if not in a keep alive period.
+  - Allow a debounce period after connections to ignore disconnects which may be
+    from prior connections.
+  - Add logging when messages are received out of order.
 
 ## 4.1.8
 
