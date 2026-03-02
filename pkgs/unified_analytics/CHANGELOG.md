@@ -1,5 +1,6 @@
-## 8.0.12-wip
+## 8.0.12
 - Require Dart 3.10
+- Added `success` indicator and `label` to `Event.flutterTrackAndroidDependencies` 
 
 ## 8.0.11
 - Added `Event.flutterTrackAndroidDependencies` to track android dependencies.
