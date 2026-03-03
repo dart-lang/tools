@@ -203,7 +203,7 @@ class AuthorizationCodeGrant {
     _redirectEndpoint = redirect;
     _scopes = scopeList;
     _stateString = state;
-    var parameters = {
+    var parameters = <String, dynamic>{
       'response_type': 'code',
       'client_id': identifier,
       'redirect_uri': redirect.toString(),
@@ -214,8 +214,7 @@ class AuthorizationCodeGrant {
     if (state != null) parameters['state'] = state;
     if (scopeList.isNotEmpty) parameters['scope'] = scopeList.join(_delimiter);
     if (resources != null && resources.isNotEmpty) {
-      parameters['resource'] =
-          resources.map((r) => r.toString()).join(_delimiter);
+      parameters['resource'] = resources.map((r) => r.toString()).toList();
     }
 
     return addQueryParameters(authorizationEndpoint, parameters);

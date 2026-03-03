@@ -74,7 +74,31 @@ Future<Client> clientCredentialsGrant(
   }
 
   if (resources != null && resources.isNotEmpty) {
-    body['resource'] = resources.map((r) => r.toString()).join(delimiter);
+    // http.post doesn't support Map<String, Iterable> for x-www-form-urlencoded
+    // bodies, so we construct the body string manually to allow
+    // multiple 'resource' parameters per RFC 8707.
+    final encodedBody = body.entries
+        .map((e) => '${Uri.encodeQueryComponent(e.key)}='
+            '${Uri.encodeQueryComponent(e.value)}')
+        .toList();
+    for (final r in resources) {
+      encodedBody.add('resource=${Uri.encodeQueryComponent(r.toString())}');
+    }
+
+    httpClient ??= http.Client();
+    var response = await httpClient.post(authorizationEndpoint,
+        headers: headers
+          ..['content-type'] = 'application/x-www-form-urlencoded',
+        body: encodedBody.join('&'));
+
+    var credentials = handleAccessTokenResponse(response, authorizationEndpoint,
+        startTime, scopes?.toList() ?? [], delimiter,
+        getParameters: getParameters);
+    return Client(credentials,
+        identifier: identifier,
+        secret: secret,
+        httpClient: httpClient,
+        customAuth: customAuth);
   }
 
   httpClient ??= http.Client();

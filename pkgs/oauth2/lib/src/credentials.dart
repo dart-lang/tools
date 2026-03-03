@@ -246,10 +246,6 @@ class Credentials {
       'refresh_token': refreshToken!,
     };
     if (scopes.isNotEmpty) body['scope'] = scopes.join(_delimiter);
-    if (resources != null && resources.isNotEmpty) {
-      body['resource'] = resources.map((r) => r.toString()).join(_delimiter);
-    }
-
     if (customAuth != null) {
       if (identifier != null) body['client_id'] = identifier;
       await customAuth(headers, body);
@@ -258,6 +254,29 @@ class Credentials {
     } else {
       if (identifier != null) body['client_id'] = identifier;
       if (secret != null) body['client_secret'] = secret;
+    }
+
+    if (resources != null && resources.isNotEmpty) {
+      final encodedBody = body.entries
+          .map((e) => '${Uri.encodeQueryComponent(e.key)}='
+              '${Uri.encodeQueryComponent(e.value)}')
+          .toList();
+      for (final r in resources) {
+        encodedBody.add('resource=${Uri.encodeQueryComponent(r.toString())}');
+      }
+      headers['content-type'] = 'application/x-www-form-urlencoded';
+      var response = await httpClient.post(tokenEndpoint,
+          headers: headers, body: encodedBody.join('&'));
+      var credentials = handleAccessTokenResponse(
+          response, tokenEndpoint, startTime, scopes, _delimiter,
+          getParameters: _getParameters);
+      if (credentials.refreshToken != null) return credentials;
+      return Credentials(credentials.accessToken,
+          refreshToken: refreshToken,
+          idToken: credentials.idToken,
+          tokenEndpoint: credentials.tokenEndpoint,
+          scopes: credentials.scopes,
+          expiration: credentials.expiration);
     }
 
     var response =

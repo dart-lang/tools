@@ -6,8 +6,17 @@ import 'dart:convert';
 
 /// Adds additional query parameters to [url], overwriting the original
 /// parameters if a name conflict occurs.
-Uri addQueryParameters(Uri url, Map<String, String> parameters) => url.replace(
-    queryParameters: Map.from(url.queryParameters)..addAll(parameters));
+Uri addQueryParameters(Uri url, Map<String, dynamic> parameters) {
+  final queryParams = <String, dynamic>{...url.queryParametersAll};
+  parameters.forEach((key, value) {
+    if (value is Iterable) {
+      queryParams[key] = value.map((e) => e.toString()).toList();
+    } else {
+      queryParams[key] = value.toString();
+    }
+  });
+  return url.replace(queryParameters: queryParams);
+}
 
 String basicAuthHeader(String identifier, String secret) {
   var userPass = '${Uri.encodeFull(identifier)}:${Uri.encodeFull(secret)}';

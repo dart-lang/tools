@@ -85,9 +85,10 @@ Future<OAuthClientInformation> registerClient(
 }) async {
   final client = httpClient ?? http.Client();
   try {
+    final endpoint = metadata?.registrationEndpoint;
     Uri registrationUrl;
-    if (metadata?.registrationEndpoint != null) {
-      registrationUrl = Uri.parse(metadata!.registrationEndpoint!);
+    if (endpoint != null) {
+      registrationUrl = Uri.parse(endpoint);
     } else {
       registrationUrl = authorizationServerUrl.replace(path: '/register');
     }
