@@ -77,6 +77,27 @@ void main() {
       expect(metadata, isNotNull);
     });
 
+    test('throws StateError on issuer mismatch', () async {
+      var client = ExpectClient()
+        ..expectRequest((request) {
+          return Future.value(http.Response(
+              jsonEncode({
+                'issuer': 'https://malicious.example.com',
+                'authorization_endpoint': 'https://server.example.com/auth',
+                'token_endpoint': 'https://server.example.com/token',
+                'response_types_supported': ['code'],
+              }),
+              200,
+              headers: {'content-type': 'application/json'}));
+        });
+
+      expect(
+          discoverAuthorizationServerMetadata(
+              Uri.parse('https://server.example.com'),
+              httpClient: client),
+          throwsStateError);
+    });
+
     test('throws StateError on unexpected error', () async {
       var client = ExpectClient()
         ..expectRequest((request) {

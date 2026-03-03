@@ -102,9 +102,19 @@ Future<OAuthServerMetadata?> discoverAuthorizationServerMetadata(
             'metadata from $endpoint',
           );
         }
-        return OAuthServerMetadata.fromJson(
+        final metadata = OAuthServerMetadata.fromJson(
           jsonDecode(response.body) as Map<String, dynamic>,
         );
+
+        final expectedIssuer = authorizationServerUrl.toString();
+        if (metadata.issuer != expectedIssuer &&
+            metadata.issuer != expectedIssuer.replaceFirst(RegExp(r'/$'), '')) {
+          throw StateError(
+            'Issuer spoofing detected: metadata issuer "${metadata.issuer}" '
+            'does not match expected "$expectedIssuer".',
+          );
+        }
+        return metadata;
       } catch (e) {
         if (e is StateError) rethrow;
         continue;
