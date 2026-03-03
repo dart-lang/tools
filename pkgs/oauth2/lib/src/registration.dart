@@ -10,7 +10,7 @@ import 'authorization_exception.dart';
 import 'discovery.dart';
 
 /// OAuth 2.0 Client Metadata (RFC 7591).
-class OAuthClientMetadata {
+final class OAuthClientMetadata {
   /// Array of redirection URI strings for use in redirect-based flows.
   final List<String> redirectUris;
 
