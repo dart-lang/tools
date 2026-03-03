@@ -71,7 +71,9 @@ final class OAuthClientMetadata {
   }
 }
 
-/// OAuth 2.0 Client Information (RFC 7591).
+/// OAuth 2.0 Client Information ([RFC 7591]).
+///
+/// [RFC 7591]: https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.1
 class OAuthClientInformation {
   /// Opaque value used by the client to identify itself to the authorization server.
   final String clientId;
