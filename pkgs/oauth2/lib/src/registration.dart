@@ -9,7 +9,9 @@ import 'package:http/http.dart' as http;
 import 'authorization_exception.dart';
 import 'discovery.dart';
 
-/// OAuth 2.0 Client Metadata (RFC 7591).
+/// OAuth 2.0 Client Metadata ([RFC 7591]).
+///
+/// [RFC 7591]: https://datatracker.ietf.org/doc/html/rfc7591
 final class OAuthClientMetadata {
   /// Array of redirection URI strings for use in redirect-based flows.
   final List<String> redirectUris;
