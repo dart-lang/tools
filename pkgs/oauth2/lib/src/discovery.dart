@@ -151,9 +151,19 @@ Future<OAuthProtectedResourceMetadata> discoverProtectedResourceMetadata(
         'HTTP ${response.statusCode} loading protected resource metadata.',
       );
     }
-    return OAuthProtectedResourceMetadata.fromJson(
+    final metadata = OAuthProtectedResourceMetadata.fromJson(
       jsonDecode(response.body) as Map<String, dynamic>,
     );
+
+    final expectedResource = serverUrl.toString();
+    if (metadata.resource != expectedResource &&
+        metadata.resource != expectedResource.replaceFirst(RegExp(r'/$'), '')) {
+      throw StateError(
+        'Resource spoofing detected: metadata resource "${metadata.resource}" '
+        'does not match expected "$expectedResource".',
+      );
+    }
+    return metadata;
   } finally {
     if (httpClient == null) client.close();
   }

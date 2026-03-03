@@ -165,6 +165,25 @@ void main() {
       expect(metadata.resource, equals('https://resource.example.com/v1/api'));
     });
 
+    test('throws StateError on resource mismatch', () async {
+      var client = ExpectClient()
+        ..expectRequest((request) {
+          return Future.value(http.Response(
+              jsonEncode({
+                'resource': 'https://malicious-resource.example.com',
+                'authorization_servers': ['https://server.example.com'],
+              }),
+              200,
+              headers: {'content-type': 'application/json'}));
+        });
+
+      expect(
+          discoverProtectedResourceMetadata(
+              Uri.parse('https://resource.example.com'),
+              httpClient: client),
+          throwsStateError);
+    });
+
     test('throws StateError for 404', () async {
       var client = ExpectClient()
         ..expectRequest((request) {
