@@ -11,14 +11,34 @@ import 'discovery.dart';
 
 /// OAuth 2.0 Client Metadata (RFC 7591).
 class OAuthClientMetadata {
+  /// Array of redirection URI strings for use in redirect-based flows.
   final List<String> redirectUris;
+
+  /// String indicator of the requested authentication method for the token endpoint.
   final String? tokenEndpointAuthMethod;
+
+  /// Array of OAuth 2.0 grant type strings that the client can use at the token endpoint.
   final List<String>? grantTypes;
+
+  /// Array of the OAuth 2.0 response type strings that the client can use at the
+  /// authorization endpoint.
   final List<String>? responseTypes;
+
+  /// Human-readable string name of the client to be presented to the end-user.
   final String? clientName;
+
+  /// URL string of a web page providing information about the client.
   final String? clientUri;
+
+  /// String containing a space-separated list of scope values that the client
+  /// can use when requesting access tokens.
   final String? scope;
+
+  /// A unique identifier string assigned by the client developer or
+  /// software publisher used by registration endpoints.
   final String? softwareId;
+
+  /// A version identifier string for the client software identified by [softwareId].
   final String? softwareVersion;
 
   const OAuthClientMetadata({
@@ -51,10 +71,20 @@ class OAuthClientMetadata {
 
 /// OAuth 2.0 Client Information (RFC 7591).
 class OAuthClientInformation {
+  /// Opaque value used by the client to identify itself to the authorization server.
   final String clientId;
+
+  /// String value specifying the client secret.
   final String? clientSecret;
+
+  /// Time at which the client identifier was issued.
   final int? clientIdIssuedAt;
+
+  /// Time at which the client secret will expire or 0 if it will not expire.
   final int? clientSecretExpiresAt;
+
+  /// String indicator of the authentication method that the authorization server
+  /// will accept from the client when using the token endpoint.
   final String? tokenEndpointAuthMethod;
 
   const OAuthClientInformation({
