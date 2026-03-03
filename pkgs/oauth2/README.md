@@ -1,4 +1,4 @@
-[![package:oauth2](https://github.com/dart-lang/tools/actions/workflows/oauth2.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/oauth2.yaml)
+[![Dart CI](https://github.com/dart-lang/tools/actions/workflows/oauth2.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/oauth2.yaml)
 [![pub package](https://img.shields.io/pub/v/oauth2.svg)](https://pub.dev/packages/oauth2)
 [![package publisher](https://img.shields.io/pub/publisher/oauth2.svg)](https://pub.dev/packages/oauth2/publisher)
 
