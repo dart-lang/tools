@@ -110,6 +110,13 @@ void main() {
               httpClient: client),
           throwsStateError);
     });
+
+    test('throws ArgumentError on insecure URL', () async {
+      expect(
+          () => discoverAuthorizationServerMetadata(
+              Uri.parse('http://server.example.com')),
+          throwsArgumentError);
+    });
   });
 
   group('discoverProtectedResourceMetadata', () {
@@ -195,6 +202,13 @@ void main() {
               Uri.parse('https://resource.example.com'),
               httpClient: client),
           throwsStateError);
+    });
+
+    test('throws ArgumentError on insecure URL', () async {
+      expect(
+          () => discoverProtectedResourceMetadata(
+              Uri.parse('http://resource.example.com')),
+          throwsArgumentError);
     });
   });
 }

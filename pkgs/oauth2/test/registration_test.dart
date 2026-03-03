@@ -115,5 +115,31 @@ void main() {
               httpClient: client),
           throwsStateError);
     });
+
+    test('throws ArgumentError on insecure authorizationServerUrl', () async {
+      var metadata =
+          const OAuthClientMetadata(redirectUris: ['app://callback']);
+      expect(
+          () =>
+              registerClient(Uri.parse('http://server.example.com'), metadata),
+          throwsArgumentError);
+    });
+
+    test('throws ArgumentError on insecure metadata registration_endpoint',
+        () async {
+      var serverMetadata = const OAuthServerMetadata(
+          issuer: 'https://server.example.com',
+          authorizationEndpoint: 'https://server.example.com/auth',
+          tokenEndpoint: 'https://server.example.com/token',
+          responseTypesSupported: ['code'],
+          registrationEndpoint: 'http://server.example.com/api/v1/register');
+      var metadata =
+          const OAuthClientMetadata(redirectUris: ['app://callback']);
+      expect(
+          () => registerClient(
+              Uri.parse('https://server.example.com'), metadata,
+              metadata: serverMetadata),
+          throwsArgumentError);
+    });
   });
 }

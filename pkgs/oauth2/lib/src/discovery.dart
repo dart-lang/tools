@@ -88,6 +88,10 @@ Future<OAuthServerMetadata?> discoverAuthorizationServerMetadata(
   Uri authorizationServerUrl, {
   http.Client? httpClient,
 }) async {
+  if (!authorizationServerUrl.isScheme('https')) {
+    throw ArgumentError.value(authorizationServerUrl, 'authorizationServerUrl',
+        'Must be an HTTPS URL per RFC 8414.');
+  }
   final client = httpClient ?? http.Client();
   try {
     for (final endpoint in _buildDiscoveryUrls(authorizationServerUrl)) {
@@ -132,6 +136,10 @@ Future<OAuthProtectedResourceMetadata> discoverProtectedResourceMetadata(
   Uri? resourceMetadataUrl,
   http.Client? httpClient,
 }) async {
+  if (!serverUrl.isScheme('https')) {
+    throw ArgumentError.value(
+        serverUrl, 'serverUrl', 'Must be an HTTPS URL per RFC 9728.');
+  }
   final client = httpClient ?? http.Client();
   try {
     final url = resourceMetadataUrl ??

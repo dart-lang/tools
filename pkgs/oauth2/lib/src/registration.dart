@@ -83,6 +83,11 @@ Future<OAuthClientInformation> registerClient(
   OAuthServerMetadata? metadata,
   http.Client? httpClient,
 }) async {
+  if (!authorizationServerUrl.isScheme('https')) {
+    throw ArgumentError.value(authorizationServerUrl, 'authorizationServerUrl',
+        'Must be an HTTPS URL per RFC 7591.');
+  }
+
   final client = httpClient ?? http.Client();
   try {
     final endpoint = metadata?.registrationEndpoint;
@@ -91,6 +96,11 @@ Future<OAuthClientInformation> registerClient(
       registrationUrl = Uri.parse(endpoint);
     } else {
       registrationUrl = authorizationServerUrl.replace(path: '/register');
+    }
+
+    if (!registrationUrl.isScheme('https')) {
+      throw ArgumentError.value(registrationUrl, 'registrationEndpoint',
+          'Must be an HTTPS URL per RFC 7591.');
     }
 
     final response = await client.post(
