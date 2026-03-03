@@ -210,5 +210,13 @@ void main() {
               Uri.parse('http://resource.example.com')),
           throwsArgumentError);
     });
+
+    test('throws ArgumentError on insecure resourceMetadataUrl', () async {
+      expect(
+          () => discoverProtectedResourceMetadata(
+              Uri.parse('https://resource.example.com'),
+              resourceMetadataUrl: Uri.parse('http://malicious.example.com')),
+          throwsArgumentError);
+    });
   });
 }

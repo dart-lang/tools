@@ -114,6 +114,9 @@ List<String>? _stringList(dynamic value) {
 ///
 /// Tries RFC 8414 (`oauth-authorization-server`) first, then falls back to
 /// OpenID Connect Discovery (`openid-configuration`).
+///
+/// The returned [Future] completes with the metadata, or with `null` if no
+/// metadata endpoint could be found.
 Future<OAuthServerMetadata?> discoverAuthorizationServerMetadata(
   Uri authorizationServerUrl, {
   http.Client? httpClient,
@@ -161,6 +164,9 @@ Future<OAuthServerMetadata?> discoverAuthorizationServerMetadata(
 }
 
 /// Discovers RFC 9728 OAuth 2.0 Protected Resource Metadata.
+///
+/// The returned [Future] completes with the metadata. It completes with a
+/// [StateError] if the metadata endpoint is not found (HTTP 404).
 Future<OAuthProtectedResourceMetadata> discoverProtectedResourceMetadata(
   Uri serverUrl, {
   Uri? resourceMetadataUrl,
@@ -169,6 +175,10 @@ Future<OAuthProtectedResourceMetadata> discoverProtectedResourceMetadata(
   if (!serverUrl.isScheme('https')) {
     throw ArgumentError.value(
         serverUrl, 'serverUrl', 'Must be an HTTPS URL per RFC 9728.');
+  }
+  if (resourceMetadataUrl != null && !resourceMetadataUrl.isScheme('https')) {
+    throw ArgumentError.value(resourceMetadataUrl, 'resourceMetadataUrl',
+        'Must be an HTTPS URL per RFC 9728.');
   }
   final client = httpClient ?? http.Client();
   try {
@@ -208,7 +218,7 @@ Future<OAuthProtectedResourceMetadata> discoverProtectedResourceMetadata(
 }
 
 List<Uri> _buildDiscoveryUrls(Uri authServerUrl) {
-  final hasPath = authServerUrl.path != '/';
+  final hasPath = authServerUrl.path.isNotEmpty && authServerUrl.path != '/';
   final origin = authServerUrl.origin;
 
   if (!hasPath) {

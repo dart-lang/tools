@@ -107,6 +107,10 @@ class OAuthClientInformation {
 }
 
 /// Performs RFC 7591 Dynamic Client Registration.
+///
+/// The returned [Future] completes with the client information. It will
+/// complete with an [AuthorizationException] if the request is rejected by the
+/// server.
 Future<OAuthClientInformation> registerClient(
   Uri authorizationServerUrl,
   OAuthClientMetadata clientMetadata, {
