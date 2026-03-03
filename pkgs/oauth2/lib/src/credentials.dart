@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
+import 'client_authenticator.dart';
 import 'handle_access_token_response.dart';
 import 'parameters.dart';
 import 'utils.dart';
@@ -216,6 +217,8 @@ class Credentials {
       String? secret,
       Iterable<String>? newScopes,
       bool basicAuth = true,
+      ClientAuthenticator? customAuth,
+      Iterable<Uri>? resources,
       http.Client? httpClient}) async {
     var scopes = this.scopes;
     if (newScopes != null) scopes = newScopes.toList();
@@ -238,10 +241,19 @@ class Credentials {
 
     var headers = <String, String>{};
 
-    var body = {'grant_type': 'refresh_token', 'refresh_token': refreshToken};
+    var body = <String, String>{
+      'grant_type': 'refresh_token',
+      'refresh_token': refreshToken!,
+    };
     if (scopes.isNotEmpty) body['scope'] = scopes.join(_delimiter);
+    if (resources != null && resources.isNotEmpty) {
+      body['resource'] = resources.map((r) => r.toString()).join(_delimiter);
+    }
 
-    if (basicAuth && secret != null) {
+    if (customAuth != null) {
+      if (identifier != null) body['client_id'] = identifier;
+      await customAuth(headers, body);
+    } else if (basicAuth && secret != null) {
       headers['Authorization'] = basicAuthHeader(identifier!, secret);
     } else {
       if (identifier != null) body['client_id'] = identifier;

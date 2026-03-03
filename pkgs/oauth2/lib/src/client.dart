@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 import 'authorization_exception.dart';
+import 'client_authenticator.dart';
 import 'credentials.dart';
 import 'expiration_exception.dart';
 
@@ -69,6 +70,9 @@ class Client extends http.BaseClient {
   /// Callback to be invoked whenever the credentials refreshed.
   final CredentialsRefreshedCallback? _onCredentialsRefreshed;
 
+  /// Custom client authenticator for injecting assertions or specific headers.
+  final ClientAuthenticator? _customAuth;
+
   /// Whether to use HTTP Basic authentication for authorizing the client.
   final bool _basicAuth;
 
@@ -90,11 +94,13 @@ class Client extends http.BaseClient {
       this.secret,
       CredentialsRefreshedCallback? onCredentialsRefreshed,
       bool basicAuth = true,
+      ClientAuthenticator? customAuth,
       http.Client? httpClient})
       : _basicAuth = basicAuth,
         _onCredentialsRefreshed = onCredentialsRefreshed,
+        _customAuth = customAuth,
         _httpClient = httpClient ?? http.Client() {
-    if (identifier == null && secret != null) {
+    if (_customAuth == null && identifier == null && secret != null) {
       throw ArgumentError('secret may not be passed without identifier.');
     }
   }
@@ -164,6 +170,7 @@ class Client extends http.BaseClient {
           secret: secret,
           newScopes: newScopes,
           basicAuth: _basicAuth,
+          customAuth: _customAuth,
           httpClient: _httpClient,
         );
         _credentials = await _refreshingFuture!;

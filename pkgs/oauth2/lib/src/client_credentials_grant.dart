@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 import 'client.dart';
+import 'client_authenticator.dart';
 import 'handle_access_token_response.dart';
 import 'utils.dart';
 
@@ -45,6 +46,8 @@ Future<Client> clientCredentialsGrant(
     bool basicAuth = true,
     http.Client? httpClient,
     String? delimiter,
+    ClientAuthenticator? customAuth,
+    Iterable<Uri>? resources,
     Map<String, dynamic> Function(MediaType? contentType, String body)?
         getParameters}) async {
   delimiter ??= ' ';
@@ -54,7 +57,10 @@ Future<Client> clientCredentialsGrant(
 
   var headers = <String, String>{};
 
-  if (identifier != null) {
+  if (customAuth != null) {
+    if (identifier != null) body['client_id'] = identifier;
+    await customAuth(headers, body);
+  } else if (identifier != null) {
     if (basicAuth) {
       headers['Authorization'] = basicAuthHeader(identifier, secret!);
     } else {
@@ -67,6 +73,10 @@ Future<Client> clientCredentialsGrant(
     body['scope'] = scopes.join(delimiter);
   }
 
+  if (resources != null && resources.isNotEmpty) {
+    body['resource'] = resources.map((r) => r.toString()).join(delimiter);
+  }
+
   httpClient ??= http.Client();
   var response = await httpClient.post(authorizationEndpoint,
       headers: headers, body: body);
@@ -75,5 +85,8 @@ Future<Client> clientCredentialsGrant(
       startTime, scopes?.toList() ?? [], delimiter,
       getParameters: getParameters);
   return Client(credentials,
-      identifier: identifier, secret: secret, httpClient: httpClient);
+      identifier: identifier,
+      secret: secret,
+      httpClient: httpClient,
+      customAuth: customAuth);
 }
