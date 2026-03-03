@@ -80,6 +80,8 @@ class OAuthClientInformation {
   final String? clientSecret;
 
   /// Time at which the client identifier was issued.
+  ///
+  /// Given as seconds since epoch.
   final int? clientIdIssuedAt;
 
   /// Time at which the client secret will expire or `0` if it will not expire.
