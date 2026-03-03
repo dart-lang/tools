@@ -55,7 +55,7 @@ final class OAuthClientMetadata {
     this.softwareVersion,
   });
 
-  Map<String, dynamic> toJson() {
+  Map<String, Object?> toJson() {
     return {
       'redirect_uris': redirectUris,
       if (tokenEndpointAuthMethod != null)
