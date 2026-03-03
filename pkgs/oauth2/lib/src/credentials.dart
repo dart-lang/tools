@@ -208,6 +208,13 @@ class Credentials {
   /// You may request different scopes than the default by passing in
   /// [newScopes]. These must be a subset of [scopes].
   ///
+  /// [customAuth] is an optional callback to add additional client
+  /// authentication headers or body parameters to a token request for advanced
+  /// scenarios, such as when using a JWT Bearer token for client authentication
+  /// per [RFC 7523](https://tools.ietf.org/html/rfc7523#section-2.2). When
+  /// provided, it replaces the default `basicAuth` credentials integration in
+  /// token requests.
+  ///
   /// This throws an [ArgumentError] if [secret] is passed without [identifier],
   /// a [StateError] if these credentials can't be refreshed, an
   /// [AuthorizationException] if refreshing the credentials fails, or a

@@ -39,7 +39,14 @@ import 'utils.dart';
 ///
 /// This function is passed the `Content-Type` header of the response as well as
 /// its body as a UTF-8-decoded string. It should return a map in the same
-/// format as the [standard JSON response](https://tools.ietf.org/html/rfc6749#section-5.1)
+/// format as the [standard JSON response](https://tools.ietf.org/html/rfc6749#section-5.1).
+///
+/// [customAuth] is an optional callback to add additional client
+/// authentication headers or body parameters to a token request for advanced
+/// scenarios, such as when using a JWT Bearer token for client authentication
+/// per [RFC 7523](https://tools.ietf.org/html/rfc7523#section-2.2). When
+/// provided, it replaces the default `basicAuth` credentials integration in
+/// token requests.
 Future<Client> clientCredentialsGrant(
     Uri authorizationEndpoint, String? identifier, String? secret,
     {Iterable<String>? scopes,

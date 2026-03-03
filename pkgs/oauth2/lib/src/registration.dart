@@ -16,14 +16,16 @@ final class OAuthClientMetadata {
   /// Array of redirection URI strings for use in redirect-based flows.
   final List<String> redirectUris;
 
-  /// String indicator of the requested authentication method for the token endpoint.
+  /// String indicator of the requested authentication method for the token
+  /// endpoint.
   final String? tokenEndpointAuthMethod;
 
-  /// Array of OAuth 2.0 grant type strings that the client can use at the token endpoint.
+  /// Array of OAuth 2.0 grant type strings that the client can use at the
+  /// token endpoint.
   final List<String>? grantTypes;
 
-  /// Array of the OAuth 2.0 response type strings that the client can use at the
-  /// authorization endpoint.
+  /// Array of the OAuth 2.0 response type strings that the client can use at
+  /// the authorization endpoint.
   final List<String>? responseTypes;
 
   /// Human-readable string name of the client to be presented to the end-user.
@@ -40,7 +42,8 @@ final class OAuthClientMetadata {
   /// software publisher used by registration endpoints.
   final String? softwareId;
 
-  /// A version identifier string for the client software identified by [softwareId].
+  /// A version identifier string for the client software identified by
+  /// [softwareId].
   final String? softwareVersion;
 
   const OAuthClientMetadata({
@@ -74,8 +77,9 @@ final class OAuthClientMetadata {
 /// OAuth 2.0 Client Information ([RFC 7591]).
 ///
 /// [RFC 7591]: https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.1
-class OAuthClientInformation {
-  /// Opaque value used by the client to identify itself to the authorization server.
+final class OAuthClientInformation {
+  /// Opaque value used by the client to identify itself to the authorization
+  /// server.
   final String clientId;
 
   /// String value specifying the client secret.
@@ -91,8 +95,8 @@ class OAuthClientInformation {
   /// Given as seconds since epoch.
   final int? clientSecretExpiresAt;
 
-  /// String indicator of the authentication method that the authorization server
-  /// will accept from the client when using the token endpoint.
+  /// String indicator of the authentication method that the authorization
+  /// server will accept from the client when using the token endpoint.
   final String? tokenEndpointAuthMethod;
 
   const OAuthClientInformation({
@@ -116,7 +120,9 @@ class OAuthClientInformation {
 
 /// Performs RFC 7591 Dynamic Client Registration.
 ///
-/// Throws [AuthorizationException] if registration fails.
+/// Dynamic Client Registration allows OAuth 2.0 clients to register with an
+/// authorization server dynamically and obtain client credentials (such as
+/// a client ID and client secret) required to interact with the server.
 ///
 /// The returned [Future] completes with the client information. It will
 /// complete with an [AuthorizationException] if the request is rejected by the
@@ -162,8 +168,11 @@ Future<OAuthClientInformation> registerClient(
         var uri = uriString == null ? null : Uri.parse(uriString);
         throw AuthorizationException(body['error'] as String, description, uri);
       }
-      throw StateError(
-          'HTTP ${response.statusCode} registering client at $registrationUrl');
+      throw AuthorizationException(
+        'server_error',
+        'HTTP ${response.statusCode} registering client at $registrationUrl',
+        null,
+      );
     }
     return OAuthClientInformation.fromJson(
       jsonDecode(response.body) as Map<String, dynamic>,

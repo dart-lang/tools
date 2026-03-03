@@ -101,7 +101,8 @@ void main() {
               (e) => e.error, 'error', equals('invalid_redirect_uri'))));
     });
 
-    test('throws StateError on unexpected status code without JSON', () async {
+    test('throws AuthorizationException on unexpected status code without JSON',
+        () async {
       var client = ExpectClient()
         ..expectRequest((request) {
           return Future.value(http.Response('Internal Server Error', 500));
@@ -113,7 +114,7 @@ void main() {
       expect(
           registerClient(Uri.parse('https://server.example.com'), metadata,
               httpClient: client),
-          throwsStateError);
+          throwsA(isA<AuthorizationException>()));
     });
 
     test('throws ArgumentError on insecure authorizationServerUrl', () async {

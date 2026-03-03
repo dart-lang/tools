@@ -6,8 +6,18 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+/// An exception thrown when OAuth 2.0 discovery fails.
+class DiscoveryException implements Exception {
+  final String message;
+
+  DiscoveryException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 /// OAuth 2.0 Authorization Server Metadata (RFC 8414).
-class OAuthServerMetadata {
+final class OAuthServerMetadata {
   /// The authorization server's issuer identifier.
   final String issuer;
 
@@ -17,7 +27,8 @@ class OAuthServerMetadata {
   /// URL of the authorization server's token endpoint.
   final String tokenEndpoint;
 
-  /// URL of the authorization server's OAuth 2.0 Dynamic Client Registration endpoint.
+  /// URL of the authorization server's OAuth 2.0 Dynamic Client Registration
+  /// endpoint.
   final String? registrationEndpoint;
 
   /// JSON array containing a list of the OAuth 2.0 scope values that this
@@ -40,8 +51,8 @@ class OAuthServerMetadata {
   /// by this authorization server.
   final List<String>? codeChallengeMethodsSupported;
 
-  /// Boolean value specifying whether the authorization server supports multiple
-  /// issuers.
+  /// Boolean value specifying whether the authorization server supports
+  /// multiple issuers.
   final bool? clientIdMetadataDocumentSupported;
 
   const OAuthServerMetadata({
@@ -80,11 +91,12 @@ class OAuthServerMetadata {
 }
 
 /// OAuth 2.0 Protected Resource Metadata (RFC 9728).
-class OAuthProtectedResourceMetadata {
+final class OAuthProtectedResourceMetadata {
   /// A URI that identifies the protected resource.
   final String resource;
 
-  /// JSON array of authorization server identifiers that the protected resource trusts.
+  /// JSON array of authorization server identifiers that the protected resource
+  /// trusts.
   final List<String>? authorizationServers;
 
   /// JSON array of the scope values that the protected resource supports.
@@ -134,7 +146,7 @@ Future<OAuthServerMetadata?> discoverAuthorizationServerMetadata(
           if (response.statusCode >= 400 && response.statusCode < 500) {
             continue;
           }
-          throw StateError(
+          throw DiscoveryException(
             'HTTP ${response.statusCode} loading authorization server '
             'metadata from $endpoint',
           );
@@ -146,14 +158,14 @@ Future<OAuthServerMetadata?> discoverAuthorizationServerMetadata(
         final expectedIssuer = authorizationServerUrl.toString();
         if (metadata.issuer.replaceAll(RegExp(r'/$'), '') !=
             expectedIssuer.replaceAll(RegExp(r'/$'), '')) {
-          throw StateError(
+          throw DiscoveryException(
             'Issuer spoofing detected: metadata issuer "${metadata.issuer}" '
             'does not match expected "$expectedIssuer".',
           );
         }
         return metadata;
       } catch (e) {
-        if (e is StateError) rethrow;
+        if (e is DiscoveryException) rethrow;
         continue;
       }
     }
@@ -166,7 +178,8 @@ Future<OAuthServerMetadata?> discoverAuthorizationServerMetadata(
 /// Discovers RFC 9728 OAuth 2.0 Protected Resource Metadata.
 ///
 /// The returned [Future] completes with the metadata. It completes with a
-/// [StateError] if the metadata endpoint is not found (HTTP 404).
+/// [DiscoveryException] if the metadata endpoint is not found (HTTP 404) or
+/// returns another invalid response.
 Future<OAuthProtectedResourceMetadata> discoverProtectedResourceMetadata(
   Uri serverUrl, {
   Uri? resourceMetadataUrl,
@@ -189,13 +202,13 @@ Future<OAuthProtectedResourceMetadata> discoverProtectedResourceMetadata(
 
     final response = await client.get(url);
     if (response.statusCode == 404) {
-      throw StateError(
+      throw DiscoveryException(
         'Resource server does not implement OAuth 2.0 Protected Resource '
         'Metadata.',
       );
     }
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw StateError(
+      throw DiscoveryException(
         'HTTP ${response.statusCode} loading protected resource metadata.',
       );
     }
@@ -206,7 +219,7 @@ Future<OAuthProtectedResourceMetadata> discoverProtectedResourceMetadata(
     final expectedResource = serverUrl.toString();
     if (metadata.resource.replaceAll(RegExp(r'/$'), '') !=
         expectedResource.replaceAll(RegExp(r'/$'), '')) {
-      throw StateError(
+      throw DiscoveryException(
         'Resource spoofing detected: metadata resource "${metadata.resource}" '
         'does not match expected "$expectedResource".',
       );

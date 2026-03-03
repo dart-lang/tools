@@ -88,7 +88,15 @@ class Client extends http.BaseClient {
   /// [httpClient] is the underlying client that this forwards requests to after
   /// adding authorization credentials to them.
   ///
+  /// [customAuth] is an optional callback to add additional client
+  /// authentication headers or body parameters to a token request for advanced
+  /// scenarios, such as when using a JWT Bearer token for client authentication
+  /// per [RFC 7523]. When provided, it replaces the default `basicAuth`
+  /// credentials integration during refresh token requests.
+  ///
   /// Throws an [ArgumentError] if [secret] is passed without [identifier].
+  ///
+  /// [RFC 7523]: https://tools.ietf.org/html/rfc7523#section-2.2
   Client(this._credentials,
       {this.identifier,
       this.secret,

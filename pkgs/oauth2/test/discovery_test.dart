@@ -77,7 +77,7 @@ void main() {
       expect(metadata, isNotNull);
     });
 
-    test('throws StateError on issuer mismatch', () async {
+    test('throws DiscoveryException on issuer mismatch', () async {
       var client = ExpectClient()
         ..expectRequest((request) {
           return Future.value(http.Response(
@@ -95,10 +95,10 @@ void main() {
           discoverAuthorizationServerMetadata(
               Uri.parse('https://server.example.com'),
               httpClient: client),
-          throwsStateError);
+          throwsA(isA<DiscoveryException>()));
     });
 
-    test('throws StateError on unexpected error', () async {
+    test('throws DiscoveryException on unexpected error', () async {
       var client = ExpectClient()
         ..expectRequest((request) {
           return Future.value(http.Response('', 500));
@@ -108,7 +108,7 @@ void main() {
           discoverAuthorizationServerMetadata(
               Uri.parse('https://server.example.com'),
               httpClient: client),
-          throwsStateError);
+          throwsA(isA<DiscoveryException>()));
     });
 
     test('throws ArgumentError on insecure URL', () async {
@@ -172,7 +172,7 @@ void main() {
       expect(metadata.resource, equals('https://resource.example.com/v1/api'));
     });
 
-    test('throws StateError on resource mismatch', () async {
+    test('throws DiscoveryException on resource mismatch', () async {
       var client = ExpectClient()
         ..expectRequest((request) {
           return Future.value(http.Response(
@@ -188,10 +188,10 @@ void main() {
           discoverProtectedResourceMetadata(
               Uri.parse('https://resource.example.com'),
               httpClient: client),
-          throwsStateError);
+          throwsA(isA<DiscoveryException>()));
     });
 
-    test('throws StateError for 404', () async {
+    test('throws DiscoveryException for 404', () async {
       var client = ExpectClient()
         ..expectRequest((request) {
           return Future.value(http.Response('', 404));
@@ -201,7 +201,7 @@ void main() {
           discoverProtectedResourceMetadata(
               Uri.parse('https://resource.example.com'),
               httpClient: client),
-          throwsStateError);
+          throwsA(isA<DiscoveryException>()));
     });
 
     test('throws ArgumentError on insecure URL', () async {
