@@ -114,6 +114,8 @@ class OAuthClientInformation {
 
 /// Performs RFC 7591 Dynamic Client Registration.
 ///
+/// Throws [AuthorizationException] if registration fails.
+///
 /// The returned [Future] completes with the client information. It will
 /// complete with an [AuthorizationException] if the request is rejected by the
 /// server.
