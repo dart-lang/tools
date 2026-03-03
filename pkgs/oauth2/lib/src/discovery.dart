@@ -144,8 +144,8 @@ Future<OAuthServerMetadata?> discoverAuthorizationServerMetadata(
         );
 
         final expectedIssuer = authorizationServerUrl.toString();
-        if (metadata.issuer != expectedIssuer &&
-            metadata.issuer != expectedIssuer.replaceFirst(RegExp(r'/$'), '')) {
+        if (metadata.issuer.replaceAll(RegExp(r'/$'), '') !=
+            expectedIssuer.replaceAll(RegExp(r'/$'), '')) {
           throw StateError(
             'Issuer spoofing detected: metadata issuer "${metadata.issuer}" '
             'does not match expected "$expectedIssuer".',
@@ -204,8 +204,8 @@ Future<OAuthProtectedResourceMetadata> discoverProtectedResourceMetadata(
     );
 
     final expectedResource = serverUrl.toString();
-    if (metadata.resource != expectedResource &&
-        metadata.resource != expectedResource.replaceFirst(RegExp(r'/$'), '')) {
+    if (metadata.resource.replaceAll(RegExp(r'/$'), '') !=
+        expectedResource.replaceAll(RegExp(r'/$'), '')) {
       throw StateError(
         'Resource spoofing detected: metadata resource "${metadata.resource}" '
         'does not match expected "$expectedResource".',
