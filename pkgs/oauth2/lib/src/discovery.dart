@@ -19,40 +19,69 @@ class DiscoveryException implements Exception {
 /// OAuth 2.0 Authorization Server Metadata (RFC 8414).
 final class OAuthServerMetadata {
   /// The authorization server's issuer identifier.
+  ///
+  /// This is a URL that uniquely identifies the authorization server. It is
+  /// typically used as a base URL for other endpoints and to prevent
+  /// mix-up attacks.
   final String issuer;
 
   /// URL of the authorization server's authorization endpoint.
+  ///
+  /// This is the URL to which the user should be redirected to begin the
+  /// authorization process.
   final String authorizationEndpoint;
 
   /// URL of the authorization server's token endpoint.
+  ///
+  /// This is the URL where the client exchanges an authorization grant (like
+  /// an authorization code) for an access token.
   final String tokenEndpoint;
 
   /// URL of the authorization server's OAuth 2.0 Dynamic Client Registration
   /// endpoint.
+  ///
+  /// This is used by clients to dynamically register with the authorization
+  /// server to obtain a client ID and optionally a client secret.
   final String? registrationEndpoint;
 
   /// JSON array containing a list of the OAuth 2.0 scope values that this
   /// authorization server supports.
+  ///
+  /// This allows clients to know in advance which scopes they can request.
   final List<String>? scopesSupported;
 
   /// JSON array containing a list of the OAuth 2.0 response type values
   /// that this authorization server supports.
+  ///
+  /// This indicates which authorization flows (e.g., "code", "token") are available.
   final List<String> responseTypesSupported;
 
   /// JSON array containing a list of the OAuth 2.0 grant type values that this
   /// authorization server supports.
+  ///
+  /// This informs clients about the supported methods for obtaining a token
+  /// (e.g., "authorization_code", "client_credentials").
   final List<String>? grantTypesSupported;
 
   /// JSON array containing a list of client authentication methods supported
   /// by this token endpoint.
+  ///
+  /// This specifies how the client should authenticate itself when requesting
+  /// a token (e.g., "client_secret_basic", "client_secret_post").
   final List<String>? tokenEndpointAuthMethodsSupported;
 
   /// JSON array containing a list of PKCE code challenge methods supported
   /// by this authorization server.
+  ///
+  /// This lists the supported hashing algorithms for Proof Key for Code Exchange
+  /// (e.g., "S256", "plain").
   final List<String>? codeChallengeMethodsSupported;
 
   /// Boolean value specifying whether the authorization server supports
   /// multiple issuers.
+  ///
+  /// If true, the server can issue tokens for multiple issuers, which might
+  /// require additional verification steps by the client.
   final bool? clientIdMetadataDocumentSupported;
 
   const OAuthServerMetadata({
@@ -93,13 +122,22 @@ final class OAuthServerMetadata {
 /// OAuth 2.0 Protected Resource Metadata (RFC 9728).
 final class OAuthProtectedResourceMetadata {
   /// A URI that identifies the protected resource.
+  ///
+  /// This is used to prevent mix-up and spoofing attacks by ensuring the
+  /// metadata corresponds to the intended resource server.
   final String resource;
 
   /// JSON array of authorization server identifiers that the protected resource
   /// trusts.
+  ///
+  /// This tells clients which authorization servers they can use to obtain
+  /// access tokens for this resource.
   final List<String>? authorizationServers;
 
   /// JSON array of the scope values that the protected resource supports.
+  ///
+  /// This helps clients understand what level of access they can request
+  /// for this specific resource.
   final List<String>? scopesSupported;
 
   const OAuthProtectedResourceMetadata({

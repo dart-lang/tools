@@ -14,36 +14,63 @@ import 'discovery.dart';
 /// [RFC 7591]: https://datatracker.ietf.org/doc/html/rfc7591
 final class OAuthClientMetadata {
   /// Array of redirection URI strings for use in redirect-based flows.
+  ///
+  /// After the user authorizes the client, the authorization server will
+  /// redirect the user back to one of these URIs.
   final List<String> redirectUris;
 
   /// String indicator of the requested authentication method for the token
   /// endpoint.
+  ///
+  /// This informs the authorization server how the client intends to
+  /// authenticate itself (e.g., "client_secret_basic", "none").
   final String? tokenEndpointAuthMethod;
 
   /// Array of OAuth 2.0 grant type strings that the client can use at the
   /// token endpoint.
+  ///
+  /// This restricts the client to using only the specified grant types
+  /// (e.g., "authorization_code", "refresh_token").
   final List<String>? grantTypes;
 
   /// Array of the OAuth 2.0 response type strings that the client can use at
   /// the authorization endpoint.
+  ///
+  /// This restricts the client to initiating only specific authorization flows
+  /// (e.g., "code").
   final List<String>? responseTypes;
 
   /// Human-readable string name of the client to be presented to the end-user.
+  ///
+  /// This is typically displayed on the authorization consent screen so the
+  /// user knows which application is requesting access.
   final String? clientName;
 
   /// URL string of a web page providing information about the client.
+  ///
+  /// This provides a link on the authorization consent screen where the user
+  /// can learn more about the client.
   final String? clientUri;
 
   /// String containing a space-separated list of scope values that the client
   /// can use when requesting access tokens.
+  ///
+  /// This defines the default or maximum set of permissions the client
+  /// is allowed to request.
   final String? scope;
 
   /// A unique identifier string assigned by the client developer or
   /// software publisher used by registration endpoints.
+  ///
+  /// This helps the authorization server categorize or identify the specific
+  /// software application being registered.
   final String? softwareId;
 
   /// A version identifier string for the client software identified by
   /// [softwareId].
+  ///
+  /// This allows the authorization server to track the specific version of
+  /// the software being registered.
   final String? softwareVersion;
 
   const OAuthClientMetadata({
@@ -80,23 +107,34 @@ final class OAuthClientMetadata {
 final class OAuthClientInformation {
   /// Opaque value used by the client to identify itself to the authorization
   /// server.
+  ///
+  /// This is required for all requests to the token endpoint to identify
+  /// the client.
   final String clientId;
 
   /// String value specifying the client secret.
+  ///
+  /// This acts as a password for the client to authenticate itself with
+  /// the authorization server. It must be kept confidential.
   final String? clientSecret;
 
   /// Time at which the client identifier was issued.
   ///
-  /// Given as seconds since epoch.
+  /// Given as seconds since epoch. This helps determine the age of the
+  /// registration.
   final int? clientIdIssuedAt;
 
   /// Time at which the client secret will expire or `0` if it will not expire.
   ///
-  /// Given as seconds since epoch.
+  /// Given as seconds since epoch. This allows the client to know when it
+  /// needs to register a new secret.
   final int? clientSecretExpiresAt;
 
   /// String indicator of the authentication method that the authorization
   /// server will accept from the client when using the token endpoint.
+  ///
+  /// This confirms the authentication method the client must use, which may
+  /// or may not be what it requested.
   final String? tokenEndpointAuthMethod;
 
   const OAuthClientInformation({
