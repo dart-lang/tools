@@ -166,12 +166,14 @@ List<String>? _stringList(dynamic value) {
 /// Tries RFC 8414 (`oauth-authorization-server`) first, then falls back to
 /// OpenID Connect Discovery (`openid-configuration`).
 ///
-/// The returned [Future] completes with the metadata, or with `null` if no
-/// metadata endpoint could be found.
+/// Completes with the metadata, or with `null` if no metadata endpoint could
+/// be found.
 ///
-/// Throws a [DiscoveryException] if a metadata endpoint is found but returns
-/// an invalid response or if issuer spoofing is detected. It may also throw a
-/// [FormatException] if the metadata is not valid JSON.
+/// If a metadata endpoint is found but returns an invalid response (e.g.,
+/// malformed JSON or issuer spoofing is detected), the function will catch
+/// the resulting exception and automatically try the next fallback URL.
+/// It throws a [DiscoveryException] or [FormatException] only if all attempted
+/// endpoints fail with errors.
 Future<OAuthServerMetadata?> discoverAuthorizationServerMetadata(
   Uri authorizationServerUrl, {
   http.Client? httpClient,
