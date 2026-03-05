@@ -53,7 +53,8 @@ final class OAuthServerMetadata {
   /// JSON array containing a list of the OAuth 2.0 response type values
   /// that this authorization server supports.
   ///
-  /// This indicates which authorization flows (e.g., "code", "token") are available.
+  /// This indicates which authorization flows (e.g., "code", "token") are
+  /// available.
   final List<String> responseTypesSupported;
 
   /// JSON array containing a list of the OAuth 2.0 grant type values that this
@@ -73,8 +74,8 @@ final class OAuthServerMetadata {
   /// JSON array containing a list of PKCE code challenge methods supported
   /// by this authorization server.
   ///
-  /// This lists the supported hashing algorithms for Proof Key for Code Exchange
-  /// (e.g., "S256", "plain").
+  /// This lists the supported hashing algorithms for Proof Key for Code
+  /// Exchange (e.g., "S256", "plain").
   final List<String>? codeChallengeMethodsSupported;
 
   /// Boolean value specifying whether the authorization server supports
