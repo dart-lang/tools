@@ -129,6 +129,10 @@ List<String>? _stringList(dynamic value) {
 ///
 /// The returned [Future] completes with the metadata, or with `null` if no
 /// metadata endpoint could be found.
+///
+/// Throws a [DiscoveryException] if a metadata endpoint is found but returns
+/// an invalid response or if issuer spoofing is detected. It may also throw a
+/// [FormatException] if the metadata is not valid JSON.
 Future<OAuthServerMetadata?> discoverAuthorizationServerMetadata(
   Uri authorizationServerUrl, {
   http.Client? httpClient,
