@@ -19,7 +19,7 @@ baz:packages/baz/
 
 const packageConfigFile = '''
 {
-  "configVersion": 2,
+  "configVersion": ${PackageConfig.minVersion},
   "packages": [
     {
       "name": "foo",
@@ -39,7 +39,6 @@ const packageConfigFile = '''
 ''';
 
 void validatePackagesFile(PackageConfig resolver, Uri directory) {
-  expect(resolver, isNotNull);
   expect(
     resolver.resolve(pkg('foo', 'bar/baz')),
     equals(Uri.parse('file:///dart/packages/foo/bar/baz')),
@@ -70,8 +69,20 @@ void main() {
       },
       (directory, loader) async {
         var config = (await findPackageConfigUri(directory, loader: loader))!;
-        expect(config.version, 2); // Found package_config.json file.
+        expect(
+          config.version,
+          PackageConfig.minVersion,
+        ); // Found package_config.json file.
         validatePackagesFile(config, directory);
+        Uri file;
+        (:config, :file) =
+            (await findPackageConfigAndUri(directory, loader: loader))!;
+        expect(
+          config.version,
+          PackageConfig.minVersion,
+        ); // Found package_config.json file.
+        validatePackagesFile(config, directory);
+        expect(file, directory.resolve('.dart_tool/package_config.json'));
       },
     );
 
@@ -89,8 +100,17 @@ void main() {
               directory.resolve('subdir/'),
               loader: loader,
             ))!;
-        expect(config.version, 2);
+        expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
+        Uri file;
+        (:config, :file) =
+            (await findPackageConfigAndUri(directory, loader: loader))!;
+        expect(
+          config.version,
+          PackageConfig.minVersion,
+        ); // Found package_config.json file.
+        validatePackagesFile(config, directory);
+        expect(file, directory.resolve('.dart_tool/package_config.json'));
       },
     );
 
@@ -109,6 +129,14 @@ void main() {
           loader: loader,
         );
         expect(config, null);
+        expect(
+          await findPackageConfigAndUri(
+            recurse: false,
+            directory,
+            loader: loader,
+          ),
+          null,
+        );
       },
     );
 
@@ -119,8 +147,8 @@ void main() {
         'packages': {'foo': <String, Object?>{}},
       },
       (Uri directory, loader) async {
-        var config = await findPackageConfigUri(directory, loader: loader);
-        expect(config, null);
+        expect(await findPackageConfigUri(directory, loader: loader), null);
+        expect(await findPackageConfigAndUri(directory, loader: loader), null);
       },
     );
   });
@@ -135,7 +163,7 @@ void main() {
       loaderTest('directly', files, (Uri directory, loader) async {
         var file = directory.resolve('.dart_tool/package_config.json');
         var config = await loadPackageConfigUri(file, loader: loader);
-        expect(config.version, 2);
+        expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
       });
       loaderTest('indirectly through .packages', files, (
@@ -165,7 +193,7 @@ void main() {
       (Uri directory, loader) async {
         var file = directory.resolve('subdir/pheldagriff');
         var config = await loadPackageConfigUri(file, loader: loader);
-        expect(config.version, 2);
+        expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
       },
     );
@@ -178,7 +206,7 @@ void main() {
       (Uri directory, loader) async {
         var file = directory.resolve('subdir/.packages');
         var config = await loadPackageConfigUri(file, loader: loader);
-        expect(config.version, 2);
+        expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
       },
     );

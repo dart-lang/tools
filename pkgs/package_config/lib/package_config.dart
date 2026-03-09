@@ -85,6 +85,50 @@ Future<PackageConfig> loadAnyPackageConfigUri(
 
 /// Finds a package configuration relative to [directory].
 ///
+/// Returns both the configuration and the [File] it was in,
+/// or `null` if no valid configuration file was found.
+///
+/// If [directory] contains a `.dart_tool/package_config.json` file,
+/// then that file is loaded.
+///
+/// If no file is found in the current directory,
+/// then the parent directories are checked recursively,
+/// all the way to the root directory, to check if those contains
+/// a package configuration.
+/// If [recurse] is set to `false`, this parent directory check is not
+/// performed.
+///
+/// If [onError] is provided, the configuration file parsing will report errors
+/// by calling that function, and then try to recover.
+/// The returned package configuration is a *best effort* attempt to create
+/// a valid configuration from the invalid configuration file.
+/// If no [onError] is provided, errors are thrown immediately.
+///
+/// If [minVersion] is set to something greater than its default,
+/// any lower-version configuration files are ignored in the search.
+Future<({PackageConfig config, File file})?> findPackageConfigAndFile(
+  Directory directory, {
+  bool recurse = true,
+  void Function(Object error)? onError,
+  int minVersion = PackageConfig.minVersion,
+}) {
+  if (minVersion > PackageConfig.maxVersion) {
+    throw ArgumentError.value(
+      minVersion,
+      'minVersion',
+      'Maximum known version is ${PackageConfig.maxVersion}',
+    );
+  }
+  return discover.findPackageConfig(
+    directory,
+    minVersion,
+    recurse,
+    onError ?? throwError,
+  );
+}
+
+/// Finds a package configuration relative to [directory].
+///
 /// If [directory] contains a `.dart_tool/package_config.json` file,
 /// then that file is loaded.
 ///
@@ -109,7 +153,7 @@ Future<PackageConfig?> findPackageConfig(
   Directory directory, {
   bool recurse = true,
   void Function(Object error)? onError,
-  int minVersion = 1,
+  int minVersion = PackageConfig.minVersion,
 }) {
   if (minVersion > PackageConfig.maxVersion) {
     throw ArgumentError.value(
@@ -118,11 +162,74 @@ Future<PackageConfig?> findPackageConfig(
       'Maximum known version is ${PackageConfig.maxVersion}',
     );
   }
-  return discover.findPackageConfig(
-    directory,
+  return discover
+      .findPackageConfig(directory, minVersion, recurse, onError ?? throwError)
+      .then((configAndFile) => configAndFile?.config);
+}
+
+/// Finds a package configuration relative to [location] and its URI location.
+///
+/// Returns both the configuration and the URI it was loaded from,
+/// or `null` if no configuration is found.
+///
+/// If [location] contains a `.dart_tool/package_config.json`
+/// package configuration file, then that file is loaded.
+/// The [location] URI *must not* be a `package:` URI.
+/// It should be a hierarchical URI which is supported
+/// by [loader].
+///
+/// If no file is found in the current directory,
+/// then the parent directories are checked recursively,
+/// all the way to the root directory, to check if those contains
+/// a package configuration.
+/// If [recurse] is set to `false`, this parent directory check is not
+/// performed.
+///
+/// If [loader] is provided, URIs are loaded using that function.
+/// The future returned by the loader must complete with a [Uint8List]
+/// containing the entire file content,
+/// or with `null` if the file does not exist.
+/// The loader may throw at its own discretion, for situations where
+/// it determines that an error might be need user attention,
+/// but it is always allowed to return `null`.
+/// This function makes no attempt to catch such errors.
+///
+/// If no [loader] is supplied, a default loader is used which
+/// only accepts `file:`,  `http:` and `https:` URIs,
+/// and which uses the platform file system and HTTP requests to
+/// fetch file content. The default loader never throws because
+/// of an I/O issue, as long as the location URIs are valid.
+/// As such, it does not distinguish between a file not existing,
+/// and it being temporarily locked or unreachable.
+///
+/// If [onError] is provided, the configuration file parsing will report errors
+/// by calling that function, and then try to recover.
+/// The returned package configuration is a *best effort* attempt to create
+/// a valid configuration from the invalid configuration file.
+/// If no [onError] is provided, errors are thrown immediately.
+///
+/// If [minVersion] is set to something greater than its default,
+/// any lower-version configuration files are ignored in the search.
+Future<({PackageConfig config, Uri file})?> findPackageConfigAndUri(
+  Uri location, {
+  bool recurse = true,
+  int minVersion = PackageConfig.minVersion,
+  Future<Uint8List?> Function(Uri uri)? loader,
+  void Function(Object error)? onError,
+}) {
+  if (minVersion > PackageConfig.maxVersion) {
+    throw ArgumentError.value(
+      minVersion,
+      'minVersion',
+      'Maximum known version is ${PackageConfig.maxVersion}',
+    );
+  }
+  return discover.findPackageConfigUri(
+    location,
     minVersion,
-    recurse,
+    loader,
     onError ?? throwError,
+    recurse,
   );
 }
 
@@ -182,13 +289,15 @@ Future<PackageConfig?> findPackageConfigUri(
       'Maximum known version is ${PackageConfig.maxVersion}',
     );
   }
-  return discover.findPackageConfigUri(
-    location,
-    minVersion,
-    loader,
-    onError ?? throwError,
-    recurse,
-  );
+  return discover
+      .findPackageConfigUri(
+        location,
+        minVersion,
+        loader,
+        onError ?? throwError,
+        recurse,
+      )
+      .then((configAndFile) => configAndFile?.config);
 }
 
 /// Writes a package configuration to the provided directory.
