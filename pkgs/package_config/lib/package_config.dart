@@ -278,7 +278,7 @@ Future<({PackageConfig config, Uri file})?> findPackageConfigAndUri(
 Future<PackageConfig?> findPackageConfigUri(
   Uri location, {
   bool recurse = true,
-  int minVersion = 1,
+  int minVersion = PackageConfig.minVersion,
   Future<Uint8List?> Function(Uri uri)? loader,
   void Function(Object error)? onError,
 }) {
