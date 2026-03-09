@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
-  test('builds the correct hierarchy of group names / test names', () async {
+  test('includes setUp and tearDown results only when defined', () async {
     var (:stdout, :stderr) =
         await runTestFile('set_up_tear_down_test.data.dart');
 
