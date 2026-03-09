@@ -208,8 +208,8 @@ bool _hasFailingTestAnnotation(MethodMirror method) =>
 bool _hasSkippedTestAnnotation(MethodMirror method) =>
     _hasAnnotationInstance(method, skippedTest);
 
-/// Returns the result of invoking [symbol] on [objectMirror] if it is a
-/// closure.
+/// Invokes [symbol] on [objectMirror] if it is a closure and returns the
+/// result.
 Future<Object?> _invokeSymbolIfExists(
     ObjectMirror objectMirror, Symbol symbol) {
   Object? invocationResult;
@@ -218,7 +218,7 @@ Future<Object?> _invokeSymbolIfExists(
   return Future.value(invocationResult);
 }
 
-/// Returns [symbol] from [objectMirror] if it is a closure.
+/// Gets [symbol] from [objectMirror] if it is a closure.
 ClosureMirror? _getClosureMember(ObjectMirror objectMirror, Symbol symbol) {
   try {
     var member = objectMirror.getField(symbol);

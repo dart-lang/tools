@@ -21,7 +21,7 @@ void main() {
         testPackagePath, '..', 'test', 'test_reflective_loader_test.dart'));
     var testFileContent = File(testFilePath).readAsLinesSync();
 
-    var (:stdout, :stderr) = await runTestFile(testFilePath, ['-r', 'json']);
+    var (:stdout, :stderr) = await runTestFile(testFilePath, reporter: 'json');
 
     expect(stderr, isEmpty);
     expect(stdout, isNotEmpty);
