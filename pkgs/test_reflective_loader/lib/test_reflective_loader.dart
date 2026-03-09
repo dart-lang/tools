@@ -146,10 +146,20 @@ void _addTestsIfTopLevelSuite() {
               solo: group.solo,
               () {
                 // If this group is a class, it may have class-wide
-                // setUp/tearDown.
-                if (group.classMirror != null) {
-                  test_package.setUpAll(group.ensureSetUpClass);
-                  test_package.tearDownAll(group.tearDownClass);
+                // setUp/tearDown. Only add the methods if they exist so that
+                // they don't show in the results/IDE if not.
+                if (group.classMirror case var classMirror?) {
+                  var setUp = _getClosureMember(classMirror, #setUpClass);
+                  if (setUp != null) {
+                    test_package.setUpAll(group.ensureSetUpClass,
+                        location: setUp.function.testLocation);
+                  }
+
+                  var tearDown = _getClosureMember(classMirror, #tearDownClass);
+                  if (tearDown != null) {
+                    test_package.tearDownAll(group.tearDownClass,
+                        location: tearDown.function.testLocation);
+                  }
                 }
                 addGroupsAndTests(group.children);
               },
@@ -198,21 +208,27 @@ bool _hasFailingTestAnnotation(MethodMirror method) =>
 bool _hasSkippedTestAnnotation(MethodMirror method) =>
     _hasAnnotationInstance(method, skippedTest);
 
+/// Returns the result of invoking [symbol] on [objectMirror] if it is a
+/// closure.
 Future<Object?> _invokeSymbolIfExists(
     ObjectMirror objectMirror, Symbol symbol) {
   Object? invocationResult;
-  InstanceMirror? closure;
+  var closure = _getClosureMember(objectMirror, symbol);
+  invocationResult = closure?.apply([]).reflectee;
+  return Future.value(invocationResult);
+}
+
+/// Returns [symbol] from [objectMirror] if it is a closure.
+ClosureMirror? _getClosureMember(ObjectMirror objectMirror, Symbol symbol) {
   try {
-    closure = objectMirror.getField(symbol);
+    var member = objectMirror.getField(symbol);
+    return member is ClosureMirror ? member : null;
     // ignore: avoid_catching_errors
   } on NoSuchMethodError {
     // ignore: empty_catches
   }
 
-  if (closure is ClosureMirror) {
-    invocationResult = closure.apply([]).reflectee;
-  }
-  return Future.value(invocationResult);
+  return null;
 }
 
 /// Adds a group to the current stack and executes [define] for child group

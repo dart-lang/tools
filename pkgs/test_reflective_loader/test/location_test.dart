@@ -9,6 +9,8 @@ import 'dart:isolate';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
+import 'utils.dart';
+
 void main() {
   test("reports correct locations in the JSON output from 'dart test'",
       () async {
@@ -18,16 +20,13 @@ void main() {
     var testFilePath = path.normalize(path.join(
         testPackagePath, '..', 'test', 'test_reflective_loader_test.dart'));
     var testFileContent = File(testFilePath).readAsLinesSync();
-    var result = await Process.run(
-        Platform.resolvedExecutable, ['test', '-r', 'json', testFilePath]);
 
-    var error = result.stderr.toString().trim();
-    var output = result.stdout.toString().trim();
+    var (:stdout, :stderr) = await runTestFile(testFilePath, ['-r', 'json']);
 
-    expect(error, isEmpty);
-    expect(output, isNotEmpty);
+    expect(stderr, isEmpty);
+    expect(stdout, isNotEmpty);
 
-    for (var event in LineSplitter.split(output).map(jsonDecode)) {
+    for (var event in LineSplitter.split(stdout).map(jsonDecode)) {
       if (event case {'type': 'testStart', 'test': Map<String, Object?> test}) {
         var name = test['name'] as String;
 
@@ -40,9 +39,14 @@ void main() {
         // the source code to ensure the locations match up.
         name = name.split(' ').last.trim();
 
-        // Skip "tearDownAll" or "setUpAll", it never has a location.
-        if (name case '(tearDownAll)' || '(setUpAll)') {
-          continue;
+        // The test names "(setUpAll)" and "(tearDownAll)" can be calls to
+        // setUpAll() and tearDownAll() or methods named "setUpClass" and
+        // "tearDownClass" so just expect to find "setUp" or "tearDown" on lines
+        // at the provided locations.
+        if (name == '(setUpAll)') {
+          name = 'setUp';
+        } else if (name == '(tearDownAll)') {
+          name = 'tearDown';
         }
 
         // Expect locations for all remaining fields.
