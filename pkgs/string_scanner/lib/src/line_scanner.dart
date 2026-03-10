@@ -59,13 +59,12 @@ class LineScanner extends StringScanner {
           newlines++;
           lastNewlineEnd = i + 1;
         } else if (char == $cr) {
-          if (i + 1 == newPosition &&
-              newPosition < string.length &&
-              string.codeUnitAt(newPosition) == $lf) {
-            // It's a CR followed by LF outside the string.
-          } else if (i + 1 < newPosition && string.codeUnitAt(i + 1) == $lf) {
-            // It's CR followed by LF inside the string, the LF will count it.
-          } else {
+          final nextIsLf =
+              (i + 1 < newPosition && string.codeUnitAt(i + 1) == $lf) ||
+                  (i + 1 == newPosition &&
+                      newPosition < string.length &&
+                      string.codeUnitAt(newPosition) == $lf);
+          if (!nextIsLf) {
             newlines++;
             lastNewlineEnd = i + 1;
           }
@@ -86,11 +85,12 @@ class LineScanner extends StringScanner {
         } else if (char == $cr) {
           if (i + 1 < oldPosition) {
             if (string.codeUnitAt(i + 1) != $lf) newlines++;
-          } else if (oldPosition < string.length &&
-              string.codeUnitAt(oldPosition) == $lf) {
-            // CR followed by LF
           } else {
-            newlines++;
+            // i + 1 == oldPosition
+            if (oldPosition >= string.length ||
+                string.codeUnitAt(oldPosition) != $lf) {
+              newlines++;
+            }
           }
         }
       }
@@ -169,12 +169,12 @@ class LineScanner extends StringScanner {
             newlines++;
             lastNewlineEnd = i + 1;
           }
-        } else if (position < string.length &&
-            string.codeUnitAt(position) == $lf) {
-          // CR followed by LF outside the match.
         } else {
-          newlines++;
-          lastNewlineEnd = i + 1;
+          // i + 1 == match.length
+          if (position >= string.length || string.codeUnitAt(position) != $lf) {
+            newlines++;
+            lastNewlineEnd = i + 1;
+          }
         }
       }
     }
