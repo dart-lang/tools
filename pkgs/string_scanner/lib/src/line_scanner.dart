@@ -4,13 +4,8 @@
 
 import 'charcode.dart';
 import 'string_scanner.dart';
-import 'utils.dart';
 
 // Note that much of this code is duplicated in eager_span_scanner.dart.
-
-/// A regular expression matching newlines. A newline is either a `\n`, a `\r\n`
-/// or a `\r` that is not immediately followed by a `\n`.
-final _newlineRegExp = RegExp(r'\n|\r\n|\r(?!\n)');
 
 /// A subclass of [StringScanner] that tracks line and column information.
 class LineScanner extends StringScanner {
@@ -31,10 +26,6 @@ class LineScanner extends StringScanner {
   /// This does not include the scanner's match information.
   LineScannerState get state =>
       LineScannerState._(this, position, line, column);
-
-  /// Whether the current position is between a CR character and an LF
-  /// charactet.
-  bool get _betweenCRLF => peekChar(-1) == $cr && peekChar() == $lf;
 
   set state(LineScannerState state) {
     if (!identical(state._scanner, this)) {
@@ -60,45 +51,68 @@ class LineScanner extends StringScanner {
       _line = 0;
       _column = 0;
     } else if (newPosition > oldPosition) {
-      final newlines = _newlinesIn(string.substring(oldPosition, newPosition),
-          endPosition: newPosition);
-      _line += newlines.length;
-      if (newlines.isEmpty) {
+      var newlines = 0;
+      var lastNewlineEnd = -1;
+      for (var i = oldPosition; i < newPosition; i++) {
+        final char = string.codeUnitAt(i);
+        if (char == $lf) {
+          newlines++;
+          lastNewlineEnd = i + 1;
+        } else if (char == $cr) {
+          if (i + 1 == newPosition &&
+              newPosition < string.length &&
+              string.codeUnitAt(newPosition) == $lf) {
+            // It's a CR followed by LF outside the string.
+          } else if (i + 1 < newPosition && string.codeUnitAt(i + 1) == $lf) {
+            // It's CR followed by LF inside the string, the LF will count it.
+          } else {
+            newlines++;
+            lastNewlineEnd = i + 1;
+          }
+        }
+      }
+      _line += newlines;
+      if (newlines == 0) {
         _column += newPosition - oldPosition;
       } else {
-        // The regex got a substring, so we need to account for where it started
-        // in the string.
-        final offsetOfLastNewline = oldPosition + newlines.last.end;
-        _column = newPosition - offsetOfLastNewline;
+        _column = newPosition - lastNewlineEnd;
       }
-    } else if (newPosition < oldPosition) {
-      final newlines = _newlinesIn(string.substring(newPosition, oldPosition),
-          endPosition: oldPosition);
+    } else {
+      var newlines = 0;
+      for (var i = newPosition; i < oldPosition; i++) {
+        final char = string.codeUnitAt(i);
+        if (char == $lf) {
+          newlines++;
+        } else if (char == $cr) {
+          if (i + 1 < oldPosition) {
+            if (string.codeUnitAt(i + 1) != $lf) newlines++;
+          } else if (oldPosition < string.length &&
+              string.codeUnitAt(oldPosition) == $lf) {
+            // CR followed by LF
+          } else {
+            newlines++;
+          }
+        }
+      }
+      _line -= newlines;
 
-      _line -= newlines.length;
-      if (newlines.isEmpty) {
+      if (newlines == 0) {
         _column -= oldPosition - newPosition;
       } else {
-        // To compute the new column, we need to locate the last newline before
-        // the new position. When searching, we must exclude the CR if we're
-        // between a CRLF because it's not considered a newline.
-        final crOffset = _betweenCRLF ? -1 : 0;
-        // Additionally, if we use newPosition as the end of the search and the
-        // character at that position itself (the next character) is a newline
-        // we should not use it, so also offset to account for that.
-        const currentCharOffset = -1;
-        final lastNewline = string.lastIndexOf(
-            _newlineRegExp, newPosition + currentCharOffset + crOffset);
-
-        // Now we need to know the offset after the newline. This is the index
-        // above plus the length of the newline (eg. if we found `\r\n`) we need
-        // to add two. However if no newline was found, that index is 0.
-        final offsetAfterLastNewline = lastNewline == -1
-            ? 0
-            : string[lastNewline] == '\r' && string[lastNewline + 1] == '\n'
-                ? lastNewline + 2
-                : lastNewline + 1;
-
+        var offsetAfterLastNewline = 0;
+        for (var i = newPosition - 1; i >= 0; i--) {
+          final char = string.codeUnitAt(i);
+          if (char == $lf) {
+            offsetAfterLastNewline = i + 1;
+            break;
+          } else if (char == $cr) {
+            if (i + 1 < string.length && string.codeUnitAt(i + 1) == $lf) {
+              continue;
+            }
+            offsetAfterLastNewline = i + 1;
+            break;
+          }
+        }
         _column = newPosition - offsetAfterLastNewline;
       }
     }
@@ -122,11 +136,18 @@ class LineScanner extends StringScanner {
 
   /// Adjusts [_line] and [_column] after having consumed [character].
   void _adjustLineAndColumn(int character) {
-    if (character == $lf || (character == $cr && peekChar() != $lf)) {
+    if (character == $lf) {
       _line += 1;
       _column = 0;
+    } else if (character == $cr) {
+      if (position < string.length && string.codeUnitAt(position) == $lf) {
+        _column += 1;
+      } else {
+        _line += 1;
+        _column = 0;
+      }
     } else {
-      _column += inSupplementaryPlane(character) ? 2 : 1;
+      _column += character >= 0x10000 && character <= 0x10FFFF ? 2 : 1;
     }
   }
 
@@ -134,34 +155,38 @@ class LineScanner extends StringScanner {
   bool scan(Pattern pattern) {
     if (!super.scan(pattern)) return false;
 
-    final newlines = _newlinesIn(lastMatch![0]!, endPosition: position);
-    _line += newlines.length;
-    if (newlines.isEmpty) {
-      _column += lastMatch![0]!.length;
+    final match = lastMatch![0]!;
+    var newlines = 0;
+    var lastNewlineEnd = -1;
+    for (var i = 0; i < match.length; i++) {
+      final char = match.codeUnitAt(i);
+      if (char == $lf) {
+        newlines++;
+        lastNewlineEnd = i + 1;
+      } else if (char == $cr) {
+        if (i + 1 < match.length) {
+          if (match.codeUnitAt(i + 1) != $lf) {
+            newlines++;
+            lastNewlineEnd = i + 1;
+          }
+        } else if (position < string.length &&
+            string.codeUnitAt(position) == $lf) {
+          // CR followed by LF outside the match.
+        } else {
+          newlines++;
+          lastNewlineEnd = i + 1;
+        }
+      }
+    }
+
+    _line += newlines;
+    if (newlines == 0) {
+      _column += match.length;
     } else {
-      _column = lastMatch![0]!.length - newlines.last.end;
+      _column = match.length - lastNewlineEnd;
     }
 
     return true;
-  }
-
-  /// Returns a list of [Match]es describing all the newlines in [text], which
-  /// ends at [endPosition].
-  ///
-  /// If [text] ends with `\r`, it will only be treated as a newline if the next
-  /// character at [position] is not a `\n`.
-  List<Match> _newlinesIn(String text, {required int endPosition}) {
-    final newlines = _newlineRegExp.allMatches(text).toList();
-    // If the last character is a `\r` it will have been treated as a newline,
-    // but this is only valid if the next character is not a `\n`.
-    if (endPosition < string.length &&
-        text.endsWith('\r') &&
-        string[endPosition] == '\n') {
-      // newlines should never be empty here, because if `text` ends with `\r`
-      // it would have matched `\r(?!\n)` in the newline regex.
-      newlines.removeLast();
-    }
-    return newlines;
   }
 }
 
