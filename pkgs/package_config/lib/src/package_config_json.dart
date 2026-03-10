@@ -1,4 +1,4 @@
-// Copyright (c) 2019, the Dart project authors. Please see the AUTHORS file
+// Copyright (c) 2019, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -195,11 +195,23 @@ PackageConfig parsePackageConfigJson(
   Map<String, Object?>? extraData;
   List<Package>? packageList;
   int? configVersion;
-  map.forEach((key, value) {
+  for (var MapEntry(:key, :value) in map.entries) {
     switch (key) {
       case _configVersionKey:
-        configVersion = checkType<int>(value, _configVersionKey) ?? 2;
-        break;
+        if (checkType<int>(value, _configVersionKey) case var version?) {
+          if (version >= PackageConfig.minVersion &&
+              version <= PackageConfig.maxVersion) {
+            configVersion = version;
+            break;
+          }
+          onError(
+            PackageConfigVersionException.supportedLimit(
+              version,
+              _configVersionKey,
+            ),
+          );
+        }
+        configVersion = PackageConfig.maxVersion;
       case _packagesKey:
         var packageArray = checkType<List<Object?>>(value, _packagesKey) ?? [];
         var packages = <Package>[];
@@ -216,12 +228,10 @@ PackageConfig parsePackageConfigJson(
           }
         }
         packageList = packages;
-        break;
       default:
         (extraData ??= {})[key] = value;
-        break;
     }
-  });
+  }
   if (configVersion == null) {
     onError(PackageConfigFormatException('Missing configVersion entry', json));
     configVersion = 2;
@@ -230,7 +240,7 @@ PackageConfig parsePackageConfigJson(
     onError(PackageConfigFormatException('Missing packages list', json));
     packageList = [];
   }
-  return SimplePackageConfig(configVersion!, packageList!, extraData, (error) {
+  return SimplePackageConfig(configVersion, packageList, extraData, (error) {
     if (error is ArgumentError) {
       onError(
         PackageConfigFormatException(

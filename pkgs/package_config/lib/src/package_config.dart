@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart' show sealed;
 
+import 'constants.dart' as constants;
 import 'errors.dart';
 import 'package_config_json.dart';
 import 'util.dart';
@@ -20,10 +21,10 @@ import 'util.dart';
 @sealed
 abstract class PackageConfig {
   /// The lowest configuration version currently supported.
-  static const int minVersion = 2;
+  static const int minVersion = constants.minConfigVersion;
 
   /// The highest configuration version currently supported.
-  static const int maxVersion = 2;
+  static const int maxVersion = constants.maxConfigVersion;
 
   /// An empty package configuration.
   ///

@@ -41,15 +41,3 @@ void _createFiles(Directory target, Map<Object?, Object?> description) {
     }
   });
 }
-
-/// Creates a [Directory] for a subdirectory of [parent].
-Directory subdir(Directory parent, String dirName) =>
-    Directory(_concat(parent, dirName));
-
-/// Creates a [File] for an entry in the [directory] directory.
-File dirFile(Directory directory, String fileName) =>
-    File(_concat(directory, fileName));
-
-/// Splits [subPath] on `/`s and appends to [directory].
-String _concat(Directory directory, String subPath) =>
-    pathAppend(directory, subPath.split('/'));

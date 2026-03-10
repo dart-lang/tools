@@ -12,7 +12,7 @@
 /// {@canonicalFor errors.PackageConfigError}
 library;
 
-export 'src/errors.dart' show PackageConfigError;
+export 'src/errors.dart' show PackageConfigError, PackageConfigVersionException;
 export 'src/package_config.dart'
     show
         InvalidLanguageVersion,

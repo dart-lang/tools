@@ -100,16 +100,27 @@ Future<PackageConfig> loadAnyPackageConfigUri(
 ///
 /// If [onError] is provided, the configuration file parsing will report errors
 /// by calling that function, and then try to recover.
+/// It's called with an error and the [File] being parsed.
 /// The returned package configuration is a *best effort* attempt to create
 /// a valid configuration from the invalid configuration file.
 /// If no [onError] is provided, errors are thrown immediately.
 ///
 /// If [minVersion] is set to something greater than its default,
-/// any lower-version configuration files are ignored in the search.
+/// any lower-version configuration files are ignored in the search
+/// when [skipInvalid] is `true`.
+/// If [skipInvalid] is `false` (the default),
+/// a configuration with an unaccepted version is reported to [onError].
+///
+/// See also:
+/// - [findPackageConfigAndUri] which works the same, except it uses
+///   [Uri]s for locations instead of [File] and [Directory],
+///   and can work with other schemes than `file:` if provided with a
+///   compatible `loader` function.
 Future<({PackageConfig config, File file})?> findPackageConfigAndFile(
   Directory directory, {
   bool recurse = true,
-  void Function(Object error)? onError,
+  bool skipInvalid = false,
+  void Function(Object error, File file)? onError,
   int minVersion = PackageConfig.minVersion,
 }) {
   if (minVersion > PackageConfig.maxVersion) {
@@ -123,6 +134,7 @@ Future<({PackageConfig config, File file})?> findPackageConfigAndFile(
     directory,
     minVersion,
     recurse,
+    skipInvalid,
     onError ?? throwError,
   );
 }
@@ -146,14 +158,26 @@ Future<({PackageConfig config, File file})?> findPackageConfigAndFile(
 /// If no [onError] is provided, errors are thrown immediately.
 ///
 /// If [minVersion] is set to something greater than its default,
-/// any lower-version configuration files are ignored in the search.
+/// any lower-version configuration files are ignored in the search
+/// when [skipInvalid] is `true` (the default).
+/// If [skipInvalid] is `false`, an error is reported to [onError]
+/// for a configuration with an unaccepted version.
 ///
 /// Returns `null` if no configuration file is found.
+///
+/// See also:
+/// - [findPackageConfigAndFile] which provides the actual configuration
+///   file being parsed in the result and to `onError`.
+/// - [findPackageConfigAndUri] which works the same, except it uses
+///   [Uri]s for locations instead of [File] and [Directory],
+///   and can work with other schemes than `file:` if provided with a
+///   compatible `loader` function.
 Future<PackageConfig?> findPackageConfig(
   Directory directory, {
-  bool recurse = true,
-  void Function(Object error)? onError,
   int minVersion = PackageConfig.minVersion,
+  bool recurse = true,
+  bool skipInvalid = true,
+  void Function(Object error)? onError,
 }) {
   if (minVersion > PackageConfig.maxVersion) {
     throw ArgumentError.value(
@@ -163,8 +187,14 @@ Future<PackageConfig?> findPackageConfig(
     );
   }
   return discover
-      .findPackageConfig(directory, minVersion, recurse, onError ?? throwError)
-      .then((configAndFile) => configAndFile?.config);
+      .findPackageConfig(
+        directory,
+        minVersion,
+        recurse,
+        skipInvalid,
+        onError == null ? throwError : (Object error, _) => onError(error),
+      )
+      .then(discover.configOnly);
 }
 
 /// Finds a package configuration relative to [location] and its URI location.
@@ -195,7 +225,7 @@ Future<PackageConfig?> findPackageConfig(
 /// This function makes no attempt to catch such errors.
 ///
 /// If no [loader] is supplied, a default loader is used which
-/// only accepts `file:`,  `http:` and `https:` URIs,
+/// only accepts `file:`, `http:` and `https:` URIs,
 /// and which uses the platform file system and HTTP requests to
 /// fetch file content. The default loader never throws because
 /// of an I/O issue, as long as the location URIs are valid.
@@ -209,13 +239,22 @@ Future<PackageConfig?> findPackageConfig(
 /// If no [onError] is provided, errors are thrown immediately.
 ///
 /// If [minVersion] is set to something greater than its default,
-/// any lower-version configuration files are ignored in the search.
+/// any lower-version configuration files are ignored in the search
+/// when [skipInvalid] is `true`.
+/// If [skipInvalid] is `false` (the default),
+/// a configuration with an unaccepted version is reported to [onError].
+///
+/// See also:
+/// - [findPackageConfigAndFile] which behaves the same, but uses
+///   [File] and [Directory] for locations instead of [Uri]s,
+///   and only uses the local filesystem.
 Future<({PackageConfig config, Uri file})?> findPackageConfigAndUri(
   Uri location, {
   bool recurse = true,
+  bool skipInvalid = false,
   int minVersion = PackageConfig.minVersion,
   Future<Uint8List?> Function(Uri uri)? loader,
-  void Function(Object error)? onError,
+  void Function(Object error, Uri uri)? onError,
 }) {
   if (minVersion > PackageConfig.maxVersion) {
     throw ArgumentError.value(
@@ -228,8 +267,9 @@ Future<({PackageConfig config, Uri file})?> findPackageConfigAndUri(
     location,
     minVersion,
     loader,
-    onError ?? throwError,
     recurse,
+    skipInvalid,
+    onError ?? throwError,
   );
 }
 
@@ -258,7 +298,7 @@ Future<({PackageConfig config, Uri file})?> findPackageConfigAndUri(
 /// This function makes no attempt to catch such errors.
 ///
 /// If no [loader] is supplied, a default loader is used which
-/// only accepts `file:`,  `http:` and `https:` URIs,
+/// only accepts `file:`, `http:` and `https:` URIs,
 /// and which uses the platform file system and HTTP requests to
 /// fetch file content. The default loader never throws because
 /// of an I/O issue, as long as the location URIs are valid.
@@ -272,12 +312,23 @@ Future<({PackageConfig config, Uri file})?> findPackageConfigAndUri(
 /// If no [onError] is provided, errors are thrown immediately.
 ///
 /// If [minVersion] is set to something greater than its default,
-/// any lower-version configuration files are ignored in the search.
+/// any lower-version configuration files are ignored in the search
+/// when [skipInvalid] is `true` (the default).
+/// If [skipInvalid] is `false`, an error is reported to [onError]
+/// for a configuration with an unaccepted version.
 ///
 /// Returns `null` if no configuration file is found.
+///
+/// See also:
+/// - [findPackageConfigAndUri] which provides the actual configuration
+///   file being parsed in the result and to `onError`.
+/// - [findPackageConfigAndFile] which works the same, except it uses
+///   [File] and [Directory] for locations instead of [Uri]s,
+///   and only uses the local filesystem.
 Future<PackageConfig?> findPackageConfigUri(
   Uri location, {
   bool recurse = true,
+  bool skipInvalid = true,
   int minVersion = PackageConfig.minVersion,
   Future<Uint8List?> Function(Uri uri)? loader,
   void Function(Object error)? onError,
@@ -294,10 +345,11 @@ Future<PackageConfig?> findPackageConfigUri(
         location,
         minVersion,
         loader,
-        onError ?? throwError,
         recurse,
+        skipInvalid,
+        onError == null ? throwError : (Object error, _) => onError(error),
       )
-      .then((configAndFile) => configAndFile?.config);
+      .then(discover.configOnly);
 }
 
 /// Writes a package configuration to the provided directory.

@@ -146,11 +146,95 @@ void main() {
       {
         'packages': {'foo': <String, Object?>{}},
       },
-      (Uri directory, loader) async {
+      (directory, loader) async {
         expect(await findPackageConfigUri(directory, loader: loader), null);
         expect(await findPackageConfigAndUri(directory, loader: loader), null);
       },
     );
+
+    for (var skip in [false, true]) {
+      group('skipInvalid: $skip', () {
+        loaderTest(
+          'does not affect invalid configVersion',
+          {
+            '.dart_tool': {
+              'package_config.json': '''
+                {
+                  "configVersion": ${PackageConfig.minVersion - 1},
+                  "packages": []
+                }
+              ''',
+            },
+          },
+          (Uri directory, loader) async {
+            await findPackageConfigUri(
+              directory,
+              skipInvalid: skip,
+              onError: expectAsync1((Object e) {
+                expect(e, isA<PackageConfigVersionException>());
+              }),
+              loader: loader,
+            );
+            await findPackageConfigAndUri(
+              directory,
+              skipInvalid: skip,
+              onError: expectAsync2((Object e, Uri f) {
+                expect(e, isA<PackageConfigVersionException>());
+                expect(f, directory.resolve('.dart_tool/package_config.json'));
+              }),
+              loader: loader,
+            );
+          },
+        );
+
+        if (PackageConfig.maxVersion > PackageConfig.minVersion) {
+          // Cannot test a minVersion above actual version until supporting
+          // more than one version.
+          // (Can be tested by temporarily increasing maxVersion
+          // fx using `-Dpkg_package_config_test_override.maxVersion=3`)
+          loaderTest(
+            'affects minVersion',
+            {
+              '.dart_tool': {
+                'package_config.json': '''
+                {
+                  "configVersion": ${PackageConfig.minVersion},
+                  "packages": []
+                }
+              ''',
+              },
+            },
+            (directory, loader) async {
+              var config = await findPackageConfigUri(
+                directory,
+                minVersion: PackageConfig.minVersion + 1,
+                skipInvalid: skip,
+                onError: expectAsync1(count: skip ? 0 : 1, (Object e) {
+                  expect(e, isA<PackageConfigVersionException>());
+                }),
+                loader: loader,
+              );
+              if (skip) expect(config, null);
+
+              var configAndFile = await findPackageConfigAndUri(
+                directory,
+                skipInvalid: skip,
+                minVersion: PackageConfig.minVersion + 1,
+                onError: expectAsync2(count: skip ? 0 : 1, (Object e, Uri f) {
+                  expect(e, isA<PackageConfigVersionException>());
+                  expect(
+                    f,
+                    directory.resolve('.dart_tool/package_config.json'),
+                  );
+                }),
+                loader: loader,
+              );
+              if (skip) expect(configAndFile, null);
+            },
+          );
+        }
+      });
+    }
   });
 
   group('loadPackageConfig', () {
