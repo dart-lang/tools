@@ -4,6 +4,7 @@
 
 import 'charcode.dart';
 import 'string_scanner.dart';
+import 'utils.dart';
 
 // Note that much of this code is duplicated in eager_span_scanner.dart.
 
@@ -147,7 +148,7 @@ class LineScanner extends StringScanner {
         _column = 0;
       }
     } else {
-      _column += character >= 0x10000 && character <= 0x10FFFF ? 2 : 1;
+      _column += inSupplementaryPlane(character) ? 2 : 1;
     }
   }
 
