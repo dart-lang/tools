@@ -46,8 +46,12 @@ Map<T, Set<T>> transitiveClosure<T extends Object>(
     );
   }
 
-  final topologicalOrder =
-      topologicalSort(nodes, edges, equals: equals, hashCode: hashCode);
+  final topologicalOrder = topologicalSort(
+    nodes,
+    edges,
+    equals: equals,
+    hashCode: hashCode,
+  );
   final result = LinkedHashMap<T, Set<T>>(equals: equals, hashCode: hashCode);
   for (final node in topologicalOrder.reversed) {
     final closure = LinkedHashSet<T>(equals: equals, hashCode: hashCode);
@@ -81,8 +85,10 @@ Map<T, Set<T>> _cyclicTransitiveClosure<T extends Object>(
     equals: equals,
     hashCode: hashCode,
   );
-  final nodesToComponents =
-      HashMap<T, List<T>>(equals: equals, hashCode: hashCode);
+  final nodesToComponents = HashMap<T, List<T>>(
+    equals: equals,
+    hashCode: hashCode,
+  );
   for (final component in components) {
     for (final node in component) {
       nodesToComponents[node] = component;
@@ -138,6 +144,7 @@ bool _componentIncludesCycle<T>(
   // A component with only a single node only contains a cycle if that node has
   // an edge to itself.
   final node = component.single;
-  return edges(node)
-      .any((edge) => equals == null ? edge == node : equals(edge, node));
+  return edges(
+    node,
+  ).any((edge) => equals == null ? edge == node : equals(edge, node));
 }

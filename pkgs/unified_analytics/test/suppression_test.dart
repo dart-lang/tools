@@ -29,8 +29,9 @@ void main() {
 
   setUp(() {
     // Setup the filesystem with the home directory
-    final fsStyle =
-        io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
+    final fsStyle = io.Platform.isWindows
+        ? FileSystemStyle.windows
+        : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
 
@@ -74,8 +75,11 @@ void main() {
 
     final logFileStats = analytics.logFileStats();
 
-    expect(logFileStats, isNull,
-        reason: 'Returns null because no records have been recorded');
+    expect(
+      logFileStats,
+      isNull,
+      reason: 'Returns null because no records have been recorded',
+    );
   });
 
   test('Second instance is not suppressed', () async {
@@ -84,8 +88,11 @@ void main() {
 
     final logFileStats = analytics.logFileStats();
 
-    expect(logFileStats, isNull,
-        reason: 'Returns null because no records have been recorded');
+    expect(
+      logFileStats,
+      isNull,
+      reason: 'Returns null because no records have been recorded',
+    );
 
     // The newly created instance will not be suppressed
     final secondAnalytics = Analytics.fake(
@@ -112,21 +119,29 @@ void main() {
 
     // Series of checks for each parameter in logFileStats
     expect(secondLogFileStats.startDateTime, thirdLogFileStats.startDateTime);
-    expect(secondLogFileStats.minsFromStartDateTime,
-        thirdLogFileStats.minsFromStartDateTime);
+    expect(
+      secondLogFileStats.minsFromStartDateTime,
+      thirdLogFileStats.minsFromStartDateTime,
+    );
     expect(secondLogFileStats.endDateTime, thirdLogFileStats.endDateTime);
-    expect(secondLogFileStats.minsFromEndDateTime,
-        thirdLogFileStats.minsFromEndDateTime);
+    expect(
+      secondLogFileStats.minsFromEndDateTime,
+      thirdLogFileStats.minsFromEndDateTime,
+    );
     expect(secondLogFileStats.sessionCount, thirdLogFileStats.sessionCount);
-    expect(secondLogFileStats.flutterChannelCount,
-        thirdLogFileStats.flutterChannelCount);
+    expect(
+      secondLogFileStats.flutterChannelCount,
+      thirdLogFileStats.flutterChannelCount,
+    );
     expect(secondLogFileStats.toolCount, thirdLogFileStats.toolCount);
     expect(secondLogFileStats.recordCount, thirdLogFileStats.recordCount);
     expect(secondLogFileStats.eventCount, thirdLogFileStats.eventCount);
 
     // Ensure the correct data is in the object
-    expect(secondLogFileStats.eventCount.containsKey(newEvent.eventName.label),
-        true);
+    expect(
+      secondLogFileStats.eventCount.containsKey(newEvent.eventName.label),
+      true,
+    );
     expect(secondLogFileStats.eventCount[newEvent.eventName.label], 1);
   });
 }

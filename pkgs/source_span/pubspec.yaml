@@ -1,5 +1,5 @@
 name: source_span
-version: 1.10.1
+version: 1.10.2
 description: >-
   Provides a standard representation for source code locations and spans.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/source_span

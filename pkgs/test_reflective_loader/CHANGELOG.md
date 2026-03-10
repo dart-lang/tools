@@ -1,3 +1,10 @@
+## 0.6.0
+
+- Test classes and suites with `name`s are now registered with `package:test`s
+  `group()` function to produce a hierarchy of groups/tests rather than a flat
+  set of tests with concatenated names. This may improve the display of tests
+  in IDEs test explorers.
+
 ## 0.5.0
 
 - Unawaited asynchronous exceptions in tests marked with `@FailingTest()` are

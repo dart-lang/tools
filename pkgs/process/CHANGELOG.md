@@ -1,3 +1,7 @@
+## 5.0.6-wip
+
+* Add an example app.
+
 ## 5.0.5
 
 * Fix mixtures of parentheses and spaces in windows command paths.

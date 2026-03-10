@@ -77,20 +77,16 @@ Map<String, Object?> generateRequestBody({
   required Map<String, Object?> eventData,
   required UserProperty userProperty,
   required String? enabledFeatures,
-}) =>
+}) => <String, Object?>{
+  'client_id': clientId,
+  'events': <Map<String, Object?>>[
     <String, Object?>{
-      'client_id': clientId,
-      'events': <Map<String, Object?>>[
-        <String, Object?>{
-          'name': eventName.label,
-          'params': {
-            ...eventData,
-            if (enabledFeatures != null) 'enabled_features': enabledFeatures,
-          },
-        }
-      ],
-      'user_properties': userProperty.preparePayload()
-    };
+      'name': eventName.label,
+      'params': {...eventData, 'enabled_features': ?enabledFeatures},
+    },
+  ],
+  'user_properties': userProperty.preparePayload(),
+};
 
 /// This will use environment variables to get the user's
 /// home directory where all the directory will be created that will
@@ -221,8 +217,9 @@ String parseDartSDKVersion(String versionString) {
   final justVersion = versionString.split(' ')[0];
 
   // For non-stable versions, this regex will include build information
-  return justVersion.replaceFirstMapped(RegExp(r'(\d+\.\d+\.\d+)(.+)'),
-      (Match match) {
+  return justVersion.replaceFirstMapped(RegExp(r'(\d+\.\d+\.\d+)(.+)'), (
+    Match match,
+  ) {
     final noFlutter = match[2]!.replaceAll('.flutter-', ' ');
     return '${match[1]} (build ${match[1]}$noFlutter)'.trim();
   });
@@ -260,8 +257,10 @@ bool surveySnoozedOrDismissed(
   if (!persistedSurveyObj.snoozed) return true;
 
   // Find how many minutes has elapsed from the timestamp and now
-  final minutesElapsed =
-      clock.now().difference(persistedSurveyObj.timestamp).inMinutes;
+  final minutesElapsed = clock
+      .now()
+      .difference(persistedSurveyObj.timestamp)
+      .inMinutes;
 
   return survey.snoozeForMinutes > minutesElapsed;
 }
@@ -287,7 +286,8 @@ bool surveySnoozedOrDismissed(
 String truncateStringToLength(String str, int maxLength) {
   if (maxLength <= 0) {
     throw ArgumentError(
-        'The length to truncate a string must be greater than 0');
+      'The length to truncate a string must be greater than 0',
+    );
   }
 
   if (maxLength > str.length) return str;
@@ -301,8 +301,10 @@ String truncateStringToLength(String str, int maxLength) {
 /// for backward compatibility.
 void writeSessionContents({required File sessionFile}) {
   final now = clock.now();
-  sessionFile.writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}, '
-      '"last_ping": ${now.millisecondsSinceEpoch}}');
+  sessionFile.writeAsStringSync(
+    '{"session_id": ${now.millisecondsSinceEpoch}, '
+    '"last_ping": ${now.millisecondsSinceEpoch}}',
+  );
 }
 
 /// A UUID generator.
