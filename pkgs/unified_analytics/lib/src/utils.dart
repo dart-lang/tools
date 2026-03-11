@@ -40,11 +40,18 @@ bool checkDirectoryForWritePermissions(Directory directory) {
 ///
 /// If the environment variable is set and not "false", return the
 /// corresponding boolean value. Otherwise, return the [defaultValue].
-bool computeSuppressAnalytics({bool defaultValue = false}) =>
-    bool.fromEnvironment(
-      DashEnvVar.suppressAnalytics.name,
-      defaultValue: defaultValue,
-    );
+bool computeSuppressAnalytics({bool defaultValue = false}) {
+  final value = io.Platform.environment[DashEnvVar.suppressAnalytics.name];
+  if (value != null) {
+    try {
+      return bool.parse(value);
+    } on Exception {
+      // Fallback to `defaultValue` if the value in ENV is invalid.
+    }
+  }
+
+  return defaultValue;
+}
 
 /// Compute the top-level tool from the environment variable `DASH__TOOL`.
 ///
