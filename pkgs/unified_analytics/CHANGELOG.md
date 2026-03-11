@@ -1,3 +1,6 @@
+## 8.0.13
+- Added `DashEnvVar` utilities for environment variable handling.
+
 ## 8.0.12
 - Require Dart 3.10
 - Added `success` indicator and `label` to `Event.flutterTrackAndroidDependencies` 
