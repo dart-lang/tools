@@ -1,4 +1,4 @@
-// Copyright (c) 2019, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2019, the Dart project authors. Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -22,7 +22,7 @@ baz:packages/baz/
 
 const packageConfigFile = '''
 {
-  "configVersion": 2,
+  "configVersion": ${PackageConfig.minVersion},
   "packages": [
     {
       "name": "foo",
@@ -42,7 +42,6 @@ const packageConfigFile = '''
 ''';
 
 void validatePackagesFile(PackageConfig resolver, Directory directory) {
-  expect(resolver, isNotNull);
   expect(
     resolver.resolve(pkg('foo', 'bar/baz')),
     equals(Uri.parse('file:///dart/packages/foo/bar/baz')),
@@ -73,8 +72,14 @@ void main() {
       },
       (Directory directory) async {
         var config = (await findPackageConfig(directory))!;
-        expect(config.version, 2); // Found package_config.json file.
+        expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
+
+        File file;
+        (:config, :file) = (await findPackageConfigAndFile(directory))!;
+        expect(config.version, PackageConfig.minVersion);
+        validatePackagesFile(config, directory);
+        expect(file.path, configFile(directory).path);
       },
     );
 
@@ -87,8 +92,8 @@ void main() {
         'packages': {'shouldNotBeFound': <Object, Object>{}},
       },
       (Directory directory) async {
-        var config = await findPackageConfig(directory);
-        expect(config, null);
+        expect(await findPackageConfig(directory), null);
+        expect(await findPackageConfigAndFile(directory), null);
       },
     );
 
@@ -101,9 +106,37 @@ void main() {
         'subdir': {'.packages': packagesFile, 'script.dart': 'main(){}'},
       },
       (Directory directory) async {
-        var config = (await findPackageConfig(subdir(directory, 'subdir/')))!;
-        expect(config.version, 2);
+        var config = (await findPackageConfig(subDir(directory, 'subdir')))!;
+        expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
+
+        File file;
+        (:config, :file) = (await findPackageConfigAndFile(directory))!;
+        expect(config.version, PackageConfig.minVersion);
+        validatePackagesFile(config, directory);
+        expect(file.path, configFile(directory).path);
+      },
+    );
+
+    // Finds package_config.json in super-directory, even inside `.dart_tool`.
+    fileTest(
+      'package_config.json recursive inside .dart_tool',
+      {
+        '.packages': packagesFile,
+        '.dart_tool': {'package_config.json': packageConfigFile},
+        'subdir': {'.packages': packagesFile, 'script.dart': 'main(){}'},
+      },
+      (Directory directory) async {
+        var config =
+            (await findPackageConfig(subDir(directory, '.dart_tool')))!;
+        expect(config.version, PackageConfig.minVersion);
+        validatePackagesFile(config, directory);
+
+        File file;
+        (:config, :file) = (await findPackageConfigAndFile(directory))!;
+        expect(config.version, PackageConfig.minVersion);
+        validatePackagesFile(config, directory);
+        expect(file.path, configFile(directory).path);
       },
     );
 
@@ -114,10 +147,87 @@ void main() {
         'packages': {'foo': <String, Object?>{}},
       },
       (Directory directory) async {
-        var config = await findPackageConfig(directory);
-        expect(config, null);
+        expect(await findPackageConfig(directory), null);
+        expect(await findPackageConfigAndFile(directory), null);
       },
     );
+
+    for (var skip in [false, true]) {
+      group('skipInvalid: $skip', () {
+        fileTest(
+          'does not affect invalid configVersion',
+          {
+            '.dart_tool': {
+              'package_config.json': '''
+                {
+                  "configVersion": ${PackageConfig.minVersion - 1},
+                  "packages": []
+                }
+              ''',
+            },
+          },
+          (Directory directory) async {
+            await findPackageConfig(
+              directory,
+              skipInvalid: skip,
+              onError: expectAsync1((Object e) {
+                expect(e, isA<PackageConfigVersionException>());
+              }),
+            );
+            await findPackageConfigAndFile(
+              directory,
+              skipInvalid: skip,
+              onError: expectAsync2((Object e, File f) {
+                expect(e, isA<PackageConfigVersionException>());
+                expect(f.path, configFile(directory).path);
+              }),
+            );
+          },
+        );
+
+        if (PackageConfig.maxVersion > PackageConfig.minVersion) {
+          // Cannot test a minVersion above actual version until supporting
+          // more than one version.
+          // (Can be tested by temporarily increasing maxVersion
+          // fx using `-Dpkg_package_config_test_override.maxVersion=3`)
+          fileTest(
+            'affects minVersion',
+            {
+              '.dart_tool': {
+                'package_config.json': '''
+                {
+                  "configVersion": ${PackageConfig.minVersion},
+                  "packages": []
+                }
+              ''',
+              },
+            },
+            (Directory directory) async {
+              var config = await findPackageConfig(
+                directory,
+                minVersion: PackageConfig.minVersion + 1,
+                skipInvalid: skip,
+                onError: expectAsync1(count: skip ? 0 : 1, (Object e) {
+                  expect(e, isA<PackageConfigVersionException>());
+                }),
+              );
+              if (skip) expect(config, null);
+
+              var configAndFile = await findPackageConfigAndFile(
+                directory,
+                skipInvalid: skip,
+                minVersion: PackageConfig.minVersion + 1,
+                onError: expectAsync2(count: skip ? 0 : 1, (Object e, File f) {
+                  expect(e, isA<PackageConfigVersionException>());
+                  expect(f.path, configFile(directory).path);
+                }),
+              );
+              if (skip) expect(configAndFile, null);
+            },
+          );
+        }
+      });
+    }
 
     group('throws', () {
       fileTest(
@@ -125,8 +235,15 @@ void main() {
         {
           '.dart_tool': {'package_config.json': 'not a JSON file'},
         },
-        (Directory directory) {
-          expect(findPackageConfig(directory), throwsA(isA<FormatException>()));
+        (Directory directory) async {
+          await expectLater(
+            findPackageConfig(directory),
+            throwsFormatException,
+          );
+          await expectLater(
+            findPackageConfigAndFile(directory),
+            throwsFormatException,
+          );
         },
       );
 
@@ -135,8 +252,15 @@ void main() {
         {
           '.dart_tool': {'package_config.json': packagesFile},
         },
-        (Directory directory) {
-          expect(findPackageConfig(directory), throwsA(isA<FormatException>()));
+        (Directory directory) async {
+          await expectLater(
+            findPackageConfig(directory),
+            throwsFormatException,
+          );
+          await expectLater(
+            findPackageConfigAndFile(directory),
+            throwsFormatException,
+          );
         },
       );
 
@@ -149,8 +273,9 @@ void main() {
         (Directory directory) async {
           // A .packages file in the directory of a .dart_tool/package_config.json
           // used to automatically redirect to the package_config.json.
+          // It no longer does.
           var file = dirFile(directory, '.packages');
-          expect(loadPackageConfig(file), throwsA(isA<FormatException>()));
+          expect(loadPackageConfig(file), throwsFormatException);
         },
       );
     });
@@ -214,10 +339,10 @@ void main() {
       (Directory directory) async {
         var config =
             (await findPackageConfig(
-              subdir(directory, 'subdir/'),
+              subDir(directory, 'subdir'),
               minVersion: 2,
             ))!;
-        expect(config.version, 2);
+        expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
       },
     );
@@ -231,12 +356,9 @@ void main() {
         '.dart_tool': {'package_config.json': packageConfigFile},
       };
       fileTest('directly', files, (Directory directory) async {
-        var file = dirFile(
-          subdir(directory, '.dart_tool'),
-          'package_config.json',
-        );
+        var file = configFile(directory);
         var config = await loadPackageConfig(file);
-        expect(config.version, 2);
+        expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
       });
     });
@@ -248,9 +370,9 @@ void main() {
         'subdir': {'pheldagriff': packageConfigFile},
       },
       (Directory directory) async {
-        var file = dirFile(directory, 'subdir/pheldagriff');
+        var file = dirFile(subDir(directory, 'subdir'), 'pheldagriff');
         var config = await loadPackageConfig(file);
-        expect(config.version, 2);
+        expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
       },
     );
@@ -261,9 +383,9 @@ void main() {
         'subdir': {'.packages': packageConfigFile},
       },
       (Directory directory) async {
-        var file = dirFile(directory, 'subdir/.packages');
+        var file = dirFile(subDir(directory, 'subdir'), '.packages');
         var config = await loadPackageConfig(file);
-        expect(config.version, 2);
+        expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
       },
     );
@@ -303,4 +425,26 @@ void main() {
       expect(() => loadPackageConfig(file), throwsFormatException);
     });
   });
+}
+
+// Simple path helpers.
+
+File configFile(Directory directory) {
+  var s = Platform.pathSeparator;
+  var path = directory.path;
+  return File(
+    '$path${path.endsWith(s) ? '' : s}.dart_tool${s}package_config.json',
+  );
+}
+
+Directory subDir(Directory directory, String name) {
+  var s = Platform.pathSeparator;
+  var path = directory.path;
+  return Directory('$path${path.endsWith(s) ? '' : s}$name$s');
+}
+
+File dirFile(Directory directory, String name) {
+  var s = Platform.pathSeparator;
+  var path = directory.path;
+  return File('$path${path.endsWith(s) ? '' : s}$name');
 }

@@ -1,19 +1,25 @@
-// Copyright (c) 2019, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2019, the Dart project authors. Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'constants.dart' as json_key;
 import 'errors.dart';
 import 'package_config.dart';
 import 'package_config_io.dart';
 import 'package_config_json.dart';
 import 'util_io.dart' show defaultLoader, pathJoin;
 
-final Uri packageConfigJsonPath = Uri(path: '.dart_tool/package_config.json');
-final Uri currentPath = Uri(path: '.');
-final Uri parentPath = Uri(path: '..');
+/// URI used as argument to [Uri.resolveUri] to create package config path.
+final Uri _packageConfigJsonPath = Uri(path: '.dart_tool/package_config.json');
+
+/// URI used as argument to [Uri.resolveUri] to convert a URI to a directory.
+final Uri _currentPath = Uri(path: '.');
+
+/// URI used as argument to [Uri.resolveUri] to get URI for parent directory.
+final Uri _parentPath = Uri(path: '..');
 
 /// Discover the package configuration for a Dart script.
 ///
@@ -30,12 +36,14 @@ final Uri parentPath = Uri(path: '..');
 /// is needed, then the caller can supply [PackageConfig.empty].
 ///
 /// If [minVersion] is greater than the version read from the
-/// `package_config.json` file, it too is ignored.
-Future<PackageConfig?> findPackageConfig(
+/// `package_config.json` file, the file is ignored if [skipInvalid] is `true`,
+/// or reported to [onError] if [skipInvalid] is `false`.
+Future<({PackageConfig config, File file})?> findPackageConfig(
   Directory baseDirectory,
   int minVersion,
   bool recursive,
-  void Function(Object error) onError,
+  bool skipInvalid,
+  void Function(Object error, File file) onError,
 ) async {
   var directory = baseDirectory;
   if (!directory.isAbsolute) directory = directory.absolute;
@@ -43,12 +51,13 @@ Future<PackageConfig?> findPackageConfig(
     return null;
   }
   do {
-    var packageConfig = await findPackageConfigInDirectory(
+    var packageConfigAndFile = await findPackageConfigInDirectory(
       directory,
       minVersion,
+      skipInvalid,
       onError,
     );
-    if (packageConfig != null) return packageConfig;
+    if (packageConfigAndFile != null) return packageConfigAndFile;
     if (!recursive) break;
     // Check in parent directories.
     var parentDirectory = directory.parent;
@@ -59,44 +68,61 @@ Future<PackageConfig?> findPackageConfig(
 }
 
 /// Similar to [findPackageConfig] but based on a URI.
-Future<PackageConfig?> findPackageConfigUri(
+Future<({PackageConfig config, Uri file})?> findPackageConfigUri(
   Uri location,
   int minVersion,
   Future<Uint8List?> Function(Uri uri)? loader,
-  void Function(Object error) onError,
   bool recursive,
+  bool skipInvalid,
+  void Function(Object error, Uri file) onError,
 ) async {
   if (location.isScheme('package')) {
-    onError(
-      PackageConfigArgumentError(
-        location,
-        'location',
-        'Must not be a package: URI',
-      ),
+    throw PackageConfigArgumentError(
+      location,
+      'location',
+      'Must not be a package: URI',
     );
-    return null;
   }
   if (loader == null) {
     if (location.isScheme('file')) {
-      return findPackageConfig(
-        Directory.fromUri(location.resolveUri(currentPath)),
+      var configAndFile = await findPackageConfig(
+        Directory.fromUri(location.resolveUri(_currentPath)),
         minVersion,
         recursive,
-        onError,
+        skipInvalid,
+        (Object error, File file) => onError(error, file.uri),
       );
+      if (configAndFile case (:var config, :var file)) {
+        return (config: config, file: file.uri);
+      }
     }
     loader = defaultLoader;
   }
-  if (!location.path.endsWith('/')) location = location.resolveUri(currentPath);
+  if (!location.path.endsWith('/')) {
+    location = location.resolveUri(_currentPath);
+  }
   while (true) {
-    var file = location.resolveUri(packageConfigJsonPath);
+    var file = location.resolveUri(_packageConfigJsonPath);
     var bytes = await loader(file);
     if (bytes != null) {
-      var config = parsePackageConfigBytes(bytes, file, onError);
-      if (config.version >= minVersion) return config;
+      var config = parsePackageConfigBytes(
+        bytes,
+        file,
+        (Object error) => onError(error, file),
+      );
+      if (config.version >= minVersion) return (config: config, file: file);
+      if (!skipInvalid) {
+        onError(
+          PackageConfigVersionException.supportedLimit(
+            config.version,
+            json_key.configVersion,
+          ),
+          file,
+        );
+      }
     }
     if (!recursive) break;
-    var parent = location.resolveUri(parentPath);
+    var parent = location.resolveUri(_parentPath);
     if (parent == location) break;
     location = parent;
   }
@@ -116,16 +142,31 @@ Future<PackageConfig?> findPackageConfigUri(
 ///
 /// If [minVersion] is greater than the version read from the
 /// `package_config.json` file, it too is ignored.
-Future<PackageConfig?> findPackageConfigInDirectory(
+Future<({PackageConfig config, File file})?> findPackageConfigInDirectory(
   Directory directory,
   int minVersion,
-  void Function(Object error) onError,
+  bool skipInvalid,
+  void Function(Object error, File file) onError,
 ) async {
   var packageConfigFile = await checkForPackageConfigJsonFile(directory);
   if (packageConfigFile != null) {
-    var config = await readConfigFile(packageConfigFile, onError);
-    if (config.version < minVersion) return null;
-    return config;
+    var hasError = false;
+    var config = await readConfigFile(packageConfigFile, (Object error) {
+      hasError = true;
+      onError(error, packageConfigFile);
+    });
+    if (!hasError && config.version < minVersion) {
+      if (skipInvalid) return null;
+      onError(
+        PackageConfigVersionException.clientLimit(
+          config.version,
+          minVersion,
+          null,
+        ),
+        packageConfigFile,
+      );
+    }
+    return (config: config, file: packageConfigFile);
   }
   return null;
 }
@@ -138,3 +179,7 @@ Future<File?> checkForPackageConfigJsonFile(Directory directory) async {
   if (await file.exists()) return file;
   return null;
 }
+
+/// Extracts the [PackageConfig] from a package config-and-file pair.
+PackageConfig? configOnly(({PackageConfig config, Object file})? pair) =>
+    pair?.config;
