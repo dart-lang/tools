@@ -6,6 +6,18 @@
 List<String> get validDashTools =>
     DashTool.values.map((e) => e.label).toList()..sort();
 
+/// Environment variables used by the unified analytics package.
+enum DashEnvVar {
+  /// Environment variable used to suppress analytics.
+  suppressAnalytics('DASH__SUPPRESS_ANALYTICS'),
+
+  /// Environment variable used to specify the top-level tool.
+  tool('DASH__TOOL');
+
+  final String name;
+  const DashEnvVar(this.name);
+}
+
 /// Values for the event name to be sent to Google Analytics.
 ///
 /// The [label] for each enum value is what will be logged, the [description]

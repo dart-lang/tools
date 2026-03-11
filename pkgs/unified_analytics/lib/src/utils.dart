@@ -35,6 +35,35 @@ bool checkDirectoryForWritePermissions(Directory directory) {
   return fileStat.modeString()[1] == 'w';
 }
 
+/// Compute whether to suppress analytics based on the environment variable
+/// `DASH__SUPPRESS_ANALYTICS`.
+///
+/// If the environment variable is set and not "false", return the
+/// corresponding boolean value. Otherwise, return the [defaultValue].
+bool computeSuppressAnalytics({bool defaultValue = false}) =>
+    bool.fromEnvironment(
+      DashEnvVar.suppressAnalytics.name,
+      defaultValue: defaultValue,
+    );
+
+/// Compute the top-level tool from the environment variable `DASH__TOOL`.
+///
+/// If the environment variable is set and valid, return the corresponding
+/// [DashTool]. Otherwise, return the [current] tool.
+DashTool computeTopLevelTool(DashTool current) {
+  final toolValue = io.Platform.environment[DashEnvVar.tool.name];
+  if (toolValue != null) {
+    try {
+      return DashTool.fromLabel(toolValue);
+    } on Exception {
+      // Fallback to `current` if the value in ENV is invalid.
+      // todo(pq): do we need better error handling here?
+    }
+  }
+
+  return current;
+}
+
 /// Format time as 'yyyy-MM-dd HH:mm:ss Z' where Z is the difference between the
 /// timezone of t and UTC formatted according to RFC 822.
 String formatDateTime(DateTime t) {
