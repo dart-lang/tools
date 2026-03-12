@@ -19,6 +19,7 @@ dependencies:
   file: '>=6.1.4 <8.0.0'
   http: '>=0.13.5 <2.0.0'
   meta: ^1.9.0
+  platform: ^3.0.0
 
 dev_dependencies:
   dart_flutter_team_lints: ^3.0.0

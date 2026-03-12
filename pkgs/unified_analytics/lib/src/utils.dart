@@ -9,6 +9,7 @@ import 'dart:math' show Random;
 import 'package:clock/clock.dart';
 import 'package:convert/convert.dart';
 import 'package:file/file.dart';
+import 'package:platform/platform.dart' as platform;
 
 import 'enums.dart';
 import 'event.dart';
@@ -41,7 +42,8 @@ bool checkDirectoryForWritePermissions(Directory directory) {
 /// If the environment variable is set and not "false", return the
 /// corresponding boolean value. Otherwise, return the [defaultValue].
 bool computeSuppressAnalytics({bool defaultValue = false}) {
-  final value = io.Platform.environment[DashEnvVar.suppressAnalytics.name];
+  final value = const platform.LocalPlatform()
+      .environment[DashEnvVar.suppressAnalytics.name];
   if (value != null) {
     try {
       return bool.parse(value);
@@ -58,7 +60,8 @@ bool computeSuppressAnalytics({bool defaultValue = false}) {
 /// If the environment variable is set and valid, return the corresponding
 /// [DashTool]. Otherwise, return the [current] tool.
 DashTool computeTopLevelTool(DashTool current) {
-  final toolValue = io.Platform.environment[DashEnvVar.tool.name];
+  final toolValue =
+      const platform.LocalPlatform().environment[DashEnvVar.tool.name];
   if (toolValue != null) {
     try {
       return DashTool.fromLabel(toolValue);
