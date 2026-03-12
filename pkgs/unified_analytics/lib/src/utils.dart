@@ -67,7 +67,6 @@ DashTool computeTopLevelTool(DashTool current) {
       return DashTool.fromLabel(toolValue);
     } on Exception {
       // Fallback to `current` if the value in ENV is invalid.
-      // todo(pq): do we need better error handling here?
     }
   }
 
