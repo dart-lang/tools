@@ -167,6 +167,26 @@ void main() {
         expect(emittedValues, [3, 5]);
       });
     });
+
+    test('handles combined results after stream is canceled', () async {
+      final source = Stream.value(1);
+      final other = Stream.value(2);
+      late final Completer<void> combineDelay;
+      Future<int> delayedSum(int a, int b) async {
+        combineDelay = Completer<void>();
+        await combineDelay.future;
+        return a + b;
+      }
+
+      final subscription = source
+          .combineLatest(other, delayedSum)
+          .listen(expectAsync1((_) {}, count: 0));
+
+      await pumpEventQueue();
+      unawaited(subscription.cancel());
+      combineDelay.complete();
+      await pumpEventQueue();
+    });
   });
 }
 

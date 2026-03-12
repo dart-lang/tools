@@ -71,8 +71,8 @@ extension CombineLatest<T> on Stream<T> {
         result
             .then(controller.add, onError: controller.addError)
             .whenComplete(() {
-          sourceSubscription!.resume();
-          otherSubscription!.resume();
+          sourceSubscription?.resume();
+          otherSubscription?.resume();
         });
       } else {
         controller.add(result);
