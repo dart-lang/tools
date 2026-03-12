@@ -9,4 +9,8 @@ export 'src/event.dart' show CustomMetrics, Event;
 export 'src/log_handler.dart' show LogFileStats;
 export 'src/survey_handler.dart' show Survey, SurveyButton, SurveyHandler;
 export 'src/utils.dart'
-    show computeSuppressAnalytics, computeTopLevelTool, parseDartSDKVersion;
+    show
+        areAnalyticsSuppressed,
+        getEnvironment,
+        parseDartSDKVersion,
+        topLevelTool;
