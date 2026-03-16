@@ -60,7 +60,16 @@ class AnsiCodeType {
 /// [Source](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors)
 class AnsiCode {
   /// The numeric value associated with this code.
+  ///
+  /// `-1` if this code is a composite code with multiple integer values.
+  /// See [codes].
   final int code;
+
+  /// The numeric values associated with this code.
+  ///
+  /// A composite code may have more than one integer value, in which case the
+  /// [code] property will be `-1`.
+  Iterable<int> get codes => [code];
 
   /// The [AnsiCode] that resets this value, if one exists.
   ///
@@ -76,10 +85,10 @@ class AnsiCode {
   const AnsiCode._(this.name, this.type, this.code, this.reset);
 
   /// Represents the value escaped for use in terminal output.
-  String get escape => '$_ansiEscapeLiteral[${code}m';
+  String get escape => '$_ansiEscapeLiteral[${codes.join(';')}m';
 
   /// Represents the value as an unescaped literal suitable for scripts.
-  String get escapeForScript => '$_ansiEscapeForScript[${code}m';
+  String get escapeForScript => '$_ansiEscapeForScript[${codes.join(';')}m';
 
   String _escapeValue({bool forScript = false}) =>
       forScript ? escapeForScript : escape;
@@ -102,6 +111,34 @@ class AnsiCode {
 
   @override
   String toString() => '$name ${type._name} ($code)';
+}
+
+/// An ANSI escape code for RGB colours.
+///
+/// Represents a true colour (24-bit RGB) escape sequence that can be used for
+/// both foreground and background colours.
+///
+/// Use [rgb] to create an instance of this class.
+///
+/// [See also](https://en.wikipedia.org/wiki/ANSI_escape_code#24-bit)
+class AnsiRgbCode extends AnsiCode {
+  /// The red value (0-255).
+  final int red;
+
+  /// The green value (0-255).
+  final int green;
+
+  /// The blue value (0-255).
+  final int blue;
+
+  /// Creates an RGB [AnsiCode] for the given [type].
+  AnsiRgbCode._(this.red, this.green, this.blue, AnsiCodeType type)
+      : super._('rgb($red,$green,$blue)', type, -1, resetAll);
+
+  int get _prefix => type == AnsiCodeType.background ? 48 : 38;
+
+  @override
+  Iterable<int> get codes => [_prefix, 2, red, green, blue];
 }
 
 /// Returns a [String] formatted with [codes].
@@ -150,12 +187,43 @@ String? wrapWith(String? value, Iterable<AnsiCode> codes,
         break;
     }
   }
+  final codeParts = myCodes.expand((c) => c.codes).map((c) => c.toString());
 
-  final sortedCodes = myCodes.map((ac) => ac.code).toList()..sort();
   final escapeValue = forScript ? _ansiEscapeForScript : _ansiEscapeLiteral;
 
-  return "$escapeValue[${sortedCodes.join(';')}m$value"
+  return "$escapeValue[${codeParts.join(';')}m$value"
       '${resetAll._escapeValue(forScript: forScript)}';
+}
+
+/// Creates an [AnsiRgbCode] with the given RGB colour values.
+///
+/// The [red], [green], and [blue] parameters must be between 0 and 255.
+///
+/// By default, it creates a foreground colour. Pass [type] as
+/// [AnsiCodeType.background] to create a background colour.
+///
+/// Throws an [ArgumentError] if any colour value is outside the 0-255 range or
+/// if [type] is neither foreground nor background.
+AnsiCode rgb(
+  int red,
+  int green,
+  int blue, {
+  AnsiCodeType type = AnsiCodeType.foreground,
+}) {
+  if (red < 0 || red > 255) {
+    throw ArgumentError.value(red, 'red', 'Must be between 0 and 255.');
+  }
+  if (green < 0 || green > 255) {
+    throw ArgumentError.value(green, 'green', 'Must be between 0 and 255.');
+  }
+  if (blue < 0 || blue > 255) {
+    throw ArgumentError.value(blue, 'blue', 'Must be between 0 and 255.');
+  }
+  if (type != AnsiCodeType.foreground && type != AnsiCodeType.background) {
+    throw ArgumentError.value(
+        type, 'type', 'Must be either foreground or background.');
+  }
+  return AnsiRgbCode._(red, green, blue, type);
 }
 
 //
