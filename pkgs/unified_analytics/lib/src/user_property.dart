@@ -86,7 +86,7 @@ class UserProperty {
   Map<String, Map<String, Object?>> preparePayload() {
     return <String, Map<String, Object?>>{
       for (final entry in _toMap().entries)
-        entry.key: <String, Object?>{'value': entry.value}
+        entry.key: <String, Object?>{'value': entry.value},
     };
   }
 
@@ -119,22 +119,26 @@ class UserProperty {
     } on FormatException catch (err) {
       final now = createSessionFile(sessionFile: sessionFile);
 
-      errorSet.add(Event.analyticsException(
-        workflow: 'UserProperty._refreshSessionData',
-        error: err.runtimeType.toString(),
-        description: 'message: ${err.message}\nsource: ${err.source}',
-      ));
+      errorSet.add(
+        Event.analyticsException(
+          workflow: 'UserProperty._refreshSessionData',
+          error: err.runtimeType.toString(),
+          description: 'message: ${err.message}\nsource: ${err.source}',
+        ),
+      );
 
       // Fallback to setting the session id as the current time
       _sessionId = now.millisecondsSinceEpoch;
     } on FileSystemException catch (err) {
       final now = createSessionFile(sessionFile: sessionFile);
 
-      errorSet.add(Event.analyticsException(
-        workflow: 'UserProperty._refreshSessionData',
-        error: err.runtimeType.toString(),
-        description: err.osError?.toString(),
-      ));
+      errorSet.add(
+        Event.analyticsException(
+          workflow: 'UserProperty._refreshSessionData',
+          error: err.runtimeType.toString(),
+          description: err.osError?.toString(),
+        ),
+      );
 
       // Fallback to setting the session id as the current time
       _sessionId = now.millisecondsSinceEpoch;
@@ -144,16 +148,16 @@ class UserProperty {
   /// Convert the data stored in this class into a map while also
   /// getting the latest session id using the [UserProperty] class.
   Map<String, Object?> _toMap() => <String, Object?>{
-        'session_id': getSessionId(),
-        'flutter_channel': flutterChannel,
-        'host': host,
-        'flutter_version': flutterVersion,
-        'dart_version': dartVersion,
-        'analytics_pkg_version': kPackageVersion,
-        'tool': tool,
-        'local_time': formatDateTime(clock.now()),
-        'host_os_version': hostOsVersion,
-        'locale': locale,
-        'client_ide': clientIde,
-      };
+    'session_id': getSessionId(),
+    'flutter_channel': flutterChannel,
+    'host': host,
+    'flutter_version': flutterVersion,
+    'dart_version': dartVersion,
+    'analytics_pkg_version': kPackageVersion,
+    'tool': tool,
+    'local_time': formatDateTime(clock.now()),
+    'host_os_version': hostOsVersion,
+    'locale': locale,
+    'client_ide': clientIde,
+  };
 }

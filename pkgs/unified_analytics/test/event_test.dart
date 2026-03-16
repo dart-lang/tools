@@ -12,26 +12,24 @@ import 'package:unified_analytics/unified_analytics.dart';
 void main() {
   test('Event.analysisStatistics constructed', () {
     Event generateEvent() => Event.analysisStatistics(
-          workingDuration: 'workingDuration',
-          withFineDependencies: false,
-          changedFileEventCount: 1,
-          removedFileEventCount: 2,
-          changedFileUniqueCount: 3,
-          removedFileUniqueCount: 4,
-          immediateFileCountPercentiles: 'immediateFileCountPercentiles',
-          immediateFileLineCountPercentiles:
-              'immediateFileLineCountPercentiles',
-          transitiveFileCountPercentiles: 'transitiveFileCountPercentiles',
-          transitiveFileLineCountPercentiles:
-              'transitiveFileLineCountPercentiles',
-          produceErrorsPotentialFileCount: 10,
-          produceErrorsPotentialFileLineCount: 11,
-          produceErrorsActualFileCount: 12,
-          produceErrorsActualFileLineCount: 13,
-          produceErrorsDurationMs: 14,
-          produceErrorsElementsDurationMs: 15,
-          libraryDiagnosticsBundleFailures: 'id1:1,id2:2',
-        );
+      workingDuration: 'workingDuration',
+      withFineDependencies: false,
+      changedFileEventCount: 1,
+      removedFileEventCount: 2,
+      changedFileUniqueCount: 3,
+      removedFileUniqueCount: 4,
+      immediateFileCountPercentiles: 'immediateFileCountPercentiles',
+      immediateFileLineCountPercentiles: 'immediateFileLineCountPercentiles',
+      transitiveFileCountPercentiles: 'transitiveFileCountPercentiles',
+      transitiveFileLineCountPercentiles: 'transitiveFileLineCountPercentiles',
+      produceErrorsPotentialFileCount: 10,
+      produceErrorsPotentialFileLineCount: 11,
+      produceErrorsActualFileCount: 12,
+      produceErrorsActualFileLineCount: 13,
+      produceErrorsDurationMs: 14,
+      produceErrorsElementsDurationMs: 15,
+      libraryDiagnosticsBundleFailures: 'id1:1,id2:2',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -43,17 +41,27 @@ void main() {
     expect(constructedEvent.eventData['removedFileEventCount'], 2);
     expect(constructedEvent.eventData['changedFileUniqueCount'], 3);
     expect(constructedEvent.eventData['removedFileUniqueCount'], 4);
-    expect(constructedEvent.eventData['immediateFileCountPercentiles'],
-        'immediateFileCountPercentiles');
-    expect(constructedEvent.eventData['immediateFileLineCountPercentiles'],
-        'immediateFileLineCountPercentiles');
-    expect(constructedEvent.eventData['transitiveFileCountPercentiles'],
-        'transitiveFileCountPercentiles');
-    expect(constructedEvent.eventData['transitiveFileLineCountPercentiles'],
-        'transitiveFileLineCountPercentiles');
+    expect(
+      constructedEvent.eventData['immediateFileCountPercentiles'],
+      'immediateFileCountPercentiles',
+    );
+    expect(
+      constructedEvent.eventData['immediateFileLineCountPercentiles'],
+      'immediateFileLineCountPercentiles',
+    );
+    expect(
+      constructedEvent.eventData['transitiveFileCountPercentiles'],
+      'transitiveFileCountPercentiles',
+    );
+    expect(
+      constructedEvent.eventData['transitiveFileLineCountPercentiles'],
+      'transitiveFileLineCountPercentiles',
+    );
     expect(constructedEvent.eventData['produceErrorsPotentialFileCount'], 10);
     expect(
-        constructedEvent.eventData['produceErrorsPotentialFileLineCount'], 11);
+      constructedEvent.eventData['produceErrorsPotentialFileLineCount'],
+      11,
+    );
     expect(constructedEvent.eventData['produceErrorsActualFileCount'], 12);
     expect(constructedEvent.eventData['produceErrorsActualFileLineCount'], 13);
     expect(constructedEvent.eventData['produceErrorsDurationMs'], 14);
@@ -78,10 +86,10 @@ void main() {
 
   test('Event.clientNotification constructed', () {
     Event generateEvent() => Event.clientNotification(
-          duration: 'duration',
-          latency: 'latency',
-          method: 'method',
-        );
+      duration: 'duration',
+      latency: 'latency',
+      method: 'method',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -95,16 +103,16 @@ void main() {
 
   test('Event.clientRequest constructed', () {
     Event generateEvent() => Event.clientRequest(
-          duration: 'duration',
-          latency: 'latency',
-          method: 'method',
-          added: 'added',
-          excluded: 'excluded',
-          files: 'files',
-          included: 'included',
-          openWorkspacePaths: 'openWorkspacePaths',
-          removed: 'removed',
-        );
+      duration: 'duration',
+      latency: 'latency',
+      method: 'method',
+      added: 'added',
+      excluded: 'excluded',
+      files: 'files',
+      included: 'included',
+      openWorkspacePaths: 'openWorkspacePaths',
+      removed: 'removed',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -118,16 +126,15 @@ void main() {
     expect(constructedEvent.eventData['files'], 'files');
     expect(constructedEvent.eventData['included'], 'included');
     expect(
-        constructedEvent.eventData['openWorkspacePaths'], 'openWorkspacePaths');
+      constructedEvent.eventData['openWorkspacePaths'],
+      'openWorkspacePaths',
+    );
     expect(constructedEvent.eventData['removed'], 'removed');
     expect(constructedEvent.eventData.length, 9);
   });
 
   test('Event.commandExecuted constructed', () {
-    Event generateEvent() => Event.commandExecuted(
-          count: 5,
-          name: 'name',
-        );
+    Event generateEvent() => Event.commandExecuted(count: 5, name: 'name');
 
     final constructedEvent = generateEvent();
 
@@ -140,18 +147,18 @@ void main() {
 
   test('Event.contextStructure constructed', () {
     Event generateEvent() => Event.contextStructure(
-          immediateFileCount: 1,
-          immediateFileLineCount: 2,
-          numberOfContexts: 3,
-          transitiveFileCount: 4,
-          transitiveFileLineCount: 5,
-          transitiveFileUniqueCount: 6,
-          transitiveFileUniqueLineCount: 7,
-          libraryCycleLibraryCounts: 'a',
-          libraryCycleLineCounts: 'b',
-          contextWorkspaceType: '[0,1,2]',
-          numberOfPackagesInWorkspace: '32',
-        );
+      immediateFileCount: 1,
+      immediateFileLineCount: 2,
+      numberOfContexts: 3,
+      transitiveFileCount: 4,
+      transitiveFileLineCount: 5,
+      transitiveFileUniqueCount: 6,
+      transitiveFileUniqueLineCount: 7,
+      libraryCycleLibraryCounts: 'a',
+      libraryCycleLineCounts: 'b',
+      contextWorkspaceType: '[0,1,2]',
+      numberOfPackagesInWorkspace: '32',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -173,10 +180,10 @@ void main() {
 
   test('Event.dartCliCommandExecuted constructed', () {
     Event generateEvent() => Event.dartCliCommandExecuted(
-          name: 'name',
-          enabledExperiments: 'enabledExperiments',
-          exitCode: 0,
-        );
+      name: 'name',
+      enabledExperiments: 'enabledExperiments',
+      exitCode: 0,
+    );
 
     final constructedEvent = generateEvent();
 
@@ -184,19 +191,21 @@ void main() {
     expect(constructedEvent.eventName, DashEvent.dartCliCommandExecuted);
     expect(constructedEvent.eventData['name'], 'name');
     expect(
-        constructedEvent.eventData['enabledExperiments'], 'enabledExperiments');
+      constructedEvent.eventData['enabledExperiments'],
+      'enabledExperiments',
+    );
     expect(constructedEvent.eventData['exitCode'], 0);
     expect(constructedEvent.eventData.length, 3);
   });
 
   test('Event.doctorValidatorResult constructed', () {
     Event generateEvent() => Event.doctorValidatorResult(
-          validatorName: 'validatorName',
-          result: 'success',
-          partOfGroupedValidator: false,
-          doctorInvocationId: 123,
-          statusInfo: 'statusInfo',
-        );
+      validatorName: 'validatorName',
+      result: 'success',
+      partOfGroupedValidator: false,
+      doctorInvocationId: 123,
+      statusInfo: 'statusInfo',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -222,10 +231,7 @@ void main() {
   });
 
   test('Event.lintUsageCount constructed', () {
-    Event generateEvent() => Event.lintUsageCount(
-          count: 5,
-          name: 'name',
-        );
+    Event generateEvent() => Event.lintUsageCount(count: 5, name: 'name');
 
     final constructedEvent = generateEvent();
 
@@ -237,11 +243,8 @@ void main() {
   });
 
   test('Event.memoryInfo constructed', () {
-    Event generateEvent() => Event.memoryInfo(
-          rss: 4,
-          periodSec: 5,
-          mbPerSec: 5.55,
-        );
+    Event generateEvent() =>
+        Event.memoryInfo(rss: 4, periodSec: 5, mbPerSec: 5.55);
 
     final constructedEvent = generateEvent();
 
@@ -255,10 +258,10 @@ void main() {
 
   test('Event.pluginRequest constructed', () {
     Event generateEvent() => Event.pluginRequest(
-          duration: 'duration',
-          method: 'method',
-          pluginId: 'pluginId',
-        );
+      duration: 'duration',
+      method: 'method',
+      pluginId: 'pluginId',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -272,12 +275,12 @@ void main() {
 
   test('Event.plugins constructed', () {
     Event generateEvent() => Event.plugins(
-          count: 5,
-          lintRuleCounts: 'lintRuleCounts',
-          warningRuleCounts: 'warningRuleCounts',
-          fixCounts: 'fixCounts',
-          assistCounts: 'assistCounts',
-        );
+      count: 5,
+      lintRuleCounts: 'lintRuleCounts',
+      warningRuleCounts: 'warningRuleCounts',
+      fixCounts: 'fixCounts',
+      assistCounts: 'assistCounts',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -286,18 +289,17 @@ void main() {
     expect(constructedEvent.eventData['count'], 5);
     expect(constructedEvent.eventData['lintRuleCounts'], 'lintRuleCounts');
     expect(
-        constructedEvent.eventData['warningRuleCounts'], 'warningRuleCounts');
+      constructedEvent.eventData['warningRuleCounts'],
+      'warningRuleCounts',
+    );
     expect(constructedEvent.eventData['fixCounts'], 'fixCounts');
     expect(constructedEvent.eventData['assistCounts'], 'assistCounts');
     expect(constructedEvent.eventData, hasLength(5));
   });
 
   test('Event.pluginUse constructed', () {
-    Event generateEvent() => Event.pluginUse(
-          count: 5,
-          enabled: 'enabled',
-          pluginId: 'pluginId',
-        );
+    Event generateEvent() =>
+        Event.pluginUse(count: 5, enabled: 'enabled', pluginId: 'pluginId');
 
     final constructedEvent = generateEvent();
 
@@ -311,10 +313,10 @@ void main() {
 
   test('Event.pubGet constructed', () {
     Event generateEvent() => Event.pubGet(
-          packageName: 'packageName',
-          version: 'version',
-          dependencyType: 'dependencyType',
-        );
+      packageName: 'packageName',
+      version: 'version',
+      dependencyType: 'dependencyType',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -328,12 +330,12 @@ void main() {
 
   test('Event.serverSession constructed', () {
     Event generateEvent() => Event.serverSession(
-          clientId: 'clientId',
-          clientVersion: 'clientVersion',
-          duration: 5,
-          flags: 'flags',
-          parameters: 'parameters',
-        );
+      clientId: 'clientId',
+      clientVersion: 'clientVersion',
+      duration: 5,
+      flags: 'flags',
+      parameters: 'parameters',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -349,9 +351,9 @@ void main() {
 
   test('Event.severityAdjustment constructed', () {
     Event generateEvent() => Event.severityAdjustment(
-          diagnostic: 'diagnostic',
-          adjustments: 'adjustments',
-        );
+      diagnostic: 'diagnostic',
+      adjustments: 'adjustments',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -363,10 +365,8 @@ void main() {
   });
 
   test('Event.surveyAction constructed', () {
-    Event generateEvent() => Event.surveyAction(
-          surveyId: 'surveyId',
-          status: 'status',
-        );
+    Event generateEvent() =>
+        Event.surveyAction(surveyId: 'surveyId', status: 'status');
 
     final constructedEvent = generateEvent();
 
@@ -390,12 +390,12 @@ void main() {
 
   test('Event.flutterBuildInfo constructed', () {
     Event generateEvent() => Event.flutterBuildInfo(
-          label: 'label',
-          buildType: 'buildType',
-          command: 'command',
-          settings: 'settings',
-          error: 'error',
-        );
+      label: 'label',
+      buildType: 'buildType',
+      command: 'command',
+      settings: 'settings',
+      error: 'error',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -411,26 +411,26 @@ void main() {
 
   test('Event.hotRunnerInfo constructed', () {
     Event generateEvent() => Event.hotRunnerInfo(
-          label: 'label',
-          targetPlatform: 'targetPlatform',
-          sdkName: 'sdkName',
-          emulator: false,
-          fullRestart: true,
-          reason: 'reason',
-          finalLibraryCount: 5,
-          syncedLibraryCount: 6,
-          syncedClassesCount: 7,
-          syncedProceduresCount: 8,
-          syncedBytes: 9,
-          invalidatedSourcesCount: 10,
-          transferTimeInMs: 11,
-          overallTimeInMs: 12,
-          compileTimeInMs: 13,
-          findInvalidatedTimeInMs: 14,
-          scannedSourcesCount: 15,
-          reassembleTimeInMs: 16,
-          reloadVMTimeInMs: 17,
-        );
+      label: 'label',
+      targetPlatform: 'targetPlatform',
+      sdkName: 'sdkName',
+      emulator: false,
+      fullRestart: true,
+      reason: 'reason',
+      finalLibraryCount: 5,
+      syncedLibraryCount: 6,
+      syncedClassesCount: 7,
+      syncedProceduresCount: 8,
+      syncedBytes: 9,
+      invalidatedSourcesCount: 10,
+      transferTimeInMs: 11,
+      overallTimeInMs: 12,
+      compileTimeInMs: 13,
+      findInvalidatedTimeInMs: 14,
+      scannedSourcesCount: 15,
+      reassembleTimeInMs: 16,
+      reloadVMTimeInMs: 17,
+    );
 
     final constructedEvent = generateEvent();
 
@@ -460,11 +460,11 @@ void main() {
 
   test('Event.flutterCommandResult constructed', () {
     Event generateEvent() => Event.flutterCommandResult(
-          commandPath: 'commandPath',
-          result: 'result',
-          commandHasTerminal: true,
-          maxRss: 123,
-        );
+      commandPath: 'commandPath',
+      result: 'result',
+      commandHasTerminal: true,
+      maxRss: 123,
+    );
 
     final constructedEvent = generateEvent();
 
@@ -477,55 +477,15 @@ void main() {
     expect(constructedEvent.eventData.length, 4);
   });
 
-  test('Event.flutterWasmDryRun constructed no findings', () {
-    Event generateEventNoFindings() => Event.flutterWasmDryRun(
-          result: 'success',
-          exitCode: 123,
-        );
-
-    final constructedEvent1 = generateEventNoFindings();
-
-    expect(generateEventNoFindings, returnsNormally);
-    expect(constructedEvent1.eventName, DashEvent.flutterWasmDryRun);
-    expect(constructedEvent1.eventData['result'], 'success');
-    expect(constructedEvent1.eventData['exitCode'], 123);
-    expect(constructedEvent1.eventData.length, 2);
-  });
-  test('Event.flutterWasmDryRun constructed with findings', () {
-    Event generateEventNoFindings() => Event.flutterWasmDryRun(
-          result: 'success',
-          exitCode: 123,
-        );
-
-    final constructedEvent1 = generateEventNoFindings();
-
-    expect(generateEventNoFindings, returnsNormally);
-    expect(constructedEvent1.eventName, DashEvent.flutterWasmDryRun);
-    expect(constructedEvent1.eventData['result'], 'success');
-    expect(constructedEvent1.eventData['exitCode'], 123);
-    expect(constructedEvent1.eventData.length, 2);
-
-    Event generateEventFindings() => Event.flutterWasmDryRun(
-        result: 'success', exitCode: 123, findingsSummary: '1,2,3');
-
-    final constructedEvent2 = generateEventFindings();
-
-    expect(generateEventFindings, returnsNormally);
-    expect(constructedEvent2.eventName, DashEvent.flutterWasmDryRun);
-    expect(constructedEvent2.eventData['result'], 'success');
-    expect(constructedEvent2.eventData['exitCode'], 123);
-    expect(constructedEvent2.eventData['findings'], '1,2,3');
-    expect(constructedEvent2.eventData.length, 3);
-  });
-
   test('Event.flutterWasmDryRunPackage constructed', () {
     Event generateEvent() => Event.flutterWasmDryRunPackage(
-            result: 'success',
-            exitCode: 123,
-            findingsInfo: {
-              '0': '-ph,pkg1:1.2.3,pkg2:5.4.3',
-              '1': '-p,pkg3:9.2.44,pkg4:6.4.3',
-            });
+      result: 'success',
+      exitCode: 123,
+      findingsInfo: {
+        '0': '-ph,pkg1:1.2.3,pkg2:5.4.3',
+        '1': '-p,pkg3:9.2.44,pkg4:6.4.3',
+      },
+    );
 
     final constructedEvent1 = generateEvent();
 
@@ -540,16 +500,16 @@ void main() {
 
   test('Event.flutterInjectDarwinPlugins constructed', () {
     Event generateEvent() => Event.flutterInjectDarwinPlugins(
-          platform: 'ios',
-          isModule: true,
-          swiftPackageManagerUsable: true,
-          swiftPackageManagerFeatureEnabled: true,
-          projectDisabledSwiftPackageManager: false,
-          projectHasSwiftPackageManagerIntegration: true,
-          pluginCount: 123,
-          swiftPackageCount: 456,
-          podCount: 678,
-        );
+      platform: 'ios',
+      isModule: true,
+      swiftPackageManagerUsable: true,
+      swiftPackageManagerFeatureEnabled: true,
+      projectDisabledSwiftPackageManager: false,
+      projectHasSwiftPackageManagerIntegration: true,
+      pluginCount: 123,
+      swiftPackageCount: 456,
+      podCount: 678,
+    );
 
     final constructedEvent = generateEvent();
 
@@ -558,19 +518,92 @@ void main() {
     expect(constructedEvent.eventData['platform'], 'ios');
     expect(constructedEvent.eventData['isModule'], isTrue);
     expect(constructedEvent.eventData['swiftPackageManagerUsable'], isTrue);
-    expect(constructedEvent.eventData['swiftPackageManagerFeatureEnabled'],
-        isTrue);
-    expect(constructedEvent.eventData['projectDisabledSwiftPackageManager'],
-        isFalse);
     expect(
-        constructedEvent.eventData['projectHasSwiftPackageManagerIntegration'],
-        isTrue);
+      constructedEvent.eventData['swiftPackageManagerFeatureEnabled'],
+      isTrue,
+    );
+    expect(
+      constructedEvent.eventData['projectDisabledSwiftPackageManager'],
+      isFalse,
+    );
+    expect(
+      constructedEvent.eventData['projectHasSwiftPackageManagerIntegration'],
+      isTrue,
+    );
     expect(constructedEvent.eventData['pluginCount'], 123);
     expect(constructedEvent.eventData['swiftPackageCount'], 456);
     expect(constructedEvent.eventData['podCount'], 678);
     expect(constructedEvent.eventData.length, 9);
   });
 
+  group('Event.flutterTrackAndroidDependencies', () {
+    test('constructed', () {
+      Event generateEvent() => Event.flutterTrackAndroidDependencies(
+        success: true,
+        isModule: true,
+        agpVersion: '8.2.2',
+        minSDK: 24,
+        targetSDK: 36,
+        compileSDK: 36,
+        jdkVersion: 24,
+        ndkVersion: '28.0.13004108',
+        gradleVersion: '8.10.2',
+      );
+
+      final constructedEvent = generateEvent();
+
+      expect(generateEvent, returnsNormally);
+      expect(
+        constructedEvent.eventName,
+        DashEvent.flutterTrackAndroidDependencies,
+      );
+      expect(constructedEvent.eventData['success'], isTrue);
+      expect(constructedEvent.eventData['label'], isNull);
+      expect(constructedEvent.eventData['isModule'], isTrue);
+      expect(constructedEvent.eventData['agpVersion'], '8.2.2');
+      expect(constructedEvent.eventData['minSDK'], 24);
+      expect(constructedEvent.eventData['targetSDK'], 36);
+      expect(constructedEvent.eventData['compileSDK'], 36);
+      expect(constructedEvent.eventData['jdkVersion'], 24);
+      expect(constructedEvent.eventData['ndkVersion'], '28.0.13004108');
+      expect(constructedEvent.eventData['gradleVersion'], '8.10.2');
+      expect(constructedEvent.eventData.length, 9);
+    });
+
+    test('constructor arguments default to null if not specified', () {
+      Event generateEvent() => Event.flutterTrackAndroidDependencies(
+        success: false,
+        label: 'failed to download gradle from ...',
+        isModule: true,
+        agpVersion: '8.2.2',
+        targetSDK: 36,
+        jdkVersion: 24,
+        gradleVersion: '8.10.2',
+      );
+
+      final constructedEvent = generateEvent();
+
+      expect(generateEvent, returnsNormally);
+      expect(
+        constructedEvent.eventName,
+        DashEvent.flutterTrackAndroidDependencies,
+      );
+      expect(constructedEvent.eventData['success'], isFalse);
+      expect(
+        constructedEvent.eventData['label'],
+        'failed to download gradle from ...',
+      );
+      expect(constructedEvent.eventData['isModule'], isTrue);
+      expect(constructedEvent.eventData['agpVersion'], '8.2.2');
+      expect(constructedEvent.eventData['minSDK'], null);
+      expect(constructedEvent.eventData['targetSDK'], 36);
+      expect(constructedEvent.eventData['compileSDK'], null);
+      expect(constructedEvent.eventData['jdkVersion'], 24);
+      expect(constructedEvent.eventData['ndkVersion'], null);
+      expect(constructedEvent.eventData['gradleVersion'], '8.10.2');
+      expect(constructedEvent.eventData.length, 7);
+    });
+  });
   test('Event.codeSizeAnalysis constructed', () {
     Event generateEvent() => Event.codeSizeAnalysis(platform: 'platform');
 
@@ -584,10 +617,10 @@ void main() {
 
   test('Event.appleUsageEvent constructed', () {
     Event generateEvent() => Event.appleUsageEvent(
-          workflow: 'workflow',
-          parameter: 'parameter',
-          result: 'result',
-        );
+      workflow: 'workflow',
+      parameter: 'parameter',
+      result: 'result',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -601,9 +634,9 @@ void main() {
 
   test('Event.exception constructed', () {
     Event generateEvent() => Event.exception(
-          exception: 'exception',
-          data: {'foo': 'bar', 'baz': 1, 'shouldBeRemoved': null},
-        );
+      exception: 'exception',
+      data: {'foo': 'bar', 'baz': 1, 'shouldBeRemoved': null},
+    );
 
     final constructedEvent = generateEvent();
 
@@ -616,20 +649,18 @@ void main() {
   });
 
   test('Event.exception constructor works when no data is provided', () {
-    Event generateEvent() => Event.exception(
-          exception: 'exception',
-        );
+    Event generateEvent() => Event.exception(exception: 'exception');
 
     expect(generateEvent, returnsNormally);
   });
 
   test('Event.timing constructed', () {
     Event generateEvent() => Event.timing(
-          workflow: 'workflow',
-          variableName: 'variableName',
-          elapsedMilliseconds: 123,
-          label: 'label',
-        );
+      workflow: 'workflow',
+      variableName: 'variableName',
+      elapsedMilliseconds: 123,
+      label: 'label',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -644,88 +675,118 @@ void main() {
 
   test('Event.commandUsageValues constructed', () {
     Event generateEvent() => Event.commandUsageValues(
-          workflow: 'workflow',
-          commandHasTerminal: true,
-          buildBundleTargetPlatform: 'buildBundleTargetPlatform',
-          buildBundleIsModule: true,
-          buildAarProjectType: 'buildAarProjectType',
-          buildAarTargetPlatform: 'buildAarTargetPlatform',
-          buildApkTargetPlatform: 'buildApkTargetPlatform',
-          buildApkBuildMode: 'buildApkBuildMode',
-          buildApkSplitPerAbi: true,
-          buildAppBundleTargetPlatform: 'buildAppBundleTargetPlatform',
-          buildAppBundleBuildMode: 'buildAppBundleBuildMode',
-          createProjectType: 'createProjectType',
-          createAndroidLanguage: 'createAndroidLanguage',
-          createIosLanguage: 'createIosLanguage',
-          packagesNumberPlugins: 123,
-          packagesProjectModule: true,
-          packagesAndroidEmbeddingVersion: 'packagesAndroidEmbeddingVersion',
-          runIsEmulator: true,
-          runTargetName: 'runTargetName',
-          runTargetOsVersion: 'runTargetOsVersion',
-          runModeName: 'runModeName',
-          runProjectModule: true,
-          runProjectHostLanguage: 'runProjectHostLanguage',
-          runAndroidEmbeddingVersion: 'runAndroidEmbeddingVersion',
-          runEnableImpeller: true,
-          runIOSInterfaceType: 'runIOSInterfaceType',
-          runIsTest: true,
-        );
+      workflow: 'workflow',
+      commandHasTerminal: true,
+      buildBundleTargetPlatform: 'buildBundleTargetPlatform',
+      buildBundleIsModule: true,
+      buildAarProjectType: 'buildAarProjectType',
+      buildAarTargetPlatform: 'buildAarTargetPlatform',
+      buildApkTargetPlatform: 'buildApkTargetPlatform',
+      buildApkBuildMode: 'buildApkBuildMode',
+      buildApkSplitPerAbi: true,
+      buildAppBundleTargetPlatform: 'buildAppBundleTargetPlatform',
+      buildAppBundleBuildMode: 'buildAppBundleBuildMode',
+      createProjectType: 'createProjectType',
+      createAndroidLanguage: 'createAndroidLanguage',
+      createIosLanguage: 'createIosLanguage',
+      packagesNumberPlugins: 123,
+      packagesProjectModule: true,
+      packagesAndroidEmbeddingVersion: 'packagesAndroidEmbeddingVersion',
+      runIsEmulator: true,
+      runTargetName: 'runTargetName',
+      runTargetOsVersion: 'runTargetOsVersion',
+      runModeName: 'runModeName',
+      runProjectModule: true,
+      runProjectHostLanguage: 'runProjectHostLanguage',
+      runAndroidEmbeddingVersion: 'runAndroidEmbeddingVersion',
+      runEnableImpeller: true,
+      runIOSInterfaceType: 'runIOSInterfaceType',
+      runIsTest: true,
+    );
 
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.commandUsageValues);
     expect(constructedEvent.eventData['workflow'], 'workflow');
-    expect(constructedEvent.eventData['buildBundleTargetPlatform'],
-        'buildBundleTargetPlatform');
+    expect(
+      constructedEvent.eventData['buildBundleTargetPlatform'],
+      'buildBundleTargetPlatform',
+    );
     expect(constructedEvent.eventData['buildBundleIsModule'], true);
-    expect(constructedEvent.eventData['buildAarProjectType'],
-        'buildAarProjectType');
-    expect(constructedEvent.eventData['buildAarTargetPlatform'],
-        'buildAarTargetPlatform');
-    expect(constructedEvent.eventData['buildApkTargetPlatform'],
-        'buildApkTargetPlatform');
     expect(
-        constructedEvent.eventData['buildApkBuildMode'], 'buildApkBuildMode');
+      constructedEvent.eventData['buildAarProjectType'],
+      'buildAarProjectType',
+    );
+    expect(
+      constructedEvent.eventData['buildAarTargetPlatform'],
+      'buildAarTargetPlatform',
+    );
+    expect(
+      constructedEvent.eventData['buildApkTargetPlatform'],
+      'buildApkTargetPlatform',
+    );
+    expect(
+      constructedEvent.eventData['buildApkBuildMode'],
+      'buildApkBuildMode',
+    );
     expect(constructedEvent.eventData['buildApkSplitPerAbi'], true);
-    expect(constructedEvent.eventData['buildAppBundleTargetPlatform'],
-        'buildAppBundleTargetPlatform');
-    expect(constructedEvent.eventData['buildAppBundleBuildMode'],
-        'buildAppBundleBuildMode');
     expect(
-        constructedEvent.eventData['createProjectType'], 'createProjectType');
-    expect(constructedEvent.eventData['createAndroidLanguage'],
-        'createAndroidLanguage');
+      constructedEvent.eventData['buildAppBundleTargetPlatform'],
+      'buildAppBundleTargetPlatform',
+    );
     expect(
-        constructedEvent.eventData['createIosLanguage'], 'createIosLanguage');
+      constructedEvent.eventData['buildAppBundleBuildMode'],
+      'buildAppBundleBuildMode',
+    );
+    expect(
+      constructedEvent.eventData['createProjectType'],
+      'createProjectType',
+    );
+    expect(
+      constructedEvent.eventData['createAndroidLanguage'],
+      'createAndroidLanguage',
+    );
+    expect(
+      constructedEvent.eventData['createIosLanguage'],
+      'createIosLanguage',
+    );
     expect(constructedEvent.eventData['packagesNumberPlugins'], 123);
     expect(constructedEvent.eventData['packagesProjectModule'], true);
-    expect(constructedEvent.eventData['packagesAndroidEmbeddingVersion'],
-        'packagesAndroidEmbeddingVersion');
+    expect(
+      constructedEvent.eventData['packagesAndroidEmbeddingVersion'],
+      'packagesAndroidEmbeddingVersion',
+    );
     expect(constructedEvent.eventData['runIsEmulator'], true);
     expect(constructedEvent.eventData['runTargetName'], 'runTargetName');
     expect(
-        constructedEvent.eventData['runTargetOsVersion'], 'runTargetOsVersion');
+      constructedEvent.eventData['runTargetOsVersion'],
+      'runTargetOsVersion',
+    );
     expect(constructedEvent.eventData['runModeName'], 'runModeName');
     expect(constructedEvent.eventData['runProjectModule'], true);
-    expect(constructedEvent.eventData['runProjectHostLanguage'],
-        'runProjectHostLanguage');
-    expect(constructedEvent.eventData['runAndroidEmbeddingVersion'],
-        'runAndroidEmbeddingVersion');
+    expect(
+      constructedEvent.eventData['runProjectHostLanguage'],
+      'runProjectHostLanguage',
+    );
+    expect(
+      constructedEvent.eventData['runAndroidEmbeddingVersion'],
+      'runAndroidEmbeddingVersion',
+    );
     expect(constructedEvent.eventData['runEnableImpeller'], true);
-    expect(constructedEvent.eventData['runIOSInterfaceType'],
-        'runIOSInterfaceType');
+    expect(
+      constructedEvent.eventData['runIOSInterfaceType'],
+      'runIOSInterfaceType',
+    );
     expect(constructedEvent.eventData.length, 27);
   });
 
   test('Event.analyticsException constructed', () {
     Event generateEvent() => Event.analyticsException(
-          workflow: 'workflow',
-          error: 'error',
-          description: 'description',
-        );
+      workflow: 'workflow',
+      error: 'error',
+      description: 'description',
+    );
 
     final constructedEvent = generateEvent();
 
@@ -739,29 +800,29 @@ void main() {
 
   test('Event.devtoolsEvent constructed', () {
     Event generateEvent() => Event.devtoolsEvent(
-          screen: 'screen',
-          eventCategory: 'eventCategory',
-          label: 'label',
-          value: 1,
-          userInitiatedInteraction: true,
-          g3Username: 'g3Username',
-          userApp: 'userApp',
-          userBuild: 'userBuild',
-          userPlatform: 'userPlatform',
-          devtoolsPlatform: 'devtoolsPlatform',
-          devtoolsChrome: 'devtoolsChrome',
-          devtoolsVersion: 'devtoolsVersion',
-          ideLaunched: 'ideLaunched',
-          isExternalBuild: 'isExternalBuild',
-          isEmbedded: 'isEmbedded',
-          ideLaunchedFeature: 'ideLaunchedFeature',
-          isWasm: 'true',
-          additionalMetrics: _TestMetrics(
-            stringField: 'test',
-            intField: 100,
-            boolField: false,
-          ),
-        );
+      screen: 'screen',
+      eventCategory: 'eventCategory',
+      label: 'label',
+      value: 1,
+      userInitiatedInteraction: true,
+      g3Username: 'g3Username',
+      userApp: 'userApp',
+      userBuild: 'userBuild',
+      userPlatform: 'userPlatform',
+      devtoolsPlatform: 'devtoolsPlatform',
+      devtoolsChrome: 'devtoolsChrome',
+      devtoolsVersion: 'devtoolsVersion',
+      ideLaunched: 'ideLaunched',
+      isExternalBuild: 'isExternalBuild',
+      isEmbedded: 'isEmbedded',
+      ideLaunchedFeature: 'ideLaunchedFeature',
+      isWasm: 'true',
+      additionalMetrics: _TestMetrics(
+        stringField: 'test',
+        intField: 100,
+        boolField: false,
+      ),
+    );
 
     final constructedEvent = generateEvent();
 
@@ -795,23 +856,28 @@ void main() {
 
   test('Event.dartMCPEvent constructed', () {
     final event = Event.dartMCPEvent(
-        client: 'test client',
-        clientVersion: '1.0.0',
-        serverVersion: '1.1.0',
-        type: 'some_event',
-        additionalData:
-            _TestMetrics(boolField: true, stringField: 'hello', intField: 1));
+      client: 'test client',
+      clientVersion: '1.0.0',
+      serverVersion: '1.1.0',
+      type: 'some_event',
+      additionalData: _TestMetrics(
+        boolField: true,
+        stringField: 'hello',
+        intField: 1,
+      ),
+    );
     expect(
-        event.eventData,
-        equals({
-          'client': 'test client',
-          'clientVersion': '1.0.0',
-          'serverVersion': '1.1.0',
-          'type': 'some_event',
-          'boolField': true,
-          'stringField': 'hello',
-          'intField': 1,
-        }));
+      event.eventData,
+      equals({
+        'client': 'test client',
+        'clientVersion': '1.0.0',
+        'serverVersion': '1.1.0',
+        'type': 'some_event',
+        'boolField': true,
+        'stringField': 'hello',
+        'intField': 1,
+      }),
+    );
   });
 
   test('Confirm all constructors were checked', () {
@@ -826,12 +892,16 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 33;
-    expect(eventsAccountedForInTests, constructorCount,
-        reason: 'If you added or removed an event constructor, '
-            'ensure you have updated '
-            '`pkgs/unified_analytics/test/event_test.dart` '
-            'to reflect the changes made');
+    final eventsAccountedForInTests = 34;
+    expect(
+      eventsAccountedForInTests,
+      constructorCount,
+      reason:
+          'If you added or removed an event constructor, '
+          'ensure you have updated '
+          '`pkgs/unified_analytics/test/event_test.dart` '
+          'to reflect the changes made',
+    );
   });
 
   test('Serializing event to json successful', () {
@@ -841,7 +911,8 @@ void main() {
       description: 'description',
     );
 
-    final expectedResult = '{"eventName":"analytics_exception",'
+    final expectedResult =
+        '{"eventName":"analytics_exception",'
         '"eventData":{"workflow":"workflow",'
         '"error":"error",'
         '"description":"description"}}';
@@ -850,7 +921,8 @@ void main() {
   });
 
   test('Deserializing string to event successful', () {
-    final eventJson = '{"eventName":"analytics_exception",'
+    final eventJson =
+        '{"eventName":"analytics_exception",'
         '"eventData":{"workflow":"workflow",'
         '"error":"error",'
         '"description":"description"}}';
@@ -868,7 +940,8 @@ void main() {
   });
 
   test('Deserializing string to event unsuccessful for invalid eventName', () {
-    final eventJson = '{"eventName":"NOT_VALID_NAME",'
+    final eventJson =
+        '{"eventName":"NOT_VALID_NAME",'
         '"eventData":{"workflow":"workflow",'
         '"error":"error",'
         '"description":"description"}}';
@@ -878,7 +951,8 @@ void main() {
   });
 
   test('Deserializing string to event unsuccessful for invalid eventData', () {
-    final eventJson = '{"eventName":"analytics_exception",'
+    final eventJson =
+        '{"eventName":"analytics_exception",'
         '"eventData": "not_valid_event_data"}';
 
     final eventConstructed = Event.fromJson(eventJson);
@@ -899,8 +973,8 @@ final class _TestMetrics extends CustomMetrics {
 
   @override
   Map<String, Object> toMap() => {
-        'stringField': stringField,
-        'intField': intField,
-        'boolField': boolField,
-      };
+    'stringField': stringField,
+    'intField': intField,
+    'boolField': boolField,
+  };
 }

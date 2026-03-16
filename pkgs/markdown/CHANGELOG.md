@@ -1,4 +1,4 @@
-## 7.3.1-wip
+## 7.3.1
 
 * Preserve metadata passed to fenced code blocks as
   `data-metadata` on the created `pre` element.

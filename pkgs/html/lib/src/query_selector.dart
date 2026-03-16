@@ -178,7 +178,7 @@ class SelectorEvaluator extends Visitor {
     }
 
     // :before, :after, :first-letter/line can't match DOM elements.
-    if (_isLegacyPsuedoClass(node.name)) return false;
+    if (_isLegacyPseudoClass(node.name)) return false;
 
     throw _unimplemented(node);
   }
@@ -186,12 +186,12 @@ class SelectorEvaluator extends Visitor {
   @override
   bool visitPseudoElementSelector(PseudoElementSelector node) {
     // :before, :after, :first-letter/line can't match DOM elements.
-    if (_isLegacyPsuedoClass(node.name)) return false;
+    if (_isLegacyPseudoClass(node.name)) return false;
 
     throw _unimplemented(node);
   }
 
-  static bool _isLegacyPsuedoClass(String name) {
+  static bool _isLegacyPseudoClass(String name) {
     switch (name) {
       case 'before':
       case 'after':

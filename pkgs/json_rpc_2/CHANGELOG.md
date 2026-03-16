@@ -1,4 +1,4 @@
-## 4.1.0-wip
+## 4.1.0
 
 * Forward errors within `Peer` when it is acting as a client.
 

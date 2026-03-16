@@ -48,15 +48,20 @@ class SseClient extends StreamChannelMixin<String?> {
   /// incoming bi-directional SSE connections. [debugKey] is an optional key
   /// that can be used to identify the SSE connection.
   SseClient(String serverUrl, {String? debugKey})
-      : _clientId =
-            debugKey == null ? generateId() : '$debugKey-${generateId()}' {
+    : _clientId = debugKey == null
+          ? generateId()
+          : '$debugKey-${generateId()}' {
     _serverUrl = '$serverUrl?sseClientId=$_clientId';
-    _eventSource =
-        EventSource(_serverUrl, EventSourceInit(withCredentials: true));
+    _eventSource = EventSource(
+      _serverUrl,
+      EventSourceInit(withCredentials: true),
+    );
     _eventSource.onOpen.first.whenComplete(() {
       _onConnected.complete();
-      _outgoingController.stream
-          .listen(_onOutgoingMessage, onDone: _onOutgoingDone);
+      _outgoingController.stream.listen(
+        _onOutgoingMessage,
+        onDone: _onOutgoingDone,
+      );
     });
     _eventSource.addEventListener('message', _onIncomingMessage.toJS);
     _eventSource.addEventListener('control', _onIncomingControlMessage.toJS);
@@ -122,8 +127,9 @@ class SseClient extends StreamChannelMixin<String?> {
   }
 
   void _onIncomingMessage(Event message) {
-    var decoded =
-        jsonDecode(((message as MessageEvent).data as JSString).toDart);
+    var decoded = jsonDecode(
+      ((message as MessageEvent).data as JSString).toDart,
+    );
     _incomingController.add(decoded as String);
   }
 
@@ -146,11 +152,13 @@ class SseClient extends StreamChannelMixin<String?> {
       try {
         final url = '$_serverUrl&messageId=${++_lastMessageId}';
         await _fetch(
-            url,
-            RequestInit(
-                method: 'POST',
-                body: encodedMessage?.toJS,
-                credentials: 'include'));
+          url,
+          RequestInit(
+            method: 'POST',
+            body: encodedMessage?.toJS,
+            credentials: 'include',
+          ),
+        );
       } catch (error) {
         final augmentedError =
             '[$_clientId] SSE client failed to send $message:\n $error';

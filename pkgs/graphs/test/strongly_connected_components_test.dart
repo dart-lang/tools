@@ -54,10 +54,9 @@ void main() {
         'c': ['d'],
         'd': ['a'],
       });
-      expect(
-        result,
-        [allOf(contains('a'), contains('b'), contains('c'), contains('d'))],
-      );
+      expect(result, [
+        allOf(contains('a'), contains('b'), contains('c'), contains('d')),
+      ]);
     });
 
     test('includes the first passed root last in a cycle', () {

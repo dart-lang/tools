@@ -445,4 +445,183 @@ a:
       expect(() => assertValidScalar([1]), throwsArgumentError);
     });
   });
+
+  group('compact char test', () {
+    test(
+      'Returns a valid index of the character used to declare block node'
+      ' in compact-inline notation for an explicit key',
+      () {
+        const yaml = '''
+? - block
+  - sequence
+
+? key: value
+  another: value
+''';
+
+        final mapKeys = (loadYamlNode(
+          yaml,
+        ) as YamlMap)
+            .nodes
+            .keys
+            .cast<YamlNode>()
+            .toList();
+
+        // Compact block lists
+        expect(
+          indexOfCompactChar(
+            yaml,
+            mapKeys.first.span.start.offset,
+          ),
+          equals((compactCharOffset: 0, lineEndingIndex: -1)),
+        );
+
+        // Compact block maps
+        expect(
+          indexOfCompactChar(
+            yaml,
+            mapKeys[1].span.start.offset,
+          ),
+
+          // Skip first "?"
+          equals(
+            (compactCharOffset: yaml.indexOf('?', 1), lineEndingIndex: -1),
+          ),
+        );
+      },
+    );
+
+    test(
+      'Returns a valid index of the character used to declare block node'
+      ' in compact-inline notation for an explicit value',
+      () {
+        /// A key/value is always implicit unless an explicit key is seen.
+        ///
+        /// See paragraph after example 8.17 in Block Mappings section.
+        const yaml = '''
+? key
+: - block
+  - sequence
+
+? another
+: explict: block
+  value: node
+''';
+
+        final values = (loadYamlNode(
+          yaml,
+        ) as YamlMap)
+            .nodes
+            .values
+            .toList();
+
+        final firstExplicitValueChar = yaml.indexOf(':');
+
+        // Compact block lists
+        expect(
+          indexOfCompactChar(yaml, values.first.span.start.offset),
+          equals(
+            (compactCharOffset: firstExplicitValueChar, lineEndingIndex: -1),
+          ),
+        );
+
+        // Compact block maps
+        expect(
+          indexOfCompactChar(yaml, values[1].span.start.offset),
+
+          // Skip first ":"
+          equals(
+            (
+              compactCharOffset: yaml.indexOf(':', firstExplicitValueChar + 1),
+              lineEndingIndex: -1
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'Returns a valid index of the character used to declare block node'
+      ' in compact-inline notation for a block sequence',
+      () {
+        const yaml = '''
+- - block
+  - sequence
+
+- key: value
+  another: value
+''';
+
+        final elements = (loadYamlNode(
+          yaml,
+        ) as YamlList)
+            .nodes;
+
+        // Compact block lists
+        expect(
+          indexOfCompactChar(yaml, elements.first.span.start.offset),
+          equals((compactCharOffset: 0, lineEndingIndex: -1)),
+        );
+
+        // Compact block maps
+        expect(
+          indexOfCompactChar(yaml, elements[1].span.start.offset),
+
+          // Skip first "?"
+          equals(
+            (compactCharOffset: yaml.lastIndexOf('-'), lineEndingIndex: -1),
+          ),
+        );
+      },
+    );
+
+    test('Returns index of line break when not compact', () {
+      const yaml = '''
+-
+  - not compact
+-
+  ?
+    - key not compact
+  :
+    - not compact
+''';
+
+      final list = (loadYamlNode(yaml) as YamlList).nodes;
+
+      // First nested block sequence is not compact
+      expect(
+        indexOfCompactChar(yaml, list[0].span.start.offset),
+        equals((compactCharOffset: -1, lineEndingIndex: yaml.indexOf('\n'))),
+      );
+
+      // Explicit key & value not compact.
+      final map = list[1] as YamlMap;
+
+      final entries = map.nodes;
+
+      expect(
+        indexOfCompactChar(
+          yaml,
+          entries.keys.cast<YamlNode>().first.span.start.offset,
+        ),
+        equals((
+          compactCharOffset: -1,
+          lineEndingIndex: yaml.indexOf('\n', map.span.start.offset)
+        )),
+      );
+
+      expect(
+        indexOfCompactChar(yaml, entries.values.first.span.start.offset),
+        equals(
+          (
+            compactCharOffset: -1,
+            lineEndingIndex: yaml.indexOf(
+              '\n',
+              yaml.indexOf(':', map.span.start.offset),
+            )
+          ),
+        ),
+      );
+    });
+  });
 }

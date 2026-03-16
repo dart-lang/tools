@@ -1,7 +1,11 @@
 ## 8.0.12
-- Added `Event.plugins` to track new analyzer plugins
+- Require Dart 3.10
+- Added `success` indicator and `label` to `Event.flutterTrackAndroidDependencies` 
 
 ## 8.0.11
+- Added `Event.flutterTrackAndroidDependencies` to track android dependencies.
+- Deprecated `Event.flutterWasmDryRun` in favor of `Event.flutterWasmDryRunPackage`.
+- Added `Event.plugins` to track new analyzer plugins
 - Added `DashEvent.ideEvent` to track IDE reported events.
 
 ## 8.0.10

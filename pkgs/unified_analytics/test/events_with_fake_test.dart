@@ -118,8 +118,10 @@ void main() {
 
     expect(fakeAnalytics.sentEvents.length, 1);
     expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
-    expect(fakeAnalytics.sentEvents.last.eventData,
-        {'surveyId': 'uniqueId', 'status': 'accept'});
+    expect(fakeAnalytics.sentEvents.last.eventData, {
+      'surveyId': 'uniqueId',
+      'status': 'accept',
+    });
   });
 
   test('event sent when survey rejected', () async {
@@ -140,7 +142,9 @@ void main() {
 
     expect(fakeAnalytics.sentEvents.length, 1);
     expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
-    expect(fakeAnalytics.sentEvents.last.eventData,
-        {'surveyId': 'uniqueId', 'status': 'dismiss'});
+    expect(fakeAnalytics.sentEvents.last.eventData, {
+      'surveyId': 'uniqueId',
+      'status': 'dismiss',
+    });
   });
 }
