@@ -171,9 +171,10 @@ void main() {
     test('handles combined results after stream is canceled', () async {
       final source = Stream.value(1);
       final other = Stream.value(2);
-      late final Completer<void> combineDelay;
+      final combineStarted = Completer<void>();
+      final combineDelay = Completer<void>();
       Future<int> delayedSum(int a, int b) async {
-        combineDelay = Completer<void>();
+        combineStarted.complete();
         await combineDelay.future;
         return a + b;
       }
@@ -182,10 +183,11 @@ void main() {
           .combineLatest(other, delayedSum)
           .listen(expectAsync1((_) {}, count: 0));
 
-      await pumpEventQueue();
+      await combineStarted.future;
+
       unawaited(subscription.cancel());
       combineDelay.complete();
-      await pumpEventQueue();
+      // No async errors should be raised
     });
   });
 }
