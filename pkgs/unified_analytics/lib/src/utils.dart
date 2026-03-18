@@ -9,6 +9,7 @@ import 'dart:math' show Random;
 import 'package:clock/clock.dart';
 import 'package:convert/convert.dart';
 import 'package:file/file.dart';
+import 'package:platform/platform.dart' as platform;
 
 import 'enums.dart';
 import 'event.dart';
@@ -21,6 +22,25 @@ import 'user_property.dart';
 /// ```
 String get dateStamp {
   return FixedDateTimeFormatter('YYYY-MM-DD').encode(clock.now());
+}
+
+/// Returns `true` if analytics are suppressed based on the environment variable
+/// `DASH__SUPPRESS_ANALYTICS`.
+///
+/// If the environment variable is set and not "false", return the
+/// corresponding boolean value. Otherwise, return the [defaultValue].
+bool areAnalyticsSuppressed({bool defaultValue = false}) {
+  final value = const platform.LocalPlatform()
+      .environment[DashEnvVar.suppressAnalytics.name];
+  if (value != null) {
+    try {
+      return bool.parse(value);
+    } on Exception {
+      // Fallback to `defaultValue` if the value in ENV is invalid.
+    }
+  }
+
+  return defaultValue;
 }
 
 /// Reads in a directory and returns `true` if write permissions are enabled.
@@ -86,6 +106,19 @@ Map<String, Object?> generateRequestBody({
     },
   ],
   'user_properties': userProperty.preparePayload(),
+};
+
+/// Returns a Map of environment variables that should be included in processes
+/// that spawn a Dash sub-tool.
+Map<String, String> getEnvironment({
+  required DashTool currentTool,
+  bool suppressAnalytics = false,
+}) => {
+  ...const platform.LocalPlatform().environment,
+  DashEnvVar.suppressAnalytics.name: areAnalyticsSuppressed(
+    defaultValue: suppressAnalytics,
+  ).toString(),
+  DashEnvVar.tool.name: topLevelTool(current: currentTool).name,
 };
 
 /// This will use environment variables to get the user's
@@ -263,6 +296,24 @@ bool surveySnoozedOrDismissed(
       .inMinutes;
 
   return survey.snoozeForMinutes > minutesElapsed;
+}
+
+/// Returns the top-level tool from the environment variable `DASH__TOOL`.
+///
+/// If the environment variable is set and valid, return the corresponding
+/// [DashTool]. Otherwise, return the [current] tool.
+DashTool topLevelTool({required DashTool current}) {
+  final toolValue =
+      const platform.LocalPlatform().environment[DashEnvVar.tool.name];
+  if (toolValue != null) {
+    try {
+      return DashTool.fromLabel(toolValue);
+    } on Exception {
+      // Fallback to `current` if the value in ENV is invalid.
+    }
+  }
+
+  return current;
 }
 
 /// Due to some limitations for GA4, this function can be used to
