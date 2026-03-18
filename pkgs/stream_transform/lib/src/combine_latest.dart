@@ -66,13 +66,16 @@ extension CombineLatest<T> on Stream<T> {
         return;
       }
       if (result is Future<S>) {
-        sourceSubscription!.pause();
-        otherSubscription!.pause();
-        result
-            .then(controller.add, onError: controller.addError)
-            .whenComplete(() {
-          sourceSubscription?.resume();
-          otherSubscription?.resume();
+        final resume = Completer<void>();
+        sourceSubscription!.pause(resume.future);
+        otherSubscription!.pause(resume.future);
+
+        result.then((value) {
+          controller.add(value);
+          resume.complete();
+        }, onError: (Object error, StackTrace stackTrace) {
+          controller.addError(error, stackTrace);
+          resume.complete();
         });
       } else {
         controller.add(result);
