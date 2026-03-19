@@ -17,6 +17,28 @@ void main(List<String> args) {
   _preview('Foreground', foregroundColors, forScript);
   _preview('Background', backgroundColors, forScript);
   _preview('Styles', styles, forScript);
+  _preview('Rgb', [rgb(255, 0, 0), rgb(0, 255, 0), rgb(0, 0, 255)], forScript);
+  _gradient('** Gradient Text Sample **', forScript);
+}
+
+void _gradient(String text, bool forScript) {
+  final length = text.length;
+  final buffer = StringBuffer();
+  for (var i = 0; i < length; i++) {
+    final ratio = i / (length - 1);
+    int red, green, blue;
+    if (ratio < .5) {
+      red = ((1 - (ratio * 2)) * 255).round();
+      green = (ratio * 2 * 255).round();
+      blue = 0;
+    } else {
+      red = 0;
+      green = ((1 - ((ratio - .5) * 2)) * 255).round();
+      blue = (((ratio - .5) * 2) * 255).round();
+    }
+    buffer.write(rgb(red, green, blue).wrap(text[i], forScript: forScript));
+  }
+  print(buffer.toString());
 }
 
 void _preview(String name, List<AnsiCode> values, bool forScript) {
