@@ -679,11 +679,14 @@ void main() {
       commandHasTerminal: true,
       buildBundleTargetPlatform: 'buildBundleTargetPlatform',
       buildBundleIsModule: true,
+      buildBundleEnableHCPP: true,
       buildAarProjectType: 'buildAarProjectType',
       buildAarTargetPlatform: 'buildAarTargetPlatform',
+      buildAarEnableHCPP: true,
       buildApkTargetPlatform: 'buildApkTargetPlatform',
       buildApkBuildMode: 'buildApkBuildMode',
       buildApkSplitPerAbi: true,
+      buildApkEnableHCPP: true,
       buildAppBundleTargetPlatform: 'buildAppBundleTargetPlatform',
       buildAppBundleBuildMode: 'buildAppBundleBuildMode',
       createProjectType: 'createProjectType',
@@ -702,6 +705,7 @@ void main() {
       runEnableImpeller: true,
       runIOSInterfaceType: 'runIOSInterfaceType',
       runIsTest: true,
+      runEnableHCPP: true,
     );
 
     final constructedEvent = generateEvent();
@@ -713,6 +717,7 @@ void main() {
       constructedEvent.eventData['buildBundleTargetPlatform'],
       'buildBundleTargetPlatform',
     );
+    expect(constructedEvent.eventData['buildBundleEnableHCPP'], true);
     expect(constructedEvent.eventData['buildBundleIsModule'], true);
     expect(
       constructedEvent.eventData['buildAarProjectType'],
@@ -722,6 +727,7 @@ void main() {
       constructedEvent.eventData['buildAarTargetPlatform'],
       'buildAarTargetPlatform',
     );
+    expect(constructedEvent.eventData['buildAarEnableHCPP'], true);
     expect(
       constructedEvent.eventData['buildApkTargetPlatform'],
       'buildApkTargetPlatform',
@@ -731,6 +737,7 @@ void main() {
       'buildApkBuildMode',
     );
     expect(constructedEvent.eventData['buildApkSplitPerAbi'], true);
+    expect(constructedEvent.eventData['buildApkEnableHCPP'], true);
     expect(
       constructedEvent.eventData['buildAppBundleTargetPlatform'],
       'buildAppBundleTargetPlatform',
@@ -778,7 +785,8 @@ void main() {
       constructedEvent.eventData['runIOSInterfaceType'],
       'runIOSInterfaceType',
     );
-    expect(constructedEvent.eventData.length, 27);
+    expect(constructedEvent.eventData['runEnableHCPP'], true);
+    expect(constructedEvent.eventData.length, 31);
   });
 
   test('Event.analyticsException constructed', () {

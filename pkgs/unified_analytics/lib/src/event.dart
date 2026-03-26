@@ -306,15 +306,18 @@ final class Event {
     // Assemble && build bundle implementation parameters
     String? buildBundleTargetPlatform,
     bool? buildBundleIsModule,
+    bool? buildBundleEnableHCPP,
 
     // Build aar implementation parameters
     String? buildAarProjectType,
     String? buildAarTargetPlatform,
+    bool? buildAarEnableHCPP,
 
     // Build apk implementation parameters
     String? buildApkTargetPlatform,
     String? buildApkBuildMode,
     bool? buildApkSplitPerAbi,
+    bool? buildApkEnableHCPP,
 
     // Build app bundle implementation parameters
     String? buildAppBundleTargetPlatform,
@@ -341,6 +344,7 @@ final class Event {
     bool? runEnableImpeller,
     String? runIOSInterfaceType,
     bool? runIsTest,
+    bool? runEnableHCPP
   }) : this._(
          eventName: DashEvent.commandUsageValues,
          eventData: {
@@ -348,11 +352,14 @@ final class Event {
            'commandHasTerminal': commandHasTerminal,
            'buildBundleTargetPlatform': ?buildBundleTargetPlatform,
            'buildBundleIsModule': ?buildBundleIsModule,
+           'buildBundleEnableHCPP': ?buildBundleEnableHCPP,
            'buildAarProjectType': ?buildAarProjectType,
            'buildAarTargetPlatform': ?buildAarTargetPlatform,
+           'buildAarEnableHCPP': ?buildAarEnableHCPP,
            'buildApkTargetPlatform': ?buildApkTargetPlatform,
            'buildApkBuildMode': ?buildApkBuildMode,
            'buildApkSplitPerAbi': ?buildApkSplitPerAbi,
+           'buildApkEnableHCPP': ?buildApkEnableHCPP,
            'buildAppBundleTargetPlatform': ?buildAppBundleTargetPlatform,
            'buildAppBundleBuildMode': ?buildAppBundleBuildMode,
            'createProjectType': ?createProjectType,
@@ -371,6 +378,7 @@ final class Event {
            'runEnableImpeller': ?runEnableImpeller,
            'runIOSInterfaceType': ?runIOSInterfaceType,
            'runIsTest': ?runIsTest,
+           'runEnableHCPP': ?runEnableHCPP
          },
        );
 
