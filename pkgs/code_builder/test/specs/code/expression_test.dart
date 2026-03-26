@@ -62,7 +62,7 @@ void main() {
   });
 
   test('should emit a String', () {
-    expect(literalString(r'$monkey'), equalsDart(r"'$monkey'"));
+    expect(literalString(r'$monkey'), equalsDart(r"'\$monkey'"));
   });
 
   test('should emit a raw String', () {
@@ -79,6 +79,25 @@ void main() {
 
   test('should escape a newline in a string', () {
     expect(literalString('some\nthing'), equalsDart(r"'some\nthing'"));
+  });
+
+  test('should escape a dollar sign in a string', () {
+    expect(literalString(r'${dangerous}'), equalsDart(r"'\${dangerous}'"));
+  });
+
+  test('should escape backslashes in a string', () {
+    expect(literalString(r'back\slash'), equalsDart(r"'back\\slash'"));
+  });
+
+  test('should escape a carriage return in a string', () {
+    expect(literalString('some\rthing'), equalsDart(r"'some\rthing'"));
+  });
+
+  test('should escape combined special characters', () {
+    expect(
+      literalString('it\'s \$100\nfor\\each'),
+      equalsDart(r"'it\'s \$100\nfor\\each'"),
+    );
   });
 
   test('should emit a && expression', () {
