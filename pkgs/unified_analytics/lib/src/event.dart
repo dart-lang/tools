@@ -306,18 +306,18 @@ final class Event {
     // Assemble && build bundle implementation parameters
     String? buildBundleTargetPlatform,
     bool? buildBundleIsModule,
-    bool? buildBundleEnableHCPP,
+    bool? buildBundleEnableHcpp,
 
     // Build aar implementation parameters
     String? buildAarProjectType,
     String? buildAarTargetPlatform,
-    bool? buildAarEnableHCPP,
+    bool? buildAarEnableHcpp,
 
     // Build apk implementation parameters
     String? buildApkTargetPlatform,
     String? buildApkBuildMode,
     bool? buildApkSplitPerAbi,
-    bool? buildApkEnableHCPP,
+    bool? buildApkEnableHcpp,
 
     // Build app bundle implementation parameters
     String? buildAppBundleTargetPlatform,
@@ -344,7 +344,7 @@ final class Event {
     bool? runEnableImpeller,
     String? runIOSInterfaceType,
     bool? runIsTest,
-    bool? runEnableHCPP
+    bool? runEnableHcpp
   }) : this._(
          eventName: DashEvent.commandUsageValues,
          eventData: {
@@ -352,14 +352,14 @@ final class Event {
            'commandHasTerminal': commandHasTerminal,
            'buildBundleTargetPlatform': ?buildBundleTargetPlatform,
            'buildBundleIsModule': ?buildBundleIsModule,
-           'buildBundleEnableHCPP': ?buildBundleEnableHCPP,
+           'buildBundleEnableHcpp': ?buildBundleEnableHcpp,
            'buildAarProjectType': ?buildAarProjectType,
            'buildAarTargetPlatform': ?buildAarTargetPlatform,
-           'buildAarEnableHCPP': ?buildAarEnableHCPP,
+           'buildAarEnableHcpp': ?buildAarEnableHcpp,
            'buildApkTargetPlatform': ?buildApkTargetPlatform,
            'buildApkBuildMode': ?buildApkBuildMode,
            'buildApkSplitPerAbi': ?buildApkSplitPerAbi,
-           'buildApkEnableHCPP': ?buildApkEnableHCPP,
+           'buildApkEnableHcpp': ?buildApkEnableHcpp,
            'buildAppBundleTargetPlatform': ?buildAppBundleTargetPlatform,
            'buildAppBundleBuildMode': ?buildAppBundleBuildMode,
            'createProjectType': ?createProjectType,
@@ -378,7 +378,7 @@ final class Event {
            'runEnableImpeller': ?runEnableImpeller,
            'runIOSInterfaceType': ?runIOSInterfaceType,
            'runIsTest': ?runIsTest,
-           'runEnableHCPP': ?runEnableHCPP
+           'runEnableHcpp': ?runEnableHcpp
          },
        );
 

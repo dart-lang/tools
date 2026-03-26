@@ -679,14 +679,14 @@ void main() {
       commandHasTerminal: true,
       buildBundleTargetPlatform: 'buildBundleTargetPlatform',
       buildBundleIsModule: true,
-      buildBundleEnableHCPP: true,
+      buildBundleEnableHcpp: true,
       buildAarProjectType: 'buildAarProjectType',
       buildAarTargetPlatform: 'buildAarTargetPlatform',
-      buildAarEnableHCPP: true,
+      buildAarEnableHcpp: true,
       buildApkTargetPlatform: 'buildApkTargetPlatform',
       buildApkBuildMode: 'buildApkBuildMode',
       buildApkSplitPerAbi: true,
-      buildApkEnableHCPP: true,
+      buildApkEnableHcpp: true,
       buildAppBundleTargetPlatform: 'buildAppBundleTargetPlatform',
       buildAppBundleBuildMode: 'buildAppBundleBuildMode',
       createProjectType: 'createProjectType',
@@ -705,7 +705,7 @@ void main() {
       runEnableImpeller: true,
       runIOSInterfaceType: 'runIOSInterfaceType',
       runIsTest: true,
-      runEnableHCPP: true,
+      runEnableHcpp: true,
     );
 
     final constructedEvent = generateEvent();
@@ -717,7 +717,7 @@ void main() {
       constructedEvent.eventData['buildBundleTargetPlatform'],
       'buildBundleTargetPlatform',
     );
-    expect(constructedEvent.eventData['buildBundleEnableHCPP'], true);
+    expect(constructedEvent.eventData['buildBundleEnableHcpp'], true);
     expect(constructedEvent.eventData['buildBundleIsModule'], true);
     expect(
       constructedEvent.eventData['buildAarProjectType'],
@@ -727,7 +727,7 @@ void main() {
       constructedEvent.eventData['buildAarTargetPlatform'],
       'buildAarTargetPlatform',
     );
-    expect(constructedEvent.eventData['buildAarEnableHCPP'], true);
+    expect(constructedEvent.eventData['buildAarEnableHcpp'], true);
     expect(
       constructedEvent.eventData['buildApkTargetPlatform'],
       'buildApkTargetPlatform',
@@ -737,7 +737,7 @@ void main() {
       'buildApkBuildMode',
     );
     expect(constructedEvent.eventData['buildApkSplitPerAbi'], true);
-    expect(constructedEvent.eventData['buildApkEnableHCPP'], true);
+    expect(constructedEvent.eventData['buildApkEnableHcpp'], true);
     expect(
       constructedEvent.eventData['buildAppBundleTargetPlatform'],
       'buildAppBundleTargetPlatform',
@@ -785,7 +785,7 @@ void main() {
       constructedEvent.eventData['runIOSInterfaceType'],
       'runIOSInterfaceType',
     );
-    expect(constructedEvent.eventData['runEnableHCPP'], true);
+    expect(constructedEvent.eventData['runEnableHcpp'], true);
     expect(constructedEvent.eventData.length, 31);
   });
 
