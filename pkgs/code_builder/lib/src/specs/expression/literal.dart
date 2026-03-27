@@ -53,8 +53,8 @@ Expression literalNum(num value) => LiteralExpression._('$value');
 /// When [raw] is `true`, the value may not contain any single quotes.
 /// When [raw] is `false`, single quotes are escaped.
 ///
-/// Newlines and carriage returns are always escaped to avoid invalid syntax.
-/// Triple quoted strings are not supported.
+/// Newlines and carriage returns are always escaped to avoid invalid syntax for
+/// single quoted strings.
 Expression literalString(String value, {bool raw = false}) {
   if (raw && value.contains('\'')) {
     throw ArgumentError('Cannot include a single quote in a raw string');
