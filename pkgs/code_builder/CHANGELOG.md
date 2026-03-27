@@ -1,3 +1,8 @@
+## 4.11.2-wip
+
+* Correct type annotations on nullable and generic variables created with
+  `declareVar`, `declareFinal`, and `declareConst`.
+
 ## 4.11.1
 
 * Convert imports of implementation libraries under `package:fixnum/src/*` into

@@ -335,6 +335,31 @@ void main() {
     );
   });
 
+  test('should emit a typedef statement for a nullable function type', () {
+    final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
+    expect(
+      FunctionType(
+        (b) =>
+            b
+              ..returnType = refer('void')
+              ..isNullable = true,
+      ).toTypeDef('Void0'),
+      equalsDart('typedef Void0 = void Function()?;', emitter),
+    );
+  });
+
+  test('should emit a typedef statement for a generic function type', () {
+    expect(
+      FunctionType(
+        (b) =>
+            b
+              ..returnType = refer('void')
+              ..types.add(refer('T')),
+      ).toTypeDef('Void0'),
+      equalsDart('typedef Void0 = void Function<T>();'),
+    );
+  });
+
   test('should emit a function type with type parameters', () {
     expect(
       FunctionType(
@@ -551,12 +576,60 @@ void main() {
     );
   });
 
+  test('should emit assigning to a nullable type', () {
+    final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
+    expect(
+      literalTrue.assignVar(
+        'foo',
+        TypeReference(
+          (b) =>
+              b
+                ..symbol = 'bool'
+                ..isNullable = true,
+        ),
+      ),
+      equalsDart('bool? foo = true', emitter),
+    );
+  });
+
   test('should emit assigning to a final', () {
     expect(literalTrue.assignFinal('foo'), equalsDart('final foo = true'));
   });
 
+  test('should emit assigning to a nullable final type', () {
+    final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
+    expect(
+      literalTrue.assignFinal(
+        'foo',
+        TypeReference(
+          (b) =>
+              b
+                ..symbol = 'bool'
+                ..isNullable = true,
+        ),
+      ),
+      equalsDart('final bool? foo = true', emitter),
+    );
+  });
+
   test('should emit assigning to a const', () {
     expect(literalTrue.assignConst('foo'), equalsDart('const foo = true'));
+  });
+
+  test('should emit assigning to a nullable const type', () {
+    final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
+    expect(
+      literalTrue.assignConst(
+        'foo',
+        TypeReference(
+          (b) =>
+              b
+                ..symbol = 'bool'
+                ..isNullable = true,
+        ),
+      ),
+      equalsDart('const bool? foo = true', emitter),
+    );
   });
 
   test('should emit await', () {
@@ -767,6 +840,37 @@ void main() {
     );
   });
 
+  test('should emit a nullable typed const variable declaration', () {
+    final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
+    expect(
+      declareConst(
+        'foo',
+        type: TypeReference(
+          (b) =>
+              b
+                ..symbol = 'String'
+                ..isNullable = true,
+        ),
+      ).assign(refer('bar')),
+      equalsDart('const String? foo = bar', emitter),
+    );
+  });
+
+  test('should emit a generic typed const variable declaration', () {
+    expect(
+      declareConst(
+        'foo',
+        type: TypeReference(
+          (b) =>
+              b
+                ..symbol = 'List'
+                ..types.add(refer('int')),
+        ),
+      ).assign(refer('bar')),
+      equalsDart('const List<int> foo = bar'),
+    );
+  });
+
   test('should emit a final variable declaration', () {
     expect(
       declareFinal('foo').assign(refer('bar')),
@@ -781,25 +885,36 @@ void main() {
     );
   });
 
-  test(
-    'should emit a nullable typed final variable declaration',
-    () {
-      final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
-      expect(
-        declareFinal(
-          'foo',
-          type: TypeReference(
-            (b) =>
-                b
-                  ..symbol = 'String'
-                  ..isNullable = true,
-          ),
-        ).assign(refer('bar')),
-        equalsDart('final String? foo = bar', emitter),
-      );
-    },
-    skip: 'https://github.com/dart-lang/code_builder/issues/315',
-  );
+  test('should emit a nullable typed final variable declaration', () {
+    final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
+    expect(
+      declareFinal(
+        'foo',
+        type: TypeReference(
+          (b) =>
+              b
+                ..symbol = 'String'
+                ..isNullable = true,
+        ),
+      ).assign(refer('bar')),
+      equalsDart('final String? foo = bar', emitter),
+    );
+  });
+
+  test('should emit a generic typed final variable declaration', () {
+    expect(
+      declareFinal(
+        'foo',
+        type: TypeReference(
+          (b) =>
+              b
+                ..symbol = 'List'
+                ..types.add(refer('int')),
+        ),
+      ).assign(refer('bar')),
+      equalsDart('final List<int> foo = bar'),
+    );
+  });
 
   test('should emit a late final variable declaration', () {
     expect(
@@ -827,6 +942,37 @@ void main() {
     expect(
       declareVar('foo', type: refer('String')).assign(refer('bar')),
       equalsDart('String foo = bar'),
+    );
+  });
+
+  test('should emit a nullable typed variable declaration', () {
+    final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
+    expect(
+      declareVar(
+        'foo',
+        type: TypeReference(
+          (b) =>
+              b
+                ..symbol = 'String'
+                ..isNullable = true,
+        ),
+      ).assign(refer('bar')),
+      equalsDart('String? foo = bar', emitter),
+    );
+  });
+
+  test('should emit a generic typed variable declaration', () {
+    expect(
+      declareVar(
+        'foo',
+        type: TypeReference(
+          (b) =>
+              b
+                ..symbol = 'List'
+                ..types.add(refer('int')),
+        ),
+      ).assign(refer('bar')),
+      equalsDart('List<int> foo = bar'),
     );
   });
 
