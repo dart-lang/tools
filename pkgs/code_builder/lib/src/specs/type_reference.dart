@@ -9,7 +9,6 @@ import 'package:meta/meta.dart';
 import '../base.dart';
 import '../mixins/generics.dart';
 import '../visitors.dart';
-import 'code.dart';
 import 'expression.dart';
 import 'reference.dart';
 

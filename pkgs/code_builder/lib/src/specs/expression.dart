@@ -267,11 +267,7 @@ abstract class Expression implements Spec {
   Expression assignFinal(String name, [Reference? type]) => BinaryExpression._(
     type == null
         ? const LiteralExpression._('final')
-        : BinaryExpression._(
-          const LiteralExpression._('final'),
-          type,
-          '',
-        ),
+        : BinaryExpression._(const LiteralExpression._('final'), type, ''),
     this,
     '$name =',
   );
@@ -281,11 +277,7 @@ abstract class Expression implements Spec {
   Expression assignConst(String name, [Reference? type]) => BinaryExpression._(
     type == null
         ? const LiteralExpression._('const')
-        : BinaryExpression._(
-          const LiteralExpression._('const'),
-          type,
-          '',
-        ),
+        : BinaryExpression._(const LiteralExpression._('const'), type, ''),
     this,
     '$name =',
     isConst: true,

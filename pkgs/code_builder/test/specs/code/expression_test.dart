@@ -885,24 +885,21 @@ void main() {
     );
   });
 
-  test(
-    'should emit a nullable typed final variable declaration',
-    () {
-      final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
-      expect(
-        declareFinal(
-          'foo',
-          type: TypeReference(
-            (b) =>
-                b
-                  ..symbol = 'String'
-                  ..isNullable = true,
-          ),
-        ).assign(refer('bar')),
-        equalsDart('final String? foo = bar', emitter),
-      );
-    },
-  );
+  test('should emit a nullable typed final variable declaration', () {
+    final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
+    expect(
+      declareFinal(
+        'foo',
+        type: TypeReference(
+          (b) =>
+              b
+                ..symbol = 'String'
+                ..isNullable = true,
+        ),
+      ).assign(refer('bar')),
+      equalsDart('final String? foo = bar', emitter),
+    );
+  });
 
   test('should emit a generic typed final variable declaration', () {
     expect(
