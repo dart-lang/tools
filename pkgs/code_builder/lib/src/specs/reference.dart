@@ -98,9 +98,6 @@ class Reference extends Expression implements Spec {
   );
 
   @override
-  Expression get expression => CodeExpression(Code.scope((a) => a(this)));
-
-  @override
   String toString() =>
       (newBuiltValueToStringHelper('Reference')
             ..add('url', url)

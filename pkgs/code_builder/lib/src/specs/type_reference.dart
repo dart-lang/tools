@@ -47,9 +47,6 @@ abstract class TypeReference extends Expression
       visitor.visitType(this, context);
 
   @override
-  Expression get expression => CodeExpression(Code.scope((a) => a(this)));
-
-  @override
   TypeReference get type => this;
 
   @override
