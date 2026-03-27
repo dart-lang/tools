@@ -81,6 +81,10 @@ void main() {
     expect(literalString('some\nthing'), equalsDart(r"'some\nthing'"));
   });
 
+  test('should escape a carriage return in a string', () {
+    expect(literalString('some\rthing'), equalsDart(r"'some\rthing'"));
+  });
+
   test('should emit a && expression', () {
     expect(literalTrue.and(literalFalse), equalsDart('true && false'));
   });

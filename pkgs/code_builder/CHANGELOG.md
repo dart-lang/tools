@@ -1,3 +1,7 @@
+## 4.11.2-wip
+
+* Escape carriage return characters in `literalString`.
+
 ## 4.11.1
 
 * Convert imports of implementation libraries under `package:fixnum/src/*` into

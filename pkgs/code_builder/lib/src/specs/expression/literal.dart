@@ -41,16 +41,28 @@ Expression literalNum(num value) => LiteralExpression._('$value');
 
 /// Create a literal expression from a string [value].
 ///
-/// **NOTE**: The string is always formatted `'<value>'`.
+/// The _content_ of [value] is used as the _source_ of the generated Dart
+/// string wrapped in single quotes. For example, `literalString('\$foo')` will
+/// generate `'$foo'`, which will be an interpolation in the generated source.
 ///
-/// If [raw] is `true`, creates a raw String formatted `r'<value>'` and the
-/// value may not contain a single quote.
-/// Escapes single quotes and newlines in the value.
+/// If the content of [value] is intended to match the content of the generated
+/// literal use the [raw] argument to create a raw String formatted
+/// `r'<value>'`. For example `literalString('\$foo', raw: true)` will generate
+/// `r'$foo'` which includes a `$` character.
+///
+/// When [raw] is `true`, the value may not contain any single quotes.
+/// When [raw] is `false`, single quotes are escaped.
+///
+/// Newlines and carriage returns are always escaped to avoid invalid syntax.
+/// Triple quoted strings are not supported.
 Expression literalString(String value, {bool raw = false}) {
   if (raw && value.contains('\'')) {
     throw ArgumentError('Cannot include a single quote in a raw string');
   }
-  final escaped = value.replaceAll('\'', '\\\'').replaceAll('\n', '\\n');
+  final escaped = value
+      .replaceAll('\'', '\\\'')
+      .replaceAll('\n', '\\n')
+      .replaceAll('\r', '\\r');
   return LiteralExpression._("${raw ? 'r' : ''}'$escaped'");
 }
 
