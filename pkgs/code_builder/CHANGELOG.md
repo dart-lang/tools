@@ -1,5 +1,7 @@
 ## 4.11.2-wip
 
+* Correct type annotations on nullable and generic variables created with
+  `declareVar`, `declareFinal`, and `declareConst`.
 * Escape carriage return characters in `literalString`.
 
 ## 4.11.1
