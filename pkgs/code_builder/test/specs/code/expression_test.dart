@@ -85,6 +85,10 @@ void main() {
     expect(literalString('some\rthing'), equalsDart(r"'some\rthing'"));
   });
 
+  test('avoids extra escapes on \\', () {
+    expect(literalString('a\\tb'), equalsDart(r"'a\tb'"));
+  });
+
   test('should emit a && expression', () {
     expect(literalTrue.and(literalFalse), equalsDart('true && false'));
   });
