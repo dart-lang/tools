@@ -12,5 +12,6 @@ jobs:
     with:
       ignore_coverage: "**.mock.dart,**.g.dart"
       ignore_license: "**.mock.dart,**.g.dart,**.mocks.dart,pkgs/markdown/**"
+      license_test_string: "// Copyright"
     permissions:
       pull-requests: write
