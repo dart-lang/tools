@@ -86,7 +86,7 @@ void main() {
   });
 
   test('avoids extra escapes on \\', () {
-    expect(literalString('a\\tb'), equalsDart(r"'a\tb'"));
+    expect(literalString(r'a\tb'), equalsDart(r"'a\tb'"));
   });
 
   test('should emit a && expression', () {
