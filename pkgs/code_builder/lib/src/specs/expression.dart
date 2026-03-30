@@ -257,7 +257,7 @@ abstract class Expression implements Spec {
   Expression assignVar(String name, [Reference? type]) => BinaryExpression._(
     type == null
         ? LiteralExpression._('var $name')
-        : BinaryExpression._(type.expression, LiteralExpression._(name), ''),
+        : BinaryExpression._(type, LiteralExpression._(name), ''),
     this,
     '=',
   );
@@ -267,11 +267,7 @@ abstract class Expression implements Spec {
   Expression assignFinal(String name, [Reference? type]) => BinaryExpression._(
     type == null
         ? const LiteralExpression._('final')
-        : BinaryExpression._(
-          const LiteralExpression._('final'),
-          type.expression,
-          '',
-        ),
+        : BinaryExpression._(const LiteralExpression._('final'), type, ''),
     this,
     '$name =',
   );
@@ -281,11 +277,7 @@ abstract class Expression implements Spec {
   Expression assignConst(String name, [Reference? type]) => BinaryExpression._(
     type == null
         ? const LiteralExpression._('const')
-        : BinaryExpression._(
-          const LiteralExpression._('const'),
-          type.expression,
-          '',
-        ),
+        : BinaryExpression._(const LiteralExpression._('const'), type, ''),
     this,
     '$name =',
     isConst: true,
@@ -414,7 +406,7 @@ Expression declareVar(
 );
 
 Expression _typedVar(String variableName, Reference type) =>
-    BinaryExpression._(type.expression, LiteralExpression._(variableName), '');
+    BinaryExpression._(type, LiteralExpression._(variableName), '');
 
 Expression _late(bool late, Expression expression) =>
     late
@@ -425,7 +417,7 @@ Expression _late(bool late, Expression expression) =>
 Code createTypeDef(String name, FunctionType type) =>
     BinaryExpression._(
       LiteralExpression._('typedef $name'),
-      type.expression,
+      type,
       '=',
     ).statement;
 
