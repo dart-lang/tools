@@ -344,7 +344,7 @@ final class Event {
     bool? runEnableImpeller,
     String? runIOSInterfaceType,
     bool? runIsTest,
-    bool? runEnableHcpp
+    bool? runEnableHcpp,
   }) : this._(
          eventName: DashEvent.commandUsageValues,
          eventData: {
@@ -378,7 +378,7 @@ final class Event {
            'runEnableImpeller': ?runEnableImpeller,
            'runIOSInterfaceType': ?runIOSInterfaceType,
            'runIsTest': ?runIsTest,
-           'runEnableHcpp': ?runEnableHcpp
+           'runEnableHcpp': ?runEnableHcpp,
          },
        );
 
