@@ -89,6 +89,66 @@ void main() {
     expect(literalString(r'a\tb'), equalsDart(r"'a\tb'"));
   });
 
+  group('literalString with fullEscape', () {
+    test('should emit a simple string', () {
+      expect(literalString('foo', fullEscape: true), equalsDart(r"'foo'"));
+    });
+
+    test('should use double quotes if it contains single quotes', () {
+      expect(literalString("don't", fullEscape: true), equalsDart('"don\'t"'));
+    });
+
+    test('should use single quotes if it contains double quotes', () {
+      expect(
+        literalString('foo "bar"', fullEscape: true),
+        equalsDart('\'foo "bar"\''),
+      );
+    });
+
+    test('should escape single quotes if it contains both quotes', () {
+      expect(
+        literalString('don\'t "bar"', fullEscape: true),
+        equalsDart('\'don\\\'t "bar"\''),
+      );
+    });
+
+    test('should use raw single quotes for dollar signs if possible', () {
+      expect(
+        literalString(r'$foo', fullEscape: true),
+        equalsDart('r\'\$foo\''),
+      );
+    });
+
+    test('should use raw double quotes for dollar signs and single quotes '
+        'if possible', () {
+      expect(
+        literalString(r"don't $foo", fullEscape: true),
+        equalsDart('r"don\'t \$foo"'),
+      );
+    });
+
+    test('should escape if it contains dollar, single, and double quotes', () {
+      expect(
+        literalString('don\'t "bar" \$foo', fullEscape: true),
+        equalsDart('\'don\\\'t "bar" \\\$foo\''),
+      );
+    });
+
+    test('should escape control characters', () {
+      expect(
+        literalString('foo\nbar', fullEscape: true),
+        equalsDart('\'foo\\nbar\''),
+      );
+    });
+
+    test('should escape control characters and dollar signs', () {
+      expect(
+        literalString('foo\n\$bar', fullEscape: true),
+        equalsDart('\'foo\\n\\\$bar\''),
+      );
+    });
+  });
+
   test('should emit a && expression', () {
     expect(literalTrue.and(literalFalse), equalsDart('true && false'));
   });
