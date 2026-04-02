@@ -41,18 +41,83 @@ Expression literalNum(num value) => LiteralExpression._('$value');
 
 /// Create a literal expression from a string [value].
 ///
-/// **NOTE**: The string is always formatted `'<value>'`.
-///
-/// If [raw] is `true`, creates a raw String formatted `r'<value>'` and the
-/// value may not contain a single quote.
-/// Escapes single quotes and newlines in the value.
-Expression literalString(String value, {bool raw = false}) {
-  if (raw && value.contains('\'')) {
-    throw ArgumentError('Cannot include a single quote in a raw string');
+/// Returns an expression that will evaluate to a String  containing exactly the
+/// same content as [value]. The literal may use single or double quotes, and
+/// may be raw, depending on the content. All disallowed characters are
+/// automatically escaped.
+Expression literalString(String value) =>
+    LiteralExpression._(_escapeString(value));
+
+String _escapeString(String value) {
+  final original = value;
+  var hasSingleQuote = false;
+  var hasDoubleQuote = false;
+  var hasDollar = false;
+  var hasBackslash = false;
+  var canBeRaw = true;
+
+  value = value.replaceAllMapped(_escapeRegExp, (match) {
+    final value = match[0]!;
+    if (value == "'") {
+      hasSingleQuote = true;
+      return value;
+    } else if (value == '"') {
+      hasDoubleQuote = true;
+      return value;
+    } else if (value == r'$') {
+      hasDollar = true;
+      return value;
+    } else if (value == r'\') {
+      hasBackslash = true;
+      return r'\\';
+    }
+
+    canBeRaw = false;
+    return _escapeMap[value] ?? _hexLiteral(value);
+  });
+
+  if (canBeRaw && (hasDollar || hasBackslash)) {
+    if (!hasSingleQuote) return "r'$original'";
+    if (!hasDoubleQuote) return 'r"$original"';
   }
-  final escaped = value.replaceAll('\'', '\\\'').replaceAll('\n', '\\n');
-  return LiteralExpression._("${raw ? 'r' : ''}'$escaped'");
+
+  if (!hasDollar) {
+    if (!hasSingleQuote) return "'$value'";
+    if (!hasDoubleQuote) return '"$value"';
+  }
+
+  value = value.replaceAll(_dollarQuoteRegexp, r'\');
+  return "'$value'";
 }
+
+final _dollarQuoteRegexp = RegExp(r"(?=[$'])");
+
+/// A map from whitespace characters & `\` to their escape sequences.
+const _escapeMap = {
+  '\b': r'\b', // 08 - backspace
+  '\t': r'\t', // 09 - tab
+  '\n': r'\n', // 0A - new line
+  '\v': r'\v', // 0B - vertical tab
+  '\f': r'\f', // 0C - form feed
+  '\r': r'\r', // 0D - carriage return
+  '\x7F': r'\x7F', // delete
+  r'\': r'\\', // backslash
+};
+
+/// Given single-character string, return the hex-escaped equivalent.
+String _hexLiteral(String input) {
+  final value = input.runes.single
+      .toRadixString(16)
+      .toUpperCase()
+      .padLeft(2, '0');
+  return '\\x$value';
+}
+
+/// A [RegExp] that matches whitespace characters that must be escaped and
+/// single-quote, double-quote, and `$`
+final _escapeRegExp = RegExp('[\$\'"\\x00-\\x07\\x0E-\\x1F$_escapeMapRegexp]');
+
+final _escapeMapRegexp = _escapeMap.keys.map(_hexLiteral).join();
 
 /// Create a literal `...` operator for use when creating a Map literal.
 ///

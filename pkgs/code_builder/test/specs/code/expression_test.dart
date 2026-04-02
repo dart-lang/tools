@@ -61,24 +61,74 @@ void main() {
     });
   });
 
-  test('should emit a String', () {
-    expect(literalString(r'$monkey'), equalsDart(r"'$monkey'"));
-  });
+  group('literalString', () {
+    test('should emit a simple string', () {
+      expect(literalString('foo'), equalsDart(r"'foo'"));
+    });
 
-  test('should emit a raw String', () {
-    expect(literalString(r'$monkey', raw: true), equalsDart(r"r'$monkey'"));
-  });
+    test('should emit an empty string', () {
+      expect(literalString(''), equalsDart("''"));
+    });
 
-  test('should escape single quotes in a String', () {
-    expect(literalString(r"don't"), equalsDart(r"'don\'t'"));
-  });
+    test('should use double quotes for just a single quote', () {
+      expect(literalString("'"), equalsDart('"\'"'));
+    });
 
-  test('does not allow single quote in raw string', () {
-    expect(() => literalString(r"don't", raw: true), throwsArgumentError);
-  });
+    test('should use single quotes for just a double quote', () {
+      expect(literalString('"'), equalsDart("'\"'"));
+    });
 
-  test('should escape a newline in a string', () {
-    expect(literalString('some\nthing'), equalsDart(r"'some\nthing'"));
+    test('should use raw string for a single backslash', () {
+      expect(literalString('\\'), equalsDart("r'\\'"));
+    });
+
+    test('should emit unicode characters', () {
+      expect(literalString('😊'), equalsDart("'😊'"));
+    });
+
+    test('should escape a carriage return in a string', () {
+      expect(literalString('some\rthing'), equalsDart(r"'some\rthing'"));
+    });
+
+    test('should use raw string for backslashes', () {
+      expect(literalString(r'a\tb'), equalsDart("r'a\\tb'"));
+    });
+
+    test('should use double quotes if it contains single quotes', () {
+      expect(literalString("don't"), equalsDart('"don\'t"'));
+    });
+
+    test('should use single quotes if it contains double quotes', () {
+      expect(literalString('foo "bar"'), equalsDart('\'foo "bar"\''));
+    });
+
+    test('should escape single quotes if it contains both quotes', () {
+      expect(literalString('don\'t "bar"'), equalsDart('\'don\\\'t "bar"\''));
+    });
+
+    test('should use raw single quotes for dollar signs if possible', () {
+      expect(literalString(r'$foo'), equalsDart('r\'\$foo\''));
+    });
+
+    test('should use raw double quotes for dollar signs and single quotes '
+        'if possible', () {
+      expect(literalString(r"don't $foo"), equalsDart('r"don\'t \$foo"'));
+    });
+
+    test('should escape if it contains dollar, single, and double quotes', () {
+      expect(
+        literalString('don\'t "bar" \$foo'),
+        equalsDart('\'don\\\'t "bar" \\\$foo\''),
+      );
+    });
+
+    test('should escape control characters', () {
+      expect(literalString('foo\nbar'), equalsDart('\'foo\\nbar\''));
+    });
+
+    test('should escape control characters and dollar signs', () {
+      expect(literalString('foo\n\$bar'), equalsDart('\'foo\\n\\\$bar\''));
+    });
   });
 
   test('should emit a && expression', () {

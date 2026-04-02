@@ -1,5 +1,7 @@
-## 4.11.2-wip
+## 5.0.0-wip
 
+* **BREAKING** `literalString` fully escapes content and cannot generate strings
+  with interpolated Dart variables. Removed `raw` argument.
 * Correct type annotations on nullable and generic variables created with
   `declareVar`, `declareFinal`, and `declareConst`.
 
