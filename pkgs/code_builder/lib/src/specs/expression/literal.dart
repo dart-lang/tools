@@ -57,23 +57,23 @@ String _escapeString(String value) {
   var canBeRaw = true;
 
   value = value.replaceAllMapped(_escapeRegExp, (match) {
-    final value = match[0]!;
-    if (value == "'") {
+    final char = match[0]!;
+    if (char == "'") {
       hasSingleQuote = true;
-      return value;
-    } else if (value == '"') {
+      return char;
+    } else if (char == '"') {
       hasDoubleQuote = true;
-      return value;
-    } else if (value == r'$') {
+      return char;
+    } else if (char == r'$') {
       hasDollar = true;
-      return value;
-    } else if (value == r'\') {
+      return char;
+    } else if (char == r'\') {
       hasBackslash = true;
       return r'\\';
     }
 
     canBeRaw = false;
-    return _escapeMap[value] ?? _hexLiteral(value);
+    return _escapeMap[char] ?? _hexLiteral(char);
   });
 
   if (canBeRaw && (hasDollar || hasBackslash)) {
@@ -90,6 +90,15 @@ String _escapeString(String value) {
   return "'$value'";
 }
 
+/// Given single-character string, return the hex-escaped equivalent.
+String _hexLiteral(String input) {
+  final value = input.runes.single
+      .toRadixString(16)
+      .toUpperCase()
+      .padLeft(2, '0');
+  return '\\x$value';
+}
+
 final _dollarQuoteRegexp = RegExp(r"(?=[$'])");
 
 /// A map from whitespace characters & `\` to their escape sequences.
@@ -104,20 +113,12 @@ const _escapeMap = {
   r'\': r'\\', // backslash
 };
 
-/// Given single-character string, return the hex-escaped equivalent.
-String _hexLiteral(String input) {
-  final value = input.runes.single
-      .toRadixString(16)
-      .toUpperCase()
-      .padLeft(2, '0');
-  return '\\x$value';
-}
-
 /// A [RegExp] that matches whitespace characters that must be escaped and
 /// single-quote, double-quote, and `$`
 final _escapeRegExp = RegExp('[\$\'"\\x00-\\x07\\x0E-\\x1F$_escapeMapRegexp]');
 
-final _escapeMapRegexp = _escapeMap.keys.map(_hexLiteral).join();
+// _escapeMap.keys.map(_hexLiteral).join();
+const _escapeMapRegexp = r'\x08\x09\x0A\x0B\x0C\x0D\x7F\x5C';
 
 /// Create a literal `...` operator for use when creating a Map literal.
 ///

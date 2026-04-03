@@ -107,7 +107,7 @@ void main() {
     });
 
     test('should use raw single quotes for dollar signs if possible', () {
-      expect(literalString(r'$foo'), equalsDart('r\'\$foo\''));
+      expect(literalString(r'$foo'), equalsDart(r"r'$foo'"));
     });
 
     test('should use raw double quotes for dollar signs and single quotes '
