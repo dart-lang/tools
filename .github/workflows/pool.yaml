@@ -68,8 +68,8 @@ jobs:
         run: dart test --platform vm
         if: always() && steps.install.outcome == 'success'
       - name: Run Chrome tests
-        run: dart test --platform chrome
+        run: dart test --platform chrome --compiler dart2js,dart2wasm
         if: always() && steps.install.outcome == 'success'
-      - name: Run Chrome tests - wasm
-        run: dart test --platform chrome -c dart2wasm
-        if: always() && steps.install.outcome == 'success' && matrix.sdk == 'dev'
+      - name: Run node tests
+        run: dart test --platform node --compiler dart2js,dart2wasm
+        if: always() && steps.install.outcome == 'success'
