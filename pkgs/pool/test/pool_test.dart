@@ -277,6 +277,51 @@ void main() {
 
       await pool.request();
     });
+
+    test('request() throws if allowRelease callback throws', () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+
+      var requestFuture = pool.request();
+
+      var completer = Completer<void>();
+      resource.allowRelease(() => completer.future);
+
+      await Future<void>.delayed(Duration.zero);
+      completer.completeError('oh no!');
+
+      await expectLater(requestFuture, throwsA('oh no!'));
+    });
+  });
+
+  group('PoolResource', () {
+    test('release() throws StateError if called twice', () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+      resource.release();
+      expect(resource.release, throwsStateError);
+    });
+
+    test('allowRelease() throws StateError if called twice', () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+      resource.allowRelease(() {});
+      expect(() => resource.allowRelease(() {}), throwsStateError);
+    });
+
+    test('allowRelease() throws if called after release()', () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+      resource.release();
+      expect(() => resource.allowRelease(() {}), throwsStateError);
+    });
+
+    test('release() throws if called after allowRelease()', () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+      resource.allowRelease(() {});
+      expect(resource.release, throwsStateError);
+    });
   });
 
   test("done doesn't complete without close", () async {
@@ -294,6 +339,19 @@ void main() {
       var pool = Pool(1)..close();
       expect(pool.request, throwsStateError);
       expect(() => pool.withResource(() {}), throwsStateError);
+    });
+
+    test('can be called multiple times', () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+
+      var closeFuture1 = pool.close();
+      var closeFuture2 = pool.close();
+
+      expect(closeFuture1, equals(closeFuture2));
+
+      resource.release();
+      await closeFuture1;
     });
 
     test('pending requests are fulfilled', () async {
@@ -652,9 +710,37 @@ void main() {
 
           await subscription.cancel();
 
-          expect(eventCount, 1 + dataSize ~/ 2);
+          // Because workers run in parallel, they might produce extra items in
+          // the batch before they see the cancellation flag.
+          var minExpected = 1 + dataSize ~/ 2;
+          var maxExpected = ((minExpected + i - 1) ~/ i) * i;
+          expect(eventCount, inInclusiveRange(minExpected, maxExpected));
         });
       }
+
+      test('cancel while paused completes', () {
+        FakeAsync().run((async) {
+          pool = Pool(2);
+
+          var stream = pool.forEach(Iterable<int>.generate(10), (i) async {
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+            return i;
+          });
+
+          var subscription = stream.listen((_) {});
+
+          async.elapse(const Duration(milliseconds: 5)); // trigger onListen
+
+          subscription.pause();
+          async.elapse(const Duration(milliseconds: 50)); // let it pause
+
+          var cancelFuture = subscription.cancel();
+
+          expect(cancelFuture, completes);
+
+          async.elapse(const Duration(seconds: 1)); // let cancel proceed
+        });
+      });
     });
 
     group('errors', () {
@@ -684,6 +770,30 @@ void main() {
       });
       test('iteration, with onError', () async {
         await errorInIterator(onError: (i, e, s) => false);
+      });
+
+      test('iterator error stops processing other items', () async {
+        pool = Pool(2);
+
+        var pulledItems = <int>[];
+        var iterable = Iterable.generate(10, (i) {
+          pulledItems.add(i);
+          if (i == 3) {
+            throw StateError('iterator error');
+          }
+          return i;
+        });
+
+        var stream = pool.forEach(iterable, (i) async {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          return i;
+        });
+
+        await expectLater(stream.toList(), throwsStateError);
+
+        // Without optimization, it pulls all 10 items.
+        // With optimization, it should stop early.
+        expect(pulledItems.length, lessThan(10));
       });
 
       test('error in action, no onError', () async {
