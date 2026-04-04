@@ -1,7 +1,8 @@
-## 5.0.0-wip
+## 4.12.0-wip
 
-* **BREAKING** `literalString` fully escapes content and cannot generate strings
-  with interpolated Dart variables. Removed `raw` argument.
+* Allow single quotes in strings passed to `literalString(raw:true)`. This
+  argument no longer guarantees a raw string is used, but results will have the
+  same behavior.
 * Correct type annotations on nullable and generic variables created with
   `declareVar`, `declareFinal`, and `declareConst`.
 
