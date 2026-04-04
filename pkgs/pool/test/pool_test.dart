@@ -741,6 +741,49 @@ void main() {
           async.elapse(const Duration(seconds: 1)); // let cancel proceed
         });
       });
+
+      test('cancel waits for all workers to finish on error', () async {
+        pool = Pool(2);
+
+        var worker1Started = Completer<void>();
+        var worker1Finish = Completer<void>();
+
+        var iterable = Iterable.generate(10, (i) {
+          if (i == 1) {
+            throw StateError('iterator error');
+          }
+          return i;
+        });
+
+        var stream = pool.forEach(iterable, (i) async {
+          if (i == 0) {
+            worker1Started.complete();
+            await worker1Finish.future;
+          }
+          return i;
+        });
+
+        var errorCompleter = Completer<void>();
+        var cancelCompleter = Completer<void>();
+
+        late StreamSubscription subscription;
+
+        subscription = stream.listen((data) {}, onError: (e) {
+          errorCompleter.complete();
+          subscription.cancel().then((_) {
+            cancelCompleter.complete();
+          });
+        });
+
+        await worker1Started.future;
+        await errorCompleter.future;
+
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        expect(cancelCompleter.isCompleted, isFalse);
+
+        worker1Finish.complete();
+        await cancelCompleter.future;
+      });
     });
 
     group('errors', () {

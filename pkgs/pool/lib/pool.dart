@@ -199,11 +199,21 @@ class Pool {
       assert(doneFuture == null);
       var futures = Iterable<Future<void>>.generate(
           _maxAllocatedResources, (i) => withResource(() => run(i)));
-      doneFuture = Future.wait(futures, eagerError: true)
-          .then<void>((_) {})
+
+      var allDone = Future.wait(futures, eagerError: false);
+
+      var eagerFail = Future.wait(futures, eagerError: true)
           .onError((Object error, StackTrace stack) {
         cancelPending = true;
         controller.addError(error, stack);
+        return <void>[];
+      });
+
+      doneFuture = Future.wait([allDone, eagerFail])
+          .then<void>((_) {})
+          .catchError((Object e) {
+        // We handle errors in the eagerFail future, so we can ignore them here
+        // to avoid unhandled exceptions.
       });
 
       doneFuture!.whenComplete(controller.close);
@@ -216,6 +226,7 @@ class Pool {
         cancelPending = true;
         if (resumeCompleter != null) {
           resumeCompleter!.complete();
+          resumeCompleter = null;
         }
         await doneFuture;
       },
