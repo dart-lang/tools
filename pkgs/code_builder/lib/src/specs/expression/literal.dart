@@ -45,7 +45,7 @@ Expression literalNum(num value) => LiteralExpression._('$value');
 ///
 /// If [raw] is `true` returns an expression that will evaluate to a String
 /// containing exactly the same content as [value]. The literal may use single
-/// or double quotes, and may not actually be markedraw, depending on the
+/// or double quotes, and may not actually be marked raw, depending on the
 /// content. All disallowed characters are automatically escaped.
 Expression literalString(String value, {bool raw = false}) {
   if (raw) return LiteralExpression._(_escapeString(value));
