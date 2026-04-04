@@ -50,7 +50,7 @@ Expression literalNum(num value) => LiteralExpression._('$value');
 Expression literalString(String value, {bool raw = false}) {
   if (raw) return LiteralExpression._(_escapeString(value));
   final escaped = value.replaceAll('\'', '\\\'').replaceAll('\n', '\\n');
-  return LiteralExpression._("${raw ? 'r' : ''}'$escaped'");
+  return LiteralExpression._("'$escaped'");
 }
 
 String _escapeString(String value) {
