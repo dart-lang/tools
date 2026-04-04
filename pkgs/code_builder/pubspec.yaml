@@ -15,9 +15,9 @@ dependencies:
   meta: ^1.16.0
 
 dev_dependencies:
-  # build: ^4.0.0
-  # build_runner: ^2.7.2
-  # built_value_generator: ^8.11.2
+  build: ^4.0.0
+  build_runner: ^2.7.2
+  built_value_generator: ^8.11.2
   dart_flutter_team_lints: ^3.0.0
   dart_style: ^3.1.2
   source_gen: ^4.0.1
