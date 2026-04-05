@@ -39,6 +39,8 @@ final extensionSets = {
   'gfm-radio': md.ExtensionSet.gitHubWeb,
 };
 
+final _radioGroups = [basicRadio, commonmarkRadio, gfmRadio];
+
 void main() {
   versionSpan.textContent = 'v${md.version}';
   markdownInput.onInput.listen(_renderMarkdown);
@@ -88,11 +90,14 @@ void _renderMarkdown([Event? event]) {
 
 void _typeItOut(String msg, int pos) {
   late Timer timer;
-  markdownInput.onInput.listen((_) {
+  late StreamSubscription<Event> sub;
+  sub = markdownInput.onInput.listen((_) {
     timer.cancel();
+    sub.cancel();
   });
   void addCharacter() {
     if (pos > msg.length) {
+      sub.cancel();
       return;
     }
     markdownInput.value = msg.substring(0, pos);
@@ -105,17 +110,15 @@ void _typeItOut(String msg, int pos) {
   timer = Timer(typing, addCharacter);
 }
 
-final _radioGroups = [basicRadio, commonmarkRadio, gfmRadio];
-
 void _switchFlavor(Event e) {
   final target = e.currentTarget as HTMLElement;
-  if (target.attributes.getNamedItem('checked') == null) {
-    for (final radio in _radioGroups.where((e) => e != target)) {
-      radio.attributes.safeRemove('checked');
+  if (target.getAttribute('checked') == null) {
+    for (final radio in _radioGroups.where((r) => r != target)) {
+      radio.removeAttribute('checked');
       radio.querySelector('.glyph')!.textContent = 'radio_button_unchecked';
     }
 
-    target.attributes.getNamedItem('checked')?.value = '';
+    target.setAttribute('checked', '');
     target.querySelector('.glyph')!.textContent = 'radio_button_checked';
     extensionSet = extensionSets[target.id];
     _renderMarkdown();
@@ -124,12 +127,6 @@ void _switchFlavor(Event e) {
 
 extension on NodeList {
   List<Node> get items => [for (var i = 0; i < length; i++) item(i)!];
-}
-
-extension on NamedNodeMap {
-  void safeRemove(String qualifiedName) {
-    if (getNamedItem(qualifiedName) != null) removeNamedItem(qualifiedName);
-  }
 }
 
 extension on HTMLDivElement {
