@@ -32,19 +32,24 @@ class _DeepEquals {
     if (obj1 is YamlScalar) obj1 = obj1.value;
     if (obj2 is YamlScalar) obj2 = obj2.value;
 
-    // _parents1 and _parents2 are guaranteed to be the same size.
-    for (var i = 0; i < _parents1.length; i++) {
-      var loop1 = identical(obj1, _parents1[i]);
-      var loop2 = identical(obj2, _parents2[i]);
-      // If both structures loop in the same place, they're equal at that point
-      // in the structure. If one loops and the other doesn't, they're not
-      // equal.
-      if (loop1 && loop2) return true;
-      if (loop1 || loop2) return false;
+    final isCollection = obj1.isCollection && obj2.isCollection;
+
+    if (isCollection) {
+      // _parents1 and _parents2 are guaranteed to be the same size.
+      for (var i = 0; i < _parents1.length; i++) {
+        final loop1 = identical(obj1, _parents1[i]);
+        final loop2 = identical(obj2, _parents2[i]);
+        // If both structures loop in the same place, they're equal at that
+        // point in the structure. If one loops and the other doesn't, they're
+        // not equal.
+        if (loop1 && loop2) return true;
+        if (loop1 || loop2) return false;
+      }
+
+      _parents1.add(obj1);
+      _parents2.add(obj2);
     }
 
-    _parents1.add(obj1);
-    _parents2.add(obj2);
     try {
       if (obj1 is List && obj2 is List) {
         return _listEquals(obj1, obj2);
@@ -56,8 +61,10 @@ class _DeepEquals {
         return obj1 == obj2;
       }
     } finally {
-      _parents1.removeLast();
-      _parents2.removeLast();
+      if (isCollection) {
+        _parents1.removeLast();
+        _parents2.removeLast();
+      }
     }
   }
 
@@ -104,28 +111,45 @@ int deepHashCode(Object? obj) {
   var parents = <Object?>[];
 
   int deepHashCodeInner(Object? value) {
-    for (var parent in parents) {
-      if (identical(parent, value)) return -1;
+    final isCollection = value.isCollection;
+
+    if (isCollection) {
+      for (var parent in parents) {
+        if (identical(parent, value)) return -1;
+      }
+      parents.add(value);
     }
 
-    parents.add(value);
     try {
       if (value is Map) {
         var equality = const UnorderedIterableEquality<Object?>();
         return equality.hash(value.keys.map(deepHashCodeInner)) ^
             equality.hash(value.values.map(deepHashCodeInner));
-      } else if (value is Iterable) {
-        return const IterableEquality<Object?>()
-            .hash(value.map(deepHashCodeInner));
+      } else if (value is List) {
+        var hash = 0;
+        for (var i = 0; i < value.length; i++) {
+          hash = 31 * hash + deepHashCodeInner(value[i]);
+        }
+        return hash;
       } else if (value is YamlScalar) {
         return (value.value as Object?).hashCode;
       } else {
         return value.hashCode;
       }
     } finally {
-      parents.removeLast();
+      if (isCollection) {
+        parents.removeLast();
+      }
     }
   }
 
   return deepHashCodeInner(obj);
+}
+
+extension on Object? {
+  bool get isCollection {
+    assert(
+        this is! Iterable || this is List, 'Iterables must be Lists in YAML');
+    return this is Map || this is List;
+  }
 }

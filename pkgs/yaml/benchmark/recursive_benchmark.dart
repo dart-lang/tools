@@ -5,8 +5,8 @@
 
 import 'package:yaml/src/equality.dart';
 
-const numTrials = 100;
-const runsPerTrial = 1000;
+const numTrials = 20;
+const runsPerTrial = 100000;
 
 void main() {
   // Create a self-referential list.
@@ -17,10 +17,21 @@ void main() {
   var map = deepEqualsMap<Object?, Object?>();
   map['self'] = map;
 
+  // Create a deep self-referential list (depth 100).
+  var deepList = <Object?>[];
+  var current = deepList;
+  for (var i = 0; i < 100; i++) {
+    var next = <Object?>[];
+    current.add(next);
+    current = next;
+  }
+  current.add(deepList); // Cycle back!
+
   // Create a map containing both.
   var m1 = deepEqualsMap<Object?, Object?>();
   m1[list] = 'list';
   m1[map] = 'map';
+  m1[deepList] = 'deepList';
 
   var best = double.infinity;
   var stopwatch = Stopwatch();
@@ -32,6 +43,7 @@ void main() {
     for (var j = 0; j < runsPerTrial; j++) {
       deepHashCode(list);
       deepHashCode(map);
+      deepHashCode(deepList);
       deepHashCode(m1);
     }
 
@@ -42,8 +54,8 @@ void main() {
     best = elapsed;
 
     if (i == 0) continue;
-    print('Run #${i.toString().padLeft(3)}: ${elapsed.toStringAsFixed(3)}ms');
+    print('Run #${i.toString().padLeft(3)}: ${elapsed.toStringAsFixed(6)}ms');
   }
 
-  print('Best   : ${best.toStringAsFixed(3)}ms');
+  print('Best   : ${best.toStringAsFixed(6)}ms');
 }
