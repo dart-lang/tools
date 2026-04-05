@@ -1,3 +1,9 @@
+## 3.1.4-wip
+
+* Fix a stack overflow (infinite recursion) in `deepHashCode` when handling self-referential lists.
+* Optimize cycle detection in `deepHashCode` by using a manual loop to avoid
+  closure allocations.
+
 ## 3.1.3
 
 * Require Dart 3.4

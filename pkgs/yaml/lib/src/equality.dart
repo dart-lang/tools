@@ -104,7 +104,9 @@ int deepHashCode(Object? obj) {
   var parents = <Object?>[];
 
   int deepHashCodeInner(Object? value) {
-    if (parents.any((parent) => identical(parent, value))) return -1;
+    for (var i = 0; i < parents.length; i++) {
+      if (identical(parents[i], value)) return -1;
+    }
 
     parents.add(value);
     try {
@@ -113,7 +115,8 @@ int deepHashCode(Object? obj) {
         return equality.hash(value.keys.map(deepHashCodeInner)) ^
             equality.hash(value.values.map(deepHashCodeInner));
       } else if (value is Iterable) {
-        return const IterableEquality<Object?>().hash(value.map(deepHashCode));
+        return const IterableEquality<Object?>()
+            .hash(value.map(deepHashCodeInner));
       } else if (value is YamlScalar) {
         return (value.value as Object?).hashCode;
       } else {
