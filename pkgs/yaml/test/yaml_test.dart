@@ -992,21 +992,41 @@ void main() {
   });
 
   group('6.8: Directives', () {
-    // TODO(nweiz): assert that this produces a warning
+    void expectYamlLoadsWithWarning(
+        Object? expected, String source, String expectedWarning) {
+      var warnings = <String>[];
+      var oldCallback = yamlWarningCallback;
+      yamlWarningCallback = (message, [span]) {
+        if (span != null) message = span.message(message);
+        warnings.add(message);
+      };
+      try {
+        expectYamlLoads(expected, source);
+        expect(warnings, anyElement(contains(expectedWarning)));
+      } finally {
+        yamlWarningCallback = oldCallback;
+      }
+    }
+
     test('[Example 6.13]', () {
-      expectYamlLoads('foo', '''
+      expectYamlLoadsWithWarning(
+          'foo',
+          '''
         %FOO  bar baz # Should be ignored
                       # with a warning.
-        --- "foo"''');
+        --- "foo"''',
+          'unknown directive');
     });
 
-    // TODO(nweiz): assert that this produces a warning.
     test('[Example 6.14]', () {
-      expectYamlLoads('foo', '''
+      expectYamlLoadsWithWarning(
+          'foo',
+          '''
         %YAML 1.3 # Attempt parsing
                    # with a warning
         ---
-        "foo"''');
+        "foo"''',
+          'only supports YAML 1.1 and 1.2');
     });
 
     test('[Example 6.15]', () {
