@@ -41,7 +41,7 @@ final extensionSets = {
 
 void main() {
   versionSpan.textContent = 'v${md.version}';
-  markdownInput.onKeyUp.listen(_renderMarkdown);
+  markdownInput.onInput.listen(_renderMarkdown);
 
   final savedMarkdown = window.localStorage.getItem('markdown');
 
@@ -88,7 +88,7 @@ void _renderMarkdown([Event? event]) {
 
 void _typeItOut(String msg, int pos) {
   late Timer timer;
-  markdownInput.onKeyUp.listen((_) {
+  markdownInput.onInput.listen((_) {
     timer.cancel();
   });
   void addCharacter() {
@@ -105,22 +105,14 @@ void _typeItOut(String msg, int pos) {
   timer = Timer(typing, addCharacter);
 }
 
+final _radioGroups = [basicRadio, commonmarkRadio, gfmRadio];
+
 void _switchFlavor(Event e) {
   final target = e.currentTarget as HTMLElement;
   if (target.attributes.getNamedItem('checked') == null) {
-    if (basicRadio != target) {
-      basicRadio.attributes.safeRemove('checked');
-      basicRadio.querySelector('.glyph')!.textContent =
-          'radio_button_unchecked';
-    }
-    if (commonmarkRadio != target) {
-      commonmarkRadio.attributes.safeRemove('checked');
-      commonmarkRadio.querySelector('.glyph')!.textContent =
-          'radio_button_unchecked';
-    }
-    if (gfmRadio != target) {
-      gfmRadio.attributes.safeRemove('checked');
-      gfmRadio.querySelector('.glyph')!.textContent = 'radio_button_unchecked';
+    for (final radio in _radioGroups.where((e) => e != target)) {
+      radio.attributes.safeRemove('checked');
+      radio.querySelector('.glyph')!.textContent = 'radio_button_unchecked';
     }
 
     target.attributes.getNamedItem('checked')?.value = '';
