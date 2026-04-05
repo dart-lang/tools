@@ -24,7 +24,7 @@ void main() {
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
-        expect(pool.request(), doesNotComplete);
+        expect(pool.request(), _doesNotComplete);
 
         async.elapse(const Duration(seconds: 1));
       });
@@ -65,7 +65,7 @@ void main() {
         for (var i = 0; i < 50; i++) {
           pool.withResource(expectAsync0(() => Completer<void>().future));
         }
-        pool.withResource(expectNoAsync());
+        pool.withResource(_expectNoAsync());
 
         async.elapse(const Duration(seconds: 1));
       });
@@ -130,7 +130,7 @@ void main() {
 
           Future<void>.delayed(const Duration(seconds: 3)).then((_) {
             lastAllocatedResource.release();
-            expect(pool.request(), doesNotComplete);
+            expect(pool.request(), _doesNotComplete);
           });
         });
 
@@ -144,10 +144,10 @@ void main() {
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
-        expect(pool.request(), doesNotComplete);
+        expect(pool.request(), _doesNotComplete);
 
         Future<void>.delayed(const Duration(seconds: 3)).then((_) {
-          expect(pool.request(), doesNotComplete);
+          expect(pool.request(), _doesNotComplete);
         });
 
         async.elapse(const Duration(seconds: 6));
@@ -881,7 +881,7 @@ void main() {
 /// Returns a function that will cause the test to fail if it's called.
 ///
 /// This should only be called within a [FakeAsync.run] zone.
-void Function() expectNoAsync() {
+void Function() _expectNoAsync() {
   var stack = Trace.current(1);
   return () => registerException(
       TestFailure('Expected function not to be called.'), stack);
@@ -890,7 +890,7 @@ void Function() expectNoAsync() {
 /// A matcher for Futures that asserts that they don't complete.
 ///
 /// This should only be called within a [FakeAsync.run] zone.
-Matcher get doesNotComplete => predicate((Future future) {
+Matcher get _doesNotComplete => predicate((Future future) {
       var stack = Trace.current(1);
       future.then((_) => registerException(
           TestFailure('Expected future not to complete.'), stack));
