@@ -104,8 +104,8 @@ int deepHashCode(Object? obj) {
   var parents = <Object?>[];
 
   int deepHashCodeInner(Object? value) {
-    for (var i = 0; i < parents.length; i++) {
-      if (identical(parents[i], value)) return -1;
+    for (var parent in parents) {
+      if (identical(parent, value)) return -1;
     }
 
     parents.add(value);

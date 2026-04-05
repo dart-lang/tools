@@ -17,24 +17,26 @@ void main() {
   var map = deepEqualsMap<Object?, Object?>();
   map['self'] = map;
 
+  // Create a map containing both.
+  var m1 = deepEqualsMap<Object?, Object?>();
+  m1[list] = 'list';
+  m1[map] = 'map';
+
   var best = double.infinity;
+  var stopwatch = Stopwatch();
 
   for (var i = 0; i <= numTrials; i++) {
-    var start = DateTime.now();
+    stopwatch.reset();
+    stopwatch.start();
 
     for (var j = 0; j < runsPerTrial; j++) {
       deepHashCode(list);
       deepHashCode(map);
-
-      var m1 = deepEqualsMap<Object?, Object?>();
-      m1[list] = 'list';
-      m1[map] = 'map';
-
       deepHashCode(m1);
     }
 
-    var elapsed =
-        DateTime.now().difference(start).inMilliseconds / runsPerTrial;
+    stopwatch.stop();
+    var elapsed = stopwatch.elapsedMicroseconds / 1000 / runsPerTrial;
 
     if (elapsed >= best) continue;
     best = elapsed;
