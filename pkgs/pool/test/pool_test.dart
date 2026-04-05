@@ -839,6 +839,24 @@ void main() {
         expect(pulledItems.length, lessThan(10));
       });
 
+      test(
+          'iterator error with advancing iterator stops processing other items',
+          () async {
+        pool = Pool(1);
+
+        var pulledItems = <int>[];
+        var stream = pool.forEach(_AdvancingThrowingIterable((i) {
+          pulledItems.add(i);
+        }), (i) async {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          return i;
+        });
+
+        await expectLater(stream.toList(), throwsException);
+
+        expect(pulledItems.length, lessThan(5));
+      });
+
       test('error in action, no onError', () async {
         pool = Pool(20);
 
@@ -896,3 +914,31 @@ Matcher get _doesNotComplete => predicate((Future future) {
           TestFailure('Expected future not to complete.'), stack));
       return true;
     });
+
+class _AdvancingThrowingIterable extends Iterable<int> {
+  final void Function(int) onPull;
+  _AdvancingThrowingIterable(this.onPull);
+
+  @override
+  Iterator<int> get iterator => _AdvancingThrowingIterator(onPull);
+}
+
+class _AdvancingThrowingIterator implements Iterator<int> {
+  final void Function(int) onPull;
+  int _count = 0;
+
+  _AdvancingThrowingIterator(this.onPull);
+
+  @override
+  int get current => _count;
+
+  @override
+  bool moveNext() {
+    _count++;
+    onPull(_count);
+    if (_count == 2) {
+      throw Exception('Iterator failed');
+    }
+    return _count < 5;
+  }
+}
