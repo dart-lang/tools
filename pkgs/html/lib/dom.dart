@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// A simple tree API that results from parsing html. Intended to be compatible
 /// with dart:html, but it is missing many types and APIs.
 library;

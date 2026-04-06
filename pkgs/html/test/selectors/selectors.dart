@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// Test for the Selectors API ported from
 /// <https://github.com/w3c/web-platform-tests/tree/master/selectors-api>
 library;
