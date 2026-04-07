@@ -627,32 +627,24 @@ void main() {
       );
     });
 
-    group('cancel', () {
+    group('cancel stops new work from starting', () {
       final dataSize = 32;
       for (var i = 1; i < 5; i++) {
         test('with pool size $i', () async {
           pool = Pool(i);
 
+          final stopAfter = dataSize ~/ 2;
+          var workStarted = -1;
           var stream =
-              pool.forEach(Iterable<int>.generate(dataSize), delayedToString);
-
-          var cancelCompleter = Completer<void>();
-
-          StreamSubscription subscription;
-
-          var eventCount = 0;
-          subscription = stream.listen((data) {
-            eventCount++;
-            if (int.parse(data) == dataSize ~/ 2) {
-              cancelCompleter.complete();
-            }
-          }, onError: registerException);
-
-          await cancelCompleter.future;
-
-          await subscription.cancel();
-
-          expect(eventCount, 1 + dataSize ~/ 2);
+              pool.forEach(Iterable<int>.generate(dataSize), (i) async {
+            if (i > workStarted) workStarted = i;
+            await pumpEventQueue();
+            return i;
+          });
+          await stream.take(stopAfter).drain<void>();
+          expect(workStarted, lessThanOrEqualTo(stopAfter + i),
+              reason: 'at most $i resources may be acquired '
+                  'during ongoing cancellation');
         });
       }
     });
