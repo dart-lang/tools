@@ -200,19 +200,19 @@ class Pool {
       var futures = List<Future<void>>.generate(
           _maxAllocatedResources, (i) => withResource(() => run(i)));
 
-      var allDone = Future.wait(futures, eagerError: false);
-
-      var eagerFail = Future.wait(futures, eagerError: true)
+      // Eagerly forward errors to the stream and trigger cancellation.
+      Future.wait(futures, eagerError: true)
           .onError((Object error, StackTrace stack) {
         cancelPending = true;
         controller.addError(error, stack);
         return <void>[];
       });
 
-      doneFuture = Future.wait([allDone, eagerFail])
+      // Wait for all work to actually complete before closing the stream.
+      doneFuture = Future.wait(futures, eagerError: false)
           .then<void>((_) {})
           .catchError((Object e) {
-        // We handle errors in the eagerFail future, so we can ignore them here
+        // We handle errors in the eager wait above, so we can ignore them here
         // to avoid unhandled exceptions.
       });
 
@@ -224,10 +224,8 @@ class Pool {
       onListen: onListen,
       onCancel: () async {
         cancelPending = true;
-        if (resumeCompleter != null) {
-          resumeCompleter!.complete();
-          resumeCompleter = null;
-        }
+        resumeCompleter?.complete();
+        resumeCompleter = null;
         await doneFuture;
       },
       onPause: () {
