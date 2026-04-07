@@ -292,6 +292,29 @@ void main() {
 
       await expectLater(requestFuture, throwsA('oh no!'));
     });
+
+    test('request() does not leak resources when allowRelease throws',
+        () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+
+      var requestFuture = pool.request();
+
+      var completer = Completer<void>();
+      resource.allowRelease(() => completer.future);
+
+      await Future<void>.delayed(Duration.zero);
+      completer.completeError('oh no!');
+
+      await expectLater(requestFuture, throwsA('oh no!'));
+
+      // Without the fix, this will hang because the slot is leaked.
+      var nextRequest = pool.request().timeout(
+          const Duration(milliseconds: 100),
+          onTimeout: () => throw TimeoutException('Leaked!'));
+
+      await expectLater(nextRequest, completes);
+    });
   });
 
   group('PoolResource', () {

@@ -319,6 +319,7 @@ class Pool {
       _onReleaseCompleters.removeFirst().complete(PoolResource._(this));
     }).onError((Object error, StackTrace stackTrace) {
       _onReleaseCompleters.removeFirst().completeError(error, stackTrace);
+      _onResourceReleased();
     });
 
     return completer.future;
