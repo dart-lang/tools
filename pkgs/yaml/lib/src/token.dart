@@ -102,7 +102,10 @@ class TagToken implements Token {
   /// The tag suffix.
   final String suffix;
 
-  TagToken(this.span, this.handle, this.suffix);
+  /// Whether this tag is declared in its canonical form
+  final bool isVerbatim;
+
+  TagToken(this.span, this.handle, this.suffix, {required this.isVerbatim});
 
   @override
   String toString() => 'TAG $handle $suffix';
