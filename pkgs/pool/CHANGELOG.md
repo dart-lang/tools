@@ -1,6 +1,7 @@
 ## 1.5.3-wip
 
 * Added an example.
+* Fix a resource leak when `PoolResource.allowRelease` callback throws.
 
 ## 1.5.2
 
