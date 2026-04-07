@@ -61,6 +61,11 @@ jobs:
       - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
         with:
           sdk: ${{ matrix.sdk }}
+      # Node 22 has wasmGC enabled, which allows the wasm tests to run!
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
       - id: install
         name: Install dependencies
         run: dart pub get
@@ -68,8 +73,8 @@ jobs:
         run: dart test --platform vm
         if: always() && steps.install.outcome == 'success'
       - name: Run Chrome tests
-        run: dart test --platform chrome
+        run: dart test --platform chrome --compiler dart2js,dart2wasm
         if: always() && steps.install.outcome == 'success'
-      - name: Run Chrome tests - wasm
-        run: dart test --platform chrome -c dart2wasm
-        if: always() && steps.install.outcome == 'success' && matrix.sdk == 'dev'
+      - name: Run node tests
+        run: dart test --platform node --compiler dart2js,dart2wasm
+        if: always() && steps.install.outcome == 'success'

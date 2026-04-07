@@ -27,7 +27,7 @@ class Pool {
   /// allocated.
   ///
   /// See [PoolResource.allowRelease].
-  final _onReleaseCallbacks = Queue<void Function()>();
+  final _onReleaseCallbacks = Queue<FutureOr<void> Function()>();
 
   /// Completers that will be completed once `onRelease` callbacks are done
   /// running.
@@ -153,7 +153,7 @@ class Pool {
   Stream<T> forEach<S, T>(
       Iterable<S> elements, FutureOr<T> Function(S source) action,
       {bool Function(S item, Object error, StackTrace stack)? onError}) {
-    onError ??= (item, e, s) => true;
+    final errorHandler = onError ?? (item, e, s) => true;
 
     var cancelPending = false;
 
@@ -163,7 +163,7 @@ class Pool {
     late Iterator<S> iterator;
 
     Future<void> run(int _) async {
-      while (iterator.moveNext()) {
+      while (!cancelPending && iterator.moveNext()) {
         // caching `current` is necessary because there are async breaks
         // in this code and `iterator` is shared across many workers
         final current = iterator.current;
@@ -182,7 +182,7 @@ class Pool {
         try {
           value = await action(current);
         } catch (e, stack) {
-          if (onError!(current, e, stack)) {
+          if (errorHandler(current, e, stack)) {
             controller.addError(e, stack);
           }
           continue;
@@ -197,11 +197,24 @@ class Pool {
       iterator = elements.iterator;
 
       assert(doneFuture == null);
-      var futures = Iterable<Future<void>>.generate(
+      var futures = List<Future<void>>.generate(
           _maxAllocatedResources, (i) => withResource(() => run(i)));
-      doneFuture = Future.wait(futures, eagerError: true)
+
+      // Eagerly forward errors to the stream and trigger cancellation.
+      Future.wait(futures, eagerError: true)
+          .onError((Object error, StackTrace stack) {
+        cancelPending = true;
+        controller.addError(error, stack);
+        return <void>[];
+      });
+
+      // Wait for all work to actually complete before closing the stream.
+      doneFuture = Future.wait(futures, eagerError: false)
           .then<void>((_) {})
-          .catchError(controller.addError);
+          .catchError((Object e) {
+        // We handle errors in the eager wait above, so we can ignore them here
+        // to avoid unhandled exceptions.
+      });
 
       doneFuture!.whenComplete(controller.close);
     }
@@ -210,8 +223,9 @@ class Pool {
       sync: true,
       onListen: onListen,
       onCancel: () async {
-        assert(!cancelPending);
         cancelPending = true;
+        resumeCompleter?.complete();
+        resumeCompleter = null;
         await doneFuture;
       },
       onPause: () {
@@ -275,7 +289,7 @@ class Pool {
 
   /// If there are any pending requests, this will fire the oldest one after
   /// running [onRelease].
-  void _onResourceReleaseAllowed(void Function() onRelease) {
+  void _onResourceReleaseAllowed(FutureOr<void> Function() onRelease) {
     _resetTimer();
 
     if (_requestedResources.isNotEmpty) {
@@ -297,15 +311,17 @@ class Pool {
   ///
   /// Futures returned by [_runOnRelease] always complete in the order they were
   /// created, even if earlier [onRelease] callbacks take longer to run.
-  Future<PoolResource> _runOnRelease(void Function() onRelease) {
-    Future.sync(onRelease).then((value) {
-      _onReleaseCompleters.removeFirst().complete(PoolResource._(this));
-    }).catchError((Object error, StackTrace stackTrace) {
-      _onReleaseCompleters.removeFirst().completeError(error, stackTrace);
-    });
-
+  Future<PoolResource> _runOnRelease(FutureOr<void> Function() onRelease) {
     var completer = Completer<PoolResource>.sync();
     _onReleaseCompleters.add(completer);
+
+    Future.sync(onRelease).then((value) {
+      _onReleaseCompleters.removeFirst().complete(PoolResource._(this));
+    }).onError((Object error, StackTrace stackTrace) {
+      _onReleaseCompleters.removeFirst().completeError(error, stackTrace);
+      _onResourceReleased();
+    });
+
     return completer.future;
   }
 
