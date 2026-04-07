@@ -115,7 +115,6 @@ const _escapeMap = {
   '\f': r'\f', // 0C - form feed
   '\r': r'\r', // 0D - carriage return
   '\x7F': r'\x7F', // delete
-  r'\': r'\\', // backslash
 };
 
 /// A [RegExp] that matches whitespace characters that must be escaped and
