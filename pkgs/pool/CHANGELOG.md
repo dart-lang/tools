@@ -1,5 +1,7 @@
 ## 1.5.3-wip
 
+* Added an example.
+
 ## 1.5.2
 
 * Require Dart 3.4.
