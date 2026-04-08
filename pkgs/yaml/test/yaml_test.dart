@@ -992,21 +992,6 @@ void main() {
   });
 
   group('6.8: Directives', () {
-    void expectYamlLoadsWithWarning(
-        Object? expected, String source, String expectedWarning) {
-      final warnings = <String>[];
-      final oldCallback = yamlWarningCallback;
-      yamlWarningCallback = (message, [_]) {
-        warnings.add(message);
-      };
-      try {
-        expectYamlLoads(expected, source);
-        expect(warnings, ['Warning: $expectedWarning']);
-      } finally {
-        yamlWarningCallback = oldCallback;
-      }
-    }
-
     test('[Example 6.13]', () {
       expectYamlLoadsWithWarning(
           'foo',
