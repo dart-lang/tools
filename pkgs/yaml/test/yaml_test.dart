@@ -992,21 +992,25 @@ void main() {
   });
 
   group('6.8: Directives', () {
-    // TODO(nweiz): assert that this produces a warning
     test('[Example 6.13]', () {
-      expectYamlLoads('foo', '''
+      expectYamlLoadsWithWarning(
+          'foo',
+          '''
         %FOO  bar baz # Should be ignored
                       # with a warning.
-        --- "foo"''');
+        --- "foo"''',
+          'unknown directive.');
     });
 
-    // TODO(nweiz): assert that this produces a warning.
     test('[Example 6.14]', () {
-      expectYamlLoads('foo', '''
+      expectYamlLoadsWithWarning(
+          'foo',
+          '''
         %YAML 1.3 # Attempt parsing
                    # with a warning
         ---
-        "foo"''');
+        "foo"''',
+          'this parser only supports YAML 1.1 and 1.2.');
     });
 
     test('[Example 6.15]', () {
