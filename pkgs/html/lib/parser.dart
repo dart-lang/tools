@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// This library has a parser for HTML5 documents, that lets you parse HTML
 /// easily from a script or server side application:
 ///

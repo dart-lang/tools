@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// This library contains extra APIs that aren't in the DOM, but are useful
 /// when interacting with the parse tree.
 library;
