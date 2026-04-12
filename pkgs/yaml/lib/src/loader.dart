@@ -176,7 +176,7 @@ class Loader {
 
         throw YamlException(
           'Duplicate mapping key.',
-          keySpan.start.offset < node.span.start.offset ? event.span : keySpan,
+          keySpan.start.offset <= node.span.start.offset ? event.span : keySpan,
         );
       }
 
