@@ -110,8 +110,16 @@ int deepHashCode(Object? obj) {
     try {
       if (value is Map) {
         var equality = const UnorderedIterableEquality<Object?>();
-        return equality.hash(value.keys.map(deepHashCodeInner)) ^
-            equality.hash(value.values.map(deepHashCodeInner));
+
+        // Avoid calling keys in YamlMap which eagerly iterates recursive
+        // references.
+        final (keys, values) = switch (value) {
+          YamlMap(:final nodes) => (nodes.keys, nodes.values),
+          _ => (value.keys, value.values)
+        };
+
+        return equality.hash(keys.map(deepHashCodeInner)) ^
+            equality.hash(values.map(deepHashCodeInner));
       } else if (value is Iterable) {
         return const IterableEquality<Object?>()
             .hash(value.map(deepHashCodeInner));
