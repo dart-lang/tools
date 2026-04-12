@@ -1137,6 +1137,23 @@ void main() {
       expect(map[key], 'value');
     });
 
+    test('self-referential map does not cause stack overflow in deepHashcode',
+        () {
+      var doc = loadYaml('&map { *map : *map }');
+      expect(doc, isNotNull);
+      expect(doc, isA<YamlMap>());
+      expect(doc.nodes.keys.first, same(doc));
+      expect(doc.nodes.values.first, same(doc));
+    });
+
+    test(
+      'Throws when duplicate aliases are used as a map key',
+      () {
+        expectYamlFails('&map { *map : hello, *map : there }');
+        expectYamlFails('&list [ { *list : this, *list : next } ]');
+      },
+    );
+
     test('[Example 7.1]', () {
       expectYamlLoads({
         'First occurrence': 'Foo',
