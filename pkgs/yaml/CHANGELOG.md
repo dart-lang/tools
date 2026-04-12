@@ -1,6 +1,8 @@
 ## 3.1.4-wip
 
-* Fix a stack overflow in `deepHashCode` when handling self-referential lists.
+* Fix stack overflow when handling self-referential collections.
+  * Fix issue in `deepHashCode` when handling self-referential lists and maps.
+  * Prevent duplicate self-referential collections from being used as keys.
 
 ## 3.1.3
 
