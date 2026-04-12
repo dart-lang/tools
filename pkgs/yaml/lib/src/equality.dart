@@ -29,6 +29,7 @@ class _DeepEquals {
 
   /// Returns whether [obj1] and [obj2] are structurally equivalent.
   bool equals(Object? obj1, Object? obj2) {
+    if (identical(obj1, obj2)) return true;
     if (obj1 is YamlScalar) obj1 = obj1.value;
     if (obj2 is YamlScalar) obj2 = obj2.value;
 

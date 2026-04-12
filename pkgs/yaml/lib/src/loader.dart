@@ -153,16 +153,31 @@ class Loader {
       throw YamlException('Invalid tag for mapping.', firstEvent.span);
     }
 
-    var children = deepEqualsMap<dynamic, YamlNode>();
-    var node = YamlMap.internal(children, firstEvent.span, firstEvent.style);
+    final children = deepEqualsMap<dynamic, YamlNode>();
+    final node = YamlMap.internal(children, firstEvent.span, firstEvent.style);
     _registerAnchor(firstEvent.anchor, node);
 
     var event = _parser.parse();
+    var hasRecursive = false;
+
     while (event.type != EventType.mappingEnd) {
-      var key = _loadNode(event);
-      var value = _loadNode(_parser.parse());
-      if (children.containsKey(key)) {
-        throw YamlException('Duplicate mapping key.', key.span);
+      final key = _loadNode(event);
+      final value = _loadNode(_parser.parse());
+
+      if (identical(node, key)) {
+        if (hasRecursive) {
+          // Key span points to anchor. Use event.
+          throw YamlException('Duplicate recursive mapping key', event.span);
+        }
+
+        hasRecursive = true;
+      } else if (children.containsKey(key)) {
+        final keySpan = key.span;
+
+        throw YamlException(
+          'Duplicate mapping key.',
+          keySpan.start.offset < node.span.start.offset ? event.span : keySpan,
+        );
       }
 
       children[key] = value;
