@@ -167,16 +167,14 @@ class Loader {
       if (identical(node, key)) {
         if (hasRecursive) {
           // Key span points to anchor. Use event.
-          throw YamlException('Duplicate recursive mapping key', event.span);
+          throw YamlException('Duplicate recursive mapping key.', event.span);
         }
 
         hasRecursive = true;
       } else if (children.containsKey(key)) {
-        final keySpan = key.span;
-
         throw YamlException(
           'Duplicate mapping key.',
-          keySpan.start.offset <= node.span.start.offset ? event.span : keySpan,
+          event.type == EventType.alias ? event.span : key.span,
         );
       }
 
