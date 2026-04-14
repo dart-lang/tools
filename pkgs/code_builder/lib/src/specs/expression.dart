@@ -345,7 +345,7 @@ abstract class Expression implements Spec {
 
   /// Returns `this`.
   @visibleForOverriding
-  @Deprecated('Do not use.')
+  @Deprecated('No longer needed. Use the expression directly.')
   Expression get expression => this;
 
   /// Returns this expression wrapped in parenthesis.
