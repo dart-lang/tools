@@ -1,5 +1,8 @@
-## 4.11.2-wip
+## 4.12.0-wip
 
+* Allow single quotes in strings passed to `literalString(raw:true)`. This
+  argument no longer guarantees a raw string is used, but results will have the
+  same behavior.
 * Correct type annotations on nullable and generic variables created with
   `declareVar`, `declareFinal`, and `declareConst`.
 
