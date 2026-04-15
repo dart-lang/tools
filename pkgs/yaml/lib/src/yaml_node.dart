@@ -54,6 +54,9 @@ class YamlMap extends YamlNode with collection.MapMixin, UnmodifiableMapMixin {
   /// `dynamic` `map.nodes["foo"]` will still work.
   final Map<dynamic, YamlNode> nodes;
 
+  /// Whether this map is self-referential.
+  bool isSelfReferential = false;
+
   /// The style used for the map in the original document.
   final CollectionStyle style;
 
@@ -98,6 +101,9 @@ class YamlMap extends YamlNode with collection.MapMixin, UnmodifiableMapMixin {
 /// A read-only [List] parsed from YAML.
 class YamlList extends YamlNode with collection.ListMixin {
   final List<YamlNode> nodes;
+
+  /// Whether this list is self-referential.
+  bool isSelfReferential = false;
 
   /// The style used for the list in the original document.
   final CollectionStyle style;

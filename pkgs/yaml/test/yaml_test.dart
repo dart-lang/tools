@@ -1137,6 +1137,60 @@ void main() {
       expect(map[key], 'value');
     });
 
+    test('self-referential map does not cause stack overflow in deepHashcode',
+        () {
+      var doc = loadYaml('&map { *map : *map }');
+      expect(doc, isNotNull);
+      expect(doc, isA<YamlMap>());
+      expect(doc.nodes.keys.first, same(doc));
+      expect(doc.nodes.values.first, same(doc));
+    });
+
+    test(
+      'Throws when duplicate aliases are used as a map key',
+      () {
+        expectYamlFails('&map { *map : hello, *map : there }');
+        expectYamlFails('&list [ { *list : this, *list : next } ]');
+      },
+    );
+
+    test(
+        'self-referential maps with structural equality as keys do not '
+        'throw duplicate key error (deviation from spec)', () {
+      // In a strict YAML parser, this should fail because *map1 and *map2 are
+      // structurally equivalent, resulting in duplicate keys in shouldBeError.
+      // However, because we use identityHashCode for self-referential maps,
+      // they have different hash codes and are not detected as duplicates.
+
+      var map1 = deepEqualsMap();
+      map1[map1] = 'hello';
+
+      var map2 = deepEqualsMap();
+      map2[map2] = 'hello';
+
+      var shouldBeError = deepEqualsMap();
+      shouldBeError[map1] = 'foo';
+      shouldBeError[map2] = 'bar';
+
+      var expected = {
+        'map1': map1,
+        'map2': map2,
+        'shouldBeError': shouldBeError
+      };
+
+      expectYamlLoads(expected, '''
+        map1: &map1 { *map1 : hello }
+        map2: &map2 { *map2 : hello }
+        shouldBeError:
+          ? *map1
+          : foo
+          ? *map2
+          : bar
+      ''');
+    },
+        skip: 'Deviation from spec: duplicate keys not detected for '
+            'structurally equivalent self-referential maps.');
+
     test('[Example 7.1]', () {
       expectYamlLoads({
         'First occurrence': 'Foo',

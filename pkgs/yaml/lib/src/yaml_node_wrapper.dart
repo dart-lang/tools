@@ -30,6 +30,9 @@ class YamlMapWrapper extends MapBase
   final Map<dynamic, YamlNode> nodes;
 
   @override
+  bool isSelfReferential = false;
+
+  @override
   Map get value => this;
 
   @override
@@ -104,6 +107,9 @@ class YamlListWrapper extends ListBase implements YamlList {
 
   @override
   final List<YamlNode> nodes;
+
+  @override
+  bool isSelfReferential = false;
 
   @override
   List get value => this;

@@ -13,7 +13,7 @@ import 'yaml_node.dart';
 
 /// Returns a [Map] that compares its keys based on [deepEquals].
 Map<K, V> deepEqualsMap<K, V>() =>
-    LinkedHashMap(equals: deepEquals, hashCode: deepHashCode);
+    LinkedHashMap(equals: _DeepEquals().equals, hashCode: _deepHasher);
 
 /// Returns whether two objects are structurally equivalent.
 ///
@@ -100,10 +100,18 @@ class _DeepEquals {
 /// This supports deep equality for maps and lists, including those with
 /// self-referential structures, and returns the same hash code for
 /// [YamlScalar]s and their values.
-int deepHashCode(Object? obj) {
+int deepHashCode(Object? obj) => _deepHasher(obj);
+
+int Function(Object?) get _deepHasher {
   var parents = <Object?>[];
 
   int deepHashCodeInner(Object? value) {
+    if (value is YamlMap && value.isSelfReferential) {
+      return identityHashCode(value);
+    }
+    if (value is YamlList && value.isSelfReferential) {
+      return identityHashCode(value);
+    }
     if (parents.any((parent) => identical(parent, value))) return -1;
 
     parents.add(value);
@@ -125,5 +133,5 @@ int deepHashCode(Object? obj) {
     }
   }
 
-  return deepHashCodeInner(obj);
+  return deepHashCodeInner;
 }
