@@ -101,6 +101,13 @@ class InlineParser {
       // A right bracket (']') is special. Hitting this character triggers the
       // "look for link or image" procedure.
       // See https://spec.commonmark.org/0.30/#an-algorithm-for-parsing-nested-emphasis-and-links.
+      if (charAt(pos) == $backslash && pos + 1 < source.length) {
+        writeText();
+        advanceBy(1);
+        start = pos; // Skip past backslash.
+        advanceBy(1); // Include next character as literal in text.
+        continue;
+      }
       if (charAt(pos) == $rbracket) {
         writeText();
         _linkOrImage();

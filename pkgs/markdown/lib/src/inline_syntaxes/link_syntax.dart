@@ -23,6 +23,11 @@ class LinkContext {
 }
 
 /// Matches links like `[blah][label]` and `[blah](url)`.
+/// 
+/// A `[blah]`, `[blah][]` or `[some text][blah]` where
+/// `blah` is not a defined reference is passed to [linkResolver]
+/// with `blah` as first argument, and `some text` as second argument
+/// when available.
 class LinkSyntax extends DelimiterSyntax {
   static final _entirelyWhitespacePattern = RegExp(r'^\s*$');
 
@@ -51,7 +56,7 @@ class LinkSyntax extends DelimiterSyntax {
     if (parser.pos + 1 >= parser.source.length) {
       // The `]` is at the end of the document, but this may still be a valid
       // shortcut reference link.
-      return _tryCreateReferenceLink(context, text);
+      return _tryCreateReferenceLink(context, text, null);
     }
 
     // Peek at the next character; don't advance, so as to avoid later stepping
@@ -75,7 +80,7 @@ class LinkSyntax extends DelimiterSyntax {
       // Reset the parser position.
       parser.pos = leftParenIndex;
       parser.advanceBy(-1);
-      return _tryCreateReferenceLink(context, text);
+      return _tryCreateReferenceLink(context, text, null);
     }
 
     if (char == $lbracket) {
@@ -87,18 +92,18 @@ class LinkSyntax extends DelimiterSyntax {
         // That opening `[` is not actually part of the link. Maybe a
         // *shortcut* reference link (followed by a `[`).
         parser.advanceBy(1);
-        return _tryCreateReferenceLink(context, text);
+        return _tryCreateReferenceLink(context, text, null);
       }
       final label = _parseReferenceLinkLabel(parser);
       if (label != null) {
-        return _tryCreateReferenceLink(context, label, secondary: true);
+        return _tryCreateReferenceLink(context, label, text, secondary: true);
       }
       return null;
     }
 
     // The link text (inside `[...]`) was not followed with a opening `(` nor
     // an opening `[`. Perhaps just a simple shortcut reference link (`[...]`).
-    return _tryCreateReferenceLink(context, text);
+    return _tryCreateReferenceLink(context, text, null);
   }
 
   /// Resolve a possible reference link.
@@ -113,6 +118,7 @@ class LinkSyntax extends DelimiterSyntax {
   /// [label] does not need to be normalized.
   Node? _resolveReferenceLink(
     String label,
+    String? content,
     Map<String, LinkReference> linkReferences, {
     required List<Node> Function() getChildren,
   }) {
@@ -137,6 +143,7 @@ class LinkSyntax extends DelimiterSyntax {
             .replaceAll(r'\\', r'\')
             .replaceAll(r'\[', '[')
             .replaceAll(r'\]', ']'),
+        content,
       );
       if (resolved != null) {
         getChildren();
@@ -169,13 +176,15 @@ class LinkSyntax extends DelimiterSyntax {
   /// Returns the nodes if it was successfully created, `null` otherwise.
   Iterable<Node>? _tryCreateReferenceLink(
     LinkContext context,
-    String label, {
+    String label,
+    String? content, {
     bool? secondary,
   }) {
     final parser = context.parser;
     final getChildren = context.getChildren;
     final link = _resolveReferenceLink(
       label,
+      content,
       parser.document.linkReferences,
       getChildren: getChildren,
     );

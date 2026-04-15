@@ -22,18 +22,23 @@ class Element implements Node {
   String? footnoteLabel;
 
   /// Instantiates a [tag] Element with [children].
-  Element(this.tag, this.children) : attributes = {};
+  Element(this.tag, this.children, [Map<String, String>? attributes])
+    : attributes = {...?attributes};
 
   /// Instantiates an empty, self-closing [tag] Element.
-  Element.empty(this.tag) : children = null, attributes = {};
+  Element.empty(this.tag, [Map<String, String>? attributes])
+    : children = null,
+      attributes = {...?attributes};
 
   /// Instantiates a [tag] Element with no [children].
-  Element.withTag(this.tag) : children = const [], attributes = {};
+  Element.withTag(this.tag, [Map<String, String>? attributes])
+    : children = const [],
+      attributes = {...?attributes};
 
   /// Instantiates a [tag] Element with a single Text child.
-  Element.text(this.tag, String text)
+  Element.text(this.tag, String text, [Map<String, String>? attributes])
     : children = [Text(text)],
-      attributes = {};
+      attributes = {...?attributes};
 
   /// Whether this element is self-closing.
   bool get isEmpty => children == null;
