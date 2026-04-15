@@ -103,7 +103,7 @@ class _DeepEquals {
 int deepHashCode(Object? obj) => _deepHasher(obj);
 
 int Function(Object?) get _deepHasher {
-  var parents = <Object?>[];
+  final parents = Set<Object?>.identity();
 
   int deepHashCodeInner(Object? value) {
     if (value is YamlMap && value.isSelfReferential) {
@@ -112,7 +112,7 @@ int Function(Object?) get _deepHasher {
     if (value is YamlList && value.isSelfReferential) {
       return identityHashCode(value);
     }
-    if (parents.any((parent) => identical(parent, value))) return -1;
+    if (parents.contains(value)) return -1;
 
     parents.add(value);
     try {
@@ -129,7 +129,7 @@ int Function(Object?) get _deepHasher {
         return value.hashCode;
       }
     } finally {
-      parents.removeLast();
+      parents.remove(value);
     }
   }
 
