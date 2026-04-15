@@ -29,6 +29,9 @@ class Loader {
   /// Aliases by the alias name.
   final _aliases = <String, YamlNode>{};
 
+  /// Anchors that are currently being resolved.
+  final _activeAnchors = <String>{};
+
   /// The span of the entire stream emitted so far.
   FileSpan get span => _span;
   FileSpan _span;
@@ -103,7 +106,12 @@ class Loader {
   /// Composes a node corresponding to an alias.
   YamlNode _loadAlias(AliasEvent event) {
     var alias = _aliases[event.name];
-    if (alias != null) return alias;
+    if (alias != null) {
+      if (_activeAnchors.contains(event.name)) {
+        throw YamlException('Self-referential collections are not supported.', event.span);
+      }
+      return alias;
+    }
 
     throw YamlException('Undefined alias.', event.span);
   }
@@ -135,10 +143,15 @@ class Loader {
     var node = YamlList.internal(children, firstEvent.span, firstEvent.style);
     _registerAnchor(firstEvent.anchor, node);
 
+    if (firstEvent.anchor case final anchor?) _activeAnchors.add(anchor);
     var event = _parser.parse();
-    while (event.type != EventType.sequenceEnd) {
-      children.add(_loadNode(event));
-      event = _parser.parse();
+    try {
+      while (event.type != EventType.sequenceEnd) {
+        children.add(_loadNode(event));
+        event = _parser.parse();
+      }
+    } finally {
+      if (firstEvent.anchor case final anchor?) _activeAnchors.remove(anchor);
     }
 
     setSpan(node, firstEvent.span.expand(event.span));
@@ -157,16 +170,21 @@ class Loader {
     var node = YamlMap.internal(children, firstEvent.span, firstEvent.style);
     _registerAnchor(firstEvent.anchor, node);
 
+    if (firstEvent.anchor case final anchor?) _activeAnchors.add(anchor);
     var event = _parser.parse();
-    while (event.type != EventType.mappingEnd) {
-      var key = _loadNode(event);
-      var value = _loadNode(_parser.parse());
-      if (children.containsKey(key)) {
-        throw YamlException('Duplicate mapping key.', key.span);
-      }
+    try {
+      while (event.type != EventType.mappingEnd) {
+        var key = _loadNode(event);
+        var value = _loadNode(_parser.parse());
+        if (children.containsKey(key)) {
+          throw YamlException('Duplicate mapping key.', key.span);
+        }
 
-      children[key] = value;
-      event = _parser.parse();
+        children[key] = value;
+        event = _parser.parse();
+      }
+    } finally {
+      if (firstEvent.anchor case final anchor?) _activeAnchors.remove(anchor);
     }
 
     setSpan(node, firstEvent.span.expand(event.span));

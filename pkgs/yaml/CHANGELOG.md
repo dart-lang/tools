@@ -1,6 +1,8 @@
 ## 3.1.4-wip
 
-* Fix a stack overflow in `deepHashCode` when handling self-referential lists.
+* Throw a `FormatException` when parsing self-referential collections instead of
+  a `StackOverflow`. Yaml definitions with collections nested within themselves
+  are unsupported.
 
 ## 3.1.3
 
