@@ -53,6 +53,23 @@ void expectYamlFails(String source) {
   expect(() => loadYaml(cleanUpLiteral(source)), throwsYamlException);
 }
 
+/// Asserts that a string containing a single YAML document produces a given
+/// value and emits warnings when loaded.
+void expectYamlLoadsWithWarning(
+    Object? expected, String source, String expectedWarning) {
+  final warnings = <String>[];
+  final oldCallback = yamlWarningCallback;
+  yamlWarningCallback = (message, [_]) {
+    warnings.add(message);
+  };
+  try {
+    expectYamlLoads(expected, source);
+    expect(warnings, ['Warning: $expectedWarning']);
+  } finally {
+    yamlWarningCallback = oldCallback;
+  }
+}
+
 /// Removes eight spaces of leading indentation from a multiline string.
 ///
 /// Note that this is very sensitive to how the literals are styled. They should
