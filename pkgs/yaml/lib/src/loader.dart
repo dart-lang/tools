@@ -108,7 +108,8 @@ class Loader {
     var alias = _aliases[event.name];
     if (alias != null) {
       if (_activeAnchors.contains(event.name)) {
-        throw YamlException('Self-referential collections are not supported.', event.span);
+        throw YamlException(
+            'Self-referential collections are not supported.', event.span);
       }
       return alias;
     }
