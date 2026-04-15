@@ -144,9 +144,10 @@ class Loader {
     var node = YamlList.internal(children, firstEvent.span, firstEvent.style);
     _registerAnchor(firstEvent.anchor, node);
 
-    if (firstEvent.anchor case final anchor?) _activeAnchors.add(anchor);
-    var event = _parser.parse();
+    Event event;
     try {
+      if (firstEvent.anchor case final anchor?) _activeAnchors.add(anchor);
+      event = _parser.parse();
       while (event.type != EventType.sequenceEnd) {
         children.add(_loadNode(event));
         event = _parser.parse();
@@ -171,9 +172,10 @@ class Loader {
     var node = YamlMap.internal(children, firstEvent.span, firstEvent.style);
     _registerAnchor(firstEvent.anchor, node);
 
-    if (firstEvent.anchor case final anchor?) _activeAnchors.add(anchor);
-    var event = _parser.parse();
+    Event event;
     try {
+      if (firstEvent.anchor case final anchor?) _activeAnchors.add(anchor);
+      event = _parser.parse();
       while (event.type != EventType.mappingEnd) {
         var key = _loadNode(event);
         var value = _loadNode(_parser.parse());
