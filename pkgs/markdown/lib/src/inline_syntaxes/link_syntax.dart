@@ -45,7 +45,6 @@ class LinkSyntax extends DelimiterSyntax {
            linkBuilder ?? linkBuilderFromResolver(linkResolver) ?? _noBuilder,
        super(pattern, startCharacter: startCharacter);
 
-  @Deprecated('User linkBuilder instead')
   Resolver get linkResolver => linkResolverFromBuilder(linkBuilder)!;
 
   @override
