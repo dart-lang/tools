@@ -122,8 +122,8 @@ class LinkSyntax extends DelimiterSyntax {
   ///
   /// Uses [linkReferences], [linkBuilder], and [createNode] to try to
   /// resolve [label] into a [Node]. If [label] is defined in
-  /// [linkReferences] or can be resolved by [linkBuilder], returns a `List<Node>`
-  /// and calls [getChildren].
+  /// [linkReferences] or can be resolved by [linkBuilder],
+  /// returns a `List<Node>` and calls [getChildren].
   ///
   /// Otherwise, returns `null` and does not call [getChildren].
   ///
@@ -208,18 +208,6 @@ class LinkSyntax extends DelimiterSyntax {
       label,
       secondary: secondary,
     );
-  }
-
-  /// Create an inline link node.
-  ///
-  /// Always calls [getChildren] to remove the link text nodes from the
-  /// document, and inserts them as children of the created `<a>` element.
-  Node _createInlineLink(
-    InlineParser parser,
-    InlineLink link, {
-    required List<Node> Function() getChildren,
-  }) {
-    return createNode(link.destination, link.title, getChildren: getChildren);
   }
 
   /// Parse a reference link label at the current position.

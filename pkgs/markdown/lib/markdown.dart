@@ -49,11 +49,11 @@ import 'src/version.dart';
 export 'src/ast.dart'
     show
         Element,
+        LinkBuilder,
         Node,
-        Text,
         NodeVisitor,
         Resolver,
-        LinkBuilder,
+        Text,
         UnparsedContent;
 export 'src/block_parser.dart';
 export 'src/block_syntaxes/alert_block_syntax.dart';
