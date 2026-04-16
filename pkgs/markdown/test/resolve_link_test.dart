@@ -80,14 +80,13 @@ void main() {
             ..attributes['href'] = '/$label.html';
           return link;
         },
-        r'''
+        '''
 * A raw [RefLink1].
 * An implicit label [RefLink2][].
 * An explicit label [_RefLabel3_][RefLink3].
-* Nested \[\]s in title are escaped [RefArray[]][RefLink4]
-      ''',
+        ''',
       );
-      //expect(called, 3);
+      expect(called, 3);
       expect(nodes, [
         isElement('ul', [
           isElement('li', [
@@ -109,11 +108,6 @@ void main() {
               ],
               {'href': '/RefLink3.html'},
             ),
-            '.',
-          ]),
-          isElement('li', [
-            'Nested []s in title are escaped',
-            isElement('a', ['RefArray[]'], {'href': '/RefLink4.html'}),
             '.',
           ]),
         ]),

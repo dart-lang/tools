@@ -275,11 +275,11 @@ void testMatcher(
 }) {
   group(name, () {
     test('using isElement', () {
-      Matcher matcher = isElement(tag, children, attributes, isEmpty);
+      final Matcher matcher = isElement(tag, children, attributes, isEmpty);
       expect(item, fails ? isNot(matcher) : matcher);
     });
     test('using ElementMatcher', () {
-      Matcher matcher = ElementMatcher(
+      final Matcher matcher = ElementMatcher(
         tag,
         children: children,
         attributes: attributes,

@@ -22,8 +22,9 @@ class Document {
   ///
   /// They are case-insensitive and added by ref syntax.
   final footnoteLabels = <String>[];
-  final Resolver? linkResolver;
-  final Resolver? imageLinkResolver;
+
+  final LinkBuilder? linkBuilder;
+  final LinkBuilder? imageLinkBuilder;
   final bool encodeHtml;
 
   /// Whether to use default block syntaxes.
@@ -47,12 +48,17 @@ class Document {
     Iterable<BlockSyntax>? blockSyntaxes,
     Iterable<InlineSyntax>? inlineSyntaxes,
     ExtensionSet? extensionSet,
-    this.linkResolver,
-    this.imageLinkResolver,
+    Resolver? linkResolver,
+    LinkBuilder? linkBuilder,
+    Resolver? imageLinkResolver,
+    LinkBuilder? imageLinkBuilder,
     this.encodeHtml = true,
     this.withDefaultBlockSyntaxes = true,
     this.withDefaultInlineSyntaxes = true,
-  }) : hasCustomInlineSyntaxes =
+  }) : linkBuilder = linkBuilder ?? linkBuilderFromResolver(linkResolver),
+       imageLinkBuilder =
+           imageLinkBuilder ?? linkBuilderFromResolver(imageLinkResolver),
+       hasCustomInlineSyntaxes =
            (inlineSyntaxes?.isNotEmpty ?? false) ||
            (extensionSet?.inlineSyntaxes.isNotEmpty ?? false) {
     if (blockSyntaxes != null) {
@@ -75,6 +81,13 @@ class Document {
       _inlineSyntaxes.addAll(extensionSet.inlineSyntaxes);
     }
   }
+
+  // Creates old-style link-resolver from the link-builder.
+
+  @Deprecated('User linkBuilder instead')
+  Resolver? get linkResolver => linkResolverFromBuilder(linkBuilder);
+  @Deprecated('User imageLinkBuilder instead')
+  Resolver? get imageLinkResolver => linkResolverFromBuilder(imageLinkBuilder);
 
   /// Parses the given [lines] of Markdown to a series of AST nodes.
   List<Node> parseLines(List<String> lines) =>

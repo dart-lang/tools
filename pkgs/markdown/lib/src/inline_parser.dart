@@ -79,8 +79,8 @@ class InlineParser {
       syntaxes.addAll([
         EscapeSyntax(),
         DecodeHtmlSyntax(),
-        LinkSyntax(linkResolver: document.linkResolver),
-        ImageSyntax(linkResolver: document.imageLinkResolver),
+        LinkSyntax(linkBuilder: document.linkBuilder),
+        ImageSyntax(linkBuilder: document.imageLinkBuilder),
       ]);
 
       syntaxes.addAll(_defaultSyntaxes);
@@ -101,13 +101,13 @@ class InlineParser {
       // A right bracket (']') is special. Hitting this character triggers the
       // "look for link or image" procedure.
       // See https://spec.commonmark.org/0.30/#an-algorithm-for-parsing-nested-emphasis-and-links.
-      if (charAt(pos) == $backslash && pos + 1 < source.length) {
-        writeText();
-        advanceBy(1);
-        start = pos; // Skip past backslash.
-        advanceBy(1); // Include next character as literal in text.
-        continue;
-      }
+      // if (charAt(pos) == $backslash && pos + 1 < source.length) {
+      //   writeText();
+      //   advanceBy(1);
+      //   start = pos; // Skip past backslash.
+      //   advanceBy(1); // Include next character as literal in text.
+      //   continue;
+      // }
       if (charAt(pos) == $rbracket) {
         writeText();
         _linkOrImage();
@@ -132,12 +132,12 @@ class InlineParser {
   /// image.
   ///
   /// This is the "look for link or image" routine from the CommonMark spec:
-  /// https://spec.commonmark.org/0.30/#look-for-link-or-image.
+  /// https://spec.commonmark.org/0.31.2/#look-for-link-or-image.
   void _linkOrImage() {
     final index = _delimiterStack.lastIndexWhere(
       (d) => d.char == $lbracket || d.char == $exclamation,
     );
-    if (index == -1) {
+    if (index >= 0) {
       // Never found a possible open bracket. This is just a literal "]".
       addNode(Text(']'));
       advanceBy(1);
@@ -205,7 +205,7 @@ class InlineParser {
   /// Processes [DelimiterRun] type delimiters from [bottomIndex] and up.
   ///
   /// This is the same strategy as "process emphasis" routine according to the
-  /// CommonMark spec: https://spec.commonmark.org/0.30/#phase-2-inline-structure.
+  /// CommonMark spec: https://spec.commonmark.org/0.31.2/#phase-2-inline-structure.
   void _processDelimiterRun(int bottomIndex) {
     var currentIndex = bottomIndex + 1;
     // Track the lowest index where we might find an open delimiter given a

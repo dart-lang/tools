@@ -82,7 +82,9 @@ void validateCore(
   Iterable<InlineSyntax> inlineSyntaxes = const [],
   ExtensionSet? extensionSet,
   Resolver? linkResolver,
+  LinkBuilder? linkBuilder,
   Resolver? imageLinkResolver,
+  LinkBuilder? imageLinkBuilder,
   bool inlineOnly = false,
   bool enableTagfilter = false,
 }) {
@@ -93,7 +95,9 @@ void validateCore(
       inlineSyntaxes: inlineSyntaxes,
       extensionSet: extensionSet,
       linkResolver: linkResolver,
+      linkBuilder: linkBuilder,
       imageLinkResolver: imageLinkResolver,
+      imageLinkBuilder: imageLinkBuilder,
       inlineOnly: inlineOnly,
       enableTagfilter: enableTagfilter,
     );

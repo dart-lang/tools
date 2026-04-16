@@ -23,22 +23,30 @@ class LinkContext {
 }
 
 /// Matches links like `[blah][label]` and `[blah](url)`.
-/// 
+///
 /// A `[blah]`, `[blah][]` or `[some text][blah]` where
-/// `blah` is not a defined reference is passed to [linkResolver]
+/// `blah` is not a defined reference is passed to [linkBuilder]
 /// with `blah` as first argument, and `some text` as second argument
 /// when available.
 class LinkSyntax extends DelimiterSyntax {
   static final _entirelyWhitespacePattern = RegExp(r'^\s*$');
 
-  final Resolver linkResolver;
+  // A default [LinkBuilder] that does nothing.
+  static List<Node>? _noBuilder(Object? _, Object? _, Object? _) => null;
+
+  final LinkBuilder linkBuilder;
 
   LinkSyntax({
     Resolver? linkResolver,
+    LinkBuilder? linkBuilder,
     String pattern = r'\[',
     int startCharacter = $lbracket,
-  }) : linkResolver = (linkResolver ?? ((String _, [String? _]) => null)),
+  }) : linkBuilder =
+           linkBuilder ?? linkBuilderFromResolver(linkResolver) ?? _noBuilder,
        super(pattern, startCharacter: startCharacter);
+
+  @Deprecated('User linkBuilder instead')
+  Resolver get linkResolver => linkResolverFromBuilder(linkBuilder)!;
 
   @override
   Iterable<Node>? close(
@@ -70,7 +78,11 @@ class LinkSyntax extends DelimiterSyntax {
       final inlineLink = _parseInlineLink(parser);
       if (inlineLink != null) {
         return [
-          _tryCreateInlineLink(parser, inlineLink, getChildren: getChildren),
+          createNode(
+            inlineLink.destination,
+            inlineLink.title,
+            getChildren: getChildren,
+          ),
         ];
       }
       // At this point, we've matched `[...](`, but that `(` did not pan out to
@@ -108,27 +120,33 @@ class LinkSyntax extends DelimiterSyntax {
 
   /// Resolve a possible reference link.
   ///
-  /// Uses [linkReferences], [linkResolver], and [createNode] to try to
+  /// Uses [linkReferences], [linkBuilder], and [createNode] to try to
   /// resolve [label] into a [Node]. If [label] is defined in
-  /// [linkReferences] or can be resolved by [linkResolver], returns a [Node]
-  /// that links to the resolved URL.
+  /// [linkReferences] or can be resolved by [linkBuilder], returns a `List<Node>`
+  /// and calls [getChildren].
   ///
-  /// Otherwise, returns `null`.
+  /// Otherwise, returns `null` and does not call [getChildren].
   ///
-  /// [label] does not need to be normalized.
-  Node? _resolveReferenceLink(
+  /// The [label] is the literal text between the start and end braces,
+  /// and is not normalized.
+  ///
+  /// The [getChildren] extracts the markdown content of this link.
+  /// It must be called if and only if a non-`null` vale is returned.
+  List<Node>? _resolveReferenceLink(
     String label,
-    String? content,
+    String? title,
     Map<String, LinkReference> linkReferences, {
     required List<Node> Function() getChildren,
   }) {
     final linkReference = linkReferences[normalizeLinkLabel(label)];
     if (linkReference != null) {
-      return createNode(
-        linkReference.destination,
-        linkReference.title,
-        getChildren: getChildren,
-      );
+      return [
+        createNode(
+          linkReference.destination,
+          linkReference.title,
+          getChildren: getChildren,
+        ),
+      ];
     } else {
       // This link has no reference definition. But we allow users of the
       // library to specify a custom resolver function ([linkResolver]) that
@@ -138,17 +156,11 @@ class LinkSyntax extends DelimiterSyntax {
       // Normally, label text does not get parsed as inline Markdown. However,
       // for the benefit of the link resolver, we need to at least escape
       // brackets, so that, e.g. a link resolver can receive `[\[\]]` as `[]`.
-      final resolved = linkResolver(
-        label
-            .replaceAll(r'\\', r'\')
-            .replaceAll(r'\[', '[')
-            .replaceAll(r'\]', ']'),
-        content,
-      );
-      if (resolved != null) {
-        getChildren();
-      }
-      return resolved;
+      final sanitizedLabel = label
+          .replaceAll(r'\\', r'\')
+          .replaceAll(r'\[', '[')
+          .replaceAll(r'\]', ']');
+      return linkBuilder(sanitizedLabel, title, getChildren);
     }
   }
 
@@ -177,19 +189,19 @@ class LinkSyntax extends DelimiterSyntax {
   Iterable<Node>? _tryCreateReferenceLink(
     LinkContext context,
     String label,
-    String? content, {
+    String? title, {
     bool? secondary,
   }) {
     final parser = context.parser;
     final getChildren = context.getChildren;
     final link = _resolveReferenceLink(
       label,
-      content,
+      title,
       parser.document.linkReferences,
       getChildren: getChildren,
     );
     if (link != null) {
-      return [link];
+      return link;
     }
     return FootnoteRefSyntax.tryCreateFootnoteLink(
       context,
@@ -198,10 +210,11 @@ class LinkSyntax extends DelimiterSyntax {
     );
   }
 
-  // Tries to create an inline link node.
-  //
-  /// Returns the link if it was successfully created, `null` otherwise.
-  Node _tryCreateInlineLink(
+  /// Create an inline link node.
+  ///
+  /// Always calls [getChildren] to remove the link text nodes from the
+  /// document, and inserts them as children of the created `<a>` element.
+  Node _createInlineLink(
     InlineParser parser,
     InlineLink link, {
     required List<Node> Function() getChildren,
