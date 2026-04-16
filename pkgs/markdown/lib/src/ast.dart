@@ -27,15 +27,16 @@ Resolver? linkResolverFromBuilder(LinkBuilder? builder) => builder == null
     ? null
     : (String label, [String? title]) {
         final nodes = builder(label, title, () => []);
-        if (nodes == null) return null;
-        if (nodes.length == 1) return nodes.first;
-        return Element('span', nodes);
+        if (nodes != null) {
+          if (nodes.length == 1) return nodes.first;
+          return Element('span', nodes);
+        }
+        return null;
       };
 
 LinkBuilder? linkBuilderFromResolver(Resolver? resolver) => resolver == null
     ? null
     : (String label, String? title, List<Node> Function() getChildren) {
-        print(">> OLD RESOLVER CALLED");
         final node = resolver(label, title);
         if (node != null) {
           getChildren();

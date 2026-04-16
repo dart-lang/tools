@@ -239,20 +239,13 @@ resolve [[]] thing
       List<Node> Function() getChildren,
     ) {
       if (label.isEmpty) return null;
+      // Special case labels starting with `_`.
       if (label.startsWith('_')) return null;
       final children = getChildren();
       if (children.isEmpty) return [Text('$nyanTail$label$nyanHead')];
-      if (children.first case final Text firstText) {
-        children.first = Text('$nyanTail${firstText.textContent}$nyanHead');
-      } else {
-        children.insert(0, Text(nyanTail));
-      }
-      if (children.last case final Text lastText) {
-        children.last = Text('${lastText.textContent}$nyanHead');
-      } else {
-        children.add(Text(nyanHead));
-      }
-      return children;
+      return children
+        ..insert(0, Text(nyanTail))
+        ..add(Text(nyanHead));
     }
 
     validateCore(
@@ -283,7 +276,7 @@ resolve [this][] thing
 resolve [_content_][label] thing
 ''',
       '''
-<p>resolve ~=[,,<em>content</em>,,]:3 thing</p>
+<p>resolve ~=[,,_<em>content</em>_,,]:3 thing</p>
 ''',
       linkBuilder: nyanBuilder,
     );
@@ -294,7 +287,7 @@ resolve [_content_][label] thing
 resolve [*star* _underline_] thing
 ''',
       '''
-<p>resolve ~=[,,_*star* _underline__,,]:3 thing</p>
+<p>resolve ~=[,,_<em>star</em> <em>underline</em>_,,]:3 thing</p>
 ''',
       linkBuilder: nyanBuilder,
     );
@@ -311,12 +304,12 @@ resolve [TH  IS] thing
     );
 
     validateCore(
-      'link builder uses normalized link content',
+      'link builder uses the same text object as the content',
       '''
 resolve [TH  IS][label] thing
 ''',
       '''
-<p>resolve ~=[,,_TH IS_,,]:3 thing</p>
+<p>resolve ~=[,,_TH  IS_,,]:3 thing</p>
 ''',
       linkBuilder: nyanBuilder,
     );

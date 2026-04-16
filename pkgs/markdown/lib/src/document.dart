@@ -82,11 +82,7 @@ class Document {
     }
   }
 
-  // Creates old-style link-resolver from the link-builder.
-
-  @Deprecated('User linkBuilder instead')
   Resolver? get linkResolver => linkResolverFromBuilder(linkBuilder);
-  @Deprecated('User imageLinkBuilder instead')
   Resolver? get imageLinkResolver => linkResolverFromBuilder(imageLinkBuilder);
 
   /// Parses the given [lines] of Markdown to a series of AST nodes.

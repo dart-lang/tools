@@ -137,7 +137,7 @@ class InlineParser {
     final index = _delimiterStack.lastIndexWhere(
       (d) => d.char == $lbracket || d.char == $exclamation,
     );
-    if (index >= 0) {
+    if (index < 0) {
       // Never found a possible open bracket. This is just a literal "]".
       addNode(Text(']'));
       advanceBy(1);
