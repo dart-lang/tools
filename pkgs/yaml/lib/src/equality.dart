@@ -101,12 +101,10 @@ class _DeepEquals {
 /// self-referential structures, and returns the same hash code for
 /// [YamlScalar]s and their values.
 int deepHashCode(Object? obj) {
-  var parents = <Object?>[];
+  final parents = Set<Object?>.identity();
 
   int deepHashCodeInner(Object? value) {
-    if (parents.any((parent) => identical(parent, value))) return -1;
-
-    parents.add(value);
+    if (!parents.add(value)) return -1;
     try {
       if (value is Map) {
         var equality = const UnorderedIterableEquality<Object?>();
@@ -121,7 +119,7 @@ int deepHashCode(Object? obj) {
         return value.hashCode;
       }
     } finally {
-      parents.removeLast();
+      parents.remove(value);
     }
   }
 
