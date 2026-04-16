@@ -1,6 +1,8 @@
-## 8.0.14
+## 8.0.15
+- Added IDE and plugin information to `Event.serverSession`.
 
-* Added HCPP related analytics to `Event.commandUsageValues`.
+## 8.0.14
+- Added HCPP related analytics to `Event.commandUsageValues`.
 
 ## 8.0.13
 - Added `DashEnvVar` utilities for environment variable handling.
