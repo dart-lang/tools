@@ -985,10 +985,10 @@ final class Event {
     required int duration,
     required String flags,
     required String parameters,
-    this.ideName = '',
-    this.ideVersion = '',
-    this.pluginName = '',
-    this.pluginVersion = '',
+    String ideName = '',
+    String ideVersion = '',
+    String pluginName = '',
+    String pluginVersion = '',
   }) : this._(
          eventName: DashEvent.serverSession,
          eventData: {
