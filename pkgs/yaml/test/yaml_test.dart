@@ -1122,19 +1122,15 @@ void main() {
       expect(anchorList, same(aliasList));
     });
 
-    test('self-referential list does not cause stack overflow in deepHashCode',
-        () {
-      var doc = loadYaml(cleanUpLiteral('''
+    test('self-referential list throws FormatException', () {
+      expect(() => loadYaml(cleanUpLiteral('''
         ? &anchor [*anchor]
-        : value'''));
-      expect(doc, isNotNull);
-      var key = doc.keys.first;
-      expect(key, isA<YamlList>());
-      expect(key[0], same(key));
+        : value''')), throwsA(isA<FormatException>()));
+    });
 
-      var map = deepEqualsMap();
-      map[key] = 'value';
-      expect(map[key], 'value');
+    test('self-referential map throws FormatException', () {
+      expect(() => loadYaml('&map { *map : *map }'),
+          throwsA(isA<FormatException>()));
     });
 
     test('[Example 7.1]', () {
