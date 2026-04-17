@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:async/async.dart';
 import 'package:meta/meta.dart';
 
 /// A shared singleton instance of `dart:io`'s [stdin] stream.
@@ -99,12 +98,16 @@ class SharedStdIn extends Stream<List<int>> {
   }
 }
 
-class SharedStdinSubscription extends DelegatingStreamSubscription<List<int>> {
-  final void Function(List<int>)? _onData;
-  final void Function()? _onDone;
-  final Function? _onError;
+class SharedStdinSubscription implements StreamSubscription<List<int>> {
+  final StreamSubscription<List<int>> _subscription;
+  void Function(List<int>)? _onData;
+  void Function()? _onDone;
+  Function? _onError;
+
+  StreamController<List<int>>? _diverted;
+
   SharedStdinSubscription._(
-      super.sourceSubscription, this._onData, this._onDone, this._onError);
+      this._subscription, this._onData, this._onDone, this._onError);
 
   /// Temporarily diverts events from this stream into a new stream.
   ///
@@ -117,23 +120,66 @@ class SharedStdinSubscription extends DelegatingStreamSubscription<List<int>> {
   /// returned stream has a listener both the substream and this stream's
   /// [onDone] callback is invoked.
   Stream<List<int>> divert() {
-    final controller = StreamController<List<int>>(
+    final diverted = _diverted = StreamController<List<int>>(
       onCancel: () {
-        super.onData(_onData);
-        super.onError(_onError);
-        super.onDone(_onDone);
+        _subscription.onData(_onData);
+        _subscription.onError(_onError);
+        _subscription.onDone(_onDone);
+        _diverted = null;
       },
+      onPause: _subscription.pause,
+      onResume: _subscription.resume,
       sync: true,
     );
 
-    super.onData(controller.add);
-    super.onError(controller.addError);
-    super.onDone(() {
-      controller.close();
+    _subscription.onData(diverted.add);
+    _subscription.onError(diverted.addError);
+    _subscription.onDone(() {
+      diverted.close();
       _onDone?.call();
     });
 
-    return controller.stream;
+    return diverted.stream;
+  }
+
+  @override
+  Future<E> asFuture<E>([E? futureValue]) =>
+      _subscription.asFuture(futureValue);
+
+  @override
+  Future<void> cancel() async {
+    await [_diverted?.close(), _subscription.cancel()].nonNulls.wait;
+  }
+
+  @override
+  bool get isPaused => _subscription.isPaused;
+
+  @override
+  void onData(void Function(List<int> data)? handleData) {
+    _onData = handleData;
+    if (_diverted == null) _subscription.onData(handleData);
+  }
+
+  @override
+  void onDone(void Function()? handleDone) {
+    _onDone = handleDone;
+    if (_diverted == null) _subscription.onDone(handleDone);
+  }
+
+  @override
+  void onError(Function? handleError) {
+    _onError = handleError;
+    if (_diverted == null) _subscription.onError(handleError);
+  }
+
+  @override
+  void pause([Future<void>? resumeSignal]) {
+    _subscription.pause(resumeSignal);
+  }
+
+  @override
+  void resume() {
+    _subscription.resume();
   }
 }
 

@@ -109,4 +109,93 @@ void main() {
 
     await sub.cancel();
   });
+
+  test('should allow changing onData while diverted', () async {
+    final logs = <List<int>>[];
+    final sub = sharedStdIn.listen(logs.add);
+    final diverted = sub.divert();
+
+    final newLogs = <List<int>>[];
+    sub.onData(newLogs.add);
+
+    final divertedLogs = <List<int>>[];
+    final divertedSub = diverted.listen(divertedLogs.add);
+
+    fakeStdIn.add('a');
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['a'.codeUnits]);
+    expect(logs, isEmpty);
+    expect(newLogs, isEmpty);
+
+    await divertedSub.cancel();
+    fakeStdIn.add('b');
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['a'.codeUnits]);
+    expect(logs, isEmpty);
+    expect(newLogs, ['b'.codeUnits]);
+
+    await sub.cancel();
+  });
+
+  test('should allow changing onDone while diverted', () async {
+    var doneCalled = false;
+    final sub = sharedStdIn.listen((_) {}, onDone: () {
+      doneCalled = true;
+    });
+    final diverted = sub.divert();
+
+    var newDoneCalled = false;
+    sub.onDone(() {
+      newDoneCalled = true;
+    });
+
+    final divertedSub = diverted.listen((_) {});
+
+    await divertedSub.cancel();
+
+    await sharedStdIn.terminate();
+    await pumpEventQueue(times: 0);
+
+    expect(doneCalled, isFalse);
+    expect(newDoneCalled, isTrue);
+    await sub.cancel();
+  });
+
+  test('should call both onDone if stream closes while diverted', () async {
+    var doneCalled = false;
+    final sub = sharedStdIn.listen((_) {}, onDone: () {
+      doneCalled = true;
+    });
+    final diverted = sub.divert();
+
+    var divertedDoneCalled = false;
+    final divertedSub = diverted.listen((_) {}, onDone: () {
+      divertedDoneCalled = true;
+    });
+
+    await sharedStdIn.terminate();
+    await pumpEventQueue(times: 0);
+
+    expect(doneCalled, isTrue);
+    expect(divertedDoneCalled, isTrue);
+    await divertedSub.cancel();
+    await sub.cancel();
+  });
+
+  test('should handle pausing and resuming while diverted', () async {
+    final sub = sharedStdIn.listen((_) {});
+    final diverted = sub.divert();
+    final divertedSub = diverted.listen((_) {});
+
+    expect(sub.isPaused, isFalse);
+
+    divertedSub.pause();
+    expect(sub.isPaused, isTrue);
+
+    divertedSub.resume();
+    expect(sub.isPaused, isFalse);
+
+    await divertedSub.cancel();
+    await sub.cancel();
+  });
 }
