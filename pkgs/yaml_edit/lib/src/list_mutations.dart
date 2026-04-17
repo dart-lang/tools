@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:math';
+
 import 'package:yaml/yaml.dart';
 
 import 'editor.dart';
@@ -18,43 +20,61 @@ SourceEdit updateInList(
   RangeError.checkValueInInterval(index, 0, list.length - 1);
 
   final currValue = list.nodes[index];
-  var offset = currValue.span.start.offset;
+  var start = currValue.span.start.offset;
   final yaml = yamlEdit.toString();
-  String valueString;
+
+  if (list.style != CollectionStyle.BLOCK) {
+    return SourceEdit(start, currValue.span.length, yamlEncodeFlow(newValue));
+  }
+
+  final listIndentation = getListIndentation(yaml, list);
+  final indentation = listIndentation + getIndentation(yamlEdit);
+  final lineEnding = getLineEnding(yaml);
 
   /// We do not use [_formatNewBlock] since we want to only replace the contents
   /// of this node while preserving comments/whitespace, while [_formatNewBlock]
   /// produces a string representation of a new node.
-  if (list.style == CollectionStyle.BLOCK) {
-    final listIndentation = getListIndentation(yaml, list);
-    final indentation = listIndentation + getIndentation(yamlEdit);
-    final lineEnding = getLineEnding(yaml);
-    valueString =
-        yamlEncodeBlock(wrapAsYamlNode(newValue), indentation, lineEnding);
+  var formattedValue =
+      yamlEncodeBlock(wrapAsYamlNode(newValue), indentation, lineEnding);
 
-    /// We prefer the compact nested notation for collections.
-    ///
-    /// By virtue of [yamlEncodeBlockString], collections automatically
-    /// have the necessary line endings.
-    if ((newValue is List && (newValue as List).isNotEmpty) ||
-        (newValue is Map && (newValue as Map).isNotEmpty)) {
-      valueString = valueString.substring(indentation);
-    } else if (currValue.collectionStyle == CollectionStyle.BLOCK) {
-      valueString += lineEnding;
-    }
-
-    var end = getContentSensitiveEnd(currValue);
-    if (end <= offset) {
-      offset++;
-      end = offset;
-      valueString = ' $valueString';
-    }
-
-    return SourceEdit(offset, end - offset, valueString);
-  } else {
-    valueString = yamlEncodeFlow(newValue);
-    return SourceEdit(offset, currValue.span.length, valueString);
+  /// We prefer the compact nested notation for collections.
+  ///
+  /// By virtue of [yamlEncodeBlockString], collections automatically
+  /// have the necessary line endings.
+  if ((newValue is List && (newValue as List).isNotEmpty) ||
+      (newValue is Map && (newValue as Map).isNotEmpty)) {
+    formattedValue = formattedValue.substring(indentation);
+  } else if (currValue.collectionStyle == CollectionStyle.BLOCK &&
+      !formattedValue.endsWith('\n')) {
+    formattedValue += lineEnding;
   }
+
+  var end = getContentSensitiveEnd(currValue);
+
+  // `package:yaml` quirk when the value is empty.
+  if (end <= start) {
+    start++;
+    end = start;
+    formattedValue = ' $formattedValue';
+  }
+
+  end = indexOfLastLineEnding(
+    yaml,
+    offset: yaml.indexOf('\n', end),
+    blockIndent: listIndentation,
+  );
+
+  // Consume the line ending to prevent any dangling line breaks. Update
+  // replaces the existing value when sandwiched or trailing. We may need to
+  // preserve the line ending whenever possible.
+  if (formattedValue.endsWith('\n') ||
+      (end >= yaml.length - 1 && !yaml.endsWith('\n'))) {
+    end = min(yaml.length, ++end);
+  } else if (lineEnding == '\r\n') {
+    --end;
+  }
+
+  return SourceEdit(start, end - start, formattedValue);
 }
 
 /// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
@@ -112,29 +132,36 @@ SourceEdit _appendToFlowList(
 /// block list.
 SourceEdit _appendToBlockList(
     YamlEditor yamlEdit, YamlList list, YamlNode item) {
-  var (indentSize, valueToIndent) = _formatNewBlock(yamlEdit, list, item);
-  var formattedValue = '${' ' * indentSize}$valueToIndent';
+  // A block list can/should never be empty. A "-" must be seen for it be a
+  // block list. This guarantees that this edit will be applied at the tail
+  // after the existing content.
+  //
+  // It's just a flow list if it's empty.
+  assert(list.isNotEmpty, 'Expected a non-empty block list');
+
+  var (:entryIndent, :formattedEntry, :lineEnding) =
+      _formatNewBlock(yamlEdit, list, item);
+  formattedEntry = '${' ' * entryIndent}$formattedEntry';
 
   final yaml = yamlEdit.toString();
-  var offset = list.span.end.offset;
+  final maxLength = yaml.length;
 
-  // Adjusts offset to after the trailing newline of the last entry, if it
-  // exists
-  if (list.isNotEmpty) {
-    final lastValueSpanEnd = list.nodes.last.span.end.offset;
-    final nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd - 1);
-    if (nextNewLineIndex == -1) {
-      formattedValue = getLineEnding(yaml) + formattedValue;
-    } else {
-      offset = nextNewLineIndex + 1;
-    }
+  var endOffset = indexOfLastLineEnding(
+    yaml,
+    offset: yaml.indexOf('\n', list.nodes.last.span.end.offset - 1),
+    blockIndent: entryIndent, // Equal to the list's indent.
+  );
+
+  if (endOffset >= (maxLength - 1) && !yaml.endsWith('\n')) {
+    formattedEntry = lineEnding + formattedEntry;
   }
 
-  return SourceEdit(offset, 0, formattedValue);
+  endOffset = min(maxLength, endOffset + 1);
+  return SourceEdit(endOffset, 0, formattedEntry);
 }
 
 /// Formats [item] into a new node for block lists.
-(int indentSize, String valueStringToIndent) _formatNewBlock(
+({int entryIndent, String lineEnding, String formattedEntry}) _formatNewBlock(
     YamlEditor yamlEdit, YamlList list, YamlNode item) {
   final yaml = yamlEdit.toString();
   final listIndentation = getListIndentation(yaml, list);
@@ -146,7 +173,11 @@ SourceEdit _appendToBlockList(
     valueString = valueString.substring(newIndentation);
   }
 
-  return (listIndentation, '- $valueString$lineEnding');
+  return (
+    entryIndent: listIndentation,
+    lineEnding: lineEnding,
+    formattedEntry: '- $valueString$lineEnding'
+  );
 }
 
 /// Formats [item] into a new node for flow lists.
@@ -174,7 +205,11 @@ SourceEdit _insertInBlockList(
 
   if (index == list.length) return _appendToBlockList(yamlEdit, list, item);
 
-  var (indentSize, formattedValue) = _formatNewBlock(yamlEdit, list, item);
+  var (:entryIndent, :formattedEntry, lineEnding: _) = _formatNewBlock(
+    yamlEdit,
+    list,
+    item,
+  );
 
   final currNode = list.nodes[index];
   final currNodeStart = currNode.span.start.offset;
@@ -206,16 +241,16 @@ SourceEdit _insertInBlockList(
     final leftPad = currSequenceOffset - offset;
     final padding = ' ' * leftPad;
 
-    final indent = ' ' * (indentSize - leftPad);
+    final indent = ' ' * (entryIndent - leftPad);
 
     // Give the indent to the first element
-    formattedValue = '$padding${formattedValue.trimLeft()}$indent';
+    formattedEntry = '$padding${formattedEntry.trimLeft()}$indent';
   } else {
-    final indent = ' ' * indentSize; // Calculate indent normally
-    formattedValue = '$indent$formattedValue';
+    final indent = ' ' * entryIndent; // Calculate indent normally
+    formattedEntry = '$indent$formattedEntry';
   }
 
-  return SourceEdit(offset, 0, formattedValue);
+  return SourceEdit(offset, 0, formattedEntry);
 }
 
 /// Determines if the list containing an element is nested within another list.
