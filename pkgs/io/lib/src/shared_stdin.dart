@@ -98,6 +98,7 @@ class SharedStdIn extends Stream<List<int>> {
   }
 }
 
+/// A subscription to [sharedStdIn] that can be temporarily diverted.
 class SharedStdinSubscription implements StreamSubscription<List<int>> {
   final StreamSubscription<List<int>> _subscription;
   void Function(List<int>)? _onData;
@@ -112,10 +113,10 @@ class SharedStdinSubscription implements StreamSubscription<List<int>> {
   /// Temporarily diverts events from this stream into a new stream.
   ///
   /// Buffers events until the returned stream has a listener. After a listener
-  /// on the returned stream cancels, subsequent events will be delievered to
+  /// on the returned stream cancels, subsequent events will be delivered to
   /// the original [onData] callback of this subscription.
   ///
-  /// While the returned stream has a listener all events an errors are passed
+  /// While the returned stream has a listener all events and errors are passed
   /// only to the substream listener's callbacks. If this stream ends while the
   /// returned stream has a listener both the substream and this stream's
   /// [onDone] callback is invoked.

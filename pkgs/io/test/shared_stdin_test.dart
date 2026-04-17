@@ -198,4 +198,31 @@ void main() {
     await divertedSub.cancel();
     await sub.cancel();
   });
+
+  test('should restore custom onData handler set before divert', () async {
+    final logs = <List<int>>[];
+    final sub = sharedStdIn.listen(logs.add);
+
+    final customLogs = <List<int>>[];
+    sub.onData(customLogs.add);
+
+    final diverted = sub.divert();
+    final divertedLogs = <List<int>>[];
+    final divertedSub = diverted.listen(divertedLogs.add);
+
+    fakeStdIn.add('a');
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['a'.codeUnits]);
+    expect(logs, isEmpty);
+    expect(customLogs, isEmpty);
+
+    await divertedSub.cancel();
+    fakeStdIn.add('b');
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['a'.codeUnits]);
+    expect(logs, isEmpty);
+    expect(customLogs, ['b'.codeUnits]);
+
+    await sub.cancel();
+  });
 }
