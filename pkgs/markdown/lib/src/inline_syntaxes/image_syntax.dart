@@ -10,7 +10,7 @@ import 'link_syntax.dart';
 /// Matches images like `![alternate text](url "optional title")` and
 /// `![alternate text][label]`.
 class ImageSyntax extends LinkSyntax {
-  ImageSyntax({super.linkResolver})
+  ImageSyntax({super.linkResolver, super.linkBuilder})
     : super(pattern: r'!\[', startCharacter: $exclamation);
 
   @override
