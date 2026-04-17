@@ -77,4 +77,36 @@ void main() {
     expect(sharedStdIn.nextLine(), completion('Hello World'));
     fakeStdIn.add('Hello World\n');
   });
+
+  test('should temporarily divert events', () async {
+    final logs = <List<int>>[];
+    final sub = sharedStdIn.listen(logs.add);
+    fakeStdIn.add('a');
+    await pumpEventQueue(times: 0);
+    expect(logs, ['a'.codeUnits]);
+
+    final diverted = sub.divert();
+    fakeStdIn.add('b');
+    await pumpEventQueue(times: 0);
+    expect(logs, ['a'.codeUnits]);
+
+    final divertedLogs = <List<int>>[];
+    final divertedSub = diverted.listen(divertedLogs.add);
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['b'.codeUnits]);
+
+    fakeStdIn.add('c');
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['b'.codeUnits, 'c'.codeUnits]);
+    expect(logs, ['a'.codeUnits]);
+
+    final cancelDone = divertedSub.cancel();
+    fakeStdIn.add('d');
+    await cancelDone;
+    fakeStdIn.add('e');
+    await pumpEventQueue(times: 0);
+    expect(logs, ['a'.codeUnits, 'd'.codeUnits, 'e'.codeUnits]);
+
+    await sub.cancel();
+  });
 }

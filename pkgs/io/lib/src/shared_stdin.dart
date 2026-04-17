@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:meta/meta.dart';
 
 /// A shared singleton instance of `dart:io`'s [stdin] stream.
@@ -63,7 +64,7 @@ class SharedStdIn extends Stream<List<int>> {
           sync: true);
 
   @override
-  StreamSubscription<List<int>> listen(
+  SharedStdinSubscription listen(
     void Function(List<int> event)? onData, {
     Function? onError,
     void Function()? onDone,
@@ -79,11 +80,11 @@ class SharedStdIn extends Stream<List<int>> {
           'Subscriber already listening. The existing subscriber must cancel '
           'before another may be added.');
     }
-    return controller.stream.listen(
+    return controller.stream._listen(
       onData,
-      onDone: onDone,
-      onError: onError,
-      cancelOnError: cancelOnError,
+      onDone,
+      onError,
+      cancelOnError,
     );
   }
 
@@ -96,4 +97,53 @@ class SharedStdIn extends Stream<List<int>> {
     await _current?.close();
     _sub = null;
   }
+}
+
+class SharedStdinSubscription extends DelegatingStreamSubscription<List<int>> {
+  final void Function(List<int>)? _onData;
+  final void Function()? _onDone;
+  final Function? _onError;
+  SharedStdinSubscription._(
+      super.sourceSubscription, this._onData, this._onDone, this._onError);
+
+  /// Temporarily diverts events from this stream into a new stream.
+  ///
+  /// Buffers events until the returned stream has a listener. After a listener
+  /// on the returned stream cancels, subsequent events will be delievered to
+  /// the original [onData] callback of this subscription.
+  ///
+  /// While the returned stream has a listener all events an errors are passed
+  /// only to the substream listener's callbacks. If this stream ends while the
+  /// returned stream has a listener both the substream and this stream's
+  /// [onDone] callback is invoked.
+  Stream<List<int>> divert() {
+    final controller = StreamController<List<int>>(
+      onCancel: () {
+        super.onData(_onData);
+        super.onError(_onError);
+        super.onDone(_onDone);
+      },
+      sync: true,
+    );
+
+    super.onData(controller.add);
+    super.onError(controller.addError);
+    super.onDone(() {
+      controller.close();
+      _onDone?.call();
+    });
+
+    return controller.stream;
+  }
+}
+
+extension on Stream<List<int>> {
+  SharedStdinSubscription _listen(void Function(List<int>)? onData,
+          void Function()? onDone, Function? onError, bool? cancelOnError) =>
+      SharedStdinSubscription._(
+          listen(onData,
+              onError: onError, onDone: onDone, cancelOnError: cancelOnError),
+          onData,
+          onDone,
+          onError);
 }
