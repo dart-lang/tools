@@ -79,11 +79,12 @@ class SharedStdIn extends Stream<List<int>> {
           'Subscriber already listening. The existing subscriber must cancel '
           'before another may be added.');
     }
-    return controller.stream._listen(
+    return SharedStdinSubscription._(
+      controller.stream.listen(onData,
+          onError: onError, onDone: onDone, cancelOnError: cancelOnError),
       onData,
       onDone,
       onError,
-      cancelOnError,
     );
   }
 
@@ -182,15 +183,4 @@ class SharedStdinSubscription implements StreamSubscription<List<int>> {
   void resume() {
     _subscription.resume();
   }
-}
-
-extension on Stream<List<int>> {
-  SharedStdinSubscription _listen(void Function(List<int>)? onData,
-          void Function()? onDone, Function? onError, bool? cancelOnError) =>
-      SharedStdinSubscription._(
-          listen(onData,
-              onError: onError, onDone: onDone, cancelOnError: cancelOnError),
-          onData,
-          onDone,
-          onError);
 }
