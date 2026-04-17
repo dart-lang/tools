@@ -346,7 +346,40 @@ void main() {
     expect(constructedEvent.eventData['duration'], 5);
     expect(constructedEvent.eventData['flags'], 'flags');
     expect(constructedEvent.eventData['parameters'], 'parameters');
-    expect(constructedEvent.eventData.length, 5);
+    expect(constructedEvent.eventData['ideName'], '');
+    expect(constructedEvent.eventData['ideVersion'], '');
+    expect(constructedEvent.eventData['pluginName'], '');
+    expect(constructedEvent.eventData['pluginVersion'], '');
+    expect(constructedEvent.eventData.length, 9);
+  });
+
+  test('Event.serverSession constructed with optional parameters', () {
+    Event generateEvent() => Event.serverSession(
+      clientId: 'clientId',
+      clientVersion: 'clientVersion',
+      duration: 5,
+      flags: 'flags',
+      parameters: 'parameters',
+      ideName: 'ideName',
+      ideVersion: 'ideVersion',
+      pluginName: 'pluginName',
+      pluginVersion: 'pluginVersion',
+    );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.serverSession);
+    expect(constructedEvent.eventData['clientId'], 'clientId');
+    expect(constructedEvent.eventData['clientVersion'], 'clientVersion');
+    expect(constructedEvent.eventData['duration'], 5);
+    expect(constructedEvent.eventData['flags'], 'flags');
+    expect(constructedEvent.eventData['parameters'], 'parameters');
+    expect(constructedEvent.eventData['ideName'], 'ideName');
+    expect(constructedEvent.eventData['ideVersion'], 'ideVersion');
+    expect(constructedEvent.eventData['pluginName'], 'pluginName');
+    expect(constructedEvent.eventData['pluginVersion'], 'pluginVersion');
+    expect(constructedEvent.eventData.length, 9);
   });
 
   test('Event.severityAdjustment constructed', () {
