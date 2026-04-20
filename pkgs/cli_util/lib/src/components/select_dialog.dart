@@ -317,8 +317,8 @@ Stream<_Key> _getKeys(Stream<List<int>> inputStream) {
       final key = switch (bytes[b]) {
         65 => _Key.up,
         66 => _Key.down,
-        49 || 72 => _Key.home, // 1
-        52 || 70 => _Key.end, // 4
+        49 || 72 => _Key.home, // 1, H
+        52 || 70 => _Key.end, // 4, F
         53 => _Key.pageUp, // 5
         54 => _Key.pageDown, // 6
         10 || 13 => _Key.enter, // newline/carraige return
