@@ -80,6 +80,8 @@ Future<Set<int>?> _runDialog(
   Stream<List<int>> inputStream, {
   required bool multiSelect,
 }) async {
+  if (options.isEmpty) return null;
+
   final maxItemLength =
       options.fold(0, (max, e) => e.length > max ? e.length : max);
   final selectedIndices = <int>{if (!multiSelect) 0};
@@ -253,7 +255,7 @@ void _render({
     // Calculate thumb height proportional to visible area.
     thumbHeight = (visibleCount * visibleCount / items.length)
         .round()
-        .clamp(1, visibleCount - 1);
+        .clamp(1, math.max(1, visibleCount - 1));
     // The max valid start index for the list window.
     final maxStart = items.length - visibleCount;
     // The max valid start index for the thumb based on its size.
