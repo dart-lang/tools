@@ -5,4 +5,5 @@
 /// Library for simple, self-contained interactive CLI components.
 library;
 
-export 'src/components/select_dialog.dart';
+export 'src/components/select_dialog.dart'
+    show showMultiSelectDialog, showSingleSelectDialog;
