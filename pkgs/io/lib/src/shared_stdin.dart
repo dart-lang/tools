@@ -63,7 +63,7 @@ class SharedStdIn extends Stream<List<int>> {
           sync: true);
 
   @override
-  SharedStdinSubscription listen(
+  SharedStdInSubscription listen(
     void Function(List<int> event)? onData, {
     Function? onError,
     void Function()? onDone,
@@ -79,7 +79,7 @@ class SharedStdIn extends Stream<List<int>> {
           'Subscriber already listening. The existing subscriber must cancel '
           'before another may be added.');
     }
-    return SharedStdinSubscription._(
+    return SharedStdInSubscription._(
       controller.stream.listen(onData,
           onError: onError, onDone: onDone, cancelOnError: cancelOnError),
       onData,
@@ -100,7 +100,7 @@ class SharedStdIn extends Stream<List<int>> {
 }
 
 /// A subscription to [sharedStdIn] that can be temporarily diverted.
-class SharedStdinSubscription implements StreamSubscription<List<int>> {
+class SharedStdInSubscription implements StreamSubscription<List<int>> {
   final StreamSubscription<List<int>> _subscription;
   void Function(List<int>)? _onData;
   void Function()? _onDone;
@@ -108,7 +108,7 @@ class SharedStdinSubscription implements StreamSubscription<List<int>> {
 
   StreamController<List<int>>? _diverted;
 
-  SharedStdinSubscription._(
+  SharedStdInSubscription._(
       this._subscription, this._onData, this._onDone, this._onError);
 
   /// Temporarily diverts events from this stream into a new stream.
