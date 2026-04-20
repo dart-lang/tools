@@ -1,6 +1,8 @@
 ## 0.5.0-wip
 
 - Add `BaseDirectories` class and deprecate `applicationConfigHome`.
+- Add `showMultiSelectDialog` and `showSingleSelectDialog` to new
+  `cli_components` library, as well as an example.
 
 ## 0.4.2
 
