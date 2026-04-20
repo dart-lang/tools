@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cli_util/src/components/select_dialog.dart';
+import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -16,6 +17,7 @@ void main() {
 
     // Custom test helper to test a series of inputs for both single and multi
     // select dialogs
+    @isTestGroup
     void testInputSequence(
       String testName,
       // If a list is provided, each version will be tried for that entry.
@@ -24,60 +26,56 @@ void main() {
       required String? singleSelectOutput,
       required List<String>? multiSelectOutput,
     }) {
-      final defaultCombo = [
-        // Initial default input combo is just all the first keys of the inputs.
-        for (var input in inputs)
-          if (input is int) input else (input as List<int>).first,
-      ];
-      // We don't test every permutation, individual keys are only tested
-      // against the default combo for the other keys.
-      final allInputCombinations = <List<int>>[defaultCombo];
-      for (var i = 0; i < inputs.length; i++) {
-        final input = inputs[i];
-        if (input is List<int>) {
-          for (var j = 1; j < input.length; j++) {
-            allInputCombinations.add([
-              ...defaultCombo.take(i),
-              input[j],
-              ...defaultCombo.skip(i + 1),
-            ]);
+      group(testName, () {
+        final defaultCombo = [
+          // Initial default input combo is just all the first keys of the inputs.
+          for (var input in inputs)
+            if (input is int) input else (input as List<int>).first,
+        ];
+        // We don't test every permutation, individual keys are only tested
+        // against the default combo for the other keys.
+        final allInputCombinations = <List<int>>[defaultCombo];
+        for (var i = 0; i < inputs.length; i++) {
+          final input = inputs[i];
+          if (input is List<int>) {
+            for (var j = 1; j < input.length; j++) {
+              allInputCombinations.add([
+                ...defaultCombo.take(i),
+                input[j],
+                ...defaultCombo.skip(i + 1),
+              ]);
+            }
           }
         }
-      }
 
-      for (var inputCombo in allInputCombinations) {
-        // Single select test
-        test('$testName (single select) - ${inputCombo.join(', ')}', () async {
-          final future = showSingleSelectDialog(
-            options,
-            inputController.stream,
-          );
-          await pumpEventQueue();
-          expect(mockStdin.lineMode, isFalse);
-          expect(mockStdin.echoMode, isFalse);
+        for (var inputCombo in allInputCombinations) {
+          for (var multiSelect in [false, true]) {
+            final dialogType = multiSelect ? 'MultiSelect' : 'SingleSelect';
+            test('$dialogType - ${inputCombo.join(', ')}', () async {
+              final future = multiSelect
+                  ? showMultiSelectDialog(
+                      options,
+                      inputController.stream,
+                    )
+                  : showSingleSelectDialog(
+                      options,
+                      inputController.stream,
+                    );
+              await pumpEventQueue();
+              expect(mockStdin.lineMode, isFalse);
+              expect(mockStdin.echoMode, isFalse);
 
-          inputController.add(inputCombo);
-          await pumpEventQueue();
+              inputController.add(inputCombo);
+              await pumpEventQueue();
 
-          expect(await future, singleSelectOutput);
-        });
-
-        // Multi select test
-        test('$testName (multi select) - ${inputCombo.join(', ')}', () async {
-          final future = showMultiSelectDialog(
-            options,
-            inputController.stream,
-          );
-          await pumpEventQueue();
-          expect(mockStdin.lineMode, isFalse);
-          expect(mockStdin.echoMode, isFalse);
-
-          inputController.add(inputCombo);
-          await pumpEventQueue();
-
-          expect(await future, multiSelectOutput);
-        });
-      }
+              expect(
+                await future,
+                multiSelect ? multiSelectOutput : singleSelectOutput,
+              );
+            });
+          }
+        }
+      });
     }
 
     setUp(() {
@@ -162,6 +160,44 @@ void main() {
       multiSelectOutput: ['f'],
     );
 
+    testInputSequence(
+      'select and unselect',
+      [Keys.down, Keys.space, Keys.space, Keys.enter],
+      singleSelectOutput: 'b',
+      multiSelectOutput: [],
+    );
+
+    testInputSequence(
+      'select, unselect, select',
+      [Keys.down, Keys.space, Keys.space, Keys.space, Keys.enter],
+      singleSelectOutput: 'b',
+      multiSelectOutput: ['b'],
+    );
+
+    testInputSequence(
+      'select multiple items with movement',
+      [Keys.down, Keys.space, Keys.up, Keys.space, Keys.enter],
+      singleSelectOutput: 'a',
+      multiSelectOutput: ['a', 'b'],
+    );
+
+    testInputSequence(
+      'unselect one of multiple',
+      [
+        Keys.down,
+        Keys.space,
+        Keys.down,
+        Keys.space,
+        Keys.up,
+        Keys.space,
+        Keys.up,
+        Keys.space,
+        Keys.enter
+      ],
+      singleSelectOutput: 'a',
+      multiSelectOutput: ['a', 'c'],
+    );
+
     testInputSequence('Cancelling dialog', [Keys.quit],
         singleSelectOutput: null, multiSelectOutput: null);
   });
@@ -227,6 +263,6 @@ extension Keys on Never {
   static const down = 66; // B
   static const pageUp = 53; // 5
   static const pageDown = 54; // 6
-  static const home = [49, 72]; // 1, H (prefix)
-  static const end = [52, 70]; // 4, F (prefix)
+  static const home = [49, 72]; // 1, H
+  static const end = [52, 70]; // 4, F
 }
