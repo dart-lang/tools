@@ -28,7 +28,8 @@ void main() {
     }) {
       group(testName, () {
         final defaultCombo = [
-          // Initial default input combo is just all the first keys of the inputs.
+          // Initial default input combo is just all the first keys of the
+          // inputs.
           for (var input in inputs)
             if (input is int) input else (input as List<int>).first,
         ];
