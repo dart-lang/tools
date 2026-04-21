@@ -1,6 +1,8 @@
-## 0.5.0-wip
+## 0.5.0
 
 - Add `BaseDirectories` class and deprecate `applicationConfigHome`.
+- Removed unused `package:meta` dependency.
+- Require Dart 3.4.
 
 ## 0.4.2
 
