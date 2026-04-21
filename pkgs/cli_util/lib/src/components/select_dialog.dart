@@ -89,13 +89,7 @@ Future<Set<int>?> _runDialog(
   final cleanupTasks = <FutureOr<void> Function()>[
     () {
       // Try to clear the dialog from the terminal
-      final start = options.length <= maxVisibleItems
-          ? 0
-          : (cursorIndex - (maxVisibleItems ~/ 2))
-              .clamp(0, options.length - maxVisibleItems);
-      final end = (start + maxVisibleItems).clamp(0, options.length);
-      final visibleCount = end - start;
-
+      final visibleCount = math.min(options.length, maxVisibleItems);
       stdout.write('\x1b[${visibleCount}A'); // Move cursor to top
       for (var i = 0; i < visibleCount; i++) {
         stdout.write('\x1b[2K\n'); // Clear each line
