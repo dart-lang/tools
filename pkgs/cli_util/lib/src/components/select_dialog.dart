@@ -131,7 +131,7 @@ Future<Set<int>?> _runDialog(
       maxItemLength: maxItemLength,
     );
 
-    final inputSub = _getKeys(inputStream).listen((key) {
+    final inputSub = inputStream.keys.listen((key) {
       final oldIndex = cursorIndex;
       switch (key) {
         case _Key.up:
@@ -298,35 +298,37 @@ void _render({
   }
 }
 
-/// Listens for terminal byte sequences and maps them to key commands.
-Stream<_Key> _getKeys(Stream<List<int>> inputStream) {
-  // Note that we cannot use async* here because the returned stream will not
-  // actually complete when cancelled if the user hits ctrl+c.
-  final streamController = StreamController<_Key>();
-  final subscription = inputStream.listen((bytes) {
-    for (var b = 0; b < bytes.length; b++) {
-      final key = switch (bytes[b]) {
-        65 => _Key.up,
-        66 => _Key.down,
-        49 || 72 => _Key.home, // 1, H
-        52 || 70 => _Key.end, // 4, F
-        53 => _Key.pageUp, // 5
-        54 => _Key.pageDown, // 6
-        10 || 13 => _Key.enter, // newline/carraige return
-        32 => _Key.space,
-        // End of text/end of transmission
-        3 || 4 => _Key.quit,
-        // Escape key but not escape sequence
-        27 when b + 1 >= bytes.length || bytes[b + 1] != 91 => _Key.quit,
-        _ => null,
-      };
-      if (key != null) {
-        streamController.add(key);
+extension on Stream<List<int>> {
+  /// Listens for terminal byte sequences and maps them to key commands.
+  Stream<_Key> get keys {
+    // Note that we cannot use async* here because the returned stream will not
+    // actually complete when cancelled if the user hits ctrl+c.
+    final streamController = StreamController<_Key>();
+    final subscription = listen((bytes) {
+      for (var b = 0; b < bytes.length; b++) {
+        final key = switch (bytes[b]) {
+          65 => _Key.up,
+          66 => _Key.down,
+          49 || 72 => _Key.home, // 1, H
+          52 || 70 => _Key.end, // 4, F
+          53 => _Key.pageUp, // 5
+          54 => _Key.pageDown, // 6
+          10 || 13 => _Key.enter, // newline/carraige return
+          32 => _Key.space,
+          // End of text/end of transmission
+          3 || 4 => _Key.quit,
+          // Escape key but not escape sequence
+          27 when b + 1 >= bytes.length || bytes[b + 1] != 91 => _Key.quit,
+          _ => null,
+        };
+        if (key != null) {
+          streamController.add(key);
+        }
       }
-    }
-  });
-  streamController.onCancel = subscription.cancel;
-  return streamController.stream;
+    });
+    streamController.onCancel = subscription.cancel;
+    return streamController.stream;
+  }
 }
 
 enum _Key { up, down, pageUp, pageDown, home, end, space, enter, quit }
