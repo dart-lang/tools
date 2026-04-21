@@ -298,7 +298,8 @@ void _render({
       final relativeI = i - start;
       final isThumb =
           relativeI >= thumbStart && relativeI < thumbStart + thumbHeight;
-      line = '${line.padRight(maxItemLength + 10)}${isThumb ? ' █' : ' │'}';
+      line = '${line.padRight(maxItemLength + selectionMarker.length + 10)}'
+          '${isThumb ? ' █' : ' │'}';
     }
 
     if (isHovered) {

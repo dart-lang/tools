@@ -9,6 +9,8 @@ import 'package:cli_util/src/components/select_dialog.dart';
 import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
+import 'fake_terminal.dart';
+
 void main() {
   group('select_dialog', () {
     late MockStdin mockStdin; // Handles capturing line/echo mode changes.
@@ -201,6 +203,205 @@ void main() {
 
     testInputSequence('Cancelling dialog', [Keys.quit],
         singleSelectOutput: null, multiSelectOutput: null);
+    
+    group('UI tests', () {
+      for (final multiSelect in [true, false]) {
+        group(multiSelect ? 'multi-select' : 'single-select', () {
+          final uBox = multiSelect ? ' [ ]' : '';
+          final sBox = multiSelect ? ' [x]' : '';
+          final renderer =
+              multiSelect ? showMultiSelectDialog : showSingleSelectDialog;
+
+          test('renders UI state correctly', () async {
+            final future = renderer(
+              ['apple', 'banana', 'cherry'],
+              inputController.stream,
+            );
+            await pumpEventQueue();
+            expect(
+              mockStdout.terminal.content,
+              '''
+>$uBox apple
+ $uBox banana
+ $uBox cherry
+''',
+            );
+
+            inputController.add([Keys.down]);
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox apple
+>$uBox banana
+ $uBox cherry
+''');
+
+            inputController.add([Keys.space]);
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox apple
+>$sBox banana
+ $uBox cherry
+''');
+
+            inputController.add([Keys.enter.first]);
+            expect(await future, multiSelect ? ['banana'] : 'banana');
+          });
+
+          test('renders scrollbar correctly at top and bottom', () async {
+            final future = renderer(
+              ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+              inputController.stream,
+              maxVisibleItems: 5, // ignore: avoid_redundant_argument_values
+            );
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+>$uBox a         █
+ $uBox b         █
+ $uBox c         █
+ $uBox d         █
+ $uBox e         │
+''');
+            inputController.add(List.filled(2, Keys.down));
+            inputController.add([Keys.space]);
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+ $uBox a         █
+ $uBox b         █
+>$sBox c         █
+ $uBox d         █
+ $uBox e         │
+''');
+
+            inputController.add(List.filled(4, Keys.down));
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+ $sBox c         │
+ $uBox d         █
+ $uBox e         █
+ $uBox f         █
+>$uBox g         █
+''');
+
+            inputController.add([Keys.enter.first]);
+            expect(await future, multiSelect ? ['c'] : 'g');
+          });
+
+          test('renders scrollbar correctly with 24 items', () async {
+            final options = List.generate(25, (i) => '$i');
+            final future = renderer(
+              options,
+              inputController.stream,
+              maxVisibleItems: 5, // ignore: avoid_redundant_argument_values
+            );
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+>$uBox 0          █
+ $uBox 1          │
+ $uBox 2          │
+ $uBox 3          │
+ $uBox 4          │
+''');
+
+            inputController.add(List.filled(2, Keys.down));
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox 0          █
+ $uBox 1          │
+>$uBox 2          │
+ $uBox 3          │
+ $uBox 4          │
+''');
+
+            inputController.add([Keys.down]);
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox 1          │
+ $uBox 2          █
+>$uBox 3          │
+ $uBox 4          │
+ $uBox 5          │
+''');
+
+            inputController.add(List.filled(6, Keys.down));
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox 7          │
+ $uBox 8          █
+>$uBox 9          │
+ $uBox 10         │
+ $uBox 11         │
+''');
+
+            inputController.add([Keys.down]);
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox 8          │
+ $uBox 9          │
+>$uBox 10         █
+ $uBox 11         │
+ $uBox 12         │
+''');
+
+            inputController.add(List.filled(5, Keys.down));
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox 13         │
+ $uBox 14         │
+>$uBox 15         █
+ $uBox 16         │
+ $uBox 17         │
+''');
+
+            inputController.add([Keys.down]);
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox 14         │
+ $uBox 15         │
+>$uBox 16         │
+ $uBox 17         █
+ $uBox 18         │
+''');
+
+            inputController.add(List.filled(5, Keys.down));
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox 19         │
+ $uBox 20         │
+>$uBox 21         │
+ $uBox 22         █
+ $uBox 23         │
+''');
+
+            inputController.add([Keys.down]);
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox 20         │
+ $uBox 21         │
+>$uBox 22         │
+ $uBox 23         │
+ $uBox 24         █
+''');
+
+            inputController.add(List.filled(2, Keys.down));
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox 20         │
+ $uBox 21         │
+ $uBox 22         │
+ $uBox 23         │
+>$uBox 24         █
+''');
+
+            inputController.add([Keys.space, Keys.enter.first]);
+            expect(await future, multiSelect ? ['24'] : '24');
+          });
+        });
+      }
+    });
   });
 }
 
@@ -229,11 +430,15 @@ class MockStdin extends Stream<List<int>> implements Stdin {
 }
 
 class MockStdout implements Stdout {
+  // Catches the raw output of writes, used just for validating certain control
+  // sequences right now.
   final buffer = <String>[];
+  final terminal = FakeTerminal();
 
   @override
   void write(Object? object) {
     buffer.add(object as String);
+    terminal.write(object);
   }
 
   @override
