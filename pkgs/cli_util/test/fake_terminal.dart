@@ -19,6 +19,7 @@ import 'dart:math' as math;
 class FakeTerminal {
   final List<String> _lines = [''];
   int _cursorRow = 0;
+  int _cursorCol = 0;
 
   /// Writes text to the terminal, interpreting supported escape sequences.
   void write(String text) {
@@ -55,11 +56,27 @@ class FakeTerminal {
     for (var i = 0; i < textLines.length; i++) {
       if (i > 0) {
         _cursorRow++;
+        _cursorCol = 0;
         if (_cursorRow >= _lines.length) {
           _lines.add('');
         }
       }
-      _lines[_cursorRow] += textLines[i];
+      final currentLine = _lines[_cursorRow];
+      final textToAppend = textLines[i];
+      if (_cursorCol < currentLine.length) {
+        final end = _cursorCol + textToAppend.length;
+        if (end <= currentLine.length) {
+          _lines[_cursorRow] = currentLine.substring(0, _cursorCol) +
+              textToAppend +
+              currentLine.substring(end);
+        } else {
+          _lines[_cursorRow] =
+              currentLine.substring(0, _cursorCol) + textToAppend;
+        }
+      } else {
+        _lines[_cursorRow] = currentLine.padRight(_cursorCol) + textToAppend;
+      }
+      _cursorCol += textToAppend.length;
     }
   }
 
