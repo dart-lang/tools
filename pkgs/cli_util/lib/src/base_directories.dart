@@ -10,7 +10,7 @@ import '../cli_util.dart';
 
 /// The standard system paths for a Dart tool.
 ///
-/// These paths respects the following directory standards:
+/// These paths respect the following directory standards:
 ///
 /// - On Linux, the [XDG Base Directory
 ///   Specification](https://specifications.freedesktop.org/basedir-spec/latest/).
@@ -150,7 +150,7 @@ final class BaseDirectories {
   /// - on **Mac OS**:
   ///   - `$HOME/Library/Caches/TemporaryItems/<tool>`
   /// - on **Linux**:
-  ///   - `$XDG_RUNTIME_HOME/<tool>` if `$XDG_RUNTIME_HOME` is defined, and
+  ///   - `$XDG_RUNTIME_DIR/<tool>` if `$XDG_RUNTIME_DIR` is defined, and
   ///   - `null` otherwise.
   ///
   /// The directory won't be created, the method merely returns the recommended
@@ -166,12 +166,12 @@ final class BaseDirectories {
 
   /// Path of the directory where the tool will place its state.
   ///
-  /// The state directory is likely not backed up or synchronized accross
+  /// The state directory is likely not backed up or synchronized across
   /// devices by the OS. For data that may be backed up and synchronized, use
   /// [dataHome] instead.
   ///
   /// This is a location appropriate for storing data which is either not
-  /// important enougn, not small enough, or not portable enough to store in
+  /// important enough, not small enough, or not portable enough to store in
   /// [dataHome]. For example: logs and indices.
   ///
   /// The directory location depends on the current [Platform.operatingSystem]:
@@ -247,7 +247,7 @@ final class BaseDirectories {
 
     switch (dir) {
       case _XdgBaseDirectoryKind.runtime:
-        // Applications should chose a different directory and print a warning.
+        // Applications should choose a different directory and print a warning.
         return null;
       case _XdgBaseDirectoryKind.cache:
         return path.join(_home, '.cache');
