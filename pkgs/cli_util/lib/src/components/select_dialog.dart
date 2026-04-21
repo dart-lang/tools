@@ -273,7 +273,7 @@ void _render({
       thumbStart = maxThumbStart;
     } else if (maxThumbStart <= 1) {
       // Very small lists, only one of two positions available.
-      thumbStart = cursor > items.length / 2 ? 0 : maxThumbStart;
+      thumbStart = cursor > items.length / 2 ? maxThumbStart : 0;
     } else {
       // Map from 1..maxThumbStart-1 linearly
       thumbStart = 1 + ((start - 1) * (maxThumbStart - 1)) ~/ (maxStart - 1);

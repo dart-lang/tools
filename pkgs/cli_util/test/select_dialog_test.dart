@@ -399,6 +399,38 @@ void main() {
             inputController.add([Keys.space, Keys.enter.first]);
             expect(await future, multiSelect ? ['24'] : '24');
           });
+
+          test('renders scrollbar correctly for small lists', () async {
+            final options = List.generate(6, (i) => '$i');
+            final future = renderer(
+              options,
+              inputController.stream,
+              maxVisibleItems: 5,
+            );
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+>$uBox 0         █
+ $uBox 1         █
+ $uBox 2         █
+ $uBox 3         █
+ $uBox 4         │
+''');
+
+            inputController.add(List.filled(4, Keys.down));
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+ $uBox 1         │
+ $uBox 2         █
+ $uBox 3         █
+>$uBox 4         █
+ $uBox 5         █
+''');
+
+            inputController.add([Keys.enter.first]);
+            expect(await future, multiSelect ? <String>[] : '4');
+          });
         });
       }
     });
