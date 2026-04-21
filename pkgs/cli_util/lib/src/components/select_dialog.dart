@@ -282,8 +282,6 @@ void _render({
 
   // Render each visible line.
   for (var i = start; i < end; i++) {
-    stdout.write('\x1b[2K'); // Clear current line
-
     final isHovered = (i == cursor);
     final isChecked = selected.contains(i);
 
