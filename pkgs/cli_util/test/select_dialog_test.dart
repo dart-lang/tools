@@ -203,7 +203,7 @@ void main() {
 
     testInputSequence('Cancelling dialog', [Keys.quit],
         singleSelectOutput: null, multiSelectOutput: null);
-    
+
     group('UI tests', () {
       for (final multiSelect in [true, false]) {
         group(multiSelect ? 'multi-select' : 'single-select', () {
