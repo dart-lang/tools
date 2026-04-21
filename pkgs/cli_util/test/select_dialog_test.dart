@@ -25,8 +25,8 @@ void main() {
       // If a list is provided, each version will be tried for that entry.
       List<Object /*int|List<int>*/ > inputs, {
       List<String> options = const ['a', 'b', 'c'],
-      required String? singleSelectOutput,
-      required List<String>? multiSelectOutput,
+      required int? singleSelectOutput,
+      required Set<int>? multiSelectOutput,
     }) {
       group(testName, () {
         final defaultCombo = [
@@ -109,79 +109,79 @@ void main() {
     testInputSequence(
       'basic navigation',
       [Keys.down, Keys.space, Keys.down, Keys.space, Keys.enter],
-      singleSelectOutput: 'c',
-      multiSelectOutput: ['b', 'c'],
+      singleSelectOutput: 2,
+      multiSelectOutput: {1, 2},
     );
 
     testInputSequence(
       'home key',
-      [Keys.down, Keys.home, Keys.enter],
-      singleSelectOutput: 'a',
-      multiSelectOutput: [],
+      [Keys.down, Keys.home, Keys.space, Keys.enter],
+      singleSelectOutput: 0,
+      multiSelectOutput: {0},
     );
 
     testInputSequence(
       'end key',
-      [Keys.end, Keys.enter],
-      singleSelectOutput: 'c',
-      multiSelectOutput: [],
+      [Keys.end, Keys.space, Keys.enter],
+      singleSelectOutput: 2,
+      multiSelectOutput: {2},
     );
 
     testInputSequence(
       'boundary conditions - top',
       [Keys.up, Keys.space, Keys.enter],
-      singleSelectOutput: 'a',
-      multiSelectOutput: ['a'],
+      singleSelectOutput: 0,
+      multiSelectOutput: {0},
     );
 
     testInputSequence(
       'boundary conditions - bottom',
       [Keys.down, Keys.down, Keys.down, Keys.space, Keys.enter],
-      singleSelectOutput: 'c',
-      multiSelectOutput: ['c'],
+      singleSelectOutput: 2,
+      multiSelectOutput: {2},
     );
 
     testInputSequence(
       'page down',
       [Keys.pageDown, Keys.space, Keys.enter],
-      singleSelectOutput: 'c',
-      multiSelectOutput: ['c'],
+      singleSelectOutput: 2,
+      multiSelectOutput: {2},
     );
 
     testInputSequence(
       'page up',
       [Keys.end, Keys.pageUp, Keys.space, Keys.enter],
-      singleSelectOutput: 'a',
-      multiSelectOutput: ['a'],
+      singleSelectOutput: 0,
+      multiSelectOutput: {0},
     );
 
     testInputSequence(
       'page down with many items',
       [Keys.pageDown, Keys.space, Keys.enter],
       options: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
-      singleSelectOutput: 'f',
-      multiSelectOutput: ['f'],
+      singleSelectOutput: 5,
+      multiSelectOutput: {5},
     );
 
     testInputSequence(
       'select and unselect',
       [Keys.down, Keys.space, Keys.space, Keys.enter],
-      singleSelectOutput: 'b',
-      multiSelectOutput: [],
+      singleSelectOutput: 1,
+      multiSelectOutput: <int>{},
     );
 
     testInputSequence(
       'select, unselect, select',
       [Keys.down, Keys.space, Keys.space, Keys.space, Keys.enter],
-      singleSelectOutput: 'b',
-      multiSelectOutput: ['b'],
+      singleSelectOutput: 1,
+      multiSelectOutput: {1},
     );
 
     testInputSequence(
       'select multiple items with movement',
       [Keys.down, Keys.space, Keys.up, Keys.space, Keys.enter],
-      singleSelectOutput: 'a',
-      multiSelectOutput: ['a', 'b'],
+      singleSelectOutput: 0,
+      multiSelectOutput: {0, 1},
     );
 
     testInputSequence(
@@ -197,8 +197,8 @@ void main() {
         Keys.space,
         Keys.enter
       ],
-      singleSelectOutput: 'a',
-      multiSelectOutput: ['a', 'c'],
+      singleSelectOutput: 0,
+      multiSelectOutput: {0, 2},
     );
 
     testInputSequence('Cancelling dialog', [Keys.quit],
@@ -244,7 +244,7 @@ void main() {
 ''');
 
             inputController.add([Keys.enter.first]);
-            expect(await future, multiSelect ? ['banana'] : 'banana');
+            expect(await future, multiSelect ? {1} : 1);
           });
 
           test('renders scrollbar correctly at top and bottom', () async {
@@ -286,7 +286,7 @@ void main() {
 ''');
 
             inputController.add([Keys.enter.first]);
-            expect(await future, multiSelect ? ['c'] : 'g');
+            expect(await future, multiSelect ? {2} : 6);
           });
 
           test('renders scrollbar correctly with 24 items', () async {
@@ -397,7 +397,7 @@ void main() {
 ''');
 
             inputController.add([Keys.space, Keys.enter.first]);
-            expect(await future, multiSelect ? ['24'] : '24');
+            expect(await future, multiSelect ? {24} : 24);
           });
 
           test('renders scrollbar correctly for small lists', () async {
@@ -429,7 +429,7 @@ void main() {
 ''');
 
             inputController.add([Keys.enter.first]);
-            expect(await future, multiSelect ? <String>[] : '4');
+            expect(await future, multiSelect ? <int>{} : 4);
           });
         });
       }

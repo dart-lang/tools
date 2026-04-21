@@ -24,7 +24,7 @@ Future<void> main() async {
       exitCode = 1;
       return;
     }
-    final count = int.parse(countResult);
+    final count = int.parse(counts[countResult]);
     print('Got result $count');
 
     final allOptions = List.generate(count, (i) => 'Item #$i');
@@ -40,8 +40,8 @@ Future<void> main() async {
     print(
       'Selection complete, selected ${selectedOptions.length} item(s):',
     );
-    for (final option in selectedOptions) {
-      print(' - $option');
+    for (final index in selectedOptions) {
+      print(' - ${allOptions[index]}');
     }
   } finally {
     await subscription.cancel();

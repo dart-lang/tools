@@ -6,8 +6,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
-/// Shows a scrollable terminal selection dialog and returns the list of
-/// selected values.
+/// Shows a scrollable terminal selection dialog and returns the set of
+/// selected indices.
 ///
 /// Temporarily disables stdin line and echo modes, and restores them before
 /// returning. Also intercepts [ProcessSignal.sigint] to cancel the dialog.
@@ -23,23 +23,19 @@ import 'dart:math' as math;
 ///
 /// Returns `null` if the user aborts the dialog (e.g. by pressing Ctrl+C or
 /// escape).
-Future<List<String>?> showMultiSelectDialog(
+Future<Set<int>?> showMultiSelectDialog(
   List<String> options,
   Stream<List<int>> inputStream, {
   int maxVisibleItems = 5,
-}) async {
-  final selectedIndices = await _runDialog(
-    options,
-    maxVisibleItems,
-    inputStream,
-    multiSelect: true,
-  );
-  if (selectedIndices == null) return null;
-  final sortedIndices = selectedIndices.toList()..sort();
-  return sortedIndices.map((index) => options[index]).toList();
-}
+}) =>
+    _runDialog(
+      options,
+      maxVisibleItems,
+      inputStream,
+      multiSelect: true,
+    );
 
-/// Shows a scrollable terminal selection dialog and returns the selected value.
+/// Shows a scrollable terminal selection dialog and returns the selected index.
 ///
 /// Temporarily disables stdin line and echo modes, and restores them before
 /// returning. Also intercepts [ProcessSignal.sigint] to cancel the dialog.
@@ -55,7 +51,7 @@ Future<List<String>?> showMultiSelectDialog(
 ///
 /// Returns `null` if the user aborts the dialog (e.g. by pressing Ctrl-C or
 /// escape).
-Future<String?> showSingleSelectDialog(
+Future<int?> showSingleSelectDialog(
   List<String> options,
   Stream<List<int>> inputStream, {
   int maxVisibleItems = 5,
@@ -69,7 +65,7 @@ Future<String?> showSingleSelectDialog(
   if (selectedIndices == null || selectedIndices.isEmpty) {
     return null;
   }
-  return options[selectedIndices.single];
+  return selectedIndices.single;
 }
 
 /// Internal utility to render a single or multi select dialog and return the
