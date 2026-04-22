@@ -114,14 +114,14 @@ Future<Set<int>?> _runDialog(
   try {
     // Move the terminal into the rendering state we want.
     if (stdin.hasTerminal) {
-      final savedLineMode = stdin.lineMode;
       final savedEchoMode = stdin.echoMode;
+      final savedLineMode = stdin.lineMode;
       cleanupTasks.add(() {
-        stdin.lineMode = savedLineMode;
         stdin.echoMode = savedEchoMode;
+        stdin.lineMode = savedLineMode;
       });
-      stdin.lineMode = false;
       stdin.echoMode = false;
+      stdin.lineMode = false;
     }
     // Hide the cursor
     stdout.write('\x1b[?25l');
