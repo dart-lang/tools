@@ -22,7 +22,8 @@ import 'dart:math' as math;
 /// dialog at once.
 ///
 /// Returns `null` if the user aborts the dialog (e.g. by pressing Ctrl+C or
-/// escape).
+/// escape), there is no terminal attached to stdout, or the terminal is too
+/// small to display the dialog.
 Future<Set<int>?> showMultiSelectDialog(
   List<String> options,
   Stream<List<int>> inputStream, {
@@ -49,8 +50,9 @@ Future<Set<int>?> showMultiSelectDialog(
 /// The [maxVisibleItems] parameter controls how many items are visible in the
 /// dialog at once.
 ///
-/// Returns `null` if the user aborts the dialog (e.g. by pressing Ctrl-C or
-/// escape).
+/// Returns `null` if the user aborts the dialog (e.g. by pressing Ctrl+C or
+/// escape), there is no terminal attached to stdout, or the terminal is too
+/// small to display the dialog.
 Future<int?> showSingleSelectDialog(
   List<String> options,
   Stream<List<int>> inputStream, {
@@ -76,10 +78,21 @@ Future<Set<int>?> _runDialog(
   Stream<List<int>> inputStream, {
   required bool multiSelect,
 }) async {
-  if (options.isEmpty) return null;
-
-  final width = _terminalWidth;
   final isScrollable = options.length > maxVisibleItems;
+  final width = _terminalWidth;
+
+  // Note that we just assume all terminals support ansii escapes because it
+  // very rare nowadays not to, and the built in detection has a lot of false
+  // negative cases (https://github.com/dart-lang/sdk/issues/31606).
+  if (options.isEmpty ||
+      !stdout.hasTerminal ||
+      width < _minimumTerminalWidth(multiSelect, isScrollable)) {
+    // We do need to actually listen to this stream and immediately cancel, or
+    // else it will never close in come cases.
+    await inputStream.listen((_) {}).cancel();
+    return null;
+  }
+
   final displayOptions =
       _truncateOptions(options, width, multiSelect, isScrollable);
 
@@ -341,6 +354,23 @@ extension on Stream<List<int>> {
 
 enum _Key { up, down, pageUp, pageDown, home, end, space, enter, quit }
 
+/// Returns the minimum width required to display a dialog with the given
+/// configuration.
+///
+/// Does not take into account the actual options, but the margin of difference
+/// there is small (this assumes options take the minimum option length plus
+/// the length of the ellipsis).
+int _minimumTerminalWidth(bool multiSelect, bool isScrollable) {
+  final checkboxWidth = multiSelect ? 4 : 0;
+  final scrollbarWidth = isScrollable ? (1 + _scrollbarLeftMargin) : 0;
+  final totalNeeded = _pointerWidth +
+      checkboxWidth +
+      _minmumOptionLength +
+      '...'.length +
+      scrollbarWidth;
+  return totalNeeded;
+}
+
 /// Returns the width of the terminal or 80 if it cannot be determined.
 int get _terminalWidth {
   try {
@@ -373,14 +403,14 @@ List<String> _truncateOptions(
   }
 
   // We don't want to truncate to less than 3 characters.
-  var limit = math.max(3, maxOptionLength);
+  var limit = math.max(_minmumOptionLength, maxOptionLength);
   if (options.every((option) => option.length <= limit)) {
     return options;
   }
-  
+
   // We are truncating, account for the space that the '...' will take up,
-  // while still showing at least 3 characters.
-  limit = math.max(3, limit - 3);
+  // while still showing at least the minimum number of characters.
+  limit = math.max(_minmumOptionLength, limit - 3);
   return options.map((option) {
     if (option.length > limit) {
       return '${option.substring(0, limit)}...';
@@ -391,3 +421,4 @@ List<String> _truncateOptions(
 
 const _pointerWidth = 2; // '  ' or '>
 const _scrollbarLeftMargin = 6;
+const _minmumOptionLength = 3;

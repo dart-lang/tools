@@ -98,10 +98,12 @@ void main() {
       // Verify terminal modes are restored.
       expect(mockStdin.lineMode, isTrue);
       expect(mockStdin.echoMode, isTrue);
-      // First, we should have disabled the visible cursor.
-      expect(mockStdout.buffer.first, '\x1b[?25l');
-      // Then we should have re-enabled it at the end.
-      expect(mockStdout.buffer.last, '\x1b[?25h\x1b[0m');
+      if (mockStdout.buffer.isNotEmpty) {
+        // First, we should have disabled the visible cursor.
+        expect(mockStdout.buffer.first, '\x1b[?25l');
+        // Then we should have re-enabled it at the end.
+        expect(mockStdout.buffer.last, '\x1b[?25h\x1b[0m');
+      }
       // Should no longer be listening to the input stream.
       expect(inputController.hasListener, isFalse);
     });
@@ -485,6 +487,65 @@ void main() {
               inputController.add([Keys.enter.first]);
               expect(await future, 0);
             }
+          });
+        });
+      }
+    });
+
+    group('Terminal support edge cases', () {
+      for (final multiselect in [true, false]) {
+        group(multiselect ? 'multiselect' : 'single select', () {
+          final renderer =
+              multiselect ? showMultiSelectDialog : showSingleSelectDialog;
+
+        test('returns null if no stdout terminal', () async {
+          mockStdout.hasTerminal = false;
+          inputController.add([Keys.space, Keys.enter.first]);
+          final result = await renderer(['a', 'b'], inputController.stream);
+          expect(result, isNull);
+        });
+
+          test('returns null if terminal too small (no scrollbar)', () async {
+            mockStdout.terminalColumns = '> '.length +
+                6 /* 3 chars + '...'*/ +
+                (multiselect ? 4 : 0) -
+                1;
+          inputController.add([Keys.space, Keys.enter.first]);
+          final result = await renderer(['a', 'b'], inputController.stream);
+          expect(result, isNull);
+        });
+
+          test('works if the terminal is exactly sized (no scrollbar)',
+              () async {
+            mockStdout.terminalColumns =
+                '> '.length + 6 /* 3 chars + '...'*/ + (multiselect ? 4 : 0);
+            inputController.add([Keys.space, Keys.enter.first]);
+            expect(await renderer(['a', 'b'], inputController.stream),
+                multiselect ? {0} : 0);
+          });
+
+          test('returns null if terminal too small (scrollbar)', () async {
+            mockStdout.terminalColumns = '> '.length +
+                6 /* 3 chars + '...'*/ +
+                '      █'.length +
+                (multiselect ? 4 : 0) -
+                1;
+            inputController.add([Keys.space, Keys.enter.first]);
+            final result = await renderer(['a', 'b'], inputController.stream,
+                maxVisibleItems: 1);
+            expect(result, isNull);
+          });
+
+          test('works if the terminal is exactly sized (scrollbar)', () async {
+            mockStdout.terminalColumns = '> '.length +
+                6 /* 3 chars + '...'*/ +
+                '      █'.length +
+                (multiselect ? 4 : 0);
+            inputController.add([Keys.space, Keys.enter.first]);
+            expect(
+                await renderer(['a', 'b'], inputController.stream,
+                    maxVisibleItems: 1),
+                multiselect ? {0} : 0);
           });
         });
       }
