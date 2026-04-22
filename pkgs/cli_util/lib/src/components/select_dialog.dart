@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'keys.dart';
+
 /// Shows a scrollable terminal selection dialog and returns the set of
 /// selected indices.
 ///
@@ -114,12 +116,16 @@ Future<Set<int>?> _runDialog(
   try {
     // Move the terminal into the rendering state we want.
     if (stdin.hasTerminal) {
-      final savedEchoMode = stdin.echoMode;
       final savedLineMode = stdin.lineMode;
+      // On Windows, if line mode is enabled then echo mode also is, but this
+      // gets reported incorrectly.
+      final savedEchoMode = stdin.echoMode || savedLineMode;
       cleanupTasks.add(() {
-        stdin.echoMode = savedEchoMode;
-        stdin.lineMode = savedLineMode;
+        // NOTE: Line mode must be enabled before echo mode on Windows.
+        if (stdin.lineMode != savedLineMode) stdin.lineMode = savedLineMode;
+        if (stdin.echoMode != savedEchoMode) stdin.echoMode = savedEchoMode;
       });
+      // NOTE: Echo mode must be set false before line mode on Windows.
       stdin.echoMode = false;
       stdin.lineMode = false;
     }
@@ -152,21 +158,21 @@ Future<Set<int>?> _runDialog(
     final inputSub = inputStream.keys.listen((key) {
       final oldIndex = cursorIndex;
       switch (key) {
-        case _Key.up:
+        case Key.up:
           cursorIndex = (cursorIndex - 1).clamp(0, options.length - 1);
-        case _Key.down:
+        case Key.down:
           cursorIndex = (cursorIndex + 1).clamp(0, options.length - 1);
-        case _Key.pageUp:
+        case Key.pageUp:
           cursorIndex =
               (cursorIndex - maxVisibleItems).clamp(0, options.length - 1);
-        case _Key.pageDown:
+        case Key.pageDown:
           cursorIndex =
               (cursorIndex + maxVisibleItems).clamp(0, options.length - 1);
-        case _Key.home:
+        case Key.home:
           cursorIndex = 0;
-        case _Key.end:
+        case Key.end:
           cursorIndex = options.length - 1;
-        case _Key.space:
+        case Key.space:
           if (multiSelect) {
             if (selectedIndices.contains(cursorIndex)) {
               selectedIndices.remove(cursorIndex);
@@ -174,11 +180,15 @@ Future<Set<int>?> _runDialog(
               selectedIndices.add(cursorIndex);
             }
           }
-        case _Key.enter:
-          doneCompleter.complete(selectedIndices);
+        case Key.enter:
+          if (!doneCompleter.isCompleted) {
+            doneCompleter.complete(selectedIndices);
+          }
           return;
-        case _Key.quit:
-          doneCompleter.complete(null);
+        case Key.quit:
+          if (!doneCompleter.isCompleted) {
+            doneCompleter.complete(null);
+          }
           return;
       }
 
@@ -319,40 +329,6 @@ void _render({
   }
 }
 
-extension on Stream<List<int>> {
-  /// Listens for terminal byte sequences and maps them to key commands.
-  Stream<_Key> get keys {
-    // Note that we cannot use async* here because the returned stream will not
-    // actually complete when cancelled if the user hits ctrl+c.
-    final streamController = StreamController<_Key>();
-    final subscription = listen((bytes) {
-      for (var b = 0; b < bytes.length; b++) {
-        final key = switch (bytes[b]) {
-          65 => _Key.up,
-          66 => _Key.down,
-          49 || 72 => _Key.home, // 1, H
-          52 || 70 => _Key.end, // 4, F
-          53 => _Key.pageUp, // 5
-          54 => _Key.pageDown, // 6
-          10 || 13 => _Key.enter, // newline/carraige return
-          32 => _Key.space,
-          // End of text/end of transmission
-          3 || 4 => _Key.quit,
-          // Escape key but not escape sequence
-          27 when b + 1 >= bytes.length || bytes[b + 1] != 91 => _Key.quit,
-          _ => null,
-        };
-        if (key != null) {
-          streamController.add(key);
-        }
-      }
-    });
-    streamController.onCancel = subscription.cancel;
-    return streamController.stream;
-  }
-}
-
-enum _Key { up, down, pageUp, pageDown, home, end, space, enter, quit }
 
 /// Returns the minimum width required to display a dialog with the given
 /// configuration.

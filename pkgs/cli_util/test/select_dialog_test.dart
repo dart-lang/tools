@@ -550,6 +550,52 @@ void main() {
         });
       }
     });
+
+    group('Windows keys', () {
+      for (final multiSelect in [true, false]) {
+        final dialogType = multiSelect ? 'MultiSelect' : 'SingleSelect';
+        final renderer =
+            multiSelect ? showMultiSelectDialog : showSingleSelectDialog;
+
+        test('$dialogType - Windows Up arrow', () async {
+          final future = renderer(['a', 'b', 'c'], inputController.stream);
+          await pumpEventQueue();
+
+          // Move down first
+          inputController.add([66]); // Standard Down
+          await pumpEventQueue();
+
+          // Now use Windows Up
+          inputController.add([224, 72]);
+          await pumpEventQueue();
+
+          if (multiSelect) {
+            inputController.add([32]); // Space to select
+            await pumpEventQueue();
+          }
+
+          inputController.add([10]); // Enter
+          expect(await future, multiSelect ? {0} : 0);
+        });
+
+        test('$dialogType - Windows Down arrow', () async {
+          final future = renderer(['a', 'b', 'c'], inputController.stream);
+          await pumpEventQueue();
+
+          // Use Windows Down
+          inputController.add([224, 80]);
+          await pumpEventQueue();
+
+          if (multiSelect) {
+            inputController.add([32]); // Space to select
+            await pumpEventQueue();
+          }
+
+          inputController.add([10]); // Enter
+          expect(await future, multiSelect ? {1} : 1);
+        });
+      }
+    });
   });
 }
 
