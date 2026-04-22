@@ -256,33 +256,33 @@ void main() {
             await pumpEventQueue();
 
             expect(mockStdout.terminal.content, '''
->$uBox a         █
- $uBox b         █
- $uBox c         █
- $uBox d         █
- $uBox e         │
+>$uBox a      █
+ $uBox b      █
+ $uBox c      █
+ $uBox d      █
+ $uBox e      │
 ''');
             inputController.add(List.filled(2, Keys.down));
             inputController.add([Keys.space]);
             await pumpEventQueue();
 
             expect(mockStdout.terminal.content, '''
- $uBox a         █
- $uBox b         █
->$sBox c         █
- $uBox d         █
- $uBox e         │
+ $uBox a      █
+ $uBox b      █
+>$sBox c      █
+ $uBox d      █
+ $uBox e      │
 ''');
 
             inputController.add(List.filled(4, Keys.down));
             await pumpEventQueue();
 
             expect(mockStdout.terminal.content, '''
- $sBox c         │
- $uBox d         █
- $uBox e         █
- $uBox f         █
->$uBox g         █
+ $sBox c      │
+ $uBox d      █
+ $uBox e      █
+ $uBox f      █
+>$uBox g      █
 ''');
 
             inputController.add([Keys.enter.first]);
@@ -299,101 +299,101 @@ void main() {
             await pumpEventQueue();
 
             expect(mockStdout.terminal.content, '''
->$uBox 0          █
- $uBox 1          │
- $uBox 2          │
- $uBox 3          │
- $uBox 4          │
+>$uBox 0       █
+ $uBox 1       │
+ $uBox 2       │
+ $uBox 3       │
+ $uBox 4       │
 ''');
 
             inputController.add(List.filled(2, Keys.down));
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
- $uBox 0          █
- $uBox 1          │
->$uBox 2          │
- $uBox 3          │
- $uBox 4          │
+ $uBox 0       █
+ $uBox 1       │
+>$uBox 2       │
+ $uBox 3       │
+ $uBox 4       │
 ''');
 
             inputController.add([Keys.down]);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
- $uBox 1          │
- $uBox 2          █
->$uBox 3          │
- $uBox 4          │
- $uBox 5          │
+ $uBox 1       │
+ $uBox 2       █
+>$uBox 3       │
+ $uBox 4       │
+ $uBox 5       │
 ''');
 
             inputController.add(List.filled(6, Keys.down));
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
- $uBox 7          │
- $uBox 8          █
->$uBox 9          │
- $uBox 10         │
- $uBox 11         │
+ $uBox 7       │
+ $uBox 8       █
+>$uBox 9       │
+ $uBox 10      │
+ $uBox 11      │
 ''');
 
             inputController.add([Keys.down]);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
- $uBox 8          │
- $uBox 9          │
->$uBox 10         █
- $uBox 11         │
- $uBox 12         │
+ $uBox 8       │
+ $uBox 9       │
+>$uBox 10      █
+ $uBox 11      │
+ $uBox 12      │
 ''');
 
             inputController.add(List.filled(5, Keys.down));
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
- $uBox 13         │
- $uBox 14         │
->$uBox 15         █
- $uBox 16         │
- $uBox 17         │
+ $uBox 13      │
+ $uBox 14      │
+>$uBox 15      █
+ $uBox 16      │
+ $uBox 17      │
 ''');
 
             inputController.add([Keys.down]);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
- $uBox 14         │
- $uBox 15         │
->$uBox 16         │
- $uBox 17         █
- $uBox 18         │
+ $uBox 14      │
+ $uBox 15      │
+>$uBox 16      │
+ $uBox 17      █
+ $uBox 18      │
 ''');
 
             inputController.add(List.filled(5, Keys.down));
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
- $uBox 19         │
- $uBox 20         │
->$uBox 21         │
- $uBox 22         █
- $uBox 23         │
+ $uBox 19      │
+ $uBox 20      │
+>$uBox 21      │
+ $uBox 22      █
+ $uBox 23      │
 ''');
 
             inputController.add([Keys.down]);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
- $uBox 20         │
- $uBox 21         │
->$uBox 22         │
- $uBox 23         │
- $uBox 24         █
+ $uBox 20      │
+ $uBox 21      │
+>$uBox 22      │
+ $uBox 23      │
+ $uBox 24      █
 ''');
 
             inputController.add(List.filled(2, Keys.down));
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
- $uBox 20         │
- $uBox 21         │
- $uBox 22         │
- $uBox 23         │
->$uBox 24         █
+ $uBox 20      │
+ $uBox 21      │
+ $uBox 22      │
+ $uBox 23      │
+>$uBox 24      █
 ''');
 
             inputController.add([Keys.space, Keys.enter.first]);
@@ -410,26 +410,81 @@ void main() {
             await pumpEventQueue();
 
             expect(mockStdout.terminal.content, '''
->$uBox 0         █
- $uBox 1         █
- $uBox 2         █
- $uBox 3         █
- $uBox 4         │
+>$uBox 0      █
+ $uBox 1      █
+ $uBox 2      █
+ $uBox 3      █
+ $uBox 4      │
 ''');
 
             inputController.add(List.filled(4, Keys.down));
             await pumpEventQueue();
 
             expect(mockStdout.terminal.content, '''
- $uBox 1         │
- $uBox 2         █
- $uBox 3         █
->$uBox 4         █
- $uBox 5         █
+ $uBox 1      │
+ $uBox 2      █
+ $uBox 3      █
+>$uBox 4      █
+ $uBox 5      █
 ''');
 
             inputController.add([Keys.enter.first]);
             expect(await future, multiSelect ? <int>{} : 4);
+          });
+
+          test('truncates long items', () async {
+            mockStdout.terminalColumns = 20 + uBox.length;
+            final future = renderer(
+              ['a very long option that should be truncated', 'short'],
+              inputController.stream,
+            );
+            await pumpEventQueue();
+
+            expect(
+              mockStdout.terminal.content,
+              '''
+>$uBox a very long opt...
+ $uBox short
+''',
+            );
+
+            inputController.add([Keys.space, Keys.enter.first]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
+          test('truncates long items when scrollable', () async {
+            mockStdout.terminalColumns = 20 + uBox.length;
+            final future = renderer(
+              [
+                'a very long option that should be truncated',
+                'b',
+                'c',
+                'd',
+                'e',
+                'f'
+              ],
+              inputController.stream,
+            );
+            await pumpEventQueue();
+
+            expect(
+              mockStdout.terminal.content,
+              '''
+>$uBox a very l...      █
+ $uBox b                █
+ $uBox c                █
+ $uBox d                █
+ $uBox e                │
+''',
+            );
+
+            if (multiSelect) {
+              inputController.add([Keys.space, Keys.enter.first]);
+              expect(await future, {0});
+            } else {
+              inputController.add([Keys.enter.first]);
+              expect(await future, 0);
+            }
           });
         });
       }
@@ -466,6 +521,12 @@ class MockStdout implements Stdout {
   // sequences right now.
   final buffer = <String>[];
   final terminal = FakeTerminal();
+
+  @override
+  bool hasTerminal = true;
+
+  @override
+  int terminalColumns = 80;
 
   @override
   void write(Object? object) {

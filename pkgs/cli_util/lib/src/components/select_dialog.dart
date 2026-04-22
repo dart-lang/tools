@@ -78,8 +78,13 @@ Future<Set<int>?> _runDialog(
 }) async {
   if (options.isEmpty) return null;
 
+  final width = _terminalWidth;
+  final isScrollable = options.length > maxVisibleItems;
+  final displayOptions =
+      _truncateOptions(options, width, multiSelect, isScrollable);
+
   final maxItemLength =
-      options.fold(0, (max, e) => e.length > max ? e.length : max);
+      displayOptions.fold(0, (max, e) => e.length > max ? e.length : max);
   final selectedIndices = <int>{if (!multiSelect) 0};
   var cursorIndex = 0;
   final cleanupTasks = <FutureOr<void> Function()>[
@@ -122,7 +127,7 @@ Future<Set<int>?> _runDialog(
 
     // Initial render
     _render(
-      items: options,
+      items: displayOptions,
       cursor: cursorIndex,
       selected: selectedIndices,
       height: maxVisibleItems,
@@ -170,7 +175,7 @@ Future<Set<int>?> _runDialog(
       }
 
       _render(
-        items: options,
+        items: displayOptions,
         cursor: cursorIndex,
         selected: selectedIndices,
         height: maxVisibleItems,
@@ -286,8 +291,11 @@ void _render({
       final relativeI = i - start;
       final isThumb =
           relativeI >= thumbStart && relativeI < thumbStart + thumbHeight;
-      line = '${line.padRight(maxItemLength + selectionMarker.length + 10)}'
-          '${isThumb ? ' █' : ' │'}';
+      final scrollbarXPosition = _pointerWidth +
+          selectionMarker.length +
+          maxItemLength +
+          _scrollbarLeftMargin;
+      line = '${line.padRight(scrollbarXPosition)}${isThumb ? '█' : '│'}';
     }
 
     if (isHovered) {
@@ -332,3 +340,54 @@ extension on Stream<List<int>> {
 }
 
 enum _Key { up, down, pageUp, pageDown, home, end, space, enter, quit }
+
+/// Returns the width of the terminal or 80 if it cannot be determined.
+int get _terminalWidth {
+  try {
+    if (stdout.hasTerminal) {
+      return stdout.terminalColumns;
+    }
+  } catch (_) {}
+  // The default width if we fail to compute it.
+  return 80;
+}
+
+/// Truncates the options to fit within the terminal width, down to a minimum
+/// of 3 characters.
+///
+/// If the options are truncated, the ellipsis '...' is added to the end of
+/// the option.
+///
+/// Accounts for the space that the scrollbar and checkboxes take up.
+List<String> _truncateOptions(
+  List<String> options,
+  int terminalWidth,
+  bool multiSelect,
+  bool isScrollable,
+) {
+  final selectionMarkerLength = multiSelect ? 4 /* ' [ ]' */ : 0;
+  final scrollbarWidth = isScrollable ? 1 : 0;
+  var maxOptionLength = terminalWidth - _pointerWidth - selectionMarkerLength;
+  if (isScrollable) {
+    maxOptionLength -= _scrollbarLeftMargin + scrollbarWidth;
+  }
+
+  // We don't want to truncate to less than 3 characters.
+  var limit = math.max(3, maxOptionLength);
+  if (options.every((option) => option.length <= limit)) {
+    return options;
+  }
+  
+  // We are truncating, account for the space that the '...' will take up,
+  // while still showing at least 3 characters.
+  limit = math.max(3, limit - 3);
+  return options.map((option) {
+    if (option.length > limit) {
+      return '${option.substring(0, limit)}...';
+    }
+    return option;
+  }).toList();
+}
+
+const _pointerWidth = 2; // '  ' or '>
+const _scrollbarLeftMargin = 6;
