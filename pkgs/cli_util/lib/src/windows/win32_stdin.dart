@@ -33,6 +33,7 @@ class Win32AnsiStdin extends Stream<List<int>> {
   void _startEventLoop() {
     if (_running) return;
     _running = true;
+    _eventLoop();
   }
 
   Future<void> _eventLoop() async {
