@@ -81,11 +81,11 @@ void main() {
 
   group('literalString raw', () {
     test('should emit a simple string', () {
-      expect(literalString(raw: true, 'foo'), equalsDart(r"'foo'"));
+      expect(literalString(raw: true, 'foo'), equalsDart(r"r'foo'"));
     });
 
     test('should emit an empty string', () {
-      expect(literalString(raw: true, ''), equalsDart("''"));
+      expect(literalString(raw: true, ''), equalsDart(r"r''"));
     });
 
     test('should use double quotes for just a single quote', () {
@@ -93,7 +93,7 @@ void main() {
     });
 
     test('should use single quotes for just a double quote', () {
-      expect(literalString(raw: true, '"'), equalsDart("'\"'"));
+      expect(literalString(raw: true, '"'), equalsDart("r'\"'"));
     });
 
     test('should use raw string for a single backslash', () {
@@ -101,7 +101,7 @@ void main() {
     });
 
     test('should emit unicode characters', () {
-      expect(literalString(raw: true, '😊'), equalsDart("'😊'"));
+      expect(literalString(raw: true, '😊'), equalsDart(r"r'😊'"));
     });
 
     test('should escape a carriage return in a string', () {
@@ -122,7 +122,7 @@ void main() {
     test('should use single quotes if it contains double quotes', () {
       expect(
         literalString(raw: true, 'foo "bar"'),
-        equalsDart('\'foo "bar"\''),
+        equalsDart("r'foo \"bar\"'"),
       );
     });
 
