@@ -6,6 +6,7 @@
   that you'd expect, and converts then to ANSI escape sequences.
   - Note that this is not a full implementation, and only handles the events
     that are needed for the CLI components in this package.
+- Increases min SDK constraint to `^3.7.0`.
 
 ## 0.5.0
 

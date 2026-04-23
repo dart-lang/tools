@@ -5,7 +5,7 @@ repository: https://github.com/dart-lang/tools/tree/main/pkgs/cli_util
 issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Acli_util
 
 environment:
-  sdk: ^3.4.0
+  sdk: ^3.7.0
 
 dependencies:
   ffi: ^2.2.0
