@@ -26,7 +26,7 @@ class Win32AnsiStdin extends Stream<List<int>> {
   factory Win32AnsiStdin() => _instance ??= Win32AnsiStdin._create();
 
   Win32AnsiStdin._create()
-      : _inputHandle = _Win32Console.instance.getStdHandle(_stdInputHandle) {
+      : _inputHandle = Win32Console.instance.getStdHandle(_stdInputHandle) {
     _controller.onCancel = _close;
   }
 
@@ -38,7 +38,7 @@ class Win32AnsiStdin extends Stream<List<int>> {
 
   Future<void> _eventLoop() async {
     // Allocate a buffer for up to 10 events at a time.
-    final pInputRecord = calloc<_InputRecord>(10);
+    final pInputRecord = calloc<InputRecord>(10);
     final pEventsRead = calloc<Uint32>();
     final pNumEvents = calloc<Uint32>();
 
@@ -51,7 +51,7 @@ class Win32AnsiStdin extends Stream<List<int>> {
 
         // Check how many events are available, we don't want to block
         // waiting to read events if there are none.
-        final numEventsResult = _Win32Console.instance
+        final numEventsResult = Win32Console.instance
             .getNumberOfConsoleInputEvents(_inputHandle, pNumEvents);
 
         if (numEventsResult == 0 || pNumEvents.value == 0) {
@@ -62,7 +62,7 @@ class Win32AnsiStdin extends Stream<List<int>> {
 
         // Read up to 10 events at a time.
         final eventsToRead = pNumEvents.value > 10 ? 10 : pNumEvents.value;
-        final result = _Win32Console.instance.readConsoleInputW(
+        final result = Win32Console.instance.readConsoleInputW(
             _inputHandle, pInputRecord, eventsToRead, pEventsRead);
 
         if (result != 0 && pEventsRead.value > 0) {
@@ -90,7 +90,7 @@ class Win32AnsiStdin extends Stream<List<int>> {
   /// Translate a win32 key event to ANSI escape sequences or characters.
   ///
   /// Returns `null` if this isn't an event we care about.
-  List<int>? _translateKeyEvent(_KeyEventRecord keyEvent) {
+  List<int>? _translateKeyEvent(KeyEventRecord keyEvent) {
     final virtualKeyCode = keyEvent.wVirtualKeyCode;
 
     switch (virtualKeyCode) {
@@ -184,28 +184,42 @@ enum InputRecordEventType {
 /// Windows console input record struct.
 ///
 /// https://learn.microsoft.com/en-us/windows/console/input-record-str
-final class _InputRecord extends Struct {
+@visibleForTesting
+final class InputRecord extends Struct {
   @Uint16()
   external int _eventType;
-  external _EventUnion event;
+  external EventUnion event;
 
   /// Converts [_eventType] to an [InputRecordEventType].
   InputRecordEventType get eventType =>
       InputRecordEventType.fromInt(_eventType);
+
+  set eventType(InputRecordEventType type) {
+    _eventType = switch (type) {
+      InputRecordEventType.keyEvent => 0x0001,
+      InputRecordEventType.mouseEvent => 0x0002,
+      InputRecordEventType.windowBufferSizeEvent => 0x0004,
+      InputRecordEventType.menuEvent => 0x0008,
+      InputRecordEventType.focusEvent => 0x0010,
+      InputRecordEventType.unknown => 0,
+    };
+  }
 }
 
-/// Union of event types for [_InputRecord].
+/// Union of event types for [InputRecord].
 ///
 /// https://learn.microsoft.com/en-us/windows/console/input-record-str
-final class _EventUnion extends Union {
-  /// Maps to [_InputRecord.eventType == 1].
-  external _KeyEventRecord keyEvent;
+@visibleForTesting
+final class EventUnion extends Union {
+  /// Maps to [InputRecord.eventType == 1].
+  external KeyEventRecord keyEvent;
 }
 
 /// Windows key event record struct.
 ///
 /// https://learn.microsoft.com/en-us/windows/console/key-event-record-str
-final class _KeyEventRecord extends Struct {
+@visibleForTesting
+final class KeyEventRecord extends Struct {
   @Int32()
   external int bKeyDown;
   @Uint16()
@@ -222,50 +236,58 @@ final class _KeyEventRecord extends Struct {
 
 /// FFI Function binding to
 /// https://learn.microsoft.com/en-us/windows/console/getstdhandle
-typedef _GetStdHandleDart = int Function(int nStdHandle);
+typedef GetStdHandleDart = int Function(int nStdHandle);
 
 /// FFI Function binding to
 /// https://learn.microsoft.com/en-us/windows/console/readconsoleinput
-typedef _ReadConsoleInputDart = int Function(
+typedef ReadConsoleInputDart = int Function(
     int hConsoleInput,
-    Pointer<_InputRecord> lpBuffer,
+    Pointer<InputRecord> lpBuffer,
     int nLength,
     Pointer<Uint32> lpNumberOfEventsRead);
 
 /// FFI Function binding to
 /// https://learn.microsoft.com/en-us/windows/console/getnumberofconsoleinputevents
-typedef _GetNumberOfConsoleInputEventsDart = int Function(
+typedef GetNumberOfConsoleInputEventsDart = int Function(
     int hConsoleInput, Pointer<Uint32> lpcNumberOfEvents);
 
 /// Lazy loader for Win32 console APIs.
-class _Win32Console {
-  static _Win32Console? _instance;
-  static _Win32Console get instance {
+@visibleForTesting
+class Win32Console {
+  static Win32Console? _instance;
+  static Win32Console get instance {
+    // Tests may set a mock instance on non-windows.
+    if (_instance case final instance?) return instance;
+
     if (!Platform.isWindows) {
       throw StateError('Win32Console is only available on Windows');
     }
-    return _instance ??= _Win32Console._();
+    return _instance = Win32Console._();
   }
 
-  final _GetStdHandleDart getStdHandle;
-  final _ReadConsoleInputDart readConsoleInputW;
-  final _GetNumberOfConsoleInputEventsDart getNumberOfConsoleInputEvents;
+  @visibleForTesting
+  static set instance(Win32Console? value) => _instance = value;
 
-  factory _Win32Console._() {
+  final GetStdHandleDart getStdHandle;
+  final ReadConsoleInputDart readConsoleInputW;
+  final GetNumberOfConsoleInputEventsDart getNumberOfConsoleInputEvents;
+
+  factory Win32Console._() {
     final kernel32 = DynamicLibrary.open('kernel32.dll');
-    return _Win32Console.__(
-        kernel32.lookupFunction<IntPtr Function(Uint32), _GetStdHandleDart>(
+    return Win32Console.internal(
+        kernel32.lookupFunction<IntPtr Function(Uint32), GetStdHandleDart>(
             'GetStdHandle'),
         kernel32.lookupFunction<
             Int32 Function(
-                IntPtr, Pointer<_InputRecord>, Uint32, Pointer<Uint32>),
-            _ReadConsoleInputDart>('ReadConsoleInputW'),
+                IntPtr, Pointer<InputRecord>, Uint32, Pointer<Uint32>),
+            ReadConsoleInputDart>('ReadConsoleInputW'),
         kernel32.lookupFunction<Int32 Function(IntPtr, Pointer<Uint32>),
-            _GetNumberOfConsoleInputEventsDart>(
+            GetNumberOfConsoleInputEventsDart>(
           'GetNumberOfConsoleInputEvents',
         ));
   }
 
-  _Win32Console.__(this.getStdHandle, this.readConsoleInputW,
+  @visibleForTesting
+  Win32Console.internal(this.getStdHandle, this.readConsoleInputW,
       this.getNumberOfConsoleInputEvents);
 }
