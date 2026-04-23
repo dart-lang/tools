@@ -7,6 +7,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:ffi/ffi.dart';
+import 'package:meta/meta.dart';
 
 /// Handles Win32 keyboard input and translates it to ANSI escape sequences.
 ///
@@ -26,7 +27,6 @@ class Win32AnsiStdin extends Stream<List<int>> {
 
   Win32AnsiStdin._create()
       : _inputHandle = _Win32Console.instance.getStdHandle(_stdInputHandle) {
-    _eventLoop();
     _controller.onCancel = _close;
   }
 
@@ -94,21 +94,21 @@ class Win32AnsiStdin extends Stream<List<int>> {
     final virtualKeyCode = keyEvent.wVirtualKeyCode;
 
     switch (virtualKeyCode) {
-      case _VirtualKeyCodes.up:
+      case VirtualKeyCodes.up:
         return [0x1b, 0x5b, 0x41]; // ESC [ A
-      case _VirtualKeyCodes.down:
+      case VirtualKeyCodes.down:
         return [0x1b, 0x5b, 0x42]; // ESC [ B
-      case _VirtualKeyCodes.home:
+      case VirtualKeyCodes.home:
         return [0x1b, 0x5b, 0x48]; // ESC [ H
-      case _VirtualKeyCodes.end:
+      case VirtualKeyCodes.end:
         return [0x1b, 0x5b, 0x46]; // ESC [ F
-      case _VirtualKeyCodes.pageUp:
+      case VirtualKeyCodes.pageUp:
         return [0x1b, 0x5b, 0x35, 0x7e]; // ESC [ 5 ~
-      case _VirtualKeyCodes.pageDown:
+      case VirtualKeyCodes.pageDown:
         return [0x1b, 0x5b, 0x36, 0x7e]; // ESC [ 6 ~
-      case _VirtualKeyCodes.enter:
+      case VirtualKeyCodes.enter:
         return [0x0d]; // CR
-      case _VirtualKeyCodes.escape:
+      case VirtualKeyCodes.escape:
         return [0x1b]; // ESC
     }
 
@@ -147,7 +147,8 @@ class Win32AnsiStdin extends Stream<List<int>> {
 const int _stdInputHandle = -10;
 
 // Virtual key codes
-extension _VirtualKeyCodes on int {
+@visibleForTesting
+extension VirtualKeyCodes on int {
   static const int enter = 0x0D;
   static const int escape = 0x1B;
   static const int pageUp = 0x21;
