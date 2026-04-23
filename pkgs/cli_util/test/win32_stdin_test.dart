@@ -19,7 +19,7 @@ void main() {
   tearDown(() {
     Win32Console.instance = null;
   });
-  
+
   test('Win32AnsiStdin translates windows stdin events to ansi escape codes',
       () async {
     final stdin = Win32AnsiStdin();
