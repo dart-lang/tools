@@ -23,9 +23,7 @@ void main() {
     );
 
     final lines = StreamQueue(
-        process.stdout
-        .transform(utf8.decoder)
-        .transform(const LineSplitter()));
+        process.stdout.transform(utf8.decoder).transform(const LineSplitter()));
 
     // Wait for the child to be ready.
     expect(await lines.next, 'READY');
