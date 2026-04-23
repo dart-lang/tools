@@ -167,7 +167,8 @@ enum InputRecordEventType {
   mouseEvent,
   windowBufferSizeEvent,
   menuEvent,
-  focusEvent;
+  focusEvent,
+  unknown;
 
   /// https://learn.microsoft.com/en-us/windows/console/input-record-str#members
   factory InputRecordEventType.fromInt(int value) => switch (value) {
@@ -176,7 +177,7 @@ enum InputRecordEventType {
         0x0004 => windowBufferSizeEvent,
         0x0008 => menuEvent,
         0x0010 => focusEvent,
-        _ => throw ArgumentError('Unknown InputRecordEventType: $value'),
+        _ => unknown,
       };
 }
 
