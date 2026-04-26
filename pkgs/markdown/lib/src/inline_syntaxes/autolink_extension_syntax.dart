@@ -89,10 +89,10 @@ class AutolinkExtensionSyntax extends InlineSyntax {
       consumeLength = _getConsumeLength(match.match);
     }
 
-    var text = match.match.substring(0, consumeLength);
-    text = parser.encodeHtml ? escapeHtml(text) : text;
+    final rawText = match.match.substring(0, consumeLength);
+    final text = parser.encodeHtml ? escapeHtml(rawText) : rawText;
 
-    var destination = text;
+    var destination = rawText;
     if (isEmailLink) {
       destination = 'mailto:$destination';
     } else if (destination[0] == 'w') {
@@ -100,8 +100,12 @@ class AutolinkExtensionSyntax extends InlineSyntax {
       destination = 'http://$destination';
     }
 
+    final normalizedDestination = normalizeLinkDestination(destination);
+
     final anchor = Element.text('a', text)
-      ..attributes['href'] = Uri.encodeFull(destination);
+      ..attributes['href'] = parser.encodeHtml
+          ? escapeHtml(normalizedDestination)
+          : normalizedDestination;
 
     parser
       ..addNode(anchor)
