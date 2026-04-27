@@ -50,15 +50,11 @@ class Win32AnsiStdin extends Stream<List<int>> {
   }
 
   Future<void> _eventLoop() async {
-    // Allocate a buffer for up to 10 events at a time.
-    Pointer<InputRecord>? pInputRecord;
-    Pointer<Uint32>? pEventsRead;
-    Pointer<Uint32>? pNumEvents;
-
-    try {
-      pInputRecord = calloc<InputRecord>(10);
-      pEventsRead = calloc<Uint32>();
-      pNumEvents = calloc<Uint32>();
+    await using((arena) async {
+      // Allocate a buffer for up to 10 events at a time.
+      final pInputRecord = arena<InputRecord>(10);
+      final pEventsRead = arena<Uint32>();
+      final pNumEvents = arena<Uint32>();
 
       while (_running) {
         // Yield to Dart event loop between emitting events.
@@ -99,12 +95,7 @@ class Win32AnsiStdin extends Stream<List<int>> {
           }
         }
       }
-    } finally {
-      // Ensure we free all allocated memory.
-      if (pInputRecord case final pointer?) calloc.free(pointer);
-      if (pEventsRead case final pointer?) calloc.free(pointer);
-      if (pNumEvents case final pointer?) calloc.free(pointer);
-    }
+    });
   }
 
   /// Translate a win32 key event to ANSI escape sequences or characters.
