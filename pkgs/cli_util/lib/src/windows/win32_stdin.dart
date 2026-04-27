@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:ffi/ffi.dart';
 import 'package:meta/meta.dart';
@@ -50,11 +51,15 @@ class Win32AnsiStdin extends Stream<List<int>> {
 
   Future<void> _eventLoop() async {
     // Allocate a buffer for up to 10 events at a time.
-    final pInputRecord = calloc<InputRecord>(10);
-    final pEventsRead = calloc<Uint32>();
-    final pNumEvents = calloc<Uint32>();
+    Pointer<InputRecord>? pInputRecord;
+    Pointer<Uint32>? pEventsRead;
+    Pointer<Uint32>? pNumEvents;
 
     try {
+      pInputRecord = calloc<InputRecord>(10);
+      pEventsRead = calloc<Uint32>();
+      pNumEvents = calloc<Uint32>();
+
       while (_running) {
         // Yield to Dart event loop between emitting events.
         await Future<void>.value();
@@ -73,7 +78,7 @@ class Win32AnsiStdin extends Stream<List<int>> {
         }
 
         // Read up to 10 events at a time.
-        final eventsToRead = pNumEvents.value > 10 ? 10 : pNumEvents.value;
+        final eventsToRead = math.min(10, pNumEvents.value);
         final result = Win32Console.instance.readConsoleInputW(
           _inputHandle,
           pInputRecord,
@@ -84,22 +89,21 @@ class Win32AnsiStdin extends Stream<List<int>> {
         if (result != 0 && pEventsRead.value > 0) {
           for (var i = 0; i < pEventsRead.value; i++) {
             final event = (pInputRecord + i).ref;
-            if (event.eventType == InputRecordEventType.keyEvent) {
-              final keyEvent = event.event.keyEvent;
-              if (keyEvent.bKeyDown != 0) {
-                final ansiiBytes = _translateKeyEvent(keyEvent);
-                if (ansiiBytes != null && ansiiBytes.isNotEmpty) {
-                  _controller.add(ansiiBytes);
-                }
-              }
+            if (event.eventType != InputRecordEventType.keyEvent) continue;
+            final keyEvent = event.event.keyEvent;
+            if (keyEvent.bKeyDown == 0) continue;
+            final ansiiBytes = _translateKeyEvent(keyEvent);
+            if (ansiiBytes != null && ansiiBytes.isNotEmpty) {
+              _controller.add(ansiiBytes);
             }
           }
         }
       }
     } finally {
-      calloc.free(pInputRecord);
-      calloc.free(pEventsRead);
-      calloc.free(pNumEvents);
+      // Ensure we free all allocated memory.
+      if (pInputRecord case final pointer?) calloc.free(pointer);
+      if (pEventsRead case final pointer?) calloc.free(pointer);
+      if (pNumEvents case final pointer?) calloc.free(pointer);
     }
   }
 
