@@ -17,16 +17,28 @@ import 'package:meta/meta.dart';
 /// This is used on Windows to work around issues where [stdin] doesn't forward
 /// arrow keys or other special keys at all.
 class Win32AnsiStdin extends Stream<List<int>> {
-  static Win32AnsiStdin? _instance;
+  static final Map<int, Win32AnsiStdin> _instances = {};
 
   final int _inputHandle;
   final StreamController<List<int>> _controller = StreamController<List<int>>();
   bool _running = false;
 
-  factory Win32AnsiStdin() => _instance ??= Win32AnsiStdin._create();
+  /// Creates or retrieves a [Win32AnsiStdin] instance for the given [handle].
+  ///
+  /// If [handle] is omitted, it defaults to the standard input handle
+  /// (`STD_INPUT_HANDLE`).
+  ///
+  /// Instances are cached and reused for the same handle.
+  factory Win32AnsiStdin([int? handle]) {
+    final actualHandle =
+        handle ?? Win32Console.instance.getStdHandle(_stdInputHandle);
+    return _instances.putIfAbsent(
+      actualHandle,
+      () => Win32AnsiStdin._create(actualHandle),
+    );
+  }
 
-  Win32AnsiStdin._create()
-    : _inputHandle = Win32Console.instance.getStdHandle(_stdInputHandle) {
+  Win32AnsiStdin._create(this._inputHandle) {
     _controller.onCancel = _close;
   }
 
@@ -127,7 +139,7 @@ class Win32AnsiStdin extends Stream<List<int>> {
   Future<void> _close() async {
     _running = false;
     await _controller.close();
-    _instance = null;
+    _instances.remove(_inputHandle);
   }
 
   @override
