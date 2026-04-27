@@ -118,6 +118,10 @@ class Win32AnsiStdin extends Stream<List<int>> {
         return [0x1b, 0x5b, 0x41]; // ESC [ A
       case VirtualKeyCodes.down:
         return [0x1b, 0x5b, 0x42]; // ESC [ B
+      case VirtualKeyCodes.right:
+        return [0x1b, 0x5b, 0x43]; // ESC [ C
+      case VirtualKeyCodes.left:
+        return [0x1b, 0x5b, 0x44]; // ESC [ D
       case VirtualKeyCodes.home:
         return [0x1b, 0x5b, 0x48]; // ESC [ H
       case VirtualKeyCodes.end:
@@ -166,7 +170,9 @@ class Win32AnsiStdin extends Stream<List<int>> {
 // Windows API Constants
 const int _stdInputHandle = -10;
 
-// Virtual key codes
+/// Virtual key codes
+///
+/// https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 @visibleForTesting
 extension VirtualKeyCodes on int {
   static const int enter = 0x0D;
@@ -175,7 +181,9 @@ extension VirtualKeyCodes on int {
   static const int pageDown = 0x22;
   static const int end = 0x23;
   static const int home = 0x24;
+  static const int left = 0x25;
   static const int up = 0x26;
+  static const int right = 0x27;
   static const int down = 0x28;
 }
 

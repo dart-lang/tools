@@ -37,6 +37,12 @@ void main() {
       await mockConsole.pushEvent(VirtualKeyCodes.down);
       expect(await queue.next, [0x1b, 0x5b, 0x42]);
 
+      await mockConsole.pushEvent(VirtualKeyCodes.right);
+      expect(await queue.next, [0x1b, 0x5b, 0x43]);
+
+      await mockConsole.pushEvent(VirtualKeyCodes.left);
+      expect(await queue.next, [0x1b, 0x5b, 0x44]);
+
       await mockConsole.pushEvent(VirtualKeyCodes.home);
       expect(await queue.next, [0x1b, 0x5b, 0x48]);
 
