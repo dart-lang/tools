@@ -19,6 +19,10 @@ import 'keys.dart';
 ///
 /// Temporarily disables stdin line and echo modes, and restores them before
 /// returning. Also intercepts [ProcessSignal.sigint] to cancel the dialog.
+/// 
+/// The cursor is hidden for the duration of the dialog and then re-shown. If
+/// you want the cursor in a certain state after this dialog you will have to
+/// restore it.
 ///
 /// The [inputStream] is a list of input events (typically originating from
 /// [stdin] or [Win32AnsiStdin]). See the `example/select_dialog.dart` for
@@ -43,6 +47,10 @@ Future<Set<int>?> showMultiSelectDialog(
 ///
 /// Temporarily disables stdin line and echo modes, and restores them before
 /// returning. Also intercepts [ProcessSignal.sigint] to cancel the dialog.
+///
+/// The cursor is hidden for the duration of the dialog and then re-shown. If
+/// you want the cursor in a certain state after this dialog you will have to
+/// restore it.
 ///
 /// The [inputStream] is a list of input events (typically originating from
 /// [stdin] or [Win32AnsiStdin]). See the `example/select_dialog.dart` for
@@ -365,7 +373,7 @@ int _minimumTerminalWidth(bool multiSelect, bool isScrollable) {
   final totalNeeded =
       _pointerWidth +
       checkboxWidth +
-      _minmumOptionLength +
+      _minimumOptionLength +
       '...'.length +
       scrollbarWidth;
   return totalNeeded;
@@ -403,22 +411,19 @@ List<String> _truncateOptions(
   }
 
   // We don't want to truncate to less than 3 characters.
-  var limit = math.max(_minmumOptionLength, maxOptionLength);
+  final limit = math.max(_minimumOptionLength, maxOptionLength);
   if (options.every((option) => option.length <= limit)) {
     return options;
   }
 
   // We are truncating, account for the space that the '...' will take up,
   // while still showing at least the minimum number of characters.
-  limit = math.max(_minmumOptionLength, limit - 3);
-  return options.map((option) {
-    if (option.length > limit) {
-      return '${option.substring(0, limit)}...';
-    }
-    return option;
-  }).toList();
+  return [
+    for (final option in options)
+      option.length > limit ? '${option.substring(0, limit - 3)}...' : option,
+  ];
 }
 
 const _pointerWidth = 2; // '  ' or '>
 const _scrollbarLeftMargin = 6;
-const _minmumOptionLength = 3;
+const _minimumOptionLength = 3;

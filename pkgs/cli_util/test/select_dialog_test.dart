@@ -469,6 +469,40 @@ void main() {
             expect(await future, multiSelect ? <int>{} : 4);
           });
 
+          test('does not truncate exactly sized items', () async {
+            mockStdout.terminalColumns = '> abcdefg'.length + uBox.length;
+            final future = renderer([
+              'abcdefg',
+              'hijklmn',
+            ], inputController.stream);
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+>$uBox abcdefg
+ $uBox hijklmn
+''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? <int>{0} : 0);
+          });
+
+          test('truncates items exactly one character too long', () async {
+            mockStdout.terminalColumns = '> abcdefg'.length + uBox.length;
+            final future = renderer([
+              'abcdefg',
+              'hijklmno',
+            ], inputController.stream);
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+>$uBox abcdefg
+ $uBox hijk...
+''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? <int>{0} : 0);
+          });
+
           test('truncates long items', () async {
             mockStdout.terminalColumns = 20 + uBox.length;
             final future = renderer([
