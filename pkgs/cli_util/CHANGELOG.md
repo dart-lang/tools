@@ -1,5 +1,7 @@
 ## 0.5.1-wip
 
+- Add `showMultiSelectDialog` and `showSingleSelectDialog` to new
+  `cli_components` library, as well as an example.
 - Adds a `package:cli_util/windows_compatibility.dart` library which initially
   contains just the `Win32AnsiStdin` class. This can be used on Windows to get
   a stdin stream that forwards arrow keys and other special keys in the way
@@ -17,8 +19,9 @@
 ## 0.4.2
 
 - Add `sdkPath` getter, deprecate `getSdkPath` function.
+
 * Move to `dart-lang/tools` monorepo.
-  
+
 ## 0.4.1
 
 - Fix a broken link in the readme.
@@ -30,6 +33,7 @@
 - Require Dart 2.19.
 
 ## 0.3.5
+
 - Make `applicationConfigHome` throw an `Exception` when it fails to find a
   configuration folder.
 
