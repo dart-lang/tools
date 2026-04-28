@@ -79,6 +79,14 @@ Future<Set<int>?> _runDialog(
   Stream<List<int>> inputStream, {
   required bool multiSelect,
 }) async {
+  try {
+    _assertValidOptions(options);
+  } catch (e) {
+    // Tests will hang if we don't listen here.
+    await inputStream.listen((_) {}).cancel();
+    rethrow;
+  }
+
   final isScrollable = options.length > maxVisibleItems;
   final width = _terminalWidth;
 
@@ -223,6 +231,14 @@ Future<Set<int>?> _runDialog(
       for (final cleanupTask in cleanupTasks) cleanupTask(),
     ].whereType<Future<void>>().wait;
   }
+}
+
+/// Validates that the given options are suitable for use in a select dialog.
+void _assertValidOptions(List<String> options) {
+  assert(
+    options.every((opt) => opt.codeUnits.every((c) => c >= 0x20 && c <= 0x7e)),
+    'All options must contain only standard ASCII.',
+  );
 }
 
 /// Renders the selection menu to the terminal.

@@ -587,6 +587,26 @@ void main() {
               multiselect ? {0} : 0,
             );
           });
+
+          test(
+            'throws AssertionError for non-ASCII options at start',
+            () async {
+              expect(
+                () => renderer(['\u00FF'], inputController.stream),
+                throwsA(isA<AssertionError>()),
+              );
+            },
+          );
+
+          test(
+            'throws AssertionError for non-ASCII options in middle',
+            () async {
+              expect(
+                () => renderer(['abc\u00FF'], inputController.stream),
+                throwsA(isA<AssertionError>()),
+              );
+            },
+          );
         });
       }
     });
