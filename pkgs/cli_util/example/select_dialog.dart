@@ -2,11 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:io';
+import 'dart:io' as io;
 
 import 'package:cli_util/cli_components.dart';
+import 'package:cli_util/windows_compatibility.dart';
 
 Future<void> main() async {
+  final stdin = io.Platform.isWindows ? Win32AnsiStdin() : io.stdin;
   final inputStream = stdin.asBroadcastStream(
     // Cancel stdin subscription once we have no listeners.
     onCancel: (subscription) => subscription.cancel(),
@@ -21,7 +23,7 @@ Future<void> main() async {
     final countResult = await showSingleSelectDialog(counts, inputStream);
     if (countResult == null) {
       print('No count selected, exiting.');
-      exitCode = 1;
+      io.exitCode = 1;
       return;
     }
     final count = int.parse(counts[countResult]);
@@ -33,7 +35,7 @@ Future<void> main() async {
         await showMultiSelectDialog(allOptions, inputStream);
     if (selectedOptions == null) {
       print('Selection cancelled, exiting.');
-      exitCode = 1;
+      io.exitCode = 1;
       return;
     }
 
