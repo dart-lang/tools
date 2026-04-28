@@ -97,7 +97,7 @@ Future<Set<int>?> _runDialog(
 
   final maxItemLength = displayOptions.fold(
     0,
-    (max, e) => e.length > max ? e.length : max,
+    (max, e) => math.max(max, e.length),
   );
   final selectedIndices = <int>{if (!multiSelect) 0};
   var cursorIndex = 0;
