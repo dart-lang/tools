@@ -115,11 +115,15 @@ Future<Set<int>?> _runDialog(
     // Move the terminal into the rendering state we want.
     if (stdin.hasTerminal) {
       final savedEchoMode = stdin.echoMode;
-      final savedLineMode = stdin.lineMode;
+      // If echoMode is true, we must also restore lineMode to true, especially
+      // on windows (it can get into invalid states).
+      final savedLineMode = stdin.lineMode || savedEchoMode;
       cleanupTasks.add(() {
-        stdin.echoMode = savedEchoMode;
+        // The order here matters for windows
         stdin.lineMode = savedLineMode;
+        stdin.echoMode = savedEchoMode;
       });
+      // The order here matters for windows
       stdin.echoMode = false;
       stdin.lineMode = false;
     }
