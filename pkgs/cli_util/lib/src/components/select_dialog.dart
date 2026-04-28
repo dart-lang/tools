@@ -30,13 +30,7 @@ Future<Set<int>?> showMultiSelectDialog(
   List<String> options,
   Stream<List<int>> inputStream, {
   int maxVisibleItems = 5,
-}) =>
-    _runDialog(
-      options,
-      maxVisibleItems,
-      inputStream,
-      multiSelect: true,
-    );
+}) => _runDialog(options, maxVisibleItems, inputStream, multiSelect: true);
 
 /// Shows a scrollable terminal selection dialog and returns the selected index.
 ///
@@ -95,11 +89,17 @@ Future<Set<int>?> _runDialog(
     return null;
   }
 
-  final displayOptions =
-      _truncateOptions(options, width, multiSelect, isScrollable);
+  final displayOptions = _truncateOptions(
+    options,
+    width,
+    multiSelect,
+    isScrollable,
+  );
 
-  final maxItemLength =
-      displayOptions.fold(0, (max, e) => e.length > max ? e.length : max);
+  final maxItemLength = displayOptions.fold(
+    0,
+    (max, e) => e.length > max ? e.length : max,
+  );
   final selectedIndices = <int>{if (!multiSelect) 0};
   var cursorIndex = 0;
   final cleanupTasks = <FutureOr<void> Function()>[
@@ -111,7 +111,7 @@ Future<Set<int>?> _runDialog(
         stdout.write('\x1b[2K\n'); // Clear each line
       }
       stdout.write('\x1b[${visibleCount}A'); // Move back
-    }
+    },
   ];
   try {
     // Move the terminal into the rendering state we want.
@@ -163,11 +163,15 @@ Future<Set<int>?> _runDialog(
         case Key.down:
           cursorIndex = (cursorIndex + 1).clamp(0, options.length - 1);
         case Key.pageUp:
-          cursorIndex =
-              (cursorIndex - maxVisibleItems).clamp(0, options.length - 1);
+          cursorIndex = (cursorIndex - maxVisibleItems).clamp(
+            0,
+            options.length - 1,
+          );
         case Key.pageDown:
-          cursorIndex =
-              (cursorIndex + maxVisibleItems).clamp(0, options.length - 1);
+          cursorIndex = (cursorIndex + maxVisibleItems).clamp(
+            0,
+            options.length - 1,
+          );
         case Key.home:
           cursorIndex = 0;
         case Key.end:
@@ -250,9 +254,10 @@ void _render({
 }) {
   // Calculate the window of items to display.
   final isScrollable = items.length > height;
-  final start = isScrollable
-      ? (cursor - (height ~/ 2)).clamp(0, items.length - height)
-      : 0;
+  final start =
+      isScrollable
+          ? (cursor - (height ~/ 2)).clamp(0, items.length - height)
+          : 0;
   final end =
       isScrollable ? math.min(start + height, items.length) : items.length;
   final visibleCount = end - start;
@@ -267,9 +272,10 @@ void _render({
   // Calculate scrollbar thumb position and height if enabled.
   if (isScrollable) {
     // Calculate thumb height proportional to visible area.
-    thumbHeight = (visibleCount * visibleCount / items.length)
-        .round()
-        .clamp(1, math.max(1, visibleCount - 1));
+    thumbHeight = (visibleCount * visibleCount / items.length).round().clamp(
+      1,
+      math.max(1, visibleCount - 1),
+    );
     // The max valid start index for the list window.
     final maxStart = items.length - visibleCount;
     // The max valid start index for the thumb based on its size.
@@ -310,7 +316,8 @@ void _render({
       final relativeI = i - start;
       final isThumb =
           relativeI >= thumbStart && relativeI < thumbStart + thumbHeight;
-      final scrollbarXPosition = _pointerWidth +
+      final scrollbarXPosition =
+          _pointerWidth +
           selectionMarker.length +
           maxItemLength +
           _scrollbarLeftMargin;
@@ -334,7 +341,8 @@ void _render({
 int _minimumTerminalWidth(bool multiSelect, bool isScrollable) {
   final checkboxWidth = multiSelect ? 4 : 0;
   final scrollbarWidth = isScrollable ? (1 + _scrollbarLeftMargin) : 0;
-  final totalNeeded = _pointerWidth +
+  final totalNeeded =
+      _pointerWidth +
       checkboxWidth +
       _minmumOptionLength +
       '...'.length +

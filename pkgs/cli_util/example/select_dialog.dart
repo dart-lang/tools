@@ -31,17 +31,17 @@ Future<void> main() async {
 
     final allOptions = List.generate(count, (i) => 'Item #$i');
     print('Select multiple items:');
-    final selectedOptions =
-        await showMultiSelectDialog(allOptions, inputStream);
+    final selectedOptions = await showMultiSelectDialog(
+      allOptions,
+      inputStream,
+    );
     if (selectedOptions == null) {
       print('Selection cancelled, exiting.');
       io.exitCode = 1;
       return;
     }
 
-    print(
-      'Selection complete, selected ${selectedOptions.length} item(s):',
-    );
+    print('Selection complete, selected ${selectedOptions.length} item(s):');
     for (final index in selectedOptions) {
       print(' - ${allOptions[index]}');
     }

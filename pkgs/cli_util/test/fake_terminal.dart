@@ -24,8 +24,9 @@ class FakeTerminal {
   /// Writes text to the terminal, interpreting supported escape sequences.
   void write(String text) {
     // Regex for the specific escape sequences used in select_dialog.dart
-    final seqRegex =
-        RegExp(r'(\x1b\[\d*A|\x1b\[2K|\x1b\[1m|\x1b\[0m|\x1b\[\?25[lh])');
+    final seqRegex = RegExp(
+      r'(\x1b\[\d*A|\x1b\[2K|\x1b\[1m|\x1b\[0m|\x1b\[\?25[lh])',
+    );
 
     var lastEnd = 0;
     for (final match in seqRegex.allMatches(text)) {
@@ -66,7 +67,8 @@ class FakeTerminal {
       if (_cursorCol < currentLine.length) {
         final end = _cursorCol + textToAppend.length;
         if (end <= currentLine.length) {
-          _lines[_cursorRow] = currentLine.substring(0, _cursorCol) +
+          _lines[_cursorRow] =
+              currentLine.substring(0, _cursorCol) +
               textToAppend +
               currentLine.substring(end);
         } else {
