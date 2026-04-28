@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// @docImport 'package:cli_util/windows_compatibility.dart';
+library;
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
@@ -15,10 +18,8 @@ import 'keys.dart';
 /// returning. Also intercepts [ProcessSignal.sigint] to cancel the dialog.
 ///
 /// The [inputStream] is a list of input events (typically originating from
-/// [stdin] but it should not be exactly [stdin] since that can only be
-/// listened to once). It is safe to pass a broadcast stream version of [stdin],
-/// but you will likely want to ignore your own events in the meantime if you
-/// are also listening to it.
+/// [stdin] or [Win32AnsiStdin]). See the `example/select_dialog.dart` for
+/// recommended patterns.
 ///
 /// The [maxVisibleItems] parameter controls how many items are visible in the
 /// dialog at once.
@@ -36,12 +37,10 @@ Future<Set<int>?> showMultiSelectDialog(
 ///
 /// Temporarily disables stdin line and echo modes, and restores them before
 /// returning. Also intercepts [ProcessSignal.sigint] to cancel the dialog.
-///
+/// 
 /// The [inputStream] is a list of input events (typically originating from
-/// [stdin] but it should not be exactly [stdin] since that can only be
-/// listened to once). It is safe to pass a broadcast stream version of [stdin],
-/// but you will likely want to ignore your own events in the meantime if you
-/// are also listening to it.
+/// [stdin] or [Win32AnsiStdin]). See the `example/select_dialog.dart` for
+/// recommended patterns.
 ///
 /// The [maxVisibleItems] parameter controls how many items are visible in the
 /// dialog at once.

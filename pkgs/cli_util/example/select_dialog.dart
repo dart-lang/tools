@@ -9,6 +9,12 @@ import 'package:cli_util/windows_compatibility.dart';
 
 Future<void> main() async {
   final stdin = io.Platform.isWindows ? Win32AnsiStdin() : io.stdin;
+
+  // These streams are single subscription, but need to be listenable from
+  // multiple places, so we convert them to broadcast streams.
+  //
+  // In a real app, you would probably have your own stdin listener, which
+  // should ignore events while the dialogs are open.
   final inputStream = stdin.asBroadcastStream(
     // Cancel stdin subscription once we have no listeners.
     onCancel: (subscription) => subscription.cancel(),
