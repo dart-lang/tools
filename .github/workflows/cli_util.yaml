@@ -48,8 +48,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        sdk: ['3.4', dev]
+        os: [ubuntu-latest, windows-latest]
+        sdk: ['3.7', dev]
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
     - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
@@ -61,3 +61,7 @@ jobs:
     - name: Run tests
       run: dart test --test-randomize-ordering-seed=random
       if: always() && steps.install.outcome == 'success'
+    - name: Run Windows Integration Test
+      if: always() && matrix.os == 'windows-latest' && steps.install.outcome == 'success'
+      run: ./test/win32_integration_test.ps1
+      shell: pwsh

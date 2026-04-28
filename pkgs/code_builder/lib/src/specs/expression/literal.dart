@@ -51,12 +51,12 @@ Expression literalNum(num value) => LiteralExpression._('$value');
 /// Passing `raw: true` is recommended and will become the only option in a
 /// future release.
 Expression literalString(String value, {bool raw = false}) {
-  if (raw) return LiteralExpression._(_escapeString(value));
+  if (raw) return LiteralExpression._(_escapeString(value, preferRaw: raw));
   final escaped = value.replaceAll('\'', '\\\'').replaceAll('\n', '\\n');
   return LiteralExpression._("'$escaped'");
 }
 
-String _escapeString(String value) {
+String _escapeString(String value, {bool preferRaw = false}) {
   final original = value;
   var hasSingleQuote = false;
   var hasDoubleQuote = false;
@@ -83,6 +83,10 @@ String _escapeString(String value) {
     canBeRaw = false;
     return _escapeMap[char] ?? _hexLiteral(char);
   });
+
+  if (preferRaw && canBeRaw && !hasSingleQuote) {
+    return "r'$original'";
+  }
 
   if (canBeRaw && (hasDollar || hasBackslash)) {
     if (!hasSingleQuote) return "r'$original'";

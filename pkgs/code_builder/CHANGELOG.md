@@ -5,6 +5,7 @@
   same behavior.
 * Correct type annotations on nullable and generic variables created with
   `declareVar`, `declareFinal`, and `declareConst`.
+* Deprecate and remove uses of `Expression.expression`.
 
 ## 4.11.1
 

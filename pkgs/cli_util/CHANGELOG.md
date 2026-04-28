@@ -2,6 +2,13 @@
 
 - Add `showMultiSelectDialog` and `showSingleSelectDialog` to new
   `cli_components` library, as well as an example.
+- Adds a `package:cli_util/windows_compatibility.dart` library which initially
+  contains just the `Win32AnsiStdin` class. This can be used on Windows to get
+  a stdin stream that forwards arrow keys and other special keys in the way
+  that you'd expect, and converts then to ANSI escape sequences.
+  - Note that this is not a full implementation, and only handles the events
+    that are needed for the CLI components in this package.
+- Increases min SDK constraint to `^3.7.0`.
 
 ## 0.5.0
 
