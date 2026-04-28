@@ -15,39 +15,38 @@ void main() {
   group('select_dialog', () {
     late MockStdin mockStdin; // Handles capturing line/echo mode changes.
     late MockStdout mockStdout; // Used to verify output.
-    late StreamController<List<int>> inputController; // Actual input stream.
+    late StreamController<ByteSequence> inputController; // Actual input stream.
 
     // Custom test helper to test a series of inputs for both single and multi
     // select dialogs
     @isTestGroup
     void testInputSequence(
       String testName,
-      // If a list is provided, each version will be tried for that entry.
-      List<Object /*int|List<int>*/ > inputs, {
+      // Every variant of every input will be tried, but only with one
+      // combination of other variants.
+      List<KeyVariants> inputs, {
       List<String> options = const ['a', 'b', 'c'],
       required int? singleSelectOutput,
       required Set<int>? multiSelectOutput,
     }) {
       group(testName, () {
-        final defaultCombo = [
+        final defaultVariant = [
           // Initial default input combo is just all the first keys of the
           // inputs.
-          for (var input in inputs)
-            if (input is int) input else (input as List<int>).first,
+          for (var input in inputs) input.first,
         ];
         // We don't test every permutation, individual keys are only tested
         // against the default combo for the other keys.
-        final allInputCombinations = <List<int>>[defaultCombo];
+        final allInputCombinations = <List<ByteSequence>>[defaultVariant];
         for (var i = 0; i < inputs.length; i++) {
           final input = inputs[i];
-          if (input is List<int>) {
-            for (var j = 1; j < input.length; j++) {
-              allInputCombinations.add([
-                ...defaultCombo.take(i),
-                input[j],
-                ...defaultCombo.skip(i + 1),
-              ]);
-            }
+          // Add an extra combination for each variant other than the first.
+          for (var j = 1; j < input.length; j++) {
+            allInputCombinations.add([
+              ...defaultVariant.take(i),
+              input[j],
+              ...defaultVariant.skip(i + 1),
+            ]);
           }
         }
 
@@ -55,20 +54,15 @@ void main() {
           for (var multiSelect in [false, true]) {
             final dialogType = multiSelect ? 'MultiSelect' : 'SingleSelect';
             test('$dialogType - ${inputCombo.join(', ')}', () async {
-              final future = multiSelect
-                  ? showMultiSelectDialog(
-                      options,
-                      inputController.stream,
-                    )
-                  : showSingleSelectDialog(
-                      options,
-                      inputController.stream,
-                    );
+              final future =
+                  multiSelect
+                      ? showMultiSelectDialog(options, inputController.stream)
+                      : showSingleSelectDialog(options, inputController.stream);
               await pumpEventQueue();
               expect(mockStdin.lineMode, isFalse);
               expect(mockStdin.echoMode, isFalse);
 
-              inputController.add(inputCombo);
+              inputCombo.forEach(inputController.add);
               await pumpEventQueue();
 
               expect(
@@ -84,7 +78,7 @@ void main() {
     setUp(() {
       mockStdin = MockStdin();
       mockStdout = MockStdout();
-      inputController = StreamController<List<int>>();
+      inputController = StreamController();
       addTearDown(() => inputController.close());
 
       // Ensure terminal settings are restored and close the stream after tests.
@@ -110,56 +104,78 @@ void main() {
 
     testInputSequence(
       'basic navigation',
-      [Keys.down, Keys.space, Keys.down, Keys.space, Keys.enter],
+      [
+        KeyVariants.down,
+        KeyVariants.space,
+        KeyVariants.down,
+        KeyVariants.space,
+        KeyVariants.enter,
+      ],
       singleSelectOutput: 2,
       multiSelectOutput: {1, 2},
     );
 
     testInputSequence(
       'home key',
-      [Keys.down, Keys.home, Keys.space, Keys.enter],
+      [
+        KeyVariants.down,
+        KeyVariants.home,
+        KeyVariants.space,
+        KeyVariants.enter,
+      ],
       singleSelectOutput: 0,
       multiSelectOutput: {0},
     );
 
     testInputSequence(
       'end key',
-      [Keys.end, Keys.space, Keys.enter],
+      [KeyVariants.end, KeyVariants.space, KeyVariants.enter],
       singleSelectOutput: 2,
       multiSelectOutput: {2},
     );
 
     testInputSequence(
       'boundary conditions - top',
-      [Keys.up, Keys.space, Keys.enter],
+      [KeyVariants.up, KeyVariants.space, KeyVariants.enter],
       singleSelectOutput: 0,
       multiSelectOutput: {0},
     );
 
     testInputSequence(
       'boundary conditions - bottom',
-      [Keys.down, Keys.down, Keys.down, Keys.space, Keys.enter],
+      [
+        KeyVariants.down,
+        KeyVariants.down,
+        KeyVariants.down,
+        KeyVariants.space,
+        KeyVariants.enter,
+      ],
       singleSelectOutput: 2,
       multiSelectOutput: {2},
     );
 
     testInputSequence(
       'page down',
-      [Keys.pageDown, Keys.space, Keys.enter],
+      [KeyVariants.pageDown, KeyVariants.space, KeyVariants.enter],
       singleSelectOutput: 2,
       multiSelectOutput: {2},
     );
 
     testInputSequence(
       'page up',
-      [Keys.end, Keys.pageUp, Keys.space, Keys.enter],
+      [
+        KeyVariants.end,
+        KeyVariants.pageUp,
+        KeyVariants.space,
+        KeyVariants.enter,
+      ],
       singleSelectOutput: 0,
       multiSelectOutput: {0},
     );
 
     testInputSequence(
       'page down with many items',
-      [Keys.pageDown, Keys.space, Keys.enter],
+      [KeyVariants.pageDown, KeyVariants.space, KeyVariants.enter],
       options: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
       singleSelectOutput: 5,
       multiSelectOutput: {5},
@@ -167,21 +183,38 @@ void main() {
 
     testInputSequence(
       'select and unselect',
-      [Keys.down, Keys.space, Keys.space, Keys.enter],
+      [
+        KeyVariants.down,
+        KeyVariants.space,
+        KeyVariants.space,
+        KeyVariants.enter,
+      ],
       singleSelectOutput: 1,
       multiSelectOutput: <int>{},
     );
 
     testInputSequence(
       'select, unselect, select',
-      [Keys.down, Keys.space, Keys.space, Keys.space, Keys.enter],
+      [
+        KeyVariants.down,
+        KeyVariants.space,
+        KeyVariants.space,
+        KeyVariants.space,
+        KeyVariants.enter,
+      ],
       singleSelectOutput: 1,
       multiSelectOutput: {1},
     );
 
     testInputSequence(
       'select multiple items with movement',
-      [Keys.down, Keys.space, Keys.up, Keys.space, Keys.enter],
+      [
+        KeyVariants.down,
+        KeyVariants.space,
+        KeyVariants.up,
+        KeyVariants.space,
+        KeyVariants.enter,
+      ],
       singleSelectOutput: 0,
       multiSelectOutput: {0, 1},
     );
@@ -189,22 +222,26 @@ void main() {
     testInputSequence(
       'unselect one of multiple',
       [
-        Keys.down,
-        Keys.space,
-        Keys.down,
-        Keys.space,
-        Keys.up,
-        Keys.space,
-        Keys.up,
-        Keys.space,
-        Keys.enter
+        KeyVariants.down,
+        KeyVariants.space,
+        KeyVariants.down,
+        KeyVariants.space,
+        KeyVariants.up,
+        KeyVariants.space,
+        KeyVariants.up,
+        KeyVariants.space,
+        KeyVariants.enter,
       ],
       singleSelectOutput: 0,
       multiSelectOutput: {0, 2},
     );
 
-    testInputSequence('Cancelling dialog', [Keys.quit],
-        singleSelectOutput: null, multiSelectOutput: null);
+    testInputSequence(
+      'Cancelling dialog',
+      [KeyVariants.quit],
+      singleSelectOutput: null,
+      multiSelectOutput: null,
+    );
 
     group('UI tests', () {
       for (final multiSelect in [true, false]) {
@@ -215,21 +252,19 @@ void main() {
               multiSelect ? showMultiSelectDialog : showSingleSelectDialog;
 
           test('renders UI state correctly', () async {
-            final future = renderer(
-              ['apple', 'banana', 'cherry'],
-              inputController.stream,
-            );
+            final future = renderer([
+              'apple',
+              'banana',
+              'cherry',
+            ], inputController.stream);
             await pumpEventQueue();
-            expect(
-              mockStdout.terminal.content,
-              '''
+            expect(mockStdout.terminal.content, '''
 >$uBox apple
  $uBox banana
  $uBox cherry
-''',
-            );
+''');
 
-            inputController.add([Keys.down]);
+            inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox apple
@@ -237,7 +272,7 @@ void main() {
  $uBox cherry
 ''');
 
-            inputController.add([Keys.space]);
+            inputController.addKey(KeyVariants.space);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox apple
@@ -245,7 +280,7 @@ void main() {
  $uBox cherry
 ''');
 
-            inputController.add([Keys.enter.first]);
+            inputController.addKey(KeyVariants.enter);
             expect(await future, multiSelect ? {1} : 1);
           });
 
@@ -264,8 +299,8 @@ void main() {
  $uBox d      █
  $uBox e      │
 ''');
-            inputController.add(List.filled(2, Keys.down));
-            inputController.add([Keys.space]);
+            inputController.addKeys(List.filled(2, KeyVariants.down));
+            inputController.addKey(KeyVariants.space);
             await pumpEventQueue();
 
             expect(mockStdout.terminal.content, '''
@@ -276,7 +311,7 @@ void main() {
  $uBox e      │
 ''');
 
-            inputController.add(List.filled(4, Keys.down));
+            inputController.addKeys(List.filled(4, KeyVariants.down));
             await pumpEventQueue();
 
             expect(mockStdout.terminal.content, '''
@@ -287,7 +322,7 @@ void main() {
 >$uBox g      █
 ''');
 
-            inputController.add([Keys.enter.first]);
+            inputController.addKey(KeyVariants.enter);
             expect(await future, multiSelect ? {2} : 6);
           });
 
@@ -308,7 +343,7 @@ void main() {
  $uBox 4       │
 ''');
 
-            inputController.add(List.filled(2, Keys.down));
+            inputController.addKeys(List.filled(2, KeyVariants.down));
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox 0       █
@@ -318,7 +353,7 @@ void main() {
  $uBox 4       │
 ''');
 
-            inputController.add([Keys.down]);
+            inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox 1       │
@@ -328,7 +363,7 @@ void main() {
  $uBox 5       │
 ''');
 
-            inputController.add(List.filled(6, Keys.down));
+            inputController.addKeys(List.filled(6, KeyVariants.down));
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox 7       │
@@ -338,7 +373,7 @@ void main() {
  $uBox 11      │
 ''');
 
-            inputController.add([Keys.down]);
+            inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox 8       │
@@ -348,7 +383,7 @@ void main() {
  $uBox 12      │
 ''');
 
-            inputController.add(List.filled(5, Keys.down));
+            inputController.addKeys(List.filled(5, KeyVariants.down));
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox 13      │
@@ -358,7 +393,7 @@ void main() {
  $uBox 17      │
 ''');
 
-            inputController.add([Keys.down]);
+            inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox 14      │
@@ -368,7 +403,7 @@ void main() {
  $uBox 18      │
 ''');
 
-            inputController.add(List.filled(5, Keys.down));
+            inputController.addKeys(List.filled(5, KeyVariants.down));
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox 19      │
@@ -378,7 +413,7 @@ void main() {
  $uBox 23      │
 ''');
 
-            inputController.add([Keys.down]);
+            inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox 20      │
@@ -388,7 +423,7 @@ void main() {
  $uBox 24      █
 ''');
 
-            inputController.add(List.filled(2, Keys.down));
+            inputController.addKeys(List.filled(2, KeyVariants.down));
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox 20      │
@@ -398,7 +433,7 @@ void main() {
 >$uBox 24      █
 ''');
 
-            inputController.add([Keys.space, Keys.enter.first]);
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(await future, multiSelect ? {24} : 24);
           });
 
@@ -419,7 +454,7 @@ void main() {
  $uBox 4      │
 ''');
 
-            inputController.add(List.filled(4, Keys.down));
+            inputController.addKeys(List.filled(4, KeyVariants.down));
             await pumpEventQueue();
 
             expect(mockStdout.terminal.content, '''
@@ -430,61 +465,52 @@ void main() {
  $uBox 5      █
 ''');
 
-            inputController.add([Keys.enter.first]);
+            inputController.addKey(KeyVariants.enter);
             expect(await future, multiSelect ? <int>{} : 4);
           });
 
           test('truncates long items', () async {
             mockStdout.terminalColumns = 20 + uBox.length;
-            final future = renderer(
-              ['a very long option that should be truncated', 'short'],
-              inputController.stream,
-            );
+            final future = renderer([
+              'a very long option that should be truncated',
+              'short',
+            ], inputController.stream);
             await pumpEventQueue();
 
-            expect(
-              mockStdout.terminal.content,
-              '''
+            expect(mockStdout.terminal.content, '''
 >$uBox a very long opt...
  $uBox short
-''',
-            );
+''');
 
-            inputController.add([Keys.space, Keys.enter.first]);
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(await future, multiSelect ? {0} : 0);
           });
 
           test('truncates long items when scrollable', () async {
             mockStdout.terminalColumns = 20 + uBox.length;
-            final future = renderer(
-              [
-                'a very long option that should be truncated',
-                'b',
-                'c',
-                'd',
-                'e',
-                'f'
-              ],
-              inputController.stream,
-            );
+            final future = renderer([
+              'a very long option that should be truncated',
+              'b',
+              'c',
+              'd',
+              'e',
+              'f',
+            ], inputController.stream);
             await pumpEventQueue();
 
-            expect(
-              mockStdout.terminal.content,
-              '''
+            expect(mockStdout.terminal.content, '''
 >$uBox a very l...      █
  $uBox b                █
  $uBox c                █
  $uBox d                █
  $uBox e                │
-''',
-            );
+''');
 
             if (multiSelect) {
-              inputController.add([Keys.space, Keys.enter.first]);
+              inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
               expect(await future, {0});
             } else {
-              inputController.add([Keys.enter.first]);
+              inputController.addKey(KeyVariants.enter);
               expect(await future, 0);
             }
           });
@@ -498,54 +524,68 @@ void main() {
           final renderer =
               multiselect ? showMultiSelectDialog : showSingleSelectDialog;
 
-        test('returns null if no stdout terminal', () async {
-          mockStdout.hasTerminal = false;
-          inputController.add([Keys.space, Keys.enter.first]);
-          final result = await renderer(['a', 'b'], inputController.stream);
-          expect(result, isNull);
-        });
+          test('returns null if no stdout terminal', () async {
+            mockStdout.hasTerminal = false;
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            final result = await renderer(['a', 'b'], inputController.stream);
+            expect(result, isNull);
+          });
 
           test('returns null if terminal too small (no scrollbar)', () async {
-            mockStdout.terminalColumns = '> '.length +
+            mockStdout.terminalColumns =
+                '> '.length +
                 6 /* 3 chars + '...'*/ +
                 (multiselect ? 4 : 0) -
                 1;
-          inputController.add([Keys.space, Keys.enter.first]);
-          final result = await renderer(['a', 'b'], inputController.stream);
-          expect(result, isNull);
-        });
-
-          test('works if the terminal is exactly sized (no scrollbar)',
-              () async {
-            mockStdout.terminalColumns =
-                '> '.length + 6 /* 3 chars + '...'*/ + (multiselect ? 4 : 0);
-            inputController.add([Keys.space, Keys.enter.first]);
-            expect(await renderer(['a', 'b'], inputController.stream),
-                multiselect ? {0} : 0);
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            final result = await renderer(['a', 'b'], inputController.stream);
+            expect(result, isNull);
           });
 
+          test(
+            'works if the terminal is exactly sized (no scrollbar)',
+            () async {
+              mockStdout.terminalColumns =
+                  '> '.length + 6 /* 3 chars + '...'*/ + (multiselect ? 4 : 0);
+              inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+              expect(
+                await renderer(['a', 'b'], inputController.stream),
+                multiselect ? {0} : 0,
+              );
+            },
+          );
+
           test('returns null if terminal too small (scrollbar)', () async {
-            mockStdout.terminalColumns = '> '.length +
+            mockStdout.terminalColumns =
+                '> '.length +
                 6 /* 3 chars + '...'*/ +
                 '      █'.length +
                 (multiselect ? 4 : 0) -
                 1;
-            inputController.add([Keys.space, Keys.enter.first]);
-            final result = await renderer(['a', 'b'], inputController.stream,
-                maxVisibleItems: 1);
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            final result = await renderer(
+              ['a', 'b'],
+              inputController.stream,
+              maxVisibleItems: 1,
+            );
             expect(result, isNull);
           });
 
           test('works if the terminal is exactly sized (scrollbar)', () async {
-            mockStdout.terminalColumns = '> '.length +
+            mockStdout.terminalColumns =
+                '> '.length +
                 6 /* 3 chars + '...'*/ +
                 '      █'.length +
                 (multiselect ? 4 : 0);
-            inputController.add([Keys.space, Keys.enter.first]);
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(
-                await renderer(['a', 'b'], inputController.stream,
-                    maxVisibleItems: 1),
-                multiselect ? {0} : 0);
+              await renderer(
+                ['a', 'b'],
+                inputController.stream,
+                maxVisibleItems: 1,
+              ),
+              multiselect ? {0} : 0,
+            );
           });
         });
       }
@@ -570,8 +610,7 @@ class MockStdin extends Stream<List<int>> implements Stdin {
     Function? onError,
     void Function()? onDone,
     bool? cancelOnError,
-  }) =>
-      throw UnimplementedError();
+  }) => throw UnimplementedError();
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -612,17 +651,58 @@ base class MyIOOverrides extends IOOverrides {
   Stdout get stdout => _stdout;
 }
 
-extension Keys on Never {
-  // Normal-ish ascii characters
-  static const space = 32;
-  static const enter = [10, 13]; // newline, carraige return
-  static const quit = [3, 4, 27]; // end of text, end of transmission, escape
+/// Nice type to use around a list of bytes that represents ascii characters
+/// or ansii escape codes.
+extension type const ByteSequence(List<int> bytes) implements List<int> {}
 
-  // Final parts of escape sequences
-  static const up = 65; // A
-  static const down = 66; // B
-  static const pageUp = 53; // 5
-  static const pageDown = 54; // 6
-  static const home = [49, 72]; // 1, H
-  static const end = [52, 70]; // 4, F
+/// All the variants of [ByteSequence]s for each key that we support.
+extension type const KeyVariants(List<ByteSequence> variants)
+    implements List<ByteSequence> {
+  // Normal-ish ascii characters
+  static const space = KeyVariants([
+    ByteSequence([32]), // space
+  ]);
+  static const enter = KeyVariants([
+    ByteSequence([10]), // newline
+    ByteSequence([13]), // carraige return
+  ]);
+  static const quit = KeyVariants([
+    ByteSequence([3]), // end of text
+    ByteSequence([4]), // end of transmission
+    ByteSequence([27]), // escape
+  ]);
+
+  // Escape sequences
+  static const up = KeyVariants([
+    ByteSequence([27, 91, 65 /* A */]),
+  ]);
+  static const down = KeyVariants([
+    ByteSequence([27, 91, 66 /* B */]),
+  ]);
+  static const pageUp = KeyVariants([
+    ByteSequence([27, 91, 53 /* 5 */, 126 /* ~ */]),
+  ]);
+  static const pageDown = KeyVariants([
+    ByteSequence([27, 91, 54 /* 6 */, 126 /* ~ */]),
+  ]);
+  static const home = KeyVariants([
+    ByteSequence([27, 91, 49 /* 1 */]),
+    ByteSequence([27, 91, 72 /* H */]),
+  ]);
+  static const end = KeyVariants([
+    ByteSequence([27, 91, 52 /* 4 */]),
+    ByteSequence([27, 91, 70 /* F */]),
+  ]);
+}
+
+extension on StreamController<ByteSequence> {
+  /// Adds the first [ByteSequence] in a [KeyVariants] to the stream.
+  void addKey(KeyVariants key) {
+    add(key.first);
+  }
+
+  /// Calls [addKey] for each key in [keys].
+  void addKeys(List<KeyVariants> keys) {
+    keys.forEach(addKey);
+  }
 }
