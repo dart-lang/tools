@@ -90,7 +90,7 @@ Future<Set<int>?> _runDialog(
       !stdout.hasTerminal ||
       width < _minimumTerminalWidth(multiSelect, isScrollable)) {
     // We do need to actually listen to this stream and immediately cancel, or
-    // else it will never close in come cases.
+    // else it will never close in some cases.
     await inputStream.listen((_) {}).cancel();
     return null;
   }
