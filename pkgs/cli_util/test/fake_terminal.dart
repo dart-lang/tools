@@ -80,12 +80,12 @@ class FakeTerminal {
     }
   }
 
-  /// Returns the current lines of the terminal.
+  /// The currently displayed lines of the terminal.
   List<String> get lines => List.unmodifiable(_lines);
 
-  /// Returns the full content as a single string.
+  /// The full displayed content as a single string.
   String get content => _lines.join('\n');
 
-  /// Returns the current cursor row (0-indexed).
+  /// The current cursor row (0-indexed).
   int get cursorRow => _cursorRow;
 }
