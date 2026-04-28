@@ -19,7 +19,7 @@ import 'keys.dart';
 ///
 /// Temporarily disables stdin line and echo modes, and restores them before
 /// returning. Also intercepts [ProcessSignal.sigint] to cancel the dialog.
-/// 
+///
 /// The cursor is hidden for the duration of the dialog and then re-shown. If
 /// you want the cursor in a certain state after this dialog you will have to
 /// restore it.
