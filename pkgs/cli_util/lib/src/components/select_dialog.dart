@@ -14,6 +14,9 @@ import 'keys.dart';
 /// Shows a scrollable terminal selection dialog and returns the set of
 /// selected indices.
 ///
+/// Only standard ASCII characters should be used in the [options], as other
+/// characters may break the width calculations.
+///
 /// Temporarily disables stdin line and echo modes, and restores them before
 /// returning. Also intercepts [ProcessSignal.sigint] to cancel the dialog.
 ///
@@ -34,6 +37,9 @@ Future<Set<int>?> showMultiSelectDialog(
 }) => _runDialog(options, maxVisibleItems, inputStream, multiSelect: true);
 
 /// Shows a scrollable terminal selection dialog and returns the selected index.
+///
+/// Only standard ASCII characters should be used in the [options], as other
+/// characters may break the width calculations.
 ///
 /// Temporarily disables stdin line and echo modes, and restores them before
 /// returning. Also intercepts [ProcessSignal.sigint] to cancel the dialog.
