@@ -37,7 +37,7 @@ Future<Set<int>?> showMultiSelectDialog(
 ///
 /// Temporarily disables stdin line and echo modes, and restores them before
 /// returning. Also intercepts [ProcessSignal.sigint] to cancel the dialog.
-/// 
+///
 /// The [inputStream] is a list of input events (typically originating from
 /// [stdin] or [Win32AnsiStdin]). See the `example/select_dialog.dart` for
 /// recommended patterns.
