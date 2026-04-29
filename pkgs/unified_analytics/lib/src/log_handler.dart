@@ -277,8 +277,8 @@ class LogHandler {
   /// or less than [kLogFileLength] records.
   void save({required Map<String, Object?> data}) {
     try {
-      final stat = logFile.statSync();
       List<String> records;
+      final stat = logFile.statSync();
       if (stat.size > kMaxLogFileSize) {
         logFile.deleteSync();
         logFile.createSync();
@@ -298,9 +298,14 @@ class LogHandler {
 
         logFile.writeAsStringSync(records.join('\n'));
       }
-    } on FileSystemException {
-      // Logging isn't important enough to warrant raising a
-      // FileSystemException that will surprise consumers of this package.
+    } on Object catch (_) {
+      // Logging isn't important enough to warrant raising an
+      // exception or error that will surprise consumers of this package.
+      // Reset the log file on exception or error.
+      if (logFile.existsSync()) {
+        logFile.deleteSync();
+      }
+      logFile.createSync();
     }
   }
 }
