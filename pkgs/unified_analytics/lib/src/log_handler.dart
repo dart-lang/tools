@@ -276,8 +276,8 @@ class LogHandler {
   /// This will keep the max number of records limited to equal to
   /// or less than [kLogFileLength] records.
   void save({required Map<String, Object?> data}) {
-    List<String> records;
     try {
+      List<String> records;
       final stat = logFile.statSync();
       if (stat.size > kMaxLogFileSize) {
         logFile.deleteSync();
@@ -302,9 +302,10 @@ class LogHandler {
       // Logging isn't important enough to warrant raising an
       // exception or error that will surprise consumers of this package.
       // Reset the log file on exception or error.
-      logFile.deleteSync();
+      if (logFile.existsSync()) {
+        logFile.deleteSync();
+      }
       logFile.createSync();
-      records = [];
     }
   }
 }
