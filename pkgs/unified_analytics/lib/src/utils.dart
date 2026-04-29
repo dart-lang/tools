@@ -351,15 +351,11 @@ String truncateStringToLength(String str, int maxLength) {
 /// The `last_ping` key:value pair has been deprecated, it remains included
 /// for backward compatibility.
 void writeSessionContents({required File sessionFile}) {
-  try {
-    final now = clock.now();
-    sessionFile.writeAsStringSync(
-      '{"session_id": ${now.millisecondsSinceEpoch}, '
-      '"last_ping": ${now.millisecondsSinceEpoch}}',
-    );
-  } on Object catch (_) {
-    // Ignore exceptions and errors.
-  }
+  final now = clock.now();
+  sessionFile.writeAsStringSync(
+    '{"session_id": ${now.millisecondsSinceEpoch}, '
+    '"last_ping": ${now.millisecondsSinceEpoch}}',
+  );
 }
 
 /// A UUID generator.
