@@ -12,6 +12,7 @@ environment:
 
 dependencies:
   args: ^2.5.0
+  stats: ^3.0.0
 
 dev_dependencies:
   dart_flutter_team_lints: ^3.0.0
