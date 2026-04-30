@@ -298,7 +298,7 @@ class LogHandler {
 
         logFile.writeAsStringSync(records.join('\n'));
       }
-    } on Object catch (_) {
+    } on Object {
       // Logging isn't important enough to warrant raising an
       // exception or error that will surprise consumers of this package.
       // Reset the log file on exception or error.

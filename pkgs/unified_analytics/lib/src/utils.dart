@@ -357,7 +357,7 @@ void writeSessionContents({required File sessionFile}) {
       '{"session_id": ${now.millisecondsSinceEpoch}, '
       '"last_ping": ${now.millisecondsSinceEpoch}}',
     );
-  } on Object catch (_) {
+  } on Object {
     // Ignore exceptions and errors.
   }
 }
