@@ -1,3 +1,6 @@
+## 1.2.0-wip
+* Added an `AnsiRgbCode` class and a `rgb` utility function.
+
 ## 1.1.0-wip
 
 * Add a `deepCopyLinks` argument to `copyPath` and `copyPathSync`.
