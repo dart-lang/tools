@@ -38,7 +38,7 @@ jobs:
 
       # Deploy to GitHub Pages.
       - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
       - uses: actions/deploy-pages@v5
