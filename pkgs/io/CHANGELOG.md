@@ -1,6 +1,8 @@
 ## 1.1.0-wip
 
 * Add a `deepCopyLinks` argument to `copyPath` and `copyPathSync`.
+* Add a `SharedStdinSubscription` with support for diverting stdin temporarily
+  to a new substream.
 
 ## 1.0.5
 
