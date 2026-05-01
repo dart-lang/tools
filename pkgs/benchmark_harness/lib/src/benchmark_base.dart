@@ -95,8 +95,8 @@ class BenchmarkBase {
   /// callers wanting a custom rendering should use [measureDetailed]
   /// directly and format the returned [DetailedMeasurement] themselves.
   ///
-  /// See [measureDetailed] for guidance on selecting [minimumMillis] —
-  /// the budget should be chosen so enough samples are collected for the
+  /// See [measureDetailed] for guidance on selecting [minimumMillis].
+  /// The budget should be chosen so enough samples are collected for the
   /// CV to be trustworthy; CV computed from few samples is not reliable.
   void reportDetailed({
     int minimumMillis = minimumMeasureDurationMillis,

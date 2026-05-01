@@ -44,8 +44,10 @@ Measurement measureForImpl(void Function() f, int minimumMillis) {
 /// than [measureForImpl] applied to a default `exercise` (which batches
 /// 10 runs per iteration).
 ///
-/// Sample count is determined entirely by the time budget. The loop
-/// never extends past [minimumMillis] to chase a sample-count target.
+/// Sample count is determined by the time budget. In the rare case
+/// where a single [run] call exceeds [minimumMillis], the loop continues
+/// until at least 2 samples are collected, the minimum required for
+/// [DetailedMeasurement.stddevMicros] to be defined.
 /// A CV% computed from only a handful of samples is not statistically
 /// reliable, so callers should pick [minimumMillis] so that
 /// `minimumMillis / expected per-run time` produces enough samples
@@ -115,7 +117,7 @@ class DetailedMeasurement {
   /// this is the average of the two middle values.
   ///
   /// More robust than [meanMicros] when the distribution has a tail
-  /// (e.g., occasional GC pauses) — the typical-case run time.
+  /// (e.g., occasional GC pauses), giving the typical-case run time.
   double get medianMicros {
     final sorted = List<int>.from(samples)..sort();
     final n = sorted.length;

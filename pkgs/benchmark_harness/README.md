@@ -146,8 +146,8 @@ JsonParse: avg=4.812 ms · median=4.785 ms · CV=2.13% · samples=415 · min=4.7
 is bypassed), so the printed mean is *per `run()` call*, not per 10
 calls. The default time budget is 2 seconds; pass
 `reportDetailed(minimumMillis: 10000)` to collect more samples on slow
-benchmarks. CV computed from very few samples carries large uncertainty
-— aim for at least a few dozen.
+benchmarks. CV computed from very few samples carries large uncertainty,
+so aim for at least a few dozen.
 
 For custom rendering (JSON, CSV, etc.), call `measureDetailed()` and
 format the returned `DetailedMeasurement` (which exposes `samples`,
