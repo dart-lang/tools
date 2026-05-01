@@ -25,6 +25,7 @@ class BenchOptions {
     required this.target,
     this.help = false,
     this.verbose = false,
+    this.json = false,
   }) {
     if (!help && flavor.isEmpty) {
       // This is the wrong exception to use, except that it's caught in the
@@ -51,6 +52,7 @@ class BenchOptions {
       target: result.option('target')!,
       help: result.flag('help'),
       verbose: result.flag('verbose'),
+      json: result.flag('json'),
     );
   }
 
@@ -61,6 +63,8 @@ class BenchOptions {
   final bool help;
 
   final bool verbose;
+
+  final bool json;
 
   static String get usage => _parserForBenchOptions.usage;
 
@@ -91,5 +95,11 @@ class BenchOptions {
       negatable: false,
       help: 'Print the full stack trace if an exception is thrown.',
       abbr: 'v',
+    )
+    ..addFlag(
+      'json',
+      defaultsTo: false,
+      negatable: false,
+      help: 'Output results as JSON for aggregation.',
     );
 }

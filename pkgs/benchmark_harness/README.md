@@ -150,6 +150,7 @@ performance impacts.
                     (defaults to "benchmark/benchmark.dart")
 -h, --help          Print usage information and quit.
 -v, --verbose       Print the full stack trace if an exception is thrown.
+    --json          Output results as JSON for aggregation.
 ```
 
 Example usage:

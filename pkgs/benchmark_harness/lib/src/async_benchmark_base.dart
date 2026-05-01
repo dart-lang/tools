@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'runner.dart';
 import 'score_emitter.dart';
 
 class AsyncBenchmarkBase {
@@ -39,26 +40,21 @@ class AsyncBenchmarkBase {
     Future<void> Function() f,
     int minimumMillis,
   ) async {
-    final minimumMicros = minimumMillis * 1000;
-    final watch = Stopwatch()..start();
-    var iter = 0;
-    var elapsed = 0;
-    while (elapsed < minimumMicros) {
-      await f();
-      elapsed = watch.elapsedMicroseconds;
-      iter++;
-    }
-    return elapsed / iter;
+    final runner = BenchmarkRunner(
+      'measureFor',
+      config: RunnerConfig(maxTotalMicros: minimumMillis * 1000),
+    );
+    final result = await runner.runAsync(f);
+    return result.median;
   }
 
   /// Measures the score for the benchmark and returns it.
   Future<double> measure() async {
     await setup();
     try {
-      // Warmup for at least 100ms. Discard result.
-      await measureFor(warmup, 100);
-      // Run the benchmark for at least 2000ms.
-      return await measureFor(exercise, 2000);
+      final runner = BenchmarkRunner(name);
+      final result = await runner.runAsync(exercise);
+      return result.median;
     } finally {
       await teardown();
     }
