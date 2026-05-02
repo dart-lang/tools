@@ -56,10 +56,7 @@ Measurement measureForImpl(void Function() f, int minimumMillis) {
 /// Intended for benchmarks where one [run] call clears the timer noise
 /// floor (a hundred microseconds or more). Below that, stopwatch
 /// overhead and timer quantization distort both score and CV.
-DetailedMeasurement measureRunsDirect(
-  void Function() run,
-  int minimumMillis,
-) {
+DetailedMeasurement measureRunsDirect(void Function() run, int minimumMillis) {
   final minimumMicros = minimumMillis * 1000;
   final samples = <int>[];
   final watch = Stopwatch()..start();

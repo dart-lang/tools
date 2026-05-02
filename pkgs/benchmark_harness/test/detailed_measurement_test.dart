@@ -35,9 +35,7 @@ void main() {
     });
 
     test('coefficient of variation is stddev/mean*100', () {
-      final m = _withSamples(
-        List.generate(50, (i) => 1000 + (i % 5) * 10),
-      );
+      final m = _withSamples(List.generate(50, (i) => 1000 + (i % 5) * 10));
       final expected = m.stddevMicros / m.meanMicros * 100;
       expect(m.coefficientOfVariation, closeTo(expected, 1e-9));
     });
@@ -70,13 +68,10 @@ void main() {
       // Each call sleep-busy-waits ~30 ms; budget is 10 ms. Without the
       // 2-sample floor this would return 1 sample and the stddev would
       // be undefined.
-      final m = measureRunsDirect(
-        () {
-          final sw = Stopwatch()..start();
-          while (sw.elapsedMilliseconds < 30) {}
-        },
-        10,
-      );
+      final m = measureRunsDirect(() {
+        final sw = Stopwatch()..start();
+        while (sw.elapsedMilliseconds < 30) {}
+      }, 10);
       expect(m.samples.length, greaterThanOrEqualTo(2));
     });
   });

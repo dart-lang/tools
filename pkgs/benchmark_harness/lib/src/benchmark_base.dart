@@ -98,9 +98,7 @@ class BenchmarkBase {
   /// See [measureDetailed] for guidance on selecting [minimumMillis].
   /// The budget should be chosen so enough samples are collected for the
   /// CV to be trustworthy; CV computed from few samples is not reliable.
-  void reportDetailed({
-    int minimumMillis = minimumMeasureDurationMillis,
-  }) {
+  void reportDetailed({int minimumMillis = minimumMeasureDurationMillis}) {
     printDetailedMeasurement(
       name,
       measureDetailed(minimumMillis: minimumMillis),
