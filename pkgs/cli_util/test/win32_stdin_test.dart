@@ -61,6 +61,10 @@ void main() {
       await mockConsole.pushEvent(VirtualKeyCodes.escape);
       expect(await queue.next, [0x1b]);
 
+      // Test Ctrl+A (Select All)
+      await mockConsole.pushEvent(1);
+      expect(await queue.next, [1]);
+
       await queue.cancel();
     },
   );
@@ -85,8 +89,14 @@ class MockWin32Console extends Win32Console {
             record.event.keyEvent.bKeyDown = 1;
             record.event.keyEvent.wVirtualKeyCode = keyCode;
             record.event.keyEvent.uChar = 0;
+            record.event.keyEvent.dwControlKeyState = 0;
             if (keyCode >= 32 && keyCode < 127) {
               record.event.keyEvent.uChar = keyCode;
+            }
+            if (keyCode == 1) {
+              record.event.keyEvent.wVirtualKeyCode = 0x41; // 'A'
+              // LEFT_CTRL_PRESSED
+              record.event.keyEvent.dwControlKeyState = 0x0008;
             }
           }
           lpNumberOfEventsRead.value = count;
