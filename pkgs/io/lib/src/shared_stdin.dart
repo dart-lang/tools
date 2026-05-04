@@ -6,8 +6,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:meta/meta.dart';
-
 /// A shared singleton instance of `dart:io`'s [stdin] stream.
 ///
 /// _Unlike_ the normal [stdin] stream, [sharedStdIn] may switch subscribers
