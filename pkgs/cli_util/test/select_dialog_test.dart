@@ -691,6 +691,18 @@ void main() {
             },
           );
         });
+
+        test('multiselect throws AssertionError for invalid initialSelected '
+            'indices', () async {
+          expect(
+            () => showMultiSelectDialog(
+              ['a', 'b'],
+              inputController.stream,
+              initialSelected: {2},
+            ),
+            throwsA(isA<AssertionError>()),
+          );
+        });
       }
     });
   });

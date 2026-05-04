@@ -97,6 +97,11 @@ Future<Set<int>?> _runDialog(
 }) async {
   try {
     _assertValidOptions(options);
+    assert(
+      initialSelected.every((index) => index >= 0 && index < options.length),
+      'All initialSelected indices must be within the range '
+      '[0, options.length).',
+    );
   } catch (e) {
     // Tests will hang if we don't listen here.
     await inputStream.listen((_) {}).cancel();
