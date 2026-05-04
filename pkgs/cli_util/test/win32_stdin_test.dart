@@ -62,7 +62,7 @@ void main() {
       expect(await queue.next, [0x1b]);
 
       // Test Ctrl+A (Select All)
-      await mockConsole.pushEvent(1);
+      await mockConsole.pushEvent(0x41, controlKeyState: 0x0008);
       expect(await queue.next, [1]);
 
       await queue.cancel();
@@ -71,11 +71,11 @@ void main() {
 }
 
 class MockWin32Console extends Win32Console {
-  final List<int> _mockEvents;
+  final List<({int keyCode, int controlKeyState})> _mockEvents;
 
   factory MockWin32Console() => MockWin32Console._([]);
 
-  MockWin32Console._(List<int> mockEvents)
+  MockWin32Console._(List<({int keyCode, int controlKeyState})> mockEvents)
     : _mockEvents = mockEvents,
       super.internal(
         (nStdHandle) => 123,
@@ -83,20 +83,15 @@ class MockWin32Console extends Win32Console {
           final count =
               nLength < mockEvents.length ? nLength : mockEvents.length;
           for (var i = 0; i < count; i++) {
-            final keyCode = mockEvents.removeAt(0);
+            final event = mockEvents.removeAt(0);
             final record = (lpBuffer + i).ref;
             record.eventType = InputRecordEventType.keyEvent;
             record.event.keyEvent.bKeyDown = 1;
-            record.event.keyEvent.wVirtualKeyCode = keyCode;
+            record.event.keyEvent.wVirtualKeyCode = event.keyCode;
             record.event.keyEvent.uChar = 0;
-            record.event.keyEvent.dwControlKeyState = 0;
-            if (keyCode >= 32 && keyCode < 127) {
-              record.event.keyEvent.uChar = keyCode;
-            }
-            if (keyCode == 1) {
-              record.event.keyEvent.wVirtualKeyCode = 0x41; // 'A'
-              // LEFT_CTRL_PRESSED
-              record.event.keyEvent.dwControlKeyState = 0x0008;
+            record.event.keyEvent.dwControlKeyState = event.controlKeyState;
+            if (event.keyCode >= 32 && event.keyCode < 127) {
+              record.event.keyEvent.uChar = event.keyCode;
             }
           }
           lpNumberOfEventsRead.value = count;
@@ -108,8 +103,8 @@ class MockWin32Console extends Win32Console {
         },
       );
 
-  Future<void> pushEvent(int keyCode) async {
-    _mockEvents.add(keyCode);
+  Future<void> pushEvent(int keyCode, {int controlKeyState = 0}) async {
+    _mockEvents.add((keyCode: keyCode, controlKeyState: controlKeyState));
     // Yield to allow the event loop in Win32AnsiStdin to run.
     await Future<void>.delayed(const Duration(milliseconds: 100));
   }
