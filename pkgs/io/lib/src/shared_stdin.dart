@@ -19,13 +19,17 @@ final SharedStdIn sharedStdIn = SharedStdIn(stdin);
 
 /// A singleton wrapper around `stdin` that allows new subscribers.
 ///
-/// This class is visible in order to be used as a test harness for mock
-/// implementations of `stdin`. In normal programs, [sharedStdIn] should be
-/// used directly.
+/// The majority of usages should go through the [sharedStdIn] singleton.
 class SharedStdIn extends Stream<List<int>> {
   StreamController<List<int>>? _current;
   StreamSubscription<List<int>>? _sub;
 
+  /// In most programs, [sharedStdIn] should be used directly.
+  ///
+  /// You should only call this constructor if [stream] is not [stdin].
+  ///
+  /// Calling this constructor more than once with the same source stream
+  /// will likely result in an error.
   SharedStdIn([Stream<List<int>>? stream]) {
     _sub = (stream ??= stdin).listen(_onInput);
   }
