@@ -24,7 +24,6 @@ final SharedStdIn sharedStdIn = SharedStdIn(stdin);
 /// This class is visible in order to be used as a test harness for mock
 /// implementations of `stdin`. In normal programs, [sharedStdIn] should be
 /// used directly.
-@visibleForTesting
 class SharedStdIn extends Stream<List<int>> {
   StreamController<List<int>>? _current;
   StreamSubscription<List<int>>? _sub;

@@ -1,6 +1,7 @@
 ## 1.1.0-wip
 
 * Add a `deepCopyLinks` argument to `copyPath` and `copyPathSync`.
+* Remove the `@visibleForTesting` annotation from `SharedStdIn`.
 
 ## 1.0.5
 
