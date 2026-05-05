@@ -265,6 +265,23 @@ void main() {
     logHandler.save(data: {});
   });
 
+  test('Catches and discards any exception raised from attempting '
+      'to write to the log file', () async {
+    final logFilePath = 'log.txt';
+    final fs = MemoryFileSystem.test(
+      opHandle: (context, operation) {
+        if (context == logFilePath && operation == FileSystemOp.write) {
+          throw Exception('generic exception');
+        }
+      },
+    );
+    final logFile = fs.file(logFilePath);
+    logFile.createSync();
+    final logHandler = LogHandler(logFile: logFile);
+
+    logHandler.save(data: {});
+  });
+
   test('deletes log file larger than kMaxLogFileSize', () async {
     var deletedLargeLogFile = false;
     var wroteDataToLogFile = false;
