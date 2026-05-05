@@ -134,10 +134,10 @@ Future<Set<int>?> _runDialog(
     0,
     (max, e) => math.max(max, e.length),
   );
-  final selectedIndices = Set<int>.from(initialSelected);
-  if (!multiSelect && selectedIndices.isEmpty) {
-    selectedIndices.add(0);
-  }
+  final selectedIndices = {
+    if (initialSelected.isEmpty && !multiSelect) 0,
+    ...initialSelected,
+  };
   var cursorIndex = 0;
   final cleanupTasks = <FutureOr<void> Function()>[
     () {
