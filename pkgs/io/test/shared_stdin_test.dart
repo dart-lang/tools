@@ -77,4 +77,152 @@ void main() {
     expect(sharedStdIn.nextLine(), completion('Hello World'));
     fakeStdIn.add('Hello World\n');
   });
+
+  test('should temporarily divert events', () async {
+    final logs = <List<int>>[];
+    final sub = sharedStdIn.listen(logs.add);
+    fakeStdIn.add('a');
+    await pumpEventQueue(times: 0);
+    expect(logs, ['a'.codeUnits]);
+
+    final diverted = sub.divert();
+    fakeStdIn.add('b');
+    await pumpEventQueue(times: 0);
+    expect(logs, ['a'.codeUnits]);
+
+    final divertedLogs = <List<int>>[];
+    final divertedSub = diverted.listen(divertedLogs.add);
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['b'.codeUnits]);
+
+    fakeStdIn.add('c');
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['b'.codeUnits, 'c'.codeUnits]);
+    expect(logs, ['a'.codeUnits]);
+
+    final cancelDone = divertedSub.cancel();
+    fakeStdIn.add('d');
+    await cancelDone;
+    fakeStdIn.add('e');
+    await pumpEventQueue(times: 0);
+    expect(logs, ['a'.codeUnits, 'd'.codeUnits, 'e'.codeUnits]);
+
+    await sub.cancel();
+  });
+
+  test('should allow changing onData while diverted', () async {
+    final logs = <List<int>>[];
+    final sub = sharedStdIn.listen(logs.add);
+    final diverted = sub.divert();
+
+    final newLogs = <List<int>>[];
+    sub.onData(newLogs.add);
+
+    final divertedLogs = <List<int>>[];
+    final divertedSub = diverted.listen(divertedLogs.add);
+
+    fakeStdIn.add('a');
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['a'.codeUnits]);
+    expect(logs, isEmpty);
+    expect(newLogs, isEmpty);
+
+    await divertedSub.cancel();
+    fakeStdIn.add('b');
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['a'.codeUnits]);
+    expect(logs, isEmpty);
+    expect(newLogs, ['b'.codeUnits]);
+
+    await sub.cancel();
+  });
+
+  test('should allow changing onDone while diverted', () async {
+    var doneCalled = false;
+    final sub = sharedStdIn.listen((_) {}, onDone: () {
+      doneCalled = true;
+    });
+    final diverted = sub.divert();
+
+    var newDoneCalled = false;
+    sub.onDone(() {
+      newDoneCalled = true;
+    });
+
+    final divertedSub = diverted.listen((_) {});
+
+    await divertedSub.cancel();
+
+    await sharedStdIn.terminate();
+    await pumpEventQueue(times: 0);
+
+    expect(doneCalled, isFalse);
+    expect(newDoneCalled, isTrue);
+    await sub.cancel();
+  });
+
+  test('should call both onDone if stream closes while diverted', () async {
+    var doneCalled = false;
+    final sub = sharedStdIn.listen((_) {}, onDone: () {
+      doneCalled = true;
+    });
+    final diverted = sub.divert();
+
+    var divertedDoneCalled = false;
+    final divertedSub = diverted.listen((_) {}, onDone: () {
+      divertedDoneCalled = true;
+    });
+
+    await sharedStdIn.terminate();
+    await pumpEventQueue(times: 0);
+
+    expect(doneCalled, isTrue);
+    expect(divertedDoneCalled, isTrue);
+    await divertedSub.cancel();
+    await sub.cancel();
+  });
+
+  test('should handle pausing and resuming while diverted', () async {
+    final sub = sharedStdIn.listen((_) {});
+    final diverted = sub.divert();
+    final divertedSub = diverted.listen((_) {});
+
+    expect(sub.isPaused, isFalse);
+
+    divertedSub.pause();
+    expect(sub.isPaused, isTrue);
+
+    divertedSub.resume();
+    expect(sub.isPaused, isFalse);
+
+    await divertedSub.cancel();
+    await sub.cancel();
+  });
+
+  test('should restore custom onData handler set before divert', () async {
+    final logs = <List<int>>[];
+    final sub = sharedStdIn.listen(logs.add);
+
+    final customLogs = <List<int>>[];
+    sub.onData(customLogs.add);
+
+    final diverted = sub.divert();
+    final divertedLogs = <List<int>>[];
+    final divertedSub = diverted.listen(divertedLogs.add);
+
+    fakeStdIn.add('a');
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['a'.codeUnits]);
+    expect(logs, isEmpty);
+    expect(customLogs, isEmpty);
+
+    await divertedSub.cancel();
+    fakeStdIn.add('b');
+    await pumpEventQueue(times: 0);
+    expect(divertedLogs, ['a'.codeUnits]);
+    expect(logs, isEmpty);
+    expect(customLogs, ['b'.codeUnits]);
+
+    await sub.cancel();
+  });
 }

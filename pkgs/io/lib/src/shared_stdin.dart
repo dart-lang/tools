@@ -63,7 +63,7 @@ class SharedStdIn extends Stream<List<int>> {
           sync: true);
 
   @override
-  StreamSubscription<List<int>> listen(
+  SharedStdInSubscription listen(
     void Function(List<int> event)? onData, {
     Function? onError,
     void Function()? onDone,
@@ -79,11 +79,12 @@ class SharedStdIn extends Stream<List<int>> {
           'Subscriber already listening. The existing subscriber must cancel '
           'before another may be added.');
     }
-    return controller.stream.listen(
+    return SharedStdInSubscription._(
+      controller.stream.listen(onData,
+          onError: onError, onDone: onDone, cancelOnError: cancelOnError),
       onData,
-      onDone: onDone,
-      onError: onError,
-      cancelOnError: cancelOnError,
+      onDone,
+      onError,
     );
   }
 
@@ -95,5 +96,91 @@ class SharedStdIn extends Stream<List<int>> {
     await _sub?.cancel();
     await _current?.close();
     _sub = null;
+  }
+}
+
+/// A subscription to [sharedStdIn] that can be temporarily diverted.
+class SharedStdInSubscription implements StreamSubscription<List<int>> {
+  final StreamSubscription<List<int>> _subscription;
+  void Function(List<int>)? _onData;
+  void Function()? _onDone;
+  Function? _onError;
+
+  StreamController<List<int>>? _diverted;
+
+  SharedStdInSubscription._(
+      this._subscription, this._onData, this._onDone, this._onError);
+
+  /// Temporarily diverts events from this stream into a new stream.
+  ///
+  /// Buffers events until the returned stream has a listener. After a listener
+  /// on the returned stream cancels, subsequent events will be delivered to
+  /// the original [onData] callback of this subscription.
+  ///
+  /// While the returned stream has a listener all events and errors are passed
+  /// only to the substream listener's callbacks. If this stream ends while the
+  /// returned stream has a listener both the substream and this stream's
+  /// [onDone] callback is invoked.
+  Stream<List<int>> divert() {
+    final diverted = _diverted = StreamController<List<int>>(
+      onCancel: () {
+        _subscription.onData(_onData);
+        _subscription.onError(_onError);
+        _subscription.onDone(_onDone);
+        _diverted = null;
+      },
+      onPause: _subscription.pause,
+      onResume: _subscription.resume,
+      sync: true,
+    );
+
+    _subscription.onData(diverted.add);
+    _subscription.onError(diverted.addError);
+    _subscription.onDone(() {
+      diverted.close();
+      _onDone?.call();
+    });
+
+    return diverted.stream;
+  }
+
+  @override
+  Future<E> asFuture<E>([E? futureValue]) =>
+      _subscription.asFuture(futureValue);
+
+  @override
+  Future<void> cancel() async {
+    await [_diverted?.close(), _subscription.cancel()].nonNulls.wait;
+  }
+
+  @override
+  bool get isPaused => _subscription.isPaused;
+
+  @override
+  void onData(void Function(List<int> data)? handleData) {
+    _onData = handleData;
+    if (_diverted == null) _subscription.onData(handleData);
+  }
+
+  @override
+  void onDone(void Function()? handleDone) {
+    _onDone = handleDone;
+    if (_diverted == null) _subscription.onDone(handleDone);
+  }
+
+  @override
+  void onError(Function? handleError) {
+    _onError = handleError;
+    if (_diverted == null) _subscription.onError(handleError);
+  }
+
+  @override
+  void pause([Future<void>? resumeSignal]) {
+    _subscription.pause(resumeSignal);
+  }
+
+  @override
+  void resume() {
+    _subscription.resume();
   }
 }
