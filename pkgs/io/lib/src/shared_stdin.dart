@@ -17,21 +17,26 @@ import 'dart:io';
 /// hanging.
 final SharedStdIn sharedStdIn = SharedStdIn(stdin);
 
-/// A singleton wrapper around `stdin` that allows new subscribers.
+/// A wrapper around a stream that allows new subscribers, intended for use
+/// with [stdin] or other input streams that usually only allow one subscriber.
 ///
-/// The majority of usages should go through the [sharedStdIn] singleton.
+/// If you only use this class with [stdin], you should use the [sharedStdIn]
+/// singleton.
+///
+/// You may still only have one listening [StreamSubscription] at a time.
 class SharedStdIn extends Stream<List<int>> {
   StreamController<List<int>>? _current;
   StreamSubscription<List<int>>? _sub;
 
-  /// In most programs, [sharedStdIn] should be used directly.
+  /// Creates a new [SharedStdIn] sharing the [stream].
   ///
-  /// You should only call this constructor if [stream] is not [stdin].
+  /// If you only use this class with [stdin], you should use the [sharedStdIn]
+  /// singleton.
   ///
-  /// Calling this constructor more than once with the same source stream
+  /// Calling this constructor more than once with the same source [stream]
   /// will likely result in an error.
-  SharedStdIn([Stream<List<int>>? stream]) {
-    _sub = (stream ??= stdin).listen(_onInput);
+  SharedStdIn(Stream<List<int>> stream) {
+    _sub = stream.listen(_onInput);
   }
 
   /// Returns a future that completes with the next line.

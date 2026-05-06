@@ -2,6 +2,9 @@
 
 * Add a `deepCopyLinks` argument to `copyPath` and `copyPathSync`.
 * Remove the `@visibleForTesting` annotation from `SharedStdIn`.
+* Make the stream parameter required for `SharedStdIn.new`.
+  * This is treated as non-breaking, because the class was marked as visible
+    for testing only.
 
 ## 1.0.5
 
