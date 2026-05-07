@@ -35,7 +35,10 @@ class SharedStdIn extends Stream<List<int>> {
   ///
   /// Calling this constructor more than once with the same source [stream]
   /// will likely result in an error.
-  SharedStdIn(Stream<List<int>> stream) {
+  factory SharedStdIn(Stream<List<int>> stream) => SharedStdIn._(stream);
+
+  /// Actual constructor is private to prevent subclassing.
+  SharedStdIn._(Stream<List<int>> stream) {
     _sub = stream.listen(_onInput);
   }
 
