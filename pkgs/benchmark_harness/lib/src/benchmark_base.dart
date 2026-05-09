@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'measurement.dart';
+import 'runner.dart';
 import 'score_emitter.dart';
 
 const int minimumMeasureDurationMillis = 2000;
@@ -20,6 +20,7 @@ class BenchmarkBase {
   void run() {}
 
   /// Runs a short version of the benchmark. By default invokes [run] once.
+  @Deprecated('Use KBSSD dynamic warmup instead')
   void warmup() {
     run();
   }
@@ -37,23 +38,27 @@ class BenchmarkBase {
   /// Not measured teardown code executed after the benchmark runs.
   void teardown() {}
 
-  /// Measures the score for this benchmark by executing it enough times
-  /// to reach [minimumMillis].
-
   /// Measures the score for this benchmark by executing it repeatedly until
   /// time minimum has been reached.
-  static double measureFor(void Function() f, int minimumMillis) =>
-      measureForImpl(f, minimumMillis).score;
+  static double measureFor(void Function() f, int minimumMillis) {
+    final runner = BenchmarkRunner(
+      'measureFor',
+      config: RunnerConfig(maxTotalMicros: minimumMillis * 1000),
+    );
+    return runner.run(f).median;
+  }
 
   /// Measures the score for the benchmark and returns it.
   double measure() {
     setup();
-    // Warmup for at least 100ms. Discard result.
-    measureForImpl(warmup, 100);
-    // Run the benchmark for at least 2000ms.
-    var result = measureForImpl(exercise, minimumMeasureDurationMillis);
-    teardown();
-    return result.score;
+    try {
+      // ignore: deprecated_member_use_from_same_package
+      warmup();
+      final runner = BenchmarkRunner(name);
+      return runner.run(exercise).median;
+    } finally {
+      teardown();
+    }
   }
 
   void report() {
