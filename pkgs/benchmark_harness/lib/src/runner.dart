@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'blackhole.dart';
 import 'kbssd_math.dart';
 import 'logger.dart' if (dart.library.js_interop) 'logger_web.dart';
+import 'model/dart_environment.dart';
 import 'result.dart';
 
 /// Configuration for the [BenchmarkRunner].
@@ -67,7 +68,7 @@ class RunnerConfig {
     this.stabilityRequired = 8,
     this.trimPercentage = 0.10,
     this.scaleFactor = 2.0,
-    this.forceRun = const bool.fromEnvironment('benchmark_harness.force_run'),
+    this.forceRun = DartEnvironment.forceRunValue,
     this.logger,
   }) : assert(maxSamples >= 4, 'maxSamples must be at least 4'),
        assert(windowSize >= 2, 'windowSize must be at least 2'),
@@ -94,8 +95,8 @@ class BenchmarkRunner {
 
   /// Runs the [benchmark] function and returns a [BenchmarkResult].
   BenchmarkResult run(dynamic Function() benchmark) {
-    const isValidate = bool.fromEnvironment('benchmark_harness.validate');
-    if (isValidate) {
+    const validate = DartEnvironment.validateValue;
+    if (validate) {
       final sw = Stopwatch()..start();
       Blackhole.sink = benchmark();
       final elapsed = sw.elapsedMicroseconds;
@@ -126,8 +127,8 @@ class BenchmarkRunner {
 
   /// Runs the [benchmark] async function and returns a [BenchmarkResult].
   Future<BenchmarkResult> runAsync(Future<dynamic> Function() benchmark) async {
-    const isValidate = bool.fromEnvironment('benchmark_harness.validate');
-    if (isValidate) {
+    const validate = DartEnvironment.validateValue;
+    if (validate) {
       final sw = Stopwatch()..start();
       await benchmark();
       final elapsed = sw.elapsedMicroseconds;

@@ -6,18 +6,17 @@
 /// benchmark harness to support strong-typed serialization and comparisons.
 library;
 
+import 'dart_environment.dart';
+
 class HostEnvironment {
   final String os;
   final String dartSdkVersion;
 
   const HostEnvironment({required this.os, required this.dartSdkVersion});
 
-  const HostEnvironment.fromDartEnvironment()
-    : os = const String.fromEnvironment('os', defaultValue: 'unknown'),
-      dartSdkVersion = const String.fromEnvironment(
-        'dart_sdk_version',
-        defaultValue: 'unknown',
-      );
+  HostEnvironment.fromDartEnvironment()
+    : os = DartEnvironment.os.value,
+      dartSdkVersion = DartEnvironment.dartSdkVersion.value;
 
   factory HostEnvironment.fromJson(Map<String, dynamic> json) {
     return HostEnvironment(

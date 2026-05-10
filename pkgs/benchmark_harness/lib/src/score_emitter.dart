@@ -5,6 +5,7 @@
 import 'dart:convert';
 
 import 'model/benchmark_result_models.dart';
+import 'model/dart_environment.dart';
 import 'result.dart';
 
 abstract class ScoreEmitter {
@@ -64,9 +65,9 @@ class JsonEmitter implements DetailedScoreEmitter {
     _results[testName] = BenchmarkVariantResult(
       name: testName,
       variant: testName,
-      platform: const String.fromEnvironment('platform', defaultValue: 'jit'),
+      platform: DartEnvironment.platform.value,
       timestamp: DateTime.now().toUtc(),
-      environment: const HostEnvironment.fromDartEnvironment(),
+      environment: HostEnvironment.fromDartEnvironment(),
       metrics: RunMetrics(
         samplesCount: 1,
         meanUs: value,
@@ -87,9 +88,9 @@ class JsonEmitter implements DetailedScoreEmitter {
     _results[result.name] = BenchmarkVariantResult(
       name: result.name,
       variant: result.name,
-      platform: const String.fromEnvironment('platform', defaultValue: 'jit'),
+      platform: DartEnvironment.platform.value,
       timestamp: DateTime.now().toUtc(),
-      environment: const HostEnvironment.fromDartEnvironment(),
+      environment: HostEnvironment.fromDartEnvironment(),
       metrics: RunMetrics(
         samplesCount: result.samples.length,
         meanUs: result.mean,

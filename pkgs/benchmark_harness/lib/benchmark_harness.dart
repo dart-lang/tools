@@ -7,6 +7,7 @@ export 'src/benchmark.dart' show Benchmark, BenchmarkVariant;
 export 'src/benchmark_base.dart' show BenchmarkBase;
 export 'src/blackhole.dart' show blackhole;
 export 'src/model/benchmark_result_models.dart';
+export 'src/model/dart_environment.dart';
 export 'src/report.dart' show BenchmarkReport;
 export 'src/result.dart' show BenchmarkComparison, BenchmarkResult;
 export 'src/runner.dart' show RunnerConfig;

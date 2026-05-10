@@ -22,8 +22,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 import '$fileUri' as user_target;
 
 void main() async {
-  const isJson = bool.fromEnvironment('json');
-  if (isJson) {
+  if (DartEnvironment.json.value) {
     final emitter = JsonEmitter();
     for (final benchmark in user_target.benchmarks) {
       await benchmark.report(emitter: emitter);

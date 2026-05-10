@@ -45,7 +45,11 @@ void main() {
       final warnings = <String>[];
       final runner = BenchmarkRunner(
         'logger-test',
-        config: RunnerConfig(targetSampleMicros: 1000, logger: warnings.add),
+        config: RunnerConfig(
+          targetSampleMicros: 1000,
+          logger: warnings.add,
+          forceRun: true,
+        ),
       );
       runner.run(() {});
 

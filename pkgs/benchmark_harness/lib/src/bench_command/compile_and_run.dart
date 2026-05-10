@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
+import '../model/dart_environment.dart';
 import 'bench_options.dart';
 import 'wrapper_helper.dart';
 
@@ -247,13 +248,15 @@ class _JITRunner extends _Runner {
     final args = <String>[
       if (packageConfig != null) '--packages=$packageConfig',
       if (options.json) ...[
-        '-Djson=true',
-        '-Dos=${Platform.operatingSystem}',
-        '-Ddart_sdk_version=${Platform.version.split(' ').first}',
-        '-Dplatform=jit',
+        DartEnvironment.json.argsValue(true),
+        DartEnvironment.os.argsValue(Platform.operatingSystem),
+        DartEnvironment.dartSdkVersion.argsValue(
+          Platform.version.split(' ').first,
+        ),
+        DartEnvironment.platform.argsValue('jit'),
       ],
-      if (options.forceRun) '-Dbenchmark_harness.force_run=true',
-      if (options.validate) '-Dbenchmark_harness.validate=true',
+      if (options.forceRun) DartEnvironment.forceRun.argsValue(true),
+      if (options.validate) DartEnvironment.validate.argsValue(true),
       ...options.compilerFlags,
       ...options.vmFlags,
       _realTarget,
@@ -281,13 +284,15 @@ class _AOTRunner extends _Runner {
       '-o',
       outFile,
       if (options.json) ...[
-        '-Djson=true',
-        '-Dos=${Platform.operatingSystem}',
-        '-Ddart_sdk_version=${Platform.version.split(' ').first}',
-        '-Dplatform=aot',
+        DartEnvironment.json.argsValue(true),
+        DartEnvironment.os.argsValue(Platform.operatingSystem),
+        DartEnvironment.dartSdkVersion.argsValue(
+          Platform.version.split(' ').first,
+        ),
+        DartEnvironment.platform.argsValue('aot'),
       ],
-      if (options.forceRun) '-Dbenchmark_harness.force_run=true',
-      if (options.validate) '-Dbenchmark_harness.validate=true',
+      if (options.forceRun) DartEnvironment.forceRun.argsValue(true),
+      if (options.validate) DartEnvironment.validate.argsValue(true),
       ...options.compilerFlags,
     ];
 
@@ -320,13 +325,15 @@ class _JSRunner extends _Runner {
       '-o',
       outFile,
       if (options.json) ...[
-        '-Djson=true',
-        '-Dos=${Platform.operatingSystem}',
-        '-Ddart_sdk_version=${Platform.version.split(' ').first}',
-        '-Dplatform=js',
+        DartEnvironment.json.argsValue(true),
+        DartEnvironment.os.argsValue(Platform.operatingSystem),
+        DartEnvironment.dartSdkVersion.argsValue(
+          Platform.version.split(' ').first,
+        ),
+        DartEnvironment.platform.argsValue('js'),
       ],
-      if (options.forceRun) '-Dbenchmark_harness.force_run=true',
-      if (options.validate) '-Dbenchmark_harness.validate=true',
+      if (options.forceRun) DartEnvironment.forceRun.argsValue(true),
+      if (options.validate) DartEnvironment.validate.argsValue(true),
       ...options.compilerFlags,
     ];
 
@@ -371,13 +378,15 @@ class _WasmRunner extends _Runner {
       '-o',
       outFile,
       if (options.json) ...[
-        '-Djson=true',
-        '-Dos=${Platform.operatingSystem}',
-        '-Ddart_sdk_version=${Platform.version.split(' ').first}',
-        '-Dplatform=wasm',
+        DartEnvironment.json.argsValue(true),
+        DartEnvironment.os.argsValue(Platform.operatingSystem),
+        DartEnvironment.dartSdkVersion.argsValue(
+          Platform.version.split(' ').first,
+        ),
+        DartEnvironment.platform.argsValue('wasm'),
       ],
-      if (options.forceRun) '-Dbenchmark_harness.force_run=true',
-      if (options.validate) '-Dbenchmark_harness.validate=true',
+      if (options.forceRun) DartEnvironment.forceRun.argsValue(true),
+      if (options.validate) DartEnvironment.validate.argsValue(true),
       ...options.compilerFlags,
     ];
 
@@ -442,13 +451,15 @@ class _IsolateRunner extends _Runner {
     final args = <String>[
       ...options.vmFlags,
       if (options.json && hasBenchmarksDeclaration(target)) ...[
-        '-Djson=true',
-        '-Dos=${Platform.operatingSystem}',
-        '-Ddart_sdk_version=${Platform.version.split(' ').first}',
-        '-Dplatform=jit',
+        DartEnvironment.json.argsValue(true),
+        DartEnvironment.os.argsValue(Platform.operatingSystem),
+        DartEnvironment.dartSdkVersion.argsValue(
+          Platform.version.split(' ').first,
+        ),
+        DartEnvironment.platform.argsValue('jit'),
       ],
-      if (options.forceRun) '-Dbenchmark_harness.force_run=true',
-      if (options.validate) '-Dbenchmark_harness.validate=true',
+      if (options.forceRun) DartEnvironment.forceRun.argsValue(true),
+      if (options.validate) DartEnvironment.validate.argsValue(true),
     ];
 
     if (!options.json) {
