@@ -25,6 +25,8 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:stats/stats.dart';
+
 /// Calculates the Median Absolute Deviation (MAD) of a sorted list of [data]
 /// relative to its [median].
 double calculateMAD(List<double> data, double median) {
@@ -41,21 +43,14 @@ double calculateMAD(List<double> data, double median) {
 /// Trims extreme values (both top and bottom) from a sliding [window]
 /// based on [trimPercentage].
 List<double> trimWindow(List<double> window, double trimPercentage) {
-  final sorted = List<double>.from(window)..sort();
+  final sorted = List<double>.of(window)..sort();
   final trimCount = (window.length * trimPercentage).round();
   if (trimCount * 2 >= window.length) return sorted;
   return sorted.sublist(trimCount, window.length - trimCount);
 }
 
-/// Estimates the standard deviation (sigma) of values in [buffer].
-double estimateSigma(List<double> buffer) {
-  if (buffer.isEmpty) return 1.0;
-  final mean = buffer.reduce((a, b) => a + b) / buffer.length;
-  final variance =
-      buffer.map((x) => math.pow(x - mean, 2)).reduce((a, b) => a + b) /
-      buffer.length;
-  return math.sqrt(variance);
-}
+double estimateSigma(List<double> buffer) =>
+    buffer.isEmpty ? 1.0 : buffer.stats.populationValues.standardDeviation;
 
 /// Calculates the Maximum Mean Discrepancy (MMD) between two trimmed windows
 /// [X] and [Y] using [sigma] as the Gaussian kernel scale parameter.
@@ -69,14 +64,17 @@ double calculateMMD(List<double> X, List<double> Y, double sigma) {
   var kXY = 0.0;
 
   for (var i = 0; i < n; i++) {
+    final xI = X[i];
+    final yI = Y[i];
     for (var j = 0; j < n; j++) {
-      kXX += math.exp(-math.pow(X[i] - X[j], 2) / s2);
-      kYY += math.exp(-math.pow(Y[i] - Y[j], 2) / s2);
-      kXY += math.exp(-math.pow(X[i] - Y[j], 2) / s2);
+      kXX += math.exp(-math.pow(xI - X[j], 2) / s2);
+      kYY += math.exp(-math.pow(yI - Y[j], 2) / s2);
+      kXY += math.exp(-math.pow(xI - Y[j], 2) / s2);
     }
   }
 
-  final mmdSquared = (kXX / (n * n)) - (2.0 * kXY / (n * n)) + (kYY / (n * n));
+  final n2 = n * n;
+  final mmdSquared = (kXX - 2.0 * kXY + kYY) / n2;
   return math.sqrt(math.max(0.0, mmdSquared));
 }
 
@@ -84,13 +82,16 @@ double calculateMMD(List<double> X, List<double> Y, double sigma) {
 /// mean of the [window], representing stability.
 bool checkSEM(List<double> window) {
   if (window.isEmpty) return false;
-  final mean = window.reduce((a, b) => a + b) / window.length;
-  if (mean == 0.0) return true;
-  final variance =
-      window.map((x) => math.pow(x - mean, 2)).reduce((a, b) => a + b) /
-      window.length;
-  final stdDev = math.sqrt(variance);
-  final sem = stdDev / math.sqrt(window.length);
-  final ciWidth = 1.96 * sem;
-  return ciWidth <= 0.03 * mean;
+  final stats = window.stats;
+  if (stats.mean == 0.0) return true;
+  final sem = stats.populationValues.standardError;
+  final ciWidth = _zScore95 * sem;
+  return ciWidth <= _semTolerance * stats.mean;
 }
+
+/// 3% tolerance for standard error.
+const _semTolerance = 0.03;
+
+/// The critical z-score value corresponding to a 95% confidence interval
+/// under a standard normal distribution (two-tailed test).
+const _zScore95 = 1.96;
