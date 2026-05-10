@@ -186,6 +186,39 @@ void main() {
     });
   });
 
+  group('JSON Result Serialization & Models', () {
+    test('can roundtrip serialize and deserialize benchmark results', () {
+      final emitter = JsonEmitter();
+      final result = BenchmarkResult(
+        name: 'roundtrip-test',
+        samples: [12.0, 15.0, 18.0],
+        isStable: true,
+        convergenceThreshold: 0.02,
+      );
+      emitter.emitDetailed(result);
+
+      final jsonString = emitter.toString();
+      final decodedMap = jsonDecode(jsonString) as Map<String, dynamic>;
+
+      expect(decodedMap, contains('roundtrip-test'));
+
+      // Strong-typed decoding
+      final variantResult = BenchmarkVariantResult.fromJson(
+        decodedMap['roundtrip-test'] as Map<String, dynamic>,
+      );
+
+      expect(variantResult.name, equals('roundtrip-test'));
+      expect(variantResult.variant, equals('roundtrip-test'));
+      expect(variantResult.platform, equals('jit'));
+      expect(variantResult.rawSamplesUs, equals([12.0, 15.0, 18.0]));
+      expect(variantResult.metrics.samplesCount, equals(3));
+      expect(variantResult.metrics.medianUs, equals(15.0));
+      expect(variantResult.metrics.isStable, isTrue);
+      expect(variantResult.metrics.convergenceThreshold, equals(0.02));
+      expect(variantResult.warmupDiagnostics.warmupConverged, isTrue);
+    });
+  });
+
   group('Operational Guidelines & Calibration Guards', () {
     test(
       'throws CalibrationException on extremely slow runtimes (> 200ms)',

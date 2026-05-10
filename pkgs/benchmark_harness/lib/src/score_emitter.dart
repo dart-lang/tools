@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+
+import 'model/benchmark_result_models.dart';
 import 'result.dart';
 
 abstract class ScoreEmitter {
@@ -55,51 +57,62 @@ class PrintEmitterV2 implements ScoreEmitterV2 {
 }
 
 class JsonEmitter implements DetailedScoreEmitter {
-  final Map<String, dynamic> _results = {};
+  final Map<String, BenchmarkVariantResult> _results = {};
 
   @override
   void emit(String testName, double value) {
-    _results[testName] = {
-      'name': testName,
-      'variant': testName,
-      'platform': const String.fromEnvironment('platform', defaultValue: 'jit'),
-      'timestamp': DateTime.now().toUtc().toIso8601String(),
-      'metrics': {'median_us': value},
-    };
+    _results[testName] = BenchmarkVariantResult(
+      name: testName,
+      variant: testName,
+      platform: const String.fromEnvironment('platform', defaultValue: 'jit'),
+      timestamp: DateTime.now().toUtc(),
+      environment: const HostEnvironment.fromDartEnvironment(),
+      metrics: RunMetrics(
+        samplesCount: 1,
+        meanUs: value,
+        medianUs: value,
+        stdDevUs: 0.0,
+        cv: 0.0,
+        confidenceInterval95: [value, value],
+        isStable: true,
+        convergenceThreshold: 0.0,
+      ),
+      warmupDiagnostics: const WarmupDiagnostics(warmupConverged: true),
+      rawSamplesUs: [value],
+    );
   }
 
   @override
   void emitDetailed(BenchmarkResult result) {
-    _results[result.name] = {
-      'name': result.name,
-      'variant': result.name,
-      'platform': const String.fromEnvironment('platform', defaultValue: 'jit'),
-      'timestamp': DateTime.now().toUtc().toIso8601String(),
-      'environment': {
-        'os': const String.fromEnvironment('os', defaultValue: 'unknown'),
-        'dart_sdk_version': const String.fromEnvironment(
-          'dart_sdk_version',
-          defaultValue: 'unknown',
-        ),
-      },
-      'metrics': {
-        'samples_count': result.samples.length,
-        'mean_us': result.mean,
-        'median_us': result.median,
-        'std_dev_us': result.stdDev,
-        'cv': result.cv / 100.0,
-        'confidence_interval_95': [
+    _results[result.name] = BenchmarkVariantResult(
+      name: result.name,
+      variant: result.name,
+      platform: const String.fromEnvironment('platform', defaultValue: 'jit'),
+      timestamp: DateTime.now().toUtc(),
+      environment: const HostEnvironment.fromDartEnvironment(),
+      metrics: RunMetrics(
+        samplesCount: result.samples.length,
+        meanUs: result.mean,
+        medianUs: result.median,
+        stdDevUs: result.stdDev,
+        cv: result.cv / 100.0,
+        confidenceInterval95: [
           result.confidenceInterval.lowerBound,
           result.confidenceInterval.upperBound,
         ],
-        'isStable': result.isStable,
-        'convergenceThreshold': result.convergenceThreshold,
-      },
-      'warmup_diagnostics': {'warmup_converged': result.isStable},
-      'raw_samples_us': result.samples,
-    };
+        isStable: result.isStable,
+        convergenceThreshold: result.convergenceThreshold ?? 0.0,
+      ),
+      warmupDiagnostics: WarmupDiagnostics(warmupConverged: result.isStable),
+      rawSamplesUs: result.samples,
+    );
   }
 
   @override
-  String toString() => jsonEncode(_results);
+  String toString() {
+    final serialized = _results.map(
+      (key, value) => MapEntry(key, value.toJson()),
+    );
+    return jsonEncode(serialized);
+  }
 }
