@@ -20,7 +20,7 @@ class BenchmarkBase {
   void run() {}
 
   /// Runs a short version of the benchmark. By default invokes [run] once.
-  @Deprecated('Use KBSSD dynamic warmup instead')
+  @Deprecated('Warmup is computed adaptively by the benchmark harness.')
   void warmup() {
     run();
   }
