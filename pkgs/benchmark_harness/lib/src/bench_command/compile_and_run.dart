@@ -243,32 +243,23 @@ class _JITRunner extends _Runner {
 
   @override
   Future<Map<String, dynamic>?> _runImpl() async {
-    final args = <String>[];
     final packageConfig = resolvePackageConfig();
-    if (packageConfig != null) {
-      args.add('--packages=$packageConfig');
-    }
-    if (options.json) {
-      args.add('-Djson=true');
-      args.add('-Dos=${Platform.operatingSystem}');
-      args.add('-Ddart_sdk_version=${Platform.version.split(' ').first}');
-      args.add('-Dplatform=jit');
-    }
-    if (options.forceRun) {
-      args.add('-Dbenchmark_harness.force_run=true');
-    }
-    if (options.validate) {
-      args.add('-Dbenchmark_harness.validate=true');
-    }
-    args.addAll(options.compilerFlags);
-    args.addAll(options.vmFlags);
-    args.add(_realTarget);
-    if (options.json && hasBenchmarksDeclaration(target)) {
-      args.add('--json');
-    }
-    if (options.forceRun) {
-      args.add('--force-run');
-    }
+    final args = <String>[
+      if (packageConfig != null) '--packages=$packageConfig',
+      if (options.json) ...[
+        '-Djson=true',
+        '-Dos=${Platform.operatingSystem}',
+        '-Ddart_sdk_version=${Platform.version.split(' ').first}',
+        '-Dplatform=jit',
+      ],
+      if (options.forceRun) '-Dbenchmark_harness.force_run=true',
+      if (options.validate) '-Dbenchmark_harness.validate=true',
+      ...options.compilerFlags,
+      ...options.vmFlags,
+      _realTarget,
+      if (options.json && hasBenchmarksDeclaration(target)) '--json',
+      if (options.forceRun) '--force-run',
+    ];
     final output = await _runProc(_Stage.run, Platform.executable, args);
     return _parseResult(output);
   }
@@ -281,30 +272,32 @@ class _AOTRunner extends _Runner {
   @override
   Future<Map<String, dynamic>?> _runImpl() async {
     final outFile = _outputFile('exe');
-    final compileArgs = ['compile', 'exe'];
     final packageConfig = resolvePackageConfig();
-    if (packageConfig != null) {
-      compileArgs.add('--packages=$packageConfig');
-    }
-    compileArgs.addAll([_realTarget, '-o', outFile]);
-    if (options.json) {
-      compileArgs.add('-Djson=true');
-      compileArgs.add('-Dos=${Platform.operatingSystem}');
-      compileArgs.add(
+    final compileArgs = <String>[
+      'compile',
+      'exe',
+      if (packageConfig != null) '--packages=$packageConfig',
+      _realTarget,
+      '-o',
+      outFile,
+      if (options.json) ...[
+        '-Djson=true',
+        '-Dos=${Platform.operatingSystem}',
         '-Ddart_sdk_version=${Platform.version.split(' ').first}',
-      );
-      compileArgs.add('-Dplatform=aot');
-    }
-    if (options.forceRun) compileArgs.add('-Dbenchmark_harness.force_run=true');
-    if (options.validate) compileArgs.add('-Dbenchmark_harness.validate=true');
-    compileArgs.addAll(options.compilerFlags);
+        '-Dplatform=aot',
+      ],
+      if (options.forceRun) '-Dbenchmark_harness.force_run=true',
+      if (options.validate) '-Dbenchmark_harness.validate=true',
+      ...options.compilerFlags,
+    ];
 
     await _runProc(_Stage.compile, Platform.executable, compileArgs);
 
-    final args = <String>[];
-    args.addAll(options.vmFlags);
-    if (options.json && hasBenchmarksDeclaration(target)) args.add('--json');
-    if (options.forceRun) args.add('--force-run');
+    final args = <String>[
+      ...options.vmFlags,
+      if (options.json && hasBenchmarksDeclaration(target)) '--json',
+      if (options.forceRun) '--force-run',
+    ];
     final output = await _runProc(_Stage.run, outFile, args);
     return _parseResult(output);
   }
@@ -317,32 +310,38 @@ class _JSRunner extends _Runner {
   @override
   Future<Map<String, dynamic>?> _runImpl() async {
     final outFile = _outputFile('js');
-    final compileArgs = ['compile', 'js'];
     final packageConfig = resolvePackageConfig();
-    if (packageConfig != null) {
-      compileArgs.add('--packages=$packageConfig');
-    }
-    compileArgs.addAll([_realTarget, '-O4', '-o', outFile]);
-    if (options.json) {
-      compileArgs.add('-Djson=true');
-      compileArgs.add('-Dos=${Platform.operatingSystem}');
-      compileArgs.add(
+    final compileArgs = <String>[
+      'compile',
+      'js',
+      if (packageConfig != null) '--packages=$packageConfig',
+      _realTarget,
+      '-O4',
+      '-o',
+      outFile,
+      if (options.json) ...[
+        '-Djson=true',
+        '-Dos=${Platform.operatingSystem}',
         '-Ddart_sdk_version=${Platform.version.split(' ').first}',
-      );
-      compileArgs.add('-Dplatform=js');
-    }
-    if (options.forceRun) compileArgs.add('-Dbenchmark_harness.force_run=true');
-    if (options.validate) compileArgs.add('-Dbenchmark_harness.validate=true');
-    compileArgs.addAll(options.compilerFlags);
+        '-Dplatform=js',
+      ],
+      if (options.forceRun) '-Dbenchmark_harness.force_run=true',
+      if (options.validate) '-Dbenchmark_harness.validate=true',
+      ...options.compilerFlags,
+    ];
 
     await _runProc(_Stage.compile, Platform.executable, compileArgs);
 
     final wrapperFile = File(_outputFile('wrapper.js'));
     wrapperFile.writeAsStringSync(_jsWrapperScript);
 
-    final args = [...options.vmFlags, '--enable-source-maps', wrapperFile.path];
-    if (options.json && hasBenchmarksDeclaration(target)) args.add('--json');
-    if (options.forceRun) args.add('--force-run');
+    final args = <String>[
+      ...options.vmFlags,
+      '--enable-source-maps',
+      wrapperFile.path,
+      if (options.json && hasBenchmarksDeclaration(target)) '--json',
+      if (options.forceRun) '--force-run',
+    ];
     final output = await _runProc(_Stage.run, 'node', args);
     return _parseResult(output);
   }
@@ -363,23 +362,24 @@ class _WasmRunner extends _Runner {
   @override
   Future<Map<String, dynamic>?> _runImpl() async {
     final outFile = _outputFile('wasm');
-    final compileArgs = ['compile', 'wasm'];
     final packageConfig = resolvePackageConfig();
-    if (packageConfig != null) {
-      compileArgs.add('--packages=$packageConfig');
-    }
-    compileArgs.addAll([_realTarget, '-o', outFile]);
-    if (options.json) {
-      compileArgs.add('-Djson=true');
-      compileArgs.add('-Dos=${Platform.operatingSystem}');
-      compileArgs.add(
+    final compileArgs = <String>[
+      'compile',
+      'wasm',
+      if (packageConfig != null) '--packages=$packageConfig',
+      _realTarget,
+      '-o',
+      outFile,
+      if (options.json) ...[
+        '-Djson=true',
+        '-Dos=${Platform.operatingSystem}',
         '-Ddart_sdk_version=${Platform.version.split(' ').first}',
-      );
-      compileArgs.add('-Dplatform=wasm');
-    }
-    if (options.forceRun) compileArgs.add('-Dbenchmark_harness.force_run=true');
-    if (options.validate) compileArgs.add('-Dbenchmark_harness.validate=true');
-    compileArgs.addAll(options.compilerFlags);
+        '-Dplatform=wasm',
+      ],
+      if (options.forceRun) '-Dbenchmark_harness.force_run=true',
+      if (options.validate) '-Dbenchmark_harness.validate=true',
+      ...options.compilerFlags,
+    ];
 
     await _runProc(_Stage.compile, Platform.executable, compileArgs);
 
@@ -387,15 +387,15 @@ class _WasmRunner extends _Runner {
     final invokerFile = File(_outputFile('invoker.mjs'));
     invokerFile.writeAsStringSync(_wasmInvokeScript);
 
-    final args = [
+    final args = <String>[
       ...options.vmFlags,
       '--experimental-wasm-stringref',
       '--experimental-wasm-imported-strings',
       '--enable-source-maps',
       invokerFile.path,
+      if (options.json && hasBenchmarksDeclaration(target)) '--json',
+      if (options.forceRun) '--force-run',
     ];
-    if (options.json && hasBenchmarksDeclaration(target)) args.add('--json');
-    if (options.forceRun) args.add('--force-run');
     final output = await _runProc(_Stage.run, 'node', args);
     return _parseResult(output);
   }
@@ -439,16 +439,17 @@ class _IsolateRunner extends _Runner {
 
   @override
   Future<Map<String, dynamic>?> _runImpl() async {
-    final args = <String>[];
-    args.addAll(options.vmFlags);
-    if (options.json && hasBenchmarksDeclaration(target)) {
-      args.add('-Djson=true');
-      args.add('-Dos=${Platform.operatingSystem}');
-      args.add('-Ddart_sdk_version=${Platform.version.split(' ').first}');
-      args.add('-Dplatform=jit');
-    }
-    if (options.forceRun) args.add('-Dbenchmark_harness.force_run=true');
-    if (options.validate) args.add('-Dbenchmark_harness.validate=true');
+    final args = <String>[
+      ...options.vmFlags,
+      if (options.json && hasBenchmarksDeclaration(target)) ...[
+        '-Djson=true',
+        '-Dos=${Platform.operatingSystem}',
+        '-Ddart_sdk_version=${Platform.version.split(' ').first}',
+        '-Dplatform=jit',
+      ],
+      if (options.forceRun) '-Dbenchmark_harness.force_run=true',
+      if (options.validate) '-Dbenchmark_harness.validate=true',
+    ];
 
     if (!options.json) {
       print('''
