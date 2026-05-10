@@ -109,11 +109,11 @@ class JsonEmitter implements DetailedScoreEmitter {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    for (var entry in _results.entries) entry.key: entry.value.toJson(),
+  };
+
+  /// Returns [toJson] encoded as a [String].
   @override
-  String toString() {
-    final serialized = _results.map(
-      (key, value) => MapEntry(key, value.toJson()),
-    );
-    return jsonEncode(serialized);
-  }
+  String toString() => jsonEncode(toJson());
 }

@@ -1,7 +1,7 @@
 # TODO items
 
 - ✅ Update deprecated note in warmup to be clear what the user should do.
-- Data classes for JSON output. Encode and decode. So they can be easily used by other systems.
+- ✅ Data classes for JSON output. Encode and decode. So they can be easily used by other systems.
   - Including THIS system when we want to compare runs!
 - Investigate how to enable "other procses coordination" with a benchmark.
   - Thinking mostly RE server benchmarks with an external "traffic" driver (like wrk or oha)

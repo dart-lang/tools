@@ -40,6 +40,39 @@ class BenchmarkResult {
     );
   }
 
+  factory BenchmarkResult.fromJson(Map<String, dynamic> json) {
+    final metrics = json['metrics'] as Map<String, dynamic>;
+    final rawSamples = (json['raw_samples_us'] as List<dynamic>)
+        .map((e) => (e as num).toDouble())
+        .toList();
+
+    return BenchmarkResult(
+      name: json['name'] as String,
+      samples: rawSamples,
+      isStable: metrics['isStable'] as bool? ?? true,
+      convergenceThreshold: (metrics['convergence_threshold'] as num? ?? 0.0)
+          .toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'raw_samples_us': samples,
+    'metrics': {
+      'samples_count': samples.length,
+      'mean_us': mean,
+      'median_us': median,
+      'std_dev_us': stdDev,
+      'cv': cv,
+      'confidence_interval_95': [
+        confidenceInterval.lowerBound,
+        confidenceInterval.upperBound,
+      ],
+      'isStable': isStable,
+      'convergence_threshold': convergenceThreshold ?? 0.0,
+    },
+  };
+
   /// The median time per operation in microseconds.
   double get median {
     if (samples.isEmpty) return 0;

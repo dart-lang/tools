@@ -203,13 +203,10 @@ void main() {
 
       final jsonString = emitter.toString();
       final decodedMap = jsonDecode(jsonString) as Map<String, dynamic>;
-
-      expect(decodedMap, contains('roundtrip-test'));
+      final roundTripMap = decodedMap['roundtrip-test'] as Map<String, dynamic>;
 
       // Strong-typed decoding
-      final variantResult = BenchmarkVariantResult.fromJson(
-        decodedMap['roundtrip-test'] as Map<String, dynamic>,
-      );
+      final variantResult = BenchmarkVariantResult.fromJson(roundTripMap);
 
       expect(variantResult.name, equals('roundtrip-test'));
       expect(variantResult.variant, equals('roundtrip-test'));
@@ -220,6 +217,24 @@ void main() {
       expect(variantResult.metrics.isStable, isTrue);
       expect(variantResult.metrics.convergenceThreshold, equals(0.02));
       expect(variantResult.warmupDiagnostics.warmupConverged, isTrue);
+
+      // Direct BenchmarkResult decoding
+      final decodedResult = BenchmarkResult.fromJson(roundTripMap);
+
+      expect(
+        jsonEncode(result),
+        jsonEncode(decodedResult),
+        reason: 'round-trip should be identical',
+      );
+
+      expect(decodedResult.name, equals('roundtrip-test'));
+      expect(decodedResult.samples, equals([12.0, 15.0, 18.0]));
+      expect(decodedResult.median, equals(15.0));
+      expect(decodedResult.mean, equals(15.0));
+      expect(decodedResult.isStable, isTrue);
+      expect(decodedResult.convergenceThreshold, equals(0.02));
+      expect(decodedResult.stdDev, equals(result.stdDev));
+      expect(decodedResult.cv, equals(result.cv));
     });
   });
 
