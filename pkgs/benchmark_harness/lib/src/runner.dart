@@ -52,6 +52,11 @@ class RunnerConfig {
   /// violated.
   final bool forceRun;
 
+  /// Optional custom callback to capture warnings.
+  ///
+  /// If null, the runner defaults to standard printing / stderr.
+  final void Function(String)? logger;
+
   const RunnerConfig({
     this.targetSampleMicros = 10000,
     this.minSamples = 10,
@@ -63,6 +68,7 @@ class RunnerConfig {
     this.trimPercentage = 0.10,
     this.scaleFactor = 2.0,
     this.forceRun = const bool.fromEnvironment('benchmark_harness.force_run'),
+    this.logger,
   }) : assert(maxSamples >= 4, 'maxSamples must be at least 4'),
        assert(windowSize >= 2, 'windowSize must be at least 2'),
        assert(stabilityRequired > 0, 'stabilityRequired must be positive');
@@ -77,6 +83,15 @@ class BenchmarkRunner {
     Blackhole.preventDCE();
   }
 
+  void _logWarning(String message) {
+    final logger = config.logger;
+    if (logger != null) {
+      logger(message);
+    } else {
+      logWarning(message);
+    }
+  }
+
   /// Runs the [benchmark] function and returns a [BenchmarkResult].
   BenchmarkResult run(dynamic Function() benchmark) {
     const isValidate = bool.fromEnvironment('benchmark_harness.validate');
@@ -85,13 +100,13 @@ class BenchmarkRunner {
       Blackhole.sink = benchmark();
       final elapsed = sw.elapsedMicroseconds;
       if (elapsed < 1) {
-        logWarning(
+        _logWarning(
           'Validation Warning: Benchmark "$name" may be optimized away by '
           'the compiler (took 0us, under 1us). Consider using blackhole() '
           'to prevent dead-code elimination.',
         );
       } else {
-        logWarning(
+        _logWarning(
           'Validation: Benchmark "$name" passed smoke run (took ${elapsed}us).',
         );
       }
@@ -117,13 +132,13 @@ class BenchmarkRunner {
       await benchmark();
       final elapsed = sw.elapsedMicroseconds;
       if (elapsed < 1) {
-        logWarning(
+        _logWarning(
           'Validation Warning: Benchmark "$name" may be optimized away by '
           'the compiler (took 0us, under 1us). Consider using blackhole() '
           'to prevent dead-code elimination.',
         );
       } else {
-        logWarning(
+        _logWarning(
           'Validation: Benchmark "$name" passed smoke run (took ${elapsed}us).',
         );
       }
@@ -222,7 +237,7 @@ class BenchmarkRunner {
 
     final isStable = converged;
     if (!isStable) {
-      logWarning(
+      _logWarning(
         '⚠️ Warmup budget exceeded (${buffer.length} samples) '
         'without proving convergence for "$name".\n'
         '   Falling back to historically best-effort window '
@@ -323,7 +338,7 @@ class BenchmarkRunner {
 
     final isStable = converged;
     if (!isStable) {
-      logWarning(
+      _logWarning(
         '⚠️ Warmup budget exceeded (${buffer.length} samples) '
         'without proving convergence for "$name".\n'
         '   Falling back to historically best-effort window '
@@ -375,7 +390,7 @@ class BenchmarkRunner {
 
   void _checkCalibration(int elapsedMicros) {
     if (elapsedMicros < 1000) {
-      logWarning(
+      _logWarning(
         'Warning: Single invocation of "$name" takes under 1 millisecond '
         '(${elapsedMicros}us). Timing overhead may dominate. '
         'Consider bundling more iterations inside your benchmark.',
@@ -387,7 +402,7 @@ class BenchmarkRunner {
         return; // Safe to bypass due to JS timer virtualization
       }
       if (config.forceRun) {
-        logWarning(
+        _logWarning(
           'Warning: Calibration guidelines violated for "$name" '
           '(${elapsedMicros}us), but proceeding because forceRun is active.',
         );

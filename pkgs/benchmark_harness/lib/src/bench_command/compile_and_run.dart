@@ -7,6 +7,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'bench_options.dart';
+import 'wrapper_helper.dart';
 
 // TODO(kevmoo): allow the user to specify custom flags – for compile and/or run
 
@@ -141,11 +142,11 @@ abstract class _Runner {
       'bench_${DateTime.now().millisecondsSinceEpoch}_',
     );
     try {
-      if (_hasBenchmarksDeclaration(target)) {
+      if (hasBenchmarksDeclaration(target)) {
         final wrapperFile = File(
           _tempDirectory.uri.resolve('wrapper.dart').toFilePath(),
         );
-        wrapperFile.writeAsStringSync(_generateWrapperContent(target));
+        wrapperFile.writeAsStringSync(generateWrapperContent(target));
         _realTarget = wrapperFile.path;
       } else {
         _realTarget = target;
@@ -225,7 +226,7 @@ $executable ${args.join(' ')}
       } catch (_) {}
     }
 
-    final parsed = _parseLegacyOutput(output);
+    final parsed = parseLegacyOutput(output, flavor);
     if (parsed != null && parsed.isNotEmpty) {
       return parsed;
     }
@@ -233,30 +234,6 @@ $executable ${args.join(' ')}
     throw FormatException(
       'Failed to decode ${flavor.name.toUpperCase()} JSON: "$output"',
     );
-  }
-
-  Map<String, dynamic>? _parseLegacyOutput(String output) {
-    final regex = RegExp(r'^(.+?)\((.+?)\):\s+([\d.]+)\s*(.*)$');
-    final results = <String, dynamic>{};
-    var linesParsed = 0;
-    for (var line in output.split('\n')) {
-      line = line.trim();
-      if (line.isEmpty) continue;
-      final match = regex.firstMatch(line);
-      if (match != null) {
-        final name = match.group(1)!;
-        final value = double.parse(match.group(3)!);
-        results[name] = {
-          'name': name,
-          'variant': name,
-          'platform': flavor.name,
-          'timestamp': DateTime.now().toUtc().toIso8601String(),
-          'metrics': {'median_us': value},
-        };
-        linesParsed++;
-      }
-    }
-    return linesParsed > 0 ? results : null;
   }
 }
 
@@ -267,7 +244,7 @@ class _JITRunner extends _Runner {
   @override
   Future<Map<String, dynamic>?> _runImpl() async {
     final args = <String>[];
-    final packageConfig = _resolvePackageConfig();
+    final packageConfig = resolvePackageConfig();
     if (packageConfig != null) {
       args.add('--packages=$packageConfig');
     }
@@ -286,7 +263,7 @@ class _JITRunner extends _Runner {
     args.addAll(options.compilerFlags);
     args.addAll(options.vmFlags);
     args.add(_realTarget);
-    if (options.json && _hasBenchmarksDeclaration(target)) {
+    if (options.json && hasBenchmarksDeclaration(target)) {
       args.add('--json');
     }
     if (options.forceRun) {
@@ -305,7 +282,7 @@ class _AOTRunner extends _Runner {
   Future<Map<String, dynamic>?> _runImpl() async {
     final outFile = _outputFile('exe');
     final compileArgs = ['compile', 'exe'];
-    final packageConfig = _resolvePackageConfig();
+    final packageConfig = resolvePackageConfig();
     if (packageConfig != null) {
       compileArgs.add('--packages=$packageConfig');
     }
@@ -326,7 +303,7 @@ class _AOTRunner extends _Runner {
 
     final args = <String>[];
     args.addAll(options.vmFlags);
-    if (options.json && _hasBenchmarksDeclaration(target)) args.add('--json');
+    if (options.json && hasBenchmarksDeclaration(target)) args.add('--json');
     if (options.forceRun) args.add('--force-run');
     final output = await _runProc(_Stage.run, outFile, args);
     return _parseResult(output);
@@ -341,7 +318,7 @@ class _JSRunner extends _Runner {
   Future<Map<String, dynamic>?> _runImpl() async {
     final outFile = _outputFile('js');
     final compileArgs = ['compile', 'js'];
-    final packageConfig = _resolvePackageConfig();
+    final packageConfig = resolvePackageConfig();
     if (packageConfig != null) {
       compileArgs.add('--packages=$packageConfig');
     }
@@ -364,7 +341,7 @@ class _JSRunner extends _Runner {
     wrapperFile.writeAsStringSync(_jsWrapperScript);
 
     final args = [...options.vmFlags, '--enable-source-maps', wrapperFile.path];
-    if (options.json && _hasBenchmarksDeclaration(target)) args.add('--json');
+    if (options.json && hasBenchmarksDeclaration(target)) args.add('--json');
     if (options.forceRun) args.add('--force-run');
     final output = await _runProc(_Stage.run, 'node', args);
     return _parseResult(output);
@@ -387,7 +364,7 @@ class _WasmRunner extends _Runner {
   Future<Map<String, dynamic>?> _runImpl() async {
     final outFile = _outputFile('wasm');
     final compileArgs = ['compile', 'wasm'];
-    final packageConfig = _resolvePackageConfig();
+    final packageConfig = resolvePackageConfig();
     if (packageConfig != null) {
       compileArgs.add('--packages=$packageConfig');
     }
@@ -417,7 +394,7 @@ class _WasmRunner extends _Runner {
       '--enable-source-maps',
       invokerFile.path,
     ];
-    if (options.json && _hasBenchmarksDeclaration(target)) args.add('--json');
+    if (options.json && hasBenchmarksDeclaration(target)) args.add('--json');
     if (options.forceRun) args.add('--force-run');
     final output = await _runProc(_Stage.run, 'node', args);
     return _parseResult(output);
@@ -464,7 +441,7 @@ class _IsolateRunner extends _Runner {
   Future<Map<String, dynamic>?> _runImpl() async {
     final args = <String>[];
     args.addAll(options.vmFlags);
-    if (options.json && _hasBenchmarksDeclaration(target)) {
+    if (options.json && hasBenchmarksDeclaration(target)) {
       args.add('-Djson=true');
       args.add('-Dos=${Platform.operatingSystem}');
       args.add('-Ddart_sdk_version=${Platform.version.split(' ').first}');
@@ -484,7 +461,7 @@ $_realTarget ${args.join(' ')}
     final errorPort = ReceivePort();
     var hasError = false;
 
-    final packageConfig = _resolvePackageConfig();
+    final packageConfig = resolvePackageConfig();
     await Isolate.spawnUri(
       Uri.file(_realTarget),
       args,
@@ -516,50 +493,4 @@ $_realTarget ${args.join(' ')}
     }
     return null;
   }
-}
-
-bool _hasBenchmarksDeclaration(String path) {
-  final file = File(path);
-  if (!file.existsSync()) return false;
-  final content = file.readAsStringSync();
-  final regex = RegExp(r'\bbenchmarks\b');
-  return regex.hasMatch(content);
-}
-
-String _generateWrapperContent(String targetPath) {
-  final absolutePath = File(targetPath).absolute.path;
-  final fileUri = Uri.file(absolutePath).toString();
-  return '''
-import 'package:benchmark_harness/benchmark_harness.dart';
-import '$fileUri' as user_target;
-
-void main() async {
-  const isJson = bool.fromEnvironment('json');
-  if (isJson) {
-    final emitter = JsonEmitter();
-    for (final benchmark in user_target.benchmarks) {
-      await benchmark.report(emitter: emitter);
-    }
-    print(emitter.toString());
-  } else {
-    for (final benchmark in user_target.benchmarks) {
-      final results = await benchmark.run();
-      print(BenchmarkReport.formatTable(results));
-    }
-  }
-}
-''';
-}
-
-String? _resolvePackageConfig() {
-  if (Platform.packageConfig != null) {
-    try {
-      return Uri.parse(Platform.packageConfig!).toFilePath();
-    } catch (_) {}
-  }
-  final local = File('.dart_tool/package_config.json').absolute;
-  if (local.existsSync()) {
-    return local.path;
-  }
-  return null;
 }

@@ -41,6 +41,24 @@ void main() {
       expect(result.samples, hasLength(greaterThanOrEqualTo(10)));
     });
 
+    test('custom logger receives warnings', () {
+      final warnings = <String>[];
+      final runner = BenchmarkRunner(
+        'logger-test',
+        config: RunnerConfig(targetSampleMicros: 1000, logger: warnings.add),
+      );
+      runner.run(() {});
+
+      expect(warnings, isNotEmpty);
+      expect(
+        warnings.first,
+        contains(
+          'Warning: Single invocation of "logger-test" takes under 1 '
+          'millisecond',
+        ),
+      );
+    });
+
     test('async support', () async {
       final runner = BenchmarkRunner(
         'test',
