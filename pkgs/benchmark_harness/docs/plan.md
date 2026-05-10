@@ -25,15 +25,15 @@ We achieve this by combining:
 
 ## 2. Unified Implementation Phases
 
-### Phase 1: Dependencies & Foundations
-1. **Integrate `package:stats`**: Add `package:stats` to `pubspec.yaml` for
+### Phase 1: Dependencies & Foundations ✅
+1. ✅ **Integrate `package:stats`**: Add `package:stats` to `pubspec.yaml` for
    standardized mathematical tools.
-2. **Result Models (`lib/src/result.dart`)**:
+2. ✅ **Result Models (`lib/src/result.dart`)**:
    - Define structured classes to capture raw metrics, execution platform
      metadata, and statistical representations.
    - Provide standard serialization support to enable cross-platform analysis.
 
-### Phase 2: Noise-Resilient Adaptive Engine (`lib/src/runner.dart`)
+### Phase 2: Noise-Resilient Adaptive Engine (`lib/src/runner.dart`) ✅
 Rather than simple iterations or arbitrary time-based warmups, the harness will
 employ a self-calibrating KBSSD engine:
 
@@ -56,49 +56,49 @@ graph TD
     M --> N
 ```
 
-1. **Adaptive Calibration**: Fill the initial cold-buffer (first
+1. ✅ **Adaptive Calibration**: Fill the initial cold-buffer (first
    $2 \times \text{windowSize}$ samples), calculate the Mean Absolute Deviation
    (MAD), and dynamically compute the target convergence threshold relative to
    local background noise.
-2. **Outlier Pre-Filtering**: Implement a sliding-window trimmed mean or
+2. ✅ **Outlier Pre-Filtering**: Implement a sliding-window trimmed mean or
    median filter to strip out high-frequency timing spikes (e.g., OS
    scheduling context switches, background GC) before feeding samples to the
    convergence engine.
-3. **Mathematical Convergence via KBSSD**:
+3. ✅ **Mathematical Convergence via KBSSD**:
    - Compare the `Past` and `Present` sliding windows using Maximum Mean
      Discrepancy (MMD).
    - Halt warmup once a stable window sequence is detected, or fall back to a
      **Practical Steady State** utilizing the Standard Error of the Mean (SEM):
      $$\text{Width} = 1.96 \times \text{SEM} \le 0.03 \times \text{Mean}$$
-4. **Patience Budget & Best-Effort Fallback**:
+4. ✅ **Patience Budget & Best-Effort Fallback**:
    - Enforce a hard budget limit (e.g., maximum 200 samples or 5 seconds).
    - If the budget is exceeded without mathematical proof of convergence,
      fall back to the historically most stable window (lowest recorded MMD
      score) and emit a warning regarding environmental noise.
 
-### Phase 3: Modern Compositional API (`lib/src/benchmark.dart`)
-1. **Composition over Inheritance**:
+### Phase 3: Modern Compositional API (`lib/src/benchmark.dart`) ✅
+1. ✅ **Composition over Inheritance**:
    - Define `BenchmarkVariant` to hold a specific executable task variation
      (e.g., different data structures, sync or async operations).
    - Define `Benchmark` to orchestrate variant execution, direct comparisons,
      and timing calibration.
-2. **Backward Compatibility**:
+2. ✅ **Backward Compatibility**:
    - Maintain structural compatibility by wrapping legacy `BenchmarkBase` and
      `AsyncBenchmarkBase` interfaces around the new `BenchmarkRunner` pipeline.
 
-### Phase 4: Enhanced Reporting & CI/CD Integration (`lib/src/report.dart`)
-1. **Rich Emitters**:
+### Phase 4: Enhanced Reporting & CI/CD Integration (`lib/src/report.dart`) ✅
+1. ✅ **Rich Emitters**:
    - Extend `ScoreEmitter` to pass detailed statistical profiles (`Stats`
      objects) instead of raw single-number scores.
    - Implement a structured `JsonEmitter` targeting CI/CD regressions and
      multi-platform performance dashboards.
-2. **Reliability Flagging**:
+2. ✅ **Reliability Flagging**:
    - Automatically flag benchmark results with high coefficients of variation
      (CV%) or wide confidence intervals as "statistically unreliable" or
      "insufficiently stable."
 
-### Phase 5: CLI Tool & Platform Aggregation (`bin/bench.dart`)
-1. **Structured Aggregator**:
+### Phase 5: CLI Tool & Platform Aggregation (`bin/bench.dart`) ✅
+1. ✅ **Structured Aggregator**:
    - Update the `bench.dart` tool to run tests across all target compilation
      modes (JIT, AOT, JS, WASM).
    - Consolidate JSON outputs to produce a combined comparison report showing
