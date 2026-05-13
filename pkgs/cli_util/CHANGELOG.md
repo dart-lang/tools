@@ -1,4 +1,4 @@
-## 0.5.1-wip
+## 0.5.1
 
 - Add `showMultiSelectDialog` and `showSingleSelectDialog` to new
   `cli_components` library, as well as an example.
