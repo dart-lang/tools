@@ -1,6 +1,11 @@
 ## 1.1.0-wip
 
 * Add a `deepCopyLinks` argument to `copyPath` and `copyPathSync`.
+* **Potentially Breaking** `AnsiCode` and `AnsiCodeType` marked final. These
+  never intended to support subclasses and were already closed for extension
+  with private generative constructors. Mark them `final` to explicitly indicate
+  they should not be used as interfaces either and retain room for more API
+  changes.
 
 ## 1.0.5
 
