@@ -63,3 +63,10 @@ List<Screenshot> parseScreenshots(List? input) {
   }
   return res;
 }
+
+/// Serializes a list of [Screenshot] objects into a JSON-serializable
+/// list of maps.
+List<Map<String, String>> serializeScreenshots(List<Screenshot>? input) => [
+  if (input != null)
+    for (var e in input) {'description': e.description, 'path': e.path},
+];

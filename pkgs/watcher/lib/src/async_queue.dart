@@ -33,9 +33,10 @@ class AsyncQueue<T> {
   /// Used to avoid top-leveling asynchronous errors.
   final void Function(Object, StackTrace) _errorHandler;
 
-  AsyncQueue(this._processor,
-      {required void Function(Object, StackTrace) onError})
-      : _errorHandler = onError;
+  AsyncQueue(
+    this._processor, {
+    required void Function(Object, StackTrace) onError,
+  }) : _errorHandler = onError;
 
   /// Enqueues [item] to be processed and starts asynchronously processing it
   /// if a process isn't already running.

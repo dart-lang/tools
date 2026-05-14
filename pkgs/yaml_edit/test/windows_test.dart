@@ -161,9 +161,7 @@ c: 3\r
 - 0\r
 ''');
       doc.remove([0]);
-      expect(doc.toString(), equals('''
-[]\r
-'''));
+      expect(doc.toString(), equals('[]\r\n'));
       expectYamlBuilderValue(doc, []);
     });
 
@@ -204,9 +202,7 @@ c: 3\r
 a: 1\r
 ''');
       doc.remove(['a']);
-      expect(doc.toString(), equals('''
-{}\r
-'''));
+      expect(doc.toString(), equals('{}\r\n'));
       expectYamlBuilderValue(doc, {});
     });
 

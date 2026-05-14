@@ -20,13 +20,15 @@ void _linkTests({required bool isNative}) {
     await startWatcher(path: 'links');
 
     writeLink(
-        link: 'links/a.link', target: 'targets/a.target', unawaitedAsync: true);
+      link: 'links/a.link',
+      target: 'targets/a.target',
+      unawaitedAsync: true,
+    );
 
     await expectAddEvent('links/a.link');
   });
 
-  test(
-      'notifies when a link is replaced with a link to a different target '
+  test('notifies when a link is replaced with a link to a different target '
       'with the same contents', () async {
     createDir('targets');
     createDir('links');
@@ -42,8 +44,7 @@ void _linkTests({required bool isNative}) {
     await expectModifyEvent('links/a.link');
   });
 
-  test(
-      'notifies when a link is replaced with a link to a different target '
+  test('notifies when a link is replaced with a link to a different target '
       'with different contents', () async {
     writeFile('targets/a.target', contents: 'a');
     writeFile('targets/b.target', contents: 'ab');
@@ -98,8 +99,10 @@ void _linkTests({required bool isNative}) {
 
     renameLink('links/a.link', 'links/b.link');
 
-    await inAnyOrder(
-        [isAddEvent('links/b.link'), isRemoveEvent('links/a.link')]);
+    await inAnyOrder([
+      isAddEvent('links/b.link'),
+      isRemoveEvent('links/a.link'),
+    ]);
   });
 
   test('notifies when a link to an empty directory is added', () async {
@@ -109,9 +112,10 @@ void _linkTests({required bool isNative}) {
     await startWatcher(path: 'links');
 
     writeLink(
-        link: 'links/a.link',
-        target: 'targets/a.targetdir',
-        unawaitedAsync: true);
+      link: 'links/a.link',
+      target: 'targets/a.targetdir',
+      unawaitedAsync: true,
+    );
 
     // Native watchers treat links as files, polling watcher polls through them.
     if (isNative) {
@@ -121,8 +125,7 @@ void _linkTests({required bool isNative}) {
     }
   });
 
-  test(
-      'does not notify about directory contents '
+  test('does not notify about directory contents '
       'when a link to a directory is added', () async {
     createDir('targets');
     createDir('links');
@@ -131,9 +134,10 @@ void _linkTests({required bool isNative}) {
     await startWatcher(path: 'links');
 
     writeLink(
-        link: 'links/a.link',
-        target: 'targets/a.targetdir',
-        unawaitedAsync: true);
+      link: 'links/a.link',
+      target: 'targets/a.targetdir',
+      unawaitedAsync: true,
+    );
 
     // Native watchers treat links as files, polling watcher polls through them.
     if (isNative) {
@@ -177,9 +181,8 @@ void _linkTests({required bool isNative}) {
     }
   });
 
-  test(
-      'notifies about linked directory contents when a directory with a linked '
-      'subdirectory is moved in', () async {
+  test('notifies about linked directory contents when a directory with a '
+      'linked subdirectory is moved in', () async {
     createDir('targets');
     createDir('links');
     createDir('targets/a.targetdir');
@@ -198,9 +201,8 @@ void _linkTests({required bool isNative}) {
     }
   });
 
-  test(
-      'notifies about linked directory contents when a directory with a linked '
-      'subdirectory containing a link loop is moved in', () async {
+  test('notifies about linked directory contents when a directory with a '
+      'linked subdirectory containing a link loop is moved in', () async {
     createDir('targets');
     createDir('links');
     createDir('targets/a.targetdir');
@@ -208,7 +210,9 @@ void _linkTests({required bool isNative}) {
     writeFile('targets/a.targetdir/a.txt');
     writeLink(link: 'links/a.link', target: 'targets/a.targetdir');
     writeLink(
-        link: 'targets/a.targetdir/cycle.link', target: 'targets/a.targetdir');
+      link: 'targets/a.targetdir/cycle.link',
+      target: 'targets/a.targetdir',
+    );
     await startWatcher(path: 'watched');
 
     renameDir('links', 'watched/links');
@@ -222,9 +226,8 @@ void _linkTests({required bool isNative}) {
     await expectNoEvents();
   });
 
-  test(
-      'notifies about linked directory contents when a directory with a linked '
-      'subdirectory containing two link loops is moved in', () async {
+  test('notifies about linked directory contents when a directory with a '
+      'linked subdirectory containing two link loops is moved in', () async {
     createDir('targets');
     createDir('links');
     createDir('targets/a.targetdir');
@@ -232,9 +235,13 @@ void _linkTests({required bool isNative}) {
     writeFile('targets/a.targetdir/a.txt');
     writeLink(link: 'links/a.link', target: 'targets/a.targetdir');
     writeLink(
-        link: 'targets/a.targetdir/cycle1.link', target: 'targets/a.targetdir');
+      link: 'targets/a.targetdir/cycle1.link',
+      target: 'targets/a.targetdir',
+    );
     writeLink(
-        link: 'targets/a.targetdir/cycle2.link', target: 'targets/a.targetdir');
+      link: 'targets/a.targetdir/cycle2.link',
+      target: 'targets/a.targetdir',
+    );
     await startWatcher(path: 'watched');
 
     renameDir('links', 'watched/links');

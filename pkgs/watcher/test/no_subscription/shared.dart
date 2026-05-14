@@ -19,8 +19,10 @@ void sharedTests() {
     var queue = StreamQueue(watcher.events);
     unawaited(queue.hasNext);
 
-    var future =
-        expectLater(queue, emits(isWatchEvent(ChangeType.ADD, 'file.txt')));
+    var future = expectLater(
+      queue,
+      emits(isWatchEvent(ChangeType.ADD, 'file.txt')),
+    );
     expect(queue, neverEmits(anything));
 
     await watcher.ready;
@@ -36,8 +38,10 @@ void sharedTests() {
     writeFile('unwatched.txt');
 
     queue = StreamQueue(watcher.events);
-    future =
-        expectLater(queue, emits(isWatchEvent(ChangeType.ADD, 'added.txt')));
+    future = expectLater(
+      queue,
+      emits(isWatchEvent(ChangeType.ADD, 'added.txt')),
+    );
     expect(queue, neverEmits(isWatchEvent(ChangeType.ADD, 'unwatched.txt')));
 
     // Wait until the watcher is ready to dispatch events again.

@@ -24,13 +24,16 @@ void main() {
   int? minTicks;
   var maxIteration = 0;
 
-  final testOutput =
-      shortestPath(0, size - 1, (e) => graph[e] ?? <Never>[]).toString();
+  final testOutput = shortestPath(
+    0,
+    size - 1,
+    (e) => graph[e] ?? <Never>[],
+  ).toString();
   print(testOutput);
   assert(testOutput == '(258, 252, 819, 999)', testOutput);
 
   final watch = Stopwatch();
-  for (var i = 1;; i++) {
+  for (var i = 1; ; i++) {
     watch
       ..reset()
       ..start();
@@ -47,8 +50,10 @@ void main() {
     }
 
     if (maxIteration == i || (i - maxIteration) % 100000 == 0) {
-      print('min ticks for one run: $minTicks\t'
-          'after $maxIteration of $i iterations');
+      print(
+        'min ticks for one run: $minTicks\t'
+        'after $maxIteration of $i iterations',
+      );
     }
   }
 }

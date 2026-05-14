@@ -17,7 +17,7 @@ class LinuxDirectoryWatcher extends ResubscribableWatcher
   String get directory => path;
 
   LinuxDirectoryWatcher(String directory)
-      : super(directory, _LinuxDirectoryWatcher.new);
+    : super(directory, _LinuxDirectoryWatcher.new);
 }
 
 /// Linux directory watcher that watches using [WatchTreeRoot].
@@ -43,9 +43,10 @@ class _LinuxDirectoryWatcher
 
   _LinuxDirectoryWatcher(this.path) {
     _watchTree = WatchTreeRoot(
-        watchedDirectory: path,
-        eventsController: _eventsController,
-        readyCompleter: _readyCompleter);
+      watchedDirectory: path,
+      eventsController: _eventsController,
+      readyCompleter: _readyCompleter,
+    );
   }
 
   @override

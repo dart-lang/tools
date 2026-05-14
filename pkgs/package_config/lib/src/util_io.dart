@@ -106,3 +106,16 @@ String pathJoinAll(Iterable<String> parts) {
   }
   return buffer.toString();
 }
+
+String pathAppend(Directory base, Iterable<String> parts) {
+  var previousPart = base.path;
+  var buffer = StringBuffer(previousPart);
+  for (var part in parts) {
+    if (!previousPart.endsWith(Platform.pathSeparator)) {
+      buffer.write(Platform.pathSeparator);
+    }
+    previousPart = part;
+    buffer.write(part);
+  }
+  return buffer.toString();
+}

@@ -38,7 +38,7 @@ void main() {
 
         // Split just the method name from the combined test so we can search
         // the source code to ensure the locations match up.
-        name = name.split('|').last.trim();
+        name = name.split(' ').last.trim();
 
         // Skip "tearDownAll" or "setUpAll", it never has a location.
         if (name case '(tearDownAll)' || '(setUpAll)') {

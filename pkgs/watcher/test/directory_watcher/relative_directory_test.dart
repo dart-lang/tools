@@ -29,8 +29,10 @@ void main() {
 
       for (final watcherFactory in [
         DirectoryWatcher.new,
-        (String path) => PollingDirectoryWatcher(path,
-            pollingDelay: const Duration(milliseconds: 1))
+        (String path) => PollingDirectoryWatcher(
+          path,
+          pollingDelay: const Duration(milliseconds: 1),
+        ),
       ]) {
         writeFile('dir/a.txt');
         writeFile('dir/b.txt');
@@ -49,16 +51,13 @@ void main() {
         await Future<void>.delayed(const Duration(milliseconds: 500));
         await subscription.cancel();
 
-        expect(
-            events.map((e) => e.toString()).toSet(),
-            {
-              'modify ${p.join('dir', 'a.txt')}',
-              'remove ${p.join('dir', 'b.txt')}',
-              'add ${p.join('dir', 'e.txt')}',
-              'remove ${p.join('dir', 'c.txt')}',
-              'add ${p.join('dir', 'd.txt')}',
-            },
-            reason: 'With watcher $watcher.');
+        expect(events.map((e) => e.toString()).toSet(), {
+          'modify ${p.join('dir', 'a.txt')}',
+          'remove ${p.join('dir', 'b.txt')}',
+          'add ${p.join('dir', 'e.txt')}',
+          'remove ${p.join('dir', 'c.txt')}',
+          'add ${p.join('dir', 'd.txt')}',
+        }, reason: 'With watcher $watcher.');
 
         deleteDir('dir');
       }

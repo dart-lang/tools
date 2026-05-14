@@ -1,3 +1,7 @@
+## 1.2.2-wip
+
+- Require Dart SDK `^3.8.0`.
+
 ## 1.2.1
 
 - Bug fix: versions before 1.2.0 would allow and ignore a trailing path

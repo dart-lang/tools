@@ -11,6 +11,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:package_config/package_config.dart';
+import 'package:package_config/src/constants.dart' as json_key;
 import 'package:path/path.dart' as p;
 
 /// Output modes.
@@ -20,12 +21,14 @@ const _printJsonList = 2;
 
 void main(List<String> args) async {
   // Basic command line parser. No fancy.
-  var files = <String>[];
+  var paths = <FileSystemEntity>[];
   var stopAtPubspec = false;
   var noParent = false;
-  var hasPrintedUsage = false;
+  var printUsage = false;
+  var hasError = false;
   var parseFlags = true;
   var printFormat = _printText;
+
   for (var arg in args) {
     if (parseFlags && arg.startsWith('-')) {
       switch (arg) {
@@ -34,10 +37,7 @@ void main(List<String> args) async {
         case '-g':
           stopAtPubspec = false;
         case '-h':
-          if (!hasPrintedUsage) {
-            hasPrintedUsage = true;
-            stdout.writeln(usage);
-          }
+          printUsage = true;
         case '-j':
           printFormat = _printJsonLines;
         case '-jl':
@@ -48,20 +48,32 @@ void main(List<String> args) async {
           parseFlags = false;
         default:
           stderr.writeln('Unexpected flag: $arg');
-          if (!hasPrintedUsage) {
-            hasPrintedUsage = true;
-            stderr.writeln(usage);
-          }
+          hasError = true;
       }
     } else {
-      files.add(arg);
+      if (File(p.normalize(arg)) case var file when file.existsSync()) {
+        paths.add(file.absolute);
+      } else if (Directory(p.normalize(arg)) case var dir
+          when dir.existsSync()) {
+        paths.add(dir.absolute);
+      } else {
+        stderr.writeln('Path does not exist: $arg');
+        hasError = true;
+      }
     }
   }
-  if (hasPrintedUsage) return;
+  if (hasError) {
+    stderr.writeln(usage);
+    exit(1);
+  }
+  if (printUsage) {
+    stdout.writeln(usage);
+    return;
+  }
 
   /// Check current directory if no PATHs on command line.
-  if (files.isEmpty) {
-    files.add(p.current);
+  if (paths.isEmpty) {
+    paths.add(Directory.current);
   }
 
   var loader = PackageConfigLoader(
@@ -73,7 +85,7 @@ void main(List<String> args) async {
   // Otherwise prints output for each file as soon as it's available.
   var jsonList = <Map<String, Object?>>[];
 
-  for (var arg in files) {
+  for (var arg in paths) {
     var fileInfo = await _resolveInfo(arg, loader);
     if (fileInfo == null) continue; // File does not exist, already reported.
     if (printFormat == _printText) {
@@ -96,20 +108,19 @@ void main(List<String> args) async {
 }
 
 /// Finds package information for command line provided path.
-Future<ConfigInfo?> _resolveInfo(String arg, PackageConfigLoader loader) async {
-  var path = p.normalize(arg);
-  var file = File(path);
-  if (file.existsSync()) {
-    file = file.absolute;
-    var directory = Directory(p.dirname(file.path));
-    return await _resolvePackageConfig(directory, file, loader);
+Future<ConfigInfo?> _resolveInfo(
+  FileSystemEntity entry,
+  PackageConfigLoader loader,
+) async {
+  Directory directory;
+  File? file;
+  if (entry is Directory) {
+    directory = entry;
+  } else {
+    file = entry as File;
+    directory = Directory(p.dirname(file.path));
   }
-  var directory = Directory(path);
-  if (directory.existsSync()) {
-    return await _resolvePackageConfig(directory.absolute, null, loader);
-  }
-  stderr.writeln('Cannot find file or directory: $arg');
-  return null;
+  return await _resolvePackageConfig(directory, file, loader);
 }
 
 // --------------------------------------------------------------------
@@ -121,25 +132,31 @@ Future<ConfigInfo> _resolvePackageConfig(
   File? file,
   PackageConfigLoader loader,
 ) async {
-  var originPath = path.path;
-  var targetPath = file?.path ?? originPath;
-  var (configPath, config) = await loader.findPackageConfig(originPath);
   Package? package;
   Uri? packageUri;
+  File? configFile;
   LanguageVersion? overrideVersion;
-  if (config != null) {
+  if (await loader.findPackageConfig(path) case (
+    file: var foundConfig,
+    :var config,
+  )) {
+    configFile = foundConfig;
     var uri = file?.uri ?? path.uri;
     package = config.packageOf(uri);
     if (package != null) {
       packageUri = config.toPackageUri(uri);
     }
   }
+  String targetPath;
   if (file != null) {
     overrideVersion = _readOverrideVersion(file);
+    targetPath = file.path;
+  } else {
+    targetPath = path.path;
   }
   return ConfigInfo(
     targetPath,
-    configPath,
+    configFile?.path,
     package,
     packageUri,
     overrideVersion,
@@ -174,22 +191,22 @@ final class ConfigInfo {
 
   Map<String, Object?> toJson() {
     return {
-      JsonKey.path: path,
-      if (configPath != null) JsonKey.configPath: configPath,
+      json_key.path: path,
+      if (configPath != null) json_key.configPath: configPath,
       if (package case var package?)
-        JsonKey.package: {
-          JsonKey.name: package.name,
-          JsonKey.root: _fileUriPath(package.root),
+        json_key.package: {
+          json_key.name: package.name,
+          json_key.root: _fileUriPath(package.root),
           if (package.languageVersion case var languageVersion?)
-            JsonKey.languageVersion: languageVersion.toString(),
+            json_key.languageVersion: languageVersion.toString(),
           if (packageUri case var packageUri?) ...{
-            JsonKey.packageUri: packageUri.toString(),
+            json_key.packageUri: packageUri.toString(),
             if (package.root != package.packageUriRoot)
-              JsonKey.lib: _fileUriPath(package.packageUriRoot),
+              json_key.lib: _fileUriPath(package.packageUriRoot),
           },
         },
       if (languageVersionOverride case var override?)
-        JsonKey.languageVersionOverride: override.toString(),
+        json_key.languageVersionOverride: override.toString(),
     };
   }
 
@@ -238,21 +255,6 @@ final class ConfigInfo {
     assert(uri.isScheme('file'));
     return File.fromUri(uri).path;
   }
-}
-
-// Constants for all used JSON keys to prevent mis-typing.
-extension type const JsonKey(String value) implements String {
-  static const JsonKey path = JsonKey('path');
-  static const JsonKey configPath = JsonKey('configPath');
-  static const JsonKey package = JsonKey('package');
-  static const JsonKey name = JsonKey('name');
-  static const JsonKey root = JsonKey('root');
-  static const JsonKey packageUri = JsonKey('packageUri');
-  static const JsonKey lib = JsonKey('lib');
-  static const JsonKey languageVersion = JsonKey('languageVersion');
-  static const JsonKey languageVersionOverride = JsonKey(
-    'languageVersionOverride',
-  );
 }
 
 // --------------------------------------------------------------------
@@ -346,61 +348,62 @@ class PackageConfigLoader {
   final bool stopAtPubspec;
 
   /// Cache lookup results in case someone does more lookups on the same path.
-  final Map<
-    (String path, bool stopAtPubspec),
-    (String? configPath, PackageConfig? config)
-  >
-  _packageConfigCache = {};
+  final Map<String, ({File file, PackageConfig config})?> _packageConfigCache =
+      {};
 
   PackageConfigLoader({this.stopAtPubspec = false, this.noParent = false});
 
-  /// Finds a package configuration relative to [path].
+  /// Finds a package configuration relative to [directory].
   ///
   /// Caches result for each directory looked at.
   /// If someone does multiple lookups in the same directory, there is no need
   /// to find and parse the same configuration more than once.
-  Future<(String? path, PackageConfig? config)> findPackageConfig(
-    String path,
-  ) async =>
-      _packageConfigCache[(
-        path,
-        stopAtPubspec,
-      )] ??= await _findPackageConfigNoCache(path);
-
-  Future<(String? path, PackageConfig? config)> _findPackageConfigNoCache(
-    String path,
+  Future<({File file, PackageConfig config})?> findPackageConfig(
+    Directory directory,
   ) async {
-    var configPath = p.join(path, '.dart_tool', 'package_config.json');
-    var configFile = File(configPath);
-    if (configFile.existsSync()) {
-      var hasError = false;
-      var config = await loadPackageConfig(
-        configFile.absolute,
-        onError: (error) {
+    var key = directory.path;
+    var cachedConfig = _packageConfigCache[key];
+    if (cachedConfig != null) return cachedConfig;
+    if (_packageConfigCache.containsKey(key)) return null;
+    return _packageConfigCache[key] = await _findPackageConfigNoCache(
+      directory,
+    );
+  }
+
+  Future<({File file, PackageConfig config})?> _findPackageConfigNoCache(
+    Directory directory,
+  ) async {
+    var hasError = false;
+    var foundFile = await findPackageConfigAndFile(
+      directory,
+      recurse: false,
+      onError: (error, file) {
+        if (!hasError) {
           stderr.writeln(
-            'Error parsing package configuration config ($configPath):\n'
-            ' $error',
+            'Error parsing package configuration in directory ${file.path}:',
           );
           hasError = true;
-        },
-      );
-      return (configPath, hasError ? null : config);
-    }
+        }
+        stderr.writeln(' $error');
+      },
+    );
+    if (hasError) return null;
+    if (foundFile != null) return foundFile;
     if (stopAtPubspec) {
-      var pubspecPath = p.join(path, 'pubspec.yaml');
+      var pubspecPath = p.join(directory.path, 'pubspec.yaml');
       var pubspecFile = File(pubspecPath);
       if (pubspecFile.existsSync()) {
         stderr
           ..writeln('Found pubspec.yaml with no .dart_tool/package_config.json')
-          ..writeln('  at $path');
-        return (null, null);
+          ..writeln('  at ${directory.path}');
+        return null;
       }
     }
-    if (noParent && path == p.current) return (null, null);
-    var parentPath = p.dirname(path);
-    if (parentPath == path) return (null, null);
-    // Recurse on parent path.
-    return findPackageConfig(parentPath);
+    if (noParent && directory.path == Directory.current.path) return null;
+    var parentDirectory = directory.parent;
+    if (directory.path == parentDirectory.path) return null;
+    // Recurse to populate cache in all directories traversed.
+    return await findPackageConfig(parentDirectory);
   }
 }
 

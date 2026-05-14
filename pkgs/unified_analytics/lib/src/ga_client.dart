@@ -37,12 +37,11 @@ class GAClient {
   final String postUrl;
   final http.Client _client;
 
-  GAClient({
-    required this.measurementId,
-    required this.apiSecret,
-  })  : postUrl = '$kAnalyticsUrl?'
-            'measurement_id=$measurementId&api_secret=$apiSecret',
-        _client = http.Client();
+  GAClient({required this.measurementId, required this.apiSecret})
+    : postUrl =
+          '$kAnalyticsUrl?'
+          'measurement_id=$measurementId&api_secret=$apiSecret',
+      _client = http.Client();
 
   /// Closes the http client's connection to prevent lingering requests.
   void close() => _client.close();

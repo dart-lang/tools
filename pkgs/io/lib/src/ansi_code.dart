@@ -47,7 +47,7 @@ enum AnsiCodeType {
 /// Standard ANSI escape code for customizing terminal text output.
 ///
 /// [Source](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors)
-class AnsiCode {
+final class AnsiCode {
   /// The numeric value associated with this code.
   final int code;
 

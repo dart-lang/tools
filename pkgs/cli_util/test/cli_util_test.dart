@@ -32,9 +32,10 @@ void main() {
 
     test('empty environment throws exception', () async {
       expect(() {
-        runZoned(() => applicationConfigHome('dart'), zoneValues: {
-          #environmentOverrides: <String, String>{},
-        });
+        runZoned(
+          () => applicationConfigHome('dart'),
+          zoneValues: {#environmentOverrides: <String, String>{}},
+        );
       }, throwsA(isA<EnvironmentNotFoundException>()));
     });
   });

@@ -9,7 +9,6 @@ environment:
 
 dependencies:
   meta: ^1.15.0
-  path: ^1.8.0
 
 dev_dependencies:
   dart_flutter_team_lints: ^3.4.0

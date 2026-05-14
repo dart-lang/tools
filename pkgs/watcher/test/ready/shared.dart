@@ -13,9 +13,11 @@ void sharedTests() {
     var watcher = createWatcher();
 
     var ready = false;
-    unawaited(watcher.ready.then((_) {
-      ready = true;
-    }));
+    unawaited(
+      watcher.ready.then((_) {
+        ready = true;
+      }),
+    );
     await pumpEventQueue();
 
     expect(ready, isFalse);
@@ -52,22 +54,24 @@ void sharedTests() {
     await subscription.cancel();
   });
 
-  test('ready returns a future that does not complete after unsubscribing',
-      () async {
-    var watcher = createWatcher();
+  test(
+    'ready returns a future that does not complete after unsubscribing',
+    () async {
+      var watcher = createWatcher();
 
-    // Subscribe to the events.
-    var subscription = watcher.events.listen((event) {});
+      // Subscribe to the events.
+      var subscription = watcher.events.listen((event) {});
 
-    // Wait until ready.
-    await watcher.ready;
+      // Wait until ready.
+      await watcher.ready;
 
-    // Now unsubscribe.
-    await subscription.cancel();
+      // Now unsubscribe.
+      await subscription.cancel();
 
-    // Should be back to not ready.
-    expect(watcher.ready, doesNotComplete);
-  });
+      // Should be back to not ready.
+      expect(watcher.ready, doesNotComplete);
+    },
+  );
 
   test('ready completes even if directory does not exist', () async {
     var watcher = createWatcher(path: 'does/not/exist');

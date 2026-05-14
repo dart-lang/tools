@@ -74,8 +74,9 @@ var _hasClosedStream = true;
 /// than other platforms, at 1s.
 void enableSleepUntilNewModificationTime() {
   if (_waitForModificationTimesDirectory != null) return;
-  _waitForModificationTimesDirectory =
-      Directory.systemTemp.createTempSync('dart_test_');
+  _waitForModificationTimesDirectory = Directory.systemTemp.createTempSync(
+    'dart_test_',
+  );
   addTearDown(() {
     _waitForModificationTimesDirectory!.deleteSync(recursive: true);
     _waitForModificationTimesDirectory = null;
@@ -292,16 +293,20 @@ void writeLink({
 /// Deletes a file in the sandbox at [path].
 void deleteFile(String path) {
   final fullPath = p.join(d.sandbox, path);
-  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
-      FileSystemEntityType.file);
+  expect(
+    FileSystemEntity.typeSync(fullPath, followLinks: false),
+    FileSystemEntityType.file,
+  );
   File(fullPath).deleteSync();
 }
 
 /// Deletes a link in the sandbox at [path].
 void deleteLink(String path) {
   final fullPath = p.join(d.sandbox, path);
-  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
-      FileSystemEntityType.link);
+  expect(
+    FileSystemEntity.typeSync(fullPath, followLinks: false),
+    FileSystemEntityType.link,
+  );
   Link(fullPath).deleteSync();
 }
 
@@ -309,8 +314,10 @@ void deleteLink(String path) {
 void renameFile(String from, String to) {
   var absoluteTo = p.join(d.sandbox, to);
   File(p.join(d.sandbox, from)).renameSync(absoluteTo);
-  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
-      FileSystemEntityType.file);
+  expect(
+    FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+    FileSystemEntityType.file,
+  );
 }
 
 /// Renames a link in the sandbox from [from] to [to].
@@ -320,8 +327,10 @@ void renameFile(String from, String to) {
 void renameLink(String from, String to) {
   var absoluteTo = p.join(d.sandbox, to);
   Link(p.join(d.sandbox, from)).renameSync(absoluteTo);
-  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
-      FileSystemEntityType.link);
+  expect(
+    FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+    FileSystemEntityType.link,
+  );
 }
 
 /// Creates a directory in the sandbox at [path].
@@ -334,16 +343,21 @@ void renameDir(String from, String to) {
   var absoluteTo = p.join(d.sandbox, to);
   // Fails sometimes on Windows, so guard+retry.
   retryForPathAccessException(
-      () => Directory(p.join(d.sandbox, from)).renameSync(absoluteTo));
-  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
-      FileSystemEntityType.directory);
+    () => Directory(p.join(d.sandbox, from)).renameSync(absoluteTo),
+  );
+  expect(
+    FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+    FileSystemEntityType.directory,
+  );
 }
 
 /// Deletes a directory in the sandbox at [path].
 void deleteDir(String path) {
   final fullPath = p.join(d.sandbox, path);
-  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
-      FileSystemEntityType.directory);
+  expect(
+    FileSystemEntity.typeSync(fullPath, followLinks: false),
+    FileSystemEntityType.directory,
+  );
   Directory(fullPath).deleteSync(recursive: true);
 }
 

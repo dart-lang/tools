@@ -42,32 +42,35 @@ abstract class ResubscribableWatcher implements Watcher {
   /// Creates a new [ResubscribableWatcher] wrapping the watchers
   /// emitted by [_factory].
   ResubscribableWatcher(String path, this._factory)
-      : path = _normalizeAndStripTrailingSeparator(path) {
+    : path = _normalizeAndStripTrailingSeparator(path) {
     late ManuallyClosedWatcher watcher;
     late StreamSubscription<WatchEvent> subscription;
 
     _eventsController = StreamController<WatchEvent>.broadcast(
-        onListen: () async {
-          final completer = _readyCompleter;
-          watcher = _factory(this.path);
-          subscription = watcher.events.listen(_eventsController.add,
-              onError: _eventsController.addError,
-              onDone: _eventsController.close);
+      onListen: () async {
+        final completer = _readyCompleter;
+        watcher = _factory(this.path);
+        subscription = watcher.events.listen(
+          _eventsController.add,
+          onError: _eventsController.addError,
+          onDone: _eventsController.close,
+        );
 
-          // It's important that we complete the value of [_readyCompleter] at
-          // the time [onListen] is called, as opposed to the value when
-          // [watcher.ready] fires. A new completer may be created by that time.
-          await watcher.ready;
-          completer.complete();
-        },
-        onCancel: () {
-          // Cancel the subscription before closing the watcher so that the
-          // watcher's `onDone` event doesn't close [events].
-          subscription.cancel();
-          watcher.close();
-          _readyCompleter = Completer();
-        },
-        sync: true);
+        // It's important that we complete the value of [_readyCompleter] at
+        // the time [onListen] is called, as opposed to the value when
+        // [watcher.ready] fires. A new completer may be created by that time.
+        await watcher.ready;
+        completer.complete();
+      },
+      onCancel: () {
+        // Cancel the subscription before closing the watcher so that the
+        // watcher's `onDone` event doesn't close [events].
+        subscription.cancel();
+        watcher.close();
+        _readyCompleter = Completer();
+      },
+      sync: true,
+    );
   }
 }
 

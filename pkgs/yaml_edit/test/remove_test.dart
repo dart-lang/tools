@@ -131,7 +131,6 @@ c: 3
       doc.remove([0, 'b']);
       expect(doc.toString(), equals('''
 - a: 1
-
   c: 3
 '''));
     });
@@ -184,9 +183,7 @@ b: 2
 a: 1
 ''');
       doc.remove(['a']);
-      expect(doc.toString(), equals('''
-{}
-'''));
+      expect(doc.toString(), equals('{}\n'));
     });
 
     test('last element should return flow empty map (2)', () {
@@ -240,6 +237,29 @@ dependencies:
 dev_dependencies:
   retry:''');
       doc.remove(['dev_dependencies', 'retry']);
+    });
+
+    test('Removes node with preceding block scalar', () {
+      final doc = YamlEditor('''
+key: >+
+  folded with keep chomping
+
+target-key: value # Comment
+                    # Comment
+ # Indented, removed
+
+# Not indented, kept
+next: value
+''');
+
+      doc.remove(['target-key']);
+      expect(doc.toString(), '''
+key: >+
+  folded with keep chomping
+
+# Not indented, kept
+next: value
+''');
     });
   });
 
@@ -312,9 +332,7 @@ dev_dependencies:
 - 0
 ''');
       doc.remove([0]);
-      expect(doc.toString(), equals('''
-[]
-'''));
+      expect(doc.toString(), equals('[]\n'));
     });
 
     test('last element should return flow empty list (2)', () {
@@ -563,6 +581,65 @@ b:
           'c': 'd'
         }
       ]);
+    });
+
+    test('Removes comments that may interfere with block scalar', () {
+      final doc = YamlEditor('''
+- >+
+  folded keep chomp
+
+- - - |+ # Nested
+        literal keep chomp
+
+  - value # May interfere
+            # With block node
+
+- top # With
+          # Funky
+
+      # Comments
+
+      # Comment
+''');
+
+      doc.remove([1, 1]);
+
+      expect(doc.toString(), '''
+- >+
+  folded keep chomp
+
+- - - |+ # Nested
+        literal keep chomp
+
+- top # With
+          # Funky
+
+      # Comments
+
+      # Comment
+''');
+
+      doc.remove([1]);
+
+      expect(doc.toString(), '''
+- >+
+  folded keep chomp
+
+- top # With
+          # Funky
+
+      # Comments
+
+      # Comment
+''');
+
+      doc.remove([1]);
+
+      expect(doc.toString(), '''
+- >+
+  folded keep chomp
+
+''');
     });
   });
 

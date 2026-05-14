@@ -57,8 +57,7 @@ void _fileTests({required bool isNative}) {
     await expectRemoveEvent('file.txt');
   });
 
-  test(
-      'emits a modify event when another file is moved on top of the watched '
+  test('emits a modify event when another file is moved on top of the watched '
       'file', () async {
     writeFile('old.txt', contents: 'different');
     await startWatcher(path: 'file.txt');

@@ -34,8 +34,9 @@ void main() {
 
   setUp(() {
     // Setup the filesystem with the home directory
-    final fsStyle =
-        io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
+    final fsStyle = io.Platform.isWindows
+        ? FileSystemStyle.windows
+        : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
 
@@ -76,10 +77,12 @@ void main() {
     analytics.clientShowedMessage();
 
     // The files that should have been generated that will be used for tests
-    sessionFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kSessionFileName);
-    logFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kLogFileName);
+    sessionFile = home
+        .childDirectory(kDartToolDirectoryName)
+        .childFile(kSessionFileName);
+    logFile = home
+        .childDirectory(kDartToolDirectoryName)
+        .childFile(kLogFileName);
   });
 
   group('Session handler:', () {
@@ -110,18 +113,23 @@ void main() {
 
       expect(
         analytics.sentEvents.where(
-            (element) => element.eventName == DashEvent.analyticsException),
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
         isEmpty,
       );
       expect(
         secondAnalytics.sentEvents.where(
-            (element) => element.eventName == DashEvent.analyticsException),
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
         isEmpty,
       );
 
       await secondAnalytics.setTelemetry(true);
-      expect(sessionFile.readAsStringSync(), isNotEmpty,
-          reason: 'Toggling telemetry should bring back the session data');
+      expect(
+        sessionFile.readAsStringSync(),
+        isNotEmpty,
+        reason: 'Toggling telemetry should bring back the session data',
+      );
     });
     test('only sends one event for FormatException', () {
       // Begin with the session file empty, it should recreate the file
@@ -133,9 +141,11 @@ void main() {
 
       analytics.sendPendingErrorEvents();
       expect(
-          analytics.sentEvents.where(
-              (element) => element.eventName == DashEvent.analyticsException),
-          hasLength(1));
+        analytics.sentEvents.where(
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
+        hasLength(1),
+      );
 
       // Making the file empty again and sending an event should not send
       // an additional event
@@ -145,10 +155,12 @@ void main() {
       expect(sessionFile.readAsStringSync(), isNotEmpty);
 
       expect(
-          analytics.sentEvents.where(
-              (element) => element.eventName == DashEvent.analyticsException),
-          hasLength(1),
-          reason: 'We should not have added a new error event');
+        analytics.sentEvents.where(
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
+        hasLength(1),
+        reason: 'We should not have added a new error event',
+      );
     });
 
     test('only sends one event for FileSystemException', () {
@@ -163,7 +175,8 @@ void main() {
       analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
-            (element) => element.eventName == DashEvent.analyticsException),
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
         hasLength(1),
       );
       expect(sessionFile.existsSync(), isTrue);
@@ -176,7 +189,8 @@ void main() {
 
       expect(
         analytics.sentEvents.where(
-            (element) => element.eventName == DashEvent.analyticsException),
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
         hasLength(1),
         reason: 'Only the first error event should exist',
       );
@@ -194,9 +208,11 @@ void main() {
 
       analytics.sendPendingErrorEvents();
       expect(
-          analytics.sentEvents.where(
-              (element) => element.eventName == DashEvent.analyticsException),
-          hasLength(1));
+        analytics.sentEvents.where(
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
+        hasLength(1),
+      );
 
       // Deleting the file now before sending an additional event should
       // cause a different test error
@@ -207,9 +223,11 @@ void main() {
       expect(sessionFile.readAsStringSync(), isNotEmpty);
       analytics.sendPendingErrorEvents();
       expect(
-          analytics.sentEvents.where(
-              (element) => element.eventName == DashEvent.analyticsException),
-          hasLength(2));
+        analytics.sentEvents.where(
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
+        hasLength(2),
+      );
       expect(analytics.sentEvents, hasLength(4));
 
       sessionFile.deleteSync();
@@ -218,9 +236,11 @@ void main() {
       analytics.send(testEvent);
       expect(sessionFile.readAsStringSync(), isNotEmpty);
       expect(
-          analytics.sentEvents.where(
-              (element) => element.eventName == DashEvent.analyticsException),
-          hasLength(2));
+        analytics.sentEvents.where(
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
+        hasLength(2),
+      );
     });
   });
 
@@ -242,19 +262,24 @@ void main() {
       analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
-            (element) => element.eventName == DashEvent.analyticsException),
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
         isEmpty,
       );
 
       // This call below will cause a FormatException while parsing the log file
       final logFileStats = analytics.logFileStats();
       expect(logFileStats, isNotNull);
-      expect(logFileStats!.recordCount, 1,
-          reason: 'The error event is not counted');
+      expect(
+        logFileStats!.recordCount,
+        1,
+        reason: 'The error event is not counted',
+      );
       analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
-            (element) => element.eventName == DashEvent.analyticsException),
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
         hasLength(1),
       );
       expect(logFile.readAsLinesSync(), hasLength(4));
@@ -279,7 +304,8 @@ void main() {
       analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
-            (element) => element.eventName == DashEvent.analyticsException),
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
         hasLength(1),
       );
       expect(logFileStats, isNotNull);
@@ -303,7 +329,8 @@ void main() {
       analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
-            (element) => element.eventName == DashEvent.analyticsException),
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
         isEmpty,
       );
 
@@ -312,7 +339,8 @@ void main() {
       analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
-            (element) => element.eventName == DashEvent.analyticsException),
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
         hasLength(1),
       );
 
@@ -329,7 +357,8 @@ void main() {
       analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
-            (element) => element.eventName == DashEvent.analyticsException),
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
         hasLength(2),
       );
 
@@ -338,7 +367,8 @@ void main() {
       analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
-            (element) => element.eventName == DashEvent.analyticsException),
+          (element) => element.eventName == DashEvent.analyticsException,
+        ),
         hasLength(2),
       );
     });

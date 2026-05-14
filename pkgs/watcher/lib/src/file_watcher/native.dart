@@ -62,8 +62,11 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
       });
     }
 
-    _subscription = stream.listen(_onBatch,
-        onError: _eventsController.addError, onDone: _onDone);
+    _subscription = stream.listen(
+      _onBatch,
+      onError: _eventsController.addError,
+      onDone: _onDone,
+    );
   }
 
   void _onBatch(List<Event> batch) {

@@ -36,13 +36,11 @@ SourceEdit updateInMap(
 /// removing the element at [key] when re-parsed.
 SourceEdit removeInMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   assert(containsKey(map, key));
-  final keyNode = getKeyNode(map, key);
-  final valueNode = map.nodes[keyNode]!;
 
   if (map.style == CollectionStyle.FLOW) {
-    return _removeFromFlowMap(yamlEdit, map, keyNode, valueNode);
+    return _removeFromFlowMap(yamlEdit, map, key);
   } else {
-    return _removeFromBlockMap(yamlEdit, map, keyNode, valueNode);
+    return _removeFromBlockMap(yamlEdit, map, key);
   }
 }
 
@@ -169,74 +167,49 @@ SourceEdit _replaceInFlowMap(
 }
 
 /// Performs the string operation on [yamlEdit] to achieve the effect of
-/// removing the [keyNode] from the map, bearing in mind that this is a block
+/// removing the [key] from the map, bearing in mind that this is a block
 /// map.
-SourceEdit _removeFromBlockMap(
-    YamlEditor yamlEdit, YamlMap map, YamlNode keyNode, YamlNode valueNode) {
-  final keySpan = keyNode.span;
-  var end = getContentSensitiveEnd(valueNode);
+SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
+  final (index: entryIndex, :keyNode, :valueNode) = getYamlMapEntry(map, key);
   final yaml = yamlEdit.toString();
-  final lineEnding = getLineEnding(yaml);
+  final mapSize = map.length;
+  final keySpan = keyNode.span;
 
-  if (map.length == 1) {
-    final start = map.span.start.offset;
-    final nextNewLine = yaml.indexOf(lineEnding, end);
-    if (nextNewLine != -1) {
-      // Remove everything up to the next newline, this strips comments that
-      // follows on the same line as the value we're removing.
-      // It also ensures we consume colon when [valueNode.value] is `null`
-      // because there is no value (e.g. `key: \n`). Because [valueNode.span] in
-      // such cases point to the colon `:`.
-      end = nextNewLine;
-    } else {
-      // Remove everything until the end of the document, if there is no newline
-      end = yaml.length;
-    }
-    return SourceEdit(start, end - start, '{}');
-  }
+  return removeBlockCollectionEntry(
+    yaml,
+    blockCollection: map,
+    collectionIndent: getMapIndentation(yaml, map),
+    isFirstEntry: entryIndex == 0,
+    isSingleEntry: mapSize == 1,
+    isLastEntry: entryIndex >= mapSize - 1,
+    nodeToRemoveOffset: (
+      // A block map only exists because of its first key.
+      start: entryIndex == 0 ? map.span.start.offset : keySpan.start.offset,
+      end: valueNode.span.length == 0
+          ? keySpan.end.offset + 2 // Null value have no span. Skip ":".
+          : getContentSensitiveEnd(valueNode),
+    ),
+    lineEnding: getLineEnding(yaml),
 
-  var start = keySpan.start.offset;
+    // Only called when the next node is present. Never before.
+    nextBlockNodeInfo: () {
+      final nextKeyNode = map.nodes.keys.elementAt(entryIndex + 1) as YamlNode;
+      final nextKeySpan = nextKeyNode.span.start;
 
-  /// Adjust the end to clear the new line after the end too.
-  ///
-  /// We do this because we suspect that our users will want the inline
-  /// comments to disappear too.
-  final nextNewLine = yaml.indexOf(lineEnding, end);
-  if (nextNewLine != -1) {
-    end = nextNewLine + lineEnding.length;
-  } else {
-    // Remove everything until the end of the document, if there is no newline
-    end = yaml.length;
-  }
-
-  final nextNode = getNextKeyNode(map, keyNode);
-
-  if (start > 0) {
-    final lastHyphen = yaml.lastIndexOf('-', start - 1);
-    final lastNewLine = yaml.lastIndexOf(lineEnding, start - 1);
-    if (lastHyphen > lastNewLine) {
-      start = lastHyphen + 2;
-
-      /// If there is a `-` before the node, and the end is on the same line
-      /// as the next node, we need to add the necessary offset to the end to
-      /// make sure the next node has the correct indentation.
-      if (nextNode != null &&
-          nextNode.span.start.offset - end <= nextNode.span.start.column) {
-        end += nextNode.span.start.column;
-      }
-    } else if (lastNewLine > lastHyphen) {
-      start = lastNewLine + lineEnding.length;
-    }
-  }
-
-  return SourceEdit(start, end - start, '');
+      return (
+        nearestLineEnding: yaml.lastIndexOf('\n', nextKeySpan.offset),
+        nextNodeColStart: nextKeySpan.column
+      );
+    },
+  );
 }
 
 /// Performs the string operation on [yamlEdit] to achieve the effect of
-/// removing the [keyNode] from the map, bearing in mind that this is a flow
+/// removing the [key] from the map, bearing in mind that this is a flow
 /// map.
-SourceEdit _removeFromFlowMap(
-    YamlEditor yamlEdit, YamlMap map, YamlNode keyNode, YamlNode valueNode) {
+SourceEdit _removeFromFlowMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
+  final (index: _, :keyNode, :valueNode) = getYamlMapEntry(map, key);
+
   var start = keyNode.span.start.offset;
   var end = valueNode.span.end.offset;
   final yaml = yamlEdit.toString();

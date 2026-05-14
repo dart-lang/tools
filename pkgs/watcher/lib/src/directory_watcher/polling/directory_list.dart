@@ -13,11 +13,12 @@ extension DirectoryRobustRecursiveListing on Directory {
   /// These can arise from concurrent file-system modification.
   ///
   /// See [listRecursively] for how symlinks are handled.
-  Stream<FileSystemEntity> listRecursivelyIgnoringErrors(
-      {bool followLinks = true}) {
-    return listRecursively(followLinks: followLinks)
-        .ignoring<PathNotFoundException>()
-        .ignoring<PathAccessException>();
+  Stream<FileSystemEntity> listRecursivelyIgnoringErrors({
+    bool followLinks = true,
+  }) {
+    return listRecursively(
+      followLinks: followLinks,
+    ).ignoring<PathNotFoundException>().ignoring<PathAccessException>();
   }
 
   /// Lists the directory recursively.
@@ -78,8 +79,10 @@ class _DirectoryTraversal {
   Future<void> _listAndRecurseOrThrow(_ResolvedDirectory directory) async {
     final subdirectories = <_ResolvedDirectory>[];
 
-    await for (var entity
-        in directory.directory.list(recursive: false, followLinks: false)) {
+    await for (var entity in directory.directory.list(
+      recursive: false,
+      followLinks: false,
+    )) {
       // Handle links.
       if (entity is Link) {
         // Look up their target and target type.
@@ -88,8 +91,12 @@ class _DirectoryTraversal {
 
         if (targetType == FileSystemEntityType.directory) {
           // Add links to directories with their target to [subdirectories].
-          subdirectories.add(_ResolvedDirectory(
-              directory: Directory(entity.path), canonicalPath: target));
+          subdirectories.add(
+            _ResolvedDirectory(
+              directory: Directory(entity.path),
+              canonicalPath: target,
+            ),
+          );
         } else if (targetType == FileSystemEntityType.file) {
           // Output files.
           _result.add(File(entity.path));
@@ -111,8 +118,12 @@ class _DirectoryTraversal {
         final resolvedDirectory = directory.isCanonical
             ? entity.path
             : p.join(directory.canonicalPath, p.basename(entity.path));
-        subdirectories.add(_ResolvedDirectory(
-            directory: entity, canonicalPath: resolvedDirectory));
+        subdirectories.add(
+          _ResolvedDirectory(
+            directory: entity,
+            canonicalPath: resolvedDirectory,
+          ),
+        );
         continue;
       }
 
@@ -141,8 +152,9 @@ class _ResolvedDirectory {
   static _ResolvedDirectory resolve(Directory directory) {
     try {
       return _ResolvedDirectory(
-          directory: directory,
-          canonicalPath: directory.resolveSymbolicLinksSync());
+        directory: directory,
+        canonicalPath: directory.resolveSymbolicLinksSync(),
+      );
     } on FileSystemException catch (e, s) {
       // The first operation on a directory is to resolve symbolic links, which
       // fails with a general FileSystemException if the file is not found.
@@ -151,7 +163,9 @@ class _ResolvedDirectory {
       if (e.message.contains('Cannot resolve symbolic links')) {
         if (e.osError != null && e.path != null) {
           Error.throwWithStackTrace(
-              _fromOSError(e.osError!, e.message, e.path!), s);
+            _fromOSError(e.osError!, e.message, e.path!),
+            s,
+          );
         }
       }
       rethrow;
@@ -237,12 +251,14 @@ extension IgnoringError<T> on Stream<T> {
   ///
   /// Everything else gets forwarded through as-is.
   Stream<T> ignoring<E>() {
-    return transform(StreamTransformer<T, T>.fromHandlers(
-      handleError: (error, st, sink) {
-        if (error is! E) {
-          sink.addError(error, st);
-        }
-      },
-    ));
+    return transform(
+      StreamTransformer<T, T>.fromHandlers(
+        handleError: (error, st, sink) {
+          if (error is! E) {
+            sink.addError(error, st);
+          }
+        },
+      ),
+    );
   }
 }
