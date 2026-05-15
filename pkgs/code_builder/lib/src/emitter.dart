@@ -735,24 +735,24 @@ class DartEmitter extends Object
       if (spec.modifier != null) {
         switch (spec.modifier!) {
           case MethodModifier.async:
-            output.write(' async ');
+            output.write(' async');
             break;
           case MethodModifier.asyncStar:
-            output.write(' async* ');
+            output.write(' async*');
             break;
           case MethodModifier.syncStar:
-            output.write(' sync* ');
+            output.write(' sync*');
             break;
         }
       }
       if (_isLambdaMethod(spec)) {
         output.write(' => ');
       } else {
-        output.write(' { ');
+        output.write(' {');
       }
       spec.body!.accept(this, output);
       if (!_isLambdaMethod(spec)) {
-        output.write(' } ');
+        output.write('}');
       }
     } else {
       output.write(';');
