@@ -480,8 +480,41 @@ class DartEmitter extends Object
         ..writeln();
     }
 
-    if (spec.ignoreForFile.isNotEmpty) {
-      final ignores = spec.ignoreForFile.toList()..sort();
+    // Process the body first in order to prime the allocators.
+    final body = StringBuffer();
+    for (final spec in spec.body) {
+      spec.accept(this, body);
+      if (spec is Method && _isLambdaMethod(spec)) {
+        body.write(';');
+      }
+    }
+
+    final header = StringBuffer();
+    spec.docs.forEach(header.writeln);
+    for (var a in spec.annotations) {
+      visitAnnotation(a, header);
+    }
+    if (spec.name != null) {
+      header.write('library ${spec.name!};');
+    } else if (spec.annotations.isNotEmpty || spec.docs.isNotEmpty) {
+      // An explicit _unnamed_ library directive is only required if there are
+      // annotations or doc comments on the library.
+      header.write('library;');
+    }
+
+    final directives = <Directive>[...allocator.imports, ...spec.directives];
+
+    if (orderDirectives) {
+      directives.sort();
+    }
+
+    final ignores = spec.ignoreForFile.toList();
+    if (directives.any((d) => d.as?.startsWith('_') ?? false)) {
+      ignores.add('no_leading_underscores_for_library_prefixes');
+    }
+
+    if (ignores.isNotEmpty) {
+      ignores.sort();
       final lines = ['// ignore_for_file: ${ignores.first}'];
       for (var ignore in ignores.skip(1)) {
         if (lines.last.length + 2 + ignore.length > 80) {
@@ -494,39 +527,9 @@ class DartEmitter extends Object
       output.writeln();
     }
 
-    // Process the body first in order to prime the allocators.
-    final body = StringBuffer();
-    for (final spec in spec.body) {
-      spec.accept(this, body);
-      if (spec is Method && _isLambdaMethod(spec)) {
-        body.write(';');
-      }
-    }
-
-    spec.docs.forEach(output.writeln);
-    for (var a in spec.annotations) {
-      visitAnnotation(a, output);
-    }
-    if (spec.name != null) {
-      output.write('library ${spec.name!};');
-    } else if (spec.annotations.isNotEmpty || spec.docs.isNotEmpty) {
-      // An explicit _unnamed_ library directive is only required if there are
-      // annotations or doc comments on the library.
-      output.write('library;');
-    }
-
-    final directives = <Directive>[...allocator.imports, ...spec.directives];
-
-    if (orderDirectives) {
-      directives.sort();
-    }
+    output.write(header);
 
     Directive? previous;
-    if (directives.any((d) => d.as?.startsWith('_') ?? false)) {
-      output.writeln(
-        '// ignore_for_file: no_leading_underscores_for_library_prefixes',
-      );
-    }
     for (final directive in directives) {
       if (_newLineBetween(orderDirectives, previous, directive)) {
         // Note: dartfmt handles creating new lines between directives.
