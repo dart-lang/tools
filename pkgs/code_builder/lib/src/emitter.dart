@@ -169,7 +169,7 @@ class DartEmitter extends Object
       out.writeln();
     }
     _visitMethods(spec.methods, out);
-    out.writeln(' }');
+    out.writeln('}');
     return out;
   }
 
@@ -198,13 +198,13 @@ class DartEmitter extends Object
           ',',
         );
     }
-    out.write('  {');
+    out.write(' {');
     for (var f in spec.fields) {
       visitField(f, out);
       out.writeln();
     }
     _visitMethods(spec.methods, out);
-    out.write('  }');
+    out.write('}');
     return out;
   }
 
@@ -292,9 +292,9 @@ class DartEmitter extends Object
         spec.body!.accept(this, output);
         output.write(';');
       } else {
-        output.write(' { ');
+        output.write(' {');
         spec.body!.accept(this, output);
-        output.write(' }');
+        output.write('}');
       }
     } else {
       output.write(';');
@@ -326,7 +326,7 @@ class DartEmitter extends Object
       out.writeln();
     }
     _visitMethods(spec.methods, out);
-    out.writeln(' }');
+    out.writeln('}');
     return out;
   }
 
@@ -735,24 +735,24 @@ class DartEmitter extends Object
       if (spec.modifier != null) {
         switch (spec.modifier!) {
           case MethodModifier.async:
-            output.write(' async ');
+            output.write(' async');
             break;
           case MethodModifier.asyncStar:
-            output.write(' async* ');
+            output.write(' async*');
             break;
           case MethodModifier.syncStar:
-            output.write(' sync* ');
+            output.write(' sync*');
             break;
         }
       }
       if (_isLambdaMethod(spec)) {
         output.write(' => ');
       } else {
-        output.write(' { ');
+        output.write(' {');
       }
       spec.body!.accept(this, output);
       if (!_isLambdaMethod(spec)) {
-        output.write(' } ');
+        output.write('}');
       }
     } else {
       output.write(';');
@@ -869,7 +869,7 @@ class DartEmitter extends Object
           ', ',
         );
     }
-    out.write(' { ');
+    out.write(' {');
     for (var v in spec.values) {
       v.docs.forEach(out.writeln);
       for (var a in v.annotations) {
@@ -922,7 +922,7 @@ class DartEmitter extends Object
       out.writeln();
     }
     _visitMethods(spec.methods, out);
-    out.writeln(' }');
+    out.writeln('}');
     return out;
   }
 }

@@ -36,6 +36,7 @@ extension Keys on Stream<List<int>> {
             32 => Key.space,
             3 || 4 => Key.quit, // End of text/end of transmission
             27 => Key.quit, // Escape key but not escape sequence
+            1 => Key.selectAll, // Ctrl+A
             _ => null,
           };
         }
@@ -49,4 +50,15 @@ extension Keys on Stream<List<int>> {
   }
 }
 
-enum Key { up, down, pageUp, pageDown, home, end, space, enter, quit }
+enum Key {
+  up,
+  down,
+  pageUp,
+  pageDown,
+  home,
+  end,
+  space,
+  enter,
+  quit,
+  selectAll,
+}

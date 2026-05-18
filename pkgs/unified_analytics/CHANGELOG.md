@@ -1,5 +1,6 @@
 ## 8.0.15
 - Added IDE and plugin information to `Event.serverSession`.
+- Discard any `Exception` or `Error` thrown while reading or writing analytics logs.
 
 ## 8.0.14
 - Added HCPP related analytics to `Event.commandUsageValues`.

@@ -38,7 +38,14 @@ Future<Set<int>?> showMultiSelectDialog(
   List<String> options,
   Stream<List<int>> inputStream, {
   int maxVisibleItems = 5,
-}) => _runDialog(options, maxVisibleItems, inputStream, multiSelect: true);
+  Set<int> initialSelected = const {},
+}) => _runDialog(
+  options,
+  maxVisibleItems,
+  inputStream,
+  multiSelect: true,
+  initialSelected: initialSelected,
+);
 
 /// Shows a scrollable terminal selection dialog and returns the selected index.
 ///
@@ -86,9 +93,15 @@ Future<Set<int>?> _runDialog(
   int maxVisibleItems,
   Stream<List<int>> inputStream, {
   required bool multiSelect,
+  Set<int> initialSelected = const {},
 }) async {
   try {
     _assertValidOptions(options);
+    assert(
+      initialSelected.every((index) => index >= 0 && index < options.length),
+      'All initialSelected indices must be within the range '
+      '[0, options.length).',
+    );
   } catch (e) {
     // Tests will hang if we don't listen here.
     await inputStream.listen((_) {}).cancel();
@@ -121,7 +134,10 @@ Future<Set<int>?> _runDialog(
     0,
     (max, e) => math.max(max, e.length),
   );
-  final selectedIndices = <int>{if (!multiSelect) 0};
+  final selectedIndices = {
+    if (initialSelected.isEmpty && !multiSelect) 0,
+    ...initialSelected,
+  };
   var cursorIndex = 0;
   final cleanupTasks = <FutureOr<void> Function()>[
     () {
@@ -203,6 +219,14 @@ Future<Set<int>?> _runDialog(
               selectedIndices.remove(cursorIndex);
             } else {
               selectedIndices.add(cursorIndex);
+            }
+          }
+        case Key.selectAll:
+          if (multiSelect) {
+            if (selectedIndices.length == options.length) {
+              selectedIndices.clear();
+            } else {
+              selectedIndices.addAll(Iterable<int>.generate(options.length));
             }
           }
         case Key.enter:

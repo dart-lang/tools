@@ -549,6 +549,55 @@ void main() {
             }
           });
         });
+
+        test('multi-select respects initialSelected', () async {
+          final future = showMultiSelectDialog(
+            ['apple', 'banana', 'cherry'],
+            inputController.stream,
+            initialSelected: {1, 2},
+          );
+          await pumpEventQueue();
+          expect(mockStdout.terminal.content, '''
+> [ ] apple
+  [x] banana
+  [x] cherry
+''');
+          inputController.addKey(KeyVariants.enter);
+          expect(await future, {1, 2});
+        });
+
+        test('multi-select Ctrl+A toggles all', () async {
+          final future = showMultiSelectDialog([
+            'apple',
+            'banana',
+            'cherry',
+          ], inputController.stream);
+          await pumpEventQueue();
+          expect(mockStdout.terminal.content, '''
+> [ ] apple
+  [ ] banana
+  [ ] cherry
+''');
+
+          inputController.addKey(KeyVariants.selectAll);
+          await pumpEventQueue();
+          expect(mockStdout.terminal.content, '''
+> [x] apple
+  [x] banana
+  [x] cherry
+''');
+
+          inputController.addKey(KeyVariants.selectAll);
+          await pumpEventQueue();
+          expect(mockStdout.terminal.content, '''
+> [ ] apple
+  [ ] banana
+  [ ] cherry
+''');
+
+          inputController.addKey(KeyVariants.enter);
+          expect(await future, <int>{});
+        });
       }
     });
 
@@ -642,6 +691,18 @@ void main() {
             },
           );
         });
+
+        test('multiselect throws AssertionError for invalid initialSelected '
+            'indices', () async {
+          expect(
+            () => showMultiSelectDialog(
+              ['a', 'b'],
+              inputController.stream,
+              initialSelected: {2},
+            ),
+            throwsA(isA<AssertionError>()),
+          );
+        });
       }
     });
   });
@@ -724,6 +785,9 @@ extension type const KeyVariants(List<ByteSequence> variants)
     ByteSequence([3]), // end of text
     ByteSequence([4]), // end of transmission
     ByteSequence([27]), // escape
+  ]);
+  static const selectAll = KeyVariants([
+    ByteSequence([1]), // Ctrl+A
   ]);
 
   // Escape sequences

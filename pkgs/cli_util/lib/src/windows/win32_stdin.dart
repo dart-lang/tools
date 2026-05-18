@@ -104,6 +104,10 @@ class Win32AnsiStdin extends Stream<List<int>> {
   List<int>? _translateKeyEvent(KeyEventRecord keyEvent) {
     final virtualKeyCode = keyEvent.wVirtualKeyCode;
 
+    if (virtualKeyCode == 0x41 && keyEvent.isCtrlPressed) {
+      return [1]; // Ctrl+A
+    }
+
     switch (virtualKeyCode) {
       case VirtualKeyCodes.up:
         return [0x1b, 0x5b, 0x41]; // ESC [ A
@@ -251,7 +255,14 @@ final class KeyEventRecord extends Struct {
   external int uChar;
   @Uint32()
   external int dwControlKeyState;
+
+  bool get isCtrlPressed =>
+      (dwControlKeyState & (_leftCtrlPressed | _rightCtrlPressed)) != 0;
 }
+
+/// https://learn.microsoft.com/en-us/windows/console/key-event-record-str
+const int _leftCtrlPressed = 0x0008;
+const int _rightCtrlPressed = 0x0004;
 
 /// FFI Function binding to
 /// https://learn.microsoft.com/en-us/windows/console/getstdhandle

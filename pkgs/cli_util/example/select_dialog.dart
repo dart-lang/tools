@@ -40,6 +40,7 @@ Future<void> main() async {
     final selectedOptions = await showMultiSelectDialog(
       allOptions,
       inputStream,
+      initialSelected: {1, 2},
     );
     if (selectedOptions == null) {
       print('Selection cancelled, exiting.');
