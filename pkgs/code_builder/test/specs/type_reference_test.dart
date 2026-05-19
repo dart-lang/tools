@@ -66,5 +66,71 @@ void main() {
         equalsDart(r'List<int?>', emitter),
       );
     });
+
+    test('should support generic bound', () {
+      expect(
+        TypeReference(
+          (b) =>
+              b
+                ..symbol = 'T'
+                ..bound = refer('num'),
+        ),
+        equalsDart(r'T extends num', emitter),
+      );
+    });
+  });
+
+  group('TypeReference API', () {
+    test('properties should be exposed', () {
+      final typeRef = TypeReference(
+        (b) =>
+            b
+              ..symbol = 'Foo'
+              ..url = 'package:foo/foo.dart',
+      );
+      expect(typeRef.symbol, 'Foo');
+      expect(typeRef.url, 'package:foo/foo.dart');
+      expect(typeRef.type, same(typeRef));
+    });
+
+    test('should support newInstance', () {
+      final typeRef = TypeReference((b) => b..symbol = 'Foo');
+      expect(
+        typeRef.newInstance([literal(42)], {'bar': literal('baz')}),
+        equalsDart(r"Foo(42, bar: 'baz', )"),
+      );
+    });
+
+    test('should support newInstanceNamed', () {
+      final typeRef = TypeReference((b) => b..symbol = 'Foo');
+      expect(
+        typeRef.newInstanceNamed(
+          'fromMap',
+          [literal(42)],
+          {'bar': literal('baz')},
+        ),
+        equalsDart(r"Foo.fromMap(42, bar: 'baz', )"),
+      );
+    });
+
+    test('should support constInstance', () {
+      final typeRef = TypeReference((b) => b..symbol = 'Foo');
+      expect(
+        typeRef.constInstance([literal(42)], {'bar': literal('baz')}),
+        equalsDart(r"const Foo(42, bar: 'baz', )"),
+      );
+    });
+
+    test('should support constInstanceNamed', () {
+      final typeRef = TypeReference((b) => b..symbol = 'Foo');
+      expect(
+        typeRef.constInstanceNamed(
+          'fromMap',
+          [literal(42)],
+          {'bar': literal('baz')},
+        ),
+        equalsDart(r"const Foo.fromMap(42, bar: 'baz', )"),
+      );
+    });
   });
 }
