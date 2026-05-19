@@ -480,20 +480,6 @@ class DartEmitter extends Object
         ..writeln();
     }
 
-    if (spec.ignoreForFile.isNotEmpty) {
-      final ignores = spec.ignoreForFile.toList()..sort();
-      final lines = ['// ignore_for_file: ${ignores.first}'];
-      for (var ignore in ignores.skip(1)) {
-        if (lines.last.length + 2 + ignore.length > 80) {
-          lines.add('// ignore_for_file: $ignore');
-        } else {
-          lines[lines.length - 1] = '${lines.last}, $ignore';
-        }
-      }
-      lines.forEach(output.writeln);
-      output.writeln();
-    }
-
     // Process the body first in order to prime the allocators.
     final body = StringBuffer();
     for (final spec in spec.body) {
@@ -503,16 +489,17 @@ class DartEmitter extends Object
       }
     }
 
-    spec.docs.forEach(output.writeln);
+    final header = StringBuffer();
+    spec.docs.forEach(header.writeln);
     for (var a in spec.annotations) {
-      visitAnnotation(a, output);
+      visitAnnotation(a, header);
     }
     if (spec.name != null) {
-      output.write('library ${spec.name!};');
+      header.write('library ${spec.name!};');
     } else if (spec.annotations.isNotEmpty || spec.docs.isNotEmpty) {
       // An explicit _unnamed_ library directive is only required if there are
       // annotations or doc comments on the library.
-      output.write('library;');
+      header.write('library;');
     }
 
     final directives = <Directive>[...allocator.imports, ...spec.directives];
@@ -521,12 +508,32 @@ class DartEmitter extends Object
       directives.sort();
     }
 
-    Directive? previous;
-    if (directives.any((d) => d.as?.startsWith('_') ?? false)) {
-      output.writeln(
-        '// ignore_for_file: no_leading_underscores_for_library_prefixes',
-      );
+    final ignores = [
+      ...spec.ignoreForFile,
+      if (directives.any((d) => d.as?.startsWith('_') ?? false))
+        'no_leading_underscores_for_library_prefixes',
+    ];
+
+    if (ignores.isNotEmpty) {
+      ignores.sort();
+      const prefix = '// ignore_for_file: ';
+      final lines = [StringBuffer(prefix)..write(ignores.first)];
+      for (var ignore in ignores.skip(1)) {
+        if (lines.last.length + 2 + ignore.length > 80) {
+          lines.add(StringBuffer(prefix)..write(ignore));
+        } else {
+          lines.last
+            ..write(', ')
+            ..write(ignore);
+        }
+      }
+      lines.forEach(output.writeln);
+      output.writeln();
     }
+
+    output.write(header);
+
+    Directive? previous;
     for (final directive in directives) {
       if (_newLineBetween(orderDirectives, previous, directive)) {
         // Note: dartfmt handles creating new lines between directives.
