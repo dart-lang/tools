@@ -81,55 +81,59 @@ void main() {
   });
 
   group('TypeReference API', () {
+    final typeRef = TypeReference((b) => b..symbol = 'Foo');
+
     test('properties should be exposed', () {
-      final typeRef = TypeReference(
+      final localTypeRef = TypeReference(
         (b) =>
             b
               ..symbol = 'Foo'
               ..url = 'package:foo/foo.dart',
       );
-      expect(typeRef.symbol, 'Foo');
-      expect(typeRef.url, 'package:foo/foo.dart');
-      expect(typeRef.type, same(typeRef));
+      expect(localTypeRef.symbol, 'Foo');
+      expect(localTypeRef.url, 'package:foo/foo.dart');
+      expect(localTypeRef.type, same(localTypeRef));
     });
 
     test('should support newInstance', () {
-      final typeRef = TypeReference((b) => b..symbol = 'Foo');
       expect(
-        typeRef.newInstance([literal(42)], {'bar': literal('baz')}),
-        equalsDart(r"Foo(42, bar: 'baz', )"),
+        typeRef.newInstance([literal(42)], {'bar': literal('baz')}, [
+          refer('int'),
+        ]),
+        equalsDart(r"Foo<int>(42, bar: 'baz', )"),
       );
     });
 
     test('should support newInstanceNamed', () {
-      final typeRef = TypeReference((b) => b..symbol = 'Foo');
       expect(
         typeRef.newInstanceNamed(
           'fromMap',
           [literal(42)],
           {'bar': literal('baz')},
+          [refer('int')],
         ),
-        equalsDart(r"Foo.fromMap(42, bar: 'baz', )"),
+        equalsDart(r"Foo.fromMap<int>(42, bar: 'baz', )"),
       );
     });
 
     test('should support constInstance', () {
-      final typeRef = TypeReference((b) => b..symbol = 'Foo');
       expect(
-        typeRef.constInstance([literal(42)], {'bar': literal('baz')}),
-        equalsDart(r"const Foo(42, bar: 'baz', )"),
+        typeRef.constInstance([literal(42)], {'bar': literal('baz')}, [
+          refer('int'),
+        ]),
+        equalsDart(r"const Foo<int>(42, bar: 'baz', )"),
       );
     });
 
     test('should support constInstanceNamed', () {
-      final typeRef = TypeReference((b) => b..symbol = 'Foo');
       expect(
         typeRef.constInstanceNamed(
           'fromMap',
           [literal(42)],
           {'bar': literal('baz')},
+          [refer('int')],
         ),
-        equalsDart(r"const Foo.fromMap(42, bar: 'baz', )"),
+        equalsDart(r"const Foo.fromMap<int>(42, bar: 'baz', )"),
       );
     });
   });

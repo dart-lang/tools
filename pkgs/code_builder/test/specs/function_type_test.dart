@@ -53,7 +53,7 @@ void main() {
         (b) =>
             b
               ..returnType = refer('String')
-              ..requiredParameters.addAll([refer('int')]),
+              ..requiredParameters.add(refer('int')),
       );
       expect(
         funcType.toTypeDef('MyFunc'),
