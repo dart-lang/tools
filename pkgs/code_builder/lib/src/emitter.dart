@@ -508,19 +508,23 @@ class DartEmitter extends Object
       directives.sort();
     }
 
-    final ignores = spec.ignoreForFile.toList();
-    if (directives.any((d) => d.as?.startsWith('_') ?? false)) {
-      ignores.add('no_leading_underscores_for_library_prefixes');
-    }
+    final ignores = [
+      ...spec.ignoreForFile,
+      if (directives.any((d) => d.as?.startsWith('_') ?? false))
+        'no_leading_underscores_for_library_prefixes',
+    ];
 
     if (ignores.isNotEmpty) {
       ignores.sort();
-      final lines = ['// ignore_for_file: ${ignores.first}'];
+      const prefix = '// ignore_for_file: ';
+      final lines = [StringBuffer(prefix)..write(ignores.first)];
       for (var ignore in ignores.skip(1)) {
         if (lines.last.length + 2 + ignore.length > 80) {
-          lines.add('// ignore_for_file: $ignore');
+          lines.add(StringBuffer(prefix)..write(ignore));
         } else {
-          lines[lines.length - 1] = '${lines.last}, $ignore';
+          lines.last
+            ..write(', ')
+            ..write(ignore);
         }
       }
       lines.forEach(output.writeln);
