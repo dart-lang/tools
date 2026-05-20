@@ -318,6 +318,53 @@ dart:core:
 ''');
   }
 
+  Future<void> test_nonConstructibleClass_withFactory() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+abstract final class C1 {
+  factory C1.f() => throw '';
+}
+abstract interface class C2 {
+  factory C2.f() => throw '';
+}
+sealed class C3 {
+  factory C3.f() => throw '';
+}
+''',
+    });
+    expect(summary, '''
+package:test/file.dart:
+  C1 (class extends Object, abstract, final):
+    f (constructor: C1 Function())
+  C2 (class extends Object, abstract, interface):
+    f (constructor: C2 Function())
+  C3 (class extends Object, sealed):
+    f (constructor: C3 Function())
+dart:core:
+  Object (referenced)
+''');
+  }
+
+  Future<void> test_enum_withFactory() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+enum E {
+  v;
+  factory E.f() => throw '';
+}
+''',
+    });
+    expect(summary, '''
+package:test/file.dart:
+  E (enum):
+    v (static getter: E)
+    values (static getter: List<E>)
+    f (constructor: E Function())
+dart:core:
+  List (referenced)
+''');
+  }
+
   Future<void> test_sealedClass() async {
     final summary = await _build({
       '$testPackageLibPath/file.dart': '''

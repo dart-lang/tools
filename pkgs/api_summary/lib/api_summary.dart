@@ -32,9 +32,15 @@ Future<String> summarizePackage(
     resourceProvider: provider,
     includedPaths: [libPath],
   );
-  // Use `.single` to make sure that `collection` just contains a single
-  // context. This ensures that `publicApi.build` will see all the files in
-  // the package.
+  if (collection.contexts.isEmpty) {
+    throw ArgumentError('No analysis context found for "$packagePath".');
+  }
+  if (collection.contexts.length > 1) {
+    throw ArgumentError(
+      'Multiple analysis contexts found for "$packagePath". '
+      'Only a single package is supported.',
+    );
+  }
   final context = collection.contexts.single;
   final publicApi = ApiDescription(
     packageName,

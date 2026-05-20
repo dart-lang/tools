@@ -69,13 +69,15 @@ class ApiDescription {
     final topLevelPublicElements = <Element>{};
     for (final file in context.contextRoot.analyzedFiles().sorted()) {
       if (!file.endsWith('.dart')) continue;
-      final fileResult = context.currentSession.getFile(file) as FileResult;
+      final someFileResult = context.currentSession.getFile(file);
+      if (someFileResult is! FileResult) continue;
+      final fileResult = someFileResult;
       final uri = fileResult.uri;
       if (fileResult.isLibrary && uri.isInPublicLibOf(_pkgName)) {
-        final resolvedLibraryResult =
-            (await context.currentSession.getResolvedLibrary(file))
-                as ResolvedLibraryResult;
-        final library = resolvedLibraryResult.element;
+        final someLibraryResult = await context.currentSession
+            .getResolvedLibrary(file);
+        if (someLibraryResult is! ResolvedLibraryResult) continue;
+        final library = someLibraryResult.element;
         topLevelPublicElements.addAll(
           library.exportNamespace.definedNames2.values,
         );
@@ -367,16 +369,20 @@ class ApiDescription {
             continue;
           }
           if (member is ConstructorElement &&
+              !member.isFactory &&
               element is ClassElement &&
               element.isAbstract &&
               (element.isFinal || element.isInterface || element.isSealed)) {
             // The class can't be constructed from outside of the library that
-            // declares it, so its constructors aren't part of the public API.
+            // declares it, so its generative constructors aren't part of the
+            // public API.
             continue;
           }
-          if (member is ConstructorElement && element is EnumElement) {
-            // Enum constructors can't be called from outside the enum itself,
-            // so they aren't part of the public API.
+          if (member is ConstructorElement &&
+              !member.isFactory &&
+              element is EnumElement) {
+            // Enum generative constructors can't be called from outside the
+            // enum itself, so they aren't part of the public API.
             continue;
           }
           final childNode = Node<MemberSortKey>();
