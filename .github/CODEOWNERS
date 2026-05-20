@@ -16,7 +16,7 @@ pkgs/code_builder               @dart-lang/dart-ecosystem-team
 pkgs/coverage                   @liamappelbe @dart-lang/dart-native-runtime-team
 pkgs/csslib                     @dart-lang/dart-ecosystem-team #formerly @leonsenft
 pkgs/extension_discovery        @dart-lang/dart-ecosystem-team #tbd
-pkgs/excerpter                    @kevmoo
+pkgs/excerpter                  @kevmoo
 pkgs/file                       @dart-lang/dart-ecosystem-team
 pkgs/file_testing               @dart-lang/dart-ecosystem-team
 pkgs/glob                       @dart-lang/dart-ecosystem-team
