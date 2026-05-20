@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 
+import 'extract.dart';
 import 'inject.dart';
 import 'transform.dart';
 
@@ -78,12 +79,14 @@ final class Updater {
     var madeUpdates = false;
     final errors = <String>[];
 
+    final extractor = ExcerptExtractor();
     for (final currentPath in pathsToUpdate) {
       final fileUpdater = FileUpdater(
         currentPath,
         baseSourcePath: baseSourcePath,
         defaultPlasterContent: defaultPlasterContent,
         defaultTransforms: defaultTransforms,
+        extractor: extractor,
       );
 
       try {

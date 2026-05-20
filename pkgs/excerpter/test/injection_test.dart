@@ -384,4 +384,56 @@ Some normal content.
       expect(results.filesVisited, equals(1));
     });
   });
+
+  group('Argument parsing robust cases', () {
+    test('handles escaped double quotes in argument values', () async {
+      await d.file('code.dart', '''
+// #docregion single
+hello
+// #enddocregion single
+''').create();
+      await d.file('test.md', '''
+<?code-excerpt "code.dart (single)" replace="/hello/\\"world\\"/g;" ?>
+```dart
+```
+''').create();
+
+      final fileUpdater = FileUpdater(
+        path.join(d.sandbox, 'test.md'),
+        baseSourcePath: d.sandbox,
+        defaultPlasterContent: '...',
+        defaultTransforms: const [],
+      );
+
+      final results = await fileUpdater.process();
+      expect(results.warnings, isEmpty);
+      expect(results.excerptsUpdated, hasLength(1));
+      expect(results.excerptsUpdated.first.updated, equals('"world"'));
+    });
+
+    test('handles ?> sequence within double-quoted argument values', () async {
+      await d.file('code.dart', '''
+// #docregion single
+hello
+// #enddocregion single
+''').create();
+      await d.file('test.md', '''
+<?code-excerpt "code.dart (single)" replace="/hello/hi ?> there/g;" ?>
+```dart
+```
+''').create();
+
+      final fileUpdater = FileUpdater(
+        path.join(d.sandbox, 'test.md'),
+        baseSourcePath: d.sandbox,
+        defaultPlasterContent: '...',
+        defaultTransforms: const [],
+      );
+
+      final results = await fileUpdater.process();
+      expect(results.warnings, isEmpty);
+      expect(results.excerptsUpdated, hasLength(1));
+      expect(results.excerptsUpdated.first.updated, equals('hi ?> there'));
+    });
+  });
 }

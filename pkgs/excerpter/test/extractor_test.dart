@@ -112,6 +112,29 @@ void main() {}
       );
     });
 
+    test(
+      'region names with underscores are ignored (not recognized)',
+      () async {
+        await d.file('underscore.dart', '''
+// #docregion my_region
+void main() {}
+// #enddocregion my_region
+''').create();
+
+        final filePath = path.join(d.sandbox, 'underscore.dart');
+        expect(
+          () => extractor.extractRegion(filePath, 'my_region'),
+          throwsA(
+            isA<ExtractException>().having(
+              (e) => e.toString(),
+              'toString()',
+              contains('The region "my_region" does not exist'),
+            ),
+          ),
+        );
+      },
+    );
+
     test('does not match docregion patterns embedded inside string literals or '
         'normal code', () async {
       await d.file('non_comment.dart', '''

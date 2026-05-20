@@ -28,6 +28,9 @@ final class FileUpdater {
   /// The path to the file to update the excerpt regions of.
   final String pathToUpdate;
 
+  /// The extractor used to read and cache regions from files.
+  final ExcerptExtractor _extractor;
+
   /// The update results for this file after
   /// running [process] for the first time.
   FileProcessResults? _results;
@@ -47,7 +50,8 @@ final class FileUpdater {
     required this.baseSourcePath,
     required this.defaultPlasterContent,
     required this.defaultTransforms,
-  });
+    ExcerptExtractor? extractor,
+  }) : _extractor = extractor ?? ExcerptExtractor();
 
   /// Process the file at [pathToUpdate] and determine
   /// what, if any, updates need to be made to its injected
@@ -61,7 +65,7 @@ final class FileUpdater {
     var excerptsVisited = 0;
     final excerptsUpdated = <({int instructionLine, String updated})>[];
 
-    final extractor = ExcerptExtractor();
+    final extractor = _extractor;
 
     final fileContent = await File(pathToUpdate).readAsString();
     final sourceFile = SourceFile.fromString(
@@ -75,7 +79,7 @@ final class FileUpdater {
     var wholeFilePathBase = '';
 
     var inStaticCodeBlock = false;
-    var staticCodeBlockBacktickCount = 0;
+    RegExp? staticCodeBlockEndMarker;
 
     for (var lineIndex = 0; lineIndex < originalLines.length; lineIndex += 1) {
       final line = originalLines[lineIndex];
@@ -83,11 +87,9 @@ final class FileUpdater {
 
       if (inStaticCodeBlock) {
         updatedContent.writeln(line);
-        final codeBlockEndMarker = RegExp(
-          '^\\s*`{$staticCodeBlockBacktickCount}.*?\$',
-        );
-        if (codeBlockEndMarker.firstMatch(trimmedLine) != null) {
+        if (staticCodeBlockEndMarker!.firstMatch(trimmedLine) != null) {
           inStaticCodeBlock = false;
+          staticCodeBlockEndMarker = null;
         }
         continue;
       }
@@ -95,9 +97,12 @@ final class FileUpdater {
       final fencedCodeBlock = _staticCodeBlockStart.firstMatch(trimmedLine);
       if (fencedCodeBlock != null) {
         inStaticCodeBlock = true;
-        staticCodeBlockBacktickCount = fencedCodeBlock
+        final staticCodeBlockBacktickCount = fencedCodeBlock
             .namedGroup('backticks')!
             .length;
+        staticCodeBlockEndMarker = RegExp(
+          '^\\s*`{$staticCodeBlockBacktickCount}.*?\$',
+        );
         updatedContent.writeln(line);
         continue;
       }
@@ -324,7 +329,7 @@ final class InjectionException extends SourceSpanException {
 final RegExp _instructionPattern = RegExp(
   r'^\s*<\?code-excerpt\s+'
   r'(?:"(?<path>\S+)(?:\s\((?<region>[^)]+)\))?\s*")?'
-  r'(?<args>.*?)\?>$',
+  r'(?<args>(?:[^"]|"(?:[^"\\]|\\.)*")*?)\?>$',
 );
 
 final RegExp _instructionStart = RegExp(r'^<\?code-excerpt');
@@ -336,7 +341,7 @@ final RegExp _codeBlockStart = RegExp(
 final RegExp _staticCodeBlockStart = RegExp(r'^\s*(?<backticks>`{3,}).*?$');
 
 final RegExp _splitArgs = RegExp(
-  r'(?<arg>[-\w]+)\s*(=\s*"(?<value>.*?)"\s*)\s*',
+  r'(?<arg>[-\w]+)\s*=\s*"(?<value>(?:[^"\\]|\\.)*)"\s*',
 );
 
 /// A code excerpt set or injection instruction
@@ -365,7 +370,9 @@ sealed class _Instruction {
       final trimmedText = matchText.trimRight();
       return (
         arg: m.namedGroup('arg')!,
-        value: m.namedGroup('value')!,
+        value: m
+            .namedGroup('value')!
+            .replaceAllMapped(RegExp(r'\\(.)'), (match) => match[1]!),
         offset: argsStart + m.start,
         length: trimmedText.length,
       );

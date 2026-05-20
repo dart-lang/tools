@@ -351,7 +351,7 @@ final class ExtractException extends SourceSpanException {
 const String _entireFileRegionName = '';
 
 final RegExp _docRegionDirective = RegExp(
-  r'#(?<end>end)?docregion\s+(?<regions>[a-zA-Z0-9,_\-\s]+)',
+  r'#(?<end>end)?docregion\s+(?<regions>[a-zA-Z0-9,-\s]+)',
 );
 
 enum _ScannerState { code, string, lineComment, blockComment }

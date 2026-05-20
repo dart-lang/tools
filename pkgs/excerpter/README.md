@@ -91,7 +91,7 @@ To inject content from docregions or entire files into Markdown files,
 you use a special syntax to inject into a code block
 or configure the injecting logic.
 
-In both cases, the syntax starts with `\<?code-excerpt` and ends with `?>`.
+In both cases, the syntax starts with `<?code-excerpt` and ends with `?>`.
 
 ### Inject instruction
 
