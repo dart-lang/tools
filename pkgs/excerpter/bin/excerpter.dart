@@ -54,19 +54,18 @@ Future<void> runExcerpter(final List<String> arguments) async {
   );
 
   final result = await updater.update(updatePath, makeUpdates: !dryRun);
-  final warnings = result.warnings;
-  final warningCount = warnings.length;
-  final errors = result.errors;
-  final errorCount = errors.length;
-  if (warningCount > 0 || errorCount > 0) {
-    for (final error in errors) {
+  if (result.warnings.isNotEmpty || result.errors.isNotEmpty) {
+    for (final error in result.errors) {
       print('  error - $error');
     }
-    for (final warning in warnings) {
+    for (final warning in result.warnings) {
       print('warning - $warning');
     }
     print('');
-    print('$errorCount errors and $warningCount warnings found!');
+    print(
+      '${result.errors.length} errors and '
+      '${result.warnings.length} warnings found!',
+    );
     print('');
   }
 
