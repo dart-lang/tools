@@ -22,13 +22,13 @@ Future<void> runExcerpter(final List<String> arguments) async {
     _printUsageAndExit(message: e.message);
   }
 
-  final dryRun = results[_dryRunFlag] as bool? ?? false;
-  final failOnUpdate = results[_failOnUpdateFlag] as bool? ?? false;
-  final excludePaths = results[_excludeOption] as List<String>? ?? const [];
-  final plasterContent = results[_plasterContentOption] as String? ?? '...';
-  final replaceInstructions = results[_replaceOption] as String?;
+  final dryRun = results.flag(_dryRunFlag);
+  final failOnUpdate = results.flag(_failOnUpdateFlag);
+  final excludePaths = results.multiOption(_excludeOption);
+  final plasterContent = results.option(_plasterContentOption) ?? '...';
+  final replaceInstructions = results.option(_replaceOption);
   final baseSourcePath = path.absolute(
-    results[_baseSourcePathOption] as String? ?? path.current,
+    results.option(_baseSourcePathOption) ?? path.current,
   );
 
   if (results.rest.length != 1) {
