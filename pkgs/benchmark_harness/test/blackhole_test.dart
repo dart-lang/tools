@@ -38,14 +38,7 @@ void main() {
     });
   });
 
-  group('Blackhole class consume and preventDCE', () {
-    test('consume executes successfully without throwing errors', () {
-      final bh = Blackhole();
-      expect(() => bh.consume('test-string'), returnsNormally);
-      expect(() => bh.consume(null), returnsNormally);
-      expect(() => bh.consume(42), returnsNormally);
-    });
-
+  group('Blackhole class preventDCE', () {
     test('preventDCE executes successfully without throwing errors', () {
       expect(Blackhole.preventDCE, returnsNormally);
     });

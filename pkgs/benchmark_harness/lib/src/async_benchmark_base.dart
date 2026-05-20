@@ -40,23 +40,25 @@ class AsyncBenchmarkBase {
     Future<void> Function() f,
     int minimumMillis,
   ) async {
-    Blackhole.preventDCE();
-    final minimumMicros = minimumMillis * 1000;
-    final watch = Stopwatch()..start();
-    var iter = 0;
-    var elapsed = 0;
-    while (elapsed < minimumMicros) {
-      await f();
-      elapsed = watch.elapsedMicroseconds;
-      iter++;
+    try {
+      final minimumMicros = minimumMillis * 1000;
+      final watch = Stopwatch()..start();
+      var iter = 0;
+      var elapsed = 0;
+      while (elapsed < minimumMicros) {
+        await f();
+        elapsed = watch.elapsedMicroseconds;
+        iter++;
+      }
+      return elapsed / iter;
+    } finally {
+      Blackhole.preventDCE();
     }
-    return elapsed / iter;
   }
 
   /// Measures the score for the benchmark and returns it.
   Future<double> measure() async {
     await setup();
-    Blackhole.preventDCE();
     try {
       // Warmup for at least 100ms. Discard result.
       await measureFor(warmup, 100);
@@ -64,6 +66,7 @@ class AsyncBenchmarkBase {
       return await measureFor(exercise, 2000);
     } finally {
       await teardown();
+      Blackhole.preventDCE();
     }
   }
 

@@ -31,24 +31,12 @@
 /// computation as live, preventing tree-shaking and dead-code elimination,
 /// while introducing zero runtime execution overhead.
 class Blackhole {
-  static dynamic _sink;
-
-  /// A public static setter to allow the harness runner to implicitly consume
-  /// benchmark returned values in the timing loops.
-  static set sink(Object? value) => _sink = value;
-
-  /// Consumes the given [value] to prevent dead-code elimination.
-  @pragma('vm:prefer-inline')
-  @pragma('dart2js:prefer-inline')
-  @pragma('wasm:prefer-inline')
-  void consume(Object? value) {
-    _sink = value;
-  }
+  static Object? _sink;
 
   /// An opaque guard that convinces compiler static analyses (such as TFA)
   /// that [_sink] is read, preventing it from being tree-shaken as write-only.
   ///
-  /// Automatically invoked inside `BenchmarkRunner` initialization.
+  /// Automatically invoked inside benchmark measurement loops.
   @pragma('vm:never-inline')
   @pragma('dart2js:never-inline')
   @pragma('wasm:never-inline')
