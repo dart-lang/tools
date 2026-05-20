@@ -213,5 +213,32 @@ body { color: red; }
         contains(contains('body { color: red; }')),
       );
     });
+
+    test('canonicalizes file paths to hit the cache', () async {
+      await d.file('cache_test.dart', '''
+// #docregion region
+first-version
+// #enddocregion region
+''').create();
+
+      final filePath = path.join(d.sandbox, 'cache_test.dart');
+      // Read once with absolute path
+      final region1 = await extractor.extractRegion(filePath, 'region');
+      expect(region1.linesWithPlaster(null), contains('first-version'));
+
+      // Overwrite the file with new content on disk
+      await d.file('cache_test.dart', '''
+// #docregion region
+second-version
+// #enddocregion region
+''').create();
+
+      // Read again using a path containing redundant '.' segments
+      final redundantPath = path.join(d.sandbox, '.', 'cache_test.dart');
+      final region2 = await extractor.extractRegion(redundantPath, 'region');
+
+      // Since the path is canonicalized, it should hit the cache and return the cached first version!
+      expect(region2.linesWithPlaster(null), contains('first-version'));
+    });
   });
 }

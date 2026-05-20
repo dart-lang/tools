@@ -337,6 +337,61 @@ Some markdown after.
         expect(results.needsUpdates, isFalse);
       },
     );
+
+    test('throws InjectionException on absolute path traversal', () async {
+      await d.file('test.md', '''
+<?code-excerpt "/etc/passwd" ?>
+```dart
+```
+''').create();
+
+      final fileUpdater = FileUpdater(
+        path.join(d.sandbox, 'test.md'),
+        baseSourcePath: d.sandbox,
+        defaultPlasterContent: '...',
+        defaultTransforms: const [],
+      );
+
+      expect(
+        fileUpdater.process,
+        throwsA(
+          isA<InjectionException>().having(
+            (e) => e.message,
+            'message',
+            contains('Path traversal detected'),
+          ),
+        ),
+      );
+    });
+
+    test(
+      'throws InjectionException on relative path traversal (..) escaping sandbox',
+      () async {
+        await d.file('test.md', '''
+<?code-excerpt "../escaped.dart" ?>
+```dart
+```
+''').create();
+
+        final fileUpdater = FileUpdater(
+          path.join(d.sandbox, 'test.md'),
+          baseSourcePath: d.sandbox,
+          defaultPlasterContent: '...',
+          defaultTransforms: const [],
+        );
+
+        expect(
+          fileUpdater.process,
+          throwsA(
+            isA<InjectionException>().having(
+              (e) => e.message,
+              'message',
+              contains('Path traversal detected'),
+            ),
+          ),
+        );
+      },
+    );
   });
 
   group('Updater exception and continueOnError behavior', () {

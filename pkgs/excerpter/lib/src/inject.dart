@@ -189,11 +189,17 @@ final class FileUpdater {
           reportError('Unclosed or unmatched code block.');
         }
 
-        final combinedPath = path.join(
-          baseSourcePath,
-          wholeFilePathBase,
-          instruction.targetPath,
+        final combinedPath = path.canonicalize(
+          path.join(baseSourcePath, wholeFilePathBase, instruction.targetPath),
         );
+        final canonicalBase = path.canonicalize(baseSourcePath);
+        if (!path.isWithin(canonicalBase, combinedPath) &&
+            combinedPath != canonicalBase) {
+          reportError(
+            'Path traversal detected: Target path must be inside the base '
+            'source directory.',
+          );
+        }
 
         final Region region;
         try {

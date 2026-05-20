@@ -22,24 +22,27 @@ final class ExcerptExtractor {
   final Map<String, Map<String, Region>?> _regionCacheByPath = {};
 
   /// Extract the region with the specified [regionName] from
-  /// the file located at the specified [path].
+  /// the file located at the specified [filePath].
   ///
   /// If a file does not exist at that location or the [regionName]
   /// does not exist either, a `ExtractException` will be thrown.
   @useResult
-  Future<Region> extractRegion(String path, String regionName) async {
-    if (!_regionCacheByPath.containsKey(path)) {
-      _regionCacheByPath[path] = await _extractAllRegions(path);
+  Future<Region> extractRegion(String filePath, String regionName) async {
+    final canonicalPath = path.canonicalize(filePath);
+    if (!_regionCacheByPath.containsKey(canonicalPath)) {
+      _regionCacheByPath[canonicalPath] = await _extractAllRegions(
+        canonicalPath,
+      );
     }
-    final regions = _regionCacheByPath[path];
+    final regions = _regionCacheByPath[canonicalPath];
     if (regions == null) {
-      throw ExtractException('No file exists at $path.');
+      throw ExtractException('No file exists at $filePath.');
     }
 
     final region = regions[regionName];
     if (region == null) {
       throw ExtractException(
-        'The region "$regionName" does not exist in the file at $path.',
+        'The region "$regionName" does not exist in the file at $filePath.',
       );
     }
 
@@ -269,9 +272,7 @@ final class Region {
   final List<_RegionLine> _lines = [];
 
   /// The minimum indent seen in this region.
-  ///
-  /// `99999` is the initial value as no line should be longer than that...
-  int _minIndent = 99999;
+  int? _minIndent;
 
   /// Creates a [Region] with the specified indentation,
   /// usually from the docregion comment.
@@ -284,7 +285,8 @@ final class Region {
 
     // Ignore the indent of blank lines.
     if (line.trim().isNotEmpty) {
-      _minIndent = math.min(_minIndent, indent);
+      final currentMin = _minIndent;
+      _minIndent = currentMin == null ? indent : math.min(currentMin, indent);
     }
   }
 
@@ -307,19 +309,20 @@ final class Region {
   Iterable<String> linesWithPlaster(final String? plaster) {
     final updatedLines = <String>[];
     final includePlaster = plaster != null && plaster != 'none';
+    final minIndent = _minIndent ?? 0;
 
     for (final line in _lines) {
       switch (line) {
         case _PlasterLine(:final directiveIndent):
           if (includePlaster) {
-            final minimizedDirectiveIndent = directiveIndent - _minIndent;
+            final minimizedDirectiveIndent = directiveIndent - minIndent;
             updatedLines.add('${' ' * minimizedDirectiveIndent}$plaster');
           }
         case _StringLine(:final line):
-          if (_minIndent == 0 || line.length < _minIndent) {
+          if (minIndent == 0 || line.length < minIndent) {
             updatedLines.add(line);
           } else {
-            updatedLines.add(line.substring(_minIndent));
+            updatedLines.add(line.substring(minIndent));
           }
       }
     }
