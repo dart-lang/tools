@@ -26,7 +26,7 @@ jobs:
       matrix:
         sdk: ['3.12', dev]
         include:
-          - sdk: stable
+          - sdk: dev
             check-formatting: true
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
