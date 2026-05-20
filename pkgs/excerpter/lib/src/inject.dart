@@ -232,6 +232,7 @@ final class FileUpdater {
         // Remove all shared whitespace on the left.
         int? sharedLeftWhitespace;
         for (final line in updatedLines) {
+          if (line.trim().isEmpty) continue;
           final leftWhitespace = line.length - line.trimLeft().length;
           // If this line has less left whitespace than preceding lines,
           // use its count as the shared left whitespace.
@@ -244,7 +245,10 @@ final class FileUpdater {
         if (sharedLeftWhitespace != null && sharedLeftWhitespace > 0) {
           updatedLines = [
             for (final line in updatedLines)
-              line.substring(sharedLeftWhitespace),
+              if (line.length < sharedLeftWhitespace)
+                line.trimLeft()
+              else
+                line.substring(sharedLeftWhitespace),
           ];
         }
 

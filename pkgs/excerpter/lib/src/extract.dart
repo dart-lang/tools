@@ -7,6 +7,7 @@ import 'dart:io';
 import 'dart:math' as math show min;
 
 import 'package:meta/meta.dart';
+import 'package:path/path.dart' as path;
 import 'package:source_span/source_span.dart';
 
 /// A tool to extract declared docregions from specified source files.
@@ -435,7 +436,7 @@ enum _LanguageDialect {
   }
 
   factory _LanguageDialect.fromPath(String filePath) {
-    final ext = filePath.split('.').last.toLowerCase();
+    final ext = path.extension(filePath).replaceFirst('.', '').toLowerCase();
     for (final dialect in _LanguageDialect.values) {
       if (dialect.extensions.contains(ext)) {
         return dialect;

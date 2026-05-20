@@ -435,5 +435,32 @@ hello
       expect(results.excerptsUpdated, hasLength(1));
       expect(results.excerptsUpdated.first.updated, equals('hi ?> there'));
     });
+
+    test('handles shared left whitespace with blank lines correctly', () async {
+      await d.file('code.dart', '''
+// #docregion single
+  line1
+
+  line2
+// #enddocregion single
+''').create();
+      await d.file('test.md', '''
+<?code-excerpt "code.dart (single)" ?>
+```dart
+```
+''').create();
+
+      final fileUpdater = FileUpdater(
+        path.join(d.sandbox, 'test.md'),
+        baseSourcePath: d.sandbox,
+        defaultPlasterContent: '...',
+        defaultTransforms: const [],
+      );
+
+      final results = await fileUpdater.process();
+      expect(results.warnings, isEmpty);
+      expect(results.excerptsUpdated, hasLength(1));
+      expect(results.excerptsUpdated.first.updated, equals('line1\n\nline2'));
+    });
   });
 }
