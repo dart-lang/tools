@@ -25,6 +25,7 @@ don't naturally belong to other topic monorepos (like
 | [coverage](pkgs/coverage/) | Coverage data manipulation and formatting | [![issues](https://img.shields.io/badge/issues-4774bc)][coverage_issues] | [![pub package](https://img.shields.io/pub/v/coverage.svg)](https://pub.dev/packages/coverage) |
 | [csslib](pkgs/csslib/) | A library for parsing and analyzing CSS (Cascading Style Sheets). | [![issues](https://img.shields.io/badge/issues-4774bc)][csslib_issues] | [![pub package](https://img.shields.io/pub/v/csslib.svg)](https://pub.dev/packages/csslib) |
 | [extension_discovery](pkgs/extension_discovery/) | A convention and utilities for package extension discovery. | [![issues](https://img.shields.io/badge/issues-4774bc)][extension_discovery_issues] | [![pub package](https://img.shields.io/pub/v/extension_discovery.svg)](https://pub.dev/packages/extension_discovery) |
+| [excerpter](pkgs/excerpter/) | Update code excerpts in Markdown documentation from source files. | [![issues](https://img.shields.io/badge/issues-4774bc)][excerpter_issues] | [![pub package](https://img.shields.io/pub/v/excerpter.svg)](https://pub.dev/packages/excerpter) |
 | [file](pkgs/file/) | A pluggable, mockable file system abstraction for Dart. | [![issues](https://img.shields.io/badge/issues-4774bc)][file_issues] | [![pub package](https://img.shields.io/pub/v/file.svg)](https://pub.dev/packages/file) |
 | [file_testing](pkgs/file_testing/) | Testing utilities for package:file. | [![issues](https://img.shields.io/badge/issues-4774bc)][file_testing_issues] | [![pub package](https://img.shields.io/pub/v/file_testing.svg)](https://pub.dev/packages/file_testing) |
 | [glob](pkgs/glob/) | A library to perform Bash-style file and directory globbing. | [![issues](https://img.shields.io/badge/issues-4774bc)][glob_issues] | [![pub package](https://img.shields.io/pub/v/glob.svg)](https://pub.dev/packages/glob) |
@@ -67,6 +68,7 @@ don't naturally belong to other topic monorepos (like
 [coverage_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Acoverage
 [csslib_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Acsslib
 [extension_discovery_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aextension_discovery
+[excerpter_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aexcerpter
 [file_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Afile
 [file_testing_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Afile_testing
 [glob_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aglob
