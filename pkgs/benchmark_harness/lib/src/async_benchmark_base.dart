@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'blackhole.dart';
 import 'score_emitter.dart';
 
 class AsyncBenchmarkBase {
@@ -39,6 +40,7 @@ class AsyncBenchmarkBase {
     Future<void> Function() f,
     int minimumMillis,
   ) async {
+    Blackhole.preventDCE();
     final minimumMicros = minimumMillis * 1000;
     final watch = Stopwatch()..start();
     var iter = 0;
@@ -54,6 +56,7 @@ class AsyncBenchmarkBase {
   /// Measures the score for the benchmark and returns it.
   Future<double> measure() async {
     await setup();
+    Blackhole.preventDCE();
     try {
       // Warmup for at least 100ms. Discard result.
       await measureFor(warmup, 100);
