@@ -364,34 +364,32 @@ Some markdown after.
       );
     });
 
-    test(
-      'throws InjectionException on relative path traversal (..) escaping sandbox',
-      () async {
-        await d.file('test.md', '''
+    test('throws InjectionException on relative path traversal (..) escaping '
+        'sandbox', () async {
+      await d.file('test.md', '''
 <?code-excerpt "../escaped.dart" ?>
 ```dart
 ```
 ''').create();
 
-        final fileUpdater = FileUpdater(
-          path.join(d.sandbox, 'test.md'),
-          baseSourcePath: d.sandbox,
-          defaultPlasterContent: '...',
-          defaultTransforms: const [],
-        );
+      final fileUpdater = FileUpdater(
+        path.join(d.sandbox, 'test.md'),
+        baseSourcePath: d.sandbox,
+        defaultPlasterContent: '...',
+        defaultTransforms: const [],
+      );
 
-        expect(
-          fileUpdater.process,
-          throwsA(
-            isA<InjectionException>().having(
-              (e) => e.message,
-              'message',
-              contains('Path traversal detected'),
-            ),
+      expect(
+        fileUpdater.process,
+        throwsA(
+          isA<InjectionException>().having(
+            (e) => e.message,
+            'message',
+            contains('Path traversal detected'),
           ),
-        );
-      },
-    );
+        ),
+      );
+    });
   });
 
   group('Updater exception and continueOnError behavior', () {

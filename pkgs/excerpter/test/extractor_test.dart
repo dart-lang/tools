@@ -237,7 +237,8 @@ second-version
       final redundantPath = path.join(d.sandbox, '.', 'cache_test.dart');
       final region2 = await extractor.extractRegion(redundantPath, 'region');
 
-      // Since the path is canonicalized, it should hit the cache and return the cached first version!
+      // Since the path is canonicalized, it should hit the cache and return the
+      // cached first version!
       expect(region2.linesWithPlaster(null), contains('first-version'));
     });
   });
