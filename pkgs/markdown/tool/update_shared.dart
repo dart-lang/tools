@@ -11,7 +11,7 @@ Future<Object?> downloadJson(String uri) async {
     final request = await client.getUrl(Uri.parse(uri));
     final response = await request.close();
 
-    return await response
+    return response
         .transform(utf8.decoder)
         .transform(const JsonDecoder())
         .single;
