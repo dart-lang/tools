@@ -2,11 +2,19 @@
 [![pub package](https://img.shields.io/pub/v/api_summary.svg)](https://pub.dev/packages/api_summary)
 [![package publisher](https://img.shields.io/pub/publisher/api_summary.svg)](https://pub.dev/packages/api_summary/publisher)
 
-A library and command-line tool to create a human-readable text summary of the public API of a Dart package. This is highly suitable for tracking the public API footprints and ensuring that API modifications are visible during code reviews (e.g. using `diff` tests).
+A library and command-line tool to create a human-readable text summary of the
+public API of a Dart package. This is highly suitable for tracking the public
+API footprints and ensuring that API modifications are visible during code
+reviews (e.g. using `diff` tests).
+
+> [!NOTE]
+> For robust breaking change tracking, you should use
+> [dart_apitool](https://pub.dev/packages/dart_apitool).
 
 ## Command Line Usage
 
-You can use the command-line tool to generate an API summary for any package containing a `pubspec.yaml` file.
+You can use the command-line tool to generate an API summary for any package
+containing a `pubspec.yaml` file.
 
 ### Installing Globally
 
@@ -30,7 +38,8 @@ api_summary
 
 ### Running via `dart run`
 
-Alternatively, you can run the executable from within a package directory if `api_summary` is a dependency:
+Alternatively, you can run the executable from within a package directory if
+`api_summary` is a dependency:
 
 ```bash
 dart run api_summary
@@ -38,12 +47,14 @@ dart run api_summary
 
 ### Options
 
-* `-p, --package-path`: The path to the package directory to summarize (defaults to the current working directory).
+* `-p, --package-path`: The path to the package directory to summarize
+  (defaults to the current working directory).
 * `-h, --help`: Prints usage instructions.
 
 ## Programmatic Usage
 
-You can also use this package programmatically inside your Dart projects, such as in automated testing or continuous integration scripts.
+You can also use this package programmatically inside your Dart projects, such
+as in automated testing or continuous integration scripts.
 
 Add `api_summary` to your `pubspec.yaml`:
 
@@ -54,7 +65,8 @@ dependencies:
 
 ### Basic Example
 
-Call the `summarizePackage` function to generate a package's public API representation:
+Call the `summarizePackage` function to generate a package's public API
+representation:
 
 ```dart
 import 'dart:io';
@@ -66,11 +78,14 @@ void main() async {
 }
 ```
 
-An executable programmatic example is also available in the [example/example.dart](example/example.dart) file.
+An executable programmatic example is also available in the
+[example/example.dart](example/example.dart) file.
 
 ### Customizing the Summary
 
-Extend the `ApiSummaryCustomizer` class to customize what is displayed in the API summary. For example, to exclude specific public classes or only display details of certain elements:
+Extend the `ApiSummaryCustomizer` class to customize what is displayed in the
+API summary. For example, to exclude specific public classes or only display
+details of certain elements:
 
 ```dart
 import 'package:api_summary/api_summary.dart';
@@ -99,9 +114,14 @@ void main() async {
 
 ## Golden File / Diff Testing
 
-A common best practice with `api_summary` is to verify in a unit test that the generated summary matches a checked-in golden file (e.g. `api.txt`). If a developer introduces an accidental breaking change or adds a new public API element, the test will fail on the `diff`, prompting them to audit and intentionally update the golden file.
+A common best practice with `api_summary` is to verify in a unit test that the
+generated summary matches a checked-in golden file (e.g. `api.txt`). If a
+developer introduces an accidental breaking change or adds a new public API
+element, the test will fail on the `diff`, prompting them to audit and
+intentionally update the golden file.
 
-Below is an example of such a test (available in the [test/app_test.dart](test/app_test.dart) file):
+Below is an example of such a test (available in the
+[test/app_test.dart](test/app_test.dart) file):
 
 ```dart
 import 'dart:io';
