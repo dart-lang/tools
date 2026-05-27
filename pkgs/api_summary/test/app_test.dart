@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 
 void main() {
   test(
-    'api_summary output matches api_summary.txt',
+    'api_summary output matches api.txt',
     timeout: const Timeout.factor(3),
     () async {
       final packageDir = _pkgDir();
@@ -28,7 +28,7 @@ void main() {
         reason: 'CLI run failed with stderr:\n${result.stderr}',
       );
 
-      final goldenFile = File(p.join(packageDir, 'api_summary.txt'));
+      final goldenFile = File(p.join(packageDir, 'api.txt'));
       final expectedOutput = LineSplitter.split(
         goldenFile.readAsStringSync(),
       ).join('\n');
