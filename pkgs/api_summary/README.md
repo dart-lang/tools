@@ -2,6 +2,132 @@
 [![pub package](https://img.shields.io/pub/v/api_summary.svg)](https://pub.dev/packages/api_summary)
 [![package publisher](https://img.shields.io/pub/publisher/api_summary.svg)](https://pub.dev/packages/api_summary/publisher)
 
+A library and command-line tool to create a human-readable text summary of the public API of a Dart package. This is highly suitable for tracking the public API footprints and ensuring that API modifications are visible during code reviews (e.g. using `diff` tests).
+
+## Command Line Usage
+
+You can use the command-line tool to generate an API summary for any package containing a `pubspec.yaml` file.
+
+### Installing Globally
+
+Activate the package using `dart pub global`:
+
+```bash
+dart pub global activate api_summary
+```
+
+Then run the tool:
+
+```bash
+api_summary --package-path /path/to/your/package
+```
+
+Or, to run against the package in the current working directory, just run:
+
+```bash
+api_summary
+```
+
+### Running via `dart run`
+
+Alternatively, you can run the executable from within a package directory if `api_summary` is a dependency:
+
+```bash
+dart run api_summary
+```
+
+### Options
+
+* `-p, --package-path`: The path to the package directory to summarize (defaults to the current working directory).
+* `-h, --help`: Prints usage instructions.
+
+## Programmatic Usage
+
+You can also use this package programmatically inside your Dart projects, such as in automated testing or continuous integration scripts.
+
+Add `api_summary` to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  api_summary: ^0.1.0-wip
+```
+
+### Basic Example
+
+Call the `summarizePackage` function to generate a package's public API representation:
+
+```dart
+import 'dart:io';
+import 'package:api_summary/api_summary.dart';
+
+void main() async {
+  final summary = await summarizePackage('/path/to/package', 'my_package');
+  print(summary);
+}
+```
+
+An executable programmatic example is also available in the [example/example.dart](example/example.dart) file.
+
+### Customizing the Summary
+
+Extend the `ApiSummaryCustomizer` class to customize what is displayed in the API summary. For example, to exclude specific public classes or only display details of certain elements:
+
+```dart
+import 'package:api_summary/api_summary.dart';
+import 'package:analyzer/dart/element/element.dart';
+
+base class MyCustomizer extends ApiSummaryCustomizer {
+  @override
+  bool shouldShowDetails(Element element) {
+    // Exclude elements named 'InternalHelper' from details printout
+    if (element.name == 'InternalHelper') {
+      return false;
+    }
+    return super.shouldShowDetails(element);
+  }
+}
+
+void main() async {
+  final summary = await summarizePackage(
+    '/path/to/package',
+    'my_package',
+    createCustomizer: () => MyCustomizer(),
+  );
+  print(summary);
+}
+```
+
+## Golden File / Diff Testing
+
+A common best practice with `api_summary` is to verify in a unit test that the generated summary matches a checked-in golden file (e.g. `api.txt`). If a developer introduces an accidental breaking change or adds a new public API element, the test will fail on the `diff`, prompting them to audit and intentionally update the golden file.
+
+Below is an example of such a test (available in the [test/app_test.dart](test/app_test.dart) file):
+
+```dart
+import 'dart:io';
+import 'package:path/path.dart' as p;
+import 'package:test/test.dart';
+import 'package:api_summary/api_summary.dart';
+
+void main() {
+  test('public API has not changed unexpectedly', () async {
+    final packageDir = Directory.current.path;
+    final goldenFile = File(p.join(packageDir, 'api.txt'));
+
+    final actualOutput = await summarizePackage(packageDir, 'my_package');
+
+    if (!goldenFile.existsSync()) {
+      // In a new setup or after updates, generate the golden file first
+      goldenFile.writeAsStringSync(actualOutput);
+      fail('Golden file api.txt did not exist and has been generated. Please review and commit it.');
+    }
+
+    final expectedOutput = goldenFile.readAsStringSync();
+    expect(actualOutput, equals(expectedOutput));
+  });
+}
+```
+
 ## Status: experimental
 
 **NOTE**: This package is currently experimental and published under the

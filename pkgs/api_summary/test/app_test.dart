@@ -12,7 +12,7 @@ void main() {
     'api_summary output matches api.txt',
     timeout: const Timeout.factor(3),
     () async {
-      final packageDir = _pkgDir();
+      final packageDir = p.current;
 
       final result = await Process.run(Platform.resolvedExecutable, [
         if (Platform.packageConfig != null)
@@ -39,24 +39,4 @@ void main() {
       expect(actualOutput, equals(expectedOutput));
     },
   );
-}
-
-// Dynamically locate the api_summary package root
-String _pkgDir() {
-  var packageDir = p.normalize(p.absolute(Directory.current.path));
-  if (!_isApiSummaryDir(packageDir)) {
-    // We might be running from the SDK root
-    final candidate = p.join(packageDir, 'pkg', 'api_summary');
-    if (_isApiSummaryDir(candidate)) {
-      packageDir = candidate;
-    }
-  }
-
-  return packageDir;
-}
-
-bool _isApiSummaryDir(String dir) {
-  final pubspec = File(p.join(dir, 'pubspec.yaml'));
-  if (!pubspec.existsSync()) return false;
-  return pubspec.readAsStringSync().contains('name: api_summary');
 }
