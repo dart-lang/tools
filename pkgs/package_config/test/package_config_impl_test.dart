@@ -4,8 +4,10 @@
 
 import 'dart:convert' show jsonDecode;
 
+import 'package:checks/checks.dart';
 import 'package:package_config/package_config_types.dart';
-import 'package:test/test.dart';
+import 'package:test/scaffolding.dart';
+
 import 'src/util.dart';
 
 void main() {
@@ -15,41 +17,36 @@ void main() {
   group('LanguageVersion', () {
     test('minimal', () {
       var version = LanguageVersion(3, 5);
-      expect(version.major, 3);
-      expect(version.minor, 5);
+      check(version.major).equals(3);
+      check(version.minor).equals(5);
     });
 
     test('negative major', () {
-      expect(
-        () => LanguageVersion(-1, 1),
-        throwsA(
-          isA<RangeError>().having((e) => e.name, 'message', contains('major')),
-        ),
-      );
+      check(() => LanguageVersion(-1, 1))
+          .throws<RangeError>()
+          .has((e) => e.name, 'name')
+          .isNotNull()
+          .contains('major');
     });
 
     test('negative minor', () {
-      expect(
-        () => LanguageVersion(1, -1),
-        throwsA(
-          isA<RangeError>().having((e) => e.name, 'message', contains('minor')),
-        ),
-      );
+      check(() => LanguageVersion(1, -1))
+          .throws<RangeError>()
+          .has((e) => e.name, 'name')
+          .isNotNull()
+          .contains('minor');
     });
 
     test('minimal parse', () {
       var version = LanguageVersion.parse('3.5');
-      expect(version.major, 3);
-      expect(version.minor, 5);
+      check(version.major).equals(3);
+      check(version.minor).equals(5);
     });
 
     void failParse(String name, String input) {
       test('$name - error', () {
-        expect(
-          () => LanguageVersion.parse(input),
-          throwsA(isA<PackageConfigError>()),
-        );
-        expect(() => LanguageVersion.parse(input), throwsFormatException);
+        check(() => LanguageVersion.parse(input)).throws<PackageConfigError>();
+        check(() => LanguageVersion.parse(input)).throws<FormatException>();
         var failed = false;
         var actual = LanguageVersion.parse(
           input,
@@ -57,8 +54,8 @@ void main() {
             failed = true;
           },
         );
-        expect(failed, true);
-        expect(actual, isA<LanguageVersion>());
+        check(failed).isTrue();
+        check(actual).isA<LanguageVersion>();
       });
     }
 
@@ -76,19 +73,46 @@ void main() {
     test('compareTo valid', () {
       var version = LanguageVersion(3, 5);
 
-      for (var (otherVersion, matcher) in [
-        (version, isZero), // Identical.
-        (LanguageVersion(3, 5), isZero), // Same major, same minor.
-        (LanguageVersion(3, 4), isPositive), // Same major, lower minor.
-        (LanguageVersion(3, 6), isNegative), // Same major, greater minor.
-        (LanguageVersion(2, 5), isPositive), // Lower major, same minor.
-        (LanguageVersion(2, 4), isPositive), // Lower major, lower minor.
-        (LanguageVersion(2, 6), isPositive), // Lower major, greater minor.
-        (LanguageVersion(4, 5), isNegative), // Greater major, same minor.
-        (LanguageVersion(4, 4), isNegative), // Greater major, lower minor.
-        (LanguageVersion(4, 6), isNegative), // Greater major, greater minor.
+      for (var (otherVersion, checkCondition) in [
+        (version, (Subject<int> s) => s.equals(0)), // Identical.
+        (
+          LanguageVersion(3, 5),
+          (Subject<int> s) => s.equals(0),
+        ), // Same major, same minor.
+        (
+          LanguageVersion(3, 4),
+          (Subject<int> s) => s.isGreaterThan(0),
+        ), // Same major, lower minor.
+        (
+          LanguageVersion(3, 6),
+          (Subject<int> s) => s.isLessThan(0),
+        ), // Same major, greater minor.
+        (
+          LanguageVersion(2, 5),
+          (Subject<int> s) => s.isGreaterThan(0),
+        ), // Lower major, same minor.
+        (
+          LanguageVersion(2, 4),
+          (Subject<int> s) => s.isGreaterThan(0),
+        ), // Lower major, lower minor.
+        (
+          LanguageVersion(2, 6),
+          (Subject<int> s) => s.isGreaterThan(0),
+        ), // Lower major, greater minor.
+        (
+          LanguageVersion(4, 5),
+          (Subject<int> s) => s.isLessThan(0),
+        ), // Greater major, same minor.
+        (
+          LanguageVersion(4, 4),
+          (Subject<int> s) => s.isLessThan(0),
+        ), // Greater major, lower minor.
+        (
+          LanguageVersion(4, 6),
+          (Subject<int> s) => s.isLessThan(0),
+        ), // Greater major, greater minor.
       ]) {
-        expect(version.compareTo(otherVersion), matcher);
+        checkCondition(check(version.compareTo(otherVersion)));
       }
     });
 
@@ -96,8 +120,8 @@ void main() {
       var validVersion = LanguageVersion(3, 5);
       var invalidVersion = LanguageVersion.parse('', onError: (_) {});
 
-      expect(validVersion.compareTo(invalidVersion), isPositive);
-      expect(invalidVersion.compareTo(validVersion), isNegative);
+      check(validVersion.compareTo(invalidVersion)).isGreaterThan(0);
+      check(invalidVersion.compareTo(validVersion)).isLessThan(0);
     });
 
     test('relational valid', () {
@@ -107,13 +131,23 @@ void main() {
         LanguageVersion version,
         LanguageVersion otherVersion,
       ) {
-        expect(version == otherVersion, version.compareTo(otherVersion) == 0);
+        check(
+          version == otherVersion,
+        ).equals(version.compareTo(otherVersion) == 0);
 
-        expect(version < otherVersion, version.compareTo(otherVersion) < 0);
-        expect(version <= otherVersion, version.compareTo(otherVersion) <= 0);
+        check(
+          version < otherVersion,
+        ).equals(version.compareTo(otherVersion) < 0);
+        check(
+          version <= otherVersion,
+        ).equals(version.compareTo(otherVersion) <= 0);
 
-        expect(version > otherVersion, version.compareTo(otherVersion) > 0);
-        expect(version >= otherVersion, version.compareTo(otherVersion) >= 0);
+        check(
+          version > otherVersion,
+        ).equals(version.compareTo(otherVersion) > 0);
+        check(
+          version >= otherVersion,
+        ).equals(version.compareTo(otherVersion) >= 0);
       }
 
       var version = LanguageVersion(3, 5);
@@ -136,13 +170,13 @@ void main() {
         LanguageVersion version,
         LanguageVersion otherVersion,
       ) {
-        expect(version == otherVersion, identical(version, otherVersion));
+        check(version == otherVersion).equals(identical(version, otherVersion));
 
-        expect(() => version < otherVersion, throwsA(isA<UnsupportedError>()));
-        expect(() => version <= otherVersion, throwsA(isA<UnsupportedError>()));
+        check(() => version < otherVersion).throws<UnsupportedError>();
+        check(() => version <= otherVersion).throws<UnsupportedError>();
 
-        expect(() => version > otherVersion, throwsA(isA<UnsupportedError>()));
-        expect(() => version >= otherVersion, throwsA(isA<UnsupportedError>()));
+        check(() => version > otherVersion).throws<UnsupportedError>();
+        check(() => version >= otherVersion).throws<UnsupportedError>();
       }
 
       var validVersion = LanguageVersion(3, 5);
@@ -159,11 +193,11 @@ void main() {
   group('Package', () {
     test('minimal', () {
       var package = Package('name', root, extraData: unique);
-      expect(package.name, 'name');
-      expect(package.root, root);
-      expect(package.packageUriRoot, root);
-      expect(package.languageVersion, null);
-      expect(package.extraData, same(unique));
+      check(package.name).equals('name');
+      check(package.root).equals(root);
+      check(package.packageUriRoot).equals(root);
+      check(package.languageVersion).isNull();
+      check(package.extraData).identicalTo(unique);
     });
 
     test('absolute package root', () {
@@ -177,12 +211,12 @@ void main() {
         languageVersion: version,
         extraData: unique,
       );
-      expect(package.name, 'name');
-      expect(package.root, root);
-      expect(package.packageUriRoot, absolute);
-      expect(package.languageVersion, version);
-      expect(package.extraData, same(unique));
-      expect(package.relativeRoot, false);
+      check(package.name).equals('name');
+      check(package.root).equals(root);
+      check(package.packageUriRoot).equals(absolute);
+      check(package.languageVersion).equals(version);
+      check(package.extraData).identicalTo(unique);
+      check(package.relativeRoot).isFalse();
     });
 
     test('relative package root', () {
@@ -195,67 +229,63 @@ void main() {
         relativeRoot: true,
         extraData: unique,
       );
-      expect(package.name, 'name');
-      expect(package.root, root);
-      expect(package.packageUriRoot, absolute);
-      expect(package.relativeRoot, true);
-      expect(package.languageVersion, null);
-      expect(package.extraData, same(unique));
+      check(package.name).equals('name');
+      check(package.root).equals(root);
+      check(package.packageUriRoot).equals(absolute);
+      check(package.relativeRoot).isTrue();
+      check(package.languageVersion).isNull();
+      check(package.extraData).identicalTo(unique);
     });
 
     for (var badName in ['a/z', 'a:z', '', '...']) {
       test("Invalid name '$badName'", () {
-        expect(() => Package(badName, root), throwsPackageConfigError);
+        check(() => Package(badName, root)).throws<PackageConfigError>();
       });
     }
 
     test('Invalid root, not absolute', () {
-      expect(
+      check(
         () => Package('name', Uri.parse('/foo/')),
-        throwsPackageConfigError,
-      );
+      ).throws<PackageConfigError>();
     });
 
     test('Invalid root, not ending in slash', () {
-      expect(
+      check(
         () => Package('name', Uri.parse('file:///foo')),
-        throwsPackageConfigError,
-      );
+      ).throws<PackageConfigError>();
     });
 
     test('invalid package root, not ending in slash', () {
-      expect(
+      check(
         () => Package('name', root, packageUriRoot: Uri.parse('foo')),
-        throwsPackageConfigError,
-      );
+      ).throws<PackageConfigError>();
     });
 
     test('invalid package root, not inside root', () {
-      expect(
+      check(
         () => Package('name', root, packageUriRoot: Uri.parse('../baz/')),
-        throwsPackageConfigError,
-      );
+      ).throws<PackageConfigError>();
     });
   });
 
   group('package config', () {
     test('empty', () {
       var empty = PackageConfig([], extraData: unique);
-      expect(empty.version, 2);
-      expect(empty.packages, isEmpty);
-      expect(empty.extraData, same(unique));
-      expect(empty.resolve(pkg('a', 'b')), isNull);
+      check(empty.version).equals(2);
+      check(empty.packages).isEmpty();
+      check(empty.extraData).identicalTo(unique);
+      check(empty.resolve(pkg('a', 'b'))).isNull();
     });
 
     test('single', () {
       var package = Package('name', root);
       var single = PackageConfig([package], extraData: unique);
-      expect(single.version, 2);
-      expect(single.packages, hasLength(1));
-      expect(single.extraData, same(unique));
-      expect(single.resolve(pkg('a', 'b')), isNull);
+      check(single.version).equals(2);
+      check(single.packages).length.equals(1);
+      check(single.extraData).identicalTo(unique);
+      check(single.resolve(pkg('a', 'b'))).isNull();
       var resolved = single.resolve(pkg('name', 'a/b'));
-      expect(resolved, root.resolve('a/b'));
+      check(resolved).equals(root.resolve('a/b'));
     });
   });
   test('writeString', () {
@@ -283,21 +313,23 @@ void main() {
     PackageConfig.writeString(config, buffer, Uri.parse('file:///pkg/'));
     var text = buffer.toString();
     var json = jsonDecode(text); // Is valid JSON.
-    expect(json, {
-      'configVersion': 2,
-      'packages': unorderedEquals([
-        {
+    check(json).isA<Map<String, dynamic>>()
+      ..['configVersion'].equals(2)
+      ..['extra'].equals('data')
+      ..['packages'].isA<Iterable<Object?>>().unorderedMatches([
+        (Subject<Object?> s) => s.isA<Map<Object?, Object?>>().deepEquals({
           'name': 'foo',
           'rootUri': 'file:///pkg/foo/',
           'packageUri': 'lib/',
           'languageVersion': '2.4',
           'foo': 'foo!',
-        },
-        {'name': 'bar', 'rootUri': 'bar/', 'packageUri': 'lib/', 'bar': 'bar!'},
-      ]),
-      'extra': 'data',
-    });
+        }),
+        (Subject<Object?> s) => s.isA<Map<Object?, Object?>>().deepEquals({
+          'name': 'bar',
+          'rootUri': 'bar/',
+          'packageUri': 'lib/',
+          'bar': 'bar!',
+        }),
+      ]);
   });
 }
-
-final Matcher throwsPackageConfigError = throwsA(isA<PackageConfigError>());
