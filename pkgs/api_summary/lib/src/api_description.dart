@@ -260,6 +260,7 @@ class ApiDescription {
           case InterfaceElement(
             :final typeParameters,
             :final supertype,
+            :final mixins,
             :final interfaces,
           ):
             final instanceDescription = <Object?>[
@@ -283,6 +284,11 @@ class ApiDescription {
                 ' extends ',
                 ..._describeType(supertype),
               ]);
+            }
+            if (mixins.isNotEmpty) {
+              instanceDescription.addAll(
+                mixins.map(_describeType).separatedBy(prefix: ' with '),
+              );
             }
             if (element is MixinElement &&
                 element.superclassConstraints.isNotEmpty) {
