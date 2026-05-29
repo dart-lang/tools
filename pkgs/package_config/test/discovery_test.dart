@@ -421,18 +421,23 @@ File configFile(Directory directory) {
   var s = Platform.pathSeparator;
   var path = directory.path;
   return File(
-    '$path${path.endsWith(s) ? '' : s}.dart_tool${s}package_config.json',
+    '$path${_ifNeeded(path, s)}.dart_tool${s}package_config.json',
   );
 }
 
 Directory subDir(Directory directory, String name) {
   var s = Platform.pathSeparator;
   var path = directory.path;
-  return Directory('$path${path.endsWith(s) ? '' : s}$name$s');
+  return Directory('$path${_ifNeeded(path, s)}$name$s');
 }
 
 File dirFile(Directory directory, String name) {
   var s = Platform.pathSeparator;
   var path = directory.path;
-  return File('$path${path.endsWith(s) ? '' : s}$name');
+  return File('$path${_ifNeeded(path, s)}$name');
+}
+
+String _ifNeeded(String previous, String separator) {
+  if (previous.endsWith(separator)) return '';
+  return separator;
 }

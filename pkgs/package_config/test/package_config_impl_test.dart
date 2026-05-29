@@ -8,6 +8,7 @@ import 'package:checks/checks.dart';
 import 'package:package_config/package_config_types.dart';
 import 'package:test/scaffolding.dart';
 
+import 'src/checks.dart';
 import 'src/util.dart';
 
 void main() {
@@ -72,56 +73,36 @@ void main() {
 
     test('compareTo valid', () {
       var version = LanguageVersion(3, 5);
+      void comparesBefore(Subject<int> comparison) => comparison.isLessThan(0);
+      void comparesAfter(Subject<int> comparison) =>
+          comparison.isGreaterThan(0);
+      void comparesEqual(Subject<int> comparison) => comparison.equals(0);
 
-      for (var (otherVersion, checkCondition) in [
-        (version, (Subject<int> s) => s.equals(0)), // Identical.
-        (
-          LanguageVersion(3, 5),
-          (Subject<int> s) => s.equals(0),
-        ), // Same major, same minor.
-        (
-          LanguageVersion(3, 4),
-          (Subject<int> s) => s.isGreaterThan(0),
-        ), // Same major, lower minor.
-        (
-          LanguageVersion(3, 6),
-          (Subject<int> s) => s.isLessThan(0),
-        ), // Same major, greater minor.
-        (
-          LanguageVersion(2, 5),
-          (Subject<int> s) => s.isGreaterThan(0),
-        ), // Lower major, same minor.
-        (
-          LanguageVersion(2, 4),
-          (Subject<int> s) => s.isGreaterThan(0),
-        ), // Lower major, lower minor.
-        (
-          LanguageVersion(2, 6),
-          (Subject<int> s) => s.isGreaterThan(0),
-        ), // Lower major, greater minor.
-        (
-          LanguageVersion(4, 5),
-          (Subject<int> s) => s.isLessThan(0),
-        ), // Greater major, same minor.
-        (
-          LanguageVersion(4, 4),
-          (Subject<int> s) => s.isLessThan(0),
-        ), // Greater major, lower minor.
+      for (var (otherVersion, checkOrder) in [
+        (version, comparesEqual), // Identical.
+        (LanguageVersion(3, 5), comparesEqual), // Same major, same minor.
+        (LanguageVersion(3, 4), comparesAfter), // Same major, lower minor.
+        (LanguageVersion(3, 6), comparesBefore), // Same major, greater minor.
+        (LanguageVersion(2, 5), comparesAfter), // Lower major, same minor.
+        (LanguageVersion(2, 4), comparesAfter), // Lower major, lower minor.
+        (LanguageVersion(2, 6), comparesAfter), // Lower major, greater minor.
+        (LanguageVersion(4, 5), comparesBefore), // Greater major, same minor.
+        (LanguageVersion(4, 4), comparesBefore), // Greater major, lower minor.
         (
           LanguageVersion(4, 6),
-          (Subject<int> s) => s.isLessThan(0),
+          comparesBefore,
         ), // Greater major, greater minor.
       ]) {
-        checkCondition(check(version.compareTo(otherVersion)));
+        checkOrder(check(version).compareTo(otherVersion));
       }
     });
 
     test('compareTo invalid', () {
       var validVersion = LanguageVersion(3, 5);
       var invalidVersion = LanguageVersion.parse('', onError: (_) {});
-
-      check(validVersion.compareTo(invalidVersion)).isGreaterThan(0);
-      check(invalidVersion.compareTo(validVersion)).isLessThan(0);
+      check(invalidVersion).isNotValid;
+      check(validVersion).compareTo(invalidVersion).isGreaterThan(0);
+      check(invalidVersion).compareTo(validVersion).isLessThan(0);
     });
 
     test('relational valid', () {
@@ -165,6 +146,35 @@ void main() {
       }
     });
 
+    test('relational operators', () {
+      var v1 = LanguageVersion(2, 6);
+      var v2 = LanguageVersion(3, 5);
+      check(v1 == v1, because: 'v1 == v1').isTrue();
+      check(v1 == v2, because: 'v1 == v2').isFalse();
+      check(v2 == v1, because: 'v2 == v1').isFalse();
+      check(v2 == v2, because: 'v2 == v2').isTrue();
+
+      check(v1 < v1, because: 'v1 < v1').isFalse();
+      check(v1 < v2, because: 'v1 < v2').isTrue();
+      check(v2 < v1, because: 'v2 < v1').isFalse();
+      check(v2 < v2, because: 'v2 < v2').isFalse();
+
+      check(v1 <= v1, because: 'v1 <= v1').isTrue();
+      check(v1 <= v2, because: 'v1 <= v2').isTrue();
+      check(v2 <= v1, because: 'v2 <= v1').isFalse();
+      check(v2 <= v2, because: 'v2 <= v2').isTrue();
+
+      check(v1 > v1, because: 'v1 > v1').isFalse();
+      check(v1 > v2, because: 'v1 > v2').isFalse();
+      check(v2 > v1, because: 'v2 > v1').isTrue();
+      check(v2 > v2, because: 'v2 > v2').isFalse();
+
+      check(v1 >= v1, because: 'v1 >= v1').isTrue();
+      check(v1 >= v2, because: 'v1 >= v2').isFalse();
+      check(v2 >= v1, because: 'v2 >= v1').isTrue();
+      check(v2 >= v2, because: 'v2 >= v2').isTrue();
+    });
+
     test('relational invalid', () {
       void testComparisonsWithInvalid(
         LanguageVersion version,
@@ -180,8 +190,12 @@ void main() {
       }
 
       var validVersion = LanguageVersion(3, 5);
+      check(validVersion).isValid;
       var invalidVersion = LanguageVersion.parse('', onError: (_) {});
+      check(invalidVersion).isNotValid;
       var differentInvalidVersion = LanguageVersion.parse('-', onError: (_) {});
+      check(differentInvalidVersion).isNotValid;
+      check(invalidVersion).notIdenticalTo(differentInvalidVersion);
 
       testComparisonsWithInvalid(validVersion, invalidVersion);
       testComparisonsWithInvalid(invalidVersion, validVersion);

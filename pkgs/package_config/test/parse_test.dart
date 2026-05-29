@@ -11,9 +11,17 @@ import 'package:package_config/src/errors.dart';
 import 'package:package_config/src/package_config_json.dart';
 import 'package:test/scaffolding.dart';
 
+import 'src/checks.dart';
 import 'src/util.dart';
 
 void main() {
+  test('min/max version', () {
+    check(PackageConfig.minVersion, because: 'PackageConfig.minVersion')
+      // Version 1 was ".packages" INI file, is not supported.
+      // When version changes, all the tests need updating.
+      ..equals(2)
+      ..isLessOrEqual(PackageConfig.maxVersion);
+  });
   group('package_config.json', () {
     test('valid', () {
       var packageConfigFile = '''
@@ -53,76 +61,60 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      check(config.version).equals(2);
-      check({
-        for (var p in config.packages) p.name,
-      }).deepEquals({'foo', 'bar', 'baz', 'noslash'});
+      var checkConfig = check(config);
+      checkConfig.version.equals(2);
+      checkConfig.packages.map((p) => p.name, 'names').unorderedEquals({
+        'foo',
+        'bar',
+        'baz',
+        'noslash',
+      });
 
-      check(
-        config.resolve(pkg('foo', 'foo.dart')),
-      ).equals(Uri.parse('file:///foo/lib/foo.dart'));
-      check(
-        config.resolve(pkg('bar', 'bar.dart')),
-      ).equals(Uri.parse('file:///bar/lib/bar.dart'));
-      check(
-        config.resolve(pkg('baz', 'baz.dart')),
-      ).equals(Uri.parse('file:///tmp/lib/baz.dart'));
+      checkConfig
+          .resolve(pkg('foo', 'foo.dart'))
+          .equals(Uri.parse('file:///foo/lib/foo.dart'));
+      checkConfig
+          .resolve(pkg('bar', 'bar.dart'))
+          .equals(Uri.parse('file:///bar/lib/bar.dart'));
+      checkConfig
+          .resolve(pkg('baz', 'baz.dart'))
+          .equals(Uri.parse('file:///tmp/lib/baz.dart'));
 
-      var foo = config['foo'];
-      check(foo).isNotNull()
-        ..has((p) => p.root, 'root').equals(Uri.parse('file:///foo/'))
-        ..has(
-          (p) => p.packageUriRoot,
-          'packageUriRoot',
-        ).equals(Uri.parse('file:///foo/lib/'))
-        ..has(
-          (p) => p.languageVersion,
-          'languageVersion',
-        ).equals(LanguageVersion(2, 5))
-        ..has((p) => p.extraData, 'extraData')
+      checkConfig['foo'].isNotNull()
+        ..root.equals(Uri.parse('file:///foo/'))
+        ..packageUriRoot.equals(Uri.parse('file:///foo/lib/'))
+        ..languageVersion.isNotNull().equals(LanguageVersion(2, 5))
+        ..extraData
             .isNotNull()
             .isA<Map<Object?, Object?>>()
             .deepEquals({'nonstandard': true})
-        ..has((p) => p.relativeRoot, 'relativeRoot').isFalse();
+        ..hasAbsoluteRoot;
 
-      var bar = config['bar'];
-      check(bar).isNotNull()
-        ..has((p) => p.root, 'root').equals(Uri.parse('file:///bar/'))
-        ..has(
-          (p) => p.packageUriRoot,
-          'packageUriRoot',
-        ).equals(Uri.parse('file:///bar/lib/'))
-        ..has(
-          (p) => p.languageVersion,
-          'languageVersion',
-        ).equals(LanguageVersion(9999, 9999))
-        ..has((p) => p.extraData, 'extraData').isNull()
-        ..has((p) => p.relativeRoot, 'relativeRoot').isFalse();
+      var bar = checkConfig['bar'];
+      bar.isNotNull()
+        ..root.equals(Uri.parse('file:///bar/'))
+        ..packageUriRoot.equals(Uri.parse('file:///bar/lib/'))
+        ..languageVersion.isNotNull().equals(LanguageVersion(9999, 9999))
+        ..extraData.isNull()
+        ..hasAbsoluteRoot;
 
-      var baz = config['baz'];
-      check(baz).isNotNull()
-        ..has((p) => p.root, 'root').equals(Uri.parse('file:///tmp/'))
-        ..has(
-          (p) => p.packageUriRoot,
-          'packageUriRoot',
-        ).equals(Uri.parse('file:///tmp/lib/'))
-        ..has((p) => p.languageVersion, 'languageVersion').isNull()
-        ..has((p) => p.relativeRoot, 'relativeRoot').isTrue();
+      var baz = checkConfig['baz'];
+      baz.isNotNull()
+        ..root.equals(Uri.parse('file:///tmp/'))
+        ..packageUriRoot.equals(Uri.parse('file:///tmp/lib/'))
+        ..languageVersion.isNull()
+        ..hasRelativeRoot;
 
       // No slash after root or package root. One is inserted.
-      var noslash = config['noslash'];
-      check(noslash).isNotNull()
-        ..has((p) => p.root, 'root').equals(Uri.parse('file:///tmp/noslash/'))
-        ..has(
-          (p) => p.packageUriRoot,
-          'packageUriRoot',
-        ).equals(Uri.parse('file:///tmp/noslash/lib/'))
-        ..has((p) => p.languageVersion, 'languageVersion').isNull()
-        ..has((p) => p.relativeRoot, 'relativeRoot').isTrue();
+      var noslash = checkConfig['noslash'];
+      noslash.isNotNull()
+        ..root.equals(Uri.parse('file:///tmp/noslash/'))
+        ..packageUriRoot.equals(Uri.parse('file:///tmp/noslash/lib/'))
+        ..languageVersion.isNull()
+        ..hasRelativeRoot;
 
-      check(
-        config.extraData,
-      ).isNotNull().isA<Map<Object?, Object?>>().deepEquals({
+      checkConfig.extraData.isNotNull().isA<Map<Object?, Object?>>().deepEquals(
+        {
         'generator': 'pub',
         'other': [42],
       });
@@ -161,23 +153,25 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      check(config.version).equals(2);
-      check({
-        for (var p in config.packages) p.name,
-      }).deepEquals({'foo', 'bar', 'baz'});
+      var checkConfig = check(config);
+      checkConfig.version.equals(2);
+      checkConfig.packages.map((pkg) => pkg.name, 'names').unorderedEquals({
+        'foo',
+        'bar',
+        'baz',
+      });
 
-      check(
-        config.resolve(pkg('foo', 'foo.dart')),
-      ).equals(Uri.parse('file:///foo/lib/foo.dart'));
-      check(
-        config.resolve(pkg('bar', 'bar.dart')),
-      ).equals(Uri.parse('file:///bar/lib/bar.dart'));
-      check(
-        config.resolve(pkg('baz', 'baz.dart')),
-      ).equals(Uri.parse('file:///tmp/lib/baz.dart'));
-      check(
-        config.extraData,
-      ).isNotNull().isA<Map<Object?, Object?>>().deepEquals({
+      checkConfig
+          .resolve(pkg('foo', 'foo.dart'))
+          .equals(Uri.parse('file:///foo/lib/foo.dart'));
+      checkConfig
+          .resolve(pkg('bar', 'bar.dart'))
+          .equals(Uri.parse('file:///bar/lib/bar.dart'));
+      checkConfig
+          .resolve(pkg('baz', 'baz.dart'))
+          .equals(Uri.parse('file:///tmp/lib/baz.dart'));
+      checkConfig.extraData.isNotNull().isA<Map<Object?, Object?>>().deepEquals(
+        {
         'generator': 'pub',
         'other': [42],
       });
@@ -195,8 +189,9 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      check(config.version).equals(2);
-      check(config.packages).isEmpty();
+      check(config)
+        ..version.equals(2)
+        ..packages.isEmpty();
     });
     test('minimal package', () {
       // A package must have a name and a rootUri, the remaining properties
@@ -206,8 +201,9 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      check(config.version).equals(2);
-      check(config.packages.first.name).equals('foo');
+      check(config)
+        ..version.equals(2)
+        ..packages.first.name.equals('foo');
     });
 
     test('nested packages', () {
@@ -227,31 +223,40 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      check(config.version).equals(2);
-      check(
-        config.packageOf(Uri.parse('file:///foo/lala/lala.dart')),
-      ).isNotNull().has((p) => p.name, 'name').equals('foo');
-      check(
-        config.packageOf(Uri.parse('file:///foo/bar/lala.dart')),
-      ).isNotNull().has((p) => p.name, 'name').equals('bar');
-      check(
-        config.packageOf(Uri.parse('file:///foo/bar/baz/lala.dart')),
-      ).isNotNull().has((p) => p.name, 'name').equals('baz');
-      check(
-        config.packageOf(Uri.parse('file:///foo/qux/lala.dart')),
-      ).isNotNull().has((p) => p.name, 'name').equals('qux');
-      check(
-        config.toPackageUri(Uri.parse('file:///foo/lib/diz')),
-      ).equals(Uri.parse('package:foo/diz'));
-      check(
-        config.toPackageUri(Uri.parse('file:///foo/bar/lib/diz')),
-      ).equals(Uri.parse('package:bar/diz'));
-      check(
-        config.toPackageUri(Uri.parse('file:///foo/bar/baz/lib/diz')),
-      ).equals(Uri.parse('package:baz/diz'));
-      check(
-        config.toPackageUri(Uri.parse('file:///foo/qux/lib/diz')),
-      ).equals(Uri.parse('package:qux/diz'));
+      var checkConfig = check(config);
+      checkConfig.version.equals(2);
+      checkConfig
+          .packageOf(Uri.parse('file:///foo/lala/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('foo');
+      checkConfig
+          .packageOf(Uri.parse('file:///foo/bar/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('bar');
+      checkConfig
+          .packageOf(Uri.parse('file:///foo/bar/baz/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('baz');
+      checkConfig
+          .packageOf(Uri.parse('file:///foo/qux/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('qux');
+      checkConfig
+          .toPackageUri(Uri.parse('file:///foo/lib/diz'))
+          .equals(Uri.parse('package:foo/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///foo/bar/lib/diz'))
+          .equals(Uri.parse('package:bar/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///foo/bar/baz/lib/diz'))
+          .equals(Uri.parse('package:baz/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///foo/qux/lib/diz'))
+          .equals(Uri.parse('package:qux/diz'));
     });
 
     test('nested packages 2', () {
@@ -271,31 +276,39 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      check(config.version).equals(2);
-      check(
-        config.packageOf(Uri.parse('file:///lala/lala.dart')),
-      ).isNotNull().has((p) => p.name, 'name').equals('foo');
-      check(
-        config.packageOf(Uri.parse('file:///bar/lala.dart')),
-      ).isNotNull().has((p) => p.name, 'name').equals('bar');
-      check(
-        config.packageOf(Uri.parse('file:///bar/baz/lala.dart')),
-      ).isNotNull().has((p) => p.name, 'name').equals('baz');
-      check(
-        config.packageOf(Uri.parse('file:///qux/lala.dart')),
-      ).isNotNull().has((p) => p.name, 'name').equals('qux');
-      check(
-        config.toPackageUri(Uri.parse('file:///lib/diz')),
-      ).equals(Uri.parse('package:foo/diz'));
-      check(
-        config.toPackageUri(Uri.parse('file:///bar/lib/diz')),
-      ).equals(Uri.parse('package:bar/diz'));
-      check(
-        config.toPackageUri(Uri.parse('file:///bar/baz/lib/diz')),
-      ).equals(Uri.parse('package:baz/diz'));
-      check(
-        config.toPackageUri(Uri.parse('file:///qux/lib/diz')),
-      ).equals(Uri.parse('package:qux/diz'));
+      var checkConfig = check(config);
+      checkConfig
+          .packageOf(Uri.parse('file:///lala/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('foo');
+      checkConfig
+          .packageOf(Uri.parse('file:///bar/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('bar');
+      checkConfig
+          .packageOf(Uri.parse('file:///bar/baz/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('baz');
+      checkConfig
+          .packageOf(Uri.parse('file:///qux/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('qux');
+      checkConfig
+          .toPackageUri(Uri.parse('file:///lib/diz'))
+          .equals(Uri.parse('package:foo/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///bar/lib/diz'))
+          .equals(Uri.parse('package:bar/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///bar/baz/lib/diz'))
+          .equals(Uri.parse('package:baz/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///qux/lib/diz'))
+          .equals(Uri.parse('package:qux/diz'));
     });
 
     test('packageOf is case sensitive on windows', () {
@@ -312,13 +325,16 @@ void main() {
         Uri.parse('file:///C:/tmp/.dart_tool/file.dart'),
         throwError,
       );
-      check(config.version).equals(2);
-      check(
-        config.packageOf(Uri.parse('file:///C:/foo/lala/lala.dart')),
-      ).isNull();
-      check(
-        config.packageOf(Uri.parse('file:///C:/Foo/lala/lala.dart')),
-      ).isNotNull().has((p) => p.name, 'name').equals('foo');
+      var checkConfig = check(config);
+      checkConfig.version.equals(2);
+      checkConfig
+          .packageOf(Uri.parse('file:///C:/foo/lala/lala.dart'))
+          .isNull();
+      checkConfig
+          .packageOf(Uri.parse('file:///C:/Foo/lala/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('foo');
     });
 
     group('invalid', () {
@@ -526,14 +542,17 @@ void main() {
           Uri.parse('file:///tmp/.dart_tool/file.dart'),
           throwError,
         );
-        check(
-          config.packageOf(Uri.parse('file:///foo/lib/bar/lib/lala.dart')),
-        ).isNotNull().has((p) => p.name, 'name').equals('foo'); // why not bar?
-        check(
-          config.toPackageUri(Uri.parse('file:///foo/lib/bar/lib/diz')),
-        ).equals(
-          Uri.parse('package:foo/bar/lib/diz'),
-        ); // why not package:bar/diz?
+        var checkConfig = check(config);
+        checkConfig
+            .packageOf(Uri.parse('file:///foo/lib/bar/lib/lala.dart'))
+            .isNotNull()
+            .name
+            .equals('foo'); // why not bar?
+        checkConfig
+            .toPackageUri(Uri.parse('file:///foo/lib/bar/lib/diz'))
+            .equals(
+              Uri.parse('package:foo/bar/lib/diz'),
+            ); // why not package:bar/diz?
       });
     });
   });
@@ -542,25 +561,19 @@ void main() {
     void testConfig(String name, PackageConfig config, PackageConfig expected) {
       group(name, () {
         test('structure', () {
-          check(config.version).equals(expected.version);
           var expectedPackages = {for (var p in expected.packages) p.name};
-          var actualPackages = {for (var p in config.packages) p.name};
-          check(actualPackages).deepEquals(expectedPackages);
+          check(
+            config,
+          ).packages.map((p) => p.name).unorderedEquals(expectedPackages);
         });
         for (var package in config.packages) {
           var name = package.name;
           test('package $name', () {
-            var expectedPackage = expected[name];
-            check(expectedPackage).isNotNull();
-            check(because: 'root', package.root).equals(expectedPackage!.root);
-            check(
-              because: 'package root',
-              package.packageUriRoot,
-            ).equals(expectedPackage.packageUriRoot);
-            check(
-              because: 'languageVersion',
-              package.languageVersion,
-            ).equals(expectedPackage.languageVersion);
+            var expectedPackage = check(expected[name]).isNotNull().value;
+            check(package, because: 'package')
+              ..root.equals(expectedPackage.root)
+              ..packageUriRoot.equals(expectedPackage.packageUriRoot)
+              ..languageVersion.equals(expectedPackage.languageVersion);
           });
         }
       });

@@ -10,6 +10,7 @@ import 'package:package_config/package_config.dart';
 import 'package:test/expect.dart' show expectAsync1, expectAsync2;
 import 'package:test/scaffolding.dart';
 
+import 'src/checks.dart';
 import 'src/util.dart';
 
 const packagesFile = '''
@@ -41,18 +42,21 @@ const packageConfigFile = '''
 ''';
 
 void validatePackagesFile(PackageConfig resolver, Uri directory) {
-  check(
-    resolver.resolve(pkg('foo', 'bar/baz')),
-  ).equals(Uri.parse('file:///dart/packages/foo/bar/baz'));
-  check(
-    resolver.resolve(pkg('bar', 'baz/qux')),
-  ).equals(directory.resolve('/dart/packages/bar/baz/qux'));
-  check(
-    resolver.resolve(pkg('baz', 'qux/foo')),
-  ).equals(directory.resolve('packages/baz/qux/foo'));
-  check([
-    for (var p in resolver.packages) p.name,
-  ]).unorderedEquals(['foo', 'bar', 'baz']);
+  var checkResolver = check(resolver);
+  checkResolver
+      .resolve(pkg('foo', 'bar/baz'))
+      .equals(Uri.parse('file:///dart/packages/foo/bar/baz'));
+  checkResolver
+      .resolve(pkg('bar', 'baz/qux'))
+      .equals(directory.resolve('/dart/packages/bar/baz/qux'));
+  checkResolver
+      .resolve(pkg('baz', 'qux/foo'))
+      .equals(directory.resolve('packages/baz/qux/foo'));
+  checkResolver.packages.map((p) => p.name).unorderedEquals([
+    'foo',
+    'bar',
+    'baz',
+  ]);
 }
 
 void main() {
@@ -68,16 +72,17 @@ void main() {
       },
       (directory, loader) async {
         var config = (await findPackageConfigUri(directory, loader: loader))!;
-        check(
-          config.version,
-        ).equals(PackageConfig.minVersion); // Found package_config.json file.
+        check(config).version.equals(
+          PackageConfig.minVersion,
+        ); // Found package_config.json file.
         validatePackagesFile(config, directory);
         Uri file;
         (:config, :file) =
             (await findPackageConfigAndUri(directory, loader: loader))!;
         check(
-          config.version,
-        ).equals(PackageConfig.minVersion); // Found package_config.json file.
+          config).version.equals(
+          PackageConfig.minVersion,
+        ); // Found package_config.json file.
         validatePackagesFile(config, directory);
         check(file).equals(directory.resolve('.dart_tool/package_config.json'));
       },
