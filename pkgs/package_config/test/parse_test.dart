@@ -5,14 +5,23 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:checks/checks.dart';
 import 'package:package_config/package_config_types.dart';
 import 'package:package_config/src/errors.dart';
 import 'package:package_config/src/package_config_json.dart';
-import 'package:test/test.dart';
+import 'package:test/scaffolding.dart';
 
+import 'src/checks.dart';
 import 'src/util.dart';
 
 void main() {
+  test('min/max version', () {
+    check(PackageConfig.minVersion, because: 'PackageConfig.minVersion')
+      // Version 1 was ".packages" INI file, is not supported.
+      // When version changes, all the tests need updating.
+      ..equals(2)
+      ..isLessOrEqual(PackageConfig.maxVersion);
+  });
   group('package_config.json', () {
     test('valid', () {
       var packageConfigFile = '''
@@ -52,60 +61,63 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      expect(config.version, 2);
-      expect(
-        {for (var p in config.packages) p.name},
-        {'foo', 'bar', 'baz', 'noslash'},
-      );
+      var checkConfig = check(config);
+      checkConfig.version.equals(2);
+      checkConfig.packages.map((p) => p.name, 'names').unorderedEquals({
+        'foo',
+        'bar',
+        'baz',
+        'noslash',
+      });
 
-      expect(
-        config.resolve(pkg('foo', 'foo.dart')),
-        Uri.parse('file:///foo/lib/foo.dart'),
-      );
-      expect(
-        config.resolve(pkg('bar', 'bar.dart')),
-        Uri.parse('file:///bar/lib/bar.dart'),
-      );
-      expect(
-        config.resolve(pkg('baz', 'baz.dart')),
-        Uri.parse('file:///tmp/lib/baz.dart'),
-      );
+      checkConfig
+          .resolve(pkg('foo', 'foo.dart'))
+          .equals(Uri.parse('file:///foo/lib/foo.dart'));
+      checkConfig
+          .resolve(pkg('bar', 'bar.dart'))
+          .equals(Uri.parse('file:///bar/lib/bar.dart'));
+      checkConfig
+          .resolve(pkg('baz', 'baz.dart'))
+          .equals(Uri.parse('file:///tmp/lib/baz.dart'));
 
-      var foo = config['foo']!;
-      expect(foo, isNotNull);
-      expect(foo.root, Uri.parse('file:///foo/'));
-      expect(foo.packageUriRoot, Uri.parse('file:///foo/lib/'));
-      expect(foo.languageVersion, LanguageVersion(2, 5));
-      expect(foo.extraData, {'nonstandard': true});
-      expect(foo.relativeRoot, false);
+      checkConfig['foo'].isNotNull()
+        ..root.equals(Uri.parse('file:///foo/'))
+        ..packageUriRoot.equals(Uri.parse('file:///foo/lib/'))
+        ..languageVersion.isNotNull().equals(LanguageVersion(2, 5))
+        ..extraData.isNotNull().isA<Map<Object?, Object?>>().deepEquals({
+          'nonstandard': true,
+        })
+        ..hasAbsoluteRoot;
 
-      var bar = config['bar']!;
-      expect(bar, isNotNull);
-      expect(bar.root, Uri.parse('file:///bar/'));
-      expect(bar.packageUriRoot, Uri.parse('file:///bar/lib/'));
-      expect(bar.languageVersion, LanguageVersion(9999, 9999));
-      expect(bar.extraData, null);
-      expect(bar.relativeRoot, false);
+      var bar = checkConfig['bar'];
+      bar.isNotNull()
+        ..root.equals(Uri.parse('file:///bar/'))
+        ..packageUriRoot.equals(Uri.parse('file:///bar/lib/'))
+        ..languageVersion.isNotNull().equals(LanguageVersion(9999, 9999))
+        ..extraData.isNull()
+        ..hasAbsoluteRoot;
 
-      var baz = config['baz']!;
-      expect(baz, isNotNull);
-      expect(baz.root, Uri.parse('file:///tmp/'));
-      expect(baz.packageUriRoot, Uri.parse('file:///tmp/lib/'));
-      expect(baz.languageVersion, null);
-      expect(baz.relativeRoot, true);
+      var baz = checkConfig['baz'];
+      baz.isNotNull()
+        ..root.equals(Uri.parse('file:///tmp/'))
+        ..packageUriRoot.equals(Uri.parse('file:///tmp/lib/'))
+        ..languageVersion.isNull()
+        ..hasRelativeRoot;
 
       // No slash after root or package root. One is inserted.
-      var noslash = config['noslash']!;
-      expect(noslash, isNotNull);
-      expect(noslash.root, Uri.parse('file:///tmp/noslash/'));
-      expect(noslash.packageUriRoot, Uri.parse('file:///tmp/noslash/lib/'));
-      expect(noslash.languageVersion, null);
-      expect(noslash.relativeRoot, true);
+      var noslash = checkConfig['noslash'];
+      noslash.isNotNull()
+        ..root.equals(Uri.parse('file:///tmp/noslash/'))
+        ..packageUriRoot.equals(Uri.parse('file:///tmp/noslash/lib/'))
+        ..languageVersion.isNull()
+        ..hasRelativeRoot;
 
-      expect(config.extraData, {
-        'generator': 'pub',
-        'other': [42],
-      });
+      checkConfig.extraData.isNotNull().isA<Map<Object?, Object?>>().deepEquals(
+        {
+          'generator': 'pub',
+          'other': [42],
+        },
+      );
     });
 
     test('valid other order', () {
@@ -141,25 +153,29 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      expect(config.version, 2);
-      expect({for (var p in config.packages) p.name}, {'foo', 'bar', 'baz'});
-
-      expect(
-        config.resolve(pkg('foo', 'foo.dart')),
-        Uri.parse('file:///foo/lib/foo.dart'),
-      );
-      expect(
-        config.resolve(pkg('bar', 'bar.dart')),
-        Uri.parse('file:///bar/lib/bar.dart'),
-      );
-      expect(
-        config.resolve(pkg('baz', 'baz.dart')),
-        Uri.parse('file:///tmp/lib/baz.dart'),
-      );
-      expect(config.extraData, {
-        'generator': 'pub',
-        'other': [42],
+      var checkConfig = check(config);
+      checkConfig.version.equals(2);
+      checkConfig.packages.map((pkg) => pkg.name, 'names').unorderedEquals({
+        'foo',
+        'bar',
+        'baz',
       });
+
+      checkConfig
+          .resolve(pkg('foo', 'foo.dart'))
+          .equals(Uri.parse('file:///foo/lib/foo.dart'));
+      checkConfig
+          .resolve(pkg('bar', 'bar.dart'))
+          .equals(Uri.parse('file:///bar/lib/bar.dart'));
+      checkConfig
+          .resolve(pkg('baz', 'baz.dart'))
+          .equals(Uri.parse('file:///tmp/lib/baz.dart'));
+      checkConfig.extraData.isNotNull().isA<Map<Object?, Object?>>().deepEquals(
+        {
+          'generator': 'pub',
+          'other': [42],
+        },
+      );
     });
 
     // Check that a few minimal configurations are valid.
@@ -174,8 +190,9 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      expect(config.version, 2);
-      expect(config.packages, isEmpty);
+      check(config)
+        ..version.equals(2)
+        ..packages.isEmpty();
     });
     test('minimal package', () {
       // A package must have a name and a rootUri, the remaining properties
@@ -185,8 +202,9 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      expect(config.version, 2);
-      expect(config.packages.first.name, 'foo');
+      check(config)
+        ..version.equals(2)
+        ..packages.first.name.equals('foo');
     });
 
     test('nested packages', () {
@@ -206,39 +224,40 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      expect(config.version, 2);
-      expect(
-        config.packageOf(Uri.parse('file:///foo/lala/lala.dart'))!.name,
-        'foo',
-      );
-      expect(
-        config.packageOf(Uri.parse('file:///foo/bar/lala.dart'))!.name,
-        'bar',
-      );
-      expect(
-        config.packageOf(Uri.parse('file:///foo/bar/baz/lala.dart'))!.name,
-        'baz',
-      );
-      expect(
-        config.packageOf(Uri.parse('file:///foo/qux/lala.dart'))!.name,
-        'qux',
-      );
-      expect(
-        config.toPackageUri(Uri.parse('file:///foo/lib/diz')),
-        Uri.parse('package:foo/diz'),
-      );
-      expect(
-        config.toPackageUri(Uri.parse('file:///foo/bar/lib/diz')),
-        Uri.parse('package:bar/diz'),
-      );
-      expect(
-        config.toPackageUri(Uri.parse('file:///foo/bar/baz/lib/diz')),
-        Uri.parse('package:baz/diz'),
-      );
-      expect(
-        config.toPackageUri(Uri.parse('file:///foo/qux/lib/diz')),
-        Uri.parse('package:qux/diz'),
-      );
+      var checkConfig = check(config);
+      checkConfig.version.equals(2);
+      checkConfig
+          .packageOf(Uri.parse('file:///foo/lala/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('foo');
+      checkConfig
+          .packageOf(Uri.parse('file:///foo/bar/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('bar');
+      checkConfig
+          .packageOf(Uri.parse('file:///foo/bar/baz/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('baz');
+      checkConfig
+          .packageOf(Uri.parse('file:///foo/qux/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('qux');
+      checkConfig
+          .toPackageUri(Uri.parse('file:///foo/lib/diz'))
+          .equals(Uri.parse('package:foo/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///foo/bar/lib/diz'))
+          .equals(Uri.parse('package:bar/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///foo/bar/baz/lib/diz'))
+          .equals(Uri.parse('package:baz/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///foo/qux/lib/diz'))
+          .equals(Uri.parse('package:qux/diz'));
     });
 
     test('nested packages 2', () {
@@ -258,33 +277,39 @@ void main() {
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
-      expect(config.version, 2);
-      expect(
-        config.packageOf(Uri.parse('file:///lala/lala.dart'))!.name,
-        'foo',
-      );
-      expect(config.packageOf(Uri.parse('file:///bar/lala.dart'))!.name, 'bar');
-      expect(
-        config.packageOf(Uri.parse('file:///bar/baz/lala.dart'))!.name,
-        'baz',
-      );
-      expect(config.packageOf(Uri.parse('file:///qux/lala.dart'))!.name, 'qux');
-      expect(
-        config.toPackageUri(Uri.parse('file:///lib/diz')),
-        Uri.parse('package:foo/diz'),
-      );
-      expect(
-        config.toPackageUri(Uri.parse('file:///bar/lib/diz')),
-        Uri.parse('package:bar/diz'),
-      );
-      expect(
-        config.toPackageUri(Uri.parse('file:///bar/baz/lib/diz')),
-        Uri.parse('package:baz/diz'),
-      );
-      expect(
-        config.toPackageUri(Uri.parse('file:///qux/lib/diz')),
-        Uri.parse('package:qux/diz'),
-      );
+      var checkConfig = check(config);
+      checkConfig
+          .packageOf(Uri.parse('file:///lala/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('foo');
+      checkConfig
+          .packageOf(Uri.parse('file:///bar/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('bar');
+      checkConfig
+          .packageOf(Uri.parse('file:///bar/baz/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('baz');
+      checkConfig
+          .packageOf(Uri.parse('file:///qux/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('qux');
+      checkConfig
+          .toPackageUri(Uri.parse('file:///lib/diz'))
+          .equals(Uri.parse('package:foo/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///bar/lib/diz'))
+          .equals(Uri.parse('package:bar/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///bar/baz/lib/diz'))
+          .equals(Uri.parse('package:baz/diz'));
+      checkConfig
+          .toPackageUri(Uri.parse('file:///qux/lib/diz'))
+          .equals(Uri.parse('package:qux/diz'));
     });
 
     test('packageOf is case sensitive on windows', () {
@@ -301,28 +326,28 @@ void main() {
         Uri.parse('file:///C:/tmp/.dart_tool/file.dart'),
         throwError,
       );
-      expect(config.version, 2);
-      expect(
-        config.packageOf(Uri.parse('file:///C:/foo/lala/lala.dart')),
-        null,
-      );
-      expect(
-        config.packageOf(Uri.parse('file:///C:/Foo/lala/lala.dart'))!.name,
-        'foo',
-      );
+      var checkConfig = check(config);
+      checkConfig.version.equals(2);
+      checkConfig
+          .packageOf(Uri.parse('file:///C:/foo/lala/lala.dart'))
+          .isNull();
+      checkConfig
+          .packageOf(Uri.parse('file:///C:/Foo/lala/lala.dart'))
+          .isNotNull()
+          .name
+          .equals('foo');
     });
 
     group('invalid', () {
       void testThrows(String name, String source) {
         test(name, () {
-          expect(
+          check(
             () => parsePackageConfigBytes(
               utf8.encode(source),
               Uri.parse('file:///tmp/.dart_tool/file.dart'),
               throwError,
             ),
-            throwsA(isA<FormatException>()),
-          );
+          ).throws<FormatException>();
         });
       }
 
@@ -332,18 +357,16 @@ void main() {
         String containsString,
       ) {
         test(name, () {
-          Object? exception;
-          try {
-            parsePackageConfigBytes(
-              utf8.encode(source),
-              Uri.parse('file:///tmp/.dart_tool/file.dart'),
-              throwError,
-            );
-          } catch (e) {
-            exception = e;
-          }
-          if (exception == null) fail("Didn't get exception");
-          expect('$exception', contains(containsString));
+          check(
+                () => parsePackageConfigBytes(
+                  utf8.encode(source),
+                  Uri.parse('file:///tmp/.dart_tool/file.dart'),
+                  throwError,
+                ),
+              )
+              .throws<Object>()
+              .has((e) => e.toString(), 'toString')
+              .contains(containsString);
         });
       }
 
@@ -520,16 +543,17 @@ void main() {
           Uri.parse('file:///tmp/.dart_tool/file.dart'),
           throwError,
         );
-        expect(
-          config
-              .packageOf(Uri.parse('file:///foo/lib/bar/lib/lala.dart'))!
-              .name,
-          'foo',
-        ); // why not bar?
-        expect(
-          config.toPackageUri(Uri.parse('file:///foo/lib/bar/lib/diz')),
-          Uri.parse('package:foo/bar/lib/diz'),
-        ); // why not package:bar/diz?
+        var checkConfig = check(config);
+        checkConfig
+            .packageOf(Uri.parse('file:///foo/lib/bar/lib/lala.dart'))
+            .isNotNull()
+            .name
+            .equals('foo'); // why not bar?
+        checkConfig
+            .toPackageUri(Uri.parse('file:///foo/lib/bar/lib/diz'))
+            .equals(
+              Uri.parse('package:foo/bar/lib/diz'),
+            ); // why not package:bar/diz?
       });
     });
   });
@@ -538,27 +562,19 @@ void main() {
     void testConfig(String name, PackageConfig config, PackageConfig expected) {
       group(name, () {
         test('structure', () {
-          expect(config.version, expected.version);
           var expectedPackages = {for (var p in expected.packages) p.name};
-          var actualPackages = {for (var p in config.packages) p.name};
-          expect(actualPackages, expectedPackages);
+          check(
+            config,
+          ).packages.map((p) => p.name).unorderedEquals(expectedPackages);
         });
         for (var package in config.packages) {
           var name = package.name;
           test('package $name', () {
-            var expectedPackage = expected[name]!;
-            expect(expectedPackage, isNotNull);
-            expect(package.root, expectedPackage.root, reason: 'root');
-            expect(
-              package.packageUriRoot,
-              expectedPackage.packageUriRoot,
-              reason: 'package root',
-            );
-            expect(
-              package.languageVersion,
-              expectedPackage.languageVersion,
-              reason: 'languageVersion',
-            );
+            var expectedPackage = check(expected[name]).isNotNull().value;
+            check(package, because: 'package')
+              ..root.equals(expectedPackage.root)
+              ..packageUriRoot.equals(expectedPackage.packageUriRoot)
+              ..languageVersion.equals(expectedPackage.languageVersion);
           });
         }
       });

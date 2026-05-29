@@ -22,6 +22,8 @@
 - Adds `PackageConfig.minVersion` to complement `.maxVersion`.
   Currently both are `2`.
 
+- Uses `package:checks` for testing.
+
 ## 2.2.0
 
 - Add relational operators to `LanguageVersion` with extension methods

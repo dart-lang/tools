@@ -2,6 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// Very simple benchmark of reading and using a `PackageConfig`.
+///
+/// Use only as relative reference while working on the code,
+/// to check before/after measurements run on the same machine.
+library;
+
 import 'dart:convert';
 
 import 'package:package_config/src/errors.dart';

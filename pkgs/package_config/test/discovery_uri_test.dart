@@ -5,9 +5,12 @@
 @TestOn('vm')
 library;
 
+import 'package:checks/checks.dart';
 import 'package:package_config/package_config.dart';
-import 'package:test/test.dart';
+import 'package:test/expect.dart' show expectAsync1, expectAsync2;
+import 'package:test/scaffolding.dart';
 
+import 'src/checks.dart';
 import 'src/util.dart';
 
 const packagesFile = '''
@@ -39,21 +42,21 @@ const packageConfigFile = '''
 ''';
 
 void validatePackagesFile(PackageConfig resolver, Uri directory) {
-  expect(
-    resolver.resolve(pkg('foo', 'bar/baz')),
-    equals(Uri.parse('file:///dart/packages/foo/bar/baz')),
-  );
-  expect(
-    resolver.resolve(pkg('bar', 'baz/qux')),
-    equals(directory.resolve('/dart/packages/bar/baz/qux')),
-  );
-  expect(
-    resolver.resolve(pkg('baz', 'qux/foo')),
-    equals(directory.resolve('packages/baz/qux/foo')),
-  );
-  expect([
-    for (var p in resolver.packages) p.name,
-  ], unorderedEquals(['foo', 'bar', 'baz']));
+  var checkResolver = check(resolver);
+  checkResolver
+      .resolve(pkg('foo', 'bar/baz'))
+      .equals(Uri.parse('file:///dart/packages/foo/bar/baz'));
+  checkResolver
+      .resolve(pkg('bar', 'baz/qux'))
+      .equals(directory.resolve('/dart/packages/bar/baz/qux'));
+  checkResolver
+      .resolve(pkg('baz', 'qux/foo'))
+      .equals(directory.resolve('packages/baz/qux/foo'));
+  checkResolver.packages.map((p) => p.name).unorderedEquals([
+    'foo',
+    'bar',
+    'baz',
+  ]);
 }
 
 void main() {
@@ -69,20 +72,18 @@ void main() {
       },
       (directory, loader) async {
         var config = (await findPackageConfigUri(directory, loader: loader))!;
-        expect(
-          config.version,
+        check(config).version.equals(
           PackageConfig.minVersion,
         ); // Found package_config.json file.
         validatePackagesFile(config, directory);
         Uri file;
         (:config, :file) =
             (await findPackageConfigAndUri(directory, loader: loader))!;
-        expect(
-          config.version,
+        check(config).version.equals(
           PackageConfig.minVersion,
         ); // Found package_config.json file.
         validatePackagesFile(config, directory);
-        expect(file, directory.resolve('.dart_tool/package_config.json'));
+        check(file).equals(directory.resolve('.dart_tool/package_config.json'));
       },
     );
 
@@ -100,17 +101,16 @@ void main() {
               directory.resolve('subdir/'),
               loader: loader,
             ))!;
-        expect(config.version, PackageConfig.minVersion);
+        check(config.version).equals(PackageConfig.minVersion);
         validatePackagesFile(config, directory);
         Uri file;
         (:config, :file) =
             (await findPackageConfigAndUri(directory, loader: loader))!;
-        expect(
+        check(
           config.version,
-          PackageConfig.minVersion,
-        ); // Found package_config.json file.
+        ).equals(PackageConfig.minVersion); // Found package_config.json file.
         validatePackagesFile(config, directory);
-        expect(file, directory.resolve('.dart_tool/package_config.json'));
+        check(file).equals(directory.resolve('.dart_tool/package_config.json'));
       },
     );
 
@@ -128,15 +128,14 @@ void main() {
           directory,
           loader: loader,
         );
-        expect(config, null);
-        expect(
+        check(config).isNull();
+        check(
           await findPackageConfigAndUri(
             recurse: false,
             directory,
             loader: loader,
           ),
-          null,
-        );
+        ).isNull();
       },
     );
 
@@ -147,8 +146,10 @@ void main() {
         'packages': {'foo': <String, Object?>{}},
       },
       (directory, loader) async {
-        expect(await findPackageConfigUri(directory, loader: loader), null);
-        expect(await findPackageConfigAndUri(directory, loader: loader), null);
+        check(await findPackageConfigUri(directory, loader: loader)).isNull();
+        check(
+          await findPackageConfigAndUri(directory, loader: loader),
+        ).isNull();
       },
     );
 
@@ -171,7 +172,7 @@ void main() {
               directory,
               skipInvalid: skip,
               onError: expectAsync1((Object e) {
-                expect(e, isA<PackageConfigVersionException>());
+                check(e).isA<PackageConfigVersionException>();
               }),
               loader: loader,
             );
@@ -179,8 +180,10 @@ void main() {
               directory,
               skipInvalid: skip,
               onError: expectAsync2((Object e, Uri f) {
-                expect(e, isA<PackageConfigVersionException>());
-                expect(f, directory.resolve('.dart_tool/package_config.json'));
+                check(e).isA<PackageConfigVersionException>();
+                check(
+                  f,
+                ).equals(directory.resolve('.dart_tool/package_config.json'));
               }),
               loader: loader,
             );
@@ -210,26 +213,25 @@ void main() {
                 minVersion: PackageConfig.minVersion + 1,
                 skipInvalid: skip,
                 onError: expectAsync1(count: skip ? 0 : 1, (Object e) {
-                  expect(e, isA<PackageConfigVersionException>());
+                  check(e).isA<PackageConfigVersionException>();
                 }),
                 loader: loader,
               );
-              if (skip) expect(config, null);
+              if (skip) check(config).isNull();
 
               var configAndFile = await findPackageConfigAndUri(
                 directory,
                 skipInvalid: skip,
                 minVersion: PackageConfig.minVersion + 1,
                 onError: expectAsync2(count: skip ? 0 : 1, (Object e, Uri f) {
-                  expect(e, isA<PackageConfigVersionException>());
-                  expect(
+                  check(e).isA<PackageConfigVersionException>();
+                  check(
                     f,
-                    directory.resolve('.dart_tool/package_config.json'),
-                  );
+                  ).equals(directory.resolve('.dart_tool/package_config.json'));
                 }),
                 loader: loader,
               );
-              if (skip) expect(configAndFile, null);
+              if (skip) check(configAndFile).isNull();
             },
           );
         }
@@ -247,7 +249,7 @@ void main() {
       loaderTest('directly', files, (Uri directory, loader) async {
         var file = directory.resolve('.dart_tool/package_config.json');
         var config = await loadPackageConfigUri(file, loader: loader);
-        expect(config.version, PackageConfig.minVersion);
+        check(config.version).equals(PackageConfig.minVersion);
         validatePackagesFile(config, directory);
       });
       loaderTest('indirectly through .packages', files, (
@@ -264,7 +266,7 @@ void main() {
             hadError = true;
           },
         );
-        expect(hadError, true);
+        check(hadError).isTrue();
       });
     });
 
@@ -277,7 +279,7 @@ void main() {
       (Uri directory, loader) async {
         var file = directory.resolve('subdir/pheldagriff');
         var config = await loadPackageConfigUri(file, loader: loader);
-        expect(config.version, PackageConfig.minVersion);
+        check(config.version).equals(PackageConfig.minVersion);
         validatePackagesFile(config, directory);
       },
     );
@@ -290,17 +292,16 @@ void main() {
       (Uri directory, loader) async {
         var file = directory.resolve('subdir/.packages');
         var config = await loadPackageConfigUri(file, loader: loader);
-        expect(config.version, PackageConfig.minVersion);
+        check(config.version).equals(PackageConfig.minVersion);
         validatePackagesFile(config, directory);
       },
     );
 
-    loaderTest('no config found', {}, (Uri directory, loader) {
+    loaderTest('no config found', {}, (Uri directory, loader) async {
       var file = directory.resolve('anyname');
-      expect(
-        () => loadPackageConfigUri(file, loader: loader),
-        throwsA(isA<ArgumentError>()),
-      );
+      await check(
+        loadPackageConfigUri(file, loader: loader),
+      ).throws<ArgumentError>();
     });
 
     loaderTest('no config found, handle error', {}, (
@@ -314,21 +315,20 @@ void main() {
         loader: loader,
         onError: expectAsync1((error) {
           hadError = true;
-          expect(error, isA<ArgumentError>());
+          check(error).isA<ArgumentError>();
         }, max: -1),
       );
-      expect(hadError, true);
+      check(hadError).isTrue();
     });
 
     loaderTest('specified file syntax error', {'anyname': 'syntax error'}, (
       Uri directory,
       loader,
-    ) {
+    ) async {
       var file = directory.resolve('anyname');
-      expect(
-        () => loadPackageConfigUri(file, loader: loader),
-        throwsFormatException,
-      );
+      await check(
+        loadPackageConfigUri(file, loader: loader),
+      ).throws<FormatException>();
     });
 
     loaderTest('specified file syntax onError', {'anyname': 'syntax error'}, (
@@ -342,10 +342,10 @@ void main() {
         loader: loader,
         onError: expectAsync1((error) {
           hadError = true;
-          expect(error, isA<FormatException>());
+          check(error).isA<FormatException>();
         }, max: -1),
       );
-      expect(hadError, true);
+      check(hadError).isTrue();
     });
 
     // Don't look for package_config.json if original name or file are bad.
@@ -357,10 +357,9 @@ void main() {
       },
       (directory, loader) async {
         var file = directory.resolve('anyname');
-        expect(
-          () => loadPackageConfigUri(file, loader: loader),
-          throwsFormatException,
-        );
+        await check(
+          loadPackageConfigUri(file, loader: loader),
+        ).throws<FormatException>();
       },
     );
 
@@ -376,10 +375,10 @@ void main() {
         loader: loader,
         onError: expectAsync1((error) {
           hadError = true;
-          expect(error, isA<FormatException>());
+          check(error).isA<FormatException>();
         }, max: -1),
       );
-      expect(hadError, true);
+      check(hadError).isTrue();
     });
   });
 }
