@@ -420,9 +420,7 @@ void main() {
 File configFile(Directory directory) {
   var s = Platform.pathSeparator;
   var path = directory.path;
-  return File(
-    '$path${_ifNeeded(path, s)}.dart_tool${s}package_config.json',
-  );
+  return File('$path${_ifNeeded(path, s)}.dart_tool${s}package_config.json');
 }
 
 Directory subDir(Directory directory, String name) {

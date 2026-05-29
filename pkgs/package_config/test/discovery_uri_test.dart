@@ -79,8 +79,7 @@ void main() {
         Uri file;
         (:config, :file) =
             (await findPackageConfigAndUri(directory, loader: loader))!;
-        check(
-          config).version.equals(
+        check(config).version.equals(
           PackageConfig.minVersion,
         ); // Found package_config.json file.
         validatePackagesFile(config, directory);

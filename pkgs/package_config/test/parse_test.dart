@@ -84,10 +84,9 @@ void main() {
         ..root.equals(Uri.parse('file:///foo/'))
         ..packageUriRoot.equals(Uri.parse('file:///foo/lib/'))
         ..languageVersion.isNotNull().equals(LanguageVersion(2, 5))
-        ..extraData
-            .isNotNull()
-            .isA<Map<Object?, Object?>>()
-            .deepEquals({'nonstandard': true})
+        ..extraData.isNotNull().isA<Map<Object?, Object?>>().deepEquals({
+          'nonstandard': true,
+        })
         ..hasAbsoluteRoot;
 
       var bar = checkConfig['bar'];
@@ -115,9 +114,10 @@ void main() {
 
       checkConfig.extraData.isNotNull().isA<Map<Object?, Object?>>().deepEquals(
         {
-        'generator': 'pub',
-        'other': [42],
-      });
+          'generator': 'pub',
+          'other': [42],
+        },
+      );
     });
 
     test('valid other order', () {
@@ -172,9 +172,10 @@ void main() {
           .equals(Uri.parse('file:///tmp/lib/baz.dart'));
       checkConfig.extraData.isNotNull().isA<Map<Object?, Object?>>().deepEquals(
         {
-        'generator': 'pub',
-        'other': [42],
-      });
+          'generator': 'pub',
+          'other': [42],
+        },
+      );
     });
 
     // Check that a few minimal configurations are valid.
