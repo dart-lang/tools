@@ -125,7 +125,7 @@ void main() {
       });
 
       test('in subdir of work dir', () {
-        String command = fs.path.join('.', 'foo', 'bla.exe');
+        String command = fs.path.join('foo', 'bla.exe');
         final String expectedPath = fs.path.join(workingDir.path, command);
         fs.file(expectedPath).createSync(recursive: true);
 
@@ -140,6 +140,45 @@ void main() {
         command = fs.path.withoutExtension(command);
         executablePath = getExecutablePath(
           command,
+          workingDir.path,
+          platform: platform,
+          fs: fs,
+        );
+        _expectSamePath(executablePath, expectedPath);
+      });
+
+      test('in subdir of work dir with forward slashes', () {
+        String command = fs.path.join('foo', 'bla.exe');
+        final String expectedPath = fs.path.join(workingDir.path, command);
+        fs.file(expectedPath).createSync(recursive: true);
+
+        String? executablePath = getExecutablePath(
+          'foo/bla.exe',
+          workingDir.path,
+          platform: platform,
+          fs: fs,
+        );
+        _expectSamePath(executablePath, expectedPath);
+
+        command = fs.path.withoutExtension(command);
+        executablePath = getExecutablePath(
+          command,
+          workingDir.path,
+          platform: platform,
+          fs: fs,
+        );
+        _expectSamePath(executablePath, expectedPath);
+      });
+
+      test('absolute path with forward slashes', () {
+        // Windows supports absolute paths with '/' separators.
+        final String expectedPath = fs.path.join(dir3.path, 'bla.exe');
+        fs.file(expectedPath).createSync();
+        final String commandWithForwardSlashes =
+            expectedPath.replaceAll('\\', '/');
+
+        final String? executablePath = getExecutablePath(
+          commandWithForwardSlashes,
           workingDir.path,
           platform: platform,
           fs: fs,
