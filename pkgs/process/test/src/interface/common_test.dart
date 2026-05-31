@@ -160,9 +160,8 @@ void main() {
         );
         _expectSamePath(executablePath, expectedPath);
 
-        command = fs.path.withoutExtension(command);
         executablePath = getExecutablePath(
-          command,
+          'foo/bla',
           workingDir.path,
           platform: platform,
           fs: fs,
