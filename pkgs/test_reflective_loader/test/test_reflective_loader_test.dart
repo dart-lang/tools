@@ -35,20 +35,12 @@ class TestReflectiveLoaderTest {
   static bool didSetUpClass = false;
   static bool didTearDownClass = false;
 
-  // TODO(scheglov): Linter was updated to automatically ignore
-  // this but needs time before it is actually used. Remove this
-  // ignore and others like it in this file once the linter
-  // change is active in this project:
-  // ignore: unreachable_from_main
   static void setUpClass() {
     expect(didSetUpClass, false);
     didSetUpClass = true;
     expect(didTearDownClass, false);
   }
 
-  // TODO(scheglov): See comment directly above
-  // "TestReflectiveLoaderTest.setUpClass" for info about this ignore:
-  // ignore: unreachable_from_main
   static void tearDownClass() {
     expect(didSetUpClass, true);
     expect(didTearDownClass, false);
@@ -109,18 +101,12 @@ class SecondTest {
   static bool didSetUpClass = false;
   static bool didTearDownClass = false;
 
-  // TODO(scheglov): See comment directly above
-  // "TestReflectiveLoaderTest.setUpClass" for info about this ignore:
-  // ignore: unreachable_from_main
   static void setUpClass() {
     expect(didSetUpClass, false);
     didSetUpClass = true;
     expect(didTearDownClass, false);
   }
 
-  // TODO(scheglov): See comment directly above
-  // "TestReflectiveLoaderTest.setUpClass" for info about this ignore:
-  // ignore: unreachable_from_main
   static void tearDownClass() {
     expect(didSetUpClass, true);
     expect(didTearDownClass, false);
