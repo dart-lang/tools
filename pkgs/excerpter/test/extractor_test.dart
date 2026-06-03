@@ -241,5 +241,34 @@ second-version
       // cached first version!
       expect(region2.linesWithPlaster(null), contains('first-version'));
     });
+
+    test('extractRegionSync works correctly and hits the same cache', () async {
+      await d.file('sync_test.dart', '''
+// #docregion region
+sync-version
+// #enddocregion region
+''').create();
+
+      final filePath = path.join(d.sandbox, 'sync_test.dart');
+
+      // Extract synchronously
+      final region1 = extractor.extractRegionSync(filePath, 'region');
+      expect(region1.linesWithPlaster(null), contains('sync-version'));
+
+      // Overwrite
+      await d.file('sync_test.dart', '''
+// #docregion region
+new-sync-version
+// #enddocregion region
+''').create();
+
+      // Extract again, should hit the cache
+      final region2 = extractor.extractRegionSync(filePath, 'region');
+      expect(region2.linesWithPlaster(null), contains('sync-version'));
+
+      // Extract asynchronously, should also hit the same cache
+      final region3 = await extractor.extractRegion(filePath, 'region');
+      expect(region3.linesWithPlaster(null), contains('sync-version'));
+    });
   });
 }

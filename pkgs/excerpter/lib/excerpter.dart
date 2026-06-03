@@ -9,5 +9,6 @@
 /// from regions declared in source files elsewhere.
 library;
 
+export 'src/extract.dart';
 export 'src/transform.dart';
 export 'src/update.dart';

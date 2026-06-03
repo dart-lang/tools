@@ -49,6 +49,51 @@ final class ExcerptExtractor {
     return region;
   }
 
+  /// Extract all declared docregions directly from the provided string
+  /// [content].
+  ///
+  /// The [filePath] is used to determine the language dialect for parsing
+  /// comments and docregion tags, and is also associated with the returned
+  /// regions for error reporting.
+  ///
+  /// Caches the parsed regions internally by their canonicalized [filePath].
+  @useResult
+  Map<String, Region> extractRegionsFromContent(
+    String content,
+    String filePath,
+  ) {
+    final canonicalPath = path.canonicalize(filePath);
+    final regions = _extractAllRegionsFromContent(content, canonicalPath);
+    _regionCacheByPath[canonicalPath] = regions;
+    return regions;
+  }
+
+  /// Synchronously extract the region with the specified [regionName] from
+  /// the file located at the specified [filePath].
+  ///
+  /// If a file does not exist at that location or the [regionName]
+  /// does not exist either, a [ExtractException] will be thrown.
+  @useResult
+  Region extractRegionSync(String filePath, String regionName) {
+    final canonicalPath = path.canonicalize(filePath);
+    if (!_regionCacheByPath.containsKey(canonicalPath)) {
+      _regionCacheByPath[canonicalPath] = _extractAllRegionsSync(canonicalPath);
+    }
+    final regions = _regionCacheByPath[canonicalPath];
+    if (regions == null) {
+      throw ExtractException('No file exists at $filePath.');
+    }
+
+    final region = regions[regionName];
+    if (region == null) {
+      throw ExtractException(
+        'The region "$regionName" does not exist in the file at $filePath.',
+      );
+    }
+
+    return region;
+  }
+
   @useResult
   Future<Map<String, Region>?> _extractAllRegions(String path) async {
     final file = File(path);
@@ -57,10 +102,24 @@ final class ExcerptExtractor {
     }
 
     final content = await file.readAsString();
-    if (content.isEmpty) {
-      return const {};
+    return _extractAllRegionsFromContent(content, path);
+  }
+
+  @useResult
+  Map<String, Region>? _extractAllRegionsSync(String path) {
+    final file = File(path);
+    if (!file.existsSync()) {
+      return null;
     }
 
+    final content = file.readAsStringSync();
+    return _extractAllRegionsFromContent(content, path);
+  }
+
+  Map<String, Region> _extractAllRegionsFromContent(
+    String content,
+    String path,
+  ) {
     final sourceFile = SourceFile.fromString(content, url: Uri.file(path));
     final lines = const LineSplitter().convert(content);
 
