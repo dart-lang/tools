@@ -19,17 +19,17 @@ base class ApiSummaryCustomizer {
   /// The analysis context for the package being summarized.
   ///
   /// This value is set by the tool before [setupComplete] is called.
-  set analysisContext(AnalysisContext analysisContext) {}
+  late final AnalysisContext analysisContext;
 
   /// The name of the package whose API is being summarized.
   ///
   /// This value is set by the tool before [setupComplete] is called.
-  set packageName(String value) {}
+  late final String packageName;
 
   /// The libraries that comprise the package's public API.
   ///
   /// This value is set by the tool before [initialScanComplete] is called.
-  set publicApiLibraries(Iterable<LibraryElement> value) {}
+  late final Iterable<LibraryElement> publicApiLibraries;
 
   /// Called after [publicApiLibraries] and [topLevelPublicElements] have been
   /// set, but before any analysis has been performed.

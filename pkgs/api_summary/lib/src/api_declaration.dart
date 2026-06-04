@@ -1,0 +1,484 @@
+// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'api_type.dart';
+
+/// Callback to render the text summary of an [ApiSummary].
+///
+/// This is set by the main package entry point to avoid circular dependencies
+/// between declaration models and formatting renderers.
+String Function(ApiSummary)? apiSummaryRenderer;
+
+/// The exposure status of an API declaration within the summarized package.
+enum ApiDeclarationStatus {
+  /// The declaration is part of the public API of the package.
+  public,
+
+  /// The declaration is from an external package or SDK library referenced
+  /// by the public API.
+  referenced,
+
+  /// The declaration is internal (non-public) but reachable through public
+  /// API signatures.
+  nonPublic,
+}
+
+/// The specific kind of executable member declaration.
+enum ApiExecutableKind { getter, setter, method, constructor, function }
+
+/// Modifiers that define the inheritance, implementation, or instantiation
+/// capabilities of a class or mixin.
+enum ApiClassModifier {
+  isSealed('sealed'),
+  isAbstract('abstract'),
+  isBase('base'),
+  isMixin('mixin'),
+  isInterface('interface'),
+  isFinal('final');
+
+  final String jsonName;
+  const ApiClassModifier(this.jsonName);
+
+  static ApiClassModifier parse(String value) =>
+      values.firstWhere((e) => e.jsonName == value);
+}
+
+/// A canonical summary of the public API of a package.
+///
+/// This serves as the root model object containing the [name] of the package
+/// and the collection of [libraries] that make up its public API surface.
+final class ApiSummary {
+  final String name;
+
+  final List<ApiLibrary> libraries;
+
+  ApiSummary({required this.name, required this.libraries});
+
+  factory ApiSummary.fromJson(Map<String, dynamic> json) => ApiSummary(
+    name: json['name'] as String,
+    libraries: _parseList(json, 'libraries', ApiLibrary.fromJson),
+  );
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'libraries': libraries.map((e) => e.toJson()).toList(),
+  };
+
+  @override
+  String toString() {
+    final renderer = apiSummaryRenderer;
+    if (renderer == null) {
+      throw StateError(
+        'apiSummaryRenderer is not initialized. Please import '
+        'package:api_summary/api_summary.dart or initialize the renderer '
+        'manually.',
+      );
+    }
+    return renderer(this);
+  }
+}
+
+/// A summary of the declarations exposed by a single library within a package.
+final class ApiLibrary {
+  final String uri;
+  final List<ApiClass> classes;
+  final List<ApiClass> enums;
+  final List<ApiClass> mixins;
+  final List<ApiExtension> extensions;
+  final List<ApiExtensionType> extensionTypes;
+  final List<ApiExecutable> functions;
+  final List<ApiTypeAlias> typeAliases;
+
+  ApiLibrary({
+    required this.uri,
+    required this.classes,
+    required this.enums,
+    required this.mixins,
+    required this.extensions,
+    required this.extensionTypes,
+    required this.functions,
+    required this.typeAliases,
+  });
+
+  factory ApiLibrary.fromJson(Map<String, dynamic> json) => ApiLibrary(
+    uri: json['uri'] as String,
+    classes: _parseList(json, 'classes', ApiClass.fromJson),
+    enums: _parseList(json, 'enums', ApiClass.fromJson),
+    mixins: _parseList(json, 'mixins', ApiClass.fromJson),
+    extensions: _parseList(json, 'extensions', ApiExtension.fromJson),
+    extensionTypes: _parseList(
+      json,
+      'extensionTypes',
+      ApiExtensionType.fromJson,
+    ),
+    functions: _parseList(json, 'functions', ApiExecutable.fromJson),
+    typeAliases: _parseList(json, 'typeAliases', ApiTypeAlias.fromJson),
+  );
+
+  Map<String, dynamic> toJson() => {
+    'uri': uri,
+    if (classes.isNotEmpty) 'classes': classes.map((e) => e.toJson()).toList(),
+    if (enums.isNotEmpty) 'enums': enums.map((e) => e.toJson()).toList(),
+    if (mixins.isNotEmpty) 'mixins': mixins.map((e) => e.toJson()).toList(),
+    if (extensions.isNotEmpty)
+      'extensions': extensions.map((e) => e.toJson()).toList(),
+    if (extensionTypes.isNotEmpty)
+      'extensionTypes': extensionTypes.map((e) => e.toJson()).toList(),
+    if (functions.isNotEmpty)
+      'functions': functions.map((e) => e.toJson()).toList(),
+    if (typeAliases.isNotEmpty)
+      'typeAliases': typeAliases.map((e) => e.toJson()).toList(),
+  };
+}
+
+/// The base class for all API declarations (classes, extensions, methods,
+/// aliases) modeled in a package summary.
+sealed class ApiDeclaration {
+  final String name;
+  final String? locationUri;
+
+  const ApiDeclaration({required this.name, this.locationUri});
+}
+
+final class ApiClass extends ApiDeclaration {
+  final ApiDeclarationStatus status;
+  final List<String> typeParameters;
+  final List<ApiType> typeParameterBounds;
+  final ApiType? supertype;
+  final List<ApiType> interfaces;
+  final List<ApiType> mixins;
+  final List<ApiType> superclassConstraints;
+  final List<ApiClassModifier> modifiers;
+  final List<String> immediateSubtypes;
+  final List<ApiExecutable> constructors;
+  final List<ApiExecutable> methods;
+  final bool isDeprecated;
+  final bool isExperimental;
+
+  ApiClass({
+    required super.name,
+    super.locationUri,
+    this.status = ApiDeclarationStatus.public,
+    required this.typeParameters,
+    this.typeParameterBounds = const [],
+    this.supertype,
+    required this.interfaces,
+    required this.mixins,
+    this.superclassConstraints = const [],
+    required this.modifiers,
+    required this.immediateSubtypes,
+    required this.constructors,
+    required this.methods,
+    this.isDeprecated = false,
+    this.isExperimental = false,
+  });
+
+  factory ApiClass.fromJson(Map<String, dynamic> json) => ApiClass(
+    name: json['name'] as String,
+    locationUri: json['locationUri'] as String?,
+    status: _parseStatus(json),
+    typeParameters: _parseStringList(json, 'typeParameters'),
+    typeParameterBounds: _parseList(
+      json,
+      'typeParameterBounds',
+      ApiType.fromJson,
+    ),
+    supertype: json['supertype'] != null
+        ? ApiType.fromJson(json['supertype'] as Map<String, dynamic>)
+        : null,
+    interfaces: _parseList(json, 'interfaces', ApiType.fromJson),
+    mixins: _parseList(json, 'mixins', ApiType.fromJson),
+    superclassConstraints: _parseList(
+      json,
+      'superclassConstraints',
+      ApiType.fromJson,
+    ),
+    modifiers: _parseStringList(
+      json,
+      'modifiers',
+    ).map(ApiClassModifier.parse).toList(),
+    immediateSubtypes: _parseStringList(json, 'immediateSubtypes'),
+    constructors: _parseList(json, 'constructors', ApiExecutable.fromJson),
+    methods: _parseList(json, 'methods', ApiExecutable.fromJson),
+    isDeprecated: json['isDeprecated'] as bool? ?? false,
+    isExperimental: json['isExperimental'] as bool? ?? false,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    if (locationUri != null) 'locationUri': locationUri,
+    if (status != ApiDeclarationStatus.public) 'status': status.name,
+    if (typeParameters.isNotEmpty) 'typeParameters': typeParameters,
+    if (typeParameterBounds.isNotEmpty)
+      'typeParameterBounds': typeParameterBounds
+          .map((e) => e.toJson())
+          .toList(),
+    if (supertype != null) 'supertype': supertype!.toJson(),
+    if (interfaces.isNotEmpty)
+      'interfaces': interfaces.map((e) => e.toJson()).toList(),
+    if (mixins.isNotEmpty) 'mixins': mixins.map((e) => e.toJson()).toList(),
+    if (superclassConstraints.isNotEmpty)
+      'superclassConstraints': superclassConstraints
+          .map((e) => e.toJson())
+          .toList(),
+    if (modifiers.isNotEmpty)
+      'modifiers': modifiers.map((e) => e.jsonName).toList(),
+    if (immediateSubtypes.isNotEmpty) 'immediateSubtypes': immediateSubtypes,
+    if (constructors.isNotEmpty)
+      'constructors': constructors.map((e) => e.toJson()).toList(),
+    if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
+    if (isDeprecated) 'isDeprecated': isDeprecated,
+    if (isExperimental) 'isExperimental': isExperimental,
+  };
+}
+
+final class ApiExtension extends ApiDeclaration {
+  final ApiDeclarationStatus status;
+  final List<String> typeParameters;
+  final List<ApiType> typeParameterBounds;
+  final ApiType extendedType;
+  final List<ApiExecutable> methods;
+  final bool isDeprecated;
+  final bool isExperimental;
+
+  ApiExtension({
+    required super.name,
+    super.locationUri,
+    this.status = ApiDeclarationStatus.public,
+    required this.typeParameters,
+    this.typeParameterBounds = const [],
+    required this.extendedType,
+    required this.methods,
+    this.isDeprecated = false,
+    this.isExperimental = false,
+  });
+
+  factory ApiExtension.fromJson(Map<String, dynamic> json) => ApiExtension(
+    name: json['name'] as String,
+    locationUri: json['locationUri'] as String?,
+    status: _parseStatus(json),
+    typeParameters: _parseStringList(json, 'typeParameters'),
+    typeParameterBounds: _parseList(
+      json,
+      'typeParameterBounds',
+      ApiType.fromJson,
+    ),
+    extendedType: ApiType.fromJson(
+      json['extendedType'] as Map<String, dynamic>,
+    ),
+    methods: _parseList(json, 'methods', ApiExecutable.fromJson),
+    isDeprecated: json['isDeprecated'] as bool? ?? false,
+    isExperimental: json['isExperimental'] as bool? ?? false,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    if (locationUri != null) 'locationUri': locationUri,
+    if (status != ApiDeclarationStatus.public) 'status': status.name,
+    if (typeParameters.isNotEmpty) 'typeParameters': typeParameters,
+    if (typeParameterBounds.isNotEmpty)
+      'typeParameterBounds': typeParameterBounds
+          .map((e) => e.toJson())
+          .toList(),
+    'extendedType': extendedType.toJson(),
+    if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
+    if (isDeprecated) 'isDeprecated': isDeprecated,
+    if (isExperimental) 'isExperimental': isExperimental,
+  };
+}
+
+final class ApiExtensionType extends ApiDeclaration {
+  final ApiDeclarationStatus status;
+  final List<String> typeParameters;
+  final List<ApiType> typeParameterBounds;
+  final ApiType representationType;
+  final List<ApiType> interfaces;
+  final List<ApiExecutable> constructors;
+  final List<ApiExecutable> methods;
+  final bool isDeprecated;
+  final bool isExperimental;
+
+  ApiExtensionType({
+    required super.name,
+    super.locationUri,
+    this.status = ApiDeclarationStatus.public,
+    required this.typeParameters,
+    this.typeParameterBounds = const [],
+    required this.representationType,
+    required this.interfaces,
+    required this.constructors,
+    required this.methods,
+    this.isDeprecated = false,
+    this.isExperimental = false,
+  });
+
+  factory ApiExtensionType.fromJson(Map<String, dynamic> json) =>
+      ApiExtensionType(
+        name: json['name'] as String,
+        locationUri: json['locationUri'] as String?,
+        status: _parseStatus(json),
+        typeParameters: _parseStringList(json, 'typeParameters'),
+        typeParameterBounds: _parseList(
+          json,
+          'typeParameterBounds',
+          ApiType.fromJson,
+        ),
+        representationType: ApiType.fromJson(
+          json['representationType'] as Map<String, dynamic>,
+        ),
+        interfaces: _parseList(json, 'interfaces', ApiType.fromJson),
+        constructors: _parseList(json, 'constructors', ApiExecutable.fromJson),
+        methods: _parseList(json, 'methods', ApiExecutable.fromJson),
+        isDeprecated: json['isDeprecated'] as bool? ?? false,
+        isExperimental: json['isExperimental'] as bool? ?? false,
+      );
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    if (locationUri != null) 'locationUri': locationUri,
+    if (status != ApiDeclarationStatus.public) 'status': status.name,
+    if (typeParameters.isNotEmpty) 'typeParameters': typeParameters,
+    if (typeParameterBounds.isNotEmpty)
+      'typeParameterBounds': typeParameterBounds
+          .map((e) => e.toJson())
+          .toList(),
+    'representationType': representationType.toJson(),
+    if (interfaces.isNotEmpty)
+      'interfaces': interfaces.map((e) => e.toJson()).toList(),
+    if (constructors.isNotEmpty)
+      'constructors': constructors.map((e) => e.toJson()).toList(),
+    if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
+    if (isDeprecated) 'isDeprecated': isDeprecated,
+    if (isExperimental) 'isExperimental': isExperimental,
+  };
+}
+
+final class ApiExecutable extends ApiDeclaration {
+  final ApiDeclarationStatus status;
+  final ApiExecutableKind kind;
+  final List<String> typeParameters;
+  final List<ApiType> typeParameterBounds;
+  final ApiType returnType;
+  final List<ApiParameter> parameters;
+  final bool isStatic;
+  final bool isDeprecated;
+  final bool isExperimental;
+
+  ApiExecutable({
+    required super.name,
+    super.locationUri,
+    this.status = ApiDeclarationStatus.public,
+    required this.kind,
+    required this.typeParameters,
+    this.typeParameterBounds = const [],
+    required this.returnType,
+    required this.parameters,
+    required this.isStatic,
+    required this.isDeprecated,
+    this.isExperimental = false,
+  });
+
+  factory ApiExecutable.fromJson(Map<String, dynamic> json) => ApiExecutable(
+    name: json['name'] as String,
+    locationUri: json['locationUri'] as String?,
+    status: _parseStatus(json),
+    kind: ApiExecutableKind.values.byName(
+      json['kind'] as String? ?? 'function',
+    ),
+    typeParameters: _parseStringList(json, 'typeParameters'),
+    typeParameterBounds: _parseList(
+      json,
+      'typeParameterBounds',
+      ApiType.fromJson,
+    ),
+    returnType: ApiType.fromJson(json['returnType'] as Map<String, dynamic>),
+    parameters: _parseList(json, 'parameters', ApiParameter.fromJson),
+    isStatic: json['isStatic'] as bool? ?? false,
+    isDeprecated: json['isDeprecated'] as bool? ?? false,
+    isExperimental: json['isExperimental'] as bool? ?? false,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    if (locationUri != null) 'locationUri': locationUri,
+    if (status != ApiDeclarationStatus.public) 'status': status.name,
+    'kind': kind.name,
+    if (typeParameters.isNotEmpty) 'typeParameters': typeParameters,
+    if (typeParameterBounds.isNotEmpty)
+      'typeParameterBounds': typeParameterBounds
+          .map((e) => e.toJson())
+          .toList(),
+    'returnType': returnType.toJson(),
+    if (parameters.isNotEmpty)
+      'parameters': parameters.map((e) => e.toJson()).toList(),
+    if (isStatic) 'isStatic': isStatic,
+    if (isDeprecated) 'isDeprecated': isDeprecated,
+    if (isExperimental) 'isExperimental': isExperimental,
+  };
+}
+
+final class ApiTypeAlias extends ApiDeclaration {
+  final ApiDeclarationStatus status;
+  final List<String> typeParameters;
+  final List<ApiType> typeParameterBounds;
+  final ApiType aliasedType;
+  final bool isDeprecated;
+  final bool isExperimental;
+
+  ApiTypeAlias({
+    required super.name,
+    super.locationUri,
+    this.status = ApiDeclarationStatus.public,
+    required this.typeParameters,
+    this.typeParameterBounds = const [],
+    required this.aliasedType,
+    required this.isDeprecated,
+    this.isExperimental = false,
+  });
+
+  factory ApiTypeAlias.fromJson(Map<String, dynamic> json) => ApiTypeAlias(
+    name: json['name'] as String,
+    locationUri: json['locationUri'] as String?,
+    status: _parseStatus(json),
+    typeParameters: _parseStringList(json, 'typeParameters'),
+    typeParameterBounds: _parseList(
+      json,
+      'typeParameterBounds',
+      ApiType.fromJson,
+    ),
+    aliasedType: ApiType.fromJson(json['aliasedType'] as Map<String, dynamic>),
+    isDeprecated: json['isDeprecated'] as bool? ?? false,
+    isExperimental: json['isExperimental'] as bool? ?? false,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    if (locationUri != null) 'locationUri': locationUri,
+    if (status != ApiDeclarationStatus.public) 'status': status.name,
+    if (typeParameters.isNotEmpty) 'typeParameters': typeParameters,
+    if (typeParameterBounds.isNotEmpty)
+      'typeParameterBounds': typeParameterBounds
+          .map((e) => e.toJson())
+          .toList(),
+    'aliasedType': aliasedType.toJson(),
+    if (isDeprecated) 'isDeprecated': isDeprecated,
+    if (isExperimental) 'isExperimental': isExperimental,
+  };
+}
+
+List<T> _parseList<T>(
+  Map<String, dynamic> json,
+  String key,
+  T Function(Map<String, dynamic>) fromJson,
+) =>
+    (json[key] as List<dynamic>?)
+        ?.map((e) => fromJson(e as Map<String, dynamic>))
+        .toList() ??
+    [];
+
+List<String> _parseStringList(Map<String, dynamic> json, String key) =>
+    (json[key] as List<dynamic>?)?.map((e) => e as String).toList() ?? [];
+
+ApiDeclarationStatus _parseStatus(Map<String, dynamic> json) =>
+    ApiDeclarationStatus.values.byName(json['status'] as String? ?? 'public');
