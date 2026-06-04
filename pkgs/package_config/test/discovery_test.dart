@@ -20,7 +20,8 @@ bar:/dart/packages/bar/
 baz:packages/baz/
 ''';
 
-const packageConfigFile = '''
+const packageConfigFile =
+    '''
 {
   "configVersion": ${PackageConfig.minVersion},
   "packages": [
@@ -127,8 +128,9 @@ void main() {
         'subdir': {'.packages': packagesFile, 'script.dart': 'main(){}'},
       },
       (Directory directory) async {
-        var config =
-            (await findPackageConfig(subDir(directory, '.dart_tool')))!;
+        var config = (await findPackageConfig(
+          subDir(directory, '.dart_tool'),
+        ))!;
         expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
 
@@ -158,7 +160,8 @@ void main() {
           'does not affect invalid configVersion',
           {
             '.dart_tool': {
-              'package_config.json': '''
+              'package_config.json':
+                  '''
                 {
                   "configVersion": ${PackageConfig.minVersion - 1},
                   "packages": []
@@ -194,7 +197,8 @@ void main() {
             'affects minVersion',
             {
               '.dart_tool': {
-                'package_config.json': '''
+                'package_config.json':
+                    '''
                 {
                   "configVersion": ${PackageConfig.minVersion},
                   "packages": []
@@ -337,11 +341,10 @@ void main() {
         'subdir': {'.packages': packagesFile, 'script.dart': 'main(){}'},
       },
       (Directory directory) async {
-        var config =
-            (await findPackageConfig(
-              subDir(directory, 'subdir'),
-              minVersion: 2,
-            ))!;
+        var config = (await findPackageConfig(
+          subDir(directory, 'subdir'),
+          minVersion: 2,
+        ))!;
         expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
       },
