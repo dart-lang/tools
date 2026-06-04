@@ -6,9 +6,17 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/diagnostic/diagnostic.dart';
 // TODO(paulberry): move pub_package_resolution.dart out of src
 import 'package:analyzer_testing/src/analysis_rule/pub_package_resolution.dart';
+import 'package:api_summary/src/api_declaration.dart';
+import 'package:api_summary/src/text_renderer.dart';
 import 'package:test/test.dart';
 
 class ApiSummaryTest extends PubPackageResolutionTest {
+  @override
+  void setUp() {
+    apiSummaryRenderer = renderTextSummary;
+    super.setUp();
+  }
+
   Future<LibraryElement> analyzeLibrary(
     String content, {
     String pathWithinLib = 'test.dart',

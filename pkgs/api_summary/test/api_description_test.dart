@@ -8,9 +8,8 @@ import 'dart:core';
 
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:api_summary/src/api_description.dart';
-import 'package:api_summary/src/api_summary_customizer.dart';
-import 'package:api_summary/src/node.dart';
+import 'package:api_summary/api_summary.dart';
+import 'package:api_summary/src/api_builder.dart';
 import 'package:test/test.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';
 
@@ -81,15 +80,15 @@ package:test/file.dart:
     new (constructor: A Function())
   AB (class extends Object, abstract, base):
     new (constructor: AB Function())
-  ABM (class extends Object, abstract, base, mixin):
+  ABM (mixin class extends Object, abstract, base, mixin):
     new (constructor: ABM Function())
   AF (class extends Object, abstract, final)
   AI (class extends Object, abstract, interface)
-  AM (class extends Object, abstract, mixin):
+  AM (mixin class extends Object, abstract, mixin):
     new (constructor: AM Function())
   B (class extends Object, base):
     new (constructor: B Function())
-  BM (class extends Object, base, mixin):
+  BM (mixin class extends Object, base, mixin):
     new (constructor: BM Function())
   C (class extends Object):
     new (constructor: C Function())
@@ -97,7 +96,7 @@ package:test/file.dart:
     new (constructor: F Function())
   I (class extends Object, interface):
     new (constructor: I Function())
-  M (class extends Object, mixin):
+  M (mixin class extends Object, mixin):
     new (constructor: M Function())
 dart:core:
   Object (referenced)
@@ -128,7 +127,6 @@ class Hidden3 {}
     // referenced by shown1. Details are only shown for shown1 and Shown2.
     expect(summary, '''
 package:test/public.dart:
-  hidden1 (non-public)
   shown1 (function: void Function(Shown2, Hidden2))
 package:test/src/private.dart:
   Hidden2 (non-public)
@@ -522,6 +520,42 @@ package:test/public.dart:
 ''');
   }
 
+  Future<void> test_topLevel_exportShow() async {
+    final summary = await _build({
+      '$testPackageLibPath/public.dart':
+          'export "src/private.dart" show Shown;',
+      '$testPackageLibPath/src/private.dart': '''
+class Shown {}
+class Hidden {}
+''',
+    });
+    expect(summary, '''
+package:test/public.dart:
+  Shown (class extends Object):
+    new (constructor: Shown Function())
+dart:core:
+  Object (referenced)
+''');
+  }
+
+  Future<void> test_topLevel_exportHide() async {
+    final summary = await _build({
+      '$testPackageLibPath/public.dart':
+          'export "src/private.dart" hide Hidden;',
+      '$testPackageLibPath/src/private.dart': '''
+class Shown {}
+class Hidden {}
+''',
+    });
+    expect(summary, '''
+package:test/public.dart:
+  Shown (class extends Object):
+    new (constructor: Shown Function())
+dart:core:
+  Object (referenced)
+''');
+  }
+
   Future<void> test_topLevel_getterSetterPair() async {
     // This test verifies that even if getter and a setter have the same name,
     // both are included in the summary output.
@@ -759,12 +793,9 @@ dart:core:
       convertPath(testPackageLibPath),
     );
     final customizer = createCustomizer?.call() ?? _ValidatingCustomizer();
-    final apiDescription = ApiDescription('test', customizer);
-    final stringBuffer = StringBuffer();
-    final nodes = await apiDescription.build(context);
+    final package = await buildApiPackage('test', context, customizer);
     expect(customizer.initialScanCompleteCalled, isTrue);
-    printNodes(stringBuffer, nodes);
-    return stringBuffer.toString();
+    return package.toString();
   }
 }
 

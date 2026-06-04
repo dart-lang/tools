@@ -50,10 +50,6 @@ extension IterableIterableExtension on Iterable<Iterable<Object?>> {
   }
 }
 
-extension StringExtension on String {
-  bool get isPublic => !startsWith('_');
-}
-
 extension UriExtension on Uri {
   bool isIn(String packageName) =>
       scheme == 'package' &&

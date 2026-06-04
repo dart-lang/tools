@@ -93,12 +93,6 @@ extension type ExtensionType(int i) {}
     );
   }
 
-  void test_string_isPublic() {
-    expect('_'.isPublic, isFalse);
-    expect('foo'.isPublic, isTrue);
-    expect('_foo'.isPublic, isFalse);
-  }
-
   void test_uri_isIn() {
     expect(Uri.parse('package:foo/bar.dart').isIn('foo'), isTrue);
     expect(Uri.parse('package:foo/bar.dart').isIn('bar.dart'), isFalse);

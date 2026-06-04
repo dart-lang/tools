@@ -2,41 +2,71 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@Timeout.factor(3)
+library;
+
 import 'dart:convert';
 import 'dart:io';
+import 'package:api_summary/api_summary.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 void main() {
-  test(
-    'api_summary output matches api.txt',
-    timeout: const Timeout.factor(3),
-    () async {
-      final packageDir = p.current;
+  late String jsonSummary;
+  late String textSummary;
 
-      final result = await Process.run(Platform.resolvedExecutable, [
-        if (Platform.packageConfig != null)
-          '--packages=${Platform.packageConfig}',
-        p.join(packageDir, 'bin', 'api_summary.dart'),
-        '-p',
-        packageDir,
-      ], workingDirectory: packageDir);
+  setUpAll(() async {
+    final apiPackage = await apiSummary(_pkgDir());
 
-      expect(
-        result.exitCode,
-        equals(0),
-        reason: 'CLI run failed with stderr:\n${result.stderr}',
-      );
+    jsonSummary = const JsonEncoder.withIndent(
+      '  ',
+    ).convert(apiPackage.toJson());
+    textSummary = apiPackage.toString();
+  });
 
-      final goldenFile = File(p.join(packageDir, 'api.txt'));
-      final expectedOutput = LineSplitter.split(
-        goldenFile.readAsStringSync(),
-      ).join('\n');
-      final actualOutput = LineSplitter.split(
-        result.stdout.toString(),
-      ).join('\n');
+  test('json output matches api.json', () {
+    _verifyGolden(jsonSummary, 'api.json');
+  });
 
-      expect(actualOutput, equals(expectedOutput));
-    },
-  );
+  test('text output matches api.txt', () {
+    _verifyGolden(textSummary, 'api.txt');
+  });
+
+  test('rehydrated json renders identical text summary', () {
+    final parsed = jsonDecode(jsonSummary) as Map<String, dynamic>;
+    final apiPackage = ApiSummary.fromJson(parsed);
+    final renderedText = apiPackage.toString();
+
+    expect(renderedText, equals(textSummary));
+  });
+}
+
+void _verifyGolden(String actual, String goldenFileName) {
+  final goldenFile = File(p.join(_pkgDir(), goldenFileName));
+  final expectedText = LineSplitter.split(
+    goldenFile.readAsStringSync(),
+  ).join('\n');
+  final actualText = LineSplitter.split(actual).join('\n');
+
+  expect(actualText, equals(expectedText));
+}
+
+// Dynamically locate the api_summary package root
+String _pkgDir() {
+  var packageDir = p.normalize(p.absolute(Directory.current.path));
+  if (!_isApiSummaryDir(packageDir)) {
+    // We might be running from the SDK root
+    final candidate = p.join(packageDir, 'pkg', 'api_summary');
+    if (_isApiSummaryDir(candidate)) {
+      packageDir = candidate;
+    }
+  }
+
+  return packageDir;
+}
+
+bool _isApiSummaryDir(String dir) {
+  final pubspec = File(p.join(dir, 'pubspec.yaml'));
+  if (!pubspec.existsSync()) return false;
+  return pubspec.readAsStringSync().contains('name: api_summary');
 }
