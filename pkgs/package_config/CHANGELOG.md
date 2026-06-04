@@ -1,4 +1,4 @@
-## 2.3.0
+## 3.0.0
 
 - Adds discovery API to find both a configuration and its location:
   `findPackageConfigAndFile` and `findPackageConfigAndUri`.
