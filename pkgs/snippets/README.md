@@ -206,7 +206,7 @@ use the same arguments set to an empty string (`""`);
 
 ## Usage as a library
 
-In addition to the CLI, you can use `excerpter` programmatically by importing it as a library:
+In addition to the CLI, you can use `snippets` programmatically by importing it as a library:
 
 <?code-excerpt path-base="example"?>
 <?code-excerpt "main.dart (main)"?>
@@ -233,7 +233,7 @@ within your Markdown files, you can either use the package
 as a library through the `Updater` class, or the CLI.
 
 ```bash
-dart run excerpter [OPTIONS] <file_or_directory>
+dart run snippets [OPTIONS] <file_or_directory>
 ```
 
 | Option              | Description                                                                                                                     |

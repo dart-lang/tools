@@ -4,9 +4,9 @@
 
 import 'dart:io';
 
-import 'package:excerpter/excerpter.dart';
 import 'package:io/io.dart';
 import 'package:path/path.dart' as path;
+import 'package:snippets/snippets.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 

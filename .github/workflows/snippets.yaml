@@ -1,22 +1,22 @@
-name: package:excerpter
+name: package:snippets
 permissions: read-all
 
 on:
   pull_request:
     paths:
-      - '.github/workflows/excerpter.yaml'
-      - 'pkgs/excerpter/**'
+      - '.github/workflows/snippets.yaml'
+      - 'pkgs/snippets/**'
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/excerpter.yaml'
-      - 'pkgs/excerpter/**'
+      - '.github/workflows/snippets.yaml'
+      - 'pkgs/snippets/**'
   schedule:
     - cron: '0 0 * * 0' # weekly
 
 defaults:
   run:
-    working-directory: pkgs/excerpter
+    working-directory: pkgs/snippets
 
 jobs:
   build:

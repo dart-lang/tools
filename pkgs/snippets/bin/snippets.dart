@@ -5,16 +5,16 @@
 import 'dart:io' as io;
 
 import 'package:args/args.dart';
-import 'package:excerpter/excerpter.dart';
 import 'package:path/path.dart' as path;
+import 'package:snippets/snippets.dart';
 
 void main(final List<String> args) async {
-  await runExcerpter(args);
+  await runSnippets(args);
 }
 
-/// Run the code excerpter with the specified [arguments],
+/// Run the code snippets tool with the specified [arguments],
 /// usually meant to be called from a command-line app.
-Future<void> runExcerpter(final List<String> arguments) async {
+Future<void> runSnippets(final List<String> arguments) async {
   final ArgResults results;
   try {
     results = _argParser.parse(arguments);
@@ -128,7 +128,7 @@ final _argParser = ArgParser()
 /// If no [exitCode] is specified, exit with a code of `1`, indicating failure.
 Never _printUsageAndExit({String? message, int exitCode = 1}) {
   if (message != null) print('\n$message\n');
-  print('Usage: excerpter [OPTIONS] file_or_directory\n');
+  print('Usage: snippets [OPTIONS] file_or_directory\n');
   print(_argParser.usage);
   io.exit(exitCode);
 }

@@ -1,4 +1,4 @@
-name: excerpter
+name: snippets
 description: Update code excerpts in Markdown documentation from source files.
 version: 0.1.0-wip
 
@@ -19,4 +19,4 @@ dev_dependencies:
   test_descriptor: ^2.0.0
 
 executables:
-  excerpter: excerpter
+  snippets: snippets

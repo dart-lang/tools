@@ -8,13 +8,10 @@ import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
 void main() {
-  final excerpterPath = path.join('bin', 'excerpter.dart');
+  final snippetsPath = path.join('bin', 'snippets.dart');
 
   test('no args', () {
-    final process = Process.runSync(Platform.executable, [
-      'run',
-      excerpterPath,
-    ]);
+    final process = Process.runSync(Platform.executable, ['run', snippetsPath]);
 
     expect(process.exitCode, equals(1));
   });
@@ -22,7 +19,7 @@ void main() {
   test('invalid format', () {
     final process = Process.runSync(Platform.executable, [
       'run',
-      excerpterPath,
+      snippetsPath,
       '-f-23-423-4',
     ]);
 
@@ -30,10 +27,7 @@ void main() {
   });
 
   test('options in README.md are in sync with CLI', () {
-    final process = Process.runSync(Platform.executable, [
-      'run',
-      excerpterPath,
-    ]);
+    final process = Process.runSync(Platform.executable, ['run', snippetsPath]);
 
     final stdout = process.stdout as String;
     // Extract option names from CLI output (e.g. --dry-run)

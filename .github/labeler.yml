@@ -48,9 +48,9 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/extension_discovery/**'
 
-'package:excerpter':
+'package:snippets':
   - changed-files:
-    - any-glob-to-any-file: 'pkgs/excerpter/**'
+    - any-glob-to-any-file: 'pkgs/snippets/**'
 
 'package:file':
   - changed-files:
