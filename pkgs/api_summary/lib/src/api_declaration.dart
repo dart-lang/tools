@@ -141,6 +141,10 @@ sealed class ApiDeclaration {
   const ApiDeclaration({required this.name, this.locationUri});
 }
 
+/// A summary of a Dart class, mixin, or enum declaration.
+///
+/// Models class modifiers, constructors, methods, type parameters, hierarchy
+/// relationships, deprecation status, and other element metadata.
 final class ApiClass extends ApiDeclaration {
   final ApiDeclarationStatus status;
   final List<String> typeParameters;
@@ -233,6 +237,9 @@ final class ApiClass extends ApiDeclaration {
   };
 }
 
+/// A summary of a Dart extension declaration.
+///
+/// Models type parameters, the extended type, and extension methods.
 final class ApiExtension extends ApiDeclaration {
   final ApiDeclarationStatus status;
   final List<String> typeParameters;
@@ -288,6 +295,9 @@ final class ApiExtension extends ApiDeclaration {
   };
 }
 
+/// A summary of a Dart extension type declaration.
+///
+/// Models the representation type, implemented interfaces, and defined constructors/methods.
 final class ApiExtensionType extends ApiDeclaration {
   final ApiDeclarationStatus status;
   final List<String> typeParameters;
@@ -354,6 +364,11 @@ final class ApiExtensionType extends ApiDeclaration {
   };
 }
 
+/// A summary of an executable member (function, method, constructor, getter,
+/// or setter).
+///
+/// Models signature details such as parameters, return type, type parameters,
+/// and modifiers.
 final class ApiExecutable extends ApiDeclaration {
   final ApiDeclarationStatus status;
   final ApiExecutableKind kind;
@@ -418,6 +433,9 @@ final class ApiExecutable extends ApiDeclaration {
   };
 }
 
+/// A summary of a Dart typedef type alias declaration.
+///
+/// Models type parameters and the aliased target type.
 final class ApiTypeAlias extends ApiDeclaration {
   final ApiDeclarationStatus status;
   final List<String> typeParameters;

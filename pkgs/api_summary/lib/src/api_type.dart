@@ -31,6 +31,7 @@ sealed class ApiType {
       _Kind.parse(json['kind'] as String).fromJson(json);
 }
 
+/// Represents the `dynamic` type in Dart.
 final class ApiDynamicType implements ApiType {
   const ApiDynamicType();
   factory ApiDynamicType.fromJson(Map<String, dynamic> _) =>
@@ -39,6 +40,7 @@ final class ApiDynamicType implements ApiType {
   Map<String, dynamic> toJson() => {'kind': _Kind.isDynamic.jsonName};
 }
 
+/// Represents the `void` type in Dart.
 final class ApiVoidType implements ApiType {
   const ApiVoidType();
   factory ApiVoidType.fromJson(Map<String, dynamic> _) => const ApiVoidType();
@@ -46,6 +48,7 @@ final class ApiVoidType implements ApiType {
   Map<String, dynamic> toJson() => {'kind': _Kind.isVoid.jsonName};
 }
 
+/// Represents a type parameter type (e.g. `T`) in Dart.
 final class ApiTypeParameterType implements ApiType {
   final String name;
   final bool isNullable;
@@ -66,6 +69,9 @@ final class ApiTypeParameterType implements ApiType {
   };
 }
 
+/// Represents an interface type (a class, mixin, or enum type) in Dart.
+///
+/// Models name, defining library URI, and type arguments.
 final class ApiInterfaceType implements ApiType {
   final String name;
   final String? libraryUri;
@@ -98,6 +104,7 @@ final class ApiInterfaceType implements ApiType {
   };
 }
 
+/// Represents a named field within a record type (e.g. `foo` in `({int foo})`).
 final class ApiRecordNamedField {
   final String name;
   final ApiType type;
@@ -113,6 +120,7 @@ final class ApiRecordNamedField {
   Map<String, dynamic> toJson() => {'name': name, 'type': type.toJson()};
 }
 
+/// Represents a record type in Dart (e.g. `(int, {String foo})`).
 final class ApiRecordType implements ApiType {
   final List<ApiType> positionalFields;
   final List<ApiRecordNamedField> namedFields;
@@ -141,6 +149,7 @@ final class ApiRecordType implements ApiType {
   };
 }
 
+/// Represents a function type in Dart (e.g. `void Function(int)`).
 final class ApiFunctionType implements ApiType {
   final ApiType returnType;
   final List<String> typeParameters;
@@ -199,6 +208,9 @@ List<T> _parseList<T>(
 List<String> _parseStringList(Map<String, dynamic> json, String key) =>
     (json[key] as List<dynamic>?)?.map((e) => e as String).toList() ?? [];
 
+/// Represents a parameter in a function or method signature.
+///
+/// Models parameter name, type, and optional/required/named status.
 final class ApiParameter {
   final String name;
   final ApiType type;
