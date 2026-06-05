@@ -49,12 +49,13 @@ class _ApiBuilder {
     final topLevelPublicElements = <Element>{};
     for (final file in context.contextRoot.analyzedFiles().sorted()) {
       if (!file.endsWith('.dart')) continue;
-      final fileResult = context.currentSession.getFile(file) as FileResult;
+      final fileResult = context.currentSession.getFile(file);
+      if (fileResult is! FileResult) continue;
       final uri = fileResult.uri;
       if (fileResult.isLibrary && uri.isInPublicLibOf(_pkgName)) {
-        final resolvedLibraryResult =
-            (await context.currentSession.getResolvedLibrary(file))
-                as ResolvedLibraryResult;
+        final resolvedLibraryResult = await context.currentSession
+            .getResolvedLibrary(file);
+        if (resolvedLibraryResult is! ResolvedLibraryResult) continue;
         final library = resolvedLibraryResult.element;
         final definedNames = library.exportNamespace.definedNames2;
         for (final key in definedNames.keys.sorted()) {
@@ -201,6 +202,13 @@ class _ApiBuilder {
       case TypeParameterType(:final element):
         return ApiTypeParameterType(
           name: element.name ?? '',
+          isNullable: isNullable,
+        );
+      case NeverType():
+        return ApiInterfaceType(
+          name: 'Never',
+          libraryUri: 'dart:core',
+          typeArguments: const [],
           isNullable: isNullable,
         );
       case VoidType():

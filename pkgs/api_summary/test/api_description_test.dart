@@ -5,9 +5,12 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'dart:core';
+import 'dart:typed_data';
 
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:api_summary/api_summary.dart';
 import 'package:api_summary/src/api_builder.dart';
 import 'package:test/test.dart';
@@ -18,6 +21,7 @@ import 'test_utils.dart';
 void main() {
   defineReflectiveSuite(() {
     defineReflectiveTests(ApiDescriptionTest);
+    defineReflectiveTests(ApiDescriptionDeletedFileTest);
   });
 }
 
@@ -776,6 +780,20 @@ dart:core:
 ''');
   }
 
+  Future<void> test_type_never() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+Never get n => throw '';
+''',
+    });
+    expect(summary, '''
+package:test/file.dart:
+  n (static getter: Never)
+dart:core:
+  Never (referenced)
+''');
+  }
+
   Future<String> _build(
     Map<String, String> files, {
     _ValidatingCustomizer Function()? createCustomizer,
@@ -869,5 +887,96 @@ base class _ValidatingCustomizer extends ApiSummaryCustomizer {
   bool shouldShowDetails(Element element) {
     expect(initialScanCompleteCalled, isTrue);
     return super.shouldShowDetails(element);
+  }
+}
+
+@reflectiveTest
+class ApiDescriptionDeletedFileTest extends ApiSummaryTest {
+  @override
+  bool get addMetaPackageDep => true;
+
+  late final _myProvider = _MyResourceProvider();
+
+  @override
+  MemoryResourceProvider get resourceProvider => _myProvider;
+
+  Future<void> test_deletedFile_graceful() async {
+    final filePath1 = convertPath('$testPackageLibPath/temp1.dart');
+    final filePath2 = convertPath('$testPackageLibPath/temp2.dart');
+    newFile(filePath1, 'class Temp1 {}');
+    newFile(filePath2, 'class Temp2 {}');
+
+    // Make temp2.dart unreadable.
+    _myProvider.unreadables.add(filePath2);
+
+    final context = contextCollection.contextFor(
+      convertPath(testPackageLibPath),
+    );
+
+    // Verify it doesn't crash when summarizing.
+    final package = await buildApiPackage(
+      'test',
+      context,
+      _ValidatingCustomizer(),
+    );
+    // temp1.dart should be fully summarized.
+    expect(
+      package.libraries.map((l) => l.uri),
+      contains('package:test/temp1.dart'),
+    );
+
+    // temp2.dart was unreadable, so it should resolve as an empty library
+    // without crashing.
+    final temp2Lib = package.libraries.firstWhere(
+      (l) => l.uri == 'package:test/temp2.dart',
+    );
+
+    expect(temp2Lib.classes, isEmpty);
+    expect(temp2Lib.enums, isEmpty);
+    expect(temp2Lib.mixins, isEmpty);
+    expect(temp2Lib.extensions, isEmpty);
+    expect(temp2Lib.extensionTypes, isEmpty);
+    expect(temp2Lib.functions, isEmpty);
+    expect(temp2Lib.typeAliases, isEmpty);
+  }
+}
+
+final class _MyResourceProvider extends MemoryResourceProvider {
+  final Set<String> unreadables = {};
+
+  _MyResourceProvider() : super();
+
+  @override
+  File getFile(String path) {
+    final file = super.getFile(path);
+    if (unreadables.contains(path)) {
+      return _UnreadableFile(file);
+    }
+    return file;
+  }
+}
+
+final class _UnreadableFile implements File {
+  final File _delegate;
+  _UnreadableFile(this._delegate);
+
+  @override
+  String get path => _delegate.path;
+
+  @override
+  bool get exists => _delegate.exists;
+
+  @override
+  Folder get parent => _delegate.parent;
+
+  @override
+  String readAsStringSync() => throw FileSystemException(path, 'Cannot read');
+
+  @override
+  Uint8List readAsBytesSync() => throw FileSystemException(path, 'Cannot read');
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    throw UnimplementedError('noSuchMethod: ${invocation.memberName}');
   }
 }
