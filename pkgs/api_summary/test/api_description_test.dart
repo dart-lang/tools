@@ -794,6 +794,31 @@ dart:core:
 ''');
   }
 
+  Future<void> test_multiple_unnamed_extensions() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+class C {}
+extension on C {
+  void f1() {}
+}
+extension on C {
+  void f2() {}
+}
+''',
+    });
+    expect(summary, '''
+package:test/file.dart:
+  C (class extends Object):
+    new (constructor: C Function())
+  @1 (extension on C):
+    f1 (method: void Function())
+  @2 (extension on C):
+    f2 (method: void Function())
+dart:core:
+  Object (referenced)
+''');
+  }
+
   Future<String> _build(
     Map<String, String> files, {
     _ValidatingCustomizer Function()? createCustomizer,

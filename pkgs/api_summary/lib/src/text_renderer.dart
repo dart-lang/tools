@@ -155,7 +155,11 @@ class _ApiTextRenderer {
       final element = item.element;
       final name = element.name;
       final locationUri = element.locationUri;
-      final key = '$locationUri#$name';
+      var key = '$locationUri#$name';
+      if (element is ApiExtension && name.isEmpty) {
+        final memberNames = element.methods.map((m) => m.name).join(',');
+        key = '$key#${element.extendedType.toJson()}#$memberNames';
+      }
 
       final childNode = Node<MemberSortKey>()
         ..text.add(_uniqueNamer.name(key, name));
