@@ -807,6 +807,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       'host_os_version',
       'locale',
       'client_ide',
+      'ai_agent',
     ];
     expect(
       analytics.userPropertyMap.keys.length,
@@ -821,6 +822,36 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       );
     }
   });
+
+  test(
+    'The UserProperty class correctly sets and exposes the ai_agent value',
+    () {
+      final secondAnalytics = Analytics.fake(
+        tool: initialTool,
+        homeDirectory: home,
+        flutterChannel: flutterChannel,
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: flutterVersion,
+        dartVersion: dartVersion,
+        fs: fs,
+        platform: platform,
+        clientIde: 'CursorIDE',
+        agent: 'Cursor',
+      );
+
+      expect(
+        secondAnalytics.userPropertyMap['ai_agent']?['value'],
+        'Cursor',
+        reason: 'The ai_agent user property should be set to Cursor',
+      );
+      expect(
+        secondAnalytics.userPropertyMap['client_ide']?['value'],
+        'CursorIDE',
+        reason: 'The client_ide user property should be set to CursorIDE',
+      );
+    },
+  );
 
   test('The minimum session duration should be at least 30 minutes', () {
     expect(

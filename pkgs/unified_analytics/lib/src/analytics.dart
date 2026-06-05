@@ -40,6 +40,10 @@ abstract class Analytics {
   /// any features that are enabled for a user. For example,
   /// "enable-linux-desktop,cli-animations" are two features that can be enabled
   /// for the flutter-tool.
+  ///
+  /// [agent] is an optional parameter to capture the name of any AI coding
+  /// assistant/agent executing the tool. Examples include "Claude Code",
+  /// "Cursor", or "Copilot".
   factory Analytics({
     required DashTool tool,
     required String dartVersion,
@@ -47,6 +51,7 @@ abstract class Analytics {
     String? flutterVersion,
     String? clientIde,
     String? enabledFeatures,
+    String? agent,
     bool enableAsserts = false,
   }) {
     // Create the instance of the file system so clients don't need
@@ -97,6 +102,7 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
+      agent: agent,
       firstRun: firstRun,
     );
   }
@@ -117,6 +123,7 @@ abstract class Analytics {
     String? flutterVersion,
     String? clientIde,
     String? enabledFeatures,
+    String? agent,
     bool enableAsserts = true,
   }) {
     // Create the instance of the file system so clients don't need
@@ -176,6 +183,7 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
+      agent: agent,
       firstRun: firstRun,
     );
   }
@@ -297,6 +305,7 @@ abstract class Analytics {
     String? flutterVersion,
     String? clientIde,
     String? enabledFeatures,
+    String? agent,
     SurveyHandler? surveyHandler,
     GAClient? gaClient,
     DevicePlatform platform = DevicePlatform.linux,
@@ -326,6 +335,7 @@ abstract class Analytics {
       gaClient: gaClient ?? const FakeGAClient(),
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
+      agent: agent,
       firstRun: firstRun,
       enableAsserts: enableAsserts,
     );
@@ -389,6 +399,7 @@ class AnalyticsImpl implements Analytics {
     required SurveyHandler surveyHandler,
     required bool enableAsserts,
     required bool firstRun,
+    String? agent,
   }) : _gaClient = gaClient,
        _surveyHandler = surveyHandler,
        _enableAsserts = enableAsserts,
@@ -412,6 +423,7 @@ class AnalyticsImpl implements Analytics {
          ),
          locale: io.Platform.localeName,
          clientIde: clientIde,
+         aiAgent: agent,
        ),
        _enabledFeatures = enabledFeatures,
        _configHandler = ConfigHandler(
@@ -772,6 +784,7 @@ class FakeAnalytics extends AnalyticsImpl {
     super.flutterVersion,
     super.clientIde,
     super.enabledFeatures,
+    super.agent,
     super.toolsMessageVersion = kToolsMessageVersion,
     super.gaClient = const FakeGAClient(),
     super.enableAsserts = true,
