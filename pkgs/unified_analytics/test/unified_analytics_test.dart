@@ -871,7 +871,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
             'ThisIsAnExtremelyLongAgentNameThatExceedsThe36CharacterLimitOfGA4',
       );
 
-      final String expectedAgent = 'ThisIsAnExtremelyLongAgentNameThatEx';
+      final expectedAgent = 'ThisIsAnExtremelyLongAgentNameThatEx';
       expect(expectedAgent.length, 36);
       expect(
         longAgentAnalytics.userPropertyMap['ai_agent']?['value'],
