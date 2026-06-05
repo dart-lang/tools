@@ -116,6 +116,10 @@ abstract class Analytics {
   ///
   /// [flutterChannel] and [flutterVersion] are nullable in case the client
   /// using this package is unable to resolve those values.
+  ///
+  /// [agent] is an optional parameter to capture the name of any AI coding
+  /// assistant/agent executing the tool. Examples include "Claude Code",
+  /// "Cursor", or "Copilot".
   factory Analytics.development({
     required DashTool tool,
     required String dartVersion,
@@ -423,7 +427,7 @@ class AnalyticsImpl implements Analytics {
          ),
          locale: io.Platform.localeName,
          clientIde: clientIde,
-         aiAgent: agent,
+         aiAgent: agent != null ? truncateStringToLength(agent, 36) : null,
        ),
        _enabledFeatures = enabledFeatures,
        _configHandler = ConfigHandler(
