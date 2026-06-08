@@ -1,0 +1,127 @@
+// Copyright (c) 2025, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'package:stats/stats.dart';
+
+/// The result of running a benchmark variant.
+///
+/// Contains the raw [samples] (time per operation in microseconds) and
+/// provides statistical analysis via [stats] and [confidenceInterval].
+class BenchmarkResult {
+  /// The name of the benchmark variant.
+  final String name;
+
+  /// The raw samples collected, where each value is microseconds per operation.
+  final List<double> samples;
+
+  /// Statistical analysis of the samples.
+  late final Stats stats;
+
+  /// The 95% confidence interval for the mean.
+  late final ConfidenceInterval confidenceInterval;
+
+  /// Whether steady state was mathematically proven.
+  final bool isStable;
+
+  /// The dynamically calibrated convergence threshold (if any).
+  final double? convergenceThreshold;
+
+  BenchmarkResult({
+    required this.name,
+    required this.samples,
+    this.isStable = true,
+    this.convergenceThreshold,
+  }) {
+    stats = Stats.fromData(samples);
+    confidenceInterval = ConfidenceInterval.calculate(
+      stats,
+      ConfidenceLevel.percent95,
+    );
+  }
+
+  factory BenchmarkResult.fromJson(Map<String, dynamic> json) {
+    final metrics = json['metrics'] as Map<String, dynamic>;
+    final rawSamples = (json['raw_samples_us'] as List<dynamic>)
+        .map((e) => (e as num).toDouble())
+        .toList();
+
+    return BenchmarkResult(
+      name: json['name'] as String,
+      samples: rawSamples,
+      isStable: metrics['isStable'] as bool? ?? true,
+      convergenceThreshold: (metrics['convergence_threshold'] as num? ?? 0.0)
+          .toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'raw_samples_us': samples,
+    'metrics': {
+      'samples_count': samples.length,
+      'mean_us': mean,
+      'median_us': median,
+      'std_dev_us': stdDev,
+      'cv': cv,
+      'confidence_interval_95': [
+        confidenceInterval.lowerBound,
+        confidenceInterval.upperBound,
+      ],
+      'isStable': isStable,
+      'convergence_threshold': convergenceThreshold ?? 0.0,
+    },
+  };
+
+  /// The median time per operation in microseconds.
+  double get median {
+    if (samples.isEmpty) return 0;
+    final sorted = List<double>.from(samples)..sort();
+    final mid = sorted.length ~/ 2;
+    if (sorted.length.isOdd) {
+      return sorted[mid];
+    }
+    return (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+
+  /// The mean time per operation in microseconds.
+  double get mean => stats.mean;
+
+  /// The standard deviation in microseconds.
+  double get stdDev => stats.sampleValues.standardDeviation;
+
+  /// The coefficient of variation (CV).
+  double get cv => stdDev / mean;
+
+  @override
+  String toString() {
+    final m = median.toStringAsFixed(2);
+    final c = (cv * 100).toStringAsFixed(1);
+    return '$name: $m us (CV: $c%)';
+  }
+}
+
+/// A comparison between two benchmark results.
+class BenchmarkComparison {
+  final BenchmarkResult test;
+  final BenchmarkResult baseline;
+
+  BenchmarkComparison({required this.test, required this.baseline});
+
+  /// How much faster the test result is compared to the baseline.
+  double get speedup => baseline.median / test.median;
+
+  /// The fractional improvement (negative for regressions).
+  double get improvement {
+    return (baseline.median - test.median) / baseline.median;
+  }
+
+  @override
+  String toString() {
+    final percent = improvement * 100;
+    final sign = percent >= 0 ? '+' : '';
+    final s = speedup.toStringAsFixed(2);
+    final i = percent.toStringAsFixed(1);
+    return '${test.name} vs ${baseline.name}: ${s}x ($sign$i%)';
+  }
+}
