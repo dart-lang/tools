@@ -1141,11 +1141,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         1,
         reason: 'There should only be one session after the initial send event',
       );
-      expect(
-        firstQuery.flutterChannelCount,
-        {'flutterChannel': 1},
-        reason: 'There should only be one flutter channel logged',
-      );
+      expect(firstQuery.flutterChannelCount, {
+        'flutterChannel': 1,
+      }, reason: 'There should only be one flutter channel logged');
       expect(firstQuery.toolCount, {
         'flutter-tool': 1,
       }, reason: 'There should only be one tool logged');
@@ -1202,11 +1200,10 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // Query the log file stats to verify that there are two tools
     final query = analytics.logFileStats()!;
 
-    expect(
-      query.toolCount,
-      {'flutter-tool': 1, 'dart-tool': 1},
-      reason: 'There should have been two tools in the persisted logs',
-    );
+    expect(query.toolCount, {
+      'flutter-tool': 1,
+      'dart-tool': 1,
+    }, reason: 'There should have been two tools in the persisted logs');
   });
 
   test('Check that log data missing some keys results in null for stats', () {
@@ -1327,11 +1324,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // Query the log file stats to verify that there are two tools
     final query = analytics.logFileStats()!;
 
-    expect(
-      query.toolCount,
-      {'dart-tool': 1},
-      reason: 'There should have only been on tool that sent events',
-    );
+    expect(query.toolCount, {
+      'dart-tool': 1,
+    }, reason: 'There should have only been on tool that sent events');
     expect(
       query.flutterChannelCount.isEmpty,
       true,
@@ -1356,11 +1351,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       query.sessionCount,
       reason: 'The session should have remained the same',
     );
-    expect(
-      query2.flutterChannelCount,
-      {'flutterChannel': 1},
-      reason: 'The first instance has flutter information initialized',
-    );
+    expect(query2.flutterChannelCount, {
+      'flutterChannel': 1,
+    }, reason: 'The first instance has flutter information initialized');
   });
 
   group('Testing against Google Analytics limitations:', () {

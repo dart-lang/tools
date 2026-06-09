@@ -7,7 +7,6 @@ import 'dart:mirrors';
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/src/event.dart';
-import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
   test('Event.analysisStatistics constructed', () {
@@ -196,6 +195,128 @@ void main() {
     );
     expect(constructedEvent.eventData['exitCode'], 0);
     expect(constructedEvent.eventData.length, 3);
+  });
+
+  test('Event.dartCliCommandExecuted constructed with Set of dependencies', () {
+    final deps = {'path', 'meta', 'collection'};
+    Event generateEvent() => Event.dartCliCommandExecuted(
+      name: 'name',
+      enabledExperiments: 'enabledExperiments',
+      exitCode: 0,
+      pubspecHasFlutterSdk: true,
+      pubspecDependencies: deps,
+    );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.dartCliCommandExecuted);
+    expect(constructedEvent.eventData['name'], 'name');
+    expect(
+      constructedEvent.eventData['enabledExperiments'],
+      'enabledExperiments',
+    );
+    expect(constructedEvent.eventData['exitCode'], 0);
+    expect(constructedEvent.eventData['pubspec_has_flutter_sdk'], true);
+
+    // Delegates chunking to chunkDependencies
+    final expectedChunks = chunkDependencies(deps);
+    expect(
+      constructedEvent.eventData['pubspec_dep_0'],
+      expectedChunks['pubspec_dep_0'],
+    );
+    expect(constructedEvent.eventData.length, 5);
+  });
+
+  test('Event.dartCliCommandExecuted delegates to chunkDependencies', () {
+    final deps = <String>{};
+    for (var i = 1; i <= 50; i++) {
+      deps.add('dep_$i');
+    }
+
+    final event = Event.dartCliCommandExecuted(
+      name: 'name',
+      enabledExperiments: 'enabledExperiments',
+      pubspecDependencies: deps,
+    );
+
+    final expected = chunkDependencies(deps);
+    for (final entry in expected.entries) {
+      expect(event.eventData[entry.key], entry.value);
+    }
+  });
+
+  group('chunkDependencies', () {
+    test('empty set returns empty map', () {
+      expect(chunkDependencies({}), isEmpty);
+    });
+
+    test('sorts deterministically using FNV-1a hash values', () {
+      final deps = {'path', 'meta', 'collection', 'args', 'yaml', 'http'};
+
+      // Verification of determinism across multiple calls
+      final result1 = chunkDependencies(deps);
+      final result2 = chunkDependencies(deps);
+      expect(result1, result2);
+
+      // Verify that it is NOT sorted alphabetically.
+      // Alphabetical order would be: args, collection, http, meta, path, yaml
+      final alphabeticalList = deps.toList()..sort();
+      final reportedList = result1['pubspec_dep_0']!.split(',');
+      expect(reportedList, isNot(alphabeticalList));
+    });
+
+    test('chunks correctly based on 100-character limit', () {
+      // 10 dependencies, each 16 characters.
+      // Delimited by ',' means 17 characters per dep (except last).
+      final deps = <String>{};
+      for (var i = 1; i <= 10; i++) {
+        deps.add('dep_${i.toString().padLeft(2, '0')}_123456789');
+      }
+
+      final result = chunkDependencies(deps);
+
+      // Since each dep is 16 chars, 6 deps would be 6 * 16 + 5 = 101 chars,
+      // which is > 100. So max 5 deps fit in a single chunk
+      // (5 * 16 + 4 = 84 chars). Therefore, it must be split across
+      // exactly 2 chunks.
+      expect(result.containsKey('pubspec_dep_0'), isTrue);
+      expect(result.containsKey('pubspec_dep_1'), isTrue);
+      expect(result.containsKey('pubspec_dep_2'), isFalse);
+
+      expect(result['pubspec_dep_0']!.length, lessThanOrEqualTo(100));
+      expect(result['pubspec_dep_1']!.length, lessThanOrEqualTo(100));
+
+      final allReported = <String>{
+        ...result['pubspec_dep_0']!.split(','),
+        ...result['pubspec_dep_1']!.split(','),
+      };
+      expect(allReported, deps);
+    });
+
+    test('caps at 20 chunks', () {
+      // Generate 150 dependencies, each 15 characters.
+      // This would require ~24 chunks, but must be capped at 20.
+      final deps = <String>{};
+      for (var i = 1; i <= 150; i++) {
+        deps.add('dep_${i.toString().padLeft(3, '0')}_12345678');
+      }
+
+      final result = chunkDependencies(deps);
+
+      expect(result.containsKey('pubspec_dep_0'), isTrue);
+      expect(result.containsKey('pubspec_dep_19'), isTrue);
+      expect(result.containsKey('pubspec_dep_20'), isFalse);
+      expect(result.length, 20);
+    });
+
+    test('guards against and skips package names > 100 characters', () {
+      final longName = 'a' * 101;
+      final result = chunkDependencies({longName, 'path'});
+
+      expect(result['pubspec_dep_0'], 'path');
+      expect(result.length, 1);
+    });
   });
 
   test('Event.doctorValidatorResult constructed', () {

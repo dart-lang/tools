@@ -1,3 +1,11 @@
+## 8.0.16
+
+- Added optional `pubspecHasFlutterSdk` and `pubspecDependencies` parameters to
+  the `Event.dartCliCommandExecuted` constructor.
+- Dependencies are deterministically sorted and chunked using a hash-based
+  algorithm to fit within Google Analytics 4 parameter limitations without
+  alphabetical bias.
+
 ## 8.0.15
 - Added IDE and plugin information to `Event.serverSession`.
 - Discard any `Exception` or `Error` thrown while reading or writing analytics logs.
@@ -10,7 +18,7 @@
 
 ## 8.0.12
 - Require Dart 3.10
-- Added `success` indicator and `label` to `Event.flutterTrackAndroidDependencies` 
+- Added `success` indicator and `label` to `Event.flutterTrackAndroidDependencies`
 
 ## 8.0.11
 - Added `Event.flutterTrackAndroidDependencies` to track android dependencies.
