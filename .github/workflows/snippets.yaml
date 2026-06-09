@@ -1,0 +1,44 @@
+name: package:snippets
+permissions: read-all
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/snippets.yaml'
+      - 'pkgs/snippets/**'
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/snippets.yaml'
+      - 'pkgs/snippets/**'
+  schedule:
+    - cron: '0 0 * * 0' # weekly
+
+defaults:
+  run:
+    working-directory: pkgs/snippets
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: ['3.12', dev]
+        include:
+          - sdk: dev
+            check-formatting: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
+        with:
+          sdk: ${{matrix.sdk}}
+
+      - run: dart pub get
+
+      - run: dart analyze --fatal-infos
+
+      - run: dart format --output=none --set-exit-if-changed .
+        if: ${{matrix.check-formatting}}
+
+      - run: dart test
