@@ -1206,9 +1206,18 @@ Map<String, String> chunkDependencies(Set<String> deps) {
   if (deps.isEmpty) return const {};
 
   // Sort deterministically by FNV-1a hash value instead of alphabetically
-  // to eliminate systemic alphabetical bias during truncation.
+  // to eliminate systemic alphabetical bias during truncation. Fall back to
+  // alphabetical comparison if there is a hash collision to guarantee absolute
+  // determinism.
   final sortedDeps = deps.toList()
-    ..sort((a, b) => _fnv1a(a).compareTo(_fnv1a(b)));
+    ..sort((a, b) {
+      final hashA = _fnv1a(a);
+      final hashB = _fnv1a(b);
+      if (hashA != hashB) {
+        return hashA.compareTo(hashB);
+      }
+      return a.compareTo(b);
+    });
 
   final chunks = <String, String>{};
   var currentChunk = <String>[];
@@ -1261,7 +1270,9 @@ int _fnv1a(String s) {
   var hash = 2166136261;
   for (var i = 0; i < s.length; i++) {
     hash ^= s.codeUnitAt(i);
-    hash = (hash * 16777619) & 0xffffffff;
+    // Split the multiplication to prevent exceeding the 53-bit safe integer
+    // limit on the web.
+    hash = (((hash & 0xff) << 24) + (hash * 403)) & 0xffffffff;
   }
   return hash;
 }
