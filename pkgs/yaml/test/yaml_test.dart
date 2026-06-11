@@ -143,6 +143,26 @@ void main() {
             }
           }));
     });
+    test('from list elements with missing "- " prefix', () {
+      final yaml = cleanUpLiteral(r'''
+        linter:
+          rules:
+            - annotate_overrides
+            alway
+            ''');
+      var result = loadYaml(yaml, recover: true, errorListener: collector);
+      expect(
+          result,
+          deepEquals({
+            'linter': {
+              'rules': ['annotate_overrides', 'alway'],
+            }
+          }));
+      expect(collector.errors.length, equals(1));
+      expectErrorAtLineCol(collector.errors[0],
+          "Expected ':'. If this is a list entry, it must start with '- '.",
+          4, 4);
+    });
   });
 
   test('includes source span information', () {
