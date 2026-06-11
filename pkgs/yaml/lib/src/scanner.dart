@@ -138,6 +138,12 @@ class Scanner {
   /// The YAML spec specifies that the initial indentation level is -1 spaces.
   final _indents = <int>[-1];
 
+  /// The token type pushed at each indent level in [_indents].
+  ///
+  /// Always the same length as [_indents]. The base level (`-1`) has no
+  /// associated token, so its entry is `null`.
+  final _indentTypes = <TokenType?>[null];
+
   /// Whether a simple key is allowed in this context.
   ///
   /// A simple key refers to any mapping key that doesn't have an explicit "?".
@@ -482,7 +488,14 @@ class Scanner {
       if (key.line == _scanner.line) continue;
 
       if (key.required) {
-        _reportError(YamlException("Expected ':'.", _scanner.emptySpan));
+        final keyIndentIdx = _indents.lastIndexOf(key.column);
+        final inBlockSequence = keyIndentIdx >= 0 &&
+            _indentTypes[keyIndentIdx] == TokenType.blockSequenceStart;
+        final message = StringBuffer("Expected ':'.");
+        if (inBlockSequence) {
+          message.write(" If this is a list entry, it must start with '- '.");
+        }
+        _reportError(YamlException(message.toString(), _scanner.emptySpan));
         _tokens.insert(key.tokenNumber - _tokensParsed,
             Token(TokenType.key, key.location.pointSpan() as FileSpan));
       }
@@ -551,6 +564,7 @@ class Scanner {
     // Push the current indentation level to the stack and set the new
     // indentation level.
     _indents.add(column);
+    _indentTypes.add(type);
 
     // Create a token and insert it into the queue.
     var token = Token(type, location.pointSpan() as FileSpan);
@@ -571,6 +585,7 @@ class Scanner {
     while (_indent > column) {
       _tokens.add(Token(TokenType.blockEnd, _scanner.emptySpan));
       _indents.removeLast();
+      _indentTypes.removeLast();
     }
   }
 
