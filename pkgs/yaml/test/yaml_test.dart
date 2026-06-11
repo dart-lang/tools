@@ -159,9 +159,11 @@ void main() {
             }
           }));
       expect(collector.errors.length, equals(1));
-      expectErrorAtLineCol(collector.errors[0],
+      expectErrorAtLineCol(
+          collector.errors[0],
           "Expected ':'. If this is a list entry, it must start with '- '.",
-          4, 4);
+          4,
+          4);
     });
   });
 
