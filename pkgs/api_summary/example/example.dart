@@ -12,8 +12,8 @@ void main() async {
 
   print('Generating API summary for the api_summary package...\n');
 
-  // Call summarizePackage to get the public API footprints
-  final summary = await summarizePackage(packagePath, 'api_summary');
+  // Call apiSummary to get the public API footprints
+  final summary = await apiSummary(packagePath);
 
   // Output the generated summary to stdout
   print(summary);

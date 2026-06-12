@@ -65,7 +65,7 @@ dependencies:
 
 ### Basic Example
 
-Call the `summarizePackage` function to generate a package's public API
+Call the `apiSummary` function to generate a package's public API
 representation:
 
 ```dart
@@ -73,7 +73,7 @@ import 'dart:io';
 import 'package:api_summary/api_summary.dart';
 
 void main() async {
-  final summary = await summarizePackage('/path/to/package', 'my_package');
+  final summary = await apiSummary('/path/to/package');
   print(summary);
 }
 ```
@@ -103,9 +103,8 @@ base class MyCustomizer extends ApiSummaryCustomizer {
 }
 
 void main() async {
-  final summary = await summarizePackage(
+  final summary = await apiSummary(
     '/path/to/package',
-    'my_package',
     createCustomizer: () => MyCustomizer(),
   );
   print(summary);
@@ -134,16 +133,16 @@ void main() {
     final packageDir = Directory.current.path;
     final goldenFile = File(p.join(packageDir, 'api.txt'));
 
-    final actualOutput = await summarizePackage(packageDir, 'my_package');
+    final actualOutput = await apiSummary(packageDir);
 
     if (!goldenFile.existsSync()) {
       // In a new setup or after updates, generate the golden file first
-      goldenFile.writeAsStringSync(actualOutput);
+      goldenFile.writeAsStringSync(actualOutput.toString());
       fail('Golden file api.txt did not exist and has been generated. Please review and commit it.');
     }
 
     final expectedOutput = goldenFile.readAsStringSync();
-    expect(actualOutput, equals(expectedOutput));
+    expect(actualOutput.toString(), equals(expectedOutput));
   });
 }
 ```
