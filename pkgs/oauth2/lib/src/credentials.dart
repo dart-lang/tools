@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
+import 'client_authenticator.dart';
 import 'handle_access_token_response.dart';
 import 'parameters.dart';
 import 'utils.dart';
@@ -207,6 +208,13 @@ class Credentials {
   /// You may request different scopes than the default by passing in
   /// [newScopes]. These must be a subset of [scopes].
   ///
+  /// [customAuth] is an optional callback to add additional client
+  /// authentication headers or body parameters to a token request for advanced
+  /// scenarios, such as when using a JWT Bearer token for client authentication
+  /// per [RFC 7523](https://tools.ietf.org/html/rfc7523#section-2.2). When
+  /// provided, it replaces the default `basicAuth` credentials integration in
+  /// token requests.
+  ///
   /// This throws an [ArgumentError] if [secret] is passed without [identifier],
   /// a [StateError] if these credentials can't be refreshed, an
   /// [AuthorizationException] if refreshing the credentials fails, or a
@@ -216,6 +224,8 @@ class Credentials {
       String? secret,
       Iterable<String>? newScopes,
       bool basicAuth = true,
+      ClientAuthenticator? customAuth,
+      Iterable<Uri>? resources,
       http.Client? httpClient}) async {
     var scopes = this.scopes;
     if (newScopes != null) scopes = newScopes.toList();
@@ -238,14 +248,42 @@ class Credentials {
 
     var headers = <String, String>{};
 
-    var body = {'grant_type': 'refresh_token', 'refresh_token': refreshToken};
+    var body = <String, String>{
+      'grant_type': 'refresh_token',
+      'refresh_token': refreshToken!,
+    };
     if (scopes.isNotEmpty) body['scope'] = scopes.join(_delimiter);
-
-    if (basicAuth && secret != null) {
+    if (customAuth != null) {
+      if (identifier != null) body['client_id'] = identifier;
+      await customAuth(headers, body);
+    } else if (basicAuth && secret != null) {
       headers['Authorization'] = basicAuthHeader(identifier!, secret);
     } else {
       if (identifier != null) body['client_id'] = identifier;
       if (secret != null) body['client_secret'] = secret;
+    }
+
+    if (resources != null && resources.isNotEmpty) {
+      final encodedBody = body.entries
+          .map((e) => '${Uri.encodeQueryComponent(e.key)}='
+              '${Uri.encodeQueryComponent(e.value)}')
+          .toList();
+      for (final r in resources) {
+        encodedBody.add('resource=${Uri.encodeQueryComponent(r.toString())}');
+      }
+      headers['content-type'] = 'application/x-www-form-urlencoded';
+      var response = await httpClient.post(tokenEndpoint,
+          headers: headers, body: encodedBody.join('&'));
+      var credentials = handleAccessTokenResponse(
+          response, tokenEndpoint, startTime, scopes, _delimiter,
+          getParameters: _getParameters);
+      if (credentials.refreshToken != null) return credentials;
+      return Credentials(credentials.accessToken,
+          refreshToken: refreshToken,
+          idToken: credentials.idToken,
+          tokenEndpoint: credentials.tokenEndpoint,
+          scopes: credentials.scopes,
+          expiration: credentials.expiration);
     }
 
     var response =
