@@ -303,7 +303,7 @@ enum AiAgent {
   ///
   /// Returns `null` if no AI agent is detected.
   static String? detectAgentName(Map<String, String> environment) {
-    const String genericAiAgentLabel = 'Generic AI Agent';
+    const genericAiAgentLabel = 'Generic AI Agent';
 
     if (environment.containsKey('CLAUDECODE') ||
         environment.containsKey('CLAUDE_CODE') ||
@@ -315,7 +315,8 @@ enum AiAgent {
       return antigravity.label;
     }
 
-    if (environment.containsKey('GEMINI_AGENT') || environment.containsKey('GEMINI_CLI')) {
+    if (environment.containsKey('GEMINI_AGENT') ||
+        environment.containsKey('GEMINI_CLI')) {
       return gemini.label;
     }
 
@@ -325,7 +326,8 @@ enum AiAgent {
     }
 
     if (environment.keys.any(
-      (String key) => key.startsWith('COPILOT_') || key.startsWith('GITHUB_COPILOT'),
+      (String key) =>
+          key.startsWith('COPILOT_') || key.startsWith('GITHUB_COPILOT'),
     )) {
       return copilot.label;
     }
@@ -335,7 +337,8 @@ enum AiAgent {
       return aider.label;
     }
 
-    if (environment.containsKey('DEVIN') || environment.containsKey('DEVIN_WORKSPACE_ID')) {
+    if (environment.containsKey('DEVIN') ||
+        environment.containsKey('DEVIN_WORKSPACE_ID')) {
       return devin.label;
     }
 
@@ -353,7 +356,8 @@ enum AiAgent {
       return codex.label;
     }
 
-    if (environment.containsKey('OPENCODE') || environment.containsKey('OPENCODE_CLIENT')) {
+    if (environment.containsKey('OPENCODE') ||
+        environment.containsKey('OPENCODE_CLIENT')) {
       return openCode.label;
     }
 
@@ -365,7 +369,7 @@ enum AiAgent {
       return replit.label;
     }
 
-    String? agent = environment['AGENT'];
+    var agent = environment['AGENT'];
     if (agent != null && agent.isNotEmpty) {
       return agent == '1' ? genericAiAgentLabel : agent;
     }
