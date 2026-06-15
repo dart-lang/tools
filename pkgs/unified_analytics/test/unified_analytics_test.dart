@@ -885,31 +885,94 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
   test('AiAgent.detectAgentName detects AI agents based on environment', () {
     expect(AiAgent.detectAgentName(<String, String>{}), isNull);
 
-    expect(AiAgent.detectAgentName(<String, String>{'CLAUDECODE': '1'}), 'Claude Code');
-    expect(AiAgent.detectAgentName(<String, String>{'CLAUDE_CODE': '1'}), 'Claude Code');
-    expect(AiAgent.detectAgentName(<String, String>{'CLAUDE_CODE_IS_COWORK': '1'}), 'Claude Code');
-    expect(AiAgent.detectAgentName(<String, String>{'ANTIGRAVITY_AGENT': '1'}), 'Antigravity');
-    expect(AiAgent.detectAgentName(<String, String>{'GEMINI_AGENT': '1'}), 'Gemini');
-    expect(AiAgent.detectAgentName(<String, String>{'GEMINI_CLI': '1'}), 'Gemini');
-    expect(AiAgent.detectAgentName(<String, String>{'TERM_PROGRAM': 'cursor'}), 'Cursor');
-    expect(AiAgent.detectAgentName(<String, String>{'CURSOR_APP_VERSION': '1'}), 'Cursor');
-    expect(AiAgent.detectAgentName(<String, String>{'COPILOT_CLI': '1'}), 'Copilot');
-    expect(AiAgent.detectAgentName(<String, String>{'GITHUB_COPILOT': '1'}), 'Copilot');
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CLAUDECODE': '1'}),
+      'Claude Code',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CLAUDE_CODE': '1'}),
+      'Claude Code',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CLAUDE_CODE_IS_COWORK': '1'}),
+      'Claude Code',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'ANTIGRAVITY_AGENT': '1'}),
+      'Antigravity',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'GEMINI_AGENT': '1'}),
+      'Gemini',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'GEMINI_CLI': '1'}),
+      'Gemini',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'TERM_PROGRAM': 'cursor'}),
+      'Cursor',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_APP_VERSION': '1'}),
+      'Cursor',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'COPILOT_CLI': '1'}),
+      'Copilot',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'GITHUB_COPILOT': '1'}),
+      'Copilot',
+    );
     expect(AiAgent.detectAgentName(<String, String>{'AIDER': '1'}), 'Aider');
-    expect(AiAgent.detectAgentName(<String, String>{'AIDER_COMMAND': '1'}), 'Aider');
+    expect(
+      AiAgent.detectAgentName(<String, String>{'AIDER_COMMAND': '1'}),
+      'Aider',
+    );
     expect(AiAgent.detectAgentName(<String, String>{'DEVIN': '1'}), 'Devin');
-    expect(AiAgent.detectAgentName(<String, String>{'DEVIN_WORKSPACE_ID': '1'}), 'Devin');
-    expect(AiAgent.detectAgentName(<String, String>{'AMP_CURRENT_THREAD_ID': '1'}), 'Amp');
-    expect(AiAgent.detectAgentName(<String, String>{'AUGMENT_AGENT': '1'}), 'Augment');
+    expect(
+      AiAgent.detectAgentName(<String, String>{'DEVIN_WORKSPACE_ID': '1'}),
+      'Devin',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'AMP_CURRENT_THREAD_ID': '1'}),
+      'Amp',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'AUGMENT_AGENT': '1'}),
+      'Augment',
+    );
     expect(AiAgent.detectAgentName(<String, String>{'CODEX_CI': '1'}), 'Codex');
-    expect(AiAgent.detectAgentName(<String, String>{'OPENCODE': '1'}), 'OpenCode');
-    expect(AiAgent.detectAgentName(<String, String>{'PI_CODING_AGENT': '1'}), 'Pi');
+    expect(
+      AiAgent.detectAgentName(<String, String>{'OPENCODE': '1'}),
+      'OpenCode',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'PI_CODING_AGENT': '1'}),
+      'Pi',
+    );
     expect(AiAgent.detectAgentName(<String, String>{'REPL_ID': '1'}), 'Replit');
-    expect(AiAgent.detectAgentName(<String, String>{'SWE_AGENT': '1'}), 'Generic AI Agent');
-    expect(AiAgent.detectAgentName(<String, String>{'AI_AGENT': '1'}), 'Generic AI Agent');
-    expect(AiAgent.detectAgentName(<String, String>{'AGENT': '1'}), 'Generic AI Agent');
-    expect(AiAgent.detectAgentName(<String, String>{'AGENT': 'MyCustomAgent'}), 'MyCustomAgent');
-    expect(AiAgent.detectAgentName(<String, String>{'AI_AGENT': 'MyCustomAgent'}), 'MyCustomAgent');
+    expect(
+      AiAgent.detectAgentName(<String, String>{'SWE_AGENT': '1'}),
+      'Generic AI Agent',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'AI_AGENT': '1'}),
+      'Generic AI Agent',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'AGENT': '1'}),
+      'Generic AI Agent',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'AGENT': 'MyCustomAgent'}),
+      'MyCustomAgent',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'AI_AGENT': 'MyCustomAgent'}),
+      'MyCustomAgent',
+    );
   });
 
   test('The minimum session duration should be at least 30 minutes', () {
@@ -1231,11 +1294,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         1,
         reason: 'There should only be one session after the initial send event',
       );
-      expect(
-        firstQuery.flutterChannelCount,
-        {'flutterChannel': 1},
-        reason: 'There should only be one flutter channel logged',
-      );
+      expect(firstQuery.flutterChannelCount, {
+        'flutterChannel': 1,
+      }, reason: 'There should only be one flutter channel logged');
       expect(firstQuery.toolCount, {
         'flutter-tool': 1,
       }, reason: 'There should only be one tool logged');
@@ -1292,11 +1353,10 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // Query the log file stats to verify that there are two tools
     final query = analytics.logFileStats()!;
 
-    expect(
-      query.toolCount,
-      {'flutter-tool': 1, 'dart-tool': 1},
-      reason: 'There should have been two tools in the persisted logs',
-    );
+    expect(query.toolCount, {
+      'flutter-tool': 1,
+      'dart-tool': 1,
+    }, reason: 'There should have been two tools in the persisted logs');
   });
 
   test('Check that log data missing some keys results in null for stats', () {
@@ -1417,11 +1477,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // Query the log file stats to verify that there are two tools
     final query = analytics.logFileStats()!;
 
-    expect(
-      query.toolCount,
-      {'dart-tool': 1},
-      reason: 'There should have only been on tool that sent events',
-    );
+    expect(query.toolCount, {
+      'dart-tool': 1,
+    }, reason: 'There should have only been on tool that sent events');
     expect(
       query.flutterChannelCount.isEmpty,
       true,
@@ -1446,11 +1504,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       query.sessionCount,
       reason: 'The session should have remained the same',
     );
-    expect(
-      query2.flutterChannelCount,
-      {'flutterChannel': 1},
-      reason: 'The first instance has flutter information initialized',
-    );
+    expect(query2.flutterChannelCount, {
+      'flutterChannel': 1,
+    }, reason: 'The first instance has flutter information initialized');
   });
 
   group('Testing against Google Analytics limitations:', () {
