@@ -1,6 +1,11 @@
 ## 1.1.0-wip
 
 * Add a `deepCopyLinks` argument to `copyPath` and `copyPathSync`.
+* Remove the `@visibleForTesting` annotation from `SharedStdIn`.
+* **Potentially Breaking** Make the stream parameter required for
+  `SharedStdIn.new`.
+  * This is treated as non-breaking because the class was marked as visible
+    for testing only.
 * **Potentially Breaking** `AnsiCode` and `AnsiCodeType` marked final. These
   were never intended to support subclasses and were already closed for
   extension with private generative constructors. They are now marked `final`
