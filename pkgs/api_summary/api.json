@@ -3,6 +3,7 @@
   "libraries": [
     {
       "uri": "package:api_summary/api_summary.dart",
+      "isPublicEntryPoint": true,
       "classes": [
         {
           "name": "ApiClass",
@@ -119,6 +120,15 @@
                 },
                 {
                   "name": "isExperimental",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isVisibleForTesting",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -321,26 +331,6 @@
               }
             },
             {
-              "name": "isDeprecated",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isExperimental",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
               "name": "methods",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -389,16 +379,6 @@
                     "libraryUri": "package:api_summary/src/api_declaration.dart"
                   }
                 ]
-              }
-            },
-            {
-              "name": "status",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiDeclarationStatus",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
               }
             },
             {
@@ -505,6 +485,36 @@
           ],
           "methods": [
             {
+              "name": "isDeprecated",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isExperimental",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isVisibleForTesting",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
               "name": "locationUri",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -523,6 +533,16 @@
                 "kind": "interface",
                 "name": "String",
                 "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "status",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiDeclarationStatus",
+                "libraryUri": "package:api_summary/src/api_declaration.dart"
               }
             }
           ]
@@ -671,7 +691,6 @@
                     "name": "bool",
                     "libraryUri": "dart:core"
                   },
-                  "isRequired": true,
                   "isNamed": true
                 },
                 {
@@ -691,6 +710,15 @@
                     "libraryUri": "dart:core"
                   },
                   "isRequired": true,
+                  "isNamed": true
+                },
+                {
+                  "name": "isVisibleForTesting",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
                   "isNamed": true
                 },
                 {
@@ -797,26 +825,6 @@
           ],
           "methods": [
             {
-              "name": "isDeprecated",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isExperimental",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
               "name": "isStatic",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -861,16 +869,6 @@
                 "kind": "interface",
                 "name": "ApiType",
                 "libraryUri": "package:api_summary/src/api_type.dart"
-              }
-            },
-            {
-              "name": "status",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiDeclarationStatus",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
               }
             },
             {
@@ -1011,6 +1009,15 @@
                   "isNamed": true
                 },
                 {
+                  "name": "isVisibleForTesting",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "locationUri",
                   "type": {
                     "kind": "interface",
@@ -1104,26 +1111,6 @@
               }
             },
             {
-              "name": "isDeprecated",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isExperimental",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
               "name": "methods",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -1138,16 +1125,6 @@
                     "libraryUri": "package:api_summary/src/api_declaration.dart"
                   }
                 ]
-              }
-            },
-            {
-              "name": "status",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiDeclarationStatus",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
               }
             },
             {
@@ -1312,6 +1289,15 @@
                   "isNamed": true
                 },
                 {
+                  "name": "isVisibleForTesting",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "locationUri",
                   "type": {
                     "kind": "interface",
@@ -1439,26 +1425,6 @@
               }
             },
             {
-              "name": "isDeprecated",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isExperimental",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
               "name": "methods",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -1483,16 +1449,6 @@
                 "kind": "interface",
                 "name": "ApiType",
                 "libraryUri": "package:api_summary/src/api_type.dart"
-              }
-            },
-            {
-              "name": "status",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiDeclarationStatus",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
               }
             },
             {
@@ -2098,6 +2054,16 @@
                   "isNamed": true
                 },
                 {
+                  "name": "isPublicEntryPoint",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isRequired": true,
+                  "isNamed": true
+                },
+                {
                   "name": "mixins",
                   "type": {
                     "kind": "interface",
@@ -2228,6 +2194,16 @@
                     "libraryUri": "package:api_summary/src/api_declaration.dart"
                   }
                 ]
+              }
+            },
+            {
+              "name": "isPublicEntryPoint",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
               }
             },
             {
@@ -2985,6 +2961,16 @@
               ]
             },
             {
+              "name": "includeImplicitNonPublicMembers",
+              "locationUri": "package:api_summary/src/api_summary_customizer.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
               "name": "initialScanComplete",
               "locationUri": "package:api_summary/src/api_summary_customizer.dart",
               "kind": "method",
@@ -3297,11 +3283,19 @@
                     "name": "bool",
                     "libraryUri": "dart:core"
                   },
-                  "isRequired": true,
                   "isNamed": true
                 },
                 {
                   "name": "isExperimental",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isVisibleForTesting",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -3383,36 +3377,6 @@
                 "kind": "interface",
                 "name": "ApiType",
                 "libraryUri": "package:api_summary/src/api_type.dart"
-              }
-            },
-            {
-              "name": "isDeprecated",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isExperimental",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "status",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiDeclarationStatus",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
               }
             },
             {

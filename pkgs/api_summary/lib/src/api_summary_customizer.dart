@@ -43,11 +43,28 @@ base class ApiSummaryCustomizer {
   /// The initial scan won't be performed until the returned Future completes.
   Future<void> setupComplete() async {}
 
+  /// Whether to include full member signatures (constructors, methods) for
+  /// non-public declarations that are implicitly exposed via public signatures.
+  bool get includeImplicitNonPublicMembers => false;
+
   /// Called after [initialScanComplete] to determine if details about an
   /// element should be shown in the API summary.
   ///
   /// The default behavior is to show details about elements in
-  /// [topLevelPublicElements].
-  bool shouldShowDetails(Element element) =>
-      topLevelPublicElements.contains(element);
+  /// [topLevelPublicElements], or non-public package elements when
+  /// [includeImplicitNonPublicMembers] is true.
+  bool shouldShowDetails(Element element) {
+    if (topLevelPublicElements.contains(element)) {
+      return true;
+    }
+    if (includeImplicitNonPublicMembers && element.library != null) {
+      final uri = element.library!.uri;
+      if (uri.scheme == 'package' &&
+          uri.pathSegments.isNotEmpty &&
+          uri.pathSegments[0] == packageName) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

@@ -74,7 +74,10 @@ class _ApiBuilder {
         publicApiLibraries.add(library);
         _libraryBuilders.putIfAbsent(
           library.uri.toString(),
-          () => _ApiLibraryBuilder(library.uri.toString()),
+          () => _ApiLibraryBuilder(
+            library.uri.toString(),
+            isPublicEntryPoint: true,
+          ),
         );
       }
     }
@@ -109,7 +112,10 @@ class _ApiBuilder {
       for (final library in libraries) {
         final builder = _libraryBuilders.putIfAbsent(
           library.uri.toString(),
-          () => _ApiLibraryBuilder(library.uri.toString()),
+          () => _ApiLibraryBuilder(
+            library.uri.toString(),
+            isPublicEntryPoint: library.uri.isInPublicLibOf(_pkgName),
+          ),
         );
         switch (apiElement) {
           case ApiClass():
@@ -150,6 +156,9 @@ class _ApiBuilder {
       'Legacy nullability (.star) is not supported.',
     ),
   };
+
+  bool _isVisibleForTesting(Element element) =>
+      element.nonSynthetic.metadata.hasVisibleForTesting;
 
   ApiType _describeType(DartType type) {
     final isNullable = _isNullable(type.nullabilitySuffix);
@@ -347,6 +356,7 @@ class _ApiBuilder {
       methods: methods,
       isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
+      isVisibleForTesting: _isVisibleForTesting(element),
     );
   }
 
@@ -368,6 +378,7 @@ class _ApiBuilder {
       methods: methods,
       isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
+      isVisibleForTesting: _isVisibleForTesting(element),
     );
   }
 
@@ -396,6 +407,7 @@ class _ApiBuilder {
       methods: methods,
       isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
+      isVisibleForTesting: _isVisibleForTesting(element),
     );
   }
 
@@ -435,6 +447,7 @@ class _ApiBuilder {
       isStatic: element.isStatic,
       isDeprecated: nonSyntheticElement.metadata.hasDeprecated,
       isExperimental: nonSyntheticElement.metadata.hasExperimental,
+      isVisibleForTesting: _isVisibleForTesting(element),
     );
   }
 
@@ -446,11 +459,13 @@ class _ApiBuilder {
     aliasedType: _describeType(element.aliasedType),
     isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
     isExperimental: element.nonSynthetic.metadata.hasExperimental,
+    isVisibleForTesting: _isVisibleForTesting(element),
   );
 }
 
 class _ApiLibraryBuilder {
   final String uri;
+  final bool isPublicEntryPoint;
   final classes = <ApiClass>[];
   final enums = <ApiClass>[];
   final mixins = <ApiClass>[];
@@ -459,7 +474,7 @@ class _ApiLibraryBuilder {
   final functions = <ApiExecutable>[];
   final typeAliases = <ApiTypeAlias>[];
 
-  _ApiLibraryBuilder(this.uri);
+  _ApiLibraryBuilder(this.uri, {required this.isPublicEntryPoint});
 
   ApiLibrary build() {
     classes.sortBy((e) => e.name);
@@ -471,6 +486,7 @@ class _ApiLibraryBuilder {
     typeAliases.sortBy((e) => e.name);
     return ApiLibrary(
       uri: uri,
+      isPublicEntryPoint: isPublicEntryPoint,
       classes: classes,
       enums: enums,
       mixins: mixins,

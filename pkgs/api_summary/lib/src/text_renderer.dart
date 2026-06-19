@@ -296,8 +296,7 @@ class _ApiTextRenderer {
 
     _renderParentheticals(
       parentheticals: parentheticals,
-      isDeprecated: element.isDeprecated,
-      isExperimental: element.isExperimental,
+      element: element,
       node: node,
     );
 
@@ -320,8 +319,7 @@ class _ApiTextRenderer {
 
     _renderParentheticals(
       parentheticals: parentheticals,
-      isDeprecated: element.isDeprecated,
-      isExperimental: element.isExperimental,
+      element: element,
       node: node,
     );
     _renderMembers([], element.methods, node);
@@ -356,8 +354,7 @@ class _ApiTextRenderer {
 
     _renderParentheticals(
       parentheticals: parentheticals,
-      isDeprecated: element.isDeprecated,
-      isExperimental: element.isExperimental,
+      element: element,
       node: node,
     );
     _renderMembers(element.constructors, element.methods, node);
@@ -404,8 +401,7 @@ class _ApiTextRenderer {
 
     _renderParentheticals(
       parentheticals: parentheticals,
-      isDeprecated: element.isDeprecated,
-      isExperimental: element.isExperimental,
+      element: element,
       node: node,
     );
   }
@@ -432,8 +428,7 @@ class _ApiTextRenderer {
 
     _renderParentheticals(
       parentheticals: parentheticals,
-      isDeprecated: element.isDeprecated,
-      isExperimental: element.isExperimental,
+      element: element,
       node: node,
     );
   }
@@ -612,15 +607,17 @@ class _ApiTextRenderer {
 
   void _renderParentheticals({
     required List<List<Object?>> parentheticals,
-    required bool isDeprecated,
-    required bool isExperimental,
+    required ApiDeclaration element,
     required Node<MemberSortKey> node,
   }) {
-    if (isDeprecated) {
+    if (element.isDeprecated) {
       parentheticals.add(['deprecated']);
     }
-    if (isExperimental) {
+    if (element.isExperimental) {
       parentheticals.add(['experimental']);
+    }
+    if (element.isVisibleForTesting) {
+      parentheticals.add(['visible for testing']);
     }
     if (parentheticals.isNotEmpty) {
       node.text.addAll(parentheticals.separatedBy(prefix: ' (', suffix: ')'));

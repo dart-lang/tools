@@ -819,6 +819,29 @@ dart:core:
 ''');
   }
 
+  Future<void> test_visibleForTesting() async {
+    final description = await _build({
+      '$testPackageLibPath/temp.dart': '''
+import 'package:meta/meta.dart';
+
+@visibleForTesting
+class C {}
+
+@visibleForTesting
+void f() {}
+''',
+    });
+
+    expect(description, '''
+package:test/temp.dart:
+  f (function: void Function(), visible for testing)
+  C (class extends Object, visible for testing):
+    new (constructor: C Function(), visible for testing)
+dart:core:
+  Object (referenced)
+''');
+  }
+
   Future<String> _build(
     Map<String, String> files, {
     _ValidatingCustomizer Function()? createCustomizer,

@@ -82,6 +82,7 @@ final class ApiSummary {
 /// A summary of the declarations exposed by a single library within a package.
 final class ApiLibrary {
   final String uri;
+  final bool isPublicEntryPoint;
   final List<ApiClass> classes;
   final List<ApiClass> enums;
   final List<ApiClass> mixins;
@@ -92,6 +93,7 @@ final class ApiLibrary {
 
   ApiLibrary({
     required this.uri,
+    required this.isPublicEntryPoint,
     required this.classes,
     required this.enums,
     required this.mixins,
@@ -103,6 +105,7 @@ final class ApiLibrary {
 
   factory ApiLibrary.fromJson(Map<String, dynamic> json) => ApiLibrary(
     uri: json['uri'] as String,
+    isPublicEntryPoint: json['isPublicEntryPoint'] as bool,
     classes: _parseList(json, 'classes', ApiClass.fromJson),
     enums: _parseList(json, 'enums', ApiClass.fromJson),
     mixins: _parseList(json, 'mixins', ApiClass.fromJson),
@@ -118,6 +121,7 @@ final class ApiLibrary {
 
   Map<String, dynamic> toJson() => {
     'uri': uri,
+    'isPublicEntryPoint': isPublicEntryPoint,
     if (classes.isNotEmpty) 'classes': classes.map((e) => e.toJson()).toList(),
     if (enums.isNotEmpty) 'enums': enums.map((e) => e.toJson()).toList(),
     if (mixins.isNotEmpty) 'mixins': mixins.map((e) => e.toJson()).toList(),
@@ -137,8 +141,19 @@ final class ApiLibrary {
 sealed class ApiDeclaration {
   final String name;
   final String? locationUri;
+  final ApiDeclarationStatus status;
+  final bool isDeprecated;
+  final bool isExperimental;
+  final bool isVisibleForTesting;
 
-  const ApiDeclaration({required this.name, this.locationUri});
+  const ApiDeclaration({
+    required this.name,
+    this.locationUri,
+    this.status = ApiDeclarationStatus.public,
+    this.isDeprecated = false,
+    this.isExperimental = false,
+    this.isVisibleForTesting = false,
+  });
 }
 
 /// A summary of a Dart class, mixin, or enum declaration.
@@ -146,7 +161,6 @@ sealed class ApiDeclaration {
 /// Models class modifiers, constructors, methods, type parameters, hierarchy
 /// relationships, deprecation status, and other element metadata.
 final class ApiClass extends ApiDeclaration {
-  final ApiDeclarationStatus status;
   final List<String> typeParameters;
   final List<ApiType> typeParameterBounds;
   final ApiType? supertype;
@@ -157,13 +171,11 @@ final class ApiClass extends ApiDeclaration {
   final List<String> immediateSubtypes;
   final List<ApiExecutable> constructors;
   final List<ApiExecutable> methods;
-  final bool isDeprecated;
-  final bool isExperimental;
 
   ApiClass({
     required super.name,
     super.locationUri,
-    this.status = ApiDeclarationStatus.public,
+    super.status,
     required this.typeParameters,
     this.typeParameterBounds = const [],
     this.supertype,
@@ -174,8 +186,9 @@ final class ApiClass extends ApiDeclaration {
     required this.immediateSubtypes,
     required this.constructors,
     required this.methods,
-    this.isDeprecated = false,
-    this.isExperimental = false,
+    super.isDeprecated,
+    super.isExperimental,
+    super.isVisibleForTesting,
   });
 
   factory ApiClass.fromJson(Map<String, dynamic> json) => ApiClass(
@@ -207,6 +220,7 @@ final class ApiClass extends ApiDeclaration {
     methods: _parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
+    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
   );
 
   Map<String, dynamic> toJson() => {
@@ -234,6 +248,7 @@ final class ApiClass extends ApiDeclaration {
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isExperimental) 'isExperimental': isExperimental,
+    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
   };
 }
 
@@ -241,24 +256,22 @@ final class ApiClass extends ApiDeclaration {
 ///
 /// Models type parameters, the extended type, and extension methods.
 final class ApiExtension extends ApiDeclaration {
-  final ApiDeclarationStatus status;
   final List<String> typeParameters;
   final List<ApiType> typeParameterBounds;
   final ApiType extendedType;
   final List<ApiExecutable> methods;
-  final bool isDeprecated;
-  final bool isExperimental;
 
   ApiExtension({
     required super.name,
     super.locationUri,
-    this.status = ApiDeclarationStatus.public,
+    super.status,
     required this.typeParameters,
     this.typeParameterBounds = const [],
     required this.extendedType,
     required this.methods,
-    this.isDeprecated = false,
-    this.isExperimental = false,
+    super.isDeprecated,
+    super.isExperimental,
+    super.isVisibleForTesting,
   });
 
   factory ApiExtension.fromJson(Map<String, dynamic> json) => ApiExtension(
@@ -277,6 +290,7 @@ final class ApiExtension extends ApiDeclaration {
     methods: _parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
+    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
   );
 
   Map<String, dynamic> toJson() => {
@@ -292,6 +306,7 @@ final class ApiExtension extends ApiDeclaration {
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isExperimental) 'isExperimental': isExperimental,
+    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
   };
 }
 
@@ -299,28 +314,26 @@ final class ApiExtension extends ApiDeclaration {
 ///
 /// Models the representation type, implemented interfaces, and defined constructors/methods.
 final class ApiExtensionType extends ApiDeclaration {
-  final ApiDeclarationStatus status;
   final List<String> typeParameters;
   final List<ApiType> typeParameterBounds;
   final ApiType representationType;
   final List<ApiType> interfaces;
   final List<ApiExecutable> constructors;
   final List<ApiExecutable> methods;
-  final bool isDeprecated;
-  final bool isExperimental;
 
   ApiExtensionType({
     required super.name,
     super.locationUri,
-    this.status = ApiDeclarationStatus.public,
+    super.status,
     required this.typeParameters,
     this.typeParameterBounds = const [],
     required this.representationType,
     required this.interfaces,
     required this.constructors,
     required this.methods,
-    this.isDeprecated = false,
-    this.isExperimental = false,
+    super.isDeprecated,
+    super.isExperimental,
+    super.isVisibleForTesting,
   });
 
   factory ApiExtensionType.fromJson(Map<String, dynamic> json) =>
@@ -342,6 +355,7 @@ final class ApiExtensionType extends ApiDeclaration {
         methods: _parseList(json, 'methods', ApiExecutable.fromJson),
         isDeprecated: json['isDeprecated'] as bool? ?? false,
         isExperimental: json['isExperimental'] as bool? ?? false,
+        isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
       );
 
   Map<String, dynamic> toJson() => {
@@ -361,6 +375,7 @@ final class ApiExtensionType extends ApiDeclaration {
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isExperimental) 'isExperimental': isExperimental,
+    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
   };
 }
 
@@ -370,28 +385,26 @@ final class ApiExtensionType extends ApiDeclaration {
 /// Models signature details such as parameters, return type, type parameters,
 /// and modifiers.
 final class ApiExecutable extends ApiDeclaration {
-  final ApiDeclarationStatus status;
   final ApiExecutableKind kind;
   final List<String> typeParameters;
   final List<ApiType> typeParameterBounds;
   final ApiType returnType;
   final List<ApiParameter> parameters;
   final bool isStatic;
-  final bool isDeprecated;
-  final bool isExperimental;
 
   ApiExecutable({
     required super.name,
     super.locationUri,
-    this.status = ApiDeclarationStatus.public,
+    super.status,
     required this.kind,
     required this.typeParameters,
     this.typeParameterBounds = const [],
     required this.returnType,
     required this.parameters,
     required this.isStatic,
-    required this.isDeprecated,
-    this.isExperimental = false,
+    super.isDeprecated,
+    super.isExperimental,
+    super.isVisibleForTesting,
   });
 
   factory ApiExecutable.fromJson(Map<String, dynamic> json) => ApiExecutable(
@@ -412,6 +425,7 @@ final class ApiExecutable extends ApiDeclaration {
     isStatic: json['isStatic'] as bool? ?? false,
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
+    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
   );
 
   Map<String, dynamic> toJson() => {
@@ -430,6 +444,7 @@ final class ApiExecutable extends ApiDeclaration {
     if (isStatic) 'isStatic': isStatic,
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isExperimental) 'isExperimental': isExperimental,
+    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
   };
 }
 
@@ -437,22 +452,20 @@ final class ApiExecutable extends ApiDeclaration {
 ///
 /// Models type parameters and the aliased target type.
 final class ApiTypeAlias extends ApiDeclaration {
-  final ApiDeclarationStatus status;
   final List<String> typeParameters;
   final List<ApiType> typeParameterBounds;
   final ApiType aliasedType;
-  final bool isDeprecated;
-  final bool isExperimental;
 
   ApiTypeAlias({
     required super.name,
     super.locationUri,
-    this.status = ApiDeclarationStatus.public,
+    super.status,
     required this.typeParameters,
     this.typeParameterBounds = const [],
     required this.aliasedType,
-    required this.isDeprecated,
-    this.isExperimental = false,
+    super.isDeprecated,
+    super.isExperimental,
+    super.isVisibleForTesting,
   });
 
   factory ApiTypeAlias.fromJson(Map<String, dynamic> json) => ApiTypeAlias(
@@ -468,6 +481,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     aliasedType: ApiType.fromJson(json['aliasedType'] as Map<String, dynamic>),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
+    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
   );
 
   Map<String, dynamic> toJson() => {
@@ -482,6 +496,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     'aliasedType': aliasedType.toJson(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isExperimental) 'isExperimental': isExperimental,
+    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
   };
 }
 

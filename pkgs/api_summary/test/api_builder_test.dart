@@ -178,6 +178,7 @@ class C {
         'libraries': [
           {
             'uri': 'package:test/file.dart',
+            'isPublicEntryPoint': true,
             'classes': [
               {
                 'name': 'C',
