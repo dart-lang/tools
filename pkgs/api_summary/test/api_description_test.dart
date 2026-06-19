@@ -7,7 +7,6 @@
 import 'dart:core';
 import 'dart:typed_data';
 
-import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
@@ -123,7 +122,7 @@ class Shown3 {}
 class Hidden3 {}
 ''',
       },
-      createCustomizer: () => _ShouldShowDetailsCustomizer(
+      customizer: _ShouldShowDetailsCustomizer(
         (e) => e.name!.toLowerCase().contains('shown'),
       ),
     );
@@ -844,7 +843,7 @@ dart:core:
 
   Future<String> _build(
     Map<String, String> files, {
-    _ValidatingCustomizer Function()? createCustomizer,
+    _ValidatingCustomizer? customizer,
   }) async {
     // Create all the files.
     files.forEach(newFile);
@@ -858,9 +857,9 @@ dart:core:
     final context = contextCollection.contextFor(
       convertPath(testPackageLibPath),
     );
-    final customizer = createCustomizer?.call() ?? _ValidatingCustomizer();
-    final package = await buildApiPackage('test', context, customizer);
-    expect(customizer.initialScanCompleteCalled, isTrue);
+    final resolvedCustomizer = customizer ?? _ValidatingCustomizer();
+    final package = await buildApiPackage('test', context, resolvedCustomizer);
+    expect(resolvedCustomizer.initialScanCompleteCalled, isTrue);
     return package.toString();
   }
 }
@@ -871,70 +870,37 @@ final class _ShouldShowDetailsCustomizer extends _ValidatingCustomizer {
   _ShouldShowDetailsCustomizer(this._shouldShowDetails);
 
   @override
-  bool shouldShowDetails(Element element) {
+  bool shouldShowDetails(Element element, ApiSummaryContext context) {
     expect(initialScanCompleteCalled, isTrue);
     return _shouldShowDetails(element);
   }
 }
 
 base class _ValidatingCustomizer extends ApiSummaryCustomizer {
-  bool topLevelPublicElementsCalled = false;
-  bool analysisContextCalled = false;
-  bool packageNameCalled = false;
-  bool publicApiLibrariesCalled = false;
   bool initialScanCompleteCalled = false;
   bool setupCompleteCalled = false;
 
   @override
-  set analysisContext(AnalysisContext value) {
-    expect(analysisContextCalled, isFalse);
-    analysisContextCalled = true;
-    super.analysisContext = value;
-  }
-
-  @override
-  set packageName(String value) {
-    expect(packageNameCalled, isFalse);
-    packageNameCalled = true;
-    super.packageName = value;
-  }
-
-  @override
-  set publicApiLibraries(Iterable<LibraryElement> value) {
+  Future<void> initialScanComplete(ApiSummaryContext context) async {
     expect(setupCompleteCalled, isTrue);
-    expect(publicApiLibrariesCalled, isFalse);
-    publicApiLibrariesCalled = true;
-    super.publicApiLibraries = value;
-  }
-
-  @override
-  set topLevelPublicElements(Set<Element> value) {
-    expect(setupCompleteCalled, isTrue);
-    expect(topLevelPublicElementsCalled, isFalse);
-    topLevelPublicElementsCalled = true;
-    super.topLevelPublicElements = value;
-  }
-
-  @override
-  Future<void> initialScanComplete() async {
-    expect(topLevelPublicElementsCalled, isTrue);
-    expect(publicApiLibrariesCalled, isTrue);
+    expect(context.topLevelPublicElements, isNotNull);
+    expect(context.publicApiLibraries, isNotNull);
     initialScanCompleteCalled = true;
-    await super.initialScanComplete();
+    await super.initialScanComplete(context);
   }
 
   @override
-  Future<void> setupComplete() async {
-    expect(packageNameCalled, isTrue);
-    expect(analysisContextCalled, isTrue);
+  Future<void> setupComplete(ApiSummaryContext context) async {
+    expect(context.packageName, 'test');
+    expect(context.analysisContext, isNotNull);
     setupCompleteCalled = true;
-    await super.setupComplete();
+    await super.setupComplete(context);
   }
 
   @override
-  bool shouldShowDetails(Element element) {
+  bool shouldShowDetails(Element element, ApiSummaryContext context) {
     expect(initialScanCompleteCalled, isTrue);
-    return super.shouldShowDetails(element);
+    return super.shouldShowDetails(element, context);
   }
 }
 

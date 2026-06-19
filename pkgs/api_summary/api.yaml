@@ -1889,6 +1889,96 @@ libraries:
               kind: interface
               name: String
               libraryUri: dart:core
+      - name: ApiSummaryContext
+        locationUri: package:api_summary/src/api_summary_customizer.dart
+        supertype:
+          kind: interface
+          name: Object
+          libraryUri: dart:core
+        modifiers:
+          - final
+        constructors:
+          - name: new
+            locationUri: package:api_summary/src/api_summary_customizer.dart
+            kind: constructor
+            returnType:
+              kind: interface
+              name: ApiSummaryContext
+              libraryUri: package:api_summary/src/api_summary_customizer.dart
+            parameters:
+              - name: analysisContext
+                type:
+                  kind: interface
+                  name: AnalysisContext
+                  libraryUri: package:analyzer/dart/analysis/analysis_context.dart
+                isRequired: true
+                isNamed: true
+              - name: packageName
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+              - name: publicApiLibraries
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: LibraryElement
+                      libraryUri: package:analyzer/dart/element/element.dart
+                  isNullable: true
+                isNamed: true
+              - name: topLevelPublicElements
+                type:
+                  kind: interface
+                  name: Set
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: Element
+                      libraryUri: package:analyzer/dart/element/element.dart
+                  isNullable: true
+                isNamed: true
+        methods:
+          - name: analysisContext
+            locationUri: package:api_summary/src/api_summary_customizer.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: AnalysisContext
+              libraryUri: package:analyzer/dart/analysis/analysis_context.dart
+          - name: packageName
+            locationUri: package:api_summary/src/api_summary_customizer.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+          - name: publicApiLibraries
+            locationUri: package:api_summary/src/api_summary_customizer.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: List
+              libraryUri: dart:core
+              typeArguments:
+                - kind: interface
+                  name: LibraryElement
+                  libraryUri: package:analyzer/dart/element/element.dart
+          - name: topLevelPublicElements
+            locationUri: package:api_summary/src/api_summary_customizer.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: Set
+              libraryUri: dart:core
+              typeArguments:
+                - kind: interface
+                  name: Element
+                  libraryUri: package:analyzer/dart/element/element.dart
       - name: ApiSummaryCustomizer
         locationUri: package:api_summary/src/api_summary_customizer.dart
         supertype:
@@ -1906,25 +1996,6 @@ libraries:
               name: ApiSummaryCustomizer
               libraryUri: package:api_summary/src/api_summary_customizer.dart
         methods:
-          - name: analysisContext
-            locationUri: package:api_summary/src/api_summary_customizer.dart
-            kind: getter
-            returnType:
-              kind: interface
-              name: AnalysisContext
-              libraryUri: package:analyzer/dart/analysis/analysis_context.dart
-          - name: analysisContext=
-            locationUri: package:api_summary/src/api_summary_customizer.dart
-            kind: setter
-            returnType:
-              kind: void
-            parameters:
-              - name: value
-                type:
-                  kind: interface
-                  name: AnalysisContext
-                  libraryUri: package:analyzer/dart/analysis/analysis_context.dart
-                isRequired: true
           - name: includeImplicitNonPublicMembers
             locationUri: package:api_summary/src/api_summary_customizer.dart
             kind: getter
@@ -1941,51 +2012,12 @@ libraries:
               libraryUri: dart:async
               typeArguments:
                 - kind: void
-          - name: packageName
-            locationUri: package:api_summary/src/api_summary_customizer.dart
-            kind: getter
-            returnType:
-              kind: interface
-              name: String
-              libraryUri: dart:core
-          - name: packageName=
-            locationUri: package:api_summary/src/api_summary_customizer.dart
-            kind: setter
-            returnType:
-              kind: void
             parameters:
-              - name: value
+              - name: context
                 type:
                   kind: interface
-                  name: String
-                  libraryUri: dart:core
-                isRequired: true
-          - name: publicApiLibraries
-            locationUri: package:api_summary/src/api_summary_customizer.dart
-            kind: getter
-            returnType:
-              kind: interface
-              name: Iterable
-              libraryUri: dart:core
-              typeArguments:
-                - kind: interface
-                  name: LibraryElement
-                  libraryUri: package:analyzer/dart/element/element.dart
-          - name: publicApiLibraries=
-            locationUri: package:api_summary/src/api_summary_customizer.dart
-            kind: setter
-            returnType:
-              kind: void
-            parameters:
-              - name: value
-                type:
-                  kind: interface
-                  name: Iterable
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: LibraryElement
-                      libraryUri: package:analyzer/dart/element/element.dart
+                  name: ApiSummaryContext
+                  libraryUri: package:api_summary/src/api_summary_customizer.dart
                 isRequired: true
           - name: setupComplete
             locationUri: package:api_summary/src/api_summary_customizer.dart
@@ -1996,6 +2028,13 @@ libraries:
               libraryUri: dart:async
               typeArguments:
                 - kind: void
+            parameters:
+              - name: context
+                type:
+                  kind: interface
+                  name: ApiSummaryContext
+                  libraryUri: package:api_summary/src/api_summary_customizer.dart
+                isRequired: true
           - name: shouldShowDetails
             locationUri: package:api_summary/src/api_summary_customizer.dart
             kind: method
@@ -2010,32 +2049,11 @@ libraries:
                   name: Element
                   libraryUri: package:analyzer/dart/element/element.dart
                 isRequired: true
-          - name: topLevelPublicElements
-            locationUri: package:api_summary/src/api_summary_customizer.dart
-            kind: getter
-            returnType:
-              kind: interface
-              name: Set
-              libraryUri: dart:core
-              typeArguments:
-                - kind: interface
-                  name: Element
-                  libraryUri: package:analyzer/dart/element/element.dart
-          - name: topLevelPublicElements=
-            locationUri: package:api_summary/src/api_summary_customizer.dart
-            kind: setter
-            returnType:
-              kind: void
-            parameters:
-              - name: value
+              - name: context
                 type:
                   kind: interface
-                  name: Set
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: Element
-                      libraryUri: package:analyzer/dart/element/element.dart
+                  name: ApiSummaryContext
+                  libraryUri: package:api_summary/src/api_summary_customizer.dart
                 isRequired: true
       - name: ApiType
         locationUri: package:api_summary/src/api_type.dart
@@ -2561,13 +2579,11 @@ libraries:
               name: String
               libraryUri: dart:core
             isRequired: true
-          - name: createCustomizer
+          - name: customizer
             type:
-              kind: function
-              returnType:
-                kind: interface
-                name: ApiSummaryCustomizer
-                libraryUri: package:api_summary/src/api_summary_customizer.dart
+              kind: interface
+              name: ApiSummaryCustomizer
+              libraryUri: package:api_summary/src/api_summary_customizer.dart
               isNullable: true
             isNamed: true
           - name: packageName

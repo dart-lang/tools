@@ -15,7 +15,8 @@ import 'src/api_summary_customizer.dart';
 import 'src/text_renderer.dart';
 
 export 'src/api_declaration.dart' hide apiSummaryRenderer;
-export 'src/api_summary_customizer.dart' show ApiSummaryCustomizer;
+export 'src/api_summary_customizer.dart'
+    show ApiSummaryContext, ApiSummaryCustomizer;
 export 'src/api_type.dart';
 
 /// Creates a canonical [ApiSummary] model of the public API of a package.
@@ -26,13 +27,12 @@ export 'src/api_type.dart';
 /// [packageName] is the name of the package, or extracted from `pubspec.yaml`
 /// if omitted.
 ///
-/// If [createCustomizer] is provided, it will be called to create an instance
-/// of [ApiSummaryCustomizer] which will be used to customize the behavior of
+/// If [customizer] is provided, it will be used to customize the behavior of
 /// the tool.
 Future<ApiSummary> apiSummary(
   String packagePath, {
   String? packageName,
-  ApiSummaryCustomizer Function()? createCustomizer,
+  ApiSummaryCustomizer? customizer,
 }) async {
   apiSummaryRenderer ??= renderTextSummary;
   final resolvedPackageName = packageName ?? _extractPackageName(packagePath);
@@ -46,7 +46,7 @@ Future<ApiSummary> apiSummary(
   return buildApiPackage(
     resolvedPackageName,
     context,
-    createCustomizer?.call() ?? ApiSummaryCustomizer(),
+    customizer ?? const ApiSummaryCustomizer(),
   );
 }
 

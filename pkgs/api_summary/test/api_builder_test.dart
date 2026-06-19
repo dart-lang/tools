@@ -245,7 +245,7 @@ class C {
 
   Future<String> _build(
     Map<String, String> files, {
-    ApiSummaryCustomizer Function()? createCustomizer,
+    ApiSummaryCustomizer? customizer,
   }) async {
     // Create all the files.
     files.forEach(newFile);
@@ -259,8 +259,8 @@ class C {
     final context = contextCollection.contextFor(
       convertPath(testPackageLibPath),
     );
-    final customizer = createCustomizer?.call() ?? ApiSummaryCustomizer();
-    final package = await buildApiPackage('test', context, customizer);
+    final resolvedCustomizer = customizer ?? const ApiSummaryCustomizer();
+    final package = await buildApiPackage('test', context, resolvedCustomizer);
     return jsonEncode(package.toJson());
   }
 }

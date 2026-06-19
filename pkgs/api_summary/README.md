@@ -93,19 +93,19 @@ import 'package:analyzer/dart/element/element.dart';
 
 base class MyCustomizer extends ApiSummaryCustomizer {
   @override
-  bool shouldShowDetails(Element element) {
+  bool shouldShowDetails(Element element, ApiSummaryContext context) {
     // Exclude elements named 'InternalHelper' from details printout
     if (element.name == 'InternalHelper') {
       return false;
     }
-    return super.shouldShowDetails(element);
+    return super.shouldShowDetails(element, context);
   }
 }
 
 void main() async {
   final summary = await apiSummary(
     '/path/to/package',
-    createCustomizer: () => MyCustomizer(),
+    customizer: MyCustomizer(),
   );
   print(summary);
 }

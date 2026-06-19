@@ -68,14 +68,10 @@ final class ApiSummary {
   @override
   String toString() {
     final renderer = apiSummaryRenderer;
-    if (renderer == null) {
-      throw StateError(
-        'apiSummaryRenderer is not initialized. Please import '
-        'package:api_summary/api_summary.dart or initialize the renderer '
-        'manually.',
-      );
+    if (renderer != null) {
+      return renderer(this);
     }
-    return renderer(this);
+    return 'ApiSummary(name: $name, libraries: ${libraries.length})';
   }
 }
 

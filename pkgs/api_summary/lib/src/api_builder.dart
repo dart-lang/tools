@@ -41,12 +41,16 @@ class _ApiBuilder {
   _ApiBuilder(this._pkgName, this._customizer);
 
   Future<ApiSummary> build(AnalysisContext context) async {
-    _customizer.packageName = _pkgName;
-    _customizer.analysisContext = context;
-    await _customizer.setupComplete();
-
     final publicApiLibraries = <LibraryElement>[];
     final topLevelPublicElements = <Element>{};
+    final scanContext = ApiSummaryContext(
+      packageName: _pkgName,
+      analysisContext: context,
+      publicApiLibraries: publicApiLibraries,
+      topLevelPublicElements: topLevelPublicElements,
+    );
+    await _customizer.setupComplete(scanContext);
+
     for (final file in context.contextRoot.analyzedFiles().sorted()) {
       if (!file.endsWith('.dart')) continue;
       final fileResult = context.currentSession.getFile(file);
@@ -81,15 +85,13 @@ class _ApiBuilder {
         );
       }
     }
-    _customizer.publicApiLibraries = publicApiLibraries;
-    _customizer.topLevelPublicElements = topLevelPublicElements;
-    await _customizer.initialScanComplete();
+    await _customizer.initialScanComplete(scanContext);
 
     while (_pendingElements.isNotEmpty) {
       final element = _pendingElements.removeFirst();
       if (!_processedElements.add(element)) continue;
 
-      if (!_customizer.shouldShowDetails(element)) continue;
+      if (!_customizer.shouldShowDetails(element, scanContext)) continue;
 
       final libraries =
           _elementToLibraries[element] ??

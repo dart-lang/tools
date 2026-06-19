@@ -1,5 +1,5 @@
 package:api_summary/api_summary.dart:
-  apiSummary (function: Future<ApiSummary> Function(String, {ApiSummaryCustomizer Function()? createCustomizer, String? packageName}))
+  apiSummary (function: Future<ApiSummary> Function(String, {ApiSummaryCustomizer? customizer, String? packageName}))
   ApiClass (class extends ApiDeclaration, final):
     new (constructor: ApiClass Function({required List<ApiExecutable> constructors, required List<String> immediateSubtypes, required List<ApiType> interfaces, bool isDeprecated, bool isExperimental, bool isVisibleForTesting, String? locationUri, required List<ApiExecutable> methods, required List<ApiType> mixins, required List<ApiClassModifier> modifiers, required String name, ApiDeclarationStatus status, List<ApiType> superclassConstraints, ApiType? supertype, List<ApiType> typeParameterBounds, required List<String> typeParameters}))
     fromJson (constructor: ApiClass Function(Map<String, dynamic>))
@@ -135,20 +135,18 @@ package:api_summary/api_summary.dart:
     name (getter: String)
     toJson (method: Map<String, dynamic> Function())
     toString (method: String Function())
+  ApiSummaryContext (class extends Object, final):
+    new (constructor: ApiSummaryContext Function({required AnalysisContext analysisContext, required String packageName, List<LibraryElement>? publicApiLibraries, Set<Element>? topLevelPublicElements}))
+    analysisContext (getter: AnalysisContext)
+    packageName (getter: String)
+    publicApiLibraries (getter: List<LibraryElement>)
+    topLevelPublicElements (getter: Set<Element>)
   ApiSummaryCustomizer (class extends Object, base):
     new (constructor: ApiSummaryCustomizer Function())
-    analysisContext (getter: AnalysisContext)
-    analysisContext= (setter: AnalysisContext)
     includeImplicitNonPublicMembers (getter: bool)
-    packageName (getter: String)
-    packageName= (setter: String)
-    publicApiLibraries (getter: Iterable<LibraryElement>)
-    publicApiLibraries= (setter: Iterable<LibraryElement>)
-    topLevelPublicElements (getter: Set<Element>)
-    topLevelPublicElements= (setter: Set<Element>)
-    initialScanComplete (method: Future<void> Function())
-    setupComplete (method: Future<void> Function())
-    shouldShowDetails (method: bool Function(Element))
+    initialScanComplete (method: Future<void> Function(ApiSummaryContext))
+    setupComplete (method: Future<void> Function(ApiSummaryContext))
+    shouldShowDetails (method: bool Function(Element, ApiSummaryContext))
   ApiType (class extends Object, sealed (immediate subtypes: ApiDynamicType, ApiFunctionType, ApiInterfaceType, ApiRecordType, ApiTypeParameterType, ApiVoidType)):
     fromJson (constructor: ApiType Function(Map<String, dynamic>))
     toJson (method: Map<String, dynamic> Function())
@@ -172,7 +170,6 @@ package:api_summary/api_summary.dart:
 dart:async:
   Future (referenced)
 dart:core:
-  Iterable (referenced)
   List (referenced)
   Map (referenced)
   Object (referenced)
