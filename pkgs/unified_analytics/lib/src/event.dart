@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:meta/meta.dart';
+
 import 'enums.dart';
 
 final class Event {
@@ -462,12 +464,19 @@ final class Event {
     required String name,
     required String enabledExperiments,
     int? exitCode,
+    bool? pubspecHasFlutterSdk,
+    Set<String>? pubspecDependencies,
+    String? pubspecEnvironmentSdk,
   }) : this._(
          eventName: DashEvent.dartCliCommandExecuted,
          eventData: {
            'name': name,
            'enabledExperiments': enabledExperiments,
            'exitCode': ?exitCode,
+           'pubspec_has_flutter_sdk': ?pubspecHasFlutterSdk,
+           'pubspec_environment_sdk': ?pubspecEnvironmentSdk,
+           if (pubspecDependencies != null)
+             ...chunkDependencies(pubspecDependencies),
          },
        );
 
@@ -1181,4 +1190,91 @@ abstract base class CustomMetrics {
   ///
   /// This must be a JSON-encodable [Map].
   Map<String, Object> toMap();
+}
+
+/// Public helper in unified_analytics to sort and chunk dependencies.
+///
+/// Respects GA4's 100-character limit per parameter and 25-parameter limit
+/// per event.
+///
+/// To eliminate alphabetical bias (e.g., always omitting packages starting
+/// with 'z' when exceeding the 20-chunk cap), dependencies are sorted
+/// deterministically by their FNV-1a hash value instead of alphabetically.
+/// This provides a statistically unbiased, pseudo-random sample of packages
+/// for large projects while remaining 100% stable, reproducible, and testable
+/// across runs.
+@visibleForTesting
+Map<String, String> chunkDependencies(Set<String> deps) {
+  if (deps.isEmpty) return const {};
+
+  // Sort deterministically by FNV-1a hash value instead of alphabetically
+  // to eliminate systemic alphabetical bias during truncation. Fall back to
+  // alphabetical comparison if there is a hash collision to guarantee absolute
+  // determinism.
+  final sortedDeps = deps.toList()
+    ..sort((a, b) {
+      final hashA = _fnv1a(a);
+      final hashB = _fnv1a(b);
+      if (hashA != hashB) {
+        return hashA.compareTo(hashB);
+      }
+      return a.compareTo(b);
+    });
+
+  final chunks = <String, String>{};
+  var currentChunk = <String>[];
+  var currentLength = 0;
+  var chunkIndex = 0;
+
+  // We have a maximum of 25 parameters per event in GA4. Standard event
+  // parameters (name, enabledExperiments, exitCode, pubspec_has_flutter_sdk)
+  // take up to 4 slots, leaving 21 slots. Capping at 20 chunks guarantees
+  // safety.
+  const maxChunks = 20;
+
+  for (final dep in sortedDeps) {
+    // Guard: Skip package names that are somehow longer than 100 characters
+    // to prevent violating GA4's value length limit.
+    if (dep.length > 100) continue;
+
+    final lengthToAdd = dep.length + (currentChunk.isEmpty ? 0 : 1);
+    if (currentLength + lengthToAdd > 100) {
+      chunks['pubspec_dep_$chunkIndex'] = currentChunk.join(',');
+      chunkIndex++;
+
+      // Stop adding chunks if we reach the GA4 parameter count safety limit
+      if (chunkIndex >= maxChunks) {
+        currentChunk = const [];
+        break;
+      }
+
+      currentChunk = [dep];
+      currentLength = dep.length;
+    } else {
+      currentChunk.add(dep);
+      currentLength += lengthToAdd;
+    }
+  }
+
+  if (currentChunk.isNotEmpty && chunkIndex < maxChunks) {
+    chunks['pubspec_dep_$chunkIndex'] = currentChunk.join(',');
+  }
+
+  return chunks;
+}
+
+/// Computes a deterministic 32-bit FNV-1a hash of a string.
+///
+/// This is used to shuffle dependency names in a stable, pseudo-random
+/// way to eliminate alphabetical bias when sampling packages for telemetry
+/// while maintaining 100% determinism across runs.
+int _fnv1a(String s) {
+  var hash = 2166136261;
+  for (var i = 0; i < s.length; i++) {
+    hash ^= s.codeUnitAt(i);
+    // Split the multiplication to prevent exceeding the 53-bit safe integer
+    // limit on the web.
+    hash = (((hash & 0xff) << 24) + (hash * 403)) & 0xffffffff;
+  }
+  return hash;
 }
