@@ -39,6 +39,13 @@ void main() {
 
     expect(renderedText, equals(textSummary));
   });
+
+  test('throws ArgumentError on missing pubspec.yaml', () async {
+    expect(
+      () => apiSummary('/non_existent_directory_12345'),
+      throwsArgumentError,
+    );
+  });
 }
 
 void _verifyGolden(String actual, String goldenFileName) {
