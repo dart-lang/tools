@@ -30,10 +30,10 @@ void main(List<String> args) async {
     final kernel32 = DynamicLibrary.open('kernel32.dll');
     final freeConsole = kernel32
         .lookupFunction<Int32 Function(), int Function()>('FreeConsole');
-    final attachConsole = kernel32
-        .lookupFunction<Int32 Function(Uint32), int Function(int)>(
-          'AttachConsole',
-        );
+    final attachConsole =
+        kernel32.lookupFunction<Int32 Function(Uint32), int Function(int)>(
+      'AttachConsole',
+    );
 
     freeConsole();
     attachConsole(0xFFFFFFFF); // ATTACH_PARENT_PROCESS
@@ -47,17 +47,17 @@ void main(List<String> args) async {
   try {
     final kernel32 = DynamicLibrary.open('kernel32.dll');
     final createFileW = kernel32.lookupFunction<
-      IntPtr Function(
-        Pointer<Utf16>,
-        Uint32,
-        Uint32,
-        Pointer,
-        Uint32,
-        Uint32,
-        IntPtr,
-      ),
-      int Function(Pointer<Utf16>, int, int, Pointer, int, int, int)
-    >('CreateFileW');
+        IntPtr Function(
+          Pointer<Utf16>,
+          Uint32,
+          Uint32,
+          Pointer,
+          Uint32,
+          Uint32,
+          IntPtr,
+        ),
+        int Function(
+            Pointer<Utf16>, int, int, Pointer, int, int, int)>('CreateFileW');
 
     final coninPath = r'CONIN$'.toNativeUtf16();
     coninHandle = createFileW(

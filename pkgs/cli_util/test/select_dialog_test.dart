@@ -54,10 +54,9 @@ void main() {
           for (var multiSelect in [false, true]) {
             final dialogType = multiSelect ? 'MultiSelect' : 'SingleSelect';
             test('$dialogType - ${inputCombo.join(', ')}', () async {
-              final future =
-                  multiSelect
-                      ? showMultiSelectDialog(options, inputController.stream)
-                      : showSingleSelectDialog(options, inputController.stream);
+              final future = multiSelect
+                  ? showMultiSelectDialog(options, inputController.stream)
+                  : showSingleSelectDialog(options, inputController.stream);
               await pumpEventQueue();
               expect(mockStdin.lineMode, isFalse);
               expect(mockStdin.echoMode, isFalse);
@@ -615,8 +614,7 @@ void main() {
           });
 
           test('returns null if terminal too small (no scrollbar)', () async {
-            mockStdout.terminalColumns =
-                '> '.length +
+            mockStdout.terminalColumns = '> '.length +
                 6 /* 3 chars + '...'*/ +
                 (multiselect ? 4 : 0) -
                 1;
@@ -639,8 +637,7 @@ void main() {
           );
 
           test('returns null if terminal too small (scrollbar)', () async {
-            mockStdout.terminalColumns =
-                '> '.length +
+            mockStdout.terminalColumns = '> '.length +
                 6 /* 3 chars + '...'*/ +
                 '      █'.length +
                 (multiselect ? 4 : 0) -
@@ -655,8 +652,7 @@ void main() {
           });
 
           test('works if the terminal is exactly sized (scrollbar)', () async {
-            mockStdout.terminalColumns =
-                '> '.length +
+            mockStdout.terminalColumns = '> '.length +
                 6 /* 3 chars + '...'*/ +
                 '      █'.length +
                 (multiselect ? 4 : 0);
@@ -692,7 +688,8 @@ void main() {
           );
         });
 
-        test('multiselect throws AssertionError for invalid initialSelected '
+        test(
+            'multiselect throws AssertionError for invalid initialSelected '
             'indices', () async {
           expect(
             () => showMultiSelectDialog(
@@ -725,7 +722,8 @@ class MockStdin extends Stream<List<int>> implements Stdin {
     Function? onError,
     void Function()? onDone,
     bool? cancelOnError,
-  }) => throw UnimplementedError();
+  }) =>
+      throw UnimplementedError();
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

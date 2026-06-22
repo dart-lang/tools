@@ -1,3 +1,7 @@
+## 8.0.16-wip
+
+- Run `dart format`.
+
 ## 8.0.15
 - Added IDE and plugin information to `Event.serverSession`.
 - Discard any `Exception` or `Error` thrown while reading or writing analytics logs.

@@ -17,8 +17,7 @@ bar:/dart/packages/bar/
 baz:packages/baz/
 ''';
 
-const packageConfigFile =
-    '''
+const packageConfigFile = '''
 {
   "configVersion": ${PackageConfig.minVersion},
   "packages": [
@@ -76,10 +75,8 @@ void main() {
         ); // Found package_config.json file.
         validatePackagesFile(config, directory);
         Uri file;
-        (:config, :file) = (await findPackageConfigAndUri(
-          directory,
-          loader: loader,
-        ))!;
+        (:config, :file) =
+            (await findPackageConfigAndUri(directory, loader: loader))!;
         expect(
           config.version,
           PackageConfig.minVersion,
@@ -98,17 +95,16 @@ void main() {
         'subdir': {'script.dart': 'main(){}'},
       },
       (directory, loader) async {
-        var config = (await findPackageConfigUri(
-          directory.resolve('subdir/'),
-          loader: loader,
-        ))!;
+        var config =
+            (await findPackageConfigUri(
+              directory.resolve('subdir/'),
+              loader: loader,
+            ))!;
         expect(config.version, PackageConfig.minVersion);
         validatePackagesFile(config, directory);
         Uri file;
-        (:config, :file) = (await findPackageConfigAndUri(
-          directory,
-          loader: loader,
-        ))!;
+        (:config, :file) =
+            (await findPackageConfigAndUri(directory, loader: loader))!;
         expect(
           config.version,
           PackageConfig.minVersion,
@@ -162,8 +158,7 @@ void main() {
           'does not affect invalid configVersion',
           {
             '.dart_tool': {
-              'package_config.json':
-                  '''
+              'package_config.json': '''
                 {
                   "configVersion": ${PackageConfig.minVersion - 1},
                   "packages": []
@@ -201,8 +196,7 @@ void main() {
             'affects minVersion',
             {
               '.dart_tool': {
-                'package_config.json':
-                    '''
+                'package_config.json': '''
                 {
                   "configVersion": ${PackageConfig.minVersion},
                   "packages": []

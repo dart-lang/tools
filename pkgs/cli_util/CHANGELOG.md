@@ -1,3 +1,7 @@
+## 0.5.2-wip
+
+- Run `dart format`.
+
 ## 0.5.1
 
 - Add `showMultiSelectDialog` and `showSingleSelectDialog` to new

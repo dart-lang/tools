@@ -259,15 +259,16 @@ abstract class Package {
     LanguageVersion? languageVersion,
     Object? extraData,
     bool relativeRoot = true,
-  }) => SimplePackage.validate(
-    name,
-    root,
-    packageUriRoot,
-    languageVersion,
-    extraData,
-    relativeRoot,
-    throwError,
-  )!;
+  }) =>
+      SimplePackage.validate(
+        name,
+        root,
+        packageUriRoot,
+        languageVersion,
+        extraData,
+        relativeRoot,
+        throwError,
+      )!;
 
   /// The package-name of the package.
   String get name;
@@ -505,15 +506,17 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
     return compareTo(other) >= 0;
   }
 
-  static Never _throwThisInvalid() => throw UnsupportedError(
-    'Can\'t compare an invalid language version to another '
-    'language version. '
-    'Verify language versions are valid before use.',
-  );
-  static Never _throwOtherInvalid() => throw UnsupportedError(
-    'Can\'t compare a language version to an invalid language version. '
-    'Verify language versions are valid before use.',
-  );
+  static Never _throwThisInvalid() =>
+      throw UnsupportedError(
+        'Can\'t compare an invalid language version to another '
+        'language version. '
+        'Verify language versions are valid before use.',
+      );
+  static Never _throwOtherInvalid() =>
+      throw UnsupportedError(
+        'Can\'t compare a language version to an invalid language version. '
+        'Verify language versions are valid before use.',
+      );
 }
 
 // --------------------------------------------------------------------

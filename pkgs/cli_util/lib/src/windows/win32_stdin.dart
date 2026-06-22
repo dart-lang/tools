@@ -195,13 +195,13 @@ enum InputRecordEventType {
 
   /// https://learn.microsoft.com/en-us/windows/console/input-record-str#members
   factory InputRecordEventType.fromInt(int value) => switch (value) {
-    0x0001 => keyEvent,
-    0x0002 => mouseEvent,
-    0x0004 => windowBufferSizeEvent,
-    0x0008 => menuEvent,
-    0x0010 => focusEvent,
-    _ => unknown,
-  };
+        0x0001 => keyEvent,
+        0x0002 => mouseEvent,
+        0x0004 => windowBufferSizeEvent,
+        0x0008 => menuEvent,
+        0x0010 => focusEvent,
+        _ => unknown,
+      };
 }
 
 /// Windows console input record struct.
@@ -270,18 +270,17 @@ typedef GetStdHandleDart = int Function(int nStdHandle);
 
 /// FFI Function binding to
 /// https://learn.microsoft.com/en-us/windows/console/readconsoleinput
-typedef ReadConsoleInputDart =
-    int Function(
-      int hConsoleInput,
-      Pointer<InputRecord> lpBuffer,
-      int nLength,
-      Pointer<Uint32> lpNumberOfEventsRead,
-    );
+typedef ReadConsoleInputDart = int Function(
+  int hConsoleInput,
+  Pointer<InputRecord> lpBuffer,
+  int nLength,
+  Pointer<Uint32> lpNumberOfEventsRead,
+);
 
 /// FFI Function binding to
 /// https://learn.microsoft.com/en-us/windows/console/getnumberofconsoleinputevents
-typedef GetNumberOfConsoleInputEventsDart =
-    int Function(int hConsoleInput, Pointer<Uint32> lpcNumberOfEvents);
+typedef GetNumberOfConsoleInputEventsDart = int Function(
+    int hConsoleInput, Pointer<Uint32> lpcNumberOfEvents);
 
 /// Lazy loader for Win32 console APIs.
 @visibleForTesting
@@ -311,13 +310,10 @@ class Win32Console {
         'GetStdHandle',
       ),
       kernel32.lookupFunction<
-        Int32 Function(IntPtr, Pointer<InputRecord>, Uint32, Pointer<Uint32>),
-        ReadConsoleInputDart
-      >('ReadConsoleInputW'),
-      kernel32.lookupFunction<
-        Int32 Function(IntPtr, Pointer<Uint32>),
-        GetNumberOfConsoleInputEventsDart
-      >('GetNumberOfConsoleInputEvents'),
+          Int32 Function(IntPtr, Pointer<InputRecord>, Uint32, Pointer<Uint32>),
+          ReadConsoleInputDart>('ReadConsoleInputW'),
+      kernel32.lookupFunction<Int32 Function(IntPtr, Pointer<Uint32>),
+          GetNumberOfConsoleInputEventsDart>('GetNumberOfConsoleInputEvents'),
     );
   }
 

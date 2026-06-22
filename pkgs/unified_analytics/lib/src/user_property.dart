@@ -150,17 +150,17 @@ class UserProperty {
   /// Convert the data stored in this class into a map while also
   /// getting the latest session id using the [UserProperty] class.
   Map<String, Object?> _toMap() => <String, Object?>{
-    'session_id': getSessionId(),
-    'flutter_channel': flutterChannel,
-    'host': host,
-    'flutter_version': flutterVersion,
-    'dart_version': dartVersion,
-    'analytics_pkg_version': kPackageVersion,
-    'tool': tool,
-    'local_time': formatDateTime(clock.now()),
-    'host_os_version': hostOsVersion,
-    'locale': locale,
-    'client_ide': clientIde,
-    'ai_agent': aiAgent,
-  };
+        'session_id': getSessionId(),
+        'flutter_channel': flutterChannel,
+        'host': host,
+        'flutter_version': flutterVersion,
+        'dart_version': dartVersion,
+        'analytics_pkg_version': kPackageVersion,
+        'tool': tool,
+        'local_time': formatDateTime(clock.now()),
+        'host_os_version': hostOsVersion,
+        'locale': locale,
+        'client_ide': clientIde,
+        'ai_agent': aiAgent,
+      };
 }

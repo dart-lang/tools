@@ -36,9 +36,8 @@ void main() {
 
   setUp(() {
     // Setup the filesystem with the home directory
-    final fsStyle = io.Platform.isWindows
-        ? FileSystemStyle.windows
-        : FileSystemStyle.posix;
+    final fsStyle =
+        io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
     dartToolDirectory = home.childDirectory(kDartToolDirectoryName);
@@ -47,15 +46,12 @@ void main() {
     clientIdFile = home
         .childDirectory(kDartToolDirectoryName)
         .childFile(kClientIdFileName);
-    sessionFile = home
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kSessionFileName);
-    configFile = home
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kConfigFileName);
-    logFile = home
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kLogFileName);
+    sessionFile =
+        home.childDirectory(kDartToolDirectoryName).childFile(kSessionFileName);
+    configFile =
+        home.childDirectory(kDartToolDirectoryName).childFile(kConfigFileName);
+    logFile =
+        home.childDirectory(kDartToolDirectoryName).childFile(kLogFileName);
     dismissedSurveyFile = home
         .childDirectory(kDartToolDirectoryName)
         .childFile(kDismissedSurveyFileName);
@@ -82,8 +78,7 @@ void main() {
     expect(
       firstAnalytics.okToSend,
       false,
-      reason:
-          'On the first run, we should not be ok '
+      reason: 'On the first run, we should not be ok '
           'to send any events, even if the user accepts',
     );
   });
@@ -99,8 +94,7 @@ void main() {
       expect(
         instance.okToSend,
         false,
-        reason:
-            'On the first run, we should not be ok '
+        reason: 'On the first run, we should not be ok '
             'to send any events, even if the user accepts',
       );
     }
@@ -202,8 +196,7 @@ void main() {
     expect(
       dartToolDirectory.listSync().length,
       equals(5),
-      reason:
-          'There should only be 5 files in the $kDartToolDirectoryName '
+      reason: 'There should only be 5 files in the $kDartToolDirectoryName '
           'directory',
     );
     expect(configFile.readAsStringSync(), kConfigString);
@@ -246,8 +239,7 @@ void main() {
     expect(
       logFile.readAsLinesSync().length,
       1,
-      reason:
-          'Events will be blocked until invoking method '
+      reason: 'Events will be blocked until invoking method '
           'ensuring client has seen message',
     );
 
@@ -316,8 +308,7 @@ void main() {
     expect(
       logFile.readAsLinesSync().length,
       1,
-      reason:
-          'Events will be blocked until invoking method '
+      reason: 'Events will be blocked until invoking method '
           'ensuring client has seen message',
     );
 
@@ -389,8 +380,8 @@ void main() {
 
     expect(
       configFile.readAsStringSync().endsWith(
-        '${secondTool.label}=$dateStamp,$firstVersion\n',
-      ),
+            '${secondTool.label}=$dateStamp,$firstVersion\n',
+          ),
       true,
     );
 
@@ -411,8 +402,8 @@ void main() {
 
     expect(
       configFile.readAsStringSync().endsWith(
-        '${secondTool.label}=$dateStamp,$firstVersion\n',
-      ),
+            '${secondTool.label}=$dateStamp,$firstVersion\n',
+          ),
       true,
     );
 
@@ -422,8 +413,8 @@ void main() {
 
     expect(
       configFile.readAsStringSync().endsWith(
-        '${secondTool.label}=$dateStamp,$secondVersion\n',
-      ),
+            '${secondTool.label}=$dateStamp,$secondVersion\n',
+          ),
       true,
     );
   });

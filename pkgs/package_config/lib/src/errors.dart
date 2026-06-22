@@ -62,9 +62,10 @@ abstract class PackageConfigVersionException {
     String errorMessage;
     if (minVersion != null) {
       if (maxVersion != null) {
-        errorMessage = minVersion == maxVersion
-            ? 'Must be $minVersion'
-            : 'Must be in the range $minVersion..$maxVersion';
+        errorMessage =
+            minVersion == maxVersion
+                ? 'Must be $minVersion'
+                : 'Must be in the range $minVersion..$maxVersion';
       } else {
         errorMessage = 'Must be at least $minVersion';
       }

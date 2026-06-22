@@ -76,11 +76,10 @@ class FakeDirectory extends Fake implements Directory {
     required bool writeEnabled,
     bool readEnabled = true,
     bool executeEnabled = true,
-  }) : _fakeModeString =
-           '${readEnabled ? "r" : "-"}'
-           '${writeEnabled ? "w" : "-"}'
-           '${executeEnabled ? "x" : "-"}'
-           '------' {
+  }) : _fakeModeString = '${readEnabled ? "r" : "-"}'
+            '${writeEnabled ? "w" : "-"}'
+            '${executeEnabled ? "x" : "-"}'
+            '------' {
     assert(_fakeModeString.length == 9);
   }
 

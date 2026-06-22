@@ -44,16 +44,14 @@ void main() {
     setUp(() async {
       handler = SseHandler(Uri.parse('/test'));
 
-      var cascade = shelf.Cascade()
-          .add(handler.handler)
-          .add(_faviconHandler)
-          .add(
-            createStaticHandler(
-              'test/web',
-              listDirectories: true,
-              defaultDocument: 'index.html',
-            ),
-          );
+      var cascade =
+          shelf.Cascade().add(handler.handler).add(_faviconHandler).add(
+                createStaticHandler(
+                  'test/web',
+                  listDirectories: true,
+                  defaultDocument: 'index.html',
+                ),
+              );
 
       server = await io.serve(cascade.handler, 'localhost', 0);
       var capabilities = Capabilities.chrome
@@ -193,16 +191,14 @@ void main() {
         keepAlive: const Duration(seconds: 5),
       );
 
-      var cascade = shelf.Cascade()
-          .add(handler.handler)
-          .add(_faviconHandler)
-          .add(
-            createStaticHandler(
-              'test/web',
-              listDirectories: true,
-              defaultDocument: 'index.html',
-            ),
-          );
+      var cascade =
+          shelf.Cascade().add(handler.handler).add(_faviconHandler).add(
+                createStaticHandler(
+                  'test/web',
+                  listDirectories: true,
+                  defaultDocument: 'index.html',
+                ),
+              );
 
       server = await io.serve(cascade.handler, 'localhost', 0);
       var capabilities = Capabilities.chrome

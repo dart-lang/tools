@@ -13,8 +13,7 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:stream_channel/stream_channel.dart';
 
 // RFC 2616 requires carriage return delimiters.
-String _sseHeaders(String? origin) =>
-    'HTTP/1.1 200 OK\r\n'
+String _sseHeaders(String? origin) => 'HTTP/1.1 200 OK\r\n'
     'Content-Type: text/event-stream\r\n'
     'Cache-Control: no-cache\r\n'
     'Connection: keep-alive\r\n'
@@ -84,8 +83,8 @@ class SseConnection extends StreamChannelMixin<String> {
   /// reconnection. This is useful as the SSE disconnection event may arrive
   /// after the new connection is established.
   SseConnection(this._sink, {Duration? keepAlive, Duration? ignoreDisconnect})
-    : _keepAlive = keepAlive,
-      _ignoreDisconnect = ignoreDisconnect {
+      : _keepAlive = keepAlive,
+        _ignoreDisconnect = ignoreDisconnect {
     _outgoingStreamQueue = StreamQueue(_outgoingController.stream);
     unawaited(_setUpListener());
     _outgoingController.onCancel = _close;
@@ -93,8 +92,8 @@ class SseConnection extends StreamChannelMixin<String> {
   }
 
   Future<void> _setUpListener() async {
-    while (!_outgoingController.isClosed &&
-        await _outgoingStreamQueue.hasNext) {
+    while (
+        !_outgoingController.isClosed && await _outgoingStreamQueue.hasNext) {
       // If we're in a KeepAlive timeout, there's nowhere to send messages so
       // wait a short period and check again.
       if (isInKeepAlivePeriod) {
@@ -263,8 +262,8 @@ class SseHandler {
   /// [SseConnection]. The SseHandler will also use it as a signal to reuse
   /// open SSE connections that are not in a keep alive period.
   SseHandler(this._uri, {Duration? keepAlive, Duration? ignoreDisconnect})
-    : _keepAlive = keepAlive,
-      _ignoreDisconnect = ignoreDisconnect;
+      : _keepAlive = keepAlive,
+        _ignoreDisconnect = ignoreDisconnect;
 
   StreamQueue<SseConnection> get connections =>
       _connectionsStream ??= StreamQueue(_connectionController.stream);

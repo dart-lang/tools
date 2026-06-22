@@ -90,8 +90,7 @@ enum DashEvent {
   ),
   commandUsageValues(
     label: 'command_usage_values',
-    description:
-        'Contains command level custom dimensions from legacy '
+    description: 'Contains command level custom dimensions from legacy '
         'flutter analytics',
     toolOwner: DashTool.flutterTool,
   ),

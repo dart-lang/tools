@@ -45,9 +45,8 @@ void main() {
 
   setUp(() {
     // Setup the filesystem with the home directory
-    final fsStyle = io.Platform.isWindows
-        ? FileSystemStyle.windows
-        : FileSystemStyle.posix;
+    final fsStyle =
+        io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
     dartToolDirectory = home.childDirectory(kDartToolDirectoryName);
@@ -92,15 +91,12 @@ void main() {
     clientIdFile = home
         .childDirectory(kDartToolDirectoryName)
         .childFile(kClientIdFileName);
-    sessionFile = home
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kSessionFileName);
-    configFile = home
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kConfigFileName);
-    logFile = home
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kLogFileName);
+    sessionFile =
+        home.childDirectory(kDartToolDirectoryName).childFile(kSessionFileName);
+    configFile =
+        home.childDirectory(kDartToolDirectoryName).childFile(kConfigFileName);
+    logFile =
+        home.childDirectory(kDartToolDirectoryName).childFile(kLogFileName);
     dismissedSurveyFile = home
         .childDirectory(kDartToolDirectoryName)
         .childFile(kDismissedSurveyFileName);
@@ -146,8 +142,7 @@ void main() {
     expect(
       configFile.readAsLinesSync().length,
       kConfigString.split('\n').length + 1,
-      reason:
-          'The number of lines should equal lines in constant value + 1 '
+      reason: 'The number of lines should equal lines in constant value + 1 '
           'for the initialized tool',
     );
   });
@@ -277,8 +272,7 @@ void main() {
     expect(
       secondAnalytics.parsedTools.length,
       equals(2),
-      reason:
-          'There should be only 2 tools that have '
+      reason: 'There should be only 2 tools that have '
           'been parsed into the config file',
     );
     expect(
@@ -323,8 +317,7 @@ void main() {
     expect(
       analytics.telemetryEnabled,
       true,
-      reason:
-          'Telemetry should be enabled by default '
+      reason: 'Telemetry should be enabled by default '
           'when initialized for the first time',
     );
     // Use the API to disable analytics
@@ -447,13 +440,13 @@ void main() {
     expect(
       (lastLogItem['client_id'] as String).isNotEmpty,
       true,
-      reason:
-          'The client id should have been regenerated and '
+      reason: 'The client id should have been regenerated and '
           'emitted in the opt in event',
     );
   });
 
-  test('Telemetry has been disabled by one '
+  test(
+      'Telemetry has been disabled by one '
       'tool and second tool correctly shows telemetry is disabled', () async {
     expect(
       analytics.telemetryEnabled,
@@ -486,13 +479,13 @@ void main() {
     expect(
       secondAnalytics.telemetryEnabled,
       false,
-      reason:
-          'Analytics telemetry should be disabled by the first class '
+      reason: 'Analytics telemetry should be disabled by the first class '
           'and the second class should show telemetry is disabled',
     );
   });
 
-  test('Two concurrent instances are running '
+  test(
+      'Two concurrent instances are running '
       'and reflect an accurate up to date telemetry status', () async {
     // Initialize a second analytics class, which simulates a second tool
     final secondAnalytics = Analytics.fake(
@@ -511,15 +504,13 @@ void main() {
     expect(
       analytics.telemetryEnabled,
       true,
-      reason:
-          'Telemetry should be enabled on initialization for '
+      reason: 'Telemetry should be enabled on initialization for '
           'first analytics instance',
     );
     expect(
       secondAnalytics.telemetryEnabled,
       true,
-      reason:
-          'Telemetry should be enabled on initialization for '
+      reason: 'Telemetry should be enabled on initialization for '
           'second analytics instance',
     );
 
@@ -534,8 +525,7 @@ void main() {
     expect(
       secondAnalytics.telemetryEnabled,
       false,
-      reason:
-          'Analytics telemetry should be disabled by the first class '
+      reason: 'Analytics telemetry should be disabled by the first class '
           'and the second class should show telemetry is disabled'
           ' by checking the timestamp on the config file',
     );
@@ -547,8 +537,7 @@ void main() {
     expect(
       configFile.readAsStringSync().endsWith('\n'),
       true,
-      reason:
-          'When initialized, the tool should correctly '
+      reason: 'When initialized, the tool should correctly '
           'add a trailing new line character',
     );
 
@@ -589,8 +578,7 @@ void main() {
     expect(
       configFile.readAsStringSync().endsWith('\n'),
       true,
-      reason:
-          'The second analytics class will correct '
+      reason: 'The second analytics class will correct '
           'the missing new line character',
     );
   });
@@ -599,8 +587,7 @@ void main() {
     expect(
       analytics.parsedTools[initialTool.label]?.versionNumber,
       toolsMessageVersion,
-      reason:
-          'On initialization, the first version number should '
+      reason: 'On initialization, the first version number should '
           'be what is set in the setup method',
     );
 
@@ -685,14 +672,14 @@ reporting=1
       expect(
         configFile.readAsStringSync().startsWith(kConfigString),
         true,
-        reason:
-            'The tool should have reset the config file '
+        reason: 'The tool should have reset the config file '
             'because it was not formatted correctly',
       );
     },
   );
 
-  test('Config file resets when there is not exactly one match for the tool', () {
+  test('Config file resets when there is not exactly one match for the tool',
+      () {
     // Write to the config file a string that is not formatted correctly
     // (ie. there is more than one match for the reporting flag)
     configFile.writeAsStringSync('''
@@ -757,8 +744,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     expect(
       configFile.readAsStringSync(),
       kConfigString,
-      reason:
-          'The config file should have been reset completely '
+      reason: 'The config file should have been reset completely '
           'due to a malformed file that contained two lines for the same tool',
     );
 
@@ -780,11 +766,10 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
     expect(
       configFile.readAsStringSync().endsWith(
-        '# displayed.\n${initialTool.label}=$dateStamp,${toolsMessageVersion + 1}\n',
-      ),
+            '# displayed.\n${initialTool.label}=$dateStamp,${toolsMessageVersion + 1}\n',
+          ),
       true,
-      reason:
-          'The config file ends with the correctly formatted ending '
+      reason: 'The config file ends with the correctly formatted ending '
           'after removing the duplicate lines for a given tool',
     );
     expect(
@@ -983,7 +968,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     );
   });
 
-  test('The session id stays the same when duration'
+  test(
+      'The session id stays the same when duration'
       ' is less than the constraint', () {
     // For this test, we will need control clock time so we will delete
     // the [dartToolDirectory] and all of its contents and reconstruct a
@@ -1053,8 +1039,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       expect(
         thirdAnalytics.userPropertyMap['session_id']?['value'],
         start.millisecondsSinceEpoch,
-        reason:
-            'The session id should not have changed since it was made '
+        reason: 'The session id should not have changed since it was made '
             'within the duration',
       );
       expect(
@@ -1140,8 +1125,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       expect(
         thirdAnalytics.userPropertyMap['session_id']?['value'],
         end.millisecondsSinceEpoch,
-        reason:
-            'The session id should have changed since it was made '
+        reason: 'The session id should have changed since it was made '
             'outside the duration',
       );
       expect(
@@ -1205,8 +1189,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     expect(
       clientIdPattern.hasMatch(body['client_id'] as String),
       true,
-      reason:
-          'The client id is not properly formatted, ie '
+      reason: 'The client id is not properly formatted, ie '
           '46cc0ba6-f604-4fd9-aa2f-8a20beb24cd4',
     );
     expect(
@@ -1239,8 +1222,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         contains('enabled_features'),
       );
       expect(
-        (body['events'][0]
-            as Map<String, dynamic>)['params']['enabled_features'],
+        (body['events'][0] as Map<String, dynamic>)['params']
+            ['enabled_features'],
         'enable-native-assets',
       );
     },
@@ -1282,8 +1265,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       expect(
         analytics.logFileStats(),
         isNull,
-        reason:
-            'The result for the log file stats should be null when '
+        reason: 'The result for the log file stats should be null when '
             'there are no logs',
       );
       analytics.send(testEvent);
@@ -1299,9 +1281,12 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         {'flutterChannel': 1},
         reason: 'There should only be one flutter channel logged',
       );
-      expect(firstQuery.toolCount, {
-        'flutter-tool': 1,
-      }, reason: 'There should only be one tool logged');
+      expect(
+          firstQuery.toolCount,
+          {
+            'flutter-tool': 1,
+          },
+          reason: 'There should only be one tool logged');
     });
 
     // Define a new clock that is outside of the session duration
@@ -1364,8 +1349,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
   test('Check that log data missing some keys results in null for stats', () {
     // The following string represents a log item that is malformed (missing the `tool` key)
-    const malformedLog =
-        '{"client_id":"d40133a0-7ea6-4347-b668-ffae94bb8774",'
+    const malformedLog = '{"client_id":"d40133a0-7ea6-4347-b668-ffae94bb8774",'
         '"events":[{"name":"hot_reload_time","params":{"time_ns":345}}],'
         '"user_properties":{'
         '"session_id":{"value":1675193534342},'
@@ -1389,8 +1373,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
   test('Malformed local_time string should result in null for stats', () {
     // The following string represents a log item that is malformed (missing the `tool` key)
-    const malformedLog =
-        '{"client_id":"d40133a0-7ea6-4347-b668-ffae94bb8774",'
+    const malformedLog = '{"client_id":"d40133a0-7ea6-4347-b668-ffae94bb8774",'
         '"events":[{"name":"hot_reload_time","params":{"time_ns":345}}],'
         '"user_properties":{'
         '"session_id":{"value":1675193534342},'
@@ -1425,8 +1408,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       expect(
         version,
         kPackageVersion,
-        reason:
-            'The package version in the pubspec and '
+        reason: 'The package version in the pubspec and '
             'constants.dart need to match\n'
             'Pubspec: $version && constants.dart: $kPackageVersion\n\n'
             'Make sure both are the same',
@@ -1439,14 +1421,14 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       expect(
         changeLogFirstLineString.substring(3),
         kPackageVersion,
-        reason:
-            'The CHANGELOG.md file needs the first line to '
+        reason: 'The CHANGELOG.md file needs the first line to '
             'be the same version as the pubspec and constants.dart',
       );
     },
   );
 
-  test('Null values for flutter parameters is reflected properly in log file', () {
+  test('Null values for flutter parameters is reflected properly in log file',
+      () {
     // Because we are using the `MemoryFileSystem.test` constructor,
     // we don't have a real clock in the filesystem, and because we
     // are checking the last modified timestamp for the session file
@@ -1500,8 +1482,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     expect(
       query2.toolCount,
       {'dart-tool': 1, 'flutter-tool': 1},
-      reason:
-          'Two different analytics instances have '
+      reason: 'Two different analytics instances have '
           'been initialized and sent events',
     );
     expect(
@@ -1529,8 +1510,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // 4. Event names must be 40 characters or fewer, may only contain alpha-numeric
     //    characters and underscores, and must start with an alphabetic character
     test('max 25 user properties per event', () {
-      final Map<String, Object> userPropPayload = analytics.userProperty
-          .preparePayload();
+      final Map<String, Object> userPropPayload =
+          analytics.userProperty.preparePayload();
       const maxUserPropKeys = 25;
 
       expect(
@@ -1541,8 +1522,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     });
 
     test('max 24 characters for user prop keys', () {
-      final Map<String, Object> userPropPayload = analytics.userProperty
-          .preparePayload();
+      final Map<String, Object> userPropPayload =
+          analytics.userProperty.preparePayload();
       const maxUserPropLength = 24;
 
       var userPropLengthValid = true;
@@ -1602,8 +1583,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       expect(
         eventValid,
         true,
-        reason:
-            'All event labels should have letters and underscores '
+        reason: 'All event labels should have letters and underscores '
             'as a delimiter if needed; invalid events below\n$invalidEvents',
       );
     });

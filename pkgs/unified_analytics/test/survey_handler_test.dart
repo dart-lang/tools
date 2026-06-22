@@ -48,14 +48,13 @@ void main() {
         }
 
         final actualSampledRate = count / iterations;
-        final actualMarginOfError = (sampleRateToTest - actualSampledRate)
-            .abs();
+        final actualMarginOfError =
+            (sampleRateToTest - actualSampledRate).abs();
 
         expect(
           actualMarginOfError < marginOfError,
           true,
-          reason:
-              'Failed on sample rate = $sampleRateToTest with'
+          reason: 'Failed on sample rate = $sampleRateToTest with'
               ' actual rate $actualMarginOfError '
               'and a margin of error = $marginOfError',
         );
@@ -245,8 +244,7 @@ void main() {
         expect(
           parsedSurveys.length,
           0,
-          reason:
-              'The condition value is not a '
+          reason: 'The condition value is not a '
               'proper integer so it should error returning no surveys',
         );
       });
@@ -261,8 +259,7 @@ void main() {
         expect(
           parsedSurveys.length,
           0,
-          reason:
-              'The dash tool in the exclude array is not valid '
+          reason: 'The dash tool in the exclude array is not valid '
               'so it should error returning no surveys',
         );
       });
@@ -1209,7 +1206,8 @@ void main() {
       });
     });
 
-    test('Filter from excludeDashTool array does not '
+    test(
+        'Filter from excludeDashTool array does not '
         'apply for different tool', () async {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
         analytics = Analytics.fake(

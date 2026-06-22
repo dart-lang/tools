@@ -76,32 +76,32 @@ class MockWin32Console extends Win32Console {
   factory MockWin32Console() => MockWin32Console._([]);
 
   MockWin32Console._(List<({int keyCode, int controlKeyState})> mockEvents)
-    : _mockEvents = mockEvents,
-      super.internal(
-        (nStdHandle) => 123,
-        (hConsoleInput, lpBuffer, nLength, lpNumberOfEventsRead) {
-          final count =
-              nLength < mockEvents.length ? nLength : mockEvents.length;
-          for (var i = 0; i < count; i++) {
-            final event = mockEvents.removeAt(0);
-            final record = (lpBuffer + i).ref;
-            record.eventType = InputRecordEventType.keyEvent;
-            record.event.keyEvent.bKeyDown = 1;
-            record.event.keyEvent.wVirtualKeyCode = event.keyCode;
-            record.event.keyEvent.uChar = 0;
-            record.event.keyEvent.dwControlKeyState = event.controlKeyState;
-            if (event.keyCode >= 32 && event.keyCode < 127) {
-              record.event.keyEvent.uChar = event.keyCode;
+      : _mockEvents = mockEvents,
+        super.internal(
+          (nStdHandle) => 123,
+          (hConsoleInput, lpBuffer, nLength, lpNumberOfEventsRead) {
+            final count =
+                nLength < mockEvents.length ? nLength : mockEvents.length;
+            for (var i = 0; i < count; i++) {
+              final event = mockEvents.removeAt(0);
+              final record = (lpBuffer + i).ref;
+              record.eventType = InputRecordEventType.keyEvent;
+              record.event.keyEvent.bKeyDown = 1;
+              record.event.keyEvent.wVirtualKeyCode = event.keyCode;
+              record.event.keyEvent.uChar = 0;
+              record.event.keyEvent.dwControlKeyState = event.controlKeyState;
+              if (event.keyCode >= 32 && event.keyCode < 127) {
+                record.event.keyEvent.uChar = event.keyCode;
+              }
             }
-          }
-          lpNumberOfEventsRead.value = count;
-          return 1;
-        },
-        (hConsoleInput, lpcNumberOfEvents) {
-          lpcNumberOfEvents.value = mockEvents.length;
-          return 1;
-        },
-      );
+            lpNumberOfEventsRead.value = count;
+            return 1;
+          },
+          (hConsoleInput, lpcNumberOfEvents) {
+            lpcNumberOfEvents.value = mockEvents.length;
+            return 1;
+          },
+        );
 
   Future<void> pushEvent(int keyCode, {int controlKeyState = 0}) async {
     _mockEvents.add((keyCode: keyCode, controlKeyState: controlKeyState));
