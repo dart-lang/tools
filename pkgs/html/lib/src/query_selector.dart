@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// Query selector implementation for our DOM.
 library;
 
@@ -178,7 +182,7 @@ class SelectorEvaluator extends Visitor {
     }
 
     // :before, :after, :first-letter/line can't match DOM elements.
-    if (_isLegacyPsuedoClass(node.name)) return false;
+    if (_isLegacyPseudoClass(node.name)) return false;
 
     throw _unimplemented(node);
   }
@@ -186,12 +190,12 @@ class SelectorEvaluator extends Visitor {
   @override
   bool visitPseudoElementSelector(PseudoElementSelector node) {
     // :before, :after, :first-letter/line can't match DOM elements.
-    if (_isLegacyPsuedoClass(node.name)) return false;
+    if (_isLegacyPseudoClass(node.name)) return false;
 
     throw _unimplemented(node);
   }
 
-  static bool _isLegacyPsuedoClass(String name) {
+  static bool _isLegacyPseudoClass(String name) {
     switch (name) {
       case 'before':
       case 'after':

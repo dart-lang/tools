@@ -15,8 +15,10 @@ import 'link_tests.dart';
 
 void main() {
   // Use a short delay to make the tests run quickly.
-  watcherFactory = (dir) => PollingDirectoryWatcher(dir,
-      pollingDelay: const Duration(milliseconds: 10));
+  watcherFactory = (dir) => PollingDirectoryWatcher(
+    dir,
+    pollingDelay: const Duration(milliseconds: 10),
+  );
 
   /// See [enableSleepUntilNewModificationTime] for a note about the "polling"
   /// tests.
@@ -41,8 +43,9 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 1));
     }
 
-    final events =
-        await takeEvents(duration: const Duration(milliseconds: 500));
+    final events = await takeEvents(
+      duration: const Duration(milliseconds: 500),
+    );
 
     // Events should be adds and removes that pair up, with no modify events.
     final adds = <String>{};

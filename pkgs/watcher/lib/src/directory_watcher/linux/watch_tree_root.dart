@@ -17,20 +17,21 @@ class WatchTreeRoot {
 
   late final WatchTree watch;
 
-  WatchTreeRoot(
-      {required String watchedDirectory,
-      required Completer<void> readyCompleter,
-      required StreamController<WatchEvent> eventsController})
-      : _readyCompleter = readyCompleter,
-        _eventsController = eventsController,
-        watchedDirectory = AbsolutePath(watchedDirectory) {
+  WatchTreeRoot({
+    required String watchedDirectory,
+    required Completer<void> readyCompleter,
+    required StreamController<WatchEvent> eventsController,
+  }) : _readyCompleter = readyCompleter,
+       _eventsController = eventsController,
+       watchedDirectory = AbsolutePath(watchedDirectory) {
     logForTesting?.call('WatchTree(),$watchedDirectory');
     watch = WatchTree(
-        watchedDirectory: this.watchedDirectory,
-        starting: true,
-        emitEvent: _emit,
-        onError: _emitError,
-        watchedDirectoryWasDeleted: _watchedDirectoryWasDeleted);
+      watchedDirectory: this.watchedDirectory,
+      starting: true,
+      emitEvent: _emit,
+      onError: _emitError,
+      watchedDirectoryWasDeleted: _watchedDirectoryWasDeleted,
+    );
     _ready();
   }
 
@@ -44,8 +45,9 @@ class WatchTreeRoot {
 
   /// Handler for when [watchedDirectory] is deleted.
   void _watchedDirectoryWasDeleted() {
-    logForTesting
-        ?.call('WatchTree,$watchedDirectory,_watchedDirectoryWasDeleted');
+    logForTesting?.call(
+      'WatchTree,$watchedDirectory,_watchedDirectoryWasDeleted',
+    );
     _ready();
     _eventsController.close();
   }

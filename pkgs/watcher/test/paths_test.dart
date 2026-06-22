@@ -13,23 +13,29 @@ void main() {
   group('AbsolutePath', () {
     test('tryRelativeTo extracts path segment', () {
       expect(
-          AbsolutePath('a${separator}b${separator}c')
-              .tryRelativeTo(AbsolutePath('a${separator}b')),
-          'c');
+        AbsolutePath(
+          'a${separator}b${separator}c',
+        ).tryRelativeTo(AbsolutePath('a${separator}b')),
+        'c',
+      );
     });
 
     test('tryRelativeTo extracts many path segments', () {
       expect(
-          AbsolutePath('a${separator}b${separator}c${separator}d')
-              .tryRelativeTo(AbsolutePath('a${separator}b')),
-          'c${separator}d');
+        AbsolutePath(
+          'a${separator}b${separator}c${separator}d',
+        ).tryRelativeTo(AbsolutePath('a${separator}b')),
+        'c${separator}d',
+      );
     });
 
     test('tryRelativeTo checks for final separator', () {
       expect(
-          AbsolutePath('a${separator}bbc')
-              .tryRelativeTo(AbsolutePath('a${separator}b')),
-          null);
+        AbsolutePath(
+          'a${separator}bbc',
+        ).tryRelativeTo(AbsolutePath('a${separator}b')),
+        null,
+      );
     });
   });
 }

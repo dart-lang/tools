@@ -82,10 +82,10 @@ class NativeWatch {
     required void Function() watchedDirectoryWasDeleted,
     required void Function(List<Event>) onEvents,
     required void Function(Object, StackTrace) onError,
-  })  : _onError = onError,
-        _onEvents = onEvents,
-        _watchedDirectoryWasDeleted = watchedDirectoryWasDeleted,
-        _restartWatching = restartWatching {
+  }) : _onError = onError,
+       _onEvents = onEvents,
+       _watchedDirectoryWasDeleted = watchedDirectoryWasDeleted,
+       _restartWatching = restartWatching {
     logForTesting?.call('NativeWatch(),$watchedDirectory');
     _subscription = watchedDirectory
         .watch()

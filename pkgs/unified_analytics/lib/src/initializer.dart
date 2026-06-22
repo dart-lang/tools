@@ -29,7 +29,8 @@ void createConfigFile({
   // an opt out from the start
   if (legacyOptOut(homeDirectory: homeDirectory)) {
     configFile.writeAsStringSync(
-        kConfigString.replaceAll('reporting=1', 'reporting=0'));
+      kConfigString.replaceAll('reporting=1', 'reporting=0'),
+    );
   } else {
     configFile.writeAsStringSync(kConfigString);
   }
@@ -71,22 +72,18 @@ DateTime createSessionFile({required File sessionFile}) {
 /// - Session JSON file
 /// - Log file
 /// - Dismissed survey JSON file
-bool runInitialization({
-  required Directory homeDirectory,
-}) {
+bool runInitialization({required Directory homeDirectory}) {
   var firstRun = false;
-  final dartToolDirectory =
-      homeDirectory.childDirectory(kDartToolDirectoryName);
+  final dartToolDirectory = homeDirectory.childDirectory(
+    kDartToolDirectoryName,
+  );
 
   // When the config file doesn't exist, initialize it with the default tools
   // and the current date.
   final configFile = dartToolDirectory.childFile(kConfigFileName);
   if (!configFile.existsSync()) {
     firstRun = true;
-    createConfigFile(
-      configFile: configFile,
-      homeDirectory: homeDirectory,
-    );
+    createConfigFile(configFile: configFile, homeDirectory: homeDirectory);
   }
 
   // Begin initialization checks for the client id.
@@ -108,8 +105,9 @@ bool runInitialization({
   }
 
   // Begin initialization checks for the dismissed survey file.
-  final dismissedSurveyFile =
-      dartToolDirectory.childFile(kDismissedSurveyFileName);
+  final dismissedSurveyFile = dartToolDirectory.childFile(
+    kDismissedSurveyFileName,
+  );
   if (!dismissedSurveyFile.existsSync()) {
     createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
   }

@@ -50,10 +50,10 @@ class RecursiveNativeWatch {
     required void Function() watchedDirectoryWasDeleted,
     required void Function(EventTree) onEvents,
     required void Function(Object, StackTrace) onError,
-  })  : _onError = onError,
-        _onEvents = onEvents,
-        _watchedDirectoryWasRecreated = watchedDirectoryWasRecreated,
-        _watchedDirectoryWasDeleted = watchedDirectoryWasDeleted {
+  }) : _onError = onError,
+       _onEvents = onEvents,
+       _watchedDirectoryWasRecreated = watchedDirectoryWasRecreated,
+       _watchedDirectoryWasDeleted = watchedDirectoryWasDeleted {
     logForTesting?.call('NativeWatch(),$watchedDirectory');
     _watch();
     if (Platform.isWindows) _watchParent();
@@ -63,16 +63,16 @@ class RecursiveNativeWatch {
     _subscription?.cancel();
     // In older SDKs watcher exceptions on Windows are not sent over the stream
     // and must be caught with a zone handler.
-    runZonedGuarded(
-      () {
-        _subscription = watchedDirectory
-            .watch(recursive: true)
-            .batchAndConvertEventsForPlatform()
-            .listen(_onData,
-                onError: _restartWatchOnOverflowOr(_onError), onDone: _onDone);
-      },
-      _restartWatchOnOverflowOr(Error.throwWithStackTrace),
-    );
+    runZonedGuarded(() {
+      _subscription = watchedDirectory
+          .watch(recursive: true)
+          .batchAndConvertEventsForPlatform()
+          .listen(
+            _onData,
+            onError: _restartWatchOnOverflowOr(_onError),
+            onDone: _onDone,
+          );
+    }, _restartWatchOnOverflowOr(Error.throwWithStackTrace));
   }
 
   /// Handles deletes and moves of [watchedDirectory] on Windows.
@@ -167,7 +167,8 @@ class RecursiveNativeWatch {
   /// And, a `SocketException` happens on Windows when the watched directory
   /// is deleted.
   void Function(Object, StackTrace) _restartWatchOnOverflowOr(
-      void Function(Object, StackTrace) otherwise) {
+    void Function(Object, StackTrace) otherwise,
+  ) {
     return (error, stackTrace) async {
       if (error is FileSystemException &&
           error.message.startsWith('Directory watcher closed unexpectedly')) {
@@ -211,7 +212,8 @@ extension _BatchEvents on Stream<FileSystemEvent> {
   Stream<List<Event>> batchAndConvertEventsForPlatform() {
     return Platform.isWindows
         ? batchBufferedByPathAndConvertEvents(
-            duration: const Duration(milliseconds: 5))
+            duration: const Duration(milliseconds: 5),
+          )
         : batchNearbyMicrotasksAndConvertEvents();
   }
 }

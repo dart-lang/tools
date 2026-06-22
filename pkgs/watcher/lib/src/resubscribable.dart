@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'package:path/path.dart' as p;
+
 import '../watcher.dart';
 
 /// A wrapper for [ManuallyClosedWatcher] that encapsulates support for closing
@@ -21,7 +23,7 @@ import '../watcher.dart';
 /// takes a factory function that produces instances of the inner class.
 abstract class ResubscribableWatcher implements Watcher {
   /// The factory function that produces instances of the inner class.
-  final ManuallyClosedWatcher Function() _factory;
+  final ManuallyClosedWatcher Function(String path) _factory;
 
   @override
   final String path;
@@ -39,32 +41,36 @@ abstract class ResubscribableWatcher implements Watcher {
 
   /// Creates a new [ResubscribableWatcher] wrapping the watchers
   /// emitted by [_factory].
-  ResubscribableWatcher(this.path, this._factory) {
+  ResubscribableWatcher(String path, this._factory)
+    : path = _normalizeAndStripTrailingSeparator(path) {
     late ManuallyClosedWatcher watcher;
     late StreamSubscription<WatchEvent> subscription;
 
     _eventsController = StreamController<WatchEvent>.broadcast(
-        onListen: () async {
-          final completer = _readyCompleter;
-          watcher = _factory();
-          subscription = watcher.events.listen(_eventsController.add,
-              onError: _eventsController.addError,
-              onDone: _eventsController.close);
+      onListen: () async {
+        final completer = _readyCompleter;
+        watcher = _factory(this.path);
+        subscription = watcher.events.listen(
+          _eventsController.add,
+          onError: _eventsController.addError,
+          onDone: _eventsController.close,
+        );
 
-          // It's important that we complete the value of [_readyCompleter] at
-          // the time [onListen] is called, as opposed to the value when
-          // [watcher.ready] fires. A new completer may be created by that time.
-          await watcher.ready;
-          completer.complete();
-        },
-        onCancel: () {
-          // Cancel the subscription before closing the watcher so that the
-          // watcher's `onDone` event doesn't close [events].
-          subscription.cancel();
-          watcher.close();
-          _readyCompleter = Completer();
-        },
-        sync: true);
+        // It's important that we complete the value of [_readyCompleter] at
+        // the time [onListen] is called, as opposed to the value when
+        // [watcher.ready] fires. A new completer may be created by that time.
+        await watcher.ready;
+        completer.complete();
+      },
+      onCancel: () {
+        // Cancel the subscription before closing the watcher so that the
+        // watcher's `onDone` event doesn't close [events].
+        subscription.cancel();
+        watcher.close();
+        _readyCompleter = Completer();
+      },
+      sync: true,
+    );
   }
 }
 
@@ -77,4 +83,14 @@ abstract class ManuallyClosedWatcher implements Watcher {
   /// Subclasses should close their [events] stream and release any internal
   /// resources.
   void close();
+}
+
+/// Normalizes [path] then strips any extra trailing separator.
+///
+/// Removes adjacent separators, `.` and `..` but does not convert to absolute.
+String _normalizeAndStripTrailingSeparator(String path) {
+  path = p.normalize(path);
+  return path.length > 1 && path.endsWith(p.separator)
+      ? path.substring(0, path.length - 1)
+      : path;
 }

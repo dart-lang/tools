@@ -16,7 +16,7 @@ import '../watch_event.dart';
 /// Single-file notifications are much simpler than those for multiple files, so
 /// this doesn't need to be split out into multiple OS-specific classes.
 class NativeFileWatcher extends ResubscribableWatcher implements FileWatcher {
-  NativeFileWatcher(String path) : super(path, () => _NativeFileWatcher(path));
+  NativeFileWatcher(String path) : super(path, _NativeFileWatcher.new);
 }
 
 class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
@@ -62,8 +62,11 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
       });
     }
 
-    _subscription = stream.listen(_onBatch,
-        onError: _eventsController.addError, onDone: _onDone);
+    _subscription = stream.listen(
+      _onBatch,
+      onError: _eventsController.addError,
+      onDone: _onDone,
+    );
   }
 
   void _onBatch(List<Event> batch) {

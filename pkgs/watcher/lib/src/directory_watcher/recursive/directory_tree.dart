@@ -101,8 +101,10 @@ class DirectoryTree {
       // Nothing found, use empty sets so everything is handled as deleted.
     }
 
-    logForTesting?.call('Watch,$watchedDirectory,list,'
-        'files=$listedFiles,directories=$listedDirectories');
+    logForTesting?.call(
+      'Watch,$watchedDirectory,list,'
+      'files=$listedFiles,directories=$listedDirectories',
+    );
     // Emit deletes for missing files.
     for (final file in _files.toList()) {
       if (!listedFiles.contains(file)) {
@@ -140,8 +142,9 @@ class DirectoryTree {
   /// was a known file. If it's not now a file and it was before, emits a
   /// delete.
   void _pollPathSegment(PathSegment segment) {
-    logForTesting
-        ?.call('DirectoryTree,$watchedDirectory,_pollPathSegment,$segment');
+    logForTesting?.call(
+      'DirectoryTree,$watchedDirectory,_pollPathSegment,$segment',
+    );
 
     final type = watchedDirectory.append(segment).typeSync();
 
@@ -183,16 +186,18 @@ class DirectoryTree {
   /// If [directory] is known, polls it. If not, starts tracking it, emitting
   /// "add" events for discovered files.
   void _trackOrPollDirectory(PathSegment directory) {
-    logForTesting
-        ?.call('Watch,$watchedDirectory,_trackOrPollDirectory,$directory');
+    logForTesting?.call(
+      'Watch,$watchedDirectory,_trackOrPollDirectory,$directory',
+    );
     if (_directories.containsKey(directory)) {
       // Poll known directories.
       _directories[directory]!.poll(EventTree.singleEvent());
     } else {
       /// Start tracking new directories.
       _directories[directory] = DirectoryTree(
-          emitEvent: _emitEvent,
-          watchedDirectory: watchedDirectory.append(directory));
+        emitEvent: _emitEvent,
+        watchedDirectory: watchedDirectory.append(directory),
+      );
     }
   }
 

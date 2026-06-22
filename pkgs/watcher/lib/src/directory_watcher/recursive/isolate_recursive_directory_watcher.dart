@@ -34,7 +34,7 @@ class IsolateRecursiveDirectoryWatcher implements ManuallyClosedWatcher {
   final void Function(LogEntry)? _log;
 
   IsolateRecursiveDirectoryWatcher(this.path)
-      : _log = logSeparateIsolateForTesting {
+    : _log = logSeparateIsolateForTesting {
     _startIsolate(path, _receivePort.sendPort, log: _log != null);
     _receivePort.listen((event) => _receiveFromIsolate(event as Event));
   }
@@ -81,8 +81,11 @@ class IsolateRecursiveDirectoryWatcher implements ManuallyClosedWatcher {
 ///
 /// [log] is whether to send test log messages from the isolate.
 void _startIsolate(String path, SendPort sendPort, {required bool log}) async {
-  unawaited(Isolate.run(
-      () async => await _WatcherIsolate(path, sendPort, log: log).closed));
+  unawaited(
+    Isolate.run(
+      () async => await _WatcherIsolate(path, sendPort, log: log).closed,
+    ),
+  );
 }
 
 class _WatcherIsolate {
@@ -96,7 +99,7 @@ class _WatcherIsolate {
   final Completer<void> _closeCompleter = Completer();
 
   _WatcherIsolate(this.path, this.sendPort, {required this.log})
-      : watcher = ManuallyClosedRecursiveDirectoryWatcher(path) {
+    : watcher = ManuallyClosedRecursiveDirectoryWatcher(path) {
     if (log) {
       logForTesting = (message) => sendPort.send(Event.log(message));
     }
@@ -113,16 +116,20 @@ class _WatcherIsolate {
       sendPort.send(Event.ready());
     });
 
-    watcher.events.listen((event) {
-      // The watcher events.
-      sendPort.send(Event.watchEvent(event));
-    }, onDone: () {
-      // `Event.close` if the watcher event stream closes.
-      sendPort.send(Event.close());
-    }, onError: (Object e, StackTrace s) {
-      // `Event.error` on error.
-      sendPort.send(Event.error(e, s));
-    });
+    watcher.events.listen(
+      (event) {
+        // The watcher events.
+        sendPort.send(Event.watchEvent(event));
+      },
+      onDone: () {
+        // `Event.close` if the watcher event stream closes.
+        sendPort.send(Event.close());
+      },
+      onError: (Object e, StackTrace s) {
+        // `Event.error` on error.
+        sendPort.send(Event.error(e, s));
+      },
+    );
 
     receivePort.listen((event) {
       // The only event sent from the host to the isolate is "close", no need
@@ -144,55 +151,48 @@ class Event {
   final LogEntry? logEntry;
 
   Event.sendPort(this.sendPort)
-      : type = EventType.sendPort,
-        watchEvent = null,
-        error = null,
-        stackTrace = null,
-        logEntry = null;
+    : type = EventType.sendPort,
+      watchEvent = null,
+      error = null,
+      stackTrace = null,
+      logEntry = null;
 
   Event.ready()
-      : type = EventType.ready,
-        sendPort = null,
-        watchEvent = null,
-        error = null,
-        stackTrace = null,
-        logEntry = null;
+    : type = EventType.ready,
+      sendPort = null,
+      watchEvent = null,
+      error = null,
+      stackTrace = null,
+      logEntry = null;
 
   Event.watchEvent(this.watchEvent)
-      : type = EventType.watchEvent,
-        sendPort = null,
-        error = null,
-        stackTrace = null,
-        logEntry = null;
+    : type = EventType.watchEvent,
+      sendPort = null,
+      error = null,
+      stackTrace = null,
+      logEntry = null;
 
   Event.close()
-      : type = EventType.close,
-        sendPort = null,
-        watchEvent = null,
-        error = null,
-        stackTrace = null,
-        logEntry = null;
+    : type = EventType.close,
+      sendPort = null,
+      watchEvent = null,
+      error = null,
+      stackTrace = null,
+      logEntry = null;
 
   Event.error(this.error, this.stackTrace)
-      : type = EventType.error,
-        sendPort = null,
-        watchEvent = null,
-        logEntry = null;
+    : type = EventType.error,
+      sendPort = null,
+      watchEvent = null,
+      logEntry = null;
 
   Event.log(String message)
-      : type = EventType.log,
-        sendPort = null,
-        watchEvent = null,
-        error = null,
-        stackTrace = null,
-        logEntry = LogEntry(message);
+    : type = EventType.log,
+      sendPort = null,
+      watchEvent = null,
+      error = null,
+      stackTrace = null,
+      logEntry = LogEntry(message);
 }
 
-enum EventType {
-  sendPort,
-  ready,
-  watchEvent,
-  close,
-  error,
-  log;
-}
+enum EventType { sendPort, ready, watchEvent, close, error, log }

@@ -27,25 +27,24 @@ void main() {
 
           test('with no edges', () {
             expect(
-              _transitiveClosure<int>(
-                {1: [], 2: [], 3: [], 4: []},
-                acyclic: acyclic,
-              ),
+              _transitiveClosure<int>({
+                1: [],
+                2: [],
+                3: [],
+                4: [],
+              }, acyclic: acyclic),
               equals(<int, Set<int>>{1: {}, 2: {}, 3: {}, 4: {}}),
             );
           });
 
           test('with single edges', () {
             expect(
-              _transitiveClosure<int>(
-                {
-                  1: [2],
-                  2: [3],
-                  3: [4],
-                  4: [],
-                },
-                acyclic: acyclic,
-              ),
+              _transitiveClosure<int>({
+                1: [2],
+                2: [3],
+                3: [4],
+                4: [],
+              }, acyclic: acyclic),
               equals({
                 1: {2, 3, 4},
                 2: {3, 4},
@@ -57,15 +56,12 @@ void main() {
 
           test('with many edges from one node', () {
             expect(
-              _transitiveClosure<int>(
-                {
-                  1: [2, 3, 4],
-                  2: [],
-                  3: [],
-                  4: [],
-                },
-                acyclic: acyclic,
-              ),
+              _transitiveClosure<int>({
+                1: [2, 3, 4],
+                2: [],
+                3: [],
+                4: [],
+              }, acyclic: acyclic),
               equals(<int, Set<int>>{
                 1: {2, 3, 4},
                 2: {},
@@ -77,15 +73,12 @@ void main() {
 
           test('with transitive edges', () {
             expect(
-              _transitiveClosure<int>(
-                {
-                  1: [2, 4],
-                  2: [],
-                  3: [],
-                  4: [3],
-                },
-                acyclic: acyclic,
-              ),
+              _transitiveClosure<int>({
+                1: [2, 4],
+                2: [],
+                3: [],
+                4: [3],
+              }, acyclic: acyclic),
               equals(<int, Set<int>>{
                 1: {2, 3, 4},
                 2: {},
@@ -97,15 +90,12 @@ void main() {
 
           test('with diamond edges', () {
             expect(
-              _transitiveClosure<int>(
-                {
-                  1: [2, 3],
-                  2: [4],
-                  3: [4],
-                  4: [],
-                },
-                acyclic: acyclic,
-              ),
+              _transitiveClosure<int>({
+                1: [2, 3],
+                2: [4],
+                3: [4],
+                4: [],
+              }, acyclic: acyclic),
               equals(<int, Set<int>>{
                 1: {2, 3, 4},
                 2: {4},
@@ -117,17 +107,14 @@ void main() {
 
           test('with disjoint subgraphs', () {
             expect(
-              _transitiveClosure<int>(
-                {
-                  1: [2],
-                  2: [3],
-                  3: [],
-                  4: [5],
-                  5: [6],
-                  6: [],
-                },
-                acyclic: acyclic,
-              ),
+              _transitiveClosure<int>({
+                1: [2],
+                2: [3],
+                3: [],
+                4: [5],
+                5: [6],
+                6: [],
+              }, acyclic: acyclic),
               equals(<int, Set<int>>{
                 1: {2, 3},
                 2: {3},
@@ -192,27 +179,21 @@ void main() {
     group('with acyclic: true throws a CycleException for a graph with', () {
       test('a one-node cycle', () {
         expect(
-          () => _transitiveClosure<int>(
-            {
-              1: [1],
-            },
-            acyclic: true,
-          ),
+          () => _transitiveClosure<int>({
+            1: [1],
+          }, acyclic: true),
           throwsCycleException([1]),
         );
       });
 
       test('a multi-node cycle', () {
         expect(
-          () => _transitiveClosure<int>(
-            {
-              1: [2],
-              2: [3],
-              3: [4],
-              4: [1],
-            },
-            acyclic: true,
-          ),
+          () => _transitiveClosure<int>({
+            1: [2],
+            2: [3],
+            3: [4],
+            4: [1],
+          }, acyclic: true),
           throwsCycleException([4, 1, 2, 3]),
         );
       });

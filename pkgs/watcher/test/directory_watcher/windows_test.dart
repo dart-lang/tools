@@ -16,8 +16,8 @@ import 'file_tests.dart';
 import 'link_tests.dart';
 
 void main() {
-  watcherFactory =
-      (directory) => RecursiveDirectoryWatcher(directory, runInIsolate: true);
+  watcherFactory = (directory) =>
+      RecursiveDirectoryWatcher(directory, runInIsolate: true);
 
   fileTests(isNative: true);
   linkTests(isNative: true);
@@ -25,6 +25,8 @@ void main() {
 
   test('DirectoryWatcher creates a RecursiveDirectoryWatcher on Windows', () {
     expect(
-        DirectoryWatcher('.'), const TypeMatcher<RecursiveDirectoryWatcher>());
+      DirectoryWatcher('.'),
+      const TypeMatcher<RecursiveDirectoryWatcher>(),
+    );
   });
 }

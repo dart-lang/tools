@@ -1,4 +1,7 @@
-## 2.3.0-wip
+## 3.0.0
+
+- Adds discovery API to find both a configuration and its location:
+  `findPackageConfigAndFile` and `findPackageConfigAndUri`.
 
 - Removes support for the `.packages` file.
   The Dart SDK no longer supports that file, and no new `.packages` files
@@ -13,7 +16,7 @@
   - Old functions still exists as deprecated, forwarding to the new
     functions without the `preferNewest` argument.
 
-  Also makes `PackageConfig`, `Package` and `LanguageVersion` `@sealed` classes,
+  Makes `PackageConfig`, `Package` and `LanguageVersion` `@sealed` classes,
   in preparation for making them `final` in a future update.
 
 - Adds `PackageConfig.minVersion` to complement `.maxVersion`.

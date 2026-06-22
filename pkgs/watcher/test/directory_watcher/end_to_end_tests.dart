@@ -23,17 +23,28 @@ import 'file_changer.dart';
 /// See `README.md` for more detail.
 void endToEndTests() {
   // Random test to cover a wide range of cases.
-  test('end to end test: random', timeout: const Timeout(Duration(minutes: 10)),
-      () async {
-    await runTest(name: 'random', repeats: 100);
-  });
+  test(
+    'end to end test: random',
+    timeout: const Timeout(Duration(minutes: 10)),
+    () async {
+      await runTest(name: 'random', repeats: 100);
+    },
+  );
 
   // Specific test cases that have caught bugs.
   for (final testCase in testCases) {
-    test('end to end test: ${testCase.name}',
-        timeout: const Timeout(Duration(minutes: 5)), () async {
-      await runTest(name: testCase.name, replayLog: testCase.log, repeats: 50);
-    }, skip: testCase.skipOnLinux && Platform.isLinux);
+    test(
+      'end to end test: ${testCase.name}',
+      timeout: const Timeout(Duration(minutes: 5)),
+      () async {
+        await runTest(
+          name: testCase.name,
+          replayLog: testCase.log,
+          repeats: 50,
+        );
+      },
+      skip: testCase.skipOnLinux && Platform.isLinux,
+    );
   }
 }
 
@@ -84,17 +95,12 @@ F modify,f/8110,250
 F create,52267,858
 F move directory to new,f,g
 '''),
-  TestCase(
-    'moves and modifies',
-    '''
+  TestCase('moves and modifies', '''
 F create directory,1
 F create,1/1,1
 ${_movesAndModifies()}
-''',
-  ),
-  TestCase(
-    'move directory in, move file over',
-    '''
+'''),
+  TestCase('move directory in, move file over', '''
 F create directory,a
 F create,a/1,1
 F create directory,b
@@ -103,11 +109,8 @@ F move directory to new,a,b/a
 F create directory,c
 F create,c/3,3
 F move file over file,b/2,b/a/1
-''',
-  ),
-  TestCase(
-    'move new file over recently-moved file',
-    '''
+'''),
+  TestCase('move new file over recently-moved file', '''
 F create directory,b/g
 F create,b/g/67046,94
 F create directory,d
@@ -117,11 +120,8 @@ F create directory,a/j
 F create,a/j/85244,308
 F wait
 F move file over file,a/j/85244,d/f/g/67046
-''',
-  ),
-  TestCase(
-    'move over, modify, delete in new directory',
-    '''
+'''),
+  TestCase('move over, modify, delete in new directory', '''
 F create,62543,809
 F wait
 F wait
@@ -132,8 +132,7 @@ F create,a/63090,758
 F move file over file,62543,a/63090
 F modify,a/63090,439
 F delete,a/63090
-''',
-  ),
+'''),
 ];
 
 String _movesAndModifies() {

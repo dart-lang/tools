@@ -118,6 +118,12 @@ class Chrome {
       // credentials. This uses a mock keychain to avoid that dialog from
       // blocking.
       '--use-mock-keychain',
+      // Prevent warnings for using flags that are not recommended for general
+      // browsing but are applicable for use in dev-focused workflows.
+      '--test-type',
+      // Dev runs of the browser should be considered independent of one
+      // another, don't announce when the previous session crashed.
+      '--disable-session-crashed-bubble',
     ];
     if (headless) {
       args.add('--headless');

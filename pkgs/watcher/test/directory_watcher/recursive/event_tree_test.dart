@@ -37,7 +37,9 @@ void main() {
 
       expect(eventTree[PathSegment('a')]!.isSingleEvent, false);
       expect(
-          eventTree[PathSegment('a')]![PathSegment('b')]!.isSingleEvent, true);
+        eventTree[PathSegment('a')]![PathSegment('b')]!.isSingleEvent,
+        true,
+      );
     });
 
     test('adding event removes tree under it', () {

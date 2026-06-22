@@ -1,3 +1,19 @@
+## 1.2.2-wip
+
+- Require Dart SDK `^3.8.0`.
+
+## 1.2.1
+
+- Bug fix: versions before 1.2.0 would allow and ignore a trailing path
+  separator passed to `DirectoryWatcher` or `FileWatcher` constructors, restore
+  that behavior.
+- In paths passed to `DirectoryWatcher` or `FileWatcher` constructors, remove
+  multiple adjacent separators and `.` and `..`, so they will not be returned in
+  events.
+- Bug fix: on Mac, stop issuing `assert(false)` when a `modifyDirectory` event
+  is ignored, so the unused events are silently ignored instead of throwing in
+  debug builds.
+
 ## 1.2.0
 
 - Polling watchers now check file sizes as well as "last modified" times, so

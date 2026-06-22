@@ -6,6 +6,18 @@
 List<String> get validDashTools =>
     DashTool.values.map((e) => e.label).toList()..sort();
 
+/// Environment variables used by the unified analytics package.
+enum DashEnvVar {
+  /// Environment variable used to suppress analytics.
+  suppressAnalytics('DASH__SUPPRESS_ANALYTICS'),
+
+  /// Environment variable used to specify the top-level tool.
+  tool('DASH__TOOL');
+
+  final String name;
+  const DashEnvVar(this.name);
+}
+
 /// Values for the event name to be sent to Google Analytics.
 ///
 /// The [label] for each enum value is what will be logged, the [description]
@@ -26,18 +38,12 @@ enum DashEvent {
     label: 'analytics_exception',
     description: 'Errors that are encountered within package:unified_analytics',
   ),
-  exception(
-    label: 'exception',
-    description: 'General errors to log',
-  ),
+  exception(label: 'exception', description: 'General errors to log'),
   surveyAction(
     label: 'survey_action',
     description: 'Actions taken by users when shown survey',
   ),
-  surveyShown(
-    label: 'survey_shown',
-    description: 'Survey shown to the user',
-  ),
+  surveyShown(label: 'survey_shown', description: 'Survey shown to the user'),
   timing(
     label: 'timing',
     description: 'Events for timing how long a process takes',
@@ -84,7 +90,8 @@ enum DashEvent {
   ),
   commandUsageValues(
     label: 'command_usage_values',
-    description: 'Contains command level custom dimensions from legacy '
+    description:
+        'Contains command level custom dimensions from legacy '
         'flutter analytics',
     toolOwner: DashTool.flutterTool,
   ),
@@ -103,6 +110,10 @@ enum DashEvent {
     description: 'Provides information about flutter commands that ran',
     toolOwner: DashTool.flutterTool,
   ),
+  @Deprecated(
+    "Use 'flutterWasmDryRunPackage' instead. This will be removed in "
+    'a future version.',
+  )
   flutterWasmDryRun(
     label: 'wasm_dry_run',
     description: 'Information for a dart2wasm dry run invoked from Flutter',
@@ -118,6 +129,12 @@ enum DashEvent {
   flutterInjectDarwinPlugins(
     label: 'flutter_inject_darwin_plugins',
     description: 'Information on plugins injected into an iOS/macOS project',
+    toolOwner: DashTool.flutterTool,
+  ),
+  flutterTrackAndroidDependencies(
+    label: 'flutter_android_dependencies',
+    description:
+        'Information related to min/target/compile SDK, JDK, NDK, Gradle version',
     toolOwner: DashTool.flutterTool,
   ),
   hotReloadTime(
@@ -164,17 +181,20 @@ enum DashEvent {
     label: 'lint_usage_count',
     description: 'Number of times a given lint is enabled',
   ),
-  memoryInfo(
-    label: 'memory_info',
-    description: 'Memory usage information',
-  ),
+  memoryInfo(label: 'memory_info', description: 'Memory usage information'),
   pluginRequest(
     label: 'plugin_request',
-    description: 'Request responses from plugins',
+    description:
+        'Analyzer plugin performance information regarding server requests',
+  ),
+  plugins(
+    label: 'plugins',
+    description: 'Information about how often _new_ analyzer plugins were used',
   ),
   pluginUse(
     label: 'plugin_use',
-    description: 'Information about how often a plugin was used',
+    description:
+        'Information about how often a _legacy_ analyzer plugin was used',
   ),
   serverSession(
     label: 'server_session',
@@ -183,8 +203,7 @@ enum DashEvent {
   severityAdjustment(
     label: 'severity_adjustment',
     description: 'Number of times diagnostic severity is changed',
-  ),
-  ;
+  );
 
   final String label;
   final String description;
@@ -209,18 +228,12 @@ enum DashTool {
     label: 'android-studio-plugins',
     description: 'Android Studio IDE plugins for Dart and Flutter',
   ),
-  dartTool(
-    label: 'dart-tool',
-    description: 'Dart CLI developer tool',
-  ),
+  dartTool(label: 'dart-tool', description: 'Dart CLI developer tool'),
   devtools(
     label: 'devtools',
     description: 'DevTools debugging and performance tools',
   ),
-  flutterTool(
-    label: 'flutter-tool',
-    description: 'Flutter CLI developer tool',
-  ),
+  flutterTool(label: 'flutter-tool', description: 'Flutter CLI developer tool'),
   intellijPlugins(
     label: 'intellij-plugins',
     description: 'IntelliJ IDE plugins for Dart and Flutter',
@@ -238,10 +251,7 @@ enum DashTool {
   /// grouping.
   final String description;
 
-  const DashTool({
-    required this.label,
-    required this.description,
-  });
+  const DashTool({required this.label, required this.description});
 
   /// This takes in the string label for a given [DashTool] and returns the
   /// enum for that string label.
@@ -249,9 +259,11 @@ enum DashTool {
     final tool = DashTool.values.where((t) => t.label == label).firstOrNull;
     if (tool != null) return tool;
 
-    throw Exception('The tool $label from the survey metadata file is not '
-        'a valid DashTool enum value\n'
-        'Valid labels for dash tools: ${validDashTools.join(', ')}');
+    throw Exception(
+      'The tool $label from the survey metadata file is not '
+      'a valid DashTool enum value\n'
+      'Valid labels for dash tools: ${validDashTools.join(', ')}',
+    );
   }
 }
 
@@ -259,9 +271,116 @@ enum DashTool {
 enum DevicePlatform {
   windows('Windows'),
   macos('macOS'),
-  linux('Linux'),
-  ;
+  linux('Linux');
 
   final String label;
   const DevicePlatform(this.label);
+}
+
+/// Enumerate options for AI agents supported.
+enum AiAgent {
+  aider('Aider'),
+  amp('Amp'),
+  antigravity('Antigravity'),
+  augment('Augment'),
+  claudeCode('Claude Code'),
+  codex('Codex'),
+  copilot('Copilot'),
+  cursor('Cursor'),
+  devin('Devin'),
+  gemini('Gemini'),
+  openCode('OpenCode'),
+  pi('Pi'),
+  replit('Replit'),
+  genericAiAgent('Generic AI Agent');
+
+  final String label;
+
+  const AiAgent(this.label);
+
+  /// Returns the name of the AI agent executing the tool, if any,
+  /// by parsing the environment variables.
+  ///
+  /// Returns `null` if no AI agent is detected.
+  static String? detectAgentName(Map<String, String> environment) {
+    const genericAiAgentLabel = 'Generic AI Agent';
+
+    if (environment.containsKey('CLAUDECODE') ||
+        environment.containsKey('CLAUDE_CODE') ||
+        environment.containsKey('CLAUDE_CODE_IS_COWORK')) {
+      return claudeCode.label;
+    }
+
+    if (environment.containsKey('ANTIGRAVITY_AGENT')) {
+      return antigravity.label;
+    }
+
+    if (environment.containsKey('GEMINI_AGENT') ||
+        environment.containsKey('GEMINI_CLI')) {
+      return gemini.label;
+    }
+
+    if (environment['TERM_PROGRAM'] == 'cursor' ||
+        environment.keys.any((String key) => key.startsWith('CURSOR_'))) {
+      return cursor.label;
+    }
+
+    if (environment.keys.any(
+      (String key) =>
+          key.startsWith('COPILOT_') || key.startsWith('GITHUB_COPILOT'),
+    )) {
+      return copilot.label;
+    }
+
+    if (environment.containsKey('AIDER') ||
+        environment.keys.any((String key) => key.startsWith('AIDER_'))) {
+      return aider.label;
+    }
+
+    if (environment.containsKey('DEVIN') ||
+        environment.containsKey('DEVIN_WORKSPACE_ID')) {
+      return devin.label;
+    }
+
+    if (environment.containsKey('AMP_CURRENT_THREAD_ID')) {
+      return amp.label;
+    }
+
+    if (environment.containsKey('AUGMENT_AGENT')) {
+      return augment.label;
+    }
+
+    if (environment.containsKey('CODEX_CI') ||
+        environment.containsKey('CODEX_SANDBOX') ||
+        environment.containsKey('CODEX_THREAD_ID')) {
+      return codex.label;
+    }
+
+    if (environment.containsKey('OPENCODE') ||
+        environment.containsKey('OPENCODE_CLIENT')) {
+      return openCode.label;
+    }
+
+    if (environment.containsKey('PI_CODING_AGENT')) {
+      return pi.label;
+    }
+
+    if (environment.containsKey('REPL_ID')) {
+      return replit.label;
+    }
+
+    var agent = environment['AGENT'];
+    if (agent != null && agent.isNotEmpty) {
+      return agent == '1' ? genericAiAgentLabel : agent;
+    }
+    agent = environment['AI_AGENT'];
+    if (agent != null && agent.isNotEmpty) {
+      return agent == '1' ? genericAiAgentLabel : agent;
+    }
+    if (environment.containsKey('SWE_AGENT')) {
+      return genericAiAgentLabel;
+    }
+
+    return null;
+  }
 }

@@ -27,25 +27,27 @@ extension BatchEvents on Stream<FileSystemEvent> {
   Stream<List<Event>> batchNearbyMicrotasksAndConvertEvents() {
     var batch = <Event>[];
     return StreamTransformer<FileSystemEvent, List<Event>>.fromHandlers(
-        handleData: (event, sink) {
-      var convertedEvent = Event.checkAndConvert(event);
-      if (convertedEvent == null) return;
-      batch.add(convertedEvent);
+      handleData: (event, sink) {
+        var convertedEvent = Event.checkAndConvert(event);
+        if (convertedEvent == null) return;
+        batch.add(convertedEvent);
 
-      // [Timer.run] schedules an event that runs after any microtasks that have
-      // been scheduled.
-      Timer.run(() {
-        if (batch.isEmpty) return;
-        sink.add(batch.toList());
-        batch.clear();
-      });
-    }, handleDone: (sink) {
-      if (batch.isNotEmpty) {
-        sink.add(batch.toList());
-        batch.clear();
-      }
-      sink.close();
-    }).bind(this);
+        // [Timer.run] schedules an event that runs after any microtasks that
+        // have been scheduled.
+        Timer.run(() {
+          if (batch.isEmpty) return;
+          sink.add(batch.toList());
+          batch.clear();
+        });
+      },
+      handleDone: (sink) {
+        if (batch.isNotEmpty) {
+          sink.add(batch.toList());
+          batch.clear();
+        }
+        sink.close();
+      },
+    ).bind(this);
   }
 
   /// Batches events by path.
@@ -53,12 +55,14 @@ extension BatchEvents on Stream<FileSystemEvent> {
   /// For each path, events are emitted when they are at least [duration] old.
   /// Rather than emitting split by path, all pending events are periodically
   /// checked and all old-enough events are emitted in one batch.
-  Stream<List<Event>> batchBufferedByPathAndConvertEvents(
-      {required Duration duration}) {
+  Stream<List<Event>> batchBufferedByPathAndConvertEvents({
+    required Duration duration,
+  }) {
     final batcher = _PathBufferedBatcher(duration);
     return StreamTransformer<FileSystemEvent, List<Event>>.fromHandlers(
-            handleData: batcher.handleData, handleDone: batcher.handleDone)
-        .bind(this);
+      handleData: batcher.handleData,
+      handleDone: batcher.handleDone,
+    ).bind(this);
   }
 }
 
