@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'blackhole.dart';
 import 'measurement.dart';
 import 'score_emitter.dart';
 
@@ -42,18 +43,27 @@ class BenchmarkBase {
 
   /// Measures the score for this benchmark by executing it repeatedly until
   /// time minimum has been reached.
-  static double measureFor(void Function() f, int minimumMillis) =>
-      measureForImpl(f, minimumMillis).score;
+  static double measureFor(void Function() f, int minimumMillis) {
+    try {
+      return measureForImpl(f, minimumMillis).score;
+    } finally {
+      Blackhole.preventDCE();
+    }
+  }
 
   /// Measures the score for the benchmark and returns it.
   double measure() {
     setup();
-    // Warmup for at least 100ms. Discard result.
-    measureForImpl(warmup, 100);
-    // Run the benchmark for at least 2000ms.
-    var result = measureForImpl(exercise, minimumMeasureDurationMillis);
-    teardown();
-    return result.score;
+    try {
+      // Warmup for at least 100ms. Discard result.
+      measureForImpl(warmup, 100);
+      // Run the benchmark for at least 2000ms.
+      var result = measureForImpl(exercise, minimumMeasureDurationMillis);
+      return result.score;
+    } finally {
+      teardown();
+      Blackhole.preventDCE();
+    }
   }
 
   void report() {
