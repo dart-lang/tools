@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// Support code for the tests in this directory.
 library;
 
@@ -20,8 +24,13 @@ Map<String, TreeBuilderFactory>? get treeTypes {
 }
 
 Future<String> get testDirectory async {
-  final packageUriDir = p.dirname(p.fromUri(await Isolate.resolvePackageUri(
-      Uri(scheme: 'package', path: 'html/html.dart'))));
+  final packageUriDir = p.dirname(
+    p.fromUri(
+      await Isolate.resolvePackageUri(
+        Uri(scheme: 'package', path: 'html/html.dart'),
+      ),
+    ),
+  );
   // Assume pub layout - root is parent directory to package URI (`lib/`).
   final rootPackageDir = p.dirname(packageUriDir);
   return p.join(rootPackageDir, 'test');
@@ -42,8 +51,8 @@ class TestData extends IterableBase<Map<String?, String>> {
   final String newTestHeading;
 
   TestData(String filename, [this.newTestHeading = 'data'])
-      // Note: can't use readAsLinesSync here because it splits on \r
-      : _text = File(filename).readAsStringSync();
+    // Note: can't use readAsLinesSync here because it splits on \r
+    : _text = File(filename).readAsStringSync();
 
   // Note: in Python this was a generator, but since we can't do that in Dart,
   // it's easier to convert it into an upfront computation.

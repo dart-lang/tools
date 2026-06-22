@@ -10,7 +10,7 @@ import '../cli_util.dart';
 
 /// The standard system paths for a Dart tool.
 ///
-/// These paths respects the following directory standards:
+/// These paths respect the following directory standards:
 ///
 /// - On Linux, the [XDG Base Directory
 ///   Specification](https://specifications.freedesktop.org/basedir-spec/latest/).
@@ -42,10 +42,8 @@ final class BaseDirectories {
   ///
   /// The [environment] map, if provided, is used to determine the base
   /// directories. If omitted, it defaults to using [Platform.environment].
-  BaseDirectories(
-    this.tool, {
-    Map<String, String>? environment,
-  }) : _environment = environment ?? Platform.environment;
+  BaseDirectories(this.tool, {Map<String, String>? environment})
+    : _environment = environment ?? Platform.environment;
 
   /// Path of the directory where the tool will place its caches.
   ///
@@ -73,8 +71,10 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  late final String cacheHome =
-      path.join(_baseDirectory(_XdgBaseDirectoryKind.cache)!, tool);
+  late final String cacheHome = path.join(
+    _baseDirectory(_XdgBaseDirectoryKind.cache)!,
+    tool,
+  );
 
   /// Path of the directory where the tool will place its configuration.
   ///
@@ -101,8 +101,10 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  late final String configHome =
-      path.join(_baseDirectory(_XdgBaseDirectoryKind.config)!, tool);
+  late final String configHome = path.join(
+    _baseDirectory(_XdgBaseDirectoryKind.config)!,
+    tool,
+  );
 
   /// Path of the directory where the tool will place its user data.
   ///
@@ -129,8 +131,10 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  late final String dataHome =
-      path.join(_baseDirectory(_XdgBaseDirectoryKind.data)!, tool);
+  late final String dataHome = path.join(
+    _baseDirectory(_XdgBaseDirectoryKind.data)!,
+    tool,
+  );
 
   /// Path of the directory where the tool will place its runtime data.
   ///
@@ -150,7 +154,7 @@ final class BaseDirectories {
   /// - on **Mac OS**:
   ///   - `$HOME/Library/Caches/TemporaryItems/<tool>`
   /// - on **Linux**:
-  ///   - `$XDG_RUNTIME_HOME/<tool>` if `$XDG_RUNTIME_HOME` is defined, and
+  ///   - `$XDG_RUNTIME_DIR/<tool>` if `$XDG_RUNTIME_DIR` is defined, and
   ///   - `null` otherwise.
   ///
   /// The directory won't be created, the method merely returns the recommended
@@ -161,17 +165,19 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  late final String? runtimeHome =
-      _join(_baseDirectory(_XdgBaseDirectoryKind.runtime), tool);
+  late final String? runtimeHome = _join(
+    _baseDirectory(_XdgBaseDirectoryKind.runtime),
+    tool,
+  );
 
   /// Path of the directory where the tool will place its state.
   ///
-  /// The state directory is likely not backed up or synchronized accross
+  /// The state directory is likely not backed up or synchronized across
   /// devices by the OS. For data that may be backed up and synchronized, use
   /// [dataHome] instead.
   ///
   /// This is a location appropriate for storing data which is either not
-  /// important enougn, not small enough, or not portable enough to store in
+  /// important enough, not small enough, or not portable enough to store in
   /// [dataHome]. For example: logs and indices.
   ///
   /// The directory location depends on the current [Platform.operatingSystem]:
@@ -191,8 +197,10 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  late final String stateHome =
-      path.join(_baseDirectory(_XdgBaseDirectoryKind.state)!, tool);
+  late final String stateHome = path.join(
+    _baseDirectory(_XdgBaseDirectoryKind.state)!,
+    tool,
+  );
 
   String? _baseDirectory(_XdgBaseDirectoryKind directoryKind) {
     if (Platform.isWindows) {
@@ -208,27 +216,28 @@ final class BaseDirectories {
   }
 
   String _baseDirectoryWindows(_XdgBaseDirectoryKind dir) => switch (dir) {
-        _XdgBaseDirectoryKind.config ||
-        _XdgBaseDirectoryKind.data =>
-          _requireEnv('APPDATA'),
-        _XdgBaseDirectoryKind.cache ||
-        _XdgBaseDirectoryKind.runtime ||
-        _XdgBaseDirectoryKind.state =>
-          _requireEnv('LOCALAPPDATA'),
-      };
+    _XdgBaseDirectoryKind.config ||
+    _XdgBaseDirectoryKind.data => _requireEnv('APPDATA'),
+    _XdgBaseDirectoryKind.cache ||
+    _XdgBaseDirectoryKind.runtime ||
+    _XdgBaseDirectoryKind.state => _requireEnv('LOCALAPPDATA'),
+  };
 
   String _baseDirectoryMacOs(_XdgBaseDirectoryKind dir) => switch (dir) {
-        _XdgBaseDirectoryKind.config ||
-        // `$HOME/Library/Preferences/` may only contain `.plist` files, so use
-        // `Application Support` instead.
-        _XdgBaseDirectoryKind.data ||
-        _XdgBaseDirectoryKind.state =>
-          path.join(_home, 'Library', 'Application Support'),
-        _XdgBaseDirectoryKind.cache => path.join(_home, 'Library', 'Caches'),
-        _XdgBaseDirectoryKind.runtime =>
-          // https://stackoverflow.com/a/76799489
-          path.join(_home, 'Library', 'Caches', 'TemporaryItems'),
-      };
+    _XdgBaseDirectoryKind.config ||
+    // `$HOME/Library/Preferences/` may only contain `.plist` files, so use
+    // `Application Support` instead.
+    _XdgBaseDirectoryKind.data ||
+    _XdgBaseDirectoryKind.state => path.join(
+      _home,
+      'Library',
+      'Application Support',
+    ),
+    _XdgBaseDirectoryKind.cache => path.join(_home, 'Library', 'Caches'),
+    _XdgBaseDirectoryKind.runtime =>
+      // https://stackoverflow.com/a/76799489
+      path.join(_home, 'Library', 'Caches', 'TemporaryItems'),
+  };
 
   String? _baseDirectoryLinux(_XdgBaseDirectoryKind dir) {
     if (Platform.isLinux) {
@@ -247,7 +256,7 @@ final class BaseDirectories {
 
     switch (dir) {
       case _XdgBaseDirectoryKind.runtime:
-        // Applications should chose a different directory and print a warning.
+        // Applications should choose a different directory and print a warning.
         return null;
       case _XdgBaseDirectoryKind.cache:
         return path.join(_home, '.cache');

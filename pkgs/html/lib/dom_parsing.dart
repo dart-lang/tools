@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// This library contains extra APIs that aren't in the DOM, but are useful
 /// when interacting with the parse tree.
 library;
@@ -16,11 +20,12 @@ class TreeVisitor {
       Node.ELEMENT_NODE => visitElement(node as Element),
       Node.TEXT_NODE => visitText(node as Text),
       Node.COMMENT_NODE => visitComment(node as Comment),
-      Node.DOCUMENT_FRAGMENT_NODE =>
-        visitDocumentFragment(node as DocumentFragment),
+      Node.DOCUMENT_FRAGMENT_NODE => visitDocumentFragment(
+        node as DocumentFragment,
+      ),
       Node.DOCUMENT_NODE => visitDocument(node as Document),
       Node.DOCUMENT_TYPE_NODE => visitDocumentType(node as DocumentType),
-      _ => throw UnsupportedError('DOM node type ${node.nodeType}')
+      _ => throw UnsupportedError('DOM node type ${node.nodeType}'),
     };
   }
 
@@ -77,8 +82,10 @@ class CodeMarkupVisitor extends TreeVisitor {
 
   @override
   void visitDocumentType(DocumentType node) {
-    _str.write('<code class="markup doctype">&lt;!DOCTYPE ${node.name}>'
-        '</code>');
+    _str.write(
+      '<code class="markup doctype">&lt;!DOCTYPE ${node.name}>'
+      '</code>',
+    );
   }
 
   @override
@@ -93,8 +100,10 @@ class CodeMarkupVisitor extends TreeVisitor {
     if (node.attributes.isNotEmpty) {
       node.attributes.forEach((key, v) {
         v = htmlSerializeEscape(v, attributeMode: true);
-        _str.write(' <code class="markup attribute-name">$key</code>'
-            '=<code class="markup attribute-value">"$v"</code>');
+        _str.write(
+          ' <code class="markup attribute-name">$key</code>'
+          '=<code class="markup attribute-value">"$v"</code>',
+        );
       });
     }
     if (node.nodes.isNotEmpty) {

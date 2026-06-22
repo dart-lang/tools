@@ -9,7 +9,6 @@ import 'package:meta/meta.dart';
 import '../base.dart';
 import '../mixins/generics.dart';
 import '../visitors.dart';
-import 'code.dart';
 import 'expression.dart';
 import 'reference.dart';
 
@@ -48,10 +47,6 @@ abstract class TypeReference extends Expression
 
   @override
   TypeReference get type => this;
-
-  @override
-  // TODO - annotate with @visibleForOverriding
-  Expression get expression => CodeExpression(Code.scope((a) => a(this)));
 
   @override
   Expression newInstance(

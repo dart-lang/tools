@@ -1,9 +1,12 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// Test for the Selectors API ported from
 /// <https://github.com/w3c/web-platform-tests/tree/master/selectors-api>
 ///
 /// Note, unlike the original we don't operate in-browser on a DOM loaded into
 /// an iframe, but instead operate over a parsed DOM.
-
 @TestOn('vm')
 library;
 
@@ -19,8 +22,11 @@ import 'level1_lib.dart';
 import 'selectors.dart';
 
 Future<Document> testContentDocument() async {
-  final testPath =
-      p.join(await testDirectory, 'selectors', 'level1-content.html');
+  final testPath = p.join(
+    await testDirectory,
+    'selectors',
+    'level1-content.html',
+  );
   return parse(File(testPath).readAsStringSync());
 }
 
@@ -71,8 +77,9 @@ void main() async {
   //Setup the namespace tests
   setupSpecialElements(element);
 
-  final outOfScope = element
-      .clone(true); // Append this to the body before running the in-document
+  final outOfScope = element.clone(
+    true,
+  ); // Append this to the body before running the in-document
   // Element tests, but after running the Document tests. This
   // tests that no elements that are not descendants of element
   // are selected.
@@ -91,10 +98,14 @@ void main() async {
   // Setup Tests
   runSpecialSelectorTests('Document', SelectorAdaptor.document(doc));
   runSpecialSelectorTests(
-      'Detached Element', SelectorAdaptor.element(detached));
+    'Detached Element',
+    SelectorAdaptor.element(detached),
+  );
   runSpecialSelectorTests('Fragment', SelectorAdaptor.fragment(fragment));
   runSpecialSelectorTests(
-      'In-document Element', SelectorAdaptor.element(element));
+    'In-document Element',
+    SelectorAdaptor.element(element),
+  );
 
   verifyStaticList('Document', SelectorAdaptor.document(doc));
   verifyStaticList('Detached Element', SelectorAdaptor.element(detached));
@@ -107,12 +118,27 @@ void main() async {
   //runInvalidSelectorTest('Fragment', fragment, invalidSelectors);
   //runInvalidSelectorTest('In-document Element', element, invalidSelectors);
 
-  runValidSelectorTest('Document', SelectorAdaptor.document(doc),
-      validSelectors, testType, docType);
-  runValidSelectorTest('Detached Element', SelectorAdaptor.element(detached),
-      validSelectors, testType, docType);
-  runValidSelectorTest('Fragment', SelectorAdaptor.fragment(fragment),
-      validSelectors, testType, docType);
+  runValidSelectorTest(
+    'Document',
+    SelectorAdaptor.document(doc),
+    validSelectors,
+    testType,
+    docType,
+  );
+  runValidSelectorTest(
+    'Detached Element',
+    SelectorAdaptor.element(detached),
+    validSelectors,
+    testType,
+    docType,
+  );
+  runValidSelectorTest(
+    'Fragment',
+    SelectorAdaptor.fragment(fragment),
+    validSelectors,
+    testType,
+    docType,
+  );
 
   group('out of scope', () {
     setUp(() {
@@ -120,7 +146,12 @@ void main() async {
       // None of these elements should match
     });
     tearDown(outOfScope.remove);
-    runValidSelectorTest('In-document Element',
-        SelectorAdaptor.element(element), validSelectors, testType, docType);
+    runValidSelectorTest(
+      'In-document Element',
+      SelectorAdaptor.element(element),
+      validSelectors,
+      testType,
+      docType,
+    );
   });
 }

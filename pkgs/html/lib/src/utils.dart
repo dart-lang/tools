@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 import 'constants.dart';
 
 bool startsWithAny(String str, List<String> prefixes) =>
@@ -70,8 +74,10 @@ String formatStr(String format, Map<String, Object?>? data) {
           result.write(padWithZeros(number, numberSize));
           break;
         default:
-          throw UnsupportedError('formatStr does not support format '
-              'character ${format[match]}');
+          throw UnsupportedError(
+            'formatStr does not support format '
+            'character ${format[match]}',
+          );
       }
 
       last = match + 1;

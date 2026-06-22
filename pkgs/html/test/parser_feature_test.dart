@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// Additional feature tests that aren't based on test data.
 library;
 
@@ -34,14 +38,18 @@ void main() {
   });
 
   test('parse error spans - full', () {
-    final parser = HtmlParser('''
+    final parser = HtmlParser(
+      '''
 <!DOCTYPE html>
 <html>
   <body>
   <!DOCTYPE html>
   </body>
 </html>
-''', generateSpans: true, sourceUrl: 'ParseError');
+''',
+      generateSpans: true,
+      sourceUrl: 'ParseError',
+    );
     final doc = parser.parse();
     expect(doc.body!.outerHtml, '<body>\n  \n  \n\n</body>');
     expect(parser.errors.length, 1);
@@ -131,8 +139,10 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
     final doc = parse(text, generateSpans: true);
     final elem = doc.querySelector('foo')!;
 
-    expect(elem.attributeSpans!['template']!.start.offset,
-        text.indexOf('template'));
+    expect(
+      elem.attributeSpans!['template']!.start.offset,
+      text.indexOf('template'),
+    );
     expect(elem.attributeValueSpans!.containsKey('template'), false);
   });
 
@@ -241,17 +251,22 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
       final n = doc.querySelector('desc')!;
       final keys = n.attributes.keys.toList();
       expect(
-          keys.first,
-          isA<AttributeName>()
-              .having((n) => n.prefix, 'prefix', 'xlink')
-              .having((n) => n.namespace, 'namespace',
-                  'http://www.w3.org/1999/xlink')
-              .having((n) => n.name, 'name', 'type'));
+        keys.first,
+        isA<AttributeName>()
+            .having((n) => n.prefix, 'prefix', 'xlink')
+            .having(
+              (n) => n.namespace,
+              'namespace',
+              'http://www.w3.org/1999/xlink',
+            )
+            .having((n) => n.name, 'name', 'type'),
+      );
 
       expect(
-          n.outerHtml,
-          '<desc xlink:type="simple" '
-          'xlink:href="http://example.com/logo.png" xlink:show="new"></desc>');
+        n.outerHtml,
+        '<desc xlink:type="simple" '
+        'xlink:href="http://example.com/logo.png" xlink:show="new"></desc>',
+      );
     });
   });
 
@@ -261,18 +276,24 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
     expect(doc.body!.innerHtml, 'foo');
     expect(parser.errors.length, 1);
     expect(parser.errors[0].errorCode, 'expected-doctype-but-got-chars');
-    expect(parser.errors[0].message,
-        'Unexpected non-space characters. Expected DOCTYPE.');
-    expect(parser.errors[0].toString(),
-        'Unexpected non-space characters. Expected DOCTYPE.');
+    expect(
+      parser.errors[0].message,
+      'Unexpected non-space characters. Expected DOCTYPE.',
+    );
+    expect(
+      parser.errors[0].toString(),
+      'Unexpected non-space characters. Expected DOCTYPE.',
+    );
   });
 
   test('Element.text', () {
-    final doc = parseFragment('<div>foo<div>bar</div>baz</div>');
+    final doc = parseFragment('<div>foo<div><br>bar</div>baz<br></div>');
     final e = doc.firstChild!;
     final text = e.firstChild!;
     expect((text as Text).data, 'foo');
     expect(e.text, 'foobarbaz');
+    expect(e.textContent(convertBRsToNewlines: true), 'foo\nbarbaz\n');
+    expect(e.textContent(convertBRsToNewlines: false), 'foobarbaz');
 
     e.text = 'FOO';
     expect(e.nodes.length, 1);
@@ -282,7 +303,7 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
   });
 
   test('Text.text', () {
-    final doc = parseFragment('<div>foo<div>bar</div>baz</div>');
+    final doc = parseFragment('<div>foo<div>bar</div><br>baz</div>');
     final e = doc.firstChild!;
     final text = e.firstChild as Text;
     expect(text.data, 'foo');
@@ -291,6 +312,8 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
     text.text = 'FOO';
     expect(text.data, 'FOO');
     expect(e.text, 'FOObarbaz');
+    expect(e.textContent(convertBRsToNewlines: true), 'FOObar\nbaz');
+    expect(e.textContent(convertBRsToNewlines: false), 'FOObarbaz');
     expect(text.text, 'FOO');
   });
 
@@ -348,9 +371,11 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
 
     test('parses content attr', () {
       expect(
-          getEncoding(
-              '<meta http-equiv="content-type" content="text/html; charset=UTF-8">'),
-          null);
+        getEncoding(
+          '<meta http-equiv="content-type" content="text/html; charset=UTF-8">',
+        ),
+        null,
+      );
     });
   });
 }

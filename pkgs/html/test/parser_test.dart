@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 @TestOn('vm')
 library;
 
@@ -31,13 +35,14 @@ String namespaceHtml(String expected) {
 }
 
 void runParserTest(
-    String groupName,
-    String? innerHTML,
-    String? input,
-    String? expected,
-    List<String>? errors,
-    TreeBuilderFactory treeCtor,
-    bool namespaceHTMLElements) {
+  String groupName,
+  String? innerHTML,
+  String? input,
+  String? expected,
+  List<String>? errors,
+  TreeBuilderFactory treeCtor,
+  bool namespaceHTMLElements,
+) {
   // XXX - move this out into the setup function
   // concatenate all consecutive character tokens into a single token
   final builder = treeCtor(namespaceHTMLElements);
@@ -56,16 +61,22 @@ void runParserTest(
     expected = namespaceHtml(expected!);
   }
 
-  expect(output, equals(expected),
-      reason:
-          '\n\nInput:\n$input\n\nExpected:\n$expected\n\nReceived:\n$output');
+  expect(
+    output,
+    equals(expected),
+    reason: '\n\nInput:\n$input\n\nExpected:\n$expected\n\nReceived:\n$output',
+  );
 
   if (checkParseErrors) {
-    expect(parser.errors.length, equals(errors!.length),
-        reason: '\n\nInput:\n$input\n\nExpected errors (${errors.length}):\n'
-            "${errors.join('\n')}\n\n"
-            'Actual errors (${parser.errors.length}):\n'
-            "${parser.errors.map((e) => '$e').join('\n')}");
+    expect(
+      parser.errors.length,
+      equals(errors!.length),
+      reason:
+          '\n\nInput:\n$input\n\nExpected errors (${errors.length}):\n'
+          "${errors.join('\n')}\n\n"
+          'Actual errors (${parser.errors.length}):\n'
+          "${parser.errors.map((e) => '$e').join('\n')}",
+    );
   }
 }
 
@@ -87,8 +98,15 @@ void main() async {
         for (var treeCtor in treeTypes!.values) {
           for (var namespaceHTMLElements in const [false, true]) {
             test(_nameFor(input!), () {
-              runParserTest(testName, innerHTML, input, expected, errors,
-                  treeCtor, namespaceHTMLElements);
+              runParserTest(
+                testName,
+                innerHTML,
+                input,
+                expected,
+                errors,
+                treeCtor,
+                namespaceHTMLElements,
+              );
             });
           }
         }

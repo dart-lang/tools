@@ -1,6 +1,14 @@
-## 8.0.14
+## 8.0.16-wip
 
-* Added HCPP related analytics to `Event.commandUsageValues`.
+- Run `dart format`.
+
+## 8.0.15
+- Added IDE and plugin information to `Event.serverSession`.
+- Discard any `Exception` or `Error` thrown while reading or writing analytics logs.
+- Added `agent` parameter to `Analytics` constructors to track the AI coding assistant/agent executing the tool.
+
+## 8.0.14
+- Added HCPP related analytics to `Event.commandUsageValues`.
 
 ## 8.0.13
 - Added `DashEnvVar` utilities for environment variable handling.

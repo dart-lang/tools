@@ -6,8 +6,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:meta/meta.dart';
-
 /// A shared singleton instance of `dart:io`'s [stdin] stream.
 ///
 /// _Unlike_ the normal [stdin] stream, [sharedStdIn] may switch subscribers
@@ -19,18 +17,29 @@ import 'package:meta/meta.dart';
 /// hanging.
 final SharedStdIn sharedStdIn = SharedStdIn(stdin);
 
-/// A singleton wrapper around `stdin` that allows new subscribers.
+/// A wrapper around a stream that allows new subscribers, intended for use
+/// with [stdin] or other input streams that usually only allow one subscriber.
 ///
-/// This class is visible in order to be used as a test harness for mock
-/// implementations of `stdin`. In normal programs, [sharedStdIn] should be
-/// used directly.
-@visibleForTesting
+/// If you only use this class with [stdin], you should use the [sharedStdIn]
+/// singleton.
+///
+/// You may still only have one listening [StreamSubscription] at a time.
 class SharedStdIn extends Stream<List<int>> {
   StreamController<List<int>>? _current;
   StreamSubscription<List<int>>? _sub;
 
-  SharedStdIn([Stream<List<int>>? stream]) {
-    _sub = (stream ??= stdin).listen(_onInput);
+  /// Creates a new [SharedStdIn] sharing the [stream].
+  ///
+  /// If you only use this class with [stdin], you should use the [sharedStdIn]
+  /// singleton.
+  ///
+  /// Calling this constructor more than once with the same source [stream]
+  /// will likely result in an error.
+  factory SharedStdIn(Stream<List<int>> stream) => SharedStdIn._(stream);
+
+  /// Actual constructor is private to prevent subclassing.
+  SharedStdIn._(Stream<List<int>> stream) {
+    _sub = stream.listen(_onInput);
   }
 
   /// Returns a future that completes with the next line.
@@ -57,10 +66,11 @@ class SharedStdIn extends Stream<List<int>> {
 
   StreamController<List<int>> _getCurrent() =>
       _current ??= StreamController<List<int>>(
-          onCancel: () {
-            _current = null;
-          },
-          sync: true);
+        onCancel: () {
+          _current = null;
+        },
+        sync: true,
+      );
 
   @override
   StreamSubscription<List<int>> listen(
@@ -75,9 +85,11 @@ class SharedStdIn extends Stream<List<int>> {
     // ignore: close_sinks
     final controller = _getCurrent();
     if (controller.hasListener) {
-      throw StateError(''
-          'Subscriber already listening. The existing subscriber must cancel '
-          'before another may be added.');
+      throw StateError(
+        ''
+        'Subscriber already listening. The existing subscriber must cancel '
+        'before another may be added.',
+      );
     }
     return controller.stream.listen(
       onData,

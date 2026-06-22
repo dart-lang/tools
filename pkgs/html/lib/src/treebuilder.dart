@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// Internals to the tree builders.
 library;
 
@@ -89,7 +93,7 @@ class TreeBuilder {
   bool insertFromTable = false;
 
   TreeBuilder(bool namespaceHTMLElements)
-      : defaultNamespace = namespaceHTMLElements ? Namespaces.html : null {
+    : defaultNamespace = namespaceHTMLElements ? Namespaces.html : null {
     reset();
   }
 
@@ -122,19 +126,19 @@ class TreeBuilder {
         case 'list':
           setElements2 = const {
             (Namespaces.html, 'ol'),
-            (Namespaces.html, 'ul')
+            (Namespaces.html, 'ul'),
           };
           break;
         case 'table':
           setElements1 = const {
             (Namespaces.html, 'html'),
-            (Namespaces.html, 'table')
+            (Namespaces.html, 'table'),
           };
           break;
         case 'select':
           setElements1 = const {
             (Namespaces.html, 'optgroup'),
-            (Namespaces.html, 'option')
+            (Namespaces.html, 'option'),
           };
           invert = true;
           break;
@@ -194,10 +198,11 @@ class TreeBuilder {
       entry = activeFormattingElements[i];
 
       // TODO(jmesserly): optimize this. No need to create a token.
-      final cloneToken = StartTagToken(entry!.localName,
-          namespace: entry.namespaceUri,
-          data: LinkedHashMap.from(entry.attributes))
-        ..span = entry.sourceSpan;
+      final cloneToken = StartTagToken(
+        entry!.localName,
+        namespace: entry.namespaceUri,
+        data: LinkedHashMap.from(entry.attributes),
+      )..span = entry.sourceSpan;
 
       // Step 9
       final element = insertElement(cloneToken);
@@ -318,8 +323,12 @@ class TreeBuilder {
 
   /// Insert [data] as text in the current node, positioned before the
   /// start of node [refNode] or to the end of the node's text.
-  static void _insertText(Node parent, String data, FileSpan? span,
-      [Element? refNode]) {
+  static void _insertText(
+    Node parent,
+    String data,
+    FileSpan? span, [
+    Element? refNode,
+  ]) {
     final nodes = parent.nodes;
     if (refNode == null) {
       if (nodes.isNotEmpty && nodes.last is Text) {
@@ -327,8 +336,10 @@ class TreeBuilder {
         last.appendData(data);
 
         if (span != null) {
-          last.sourceSpan =
-              span.file.span(last.sourceSpan!.start.offset, span.end.offset);
+          last.sourceSpan = span.file.span(
+            last.sourceSpan!.start.offset,
+            span.end.offset,
+          );
         }
       } else {
         nodes.add(Text(data)..sourceSpan = span);
@@ -378,8 +389,16 @@ class TreeBuilder {
     final name = openElements.last.localName;
     // XXX td, th and tr are not actually needed
     if (name != exclude &&
-        const ['dd', 'dt', 'li', 'option', 'optgroup', 'p', 'rp', 'rt']
-            .contains(name)) {
+        const [
+          'dd',
+          'dt',
+          'li',
+          'option',
+          'optgroup',
+          'p',
+          'rp',
+          'rt',
+        ].contains(name)) {
       openElements.removeLast();
       // XXX This is not entirely what the specification says. We should
       // investigate it more closely.

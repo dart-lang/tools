@@ -22,11 +22,10 @@ void main() {
   test('should create an async method', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..modifier = MethodModifier.async
-              ..body = literalNull.code,
+        (b) => b
+          ..name = 'foo'
+          ..modifier = MethodModifier.async
+          ..body = literalNull.code,
       ),
       equalsDart(r'''
         foo() async => null
@@ -37,11 +36,10 @@ void main() {
   test('should create an async* method', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..modifier = MethodModifier.asyncStar
-              ..body = literalNull.code,
+        (b) => b
+          ..name = 'foo'
+          ..modifier = MethodModifier.asyncStar
+          ..body = literalNull.code,
       ),
       equalsDart(r'''
         foo() async* => null
@@ -52,11 +50,10 @@ void main() {
   test('should create an sync* method', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..modifier = MethodModifier.syncStar
-              ..body = literalNull.code,
+        (b) => b
+          ..name = 'foo'
+          ..modifier = MethodModifier.syncStar
+          ..body = literalNull.code,
       ),
       equalsDart(r'''
         foo() sync* => null
@@ -67,11 +64,10 @@ void main() {
   test('should create a lambda method implicitly', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'returnsTrue'
-              ..returns = refer('bool')
-              ..body = literalTrue.code,
+        (b) => b
+          ..name = 'returnsTrue'
+          ..returns = refer('bool')
+          ..body = literalTrue.code,
       ),
       equalsDart(r'''
         bool returnsTrue() => true
@@ -82,11 +78,10 @@ void main() {
   test('should create a lambda method if the value is cast', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'returnsCastedValue'
-              ..returns = refer('Foo')
-              ..body = refer('bar').asA(refer('Foo')).code,
+        (b) => b
+          ..name = 'returnsCastedValue'
+          ..returns = refer('Foo')
+          ..body = refer('bar').asA(refer('Foo')).code,
       ),
       equalsDart(r'''
         Foo returnsCastedValue() => (bar as Foo)
@@ -97,10 +92,9 @@ void main() {
   test('should create a normal method implicitly', () {
     expect(
       Method.returnsVoid(
-        (b) =>
-            b
-              ..name = 'assignTrue'
-              ..body = refer('topLevelFoo').assign(literalTrue).statement,
+        (b) => b
+          ..name = 'assignTrue'
+          ..body = refer('topLevelFoo').assign(literalTrue).statement,
       ),
       equalsDart(r'''
         void assignTrue() {
@@ -113,11 +107,10 @@ void main() {
   test('should create a getter', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..external = true
-              ..type = MethodType.getter,
+        (b) => b
+          ..name = 'foo'
+          ..external = true
+          ..type = MethodType.getter,
       ),
       equalsDart(r'''
         external get foo;
@@ -128,12 +121,11 @@ void main() {
   test('should create a setter', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..external = true
-              ..requiredParameters.add(Parameter((b) => b..name = 'foo'))
-              ..type = MethodType.setter,
+        (b) => b
+          ..name = 'foo'
+          ..external = true
+          ..requiredParameters.add(Parameter((b) => b..name = 'foo'))
+          ..type = MethodType.setter,
       ),
       equalsDart(r'''
         external set foo(foo);
@@ -144,10 +136,9 @@ void main() {
   test('should create a method with a return type', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..returns = refer('String'),
+        (b) => b
+          ..name = 'foo'
+          ..returns = refer('String'),
       ),
       equalsDart(r'''
         String foo();
@@ -167,15 +158,13 @@ void main() {
   test('should create a method with a function type return type', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..returns = FunctionType(
-                (b) =>
-                    b
-                      ..returnType = refer('String')
-                      ..requiredParameters.addAll([refer('int')]),
-              ),
+        (b) => b
+          ..name = 'foo'
+          ..returns = FunctionType(
+            (b) => b
+              ..returnType = refer('String')
+              ..requiredParameters.addAll([refer('int')]),
+          ),
       ),
       equalsDart(r'''
         String Function(int) foo();
@@ -188,10 +177,9 @@ void main() {
     () {
       expect(
         FunctionType(
-          (b) =>
-              b
-                ..returnType = refer('String')
-                ..optionalParameters.add(refer('int')),
+          (b) => b
+            ..returnType = refer('String')
+            ..optionalParameters.add(refer('int')),
         ),
         equalsDart(r'''
         String Function([int])
@@ -204,11 +192,10 @@ void main() {
       'and an optional positional parameter', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..returnType = refer('String')
-              ..requiredParameters.add(refer('int'))
-              ..optionalParameters.add(refer('int')),
+        (b) => b
+          ..returnType = refer('String')
+          ..requiredParameters.add(refer('int'))
+          ..optionalParameters.add(refer('int')),
       ),
       equalsDart(r'''
         String Function(int, [int, ])
@@ -228,10 +215,9 @@ void main() {
   test('should create a function type with an optional named parameter', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..returnType = refer('String')
-              ..namedParameters['named'] = refer('int'),
+        (b) => b
+          ..returnType = refer('String')
+          ..namedParameters['named'] = refer('int'),
       ),
       equalsDart(r'''
         String Function({int named})
@@ -243,11 +229,10 @@ void main() {
       'and an optional named parameter', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..returnType = refer('String')
-              ..requiredParameters.add(refer('int'))
-              ..namedParameters['named'] = refer('int'),
+        (b) => b
+          ..returnType = refer('String')
+          ..requiredParameters.add(refer('int'))
+          ..namedParameters['named'] = refer('int'),
       ),
       equalsDart(r'''
         String Function(int, {int named, })
@@ -258,10 +243,9 @@ void main() {
   test('should create a function type with a required named parameter', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..returnType = refer('String')
-              ..namedRequiredParameters['named'] = refer('int'),
+        (b) => b
+          ..returnType = refer('String')
+          ..namedRequiredParameters['named'] = refer('int'),
       ),
       equalsDart(r'''
         String Function({required int named})
@@ -273,11 +257,10 @@ void main() {
       'named parameter', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..returnType = refer('String')
-              ..namedRequiredParameters['named'] = refer('int')
-              ..namedParameters['optional'] = refer('int'),
+        (b) => b
+          ..returnType = refer('String')
+          ..namedRequiredParameters['named'] = refer('int')
+          ..namedParameters['optional'] = refer('int'),
       ),
       equalsDart(r'''
         String Function({required int named, int optional, })
@@ -288,10 +271,9 @@ void main() {
   test('should create a typedef to a reference', () {
     expect(
       TypeDef(
-        (b) =>
-            b
-              ..name = 'i32'
-              ..definition = const Reference('int'),
+        (b) => b
+          ..name = 'i32'
+          ..definition = const Reference('int'),
       ),
       equalsDart(r'''
         typedef i32 = int;
@@ -302,15 +284,13 @@ void main() {
   test('should create a typedef to a function type', () {
     expect(
       TypeDef(
-        (b) =>
-            b
-              ..name = 'MyMapper'
-              ..definition = FunctionType(
-                (b) =>
-                    b
-                      ..returnType = refer('String')
-                      ..optionalParameters.add(refer('int')),
-              ),
+        (b) => b
+          ..name = 'MyMapper'
+          ..definition = FunctionType(
+            (b) => b
+              ..returnType = refer('String')
+              ..optionalParameters.add(refer('int')),
+          ),
       ),
       equalsDart(r'''
         typedef MyMapper = String Function([int]);
@@ -321,20 +301,17 @@ void main() {
   test('should create a method with a nested function type return type', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..returns = FunctionType(
-                (b) =>
-                    b
-                      ..returnType = FunctionType(
-                        (b) =>
-                            b
-                              ..returnType = refer('String')
-                              ..requiredParameters.add(refer('String')),
-                      )
-                      ..requiredParameters.addAll([refer('int')]),
-              ),
+        (b) => b
+          ..name = 'foo'
+          ..returns = FunctionType(
+            (b) => b
+              ..returnType = FunctionType(
+                (b) => b
+                  ..returnType = refer('String')
+                  ..requiredParameters.add(refer('String')),
+              )
+              ..requiredParameters.addAll([refer('int')]),
+          ),
       ),
       equalsDart(r'''
         String Function(String) Function(int) foo();
@@ -345,22 +322,19 @@ void main() {
   test('should create a method with a function type argument', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..requiredParameters.add(
-                Parameter(
-                  (b) =>
-                      b
-                        ..type = FunctionType(
-                          (b) =>
-                              b
-                                ..returnType = refer('String')
-                                ..requiredParameters.add(refer('int')),
-                        )
-                        ..name = 'argument',
-                ),
-              ),
+        (b) => b
+          ..name = 'foo'
+          ..requiredParameters.add(
+            Parameter(
+              (b) => b
+                ..type = FunctionType(
+                  (b) => b
+                    ..returnType = refer('String')
+                    ..requiredParameters.add(refer('int')),
+                )
+                ..name = 'argument',
+            ),
+          ),
       ),
       equalsDart(r'''
           foo(String Function(int) argument);
@@ -371,29 +345,23 @@ void main() {
   test('should create a method with a nested function type argument', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..requiredParameters.add(
-                Parameter(
-                  (b) =>
-                      b
-                        ..type = FunctionType(
-                          (b) =>
-                              b
-                                ..returnType = FunctionType(
-                                  (b) =>
-                                      b
-                                        ..returnType = refer('String')
-                                        ..requiredParameters.add(
-                                          refer('String'),
-                                        ),
-                                )
-                                ..requiredParameters.add(refer('int')),
-                        )
-                        ..name = 'argument',
-                ),
-              ),
+        (b) => b
+          ..name = 'foo'
+          ..requiredParameters.add(
+            Parameter(
+              (b) => b
+                ..type = FunctionType(
+                  (b) => b
+                    ..returnType = FunctionType(
+                      (b) => b
+                        ..returnType = refer('String')
+                        ..requiredParameters.add(refer('String')),
+                    )
+                    ..requiredParameters.add(refer('int')),
+                )
+                ..name = 'argument',
+            ),
+          ),
       ),
       equalsDart(r'''
           foo(String Function(String) Function(int) argument);
@@ -404,10 +372,9 @@ void main() {
   test('should create a method with generic types', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..types.add(refer('T')),
+        (b) => b
+          ..name = 'foo'
+          ..types.add(refer('T')),
       ),
       equalsDart(r'''
         foo<T>();
@@ -418,10 +385,9 @@ void main() {
   test('should create an external method', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..external = true,
+        (b) => b
+          ..name = 'foo'
+          ..external = true,
       ),
       equalsDart(r'''
         external foo();
@@ -432,10 +398,9 @@ void main() {
   test('should create a method with a body', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..body = const Code('return 1+ 2;'),
+        (b) => b
+          ..name = 'foo'
+          ..body = const Code('return 1+ 2;'),
       ),
       equalsDart(r'''
         foo() {
@@ -448,11 +413,10 @@ void main() {
   test('should create a lambda method (explicitly)', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..lambda = true
-              ..body = const Code('1 + 2'),
+        (b) => b
+          ..name = 'foo'
+          ..lambda = true
+          ..body = const Code('1 + 2'),
       ),
       equalsDart(r'''
         foo() => 1 + 2
@@ -464,10 +428,9 @@ void main() {
     final $LinkedHashMap = refer('LinkedHashMap', 'dart:collection');
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..body = Code.scope((a) => 'return ${a($LinkedHashMap)}();'),
+        (b) => b
+          ..name = 'foo'
+          ..body = Code.scope((a) => 'return ${a($LinkedHashMap)}();'),
       ),
       equalsDart(r'''
         foo() {
@@ -480,10 +443,9 @@ void main() {
   test('should create a method with a parameter', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'fib'
-              ..requiredParameters.add(Parameter((b) => b.name = 'i')),
+        (b) => b
+          ..name = 'fib'
+          ..requiredParameters.add(Parameter((b) => b.name = 'i')),
       ),
       equalsDart(r'''
         fib(i);
@@ -494,17 +456,15 @@ void main() {
   test('should create a method with an annotated parameter', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'fib'
-              ..requiredParameters.add(
-                Parameter(
-                  (b) =>
-                      b
-                        ..name = 'i'
-                        ..annotations.add(refer('deprecated')),
-                ),
-              ),
+        (b) => b
+          ..name = 'fib'
+          ..requiredParameters.add(
+            Parameter(
+              (b) => b
+                ..name = 'i'
+                ..annotations.add(refer('deprecated')),
+            ),
+          ),
       ),
       equalsDart(r'''
         fib(@deprecated i);
@@ -515,17 +475,15 @@ void main() {
   test('should create a method with a parameter with a type', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'fib'
-              ..requiredParameters.add(
-                Parameter(
-                  (b) =>
-                      b
-                        ..name = 'i'
-                        ..type = refer('int').type,
-                ),
-              ),
+        (b) => b
+          ..name = 'fib'
+          ..requiredParameters.add(
+            Parameter(
+              (b) => b
+                ..name = 'i'
+                ..type = refer('int').type,
+            ),
+          ),
       ),
       equalsDart(r'''
         fib(int i);
@@ -536,18 +494,16 @@ void main() {
   test('should create a method with a covariant parameter with a type', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'fib'
-              ..requiredParameters.add(
-                Parameter(
-                  (b) =>
-                      b
-                        ..name = 'i'
-                        ..covariant = true
-                        ..type = refer('int').type,
-                ),
-              ),
+        (b) => b
+          ..name = 'fib'
+          ..requiredParameters.add(
+            Parameter(
+              (b) => b
+                ..name = 'i'
+                ..covariant = true
+                ..type = refer('int').type,
+            ),
+          ),
       ),
       equalsDart(r'''
         fib(covariant int i);
@@ -558,36 +514,31 @@ void main() {
   test('should create a method with a parameter with a generic type', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..types.add(
-                TypeReference(
-                  (b) =>
-                      b
-                        ..symbol = 'T'
-                        ..bound = refer('Iterable'),
+        (b) => b
+          ..name = 'foo'
+          ..types.add(
+            TypeReference(
+              (b) => b
+                ..symbol = 'T'
+                ..bound = refer('Iterable'),
+            ),
+          )
+          ..requiredParameters.addAll([
+            Parameter(
+              (b) => b
+                ..name = 't'
+                ..type = refer('T'),
+            ),
+            Parameter(
+              (b) => b
+                ..name = 'x'
+                ..type = TypeReference(
+                  (b) => b
+                    ..symbol = 'X'
+                    ..types.add(refer('T')),
                 ),
-              )
-              ..requiredParameters.addAll([
-                Parameter(
-                  (b) =>
-                      b
-                        ..name = 't'
-                        ..type = refer('T'),
-                ),
-                Parameter(
-                  (b) =>
-                      b
-                        ..name = 'x'
-                        ..type = TypeReference(
-                          (b) =>
-                              b
-                                ..symbol = 'X'
-                                ..types.add(refer('T')),
-                        ),
-                ),
-              ]),
+            ),
+          ]),
       ),
       equalsDart(r'''
         foo<T extends Iterable>(T t, X<T> x, );
@@ -598,10 +549,9 @@ void main() {
   test('should create a method with an optional parameter', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'fib'
-              ..optionalParameters.add(Parameter((b) => b.name = 'i')),
+        (b) => b
+          ..name = 'fib'
+          ..optionalParameters.add(Parameter((b) => b.name = 'i')),
       ),
       equalsDart(r'''
         fib([i]);
@@ -612,13 +562,12 @@ void main() {
   test('should create a method with multiple optional parameters', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..optionalParameters.addAll([
-                Parameter((b) => b.name = 'a'),
-                Parameter((b) => b.name = 'b'),
-              ]),
+        (b) => b
+          ..name = 'foo'
+          ..optionalParameters.addAll([
+            Parameter((b) => b.name = 'a'),
+            Parameter((b) => b.name = 'b'),
+          ]),
       ),
       equalsDart(r'''
         foo([a, b, ]);
@@ -629,17 +578,15 @@ void main() {
   test('should create a method with an optional parameter with a value', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'fib'
-              ..optionalParameters.add(
-                Parameter(
-                  (b) =>
-                      b
-                        ..name = 'i'
-                        ..defaultTo = const Code('0'),
-                ),
-              ),
+        (b) => b
+          ..name = 'fib'
+          ..optionalParameters.add(
+            Parameter(
+              (b) => b
+                ..name = 'i'
+                ..defaultTo = const Code('0'),
+            ),
+          ),
       ),
       equalsDart(r'''
         fib([i = 0]);
@@ -650,19 +597,17 @@ void main() {
   test('should create a method with a named required parameter', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'fib'
-              ..optionalParameters.add(
-                Parameter(
-                  (b) =>
-                      b
-                        ..name = 'i'
-                        ..named = true
-                        ..required = true
-                        ..type = refer('int').type,
-                ),
-              ),
+        (b) => b
+          ..name = 'fib'
+          ..optionalParameters.add(
+            Parameter(
+              (b) => b
+                ..name = 'i'
+                ..named = true
+                ..required = true
+                ..type = refer('int').type,
+            ),
+          ),
       ),
       equalsDart(r'''
         fib({required int i});
@@ -673,20 +618,18 @@ void main() {
   test('should create a method with a named required covariant parameter', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'fib'
-              ..optionalParameters.add(
-                Parameter(
-                  (b) =>
-                      b
-                        ..name = 'i'
-                        ..named = true
-                        ..required = true
-                        ..covariant = true
-                        ..type = refer('int').type,
-                ),
-              ),
+        (b) => b
+          ..name = 'fib'
+          ..optionalParameters.add(
+            Parameter(
+              (b) => b
+                ..name = 'i'
+                ..named = true
+                ..required = true
+                ..covariant = true
+                ..type = refer('int').type,
+            ),
+          ),
       ),
       equalsDart(r'''
         fib({required covariant int i});
@@ -697,17 +640,15 @@ void main() {
   test('should create a method with a named optional parameter', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'fib'
-              ..optionalParameters.add(
-                Parameter(
-                  (b) =>
-                      b
-                        ..named = true
-                        ..name = 'i',
-                ),
-              ),
+        (b) => b
+          ..name = 'fib'
+          ..optionalParameters.add(
+            Parameter(
+              (b) => b
+                ..named = true
+                ..name = 'i',
+            ),
+          ),
       ),
       equalsDart(r'''
         fib({i});
@@ -718,18 +659,16 @@ void main() {
   test('should create a method with a named optional parameter with value', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'fib'
-              ..optionalParameters.add(
-                Parameter(
-                  (b) =>
-                      b
-                        ..named = true
-                        ..name = 'i'
-                        ..defaultTo = const Code('0'),
-                ),
-              ),
+        (b) => b
+          ..name = 'fib'
+          ..optionalParameters.add(
+            Parameter(
+              (b) => b
+                ..named = true
+                ..name = 'i'
+                ..defaultTo = const Code('0'),
+            ),
+          ),
       ),
       equalsDart(r'''
         fib({i = 0});
@@ -740,18 +679,16 @@ void main() {
   test('should create a method with a mix of parameters', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..name = 'foo'
-              ..requiredParameters.add(Parameter((b) => b..name = 'a'))
-              ..optionalParameters.add(
-                Parameter(
-                  (b) =>
-                      b
-                        ..named = true
-                        ..name = 'b',
-                ),
-              ),
+        (b) => b
+          ..name = 'foo'
+          ..requiredParameters.add(Parameter((b) => b..name = 'a'))
+          ..optionalParameters.add(
+            Parameter(
+              (b) => b
+                ..named = true
+                ..name = 'b',
+            ),
+          ),
       ),
       equalsDart(r'''
         foo(a, {b, });
@@ -762,13 +699,12 @@ void main() {
   test('should create a method as a closure', () {
     expect(
       Method(
-        (b) =>
-            b
-              ..requiredParameters.add(Parameter((b) => b..name = 'a'))
-              ..body = const Code(''),
+        (b) => b
+          ..requiredParameters.add(Parameter((b) => b..name = 'a'))
+          ..body = const Code(''),
       ).closure,
       equalsDart(r'''
-        (a) { }
+        (a) {}
       '''),
     );
   });

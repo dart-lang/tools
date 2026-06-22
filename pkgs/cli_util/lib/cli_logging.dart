@@ -225,11 +225,12 @@ class AnsiProgress extends Progress {
     }
   }
 
-  void _updateDisplay(
-      {bool isFinal = false,
-      bool cancelled = false,
-      String? message,
-      bool showTiming = false}) {
+  void _updateDisplay({
+    bool isFinal = false,
+    bool cancelled = false,
+    String? message,
+    bool showTiming = false,
+  }) {
     var char = kAnimationItems[_timer.tick % kAnimationItems.length];
     if (isFinal || cancelled) {
       char = '';
@@ -256,7 +257,7 @@ class VerboseLogger implements Logger {
   final _timer = Stopwatch()..start();
 
   VerboseLogger({Ansi? ansi, this.logTime = false})
-      : ansi = ansi ?? Ansi(Ansi.terminalSupportsAnsi);
+    : ansi = ansi ?? Ansi(Ansi.terminalSupportsAnsi);
 
   @override
   bool get isVerbose => true;

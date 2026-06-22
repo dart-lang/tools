@@ -979,12 +979,24 @@ final class Event {
   /// * [parameters] - the names of the parameters passed to the `initialize`
   ///   request, or an empty string if the `initialize` request was not sent
   ///   or if there were no parameters given.
+  ///
+  /// * [ideName] - the name of the IDE, e.g. IntelliJ IDEA.
+  ///
+  /// * [ideVersion] - the version of the IDE platform.
+  ///
+  /// * [pluginName] - the name of the plugin, e.g. Dart.
+  ///
+  /// * [pluginVersion] - the version of the plugin.
   Event.serverSession({
     required String clientId,
     required String clientVersion,
     required int duration,
     required String flags,
     required String parameters,
+    String ideName = '',
+    String ideVersion = '',
+    String pluginName = '',
+    String pluginVersion = '',
   }) : this._(
          eventName: DashEvent.serverSession,
          eventData: {
@@ -992,6 +1004,10 @@ final class Event {
            'clientVersion': clientVersion,
            'duration': duration,
            'flags': flags,
+           'ideName': ideName,
+           'ideVersion': ideVersion,
+           'pluginName': pluginName,
+           'pluginVersion': pluginVersion,
            'parameters': parameters,
          },
        );

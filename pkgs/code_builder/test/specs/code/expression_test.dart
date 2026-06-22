@@ -61,24 +61,107 @@ void main() {
     });
   });
 
-  test('should emit a String', () {
-    expect(literalString(r'$monkey'), equalsDart(r"'$monkey'"));
+  group('literalString legacy', () {
+    test('should emit a String', () {
+      expect(literalString(r'$monkey'), equalsDart(r"'$monkey'"));
+    });
+
+    test('should emit a raw String', () {
+      expect(literalString(r'$monkey', raw: true), equalsDart(r"r'$monkey'"));
+    });
+
+    test('should escape single quotes in a String', () {
+      expect(literalString(r"don't"), equalsDart(r"'don\'t'"));
+    });
+
+    test('should escape a newline in a string', () {
+      expect(literalString('some\nthing'), equalsDart(r"'some\nthing'"));
+    });
   });
 
-  test('should emit a raw String', () {
-    expect(literalString(r'$monkey', raw: true), equalsDart(r"r'$monkey'"));
-  });
+  group('literalString raw', () {
+    test('should emit a simple string', () {
+      expect(literalString(raw: true, 'foo'), equalsDart(r"r'foo'"));
+    });
 
-  test('should escape single quotes in a String', () {
-    expect(literalString(r"don't"), equalsDart(r"'don\'t'"));
-  });
+    test('should emit an empty string', () {
+      expect(literalString(raw: true, ''), equalsDart(r"r''"));
+    });
 
-  test('does not allow single quote in raw string', () {
-    expect(() => literalString(r"don't", raw: true), throwsArgumentError);
-  });
+    test('should use double quotes for just a single quote', () {
+      expect(literalString(raw: true, "'"), equalsDart('"\'"'));
+    });
 
-  test('should escape a newline in a string', () {
-    expect(literalString('some\nthing'), equalsDart(r"'some\nthing'"));
+    test('should use single quotes for just a double quote', () {
+      expect(literalString(raw: true, '"'), equalsDart("r'\"'"));
+    });
+
+    test('should use raw string for a single backslash', () {
+      expect(literalString(raw: true, '\\'), equalsDart("r'\\'"));
+    });
+
+    test('should emit unicode characters', () {
+      expect(literalString(raw: true, '😊'), equalsDart(r"r'😊'"));
+    });
+
+    test('should escape a carriage return in a string', () {
+      expect(
+        literalString(raw: true, 'some\rthing'),
+        equalsDart(r"'some\rthing'"),
+      );
+    });
+
+    test('should use raw string for backslashes', () {
+      expect(literalString(raw: true, r'a\tb'), equalsDart("r'a\\tb'"));
+    });
+
+    test('should use double quotes if it contains single quotes', () {
+      expect(literalString(raw: true, "don't"), equalsDart('"don\'t"'));
+    });
+
+    test('should use single quotes if it contains double quotes', () {
+      expect(
+        literalString(raw: true, 'foo "bar"'),
+        equalsDart("r'foo \"bar\"'"),
+      );
+    });
+
+    test('should escape single quotes if it contains both quotes', () {
+      expect(
+        literalString(raw: true, 'don\'t "bar"'),
+        equalsDart('\'don\\\'t "bar"\''),
+      );
+    });
+
+    test('should use raw single quotes for dollar signs if possible', () {
+      expect(literalString(raw: true, r'$foo'), equalsDart(r"r'$foo'"));
+    });
+
+    test('should use raw double quotes for dollar signs and single quotes '
+        'if possible', () {
+      expect(
+        literalString(raw: true, r"don't $foo"),
+        equalsDart('r"don\'t \$foo"'),
+      );
+    });
+
+    test('should escape if it contains dollar, single, and double quotes', () {
+      expect(
+        literalString(raw: true, 'don\'t "bar" \$foo'),
+        equalsDart('\'don\\\'t "bar" \\\$foo\''),
+      );
+    });
+
+    test('should escape control characters', () {
+      expect(literalString(raw: true, 'foo\nbar'), equalsDart('\'foo\\nbar\''));
+    });
+
+    test('should escape control characters and dollar signs', () {
+      expect(
+        literalString(raw: true, 'foo\n\$bar'),
+        equalsDart('\'foo\\n\\\$bar\''),
+      );
+    });
   });
 
   test('should emit a && expression', () {
@@ -339,10 +422,9 @@ void main() {
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..returnType = refer('void')
-              ..isNullable = true,
+        (b) => b
+          ..returnType = refer('void')
+          ..isNullable = true,
       ).toTypeDef('Void0'),
       equalsDart('typedef Void0 = void Function()?;', emitter),
     );
@@ -351,10 +433,9 @@ void main() {
   test('should emit a typedef statement for a generic function type', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..returnType = refer('void')
-              ..types.add(refer('T')),
+        (b) => b
+          ..returnType = refer('void')
+          ..types.add(refer('T')),
       ).toTypeDef('Void0'),
       equalsDart('typedef Void0 = void Function<T>();'),
     );
@@ -363,10 +444,9 @@ void main() {
   test('should emit a function type with type parameters', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..returnType = refer('T')
-              ..types.add(refer('T')),
+        (b) => b
+          ..returnType = refer('T')
+          ..types.add(refer('T')),
       ),
       equalsDart('T Function<T>()'),
     );
@@ -382,10 +462,9 @@ void main() {
   test('should emit a function type with parameters', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..requiredParameters.add(refer('String'))
-              ..optionalParameters.add(refer('int')),
+        (b) => b
+          ..requiredParameters.add(refer('String'))
+          ..optionalParameters.add(refer('int')),
       ),
       equalsDart('Function(String, [int, ])'),
     );
@@ -406,10 +485,9 @@ void main() {
     () {
       expect(
         FunctionType(
-          (b) =>
-              b
-                ..namedRequiredParameters.addAll({'x': refer('int')})
-                ..namedParameters.addAll({'y': refer('int')}),
+          (b) => b
+            ..namedRequiredParameters.addAll({'x': refer('int')})
+            ..namedParameters.addAll({'y': refer('int')}),
         ),
         equalsDart('Function({required int x, int y, })'),
       );
@@ -419,12 +497,11 @@ void main() {
   test('should emit a function type with named required parameters', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..namedRequiredParameters.addAll({
-                'x': refer('int'),
-                'y': refer('int'),
-              }),
+        (b) => b
+          ..namedRequiredParameters.addAll({
+            'x': refer('int'),
+            'y': refer('int'),
+          }),
       ),
       equalsDart('Function({required int x, required int y, })'),
     );
@@ -434,10 +511,9 @@ void main() {
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..requiredParameters.add(refer('String'))
-              ..isNullable = true,
+        (b) => b
+          ..requiredParameters.add(refer('String'))
+          ..isNullable = true,
       ),
       equalsDart('Function(String)?', emitter),
     );
@@ -446,10 +522,9 @@ void main() {
   test('should emit a nullable function type in pre-Null Safety library', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..requiredParameters.add(refer('String'))
-              ..isNullable = true,
+        (b) => b
+          ..requiredParameters.add(refer('String'))
+          ..isNullable = true,
       ),
       equalsDart('Function(String)'),
     );
@@ -459,10 +534,9 @@ void main() {
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..requiredParameters.add(refer('String'))
-              ..isNullable = false,
+        (b) => b
+          ..requiredParameters.add(refer('String'))
+          ..isNullable = false,
       ),
       equalsDart('Function(String)', emitter),
     );
@@ -473,10 +547,9 @@ void main() {
     () {
       expect(
         FunctionType(
-          (b) =>
-              b
-                ..requiredParameters.add(refer('String'))
-                ..isNullable = false,
+          (b) => b
+            ..requiredParameters.add(refer('String'))
+            ..isNullable = false,
         ),
         equalsDart('Function(String)'),
       );
@@ -498,10 +571,9 @@ void main() {
       refer('map').property('putIfAbsent').call([
         literalString('foo'),
         Method(
-          (b) =>
-              b
-                ..types.add(refer('T'))
-                ..body = literalTrue.code,
+          (b) => b
+            ..types.add(refer('T'))
+            ..body = literalTrue.code,
         ).genericClosure,
       ]),
       equalsDart("map.putIfAbsent('foo', <T>() => true, )"),
@@ -582,10 +654,9 @@ void main() {
       literalTrue.assignVar(
         'foo',
         TypeReference(
-          (b) =>
-              b
-                ..symbol = 'bool'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'bool'
+            ..isNullable = true,
         ),
       ),
       equalsDart('bool? foo = true', emitter),
@@ -602,10 +673,9 @@ void main() {
       literalTrue.assignFinal(
         'foo',
         TypeReference(
-          (b) =>
-              b
-                ..symbol = 'bool'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'bool'
+            ..isNullable = true,
         ),
       ),
       equalsDart('final bool? foo = true', emitter),
@@ -622,10 +692,9 @@ void main() {
       literalTrue.assignConst(
         'foo',
         TypeReference(
-          (b) =>
-              b
-                ..symbol = 'bool'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'bool'
+            ..isNullable = true,
         ),
       ),
       equalsDart('const bool? foo = true', emitter),
@@ -846,10 +915,9 @@ void main() {
       declareConst(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'String'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'String'
+            ..isNullable = true,
         ),
       ).assign(refer('bar')),
       equalsDart('const String? foo = bar', emitter),
@@ -861,10 +929,9 @@ void main() {
       declareConst(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'List'
-                ..types.add(refer('int')),
+          (b) => b
+            ..symbol = 'List'
+            ..types.add(refer('int')),
         ),
       ).assign(refer('bar')),
       equalsDart('const List<int> foo = bar'),
@@ -891,10 +958,9 @@ void main() {
       declareFinal(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'String'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'String'
+            ..isNullable = true,
         ),
       ).assign(refer('bar')),
       equalsDart('final String? foo = bar', emitter),
@@ -906,10 +972,9 @@ void main() {
       declareFinal(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'List'
-                ..types.add(refer('int')),
+          (b) => b
+            ..symbol = 'List'
+            ..types.add(refer('int')),
         ),
       ).assign(refer('bar')),
       equalsDart('final List<int> foo = bar'),
@@ -951,10 +1016,9 @@ void main() {
       declareVar(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'String'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'String'
+            ..isNullable = true,
         ),
       ).assign(refer('bar')),
       equalsDart('String? foo = bar', emitter),
@@ -966,10 +1030,9 @@ void main() {
       declareVar(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'List'
-                ..types.add(refer('int')),
+          (b) => b
+            ..symbol = 'List'
+            ..types.add(refer('int')),
         ),
       ).assign(refer('bar')),
       equalsDart('List<int> foo = bar'),

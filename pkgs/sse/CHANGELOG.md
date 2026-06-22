@@ -1,3 +1,7 @@
+## 4.2.1-wip
+
+- Run `dart format`.
+
 ## 4.2.0
 
 - Update the minimum Dart SDK version to `3.11.0`.

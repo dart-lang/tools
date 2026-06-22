@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 import 'dart:io';
 
 import 'package:dart_style/dart_style.dart';
@@ -18,9 +22,10 @@ void main() {
               'const entitiesTrieRoot = $root;'
           .replaceAll('{}', '<int, dynamic>{}');
   final formatted = DartFormatter(
-          languageVersion: DartFormatter.latestShortStyleLanguageVersion)
-      .format(source);
+    languageVersion: DartFormatter.latestShortStyleLanguageVersion,
+  ).format(source);
   final htmlDir = File(Platform.script.path).parent.parent;
-  File(join(htmlDir.path, 'lib', 'src', 'trie.dart'))
-      .writeAsStringSync(formatted);
+  File(
+    join(htmlDir.path, 'lib', 'src', 'trie.dart'),
+  ).writeAsStringSync(formatted);
 }

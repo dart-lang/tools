@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// This library contains token types used by the html5 tokenizer.
 library;
 
@@ -33,13 +37,14 @@ class StartTagToken extends TagToken {
   /// The namespace. This is filled in later during tree building.
   String? namespace;
 
-  StartTagToken(String? name,
-      {LinkedHashMap<Object, String>? data,
-      bool selfClosing = false,
-      this.selfClosingAcknowledged = false,
-      this.namespace})
-      : data = data ?? LinkedHashMap(),
-        super(name, selfClosing);
+  StartTagToken(
+    String? name, {
+    LinkedHashMap<Object, String>? data,
+    bool selfClosing = false,
+    this.selfClosingAcknowledged = false,
+    this.namespace,
+  }) : data = data ?? LinkedHashMap(),
+       super(name, selfClosing);
 
   @override
   int get kind => TokenKind.startTag;
@@ -47,7 +52,7 @@ class StartTagToken extends TagToken {
 
 class EndTagToken extends TagToken {
   EndTagToken(String? name, {bool selfClosing = false})
-      : super(name, selfClosing);
+    : super(name, selfClosing);
 
   @override
   int get kind => TokenKind.endTag;

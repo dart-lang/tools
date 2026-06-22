@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// Additional feature tests that aren't based on test data.
 library;
 
@@ -18,10 +22,12 @@ void main() {
   });
 
   group('Document', () {
-    final doc = parse('<div id=foo>'
-        '<div class=" bar baz"></div>'
-        '<div class="qux  baz "></div>'
-        '<div id=Foo>');
+    final doc = parse(
+      '<div id=foo>'
+      '<div class=" bar baz"></div>'
+      '<div class="qux  baz "></div>'
+      '<div id=Foo>',
+    );
 
     test('getElementById', () {
       final foo = doc.body!.nodes[0];
