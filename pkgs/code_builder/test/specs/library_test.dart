@@ -148,7 +148,7 @@ void main() {
         ),
         equalsDart(r'''
             import 'dart:collection';
-          
+
             final test = LinkedHashMap();
           ''', DartEmitter()),
       );
@@ -224,7 +224,7 @@ void main() {
         ),
         equalsDart(r'''
           import 'dart:collection';
-          
+
           final test = LinkedHashMap();
         ''', DartEmitter(allocator: Allocator())),
       );
@@ -249,8 +249,9 @@ void main() {
         ),
         equalsDart(r'''
           // ignore_for_file: no_leading_underscores_for_library_prefixes
+
           import 'dart:collection' as _i1;
-          
+
           final test = _i1.LinkedHashMap();
         ''', DartEmitter(allocator: Allocator.simplePrefixing())),
       );
@@ -312,5 +313,41 @@ void main() {
       '''),
       );
     });
+
+    test(
+      'should emit scoped lint ignores before library annotations, directives',
+      () {
+        expect(
+          Library(
+            (b) =>
+                b
+                  ..annotations.add(
+                    refer(
+                      'JS',
+                      'dart:js_interop',
+                    ).call([literalString('vscode')]),
+                  )
+                  ..body.add(
+                    Method(
+                      (m) =>
+                          m
+                            ..name = 'foo'
+                            ..external = true,
+                    ),
+                  ),
+          ),
+          equalsDart(r'''
+            // ignore_for_file: no_leading_underscores_for_library_prefixes
+
+            @_i1.JS('vscode')
+            library;
+
+            import 'dart:js_interop' as _i1;
+
+            external foo();
+          ''', DartEmitter.scoped()),
+        );
+      },
+    );
   });
 }

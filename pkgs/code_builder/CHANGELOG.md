@@ -1,3 +1,15 @@
+## 4.12.0-wip
+
+* Ensure scoped lint ignores
+  (such as `// ignore_for_file: no_leading_underscores_for_library_prefixes`)
+  are emitted at the top of the file before library annotations and directives.
+* Allow single quotes in strings passed to `literalString(raw:true)`. This
+  argument no longer guarantees a raw string is used, but results will have the
+  same behavior.
+* Correct type annotations on nullable and generic variables created with
+  `declareVar`, `declareFinal`, and `declareConst`.
+* Deprecate and remove uses of `Expression.expression`.
+
 ## 4.11.1
 
 * Convert imports of implementation libraries under `package:fixnum/src/*` into

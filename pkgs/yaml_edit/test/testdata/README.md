@@ -15,8 +15,8 @@ When the tests are run (see [Running Tests](#Running-Tests)), the series of spec
 
 ## Running Tests
 
-By default, golden testing is performed with `pub run test`. If we only wanted to
-performed golden testing, simply do: `pub run test test/golden_test.dart`.
+By default, golden testing is performed with `dart test`. If we only wanted to
+performed golden testing, simply do: `dart test test/golden_test.dart`.
 
 ## Input Format
 

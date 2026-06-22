@@ -346,7 +346,40 @@ void main() {
     expect(constructedEvent.eventData['duration'], 5);
     expect(constructedEvent.eventData['flags'], 'flags');
     expect(constructedEvent.eventData['parameters'], 'parameters');
-    expect(constructedEvent.eventData.length, 5);
+    expect(constructedEvent.eventData['ideName'], '');
+    expect(constructedEvent.eventData['ideVersion'], '');
+    expect(constructedEvent.eventData['pluginName'], '');
+    expect(constructedEvent.eventData['pluginVersion'], '');
+    expect(constructedEvent.eventData.length, 9);
+  });
+
+  test('Event.serverSession constructed with optional parameters', () {
+    Event generateEvent() => Event.serverSession(
+      clientId: 'clientId',
+      clientVersion: 'clientVersion',
+      duration: 5,
+      flags: 'flags',
+      parameters: 'parameters',
+      ideName: 'ideName',
+      ideVersion: 'ideVersion',
+      pluginName: 'pluginName',
+      pluginVersion: 'pluginVersion',
+    );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.serverSession);
+    expect(constructedEvent.eventData['clientId'], 'clientId');
+    expect(constructedEvent.eventData['clientVersion'], 'clientVersion');
+    expect(constructedEvent.eventData['duration'], 5);
+    expect(constructedEvent.eventData['flags'], 'flags');
+    expect(constructedEvent.eventData['parameters'], 'parameters');
+    expect(constructedEvent.eventData['ideName'], 'ideName');
+    expect(constructedEvent.eventData['ideVersion'], 'ideVersion');
+    expect(constructedEvent.eventData['pluginName'], 'pluginName');
+    expect(constructedEvent.eventData['pluginVersion'], 'pluginVersion');
+    expect(constructedEvent.eventData.length, 9);
   });
 
   test('Event.severityAdjustment constructed', () {
@@ -539,6 +572,7 @@ void main() {
   group('Event.flutterTrackAndroidDependencies', () {
     test('constructed', () {
       Event generateEvent() => Event.flutterTrackAndroidDependencies(
+        success: true,
         isModule: true,
         agpVersion: '8.2.2',
         minSDK: 24,
@@ -556,6 +590,8 @@ void main() {
         constructedEvent.eventName,
         DashEvent.flutterTrackAndroidDependencies,
       );
+      expect(constructedEvent.eventData['success'], isTrue);
+      expect(constructedEvent.eventData['label'], isNull);
       expect(constructedEvent.eventData['isModule'], isTrue);
       expect(constructedEvent.eventData['agpVersion'], '8.2.2');
       expect(constructedEvent.eventData['minSDK'], 24);
@@ -564,11 +600,13 @@ void main() {
       expect(constructedEvent.eventData['jdkVersion'], 24);
       expect(constructedEvent.eventData['ndkVersion'], '28.0.13004108');
       expect(constructedEvent.eventData['gradleVersion'], '8.10.2');
-      expect(constructedEvent.eventData.length, 8);
+      expect(constructedEvent.eventData.length, 9);
     });
 
     test('constructor arguments default to null if not specified', () {
       Event generateEvent() => Event.flutterTrackAndroidDependencies(
+        success: false,
+        label: 'failed to download gradle from ...',
         isModule: true,
         agpVersion: '8.2.2',
         targetSDK: 36,
@@ -583,6 +621,11 @@ void main() {
         constructedEvent.eventName,
         DashEvent.flutterTrackAndroidDependencies,
       );
+      expect(constructedEvent.eventData['success'], isFalse);
+      expect(
+        constructedEvent.eventData['label'],
+        'failed to download gradle from ...',
+      );
       expect(constructedEvent.eventData['isModule'], isTrue);
       expect(constructedEvent.eventData['agpVersion'], '8.2.2');
       expect(constructedEvent.eventData['minSDK'], null);
@@ -591,7 +634,7 @@ void main() {
       expect(constructedEvent.eventData['jdkVersion'], 24);
       expect(constructedEvent.eventData['ndkVersion'], null);
       expect(constructedEvent.eventData['gradleVersion'], '8.10.2');
-      expect(constructedEvent.eventData.length, 5);
+      expect(constructedEvent.eventData.length, 7);
     });
   });
   test('Event.codeSizeAnalysis constructed', () {
@@ -669,11 +712,14 @@ void main() {
       commandHasTerminal: true,
       buildBundleTargetPlatform: 'buildBundleTargetPlatform',
       buildBundleIsModule: true,
+      buildBundleEnableHcpp: true,
       buildAarProjectType: 'buildAarProjectType',
       buildAarTargetPlatform: 'buildAarTargetPlatform',
+      buildAarEnableHcpp: true,
       buildApkTargetPlatform: 'buildApkTargetPlatform',
       buildApkBuildMode: 'buildApkBuildMode',
       buildApkSplitPerAbi: true,
+      buildApkEnableHcpp: true,
       buildAppBundleTargetPlatform: 'buildAppBundleTargetPlatform',
       buildAppBundleBuildMode: 'buildAppBundleBuildMode',
       createProjectType: 'createProjectType',
@@ -692,6 +738,7 @@ void main() {
       runEnableImpeller: true,
       runIOSInterfaceType: 'runIOSInterfaceType',
       runIsTest: true,
+      runEnableHcpp: true,
     );
 
     final constructedEvent = generateEvent();
@@ -703,6 +750,7 @@ void main() {
       constructedEvent.eventData['buildBundleTargetPlatform'],
       'buildBundleTargetPlatform',
     );
+    expect(constructedEvent.eventData['buildBundleEnableHcpp'], true);
     expect(constructedEvent.eventData['buildBundleIsModule'], true);
     expect(
       constructedEvent.eventData['buildAarProjectType'],
@@ -712,6 +760,7 @@ void main() {
       constructedEvent.eventData['buildAarTargetPlatform'],
       'buildAarTargetPlatform',
     );
+    expect(constructedEvent.eventData['buildAarEnableHcpp'], true);
     expect(
       constructedEvent.eventData['buildApkTargetPlatform'],
       'buildApkTargetPlatform',
@@ -721,6 +770,7 @@ void main() {
       'buildApkBuildMode',
     );
     expect(constructedEvent.eventData['buildApkSplitPerAbi'], true);
+    expect(constructedEvent.eventData['buildApkEnableHcpp'], true);
     expect(
       constructedEvent.eventData['buildAppBundleTargetPlatform'],
       'buildAppBundleTargetPlatform',
@@ -768,7 +818,8 @@ void main() {
       constructedEvent.eventData['runIOSInterfaceType'],
       'runIOSInterfaceType',
     );
-    expect(constructedEvent.eventData.length, 27);
+    expect(constructedEvent.eventData['runEnableHcpp'], true);
+    expect(constructedEvent.eventData.length, 31);
   });
 
   test('Event.analyticsException constructed', () {

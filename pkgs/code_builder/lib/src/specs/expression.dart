@@ -53,90 +53,83 @@ abstract class Expression implements Spec {
   Code get statement => ToCodeExpression(this, true);
 
   /// Returns the result of `this` `&&` [other].
-  Expression and(Expression other) =>
-      BinaryExpression._(expression, other, '&&');
+  Expression and(Expression other) => BinaryExpression._(this, other, '&&');
 
   /// Returns the result of `this` `||` [other].
-  Expression or(Expression other) =>
-      BinaryExpression._(expression, other, '||');
+  Expression or(Expression other) => BinaryExpression._(this, other, '||');
 
   /// Returns the result of `!this`.
-  Expression negate() =>
-      BinaryExpression._(_empty, expression, '!', addSpace: false);
+  Expression negate() => BinaryExpression._(_empty, this, '!', addSpace: false);
 
   /// Returns the result of `this` `as` [other].
   Expression asA(Expression other) =>
-      ParenthesizedExpression._(BinaryExpression._(expression, other, 'as'));
+      ParenthesizedExpression._(BinaryExpression._(this, other, 'as'));
 
   /// Returns accessing the index operator (`[]`) on `this`.
   Expression index(Expression index) => BinaryExpression._(
-    expression,
+    this,
     CodeExpression(Block.of([const Code('['), index.code, const Code(']')])),
     '',
   );
 
   /// Returns the result of `this` `is` [other].
-  Expression isA(Expression other) =>
-      BinaryExpression._(expression, other, 'is');
+  Expression isA(Expression other) => BinaryExpression._(this, other, 'is');
 
   /// Returns the result of `this` `is!` [other].
-  Expression isNotA(Expression other) =>
-      BinaryExpression._(expression, other, 'is!');
+  Expression isNotA(Expression other) => BinaryExpression._(this, other, 'is!');
 
   /// Returns the result of `this` `==` [other].
-  Expression equalTo(Expression other) =>
-      BinaryExpression._(expression, other, '==');
+  Expression equalTo(Expression other) => BinaryExpression._(this, other, '==');
 
   /// Returns the result of `this` `!=` [other].
   Expression notEqualTo(Expression other) =>
-      BinaryExpression._(expression, other, '!=');
+      BinaryExpression._(this, other, '!=');
 
   /// Returns the result of `this` `>` [other].
   Expression greaterThan(Expression other) =>
-      BinaryExpression._(expression, other, '>');
+      BinaryExpression._(this, other, '>');
 
   /// Returns the result of `this` `<` [other].
-  Expression lessThan(Expression other) =>
-      BinaryExpression._(expression, other, '<');
+  Expression lessThan(Expression other) => BinaryExpression._(this, other, '<');
 
   /// Returns the result of `this` `>=` [other].
   Expression greaterOrEqualTo(Expression other) =>
-      BinaryExpression._(expression, other, '>=');
+      BinaryExpression._(this, other, '>=');
 
   /// Returns the result of `this` `<=` [other].
   Expression lessOrEqualTo(Expression other) =>
-      BinaryExpression._(expression, other, '<=');
+      BinaryExpression._(this, other, '<=');
 
   /// Returns the result of `this` `+` [other].
   Expression operatorAdd(Expression other) =>
-      BinaryExpression._(expression, other, '+');
+      BinaryExpression._(this, other, '+');
 
   /// Returns the result of `this` `-` [other].
   Expression operatorSubtract(Expression other) =>
-      BinaryExpression._(expression, other, '-');
+      BinaryExpression._(this, other, '-');
 
   @Deprecated('Use `operatorSubtract` instead')
   Expression operatorSubstract(Expression other) => operatorSubtract(other);
 
   /// Returns the result of `this` `/` [other].
   Expression operatorDivide(Expression other) =>
-      BinaryExpression._(expression, other, '/');
+      BinaryExpression._(this, other, '/');
 
   /// Returns the result of `this` `*` [other].
   Expression operatorMultiply(Expression other) =>
-      BinaryExpression._(expression, other, '*');
+      BinaryExpression._(this, other, '*');
 
   /// Returns the result of `this` `%` [other].
   Expression operatorEuclideanModulo(Expression other) =>
-      BinaryExpression._(expression, other, '%');
+      BinaryExpression._(this, other, '%');
 
   /// Returns the result of `this` `~/` [other].
   Expression operatorIntDivide(Expression other) =>
-      BinaryExpression._(expression, other, '~/');
+      BinaryExpression._(this, other, '~/');
 
   Expression conditional(Expression whenTrue, Expression whenFalse) =>
       BinaryExpression._(
-        expression,
+        this,
         BinaryExpression._(whenTrue, whenFalse, ':'),
         '?',
       );
@@ -146,51 +139,51 @@ abstract class Expression implements Spec {
 
   /// Returns the result of `++this`.
   Expression operatorUnaryPrefixIncrement() =>
-      BinaryExpression._(_empty, expression, '++', addSpace: false);
+      BinaryExpression._(_empty, this, '++', addSpace: false);
 
   /// Return the result of `this++`.
   Expression operatorUnaryPostfixIncrement() =>
-      BinaryExpression._(expression, _empty, '++', addSpace: false);
+      BinaryExpression._(this, _empty, '++', addSpace: false);
 
   /// Returns the result of `-this`.
   Expression operatorUnaryMinus() =>
-      BinaryExpression._(_empty, expression, '-', addSpace: false);
+      BinaryExpression._(_empty, this, '-', addSpace: false);
 
   /// Returns the result of `--this`.
   Expression operatorUnaryPrefixDecrement() =>
-      BinaryExpression._(_empty, expression, '--', addSpace: false);
+      BinaryExpression._(_empty, this, '--', addSpace: false);
 
   /// Return the result of `this--`.
   Expression operatorUnaryPostfixDecrement() =>
-      BinaryExpression._(expression, _empty, '--', addSpace: false);
+      BinaryExpression._(this, _empty, '--', addSpace: false);
 
   /// Returns the result of `this` `&` [other].
   Expression operatorBitwiseAnd(Expression other) =>
-      BinaryExpression._(expression, other, '&');
+      BinaryExpression._(this, other, '&');
 
   /// Returns the result of `this` `|` [other].
   Expression operatorBitwiseOr(Expression other) =>
-      BinaryExpression._(expression, other, '|');
+      BinaryExpression._(this, other, '|');
 
   /// Returns the result of `this` `^` [other].
   Expression operatorBitwiseXor(Expression other) =>
-      BinaryExpression._(expression, other, '^');
+      BinaryExpression._(this, other, '^');
 
   /// Returns the result of `~this`.
   Expression operatorUnaryBitwiseComplement() =>
-      BinaryExpression._(_empty, expression, '~', addSpace: false);
+      BinaryExpression._(_empty, this, '~', addSpace: false);
 
   /// Returns the result of `this` `<<` [other].
   Expression operatorShiftLeft(Expression other) =>
-      BinaryExpression._(expression, other, '<<');
+      BinaryExpression._(this, other, '<<');
 
   /// Returns the result of `this` `>>` [other].
   Expression operatorShiftRight(Expression other) =>
-      BinaryExpression._(expression, other, '>>');
+      BinaryExpression._(this, other, '>>');
 
   /// Returns the result of `this` `>>>` [other].
   Expression operatorShiftRightUnsigned(Expression other) =>
-      BinaryExpression._(expression, other, '>>>');
+      BinaryExpression._(this, other, '>>>');
 
   /// Return `{this} = {other}`.
   Expression assign(Expression other) =>
@@ -257,7 +250,7 @@ abstract class Expression implements Spec {
   Expression assignVar(String name, [Reference? type]) => BinaryExpression._(
     type == null
         ? LiteralExpression._('var $name')
-        : BinaryExpression._(type.expression, LiteralExpression._(name), ''),
+        : BinaryExpression._(type, LiteralExpression._(name), ''),
     this,
     '=',
   );
@@ -267,11 +260,7 @@ abstract class Expression implements Spec {
   Expression assignFinal(String name, [Reference? type]) => BinaryExpression._(
     type == null
         ? const LiteralExpression._('final')
-        : BinaryExpression._(
-          const LiteralExpression._('final'),
-          type.expression,
-          '',
-        ),
+        : BinaryExpression._(const LiteralExpression._('final'), type, ''),
     this,
     '$name =',
   );
@@ -281,11 +270,7 @@ abstract class Expression implements Spec {
   Expression assignConst(String name, [Reference? type]) => BinaryExpression._(
     type == null
         ? const LiteralExpression._('const')
-        : BinaryExpression._(
-          const LiteralExpression._('const'),
-          type.expression,
-          '',
-        ),
+        : BinaryExpression._(const LiteralExpression._('const'), type, ''),
     this,
     '$name =',
     isConst: true,
@@ -358,8 +343,9 @@ abstract class Expression implements Spec {
   Expression get thrown =>
       BinaryExpression._(const LiteralExpression._('throw'), this, '');
 
-  /// May be overridden to support other types implementing [Expression].
+  /// Returns `this`.
   @visibleForOverriding
+  @Deprecated('No longer needed. Use the expression directly.')
   Expression get expression => this;
 
   /// Returns this expression wrapped in parenthesis.
@@ -414,7 +400,7 @@ Expression declareVar(
 );
 
 Expression _typedVar(String variableName, Reference type) =>
-    BinaryExpression._(type.expression, LiteralExpression._(variableName), '');
+    BinaryExpression._(type, LiteralExpression._(variableName), '');
 
 Expression _late(bool late, Expression expression) =>
     late
@@ -425,7 +411,7 @@ Expression _late(bool late, Expression expression) =>
 Code createTypeDef(String name, FunctionType type) =>
     BinaryExpression._(
       LiteralExpression._('typedef $name'),
-      type.expression,
+      type,
       '=',
     ).statement;
 

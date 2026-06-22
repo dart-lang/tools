@@ -1,4 +1,4 @@
-// Copyright (c) 2019, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2019, the Dart project authors. Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart' show sealed;
 
+import 'constants.dart' as constants;
 import 'errors.dart';
 import 'package_config_json.dart';
 import 'util.dart';
@@ -20,10 +21,10 @@ import 'util.dart';
 @sealed
 abstract class PackageConfig {
   /// The lowest configuration version currently supported.
-  static const int minVersion = 2;
+  static const int minVersion = constants.minConfigVersion;
 
   /// The highest configuration version currently supported.
-  static const int maxVersion = 2;
+  static const int maxVersion = constants.maxConfigVersion;
 
   /// An empty package configuration.
   ///
@@ -258,16 +259,15 @@ abstract class Package {
     LanguageVersion? languageVersion,
     Object? extraData,
     bool relativeRoot = true,
-  }) =>
-      SimplePackage.validate(
-        name,
-        root,
-        packageUriRoot,
-        languageVersion,
-        extraData,
-        relativeRoot,
-        throwError,
-      )!;
+  }) => SimplePackage.validate(
+    name,
+    root,
+    packageUriRoot,
+    languageVersion,
+    extraData,
+    relativeRoot,
+    throwError,
+  )!;
 
   /// The package-name of the package.
   String get name;
@@ -505,17 +505,15 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
     return compareTo(other) >= 0;
   }
 
-  static Never _throwThisInvalid() =>
-      throw UnsupportedError(
-        'Can\'t compare an invalid language version to another '
-        'language version. '
-        'Verify language versions are valid before use.',
-      );
-  static Never _throwOtherInvalid() =>
-      throw UnsupportedError(
-        'Can\'t compare a language version to an invalid language version. '
-        'Verify language versions are valid before use.',
-      );
+  static Never _throwThisInvalid() => throw UnsupportedError(
+    'Can\'t compare an invalid language version to another '
+    'language version. '
+    'Verify language versions are valid before use.',
+  );
+  static Never _throwOtherInvalid() => throw UnsupportedError(
+    'Can\'t compare a language version to an invalid language version. '
+    'Verify language versions are valid before use.',
+  );
 }
 
 // --------------------------------------------------------------------

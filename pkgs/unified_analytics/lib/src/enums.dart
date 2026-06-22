@@ -6,6 +6,18 @@
 List<String> get validDashTools =>
     DashTool.values.map((e) => e.label).toList()..sort();
 
+/// Environment variables used by the unified analytics package.
+enum DashEnvVar {
+  /// Environment variable used to suppress analytics.
+  suppressAnalytics('DASH__SUPPRESS_ANALYTICS'),
+
+  /// Environment variable used to specify the top-level tool.
+  tool('DASH__TOOL');
+
+  final String name;
+  const DashEnvVar(this.name);
+}
+
 /// Values for the event name to be sent to Google Analytics.
 ///
 /// The [label] for each enum value is what will be logged, the [description]
@@ -263,4 +275,112 @@ enum DevicePlatform {
 
   final String label;
   const DevicePlatform(this.label);
+}
+
+/// Enumerate options for AI agents supported.
+enum AiAgent {
+  aider('Aider'),
+  amp('Amp'),
+  antigravity('Antigravity'),
+  augment('Augment'),
+  claudeCode('Claude Code'),
+  codex('Codex'),
+  copilot('Copilot'),
+  cursor('Cursor'),
+  devin('Devin'),
+  gemini('Gemini'),
+  openCode('OpenCode'),
+  pi('Pi'),
+  replit('Replit'),
+  genericAiAgent('Generic AI Agent');
+
+  final String label;
+
+  const AiAgent(this.label);
+
+  /// Returns the name of the AI agent executing the tool, if any,
+  /// by parsing the environment variables.
+  ///
+  /// Returns `null` if no AI agent is detected.
+  static String? detectAgentName(Map<String, String> environment) {
+    const genericAiAgentLabel = 'Generic AI Agent';
+
+    if (environment.containsKey('CLAUDECODE') ||
+        environment.containsKey('CLAUDE_CODE') ||
+        environment.containsKey('CLAUDE_CODE_IS_COWORK')) {
+      return claudeCode.label;
+    }
+
+    if (environment.containsKey('ANTIGRAVITY_AGENT')) {
+      return antigravity.label;
+    }
+
+    if (environment.containsKey('GEMINI_AGENT') ||
+        environment.containsKey('GEMINI_CLI')) {
+      return gemini.label;
+    }
+
+    if (environment['TERM_PROGRAM'] == 'cursor' ||
+        environment.keys.any((String key) => key.startsWith('CURSOR_'))) {
+      return cursor.label;
+    }
+
+    if (environment.keys.any(
+      (String key) =>
+          key.startsWith('COPILOT_') || key.startsWith('GITHUB_COPILOT'),
+    )) {
+      return copilot.label;
+    }
+
+    if (environment.containsKey('AIDER') ||
+        environment.keys.any((String key) => key.startsWith('AIDER_'))) {
+      return aider.label;
+    }
+
+    if (environment.containsKey('DEVIN') ||
+        environment.containsKey('DEVIN_WORKSPACE_ID')) {
+      return devin.label;
+    }
+
+    if (environment.containsKey('AMP_CURRENT_THREAD_ID')) {
+      return amp.label;
+    }
+
+    if (environment.containsKey('AUGMENT_AGENT')) {
+      return augment.label;
+    }
+
+    if (environment.containsKey('CODEX_CI') ||
+        environment.containsKey('CODEX_SANDBOX') ||
+        environment.containsKey('CODEX_THREAD_ID')) {
+      return codex.label;
+    }
+
+    if (environment.containsKey('OPENCODE') ||
+        environment.containsKey('OPENCODE_CLIENT')) {
+      return openCode.label;
+    }
+
+    if (environment.containsKey('PI_CODING_AGENT')) {
+      return pi.label;
+    }
+
+    if (environment.containsKey('REPL_ID')) {
+      return replit.label;
+    }
+
+    var agent = environment['AGENT'];
+    if (agent != null && agent.isNotEmpty) {
+      return agent == '1' ? genericAiAgentLabel : agent;
+    }
+    agent = environment['AI_AGENT'];
+    if (agent != null && agent.isNotEmpty) {
+      return agent == '1' ? genericAiAgentLabel : agent;
+    }
+    if (environment.containsKey('SWE_AGENT')) {
+      return genericAiAgentLabel;
+    }
+
+    return null;
+  }
 }
