@@ -422,9 +422,10 @@ void main() {
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     expect(
       FunctionType(
-        (b) => b
-          ..returnType = refer('void')
-          ..isNullable = true,
+        (b) =>
+            b
+              ..returnType = refer('void')
+              ..isNullable = true,
       ).toTypeDef('Void0'),
       equalsDart('typedef Void0 = void Function()?;', emitter),
     );
@@ -433,9 +434,10 @@ void main() {
   test('should emit a typedef statement for a generic function type', () {
     expect(
       FunctionType(
-        (b) => b
-          ..returnType = refer('void')
-          ..types.add(refer('T')),
+        (b) =>
+            b
+              ..returnType = refer('void')
+              ..types.add(refer('T')),
       ).toTypeDef('Void0'),
       equalsDart('typedef Void0 = void Function<T>();'),
     );
@@ -444,9 +446,10 @@ void main() {
   test('should emit a function type with type parameters', () {
     expect(
       FunctionType(
-        (b) => b
-          ..returnType = refer('T')
-          ..types.add(refer('T')),
+        (b) =>
+            b
+              ..returnType = refer('T')
+              ..types.add(refer('T')),
       ),
       equalsDart('T Function<T>()'),
     );
@@ -462,9 +465,10 @@ void main() {
   test('should emit a function type with parameters', () {
     expect(
       FunctionType(
-        (b) => b
-          ..requiredParameters.add(refer('String'))
-          ..optionalParameters.add(refer('int')),
+        (b) =>
+            b
+              ..requiredParameters.add(refer('String'))
+              ..optionalParameters.add(refer('int')),
       ),
       equalsDart('Function(String, [int, ])'),
     );
@@ -485,9 +489,10 @@ void main() {
     () {
       expect(
         FunctionType(
-          (b) => b
-            ..namedRequiredParameters.addAll({'x': refer('int')})
-            ..namedParameters.addAll({'y': refer('int')}),
+          (b) =>
+              b
+                ..namedRequiredParameters.addAll({'x': refer('int')})
+                ..namedParameters.addAll({'y': refer('int')}),
         ),
         equalsDart('Function({required int x, int y, })'),
       );
@@ -497,11 +502,12 @@ void main() {
   test('should emit a function type with named required parameters', () {
     expect(
       FunctionType(
-        (b) => b
-          ..namedRequiredParameters.addAll({
-            'x': refer('int'),
-            'y': refer('int'),
-          }),
+        (b) =>
+            b
+              ..namedRequiredParameters.addAll({
+                'x': refer('int'),
+                'y': refer('int'),
+              }),
       ),
       equalsDart('Function({required int x, required int y, })'),
     );
@@ -511,9 +517,10 @@ void main() {
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     expect(
       FunctionType(
-        (b) => b
-          ..requiredParameters.add(refer('String'))
-          ..isNullable = true,
+        (b) =>
+            b
+              ..requiredParameters.add(refer('String'))
+              ..isNullable = true,
       ),
       equalsDart('Function(String)?', emitter),
     );
@@ -522,9 +529,10 @@ void main() {
   test('should emit a nullable function type in pre-Null Safety library', () {
     expect(
       FunctionType(
-        (b) => b
-          ..requiredParameters.add(refer('String'))
-          ..isNullable = true,
+        (b) =>
+            b
+              ..requiredParameters.add(refer('String'))
+              ..isNullable = true,
       ),
       equalsDart('Function(String)'),
     );
@@ -534,9 +542,10 @@ void main() {
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     expect(
       FunctionType(
-        (b) => b
-          ..requiredParameters.add(refer('String'))
-          ..isNullable = false,
+        (b) =>
+            b
+              ..requiredParameters.add(refer('String'))
+              ..isNullable = false,
       ),
       equalsDart('Function(String)', emitter),
     );
@@ -547,9 +556,10 @@ void main() {
     () {
       expect(
         FunctionType(
-          (b) => b
-            ..requiredParameters.add(refer('String'))
-            ..isNullable = false,
+          (b) =>
+              b
+                ..requiredParameters.add(refer('String'))
+                ..isNullable = false,
         ),
         equalsDart('Function(String)'),
       );
@@ -571,9 +581,10 @@ void main() {
       refer('map').property('putIfAbsent').call([
         literalString('foo'),
         Method(
-          (b) => b
-            ..types.add(refer('T'))
-            ..body = literalTrue.code,
+          (b) =>
+              b
+                ..types.add(refer('T'))
+                ..body = literalTrue.code,
         ).genericClosure,
       ]),
       equalsDart("map.putIfAbsent('foo', <T>() => true, )"),
@@ -654,9 +665,10 @@ void main() {
       literalTrue.assignVar(
         'foo',
         TypeReference(
-          (b) => b
-            ..symbol = 'bool'
-            ..isNullable = true,
+          (b) =>
+              b
+                ..symbol = 'bool'
+                ..isNullable = true,
         ),
       ),
       equalsDart('bool? foo = true', emitter),
@@ -673,9 +685,10 @@ void main() {
       literalTrue.assignFinal(
         'foo',
         TypeReference(
-          (b) => b
-            ..symbol = 'bool'
-            ..isNullable = true,
+          (b) =>
+              b
+                ..symbol = 'bool'
+                ..isNullable = true,
         ),
       ),
       equalsDart('final bool? foo = true', emitter),
@@ -692,9 +705,10 @@ void main() {
       literalTrue.assignConst(
         'foo',
         TypeReference(
-          (b) => b
-            ..symbol = 'bool'
-            ..isNullable = true,
+          (b) =>
+              b
+                ..symbol = 'bool'
+                ..isNullable = true,
         ),
       ),
       equalsDart('const bool? foo = true', emitter),
@@ -915,9 +929,10 @@ void main() {
       declareConst(
         'foo',
         type: TypeReference(
-          (b) => b
-            ..symbol = 'String'
-            ..isNullable = true,
+          (b) =>
+              b
+                ..symbol = 'String'
+                ..isNullable = true,
         ),
       ).assign(refer('bar')),
       equalsDart('const String? foo = bar', emitter),
@@ -929,9 +944,10 @@ void main() {
       declareConst(
         'foo',
         type: TypeReference(
-          (b) => b
-            ..symbol = 'List'
-            ..types.add(refer('int')),
+          (b) =>
+              b
+                ..symbol = 'List'
+                ..types.add(refer('int')),
         ),
       ).assign(refer('bar')),
       equalsDart('const List<int> foo = bar'),
@@ -958,9 +974,10 @@ void main() {
       declareFinal(
         'foo',
         type: TypeReference(
-          (b) => b
-            ..symbol = 'String'
-            ..isNullable = true,
+          (b) =>
+              b
+                ..symbol = 'String'
+                ..isNullable = true,
         ),
       ).assign(refer('bar')),
       equalsDart('final String? foo = bar', emitter),
@@ -972,9 +989,10 @@ void main() {
       declareFinal(
         'foo',
         type: TypeReference(
-          (b) => b
-            ..symbol = 'List'
-            ..types.add(refer('int')),
+          (b) =>
+              b
+                ..symbol = 'List'
+                ..types.add(refer('int')),
         ),
       ).assign(refer('bar')),
       equalsDart('final List<int> foo = bar'),
@@ -1016,9 +1034,10 @@ void main() {
       declareVar(
         'foo',
         type: TypeReference(
-          (b) => b
-            ..symbol = 'String'
-            ..isNullable = true,
+          (b) =>
+              b
+                ..symbol = 'String'
+                ..isNullable = true,
         ),
       ).assign(refer('bar')),
       equalsDart('String? foo = bar', emitter),
@@ -1030,9 +1049,10 @@ void main() {
       declareVar(
         'foo',
         type: TypeReference(
-          (b) => b
-            ..symbol = 'List'
-            ..types.add(refer('int')),
+          (b) =>
+              b
+                ..symbol = 'List'
+                ..types.add(refer('int')),
         ),
       ).assign(refer('bar')),
       equalsDart('List<int> foo = bar'),

@@ -34,10 +34,10 @@ const Map<String, String> errorMessages = {
       'Entity used with illegal number (windows-1252 reference).',
   'cant-convert-numeric-entity':
       "Numeric entity couldn't be converted to character "
-      '(codepoint U+%(charAsInt)08x).',
+          '(codepoint U+%(charAsInt)08x).',
   'illegal-codepoint-for-numeric-entity':
       'Numeric entity represents an illegal codepoint: '
-      'U+%(charAsInt)08x.',
+          'U+%(charAsInt)08x.',
   'numeric-entity-without-semicolon': "Numeric entity didn't end with ';'.",
   'expected-numeric-entity-but-got-eof':
       'Numeric entity expected. Got end of file instead.',
@@ -51,7 +51,7 @@ const Map<String, String> errorMessages = {
       "Expected tag name. Got '>' instead.",
   'expected-tag-name-but-got-question-mark':
       "Expected tag name. Got '?' instead. (HTML doesn't "
-      'support processing instructions.)',
+          'support processing instructions.)',
   'expected-tag-name': 'Expected tag name. Got something else instead',
   'expected-closing-tag-but-got-right-bracket':
       "Expected closing tag. Got '>' instead. Ignoring '</>'.",
@@ -138,27 +138,23 @@ const Map<String, String> errorMessages = {
   'missing-end-tags': 'Missing end tags (%(name)s).',
   'unexpected-start-tag-implies-end-tag':
       'Unexpected start tag (%(startName)s) '
-      'implies end tag (%(endName)s).',
+          'implies end tag (%(endName)s).',
   'unexpected-start-tag-treated-as':
       'Unexpected start tag (%(originalName)s). Treated as %(newName)s.',
   'deprecated-tag': "Unexpected start tag %(name)s. Don't use it!",
   'unexpected-start-tag-ignored': 'Unexpected start tag %(name)s. Ignored.',
-  'expected-one-end-tag-but-got-another':
-      'Unexpected end tag (%(gotName)s). '
+  'expected-one-end-tag-but-got-another': 'Unexpected end tag (%(gotName)s). '
       'Missing end tag (%(expectedName)s).',
   'end-tag-too-early':
       'End tag (%(name)s) seen too early. Expected other end tag.',
   'end-tag-too-early-named':
       'Unexpected end tag (%(gotName)s). Expected end tag (%(expectedName)s).',
   'end-tag-too-early-ignored': 'End tag (%(name)s) seen too early. Ignored.',
-  'adoption-agency-1.1':
-      'End tag (%(name)s) violates step 1, '
+  'adoption-agency-1.1': 'End tag (%(name)s) violates step 1, '
       'paragraph 1 of the adoption agency algorithm.',
-  'adoption-agency-1.2':
-      'End tag (%(name)s) violates step 1, '
+  'adoption-agency-1.2': 'End tag (%(name)s) violates step 1, '
       'paragraph 2 of the adoption agency algorithm.',
-  'adoption-agency-1.3':
-      'End tag (%(name)s) violates step 1, '
+  'adoption-agency-1.3': 'End tag (%(name)s) violates step 1, '
       'paragraph 3 of the adoption agency algorithm.',
   'unexpected-end-tag-treated-as':
       'Unexpected end tag (%(originalName)s). Treated as %(newName)s.',
@@ -167,23 +163,19 @@ const Map<String, String> errorMessages = {
       'Unexpected implied end tag (%(name)s) in the table phase.',
   'unexpected-implied-end-tag-in-table-body':
       'Unexpected implied end tag (%(name)s) in the table body phase.',
-  'unexpected-char-implies-table-voodoo':
-      'Unexpected non-space characters in '
+  'unexpected-char-implies-table-voodoo': 'Unexpected non-space characters in '
       'table context caused voodoo mode.',
   'unexpected-hidden-input-in-table':
       'Unexpected input with type hidden in table context.',
   'unexpected-form-in-table': 'Unexpected form in table context.',
   'unexpected-start-tag-implies-table-voodoo':
       'Unexpected start tag (%(name)s) in '
+          'table context caused voodoo mode.',
+  'unexpected-end-tag-implies-table-voodoo': 'Unexpected end tag (%(name)s) in '
       'table context caused voodoo mode.',
-  'unexpected-end-tag-implies-table-voodoo':
-      'Unexpected end tag (%(name)s) in '
-      'table context caused voodoo mode.',
-  'unexpected-cell-in-table-body':
-      'Unexpected table cell start tag (%(name)s) '
+  'unexpected-cell-in-table-body': 'Unexpected table cell start tag (%(name)s) '
       'in the table body phase.',
-  'unexpected-cell-end-tag':
-      'Got table cell end tag (%(name)s) '
+  'unexpected-cell-end-tag': 'Got table cell end tag (%(name)s) '
       'while required end tags are missing.',
   'unexpected-end-tag-in-table-body':
       'Unexpected end tag (%(name)s) in the table body phase. Ignored.',
@@ -193,12 +185,12 @@ const Map<String, String> errorMessages = {
       'Unexpected end tag (%(name)s) in the table row phase. Ignored.',
   'unexpected-select-in-select':
       'Unexpected select start tag in the select phase '
-      'treated as select end tag.',
+          'treated as select end tag.',
   'unexpected-input-in-select':
       'Unexpected input start tag in the select phase.',
   'unexpected-start-tag-in-select':
       'Unexpected start tag token (%(name)s in the select phase. '
-      'Ignored.',
+          'Ignored.',
   'unexpected-end-tag-in-select':
       'Unexpected end tag (%(name)s) in the select phase. Ignored.',
   'unexpected-table-element-start-tag-in-select-in-table':
@@ -207,41 +199,32 @@ const Map<String, String> errorMessages = {
       'Unexpected table element end tag (%(name)s) in the select in table phase.',
   'unexpected-char-after-body':
       'Unexpected non-space characters in the after body phase.',
-  'unexpected-start-tag-after-body':
-      'Unexpected start tag token (%(name)s)'
+  'unexpected-start-tag-after-body': 'Unexpected start tag token (%(name)s)'
       ' in the after body phase.',
-  'unexpected-end-tag-after-body':
-      'Unexpected end tag token (%(name)s)'
+  'unexpected-end-tag-after-body': 'Unexpected end tag token (%(name)s)'
       ' in the after body phase.',
   'unexpected-char-in-frameset':
       'Unexpected characters in the frameset phase. Characters ignored.',
-  'unexpected-start-tag-in-frameset':
-      'Unexpected start tag token (%(name)s)'
+  'unexpected-start-tag-in-frameset': 'Unexpected start tag token (%(name)s)'
       ' in the frameset phase. Ignored.',
   'unexpected-frameset-in-frameset-innerhtml':
       'Unexpected end tag token (frameset) '
-      'in the frameset phase (innerHTML).',
-  'unexpected-end-tag-in-frameset':
-      'Unexpected end tag token (%(name)s)'
+          'in the frameset phase (innerHTML).',
+  'unexpected-end-tag-in-frameset': 'Unexpected end tag token (%(name)s)'
       ' in the frameset phase. Ignored.',
-  'unexpected-char-after-frameset':
-      'Unexpected non-space characters in the '
+  'unexpected-char-after-frameset': 'Unexpected non-space characters in the '
       'after frameset phase. Ignored.',
-  'unexpected-start-tag-after-frameset':
-      'Unexpected start tag (%(name)s)'
+  'unexpected-start-tag-after-frameset': 'Unexpected start tag (%(name)s)'
       ' in the after frameset phase. Ignored.',
-  'unexpected-end-tag-after-frameset':
-      'Unexpected end tag (%(name)s)'
+  'unexpected-end-tag-after-frameset': 'Unexpected end tag (%(name)s)'
       ' in the after frameset phase. Ignored.',
   'unexpected-end-tag-after-body-innerhtml':
       'Unexpected end tag after body(innerHtml)',
   'expected-eof-but-got-char':
       'Unexpected non-space characters. Expected end of file.',
-  'expected-eof-but-got-start-tag':
-      'Unexpected start tag (%(name)s)'
+  'expected-eof-but-got-start-tag': 'Unexpected start tag (%(name)s)'
       '. Expected end of file.',
-  'expected-eof-but-got-end-tag':
-      'Unexpected end tag (%(name)s)'
+  'expected-eof-but-got-end-tag': 'Unexpected end tag (%(name)s)'
       '. Expected end of file.',
   'eof-in-table': 'Unexpected end of file. Expected table content.',
   'eof-in-select': 'Unexpected end of file. Expected select content.',
@@ -274,7 +257,7 @@ class Namespaces {
       xlink => 'xlink',
       xml => 'xml',
       xmlns => 'xmlns',
-      _ => null,
+      _ => null
     };
   }
 }
@@ -296,7 +279,7 @@ const scopingElements = {
   (Namespaces.mathml, 'annotation-xml'),
   (Namespaces.svg, 'foreignObject'),
   (Namespaces.svg, 'desc'),
-  (Namespaces.svg, 'title'),
+  (Namespaces.svg, 'title')
 };
 
 const formattingElements = {
@@ -313,7 +296,7 @@ const formattingElements = {
   (Namespaces.html, 'strike'),
   (Namespaces.html, 'strong'),
   (Namespaces.html, 'tt'),
-  (Namespaces.html, ''),
+  (Namespaces.html, '')
 };
 
 const specialElements = {
@@ -396,14 +379,14 @@ const specialElements = {
   (Namespaces.html, 'ul'),
   (Namespaces.html, 'wbr'),
   (Namespaces.html, 'xmp'),
-  (Namespaces.svg, 'foreignObject'),
+  (Namespaces.svg, 'foreignObject')
 };
 
 const htmlIntegrationPointElements = {
   (Namespaces.mathml, 'annotaion-xml'),
   (Namespaces.svg, 'foreignObject'),
   (Namespaces.svg, 'desc'),
-  (Namespaces.svg, 'title'),
+  (Namespaces.svg, 'title')
 };
 
 const mathmlTextIntegrationPointElements = {
@@ -411,7 +394,7 @@ const mathmlTextIntegrationPointElements = {
   (Namespaces.mathml, 'mo'),
   (Namespaces.mathml, 'mn'),
   (Namespaces.mathml, 'ms'),
-  (Namespaces.mathml, 'mtext'),
+  (Namespaces.mathml, 'mtext')
 };
 
 abstract final class Charcode {
@@ -475,7 +458,7 @@ const spaceCharacters = {
   Charcode.lineFeed,
   Charcode.carriageReturn,
   Charcode.tab,
-  Charcode.formFeed,
+  Charcode.formFeed
 };
 
 bool isWhitespace(String? char) {
@@ -574,7 +557,7 @@ const rcdataElements = {
   'iframe',
   'noembed',
   'noframes',
-  'noscript',
+  'noscript'
 };
 
 // entitiesWindows1252 has to be _ordered_ and needs to have an index. It
@@ -611,7 +594,7 @@ const List<int> entitiesWindows1252 = [
   339, // 0x9C  0x0153  LATIN SMALL LIGATURE OE
   65533, // 0x9D          UNDEFINED
   382, // 0x9E  0x017E  LATIN SMALL LETTER Z WITH CARON
-  376, // 0x9F  0x0178  LATIN CAPITAL LETTER Y WITH DIAERESIS
+  376 // 0x9F  0x0178  LATIN CAPITAL LETTER Y WITH DIAERESIS
 ];
 
 const xmlEntities = ['lt;', 'gt;', 'amp;', 'apos;', 'quot;'];
@@ -2884,7 +2867,7 @@ const Map<int, String> replacementCharacters = {
   0x9C: '\u0153',
   0x9D: '\u009D',
   0x9E: '\u017E',
-  0x9F: '\u0178',
+  0x9F: '\u0178'
 };
 
 const Map<String, String> encodings = {
@@ -3114,7 +3097,7 @@ const Map<String, String> encodings = {
   'windows1257': 'cp1257',
   'windows1258': 'cp1258',
   'windows936': 'gbk',
-  'x-x-big5': 'big5',
+  'x-x-big5': 'big5'
 };
 
 const asciiCharacters = [
@@ -3373,5 +3356,5 @@ const asciiCharacters = [
   '\u00fc',
   '\u00fd',
   '\u00fe',
-  '\u00ff',
+  '\u00ff'
 ];

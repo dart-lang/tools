@@ -50,9 +50,10 @@ void main() {
 
     test('should support toTypeDef', () {
       final funcType = FunctionType(
-        (b) => b
-          ..returnType = refer('String')
-          ..requiredParameters.add(refer('int')),
+        (b) =>
+            b
+              ..returnType = refer('String')
+              ..requiredParameters.add(refer('int')),
       );
       expect(
         funcType.toTypeDef('MyFunc'),

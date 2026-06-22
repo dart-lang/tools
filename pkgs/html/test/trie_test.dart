@@ -22,16 +22,15 @@ void main() {
     Map<int, dynamic> deepCopyMapOfMaps(Map<int, dynamic> src) {
       return {
         for (final pair in src.entries)
-          pair.key: deepCopyMapOfMaps(pair.value as Map<int, dynamic>),
+          pair.key: deepCopyMapOfMaps(pair.value as Map<int, dynamic>)
       };
     }
 
     final root = deepCopyMapOfMaps(entitiesTrieRoot);
     // Iterate from longest to shortest to clean up trie as we go
     outer:
-    for (final entityString
-        in entities.keys.toList()
-          ..sort((a, b) => b.length.compareTo(a.length))) {
+    for (final entityString in entities.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length))) {
       final codeUnits = entityString.codeUnits;
       var node = root;
       final path = [root];

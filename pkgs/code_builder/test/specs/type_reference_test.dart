@@ -13,9 +13,10 @@ void main() {
   test('should create a nullable type in a pre-Null Safety library', () {
     expect(
       TypeReference(
-        (b) => b
-          ..symbol = 'Foo'
-          ..isNullable = true,
+        (b) =>
+            b
+              ..symbol = 'Foo'
+              ..isNullable = true,
       ),
       equalsDart(r'''
         Foo
@@ -31,9 +32,10 @@ void main() {
     test('should create a nullable type', () {
       expect(
         TypeReference(
-          (b) => b
-            ..symbol = 'Foo'
-            ..isNullable = true,
+          (b) =>
+              b
+                ..symbol = 'Foo'
+                ..isNullable = true,
         ),
         equalsDart(r'Foo?', emitter),
       );
@@ -49,15 +51,17 @@ void main() {
     test('should create a type with nullable type arguments', () {
       expect(
         TypeReference(
-          (b) => b
-            ..symbol = 'List'
-            ..types.add(
-              TypeReference(
-                (b) => b
-                  ..symbol = 'int'
-                  ..isNullable = true,
-              ),
-            ),
+          (b) =>
+              b
+                ..symbol = 'List'
+                ..types.add(
+                  TypeReference(
+                    (b) =>
+                        b
+                          ..symbol = 'int'
+                          ..isNullable = true,
+                  ),
+                ),
         ),
         equalsDart(r'List<int?>', emitter),
       );
@@ -66,9 +70,10 @@ void main() {
     test('should support generic bound', () {
       expect(
         TypeReference(
-          (b) => b
-            ..symbol = 'T'
-            ..bound = refer('num'),
+          (b) =>
+              b
+                ..symbol = 'T'
+                ..bound = refer('num'),
         ),
         equalsDart(r'T extends num', emitter),
       );
@@ -80,9 +85,10 @@ void main() {
 
     test('properties should be exposed', () {
       final localTypeRef = TypeReference(
-        (b) => b
-          ..symbol = 'Foo'
-          ..url = 'package:foo/foo.dart',
+        (b) =>
+            b
+              ..symbol = 'Foo'
+              ..url = 'package:foo/foo.dart',
       );
       expect(localTypeRef.symbol, 'Foo');
       expect(localTypeRef.url, 'package:foo/foo.dart');

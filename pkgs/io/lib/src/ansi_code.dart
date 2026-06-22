@@ -96,9 +96,9 @@ final class AnsiCode {
   ///   * [type] is [AnsiCodeType.reset]
   String? wrap(String? value, {bool forScript = false}) =>
       _isNoop(type == AnsiCodeType.reset, value, forScript)
-      ? value
-      : '${_escapeValue(forScript: forScript)}$value'
-            '${reset!._escapeValue(forScript: forScript)}';
+          ? value
+          : '${_escapeValue(forScript: forScript)}$value'
+              '${reset!._escapeValue(forScript: forScript)}';
 
   @override
   String toString() => '$name ${type._name} ($code)';
@@ -118,11 +118,8 @@ final class AnsiCode {
 ///   * [codes] contains more than one value of type [AnsiCodeType.foreground].
 ///   * [codes] contains more than one value of type [AnsiCodeType.background].
 ///   * [codes] contains any value of type [AnsiCodeType.reset].
-String? wrapWith(
-  String? value,
-  Iterable<AnsiCode> codes, {
-  bool forScript = false,
-}) {
+String? wrapWith(String? value, Iterable<AnsiCode> codes,
+    {bool forScript = false}) {
   // Eliminate duplicates
   final myCodes = codes.toSet();
 
@@ -136,27 +133,18 @@ String? wrapWith(
       case AnsiCodeType.foreground:
         foreground++;
         if (foreground > 1) {
-          throw ArgumentError.value(
-            codes,
-            'codes',
-            'Cannot contain more than one foreground color code.',
-          );
+          throw ArgumentError.value(codes, 'codes',
+              'Cannot contain more than one foreground color code.');
         }
       case AnsiCodeType.background:
         background++;
         if (background > 1) {
-          throw ArgumentError.value(
-            codes,
-            'codes',
-            'Cannot contain more than one foreground color code.',
-          );
+          throw ArgumentError.value(codes, 'codes',
+              'Cannot contain more than one foreground color code.');
         }
       case AnsiCodeType.reset:
         throw ArgumentError.value(
-          codes,
-          'codes',
-          'Cannot contain reset codes.',
-        );
+            codes, 'codes', 'Cannot contain reset codes.');
       case AnsiCodeType.style:
         // Ignore.
         break;
@@ -177,12 +165,8 @@ String? wrapWith(
 const styleBold = AnsiCode._('bold', AnsiCodeType.style, 1, resetBold);
 const styleDim = AnsiCode._('dim', AnsiCodeType.style, 2, resetDim);
 const styleItalic = AnsiCode._('italic', AnsiCodeType.style, 3, resetItalic);
-const styleUnderlined = AnsiCode._(
-  'underlined',
-  AnsiCodeType.style,
-  4,
-  resetUnderlined,
-);
+const styleUnderlined =
+    AnsiCode._('underlined', AnsiCodeType.style, 4, resetUnderlined);
 const styleBlink = AnsiCode._('blink', AnsiCodeType.style, 5, resetBlink);
 const styleReverse = AnsiCode._('reverse', AnsiCodeType.style, 7, resetReverse);
 
@@ -190,12 +174,8 @@ const styleReverse = AnsiCode._('reverse', AnsiCodeType.style, 7, resetReverse);
 const styleHidden = AnsiCode._('hidden', AnsiCodeType.style, 8, resetHidden);
 
 /// Not widely supported.
-const styleCrossedOut = AnsiCode._(
-  'crossed out',
-  AnsiCodeType.style,
-  9,
-  resetCrossedOut,
-);
+const styleCrossedOut =
+    AnsiCode._('crossed out', AnsiCodeType.style, 9, resetCrossedOut);
 
 //
 // Reset values
@@ -225,153 +205,61 @@ const yellow = AnsiCode._('yellow', AnsiCodeType.foreground, 33, resetAll);
 const blue = AnsiCode._('blue', AnsiCodeType.foreground, 34, resetAll);
 const magenta = AnsiCode._('magenta', AnsiCodeType.foreground, 35, resetAll);
 const cyan = AnsiCode._('cyan', AnsiCodeType.foreground, 36, resetAll);
-const lightGray = AnsiCode._(
-  'light gray',
-  AnsiCodeType.foreground,
-  37,
-  resetAll,
-);
-const defaultForeground = AnsiCode._(
-  'default',
-  AnsiCodeType.foreground,
-  39,
-  resetAll,
-);
+const lightGray =
+    AnsiCode._('light gray', AnsiCodeType.foreground, 37, resetAll);
+const defaultForeground =
+    AnsiCode._('default', AnsiCodeType.foreground, 39, resetAll);
 const darkGray = AnsiCode._('dark gray', AnsiCodeType.foreground, 90, resetAll);
 const lightRed = AnsiCode._('light red', AnsiCodeType.foreground, 91, resetAll);
-const lightGreen = AnsiCode._(
-  'light green',
-  AnsiCodeType.foreground,
-  92,
-  resetAll,
-);
-const lightYellow = AnsiCode._(
-  'light yellow',
-  AnsiCodeType.foreground,
-  93,
-  resetAll,
-);
-const lightBlue = AnsiCode._(
-  'light blue',
-  AnsiCodeType.foreground,
-  94,
-  resetAll,
-);
-const lightMagenta = AnsiCode._(
-  'light magenta',
-  AnsiCodeType.foreground,
-  95,
-  resetAll,
-);
-const lightCyan = AnsiCode._(
-  'light cyan',
-  AnsiCodeType.foreground,
-  96,
-  resetAll,
-);
+const lightGreen =
+    AnsiCode._('light green', AnsiCodeType.foreground, 92, resetAll);
+const lightYellow =
+    AnsiCode._('light yellow', AnsiCodeType.foreground, 93, resetAll);
+const lightBlue =
+    AnsiCode._('light blue', AnsiCodeType.foreground, 94, resetAll);
+const lightMagenta =
+    AnsiCode._('light magenta', AnsiCodeType.foreground, 95, resetAll);
+const lightCyan =
+    AnsiCode._('light cyan', AnsiCodeType.foreground, 96, resetAll);
 const white = AnsiCode._('white', AnsiCodeType.foreground, 97, resetAll);
 
 //
 // Background values
 //
 
-const backgroundBlack = AnsiCode._(
-  'black',
-  AnsiCodeType.background,
-  40,
-  resetAll,
-);
+const backgroundBlack =
+    AnsiCode._('black', AnsiCodeType.background, 40, resetAll);
 const backgroundRed = AnsiCode._('red', AnsiCodeType.background, 41, resetAll);
-const backgroundGreen = AnsiCode._(
-  'green',
-  AnsiCodeType.background,
-  42,
-  resetAll,
-);
-const backgroundYellow = AnsiCode._(
-  'yellow',
-  AnsiCodeType.background,
-  43,
-  resetAll,
-);
-const backgroundBlue = AnsiCode._(
-  'blue',
-  AnsiCodeType.background,
-  44,
-  resetAll,
-);
-const backgroundMagenta = AnsiCode._(
-  'magenta',
-  AnsiCodeType.background,
-  45,
-  resetAll,
-);
-const backgroundCyan = AnsiCode._(
-  'cyan',
-  AnsiCodeType.background,
-  46,
-  resetAll,
-);
-const backgroundLightGray = AnsiCode._(
-  'light gray',
-  AnsiCodeType.background,
-  47,
-  resetAll,
-);
-const backgroundDefault = AnsiCode._(
-  'default',
-  AnsiCodeType.background,
-  49,
-  resetAll,
-);
-const backgroundDarkGray = AnsiCode._(
-  'dark gray',
-  AnsiCodeType.background,
-  100,
-  resetAll,
-);
-const backgroundLightRed = AnsiCode._(
-  'light red',
-  AnsiCodeType.background,
-  101,
-  resetAll,
-);
-const backgroundLightGreen = AnsiCode._(
-  'light green',
-  AnsiCodeType.background,
-  102,
-  resetAll,
-);
-const backgroundLightYellow = AnsiCode._(
-  'light yellow',
-  AnsiCodeType.background,
-  103,
-  resetAll,
-);
-const backgroundLightBlue = AnsiCode._(
-  'light blue',
-  AnsiCodeType.background,
-  104,
-  resetAll,
-);
-const backgroundLightMagenta = AnsiCode._(
-  'light magenta',
-  AnsiCodeType.background,
-  105,
-  resetAll,
-);
-const backgroundLightCyan = AnsiCode._(
-  'light cyan',
-  AnsiCodeType.background,
-  106,
-  resetAll,
-);
-const backgroundWhite = AnsiCode._(
-  'white',
-  AnsiCodeType.background,
-  107,
-  resetAll,
-);
+const backgroundGreen =
+    AnsiCode._('green', AnsiCodeType.background, 42, resetAll);
+const backgroundYellow =
+    AnsiCode._('yellow', AnsiCodeType.background, 43, resetAll);
+const backgroundBlue =
+    AnsiCode._('blue', AnsiCodeType.background, 44, resetAll);
+const backgroundMagenta =
+    AnsiCode._('magenta', AnsiCodeType.background, 45, resetAll);
+const backgroundCyan =
+    AnsiCode._('cyan', AnsiCodeType.background, 46, resetAll);
+const backgroundLightGray =
+    AnsiCode._('light gray', AnsiCodeType.background, 47, resetAll);
+const backgroundDefault =
+    AnsiCode._('default', AnsiCodeType.background, 49, resetAll);
+const backgroundDarkGray =
+    AnsiCode._('dark gray', AnsiCodeType.background, 100, resetAll);
+const backgroundLightRed =
+    AnsiCode._('light red', AnsiCodeType.background, 101, resetAll);
+const backgroundLightGreen =
+    AnsiCode._('light green', AnsiCodeType.background, 102, resetAll);
+const backgroundLightYellow =
+    AnsiCode._('light yellow', AnsiCodeType.background, 103, resetAll);
+const backgroundLightBlue =
+    AnsiCode._('light blue', AnsiCodeType.background, 104, resetAll);
+const backgroundLightMagenta =
+    AnsiCode._('light magenta', AnsiCodeType.background, 105, resetAll);
+const backgroundLightCyan =
+    AnsiCode._('light cyan', AnsiCodeType.background, 106, resetAll);
+const backgroundWhite =
+    AnsiCode._('white', AnsiCodeType.background, 107, resetAll);
 
 /// All of the [AnsiCode] values that represent [AnsiCodeType.style].
 const List<AnsiCode> styles = [
@@ -382,7 +270,7 @@ const List<AnsiCode> styles = [
   styleBlink,
   styleReverse,
   styleHidden,
-  styleCrossedOut,
+  styleCrossedOut
 ];
 
 /// All of the [AnsiCode] values that represent [AnsiCodeType.foreground].
@@ -403,7 +291,7 @@ const List<AnsiCode> foregroundColors = [
   lightBlue,
   lightMagenta,
   lightCyan,
-  white,
+  white
 ];
 
 /// All of the [AnsiCode] values that represent [AnsiCodeType.background].
@@ -424,5 +312,5 @@ const List<AnsiCode> backgroundColors = [
   backgroundLightBlue,
   backgroundLightMagenta,
   backgroundLightCyan,
-  backgroundWhite,
+  backgroundWhite
 ];

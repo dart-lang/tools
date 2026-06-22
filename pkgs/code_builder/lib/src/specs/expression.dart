@@ -378,10 +378,10 @@ Expression declareFinal(
   type == null
       ? LiteralExpression._('final $variableName')
       : BinaryExpression._(
-          const LiteralExpression._('final'),
-          _typedVar(variableName, type),
-          '',
-        ),
+        const LiteralExpression._('final'),
+        _typedVar(variableName, type),
+        '',
+      ),
 );
 
 /// Declare a variable named [variableName].
@@ -402,16 +402,18 @@ Expression declareVar(
 Expression _typedVar(String variableName, Reference type) =>
     BinaryExpression._(type, LiteralExpression._(variableName), '');
 
-Expression _late(bool late, Expression expression) => late
-    ? BinaryExpression._(const LiteralExpression._('late'), expression, '')
-    : expression;
+Expression _late(bool late, Expression expression) =>
+    late
+        ? BinaryExpression._(const LiteralExpression._('late'), expression, '')
+        : expression;
 
 /// Creates `typedef {name} =`.
-Code createTypeDef(String name, FunctionType type) => BinaryExpression._(
-  LiteralExpression._('typedef $name'),
-  type,
-  '=',
-).statement;
+Code createTypeDef(String name, FunctionType type) =>
+    BinaryExpression._(
+      LiteralExpression._('typedef $name'),
+      type,
+      '=',
+    ).statement;
 
 class ToCodeExpression implements Code {
   final Expression code;

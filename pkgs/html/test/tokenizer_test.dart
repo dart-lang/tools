@@ -49,29 +49,24 @@ class TokenizerTestParser {
   final bool _generateSpans;
   List<List<Object?>>? outputTokens;
 
-  TokenizerTestParser(
-    String? initialState, [
-    String? lastStartTag,
-    bool generateSpans = false,
-  ]) : _state = initialState,
-       _lastStartTag = lastStartTag,
-       _generateSpans = generateSpans;
+  TokenizerTestParser(String? initialState,
+      [String? lastStartTag, bool generateSpans = false])
+      : _state = initialState,
+        _lastStartTag = lastStartTag,
+        _generateSpans = generateSpans;
 
   List<dynamic>? parse(String str) {
     // Note: we need to pass bytes to the tokenizer if we want it to handle BOM.
     final bytes = utf8.encode(str);
-    final tokenizer = HtmlTokenizer(
-      bytes,
-      encoding: 'utf-8',
-      generateSpans: _generateSpans,
-    );
+    final tokenizer =
+        HtmlTokenizer(bytes, encoding: 'utf-8', generateSpans: _generateSpans);
     outputTokens = [];
 
     // Note: we can't get a closure of the state method. However, we can
     // create a new closure to invoke it via mirrors.
     final mtok = reflect(tokenizer);
-    tokenizer.state = () =>
-        mtok.invoke(Symbol(_state!), const []).reflectee as bool;
+    tokenizer.state =
+        () => mtok.invoke(Symbol(_state!), const []).reflectee as bool;
 
     if (_lastStartTag != null) {
       tokenizer.currentToken = StartTagToken(_lastStartTag);
@@ -108,22 +103,13 @@ class TokenizerTestParser {
   }
 
   void processDoctype(DoctypeToken token) {
-    addOutputToken(token, [
-      'DOCTYPE',
-      token.name,
-      token.publicId,
-      token.systemId,
-      token.correct,
-    ]);
+    addOutputToken(token,
+        ['DOCTYPE', token.name, token.publicId, token.systemId, token.correct]);
   }
 
   void processStartTag(StartTagToken token) {
-    addOutputToken(token, [
-      'StartTag',
-      token.name,
-      token.data,
-      token.selfClosing,
-    ]);
+    addOutputToken(
+        token, ['StartTag', token.name, token.data, token.selfClosing]);
   }
 
   void processEndTag(EndTagToken token) {
@@ -193,13 +179,9 @@ List<dynamic> normalizeTokens(List<dynamic> tokens) {
 ///
 /// If the ignoreErrorOrder flag is set to true we don't test the relative
 /// positions of parse errors and non parse errors.
-void expectTokensMatch(
-  List<dynamic> expectedTokens,
-  List<dynamic> receivedTokens,
-  bool ignoreErrorOrder, [
-  bool ignoreErrors = false,
-  String? message,
-]) {
+void expectTokensMatch(List<dynamic> expectedTokens,
+    List<dynamic> receivedTokens, bool ignoreErrorOrder,
+    [bool ignoreErrors = false, String? message]) {
   // If the 'selfClosing' attribute is not included in the expected test tokens,
   // remove it from the received token.
   var removeSelfClosing = false;
@@ -228,12 +210,10 @@ void expectTokensMatch(
 
     expect(receivedNonErrors, equals(expectedNonErrors), reason: message);
     if (!ignoreErrors) {
-      final expectedParseErrors = expectedTokens.where(
-        (t) => t == 'ParseError',
-      );
-      final receivedParseErrors = receivedTokens.where(
-        (t) => t == 'ParseError',
-      );
+      final expectedParseErrors =
+          expectedTokens.where((t) => t == 'ParseError');
+      final receivedParseErrors =
+          receivedTokens.where((t) => t == 'ParseError');
       expect(receivedParseErrors, equals(expectedParseErrors), reason: message);
     }
   }
@@ -251,10 +231,9 @@ void runTokenizerTest(Map<String, dynamic> testInfo) {
     testInfo['lastStartTag'] = null;
   }
   final parser = TokenizerTestParser(
-    testInfo['initialState'] as String?,
-    testInfo['lastStartTag'] as String?,
-    testInfo['generateSpans'] as bool? ?? false,
-  );
+      testInfo['initialState'] as String?,
+      testInfo['lastStartTag'] as String?,
+      testInfo['generateSpans'] as bool? ?? false);
   var tokens = parser.parse(testInfo['input'] as String)!;
   tokens = concatenateCharacterTokens(tokens);
   final received = normalizeTokens(tokens);
@@ -266,7 +245,7 @@ void runTokenizerTest(Map<String, dynamic> testInfo) {
     '\nExpected:',
     expected,
     '\nreceived:',
-    tokens,
+    tokens
   ].map((s) => '$s').join('\n');
   final ignoreErrorOrder = testInfo['ignoreErrorOrder'] as bool? ?? false;
 

@@ -57,23 +57,17 @@ class HtmlTokenizer implements Iterator<Token> {
   List<TagAttribute>? _attributes;
   Set<String>? _attributeNames;
 
-  HtmlTokenizer(
-    dynamic doc, {
-    String? encoding,
-    bool parseMeta = true,
-    this.lowercaseElementName = true,
-    this.lowercaseAttrName = true,
-    this.generateSpans = false,
-    String? sourceUrl,
-    this.attributeSpans = false,
-  }) : stream = HtmlInputStream(
-         doc,
-         encoding,
-         parseMeta,
-         generateSpans,
-         sourceUrl,
-       ),
-       tokenQueue = Queue() {
+  HtmlTokenizer(dynamic doc,
+      {String? encoding,
+      bool parseMeta = true,
+      this.lowercaseElementName = true,
+      this.lowercaseAttrName = true,
+      this.generateSpans = false,
+      String? sourceUrl,
+      this.attributeSpans = false})
+      : stream =
+            HtmlInputStream(doc, encoding, parseMeta, generateSpans, sourceUrl),
+        tokenQueue = Queue() {
     reset();
   }
 
@@ -190,21 +184,13 @@ class HtmlTokenizer implements Iterator<Token> {
     // Certain characters get replaced with others
     var char = replacementCharacters[charAsInt];
     if (char != null) {
-      _addToken(
-        ParseErrorToken(
-          'illegal-codepoint-for-numeric-entity',
-          messageParams: {'charAsInt': charAsInt},
-        ),
-      );
+      _addToken(ParseErrorToken('illegal-codepoint-for-numeric-entity',
+          messageParams: {'charAsInt': charAsInt}));
     } else if ((0xD800 <= charAsInt && charAsInt <= 0xDFFF) ||
         (charAsInt > 0x10FFFF)) {
       char = '\uFFFD';
-      _addToken(
-        ParseErrorToken(
-          'illegal-codepoint-for-numeric-entity',
-          messageParams: {'charAsInt': charAsInt},
-        ),
-      );
+      _addToken(ParseErrorToken('illegal-codepoint-for-numeric-entity',
+          messageParams: {'charAsInt': charAsInt}));
     } else {
       // Should speed up this check somehow (e.g. move the set to a constant)
       if ((0x0001 <= charAsInt && charAsInt <= 0x0008) ||
@@ -246,14 +232,10 @@ class HtmlTokenizer implements Iterator<Token> {
             0xFFFFE,
             0xFFFFF,
             0x10FFFE,
-            0x10FFFF,
+            0x10FFFF
           ].contains(charAsInt)) {
-        _addToken(
-          ParseErrorToken(
-            'illegal-codepoint-for-numeric-entity',
-            messageParams: {'charAsInt': charAsInt},
-          ),
-        );
+        _addToken(ParseErrorToken('illegal-codepoint-for-numeric-entity',
+            messageParams: {'charAsInt': charAsInt}));
       }
       char = String.fromCharCodes([charAsInt]);
     }
@@ -430,10 +412,7 @@ class HtmlTokenizer implements Iterator<Token> {
       // any <!-- or --> sequences
     } else {
       final chars = stream.charsUntil3(
-        Charcode.ampersand,
-        Charcode.lessThan,
-        Charcode.nul,
-      );
+          Charcode.ampersand, Charcode.lessThan, Charcode.nul);
       _addToken(CharactersToken('$data$chars'));
     }
     return true;
@@ -568,12 +547,8 @@ class HtmlTokenizer implements Iterator<Token> {
       state = dataState;
     } else {
       // XXX data can be _'_...
-      _addToken(
-        ParseErrorToken(
-          'expected-closing-tag-but-got-char',
-          messageParams: {'data': data},
-        ),
-      );
+      _addToken(ParseErrorToken('expected-closing-tag-but-got-char',
+          messageParams: {'data': data}));
       stream.unget(data);
       state = bogusCommentState;
     }
@@ -795,11 +770,8 @@ class HtmlTokenizer implements Iterator<Token> {
     } else if (data == eof) {
       state = dataState;
     } else {
-      final chars = stream.charsUntil3(
-        Charcode.lessThan,
-        Charcode.hyphen,
-        Charcode.nul,
-      );
+      final chars =
+          stream.charsUntil3(Charcode.lessThan, Charcode.hyphen, Charcode.nul);
       _addToken(CharactersToken('$data$chars'));
     }
     return true;
@@ -1157,8 +1129,7 @@ class HtmlTokenizer implements Iterator<Token> {
       state = attributeValueSingleQuotedState;
     } else if (data == '>') {
       _addToken(
-        ParseErrorToken('expected-attribute-value-but-got-right-bracket'),
-      );
+          ParseErrorToken('expected-attribute-value-but-got-right-bracket'));
       emitCurrentToken();
     } else if (data == '\u0000') {
       _addToken(ParseErrorToken('invalid-codepoint'));
@@ -1198,9 +1169,8 @@ class HtmlTokenizer implements Iterator<Token> {
       state = dataState;
     } else {
       _attributeValue.write(data);
-      _attributeValue.write(
-        stream.charsUntil2(Charcode.doubleQuote, Charcode.ampersand),
-      );
+      _attributeValue
+          .write(stream.charsUntil2(Charcode.doubleQuote, Charcode.ampersand));
     }
     return true;
   }
@@ -1222,9 +1192,8 @@ class HtmlTokenizer implements Iterator<Token> {
       state = dataState;
     } else {
       _attributeValue.write(data);
-      _attributeValue.write(
-        stream.charsUntil2(Charcode.singleQuote, Charcode.ampersand),
-      );
+      _attributeValue
+          .write(stream.charsUntil2(Charcode.singleQuote, Charcode.ampersand));
     }
     return true;
   }
@@ -1245,26 +1214,23 @@ class HtmlTokenizer implements Iterator<Token> {
       state = dataState;
     } else if ('"\'=<`'.contains(data!)) {
       _addToken(
-        ParseErrorToken('unexpected-character-in-unquoted-attribute-value'),
-      );
+          ParseErrorToken('unexpected-character-in-unquoted-attribute-value'));
       _attributeValue.write(data);
     } else if (data == '\u0000') {
       _addToken(ParseErrorToken('invalid-codepoint'));
       _attributeValue.write('\uFFFD');
     } else {
       _attributeValue.write(data);
-      _attributeValue.write(
-        stream.charsUntil(const {
-          Charcode.ampersand,
-          Charcode.greaterThan,
-          Charcode.doubleQuote,
-          Charcode.singleQuote,
-          Charcode.equals,
-          Charcode.lessThan,
-          Charcode.graveAccent,
-          ...spaceCharacters,
-        }),
-      );
+      _attributeValue.write(stream.charsUntil(const {
+        Charcode.ampersand,
+        Charcode.greaterThan,
+        Charcode.doubleQuote,
+        Charcode.singleQuote,
+        Charcode.equals,
+        Charcode.lessThan,
+        Charcode.graveAccent,
+        ...spaceCharacters
+      }));
     }
     return true;
   }
@@ -1466,13 +1432,11 @@ class HtmlTokenizer implements Iterator<Token> {
       state = commentState;
     } else if (data == '!') {
       _addToken(
-        ParseErrorToken('unexpected-bang-after-double-dash-in-comment'),
-      );
+          ParseErrorToken('unexpected-bang-after-double-dash-in-comment'));
       state = commentEndBangState;
     } else if (data == '-') {
       _addToken(
-        ParseErrorToken('unexpected-dash-after-double-dash-in-comment'),
-      );
+          ParseErrorToken('unexpected-dash-after-double-dash-in-comment'));
       currentStringToken.add(data!);
     } else if (data == eof) {
       _addToken(ParseErrorToken('eof-in-comment-double-dash'));
@@ -1625,12 +1589,8 @@ class HtmlTokenizer implements Iterator<Token> {
       // discarded; only the latest character might be '>' or EOF
       // and needs to be ungetted
       stream.unget(data);
-      _addToken(
-        ParseErrorToken(
-          'expected-space-or-right-bracket-in-doctype',
-          messageParams: {'data': data},
-        ),
-      );
+      _addToken(ParseErrorToken('expected-space-or-right-bracket-in-doctype',
+          messageParams: {'data': data}));
       currentDoctypeToken.correct = false;
       state = bogusDoctypeState;
     }

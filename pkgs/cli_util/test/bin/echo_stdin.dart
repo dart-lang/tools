@@ -46,19 +46,18 @@ void main(List<String> args) async {
   var coninHandle = -1;
   try {
     final kernel32 = DynamicLibrary.open('kernel32.dll');
-    final createFileW = kernel32
-        .lookupFunction<
-          IntPtr Function(
-            Pointer<Utf16>,
-            Uint32,
-            Uint32,
-            Pointer,
-            Uint32,
-            Uint32,
-            IntPtr,
-          ),
-          int Function(Pointer<Utf16>, int, int, Pointer, int, int, int)
-        >('CreateFileW');
+    final createFileW = kernel32.lookupFunction<
+      IntPtr Function(
+        Pointer<Utf16>,
+        Uint32,
+        Uint32,
+        Pointer,
+        Uint32,
+        Uint32,
+        IntPtr,
+      ),
+      int Function(Pointer<Utf16>, int, int, Pointer, int, int, int)
+    >('CreateFileW');
 
     final coninPath = r'CONIN$'.toNativeUtf16();
     coninHandle = createFileW(
@@ -76,13 +75,11 @@ void main(List<String> args) async {
     // Ignore errors
   }
 
-  final subscription = Win32AnsiStdin(coninHandle == -1 ? null : coninHandle)
-      .listen((data) {
-        file.writeAsStringSync(
-          '${jsonEncode(data)}\r\n',
-          mode: FileMode.append,
-        );
-      });
+  final subscription = Win32AnsiStdin(
+    coninHandle == -1 ? null : coninHandle,
+  ).listen((data) {
+    file.writeAsStringSync('${jsonEncode(data)}\r\n', mode: FileMode.append);
+  });
 
   file.writeAsStringSync('READY\r\n', mode: FileMode.append);
 

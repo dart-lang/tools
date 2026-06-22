@@ -16,11 +16,12 @@ typedef Resolver = Node? Function(String name, [String? title]);
 /// child nodes equivalent to `link _text_!`.
 /// Calling `getChildren` removes the nodes from the parsing,
 /// and should be called if and only if a non-`null` result is returned.
-typedef LinkBuilder = List<Node>? Function(
-  String label,
-  String? title,
-  List<Node> Function() getChildren,
-);
+typedef LinkBuilder =
+    List<Node>? Function(
+      String label,
+      String? title,
+      List<Node> Function() getChildren,
+    );
 
 Resolver? linkResolverFromBuilder(LinkBuilder? builder) => builder == null
     ? null

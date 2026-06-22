@@ -270,19 +270,18 @@ typedef GetStdHandleDart = int Function(int nStdHandle);
 
 /// FFI Function binding to
 /// https://learn.microsoft.com/en-us/windows/console/readconsoleinput
-typedef ReadConsoleInputDart = int Function(
-  int hConsoleInput,
-  Pointer<InputRecord> lpBuffer,
-  int nLength,
-  Pointer<Uint32> lpNumberOfEventsRead,
-);
+typedef ReadConsoleInputDart =
+    int Function(
+      int hConsoleInput,
+      Pointer<InputRecord> lpBuffer,
+      int nLength,
+      Pointer<Uint32> lpNumberOfEventsRead,
+    );
 
 /// FFI Function binding to
 /// https://learn.microsoft.com/en-us/windows/console/getnumberofconsoleinputevents
-typedef GetNumberOfConsoleInputEventsDart = int Function(
-  int hConsoleInput,
-  Pointer<Uint32> lpcNumberOfEvents,
-);
+typedef GetNumberOfConsoleInputEventsDart =
+    int Function(int hConsoleInput, Pointer<Uint32> lpcNumberOfEvents);
 
 /// Lazy loader for Win32 console APIs.
 @visibleForTesting

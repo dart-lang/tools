@@ -18,24 +18,18 @@ void main() {
   var nan = double.parse('NaN');
 
   group('has a friendly error message for', () {
-    var tabError = predicate(
-      (e) => e.toString().contains(
-        'Tab characters are not allowed as indentation',
-      ),
-    );
+    var tabError = predicate((e) =>
+        e.toString().contains('Tab characters are not allowed as indentation'));
 
     test('using a tab as indentation', () {
       expect(() => loadYaml('foo:\n\tbar'), throwsA(tabError));
     });
 
     test('using a tab not as indentation', () {
-      expect(
-        () => loadYaml('''
+      expect(() => loadYaml('''
           "foo
           \tbar"
-          error'''),
-        throwsA(isNot(tabError)),
-      );
+          error'''), throwsA(isNot(tabError)));
     });
   });
 
@@ -87,11 +81,13 @@ void main() {
           ''');
       var result = loadYaml(yaml, recover: true, errorListener: collector);
       expect(
-        result,
-        deepEquals({
-          'dependencies': {'zero': null, 'one': 'any'},
-        }),
-      );
+          result,
+          deepEquals({
+            'dependencies': {
+              'zero': null,
+              'one': 'any',
+            }
+          }));
       expect(collector.errors.length, equals(1));
       // These errors are reported at the start of the next token (after the
       // whitespace/newlines).
@@ -113,18 +109,17 @@ void main() {
           ''');
       var result = loadYaml(yaml, recover: true, errorListener: collector);
       expect(
-        result,
-        deepEquals({
-          'dependencies': {
-            'one': 'any',
-            'two': null,
-            'three': null,
-            'four': null,
-            'five': '1.2.3',
-            'six': '5.4.3',
-          },
-        }),
-      );
+          result,
+          deepEquals({
+            'dependencies': {
+              'one': 'any',
+              'two': null,
+              'three': null,
+              'four': null,
+              'five': '1.2.3',
+              'six': '5.4.3',
+            }
+          }));
 
       expect(collector.errors.length, equals(2));
       // These errors are reported at the start of the next token (after the
@@ -140,11 +135,13 @@ void main() {
           ''');
       var result = loadYaml(yaml, recover: true);
       expect(
-        result,
-        deepEquals({
-          'dependencies': {'six': '5.4.3', 'seven': null},
-        }),
-      );
+          result,
+          deepEquals({
+            'dependencies': {
+              'six': '5.4.3',
+              'seven': null,
+            }
+          }));
     });
   });
 
@@ -200,32 +197,24 @@ void main() {
   // the spec.
   group('2.1: Collections', () {
     test('[Example 2.1]', () {
-      expectYamlLoads(
-        ['Mark McGwire', 'Sammy Sosa', 'Ken Griffey'],
-        '''
+      expectYamlLoads(['Mark McGwire', 'Sammy Sosa', 'Ken Griffey'], '''
         - Mark McGwire
         - Sammy Sosa
-        - Ken Griffey''',
-      );
+        - Ken Griffey''');
     });
 
     test('[Example 2.2]', () {
-      expectYamlLoads(
-        {'hr': 65, 'avg': 0.278, 'rbi': 147},
-        '''
+      expectYamlLoads({'hr': 65, 'avg': 0.278, 'rbi': 147}, '''
         hr:  65    # Home runs
         avg: 0.278 # Batting average
-        rbi: 147   # Runs Batted In''',
-      );
+        rbi: 147   # Runs Batted In''');
     });
 
     test('[Example 2.3]', () {
-      expectYamlLoads(
-        {
-          'american': ['Boston Red Sox', 'Detroit Tigers', 'New York Yankees'],
-          'national': ['New York Mets', 'Chicago Cubs', 'Atlanta Braves'],
-        },
-        '''
+      expectYamlLoads({
+        'american': ['Boston Red Sox', 'Detroit Tigers', 'New York Yankees'],
+        'national': ['New York Mets', 'Chicago Cubs', 'Atlanta Braves'],
+      }, '''
         american:
           - Boston Red Sox
           - Detroit Tigers
@@ -233,17 +222,14 @@ void main() {
         national:
           - New York Mets
           - Chicago Cubs
-          - Atlanta Braves''',
-      );
+          - Atlanta Braves''');
     });
 
     test('[Example 2.4]', () {
-      expectYamlLoads(
-        [
-          {'name': 'Mark McGwire', 'hr': 65, 'avg': 0.278},
-          {'name': 'Sammy Sosa', 'hr': 63, 'avg': 0.288},
-        ],
-        '''
+      expectYamlLoads([
+        {'name': 'Mark McGwire', 'hr': 65, 'avg': 0.278},
+        {'name': 'Sammy Sosa', 'hr': 63, 'avg': 0.288},
+      ], '''
         -
           name: Mark McGwire
           hr:   65
@@ -251,48 +237,39 @@ void main() {
         -
           name: Sammy Sosa
           hr:   63
-          avg:  0.288''',
-      );
+          avg:  0.288''');
     });
 
     test('[Example 2.5]', () {
-      expectYamlLoads(
-        [
-          ['name', 'hr', 'avg'],
-          ['Mark McGwire', 65, 0.278],
-          ['Sammy Sosa', 63, 0.288],
-        ],
-        '''
+      expectYamlLoads([
+        ['name', 'hr', 'avg'],
+        ['Mark McGwire', 65, 0.278],
+        ['Sammy Sosa', 63, 0.288]
+      ], '''
         - [name        , hr, avg  ]
         - [Mark McGwire, 65, 0.278]
-        - [Sammy Sosa  , 63, 0.288]''',
-      );
+        - [Sammy Sosa  , 63, 0.288]''');
     });
 
     test('[Example 2.6]', () {
-      expectYamlLoads(
-        {
-          'Mark McGwire': {'hr': 65, 'avg': 0.278},
-          'Sammy Sosa': {'hr': 63, 'avg': 0.288},
-        },
-        '''
+      expectYamlLoads({
+        'Mark McGwire': {'hr': 65, 'avg': 0.278},
+        'Sammy Sosa': {'hr': 63, 'avg': 0.288}
+      }, '''
         Mark McGwire: {hr: 65, avg: 0.278}
         Sammy Sosa: {
             hr: 63,
             avg: 0.288
-          }''',
-      );
+          }''');
     });
   });
 
   group('2.2: Structures', () {
     test('[Example 2.7]', () {
-      expectYamlStreamLoads(
-        [
-          ['Mark McGwire', 'Sammy Sosa', 'Ken Griffey'],
-          ['Chicago Cubs', 'St Louis Cardinals'],
-        ],
-        '''
+      expectYamlStreamLoads([
+        ['Mark McGwire', 'Sammy Sosa', 'Ken Griffey'],
+        ['Chicago Cubs', 'St Louis Cardinals']
+      ], '''
         # Ranking of 1998 home runs
         ---
         - Mark McGwire
@@ -302,21 +279,14 @@ void main() {
         # Team ranking
         ---
         - Chicago Cubs
-        - St Louis Cardinals''',
-      );
+        - St Louis Cardinals''');
     });
 
     test('[Example 2.8]', () {
-      expectYamlStreamLoads(
-        [
-          {
-            'time': '20:03:20',
-            'player': 'Sammy Sosa',
-            'action': 'strike (miss)',
-          },
-          {'time': '20:03:47', 'player': 'Sammy Sosa', 'action': 'grand slam'},
-        ],
-        '''
+      expectYamlStreamLoads([
+        {'time': '20:03:20', 'player': 'Sammy Sosa', 'action': 'strike (miss)'},
+        {'time': '20:03:47', 'player': 'Sammy Sosa', 'action': 'grand slam'},
+      ], '''
         ---
         time: 20:03:20
         player: Sammy Sosa
@@ -326,17 +296,14 @@ void main() {
         time: 20:03:47
         player: Sammy Sosa
         action: grand slam
-        ...''',
-      );
+        ...''');
     });
 
     test('[Example 2.9]', () {
-      expectYamlLoads(
-        {
-          'hr': ['Mark McGwire', 'Sammy Sosa'],
-          'rbi': ['Sammy Sosa', 'Ken Griffey'],
-        },
-        '''
+      expectYamlLoads({
+        'hr': ['Mark McGwire', 'Sammy Sosa'],
+        'rbi': ['Sammy Sosa', 'Ken Griffey']
+      }, '''
         ---
         hr: # 1998 hr ranking
           - Mark McGwire
@@ -344,17 +311,14 @@ void main() {
         rbi:
           # 1998 rbi ranking
           - Sammy Sosa
-          - Ken Griffey''',
-      );
+          - Ken Griffey''');
     });
 
     test('[Example 2.10]', () {
-      expectYamlLoads(
-        {
-          'hr': ['Mark McGwire', 'Sammy Sosa'],
-          'rbi': ['Sammy Sosa', 'Ken Griffey'],
-        },
-        '''
+      expectYamlLoads({
+        'hr': ['Mark McGwire', 'Sammy Sosa'],
+        'rbi': ['Sammy Sosa', 'Ken Griffey']
+      }, '''
         ---
         hr:
           - Mark McGwire
@@ -362,8 +326,7 @@ void main() {
           - &SS Sammy Sosa
         rbi:
           - *SS # Subsequent occurrence
-          - Ken Griffey''',
-      );
+          - Ken Griffey''');
     });
 
     test('[Example 2.11]', () {
@@ -372,7 +335,7 @@ void main() {
       doc[['New York Yankees', 'Atlanta Braves']] = [
         '2001-07-02',
         '2001-08-12',
-        '2001-08-14',
+        '2001-08-14'
       ];
       expectYamlLoads(doc, '''
         ? - Detroit Tigers
@@ -387,13 +350,11 @@ void main() {
     });
 
     test('[Example 2.12]', () {
-      expectYamlLoads(
-        [
-          {'item': 'Super Hoop', 'quantity': 1},
-          {'item': 'Basketball', 'quantity': 4},
-          {'item': 'Big Shoes', 'quantity': 1},
-        ],
-        '''
+      expectYamlLoads([
+        {'item': 'Super Hoop', 'quantity': 1},
+        {'item': 'Basketball', 'quantity': 4},
+        {'item': 'Big Shoes', 'quantity': 1},
+      ], '''
         ---
         # Products purchased
         - item    : Super Hoop
@@ -401,23 +362,19 @@ void main() {
         - item    : Basketball
           quantity: 4
         - item    : Big Shoes
-          quantity: 1''',
-      );
+          quantity: 1''');
     });
   });
 
   group('2.3: Scalars', () {
     test('[Example 2.13]', () {
-      expectYamlLoads(
-        cleanUpLiteral('''
+      expectYamlLoads(cleanUpLiteral('''
         \\//||\\/||
-        // ||  ||__'''),
-        '''
+        // ||  ||__'''), '''
         # ASCII Art
         --- |
           \\//||\\/||
-          // ||  ||__''',
-      );
+          // ||  ||__''');
     });
 
     test('[Example 2.14]', () {
@@ -429,15 +386,13 @@ void main() {
     });
 
     test('[Example 2.15]', () {
-      expectYamlLoads(
-        cleanUpLiteral('''
+      expectYamlLoads(cleanUpLiteral('''
         Sammy Sosa completed another fine season with great stats.
 
           63 Home Runs
           0.288 Batting Average
 
-        What a year!'''),
-        '''
+        What a year!'''), '''
         >
          Sammy Sosa completed another
          fine season with great stats.
@@ -445,43 +400,35 @@ void main() {
            63 Home Runs
            0.288 Batting Average
 
-         What a year!''',
-      );
+         What a year!''');
     });
 
     test('[Example 2.16]', () {
-      expectYamlLoads(
-        {
-          'name': 'Mark McGwire',
-          'accomplishment':
-              'Mark set a major league home run record in 1998.\n',
-          'stats': '65 Home Runs\n0.278 Batting Average',
-        },
-        '''
+      expectYamlLoads({
+        'name': 'Mark McGwire',
+        'accomplishment': 'Mark set a major league home run record in 1998.\n',
+        'stats': '65 Home Runs\n0.278 Batting Average'
+      }, '''
         name: Mark McGwire
         accomplishment: >
           Mark set a major league
           home run record in 1998.
         stats: |
           65 Home Runs
-          0.278 Batting Average''',
-      );
+          0.278 Batting Average''');
     });
 
     test('[Example 2.17]', () {
-      expectYamlLoads(
-        {
-          'unicode': 'Sosa did fine.\u263A \u{1F680}',
-          'control': '\b1998\t1999\t2000\n',
-          'hex esc': '\r\n is \r\n',
-          'single': '"Howdy!" he cried.',
-          'quoted': " # Not a 'comment'.",
-          'tie-fighter': '|\\-*-/|',
-          'surrogate-pair': 'I \u{D83D}\u{DE03}  ️Dart!',
-          'key-\u{D83D}\u{DD11}':
-              'Look\u{D83D}\u{DE03}\u{D83C}\u{DF89}surprise!',
-        },
-        """
+      expectYamlLoads({
+        'unicode': 'Sosa did fine.\u263A \u{1F680}',
+        'control': '\b1998\t1999\t2000\n',
+        'hex esc': '\r\n is \r\n',
+        'single': '"Howdy!" he cried.',
+        'quoted': " # Not a 'comment'.",
+        'tie-fighter': '|\\-*-/|',
+        'surrogate-pair': 'I \u{D83D}\u{DE03}  ️Dart!',
+        'key-\u{D83D}\u{DD11}': 'Look\u{D83D}\u{DE03}\u{D83C}\u{DF89}surprise!',
+      }, """
         unicode: "Sosa did fine.\\u263A \\U0001F680"
         control: "\\b1998\\t1999\\t2000\\n"
         hex esc: "\\x0d\\x0a is \\r\\n"
@@ -491,61 +438,56 @@ void main() {
         tie-fighter: '|\\-*-/|'
         
         surrogate-pair: I \u{D83D}\u{DE03}  ️Dart!
-        key-\u{D83D}\u{DD11}: Look\u{D83D}\u{DE03}\u{D83C}\u{DF89}surprise!""",
-      );
+        key-\u{D83D}\u{DD11}: Look\u{D83D}\u{DE03}\u{D83C}\u{DF89}surprise!""");
     });
 
     test('[Example 2.18]', () {
-      expectYamlLoads(
-        {
-          'plain': 'This unquoted scalar spans many lines.',
-          'quoted': 'So does this quoted scalar.\n',
-        },
-        '''
+      expectYamlLoads({
+        'plain': 'This unquoted scalar spans many lines.',
+        'quoted': 'So does this quoted scalar.\n'
+      }, '''
         plain:
           This unquoted scalar
           spans many lines.
 
         quoted: "So does this
-          quoted scalar.\\n"''',
-      );
+          quoted scalar.\\n"''');
     });
   });
 
   group('2.4: Tags', () {
     test('[Example 2.19]', () {
-      expectYamlLoads(
-        {'canonical': 12345, 'decimal': 12345, 'octal': 12, 'hexadecimal': 12},
-        '''
+      expectYamlLoads({
+        'canonical': 12345,
+        'decimal': 12345,
+        'octal': 12,
+        'hexadecimal': 12
+      }, '''
         canonical: 12345
         decimal: +12345
         octal: 0o14
-        hexadecimal: 0xC''',
-      );
+        hexadecimal: 0xC''');
     });
 
     test('[Example 2.20]', () {
-      expectYamlLoads(
-        {
-          'canonical': 1230.15,
-          'exponential': 1230.15,
-          'fixed': 1230.15,
-          'negative infinity': -infinity,
-          'not a number': nan,
-        },
-        '''
+      expectYamlLoads({
+        'canonical': 1230.15,
+        'exponential': 1230.15,
+        'fixed': 1230.15,
+        'negative infinity': -infinity,
+        'not a number': nan
+      }, '''
         canonical: 1.23015e+3
         exponential: 12.3015e+02
         fixed: 1230.15
         negative infinity: -.inf
-        not a number: .NaN''',
-      );
+        not a number: .NaN''');
     });
 
     test('[Example 2.21]', () {
       var doc = deepEqualsMap({
         'booleans': [true, false],
-        'string': '012345',
+        'string': '012345'
       });
       doc[null] = null;
       expectYamlLoads(doc, """
@@ -563,33 +505,31 @@ void main() {
     // doesn't plan to support.
 
     test('[Example 2.28]', () {
-      expectYamlStreamLoads(
-        [
-          {
-            'Time': '2001-11-23 15:01:42 -5',
-            'User': 'ed',
-            'Warning': 'This is an error message for the log file',
-          },
-          {
-            'Time': '2001-11-23 15:02:31 -5',
-            'User': 'ed',
-            'Warning': 'A slightly different error message.',
-          },
-          {
-            'DateTime': '2001-11-23 15:03:17 -5',
-            'User': 'ed',
-            'Fatal': 'Unknown variable "bar"',
-            'Stack': [
-              {
-                'file': 'TopClass.py',
-                'line': 23,
-                'code': 'x = MoreObject("345\\n")\n',
-              },
-              {'file': 'MoreClass.py', 'line': 58, 'code': 'foo = bar'},
-            ],
-          },
-        ],
-        '''
+      expectYamlStreamLoads([
+        {
+          'Time': '2001-11-23 15:01:42 -5',
+          'User': 'ed',
+          'Warning': 'This is an error message for the log file'
+        },
+        {
+          'Time': '2001-11-23 15:02:31 -5',
+          'User': 'ed',
+          'Warning': 'A slightly different error message.'
+        },
+        {
+          'DateTime': '2001-11-23 15:03:17 -5',
+          'User': 'ed',
+          'Fatal': 'Unknown variable "bar"',
+          'Stack': [
+            {
+              'file': 'TopClass.py',
+              'line': 23,
+              'code': 'x = MoreObject("345\\n")\n'
+            },
+            {'file': 'MoreClass.py', 'line': 58, 'code': 'foo = bar'}
+          ]
+        }
+      ], '''
         ---
         Time: 2001-11-23 15:01:42 -5
         User: ed
@@ -615,8 +555,7 @@ void main() {
           - file: MoreClass.py
             line: 58
             code: |-
-              foo = bar''',
-      );
+              foo = bar''');
     });
   });
 
@@ -627,18 +566,14 @@ void main() {
   group('5.1: Character Set', () {
     void expectAllowsCharacter(int charCode) {
       var char = String.fromCharCodes([charCode]);
-      expectYamlLoads(
-        'The character "$char" is allowed',
-        'The character "$char" is allowed',
-      );
+      expectYamlLoads('The character "$char" is allowed',
+          'The character "$char" is allowed');
     }
 
     void expectAllowsQuotedCharacter(int charCode) {
       var char = String.fromCharCodes([charCode]);
-      expectYamlLoads(
-        "The character '$char' is allowed",
-        '"The character \'$char\' is allowed"',
-      );
+      expectYamlLoads("The character '$char' is allowed",
+          '"The character \'$char\' is allowed"');
     }
 
     void expectDisallowsCharacter(int charCode) {
@@ -679,32 +614,26 @@ void main() {
 
   group('5.3: Indicator Characters', () {
     test('[Example 5.3]', () {
-      expectYamlLoads(
-        {
-          'sequence': ['one', 'two'],
-          'mapping': {'sky': 'blue', 'sea': 'green'},
-        },
-        '''
+      expectYamlLoads({
+        'sequence': ['one', 'two'],
+        'mapping': {'sky': 'blue', 'sea': 'green'}
+      }, '''
         sequence:
         - one
         - two
         mapping:
           ? sky
           : blue
-          sea : green''',
-      );
+          sea : green''');
     });
 
     test('[Example 5.4]', () {
-      expectYamlLoads(
-        {
-          'sequence': ['one', 'two'],
-          'mapping': {'sky': 'blue', 'sea': 'green'},
-        },
-        '''
+      expectYamlLoads({
+        'sequence': ['one', 'two'],
+        'mapping': {'sky': 'blue', 'sea': 'green'}
+      }, '''
         sequence: [ one, two, ]
-        mapping: { sky: blue, sea: green }''',
-      );
+        mapping: { sky: blue, sea: green }''');
     });
 
     test('[Example 5.5]', () => expectYamlLoads(null, '# Comment only.'));
@@ -712,27 +641,21 @@ void main() {
     // Skipping 5.6 because it uses an undefined tag.
 
     test('[Example 5.7]', () {
-      expectYamlLoads(
-        {'literal': 'some\ntext\n', 'folded': 'some text\n'},
-        '''
+      expectYamlLoads({'literal': 'some\ntext\n', 'folded': 'some text\n'}, '''
         literal: |
           some
           text
         folded: >
           some
           text
-        ''',
-      );
+        ''');
     });
 
     test('[Example 5.8]', () {
-      expectYamlLoads(
-        {'single': 'text', 'double': 'text'},
-        '''
+      expectYamlLoads({'single': 'text', 'double': 'text'}, '''
         single: 'text'
         double: "text"
-        ''',
-      );
+        ''');
     });
 
     test('[Example 5.9]', () {
@@ -762,63 +685,55 @@ void main() {
 
     group('in a scalar context must be normalized', () {
       test(
-        'from \\r to \\n',
-        () => expectYamlLoads(['foo\nbar'], indentLiteral('- |\n  foo\r  bar')),
-      );
+          'from \\r to \\n',
+          () => expectYamlLoads(
+              ['foo\nbar'], indentLiteral('- |\n  foo\r  bar')));
       test(
-        'from \\r\\n to \\n',
-        () =>
-            expectYamlLoads(['foo\nbar'], indentLiteral('- |\n  foo\r\n  bar')),
-      );
+          'from \\r\\n to \\n',
+          () => expectYamlLoads(
+              ['foo\nbar'], indentLiteral('- |\n  foo\r\n  bar')));
     });
 
     test('[Example 5.11]', () {
-      expectYamlLoads(
-        cleanUpLiteral('''
+      expectYamlLoads(cleanUpLiteral('''
         Line break (no glyph)
-        Line break (glyphed)'''),
-        '''
+        Line break (glyphed)'''), '''
         |
           Line break (no glyph)
-          Line break (glyphed)''',
-      );
+          Line break (glyphed)''');
     });
   });
 
   group('5.5: White Space Characters', () {
     test('[Example 5.12]', () {
-      expectYamlLoads(
-        {
-          'quoted': 'Quoted \t',
-          'block': 'void main() {\n\tprintf("Hello, world!\\n");\n}\n',
-        },
-        '''
+      expectYamlLoads({
+        'quoted': 'Quoted \t',
+        'block': 'void main() {\n\tprintf("Hello, world!\\n");\n}\n'
+      }, '''
         # Tabs and spaces
         quoted: "Quoted \t"
         block:\t|
           void main() {
           \tprintf("Hello, world!\\n");
           }
-        ''',
-      );
+        ''');
     });
   });
 
   group('5.7: Escaped Characters', () {
     test('[Example 5.13]', () {
       expectYamlLoads(
-        'Fun with \x5C '
-            '\x22 \x07 \x08 \x1B \x0C '
-            '\x0A \x0D \x09 \x0B \x00 '
-            '\x20 \xA0 \x85 \u2028 \u2029 '
-            'A A A',
-        '''
+          'Fun with \x5C '
+              '\x22 \x07 \x08 \x1B \x0C '
+              '\x0A \x0D \x09 \x0B \x00 '
+              '\x20 \xA0 \x85 \u2028 \u2029 '
+              'A A A',
+          '''
         "Fun with \\\\
         \\" \\a \\b \\e \\f \\
         \\n \\r \\t \\v \\0 \\
         \\  \\_ \\N \\L \\P \\
-        \\x41 \\u0041 \\U00000041"''',
-      );
+        \\x41 \\u0041 \\U00000041"''');
     });
 
     test('[Example 5.14]', () {
@@ -844,28 +759,23 @@ void main() {
     });
 
     test('may be different for the children of sibling nodes', () {
-      expectYamlLoads(
-        [
-          ['foo'],
-          ['bar'],
-        ],
-        '''
+      expectYamlLoads([
+        ['foo'],
+        ['bar']
+      ], '''
         -
           - foo
         -
-         - bar''',
-      );
+         - bar''');
     });
 
     test('[Example 6.1]', () {
-      expectYamlLoads(
-        {
-          'Not indented': {
-            'By one space': 'By four\n  spaces\n',
-            'Flow style': ['By two', 'Also by two', 'Still by two'],
-          },
-        },
-        '''
+      expectYamlLoads({
+        'Not indented': {
+          'By one space': 'By four\n  spaces\n',
+          'Flow style': ['By two', 'Also by two', 'Still by two']
+        }
+      }, '''
           # Leading comment line spaces are
            # neither content nor indentation.
             
@@ -877,51 +787,42 @@ void main() {
            By two,        # in flow style
           Also by two,    # are neither
           \tStill by two   # content nor
-            ]             # indentation.''',
-      );
+            ]             # indentation.''');
     });
 
     test('[Example 6.2]', () {
-      expectYamlLoads(
-        {
-          'a': [
-            'b',
-            ['c', 'd'],
-          ],
-        },
-        '''
+      expectYamlLoads({
+        'a': [
+          'b',
+          ['c', 'd']
+        ]
+      }, '''
         ? a
         : -\tb
           -  -\tc
-             - d''',
-      );
+             - d''');
     });
   });
 
   group('6.2: Separation Spaces', () {
     test('[Example 6.3]', () {
-      expectYamlLoads(
-        [
-          {'foo': 'bar'},
-          ['baz', 'baz'],
-        ],
-        '''
+      expectYamlLoads([
+        {'foo': 'bar'},
+        ['baz', 'baz']
+      ], '''
         - foo:\t bar
         - - baz
-          -\tbaz''',
-      );
+          -\tbaz''');
     });
   });
 
   group('6.3: Line Prefixes', () {
     test('[Example 6.4]', () {
-      expectYamlLoads(
-        {
-          'plain': 'text lines',
-          'quoted': 'text lines',
-          'block': 'text\n \tlines\n',
-        },
-        '''
+      expectYamlLoads({
+        'plain': 'text lines',
+        'quoted': 'text lines',
+        'block': 'text\n \tlines\n'
+      }, '''
         plain: text
           lines
         quoted: "text
@@ -929,27 +830,23 @@ void main() {
         block: |
           text
            \tlines
-        ''',
-      );
+        ''');
     });
   });
 
   group('6.4: Empty Lines', () {
     test('[Example 6.5]', () {
-      expectYamlLoads(
-        {
-          'Folding': 'Empty line\nas a line feed',
-          'Chomping': 'Clipped empty lines\n',
-        },
-        '''
+      expectYamlLoads({
+        'Folding': 'Empty line\nas a line feed',
+        'Chomping': 'Clipped empty lines\n',
+      }, '''
         Folding:
           "Empty line
            \t
           as a line feed"
         Chomping: |
           Clipped empty lines
-         ''',
-      );
+         ''');
     });
   });
 
@@ -997,72 +894,54 @@ void main() {
     });
 
     test('[Example 6.9]', () {
-      expectYamlLoads(
-        {'key': 'value'},
-        '''
+      expectYamlLoads({'key': 'value'}, '''
         key:    # Comment
-          value''',
-      );
+          value''');
     });
 
     group('outside of scalar content', () {
       test('may appear on a line of their own', () {
-        expectYamlLoads(
-          [1, 2],
-          '''
+        expectYamlLoads([1, 2], '''
         - 1
         # Comment
-        - 2''',
-        );
+        - 2''');
       });
 
       test('are independent of indentation level', () {
-        expectYamlLoads(
-          [
-            [1, 2],
-          ],
-          '''
+        expectYamlLoads([
+          [1, 2]
+        ], '''
         -
           - 1
          # Comment
-          - 2''',
-        );
+          - 2''');
       });
 
       test('include lines containing only white space characters', () {
-        expectYamlLoads(
-          [1, 2],
-          '''
+        expectYamlLoads([1, 2], '''
         - 1
           \t  
-        - 2''',
-        );
+        - 2''');
       });
     });
 
     group('within scalar content', () {
       test('may not appear on a line of their own', () {
-        expectYamlLoads(
-          ['foo\n# not comment\nbar\n'],
-          '''
+        expectYamlLoads(['foo\n# not comment\nbar\n'], '''
         - |
           foo
           # not comment
           bar
-        ''',
-        );
+        ''');
       });
 
       test("don't include lines containing only white space characters", () {
-        expectYamlLoads(
-          ['foo\n  \t   \nbar\n'],
-          '''
+        expectYamlLoads(['foo\n  \t   \nbar\n'], '''
         - |
           foo
             \t   
           bar
-        ''',
-        );
+        ''');
       });
     });
 
@@ -1074,26 +953,20 @@ void main() {
     });
 
     test('[Example 6.11]', () {
-      expectYamlLoads(
-        {'key': 'value'},
-        '''
+      expectYamlLoads({'key': 'value'}, '''
         key:    # Comment
                 # lines
           value
-        ''',
-      );
+        ''');
     });
 
     group('ending a block scalar header', () {
       test('may not be followed by additional comment lines', () {
-        expectYamlLoads(
-          ['# not comment\nfoo\n'],
-          '''
+        expectYamlLoads(['# not comment\nfoo\n'], '''
         - | # comment
             # not comment
             foo
-        ''',
-        );
+        ''');
       });
     });
   });
@@ -1120,18 +993,24 @@ void main() {
 
   group('6.8: Directives', () {
     test('[Example 6.13]', () {
-      expectYamlLoadsWithWarning('foo', '''
+      expectYamlLoadsWithWarning(
+          'foo',
+          '''
         %FOO  bar baz # Should be ignored
                       # with a warning.
-        --- "foo"''', 'unknown directive.');
+        --- "foo"''',
+          'unknown directive.');
     });
 
     test('[Example 6.14]', () {
-      expectYamlLoadsWithWarning('foo', '''
+      expectYamlLoadsWithWarning(
+          'foo',
+          '''
         %YAML 1.3 # Attempt parsing
                    # with a warning
         ---
-        "foo"''', 'this parser only supports YAML 1.1 and 1.2.');
+        "foo"''',
+          'this parser only supports YAML 1.1 and 1.2.');
     });
 
     test('[Example 6.15]', () {
@@ -1161,22 +1040,16 @@ void main() {
 
   group('6.9: Node Properties', () {
     test('may be specified in any order', () {
-      expectYamlLoads(
-        ['foo', 'bar'],
-        '''
+      expectYamlLoads(['foo', 'bar'], '''
         - !!str &a1 foo
-        - &a2 !!str bar''',
-      );
+        - &a2 !!str bar''');
     });
 
     test('[Example 6.23]', () {
-      expectYamlLoads(
-        {'foo': 'bar', 'baz': 'foo'},
-        '''
+      expectYamlLoads({'foo': 'bar', 'baz': 'foo'}, '''
         !!str &a1 "foo":
           !!str bar
-        &a2 baz : *a1''',
-      );
+        &a2 baz : *a1''');
     });
 
     // Example 6.24 tests custom tag URIs, which this implementation currently
@@ -1191,23 +1064,18 @@ void main() {
     // currently doesn't plan to support.
 
     test('[Example 6.28]', () {
-      expectYamlLoads(
-        ['12', 12, '12'],
-        '''
+      expectYamlLoads(['12', 12, '12'], '''
         # Assuming conventional resolution:
         - "12"
         - 12
-        - ! 12''',
-      );
+        - ! 12''');
     });
 
     test('[Example 6.29]', () {
       expectYamlLoads(
-        {'First occurrence': 'Value', 'Second occurrence': 'Value'},
-        '''
+          {'First occurrence': 'Value', 'Second occurrence': 'Value'}, '''
         First occurrence: &anchor Value
-        Second occurrence: *anchor''',
-      );
+        Second occurrence: *anchor''');
     });
   });
 
@@ -1224,94 +1092,68 @@ void main() {
     });
 
     group('must not specify', () {
-      test(
-        'tag properties',
-        () => expectYamlFails('''
+      test('tag properties', () => expectYamlFails('''
         - &anchor foo
-        - !str *anchor'''),
-      );
+        - !str *anchor'''));
 
-      test(
-        'anchor properties',
-        () => expectYamlFails('''
+      test('anchor properties', () => expectYamlFails('''
         - &anchor foo
-        - &anchor2 *anchor'''),
-      );
+        - &anchor2 *anchor'''));
 
-      test(
-        'content',
-        () => expectYamlFails('''
+      test('content', () => expectYamlFails('''
         - &anchor foo
-        - *anchor bar'''),
-      );
+        - *anchor bar'''));
     });
 
     test('must preserve structural equality', () {
-      var doc = loadYaml(
-        cleanUpLiteral('''
+      var doc = loadYaml(cleanUpLiteral('''
         anchor: &anchor [a, b, c]
-        alias: *anchor'''),
-      );
+        alias: *anchor'''));
       var anchorList = doc['anchor'];
       var aliasList = doc['alias'];
       expect(anchorList, same(aliasList));
 
-      doc = loadYaml(
-        cleanUpLiteral('''
+      doc = loadYaml(cleanUpLiteral('''
         ? &anchor [a, b, c]
         : ? *anchor
-          : bar'''),
-      );
+          : bar'''));
       anchorList = doc.keys.first;
       aliasList = doc[['a', 'b', 'c']].keys.first;
       expect(anchorList, same(aliasList));
     });
 
     test('self-referential list throws FormatException', () {
-      expect(
-        () => loadYaml(
-          cleanUpLiteral('''
+      expect(() => loadYaml(cleanUpLiteral('''
         ? &anchor [*anchor]
-        : value'''),
-        ),
-        throwsA(isA<FormatException>()),
-      );
+        : value''')), throwsA(isA<FormatException>()));
     });
 
     test('self-referential map throws FormatException', () {
-      expect(
-        () => loadYaml('&map { *map : *map }'),
-        throwsA(isA<FormatException>()),
-      );
+      expect(() => loadYaml('&map { *map : *map }'),
+          throwsA(isA<FormatException>()));
     });
 
     test('[Example 7.1]', () {
-      expectYamlLoads(
-        {
-          'First occurrence': 'Foo',
-          'Second occurrence': 'Foo',
-          'Override anchor': 'Bar',
-          'Reuse anchor': 'Bar',
-        },
-        '''
+      expectYamlLoads({
+        'First occurrence': 'Foo',
+        'Second occurrence': 'Foo',
+        'Override anchor': 'Bar',
+        'Reuse anchor': 'Bar',
+      }, '''
         First occurrence: &anchor Foo
         Second occurrence: *anchor
         Override anchor: &anchor Bar
-        Reuse anchor: *anchor''',
-      );
+        Reuse anchor: *anchor''');
     });
   });
 
   group('7.2: Empty Nodes', () {
     test('[Example 7.2]', () {
-      expectYamlLoads(
-        {'foo': '', '': 'bar'},
-        '''
+      expectYamlLoads({'foo': '', '': 'bar'}, '''
         {
           foo : !!str,
           !!str : bar,
-        }''',
-      );
+        }''');
     });
 
     test('[Example 7.3]', () {
@@ -1327,29 +1169,24 @@ void main() {
 
   group('7.3: Flow Scalar Styles', () {
     test('[Example 7.4]', () {
-      expectYamlLoads(
-        {
-          'implicit block key': [
-            {'implicit flow key': 'value'},
-          ],
-        },
-        '''
+      expectYamlLoads({
+        'implicit block key': [
+          {'implicit flow key': 'value'}
+        ]
+      }, '''
         "implicit block key" : [
           "implicit flow key" : value,
-         ]''',
-      );
+         ]''');
     });
 
     test('[Example 7.5]', () {
       expectYamlLoads(
-        'folded to a space,\nto a line feed, or \t \tnon-content',
-        '''
+          'folded to a space,\nto a line feed, or \t \tnon-content', '''
         "folded 
         to a space,\t
          
         to a line feed, or \t\\
-         \\ \tnon-content"''',
-      );
+         \\ \tnon-content"''');
     });
 
     test('[Example 7.6]', () {
@@ -1365,17 +1202,14 @@ void main() {
     });
 
     test('[Example 7.8]', () {
-      expectYamlLoads(
-        {
-          'implicit block key': [
-            {'implicit flow key': 'value'},
-          ],
-        },
-        """
+      expectYamlLoads({
+        'implicit block key': [
+          {'implicit flow key': 'value'}
+        ]
+      }, """
         'implicit block key' : [
           'implicit flow key' : value,
-         ]""",
-      );
+         ]""");
     });
 
     test('[Example 7.9]', () {
@@ -1387,22 +1221,20 @@ void main() {
     });
 
     test('[Example 7.10]', () {
-      expectYamlLoads(
+      expectYamlLoads([
+        '::vector',
+        ': - ()',
+        'Up, up, and away!',
+        -123,
+        'http://example.com/foo#bar',
         [
           '::vector',
           ': - ()',
           'Up, up, and away!',
           -123,
-          'http://example.com/foo#bar',
-          [
-            '::vector',
-            ': - ()',
-            'Up, up, and away!',
-            -123,
-            'http://example.com/foo#bar',
-          ],
-        ],
-        '''
+          'http://example.com/foo#bar'
+        ]
+      ], '''
         # Outside flow collection:
         - ::vector
         - ": - ()"
@@ -1414,22 +1246,18 @@ void main() {
           ": - ()",
           "Up, up, and away!",
           -123,
-          http://example.com/foo#bar ]''',
-      );
+          http://example.com/foo#bar ]''');
     });
 
     test('[Example 7.11]', () {
-      expectYamlLoads(
-        {
-          'implicit block key': [
-            {'implicit flow key': 'value'},
-          ],
-        },
-        '''
+      expectYamlLoads({
+        'implicit block key': [
+          {'implicit flow key': 'value'}
+        ]
+      }, '''
         implicit block key : [
           implicit flow key : value,
-         ]''',
-      );
+         ]''');
     });
 
     test('[Example 7.12]', () {
@@ -1443,27 +1271,22 @@ void main() {
 
   group('7.4: Flow Collection Styles', () {
     test('[Example 7.13]', () {
-      expectYamlLoads(
-        [
-          ['one', 'two'],
-          ['three', 'four'],
-        ],
-        '''
+      expectYamlLoads([
+        ['one', 'two'],
+        ['three', 'four']
+      ], '''
         - [ one, two, ]
-        - [three ,four]''',
-      );
+        - [three ,four]''');
     });
 
     test('[Example 7.14]', () {
-      expectYamlLoads(
-        [
-          'double quoted',
-          'single quoted',
-          'plain text',
-          ['nested'],
-          {'single': 'pair'},
-        ],
-        """
+      expectYamlLoads([
+        'double quoted',
+        'single quoted',
+        'plain text',
+        ['nested'],
+        {'single': 'pair'}
+      ], """
         [
         "double
          quoted", 'single
@@ -1471,20 +1294,16 @@ void main() {
         plain
          text, [ nested ],
         single: pair,
-        ]""",
-      );
+        ]""");
     });
 
     test('[Example 7.15]', () {
-      expectYamlLoads(
-        [
-          {'one': 'two', 'three': 'four'},
-          {'five': 'six', 'seven': 'eight'},
-        ],
-        '''
+      expectYamlLoads([
+        {'one': 'two', 'three': 'four'},
+        {'five': 'six', 'seven': 'eight'},
+      ], '''
         - { one : two , three: four , }
-        - {five: six,seven : eight}''',
-      );
+        - {five: six,seven : eight}''');
     });
 
     test('[Example 7.16]', () {
@@ -1502,7 +1321,7 @@ void main() {
       var doc = deepEqualsMap({
         'unquoted': 'separate',
         'http://foo.com': null,
-        'omitted value': null,
+        'omitted value': null
       });
       doc[null] = 'omitted key';
       expectYamlLoads(doc, '''
@@ -1516,39 +1335,31 @@ void main() {
 
     test('[Example 7.18]', () {
       expectYamlLoads(
-        {'adjacent': 'value', 'readable': 'value', 'empty': null},
-        '''
+          {'adjacent': 'value', 'readable': 'value', 'empty': null}, '''
         {
         "adjacent":value,
         "readable": value,
         "empty":
-        }''',
-      );
+        }''');
     });
 
     test('[Example 7.19]', () {
-      expectYamlLoads(
-        [
-          {'foo': 'bar'},
-        ],
-        '''
+      expectYamlLoads([
+        {'foo': 'bar'}
+      ], '''
         [
         foo: bar
-        ]''',
-      );
+        ]''');
     });
 
     test('[Example 7.20]', () {
-      expectYamlLoads(
-        [
-          {'foo bar': 'baz'},
-        ],
-        '''
+      expectYamlLoads([
+        {'foo bar': 'baz'}
+      ], '''
         [
         ? foo
          bar : baz
-        ]''',
-      );
+        ]''');
     });
 
     test('[Example 7.21]', () {
@@ -1558,19 +1369,16 @@ void main() {
       var el2 = deepEqualsMap();
       el2[{'JSON': 'like'}] = 'adjacent';
 
-      expectYamlLoads(
+      expectYamlLoads([
         [
-          [
-            {'YAML': 'separate'},
-          ],
-          [el1],
-          [el2],
+          {'YAML': 'separate'}
         ],
-        '''
+        [el1],
+        [el2]
+      ], '''
         - [ YAML : separate ]
         - [ : empty key entry ]
-        - [ {JSON: like}:adjacent ]''',
-      );
+        - [ {JSON: like}:adjacent ]''');
     });
 
     // TODO(nweiz): enable this when we throw an error for long or multiline
@@ -1589,42 +1397,34 @@ void main() {
 
   group('7.5: Flow Nodes', () {
     test('[Example 7.23]', () {
-      expectYamlLoads(
-        [
-          ['a', 'b'],
-          {'a': 'b'},
-          'a',
-          'b',
-          'c',
-        ],
-        '''
+      expectYamlLoads([
+        ['a', 'b'],
+        {'a': 'b'},
+        'a',
+        'b',
+        'c'
+      ], '''
         - [ a, b ]
         - { a: b }
         - 'a'
         - 'b'
-        - c''',
-      );
+        - c''');
     });
 
     test('[Example 7.24]', () {
-      expectYamlLoads(
-        ['a', 'b', 'c', 'c', ''],
-        '''
+      expectYamlLoads(['a', 'b', 'c', 'c', ''], '''
         - !!str "a"
         - 'b'
         - &anchor "c"
         - *anchor
-        - !!str''',
-      );
+        - !!str''');
     });
   });
 
   // Chapter 8: Block Styles
   group('8.1: Block Scalar Styles', () {
     test('[Example 8.1]', () {
-      expectYamlLoads(
-        ['literal\n', ' folded\n', 'keep\n\n', ' strip'],
-        '''
+      expectYamlLoads(['literal\n', ' folded\n', 'keep\n\n', ' strip'], '''
         - | # Empty header
          literal
         - >1 # Indentation indicator
@@ -1633,8 +1433,7 @@ void main() {
          keep
 
         - >1- # Both indicators
-          strip''',
-      );
+          strip''');
     });
 
     test('[Example 8.2]', () {
@@ -1643,8 +1442,8 @@ void main() {
       // confident that "\t\ndetected\n" is correct when parsed according to the
       // rest of the spec.
       expectYamlLoads(
-        ['detected\n', '\n\n# detected\n', ' explicit\n', '\t\ndetected\n'],
-        '''
+          ['detected\n', '\n\n# detected\n', ' explicit\n', '\t\ndetected\n'],
+          '''
         - |
          detected
         - >
@@ -1656,8 +1455,7 @@ void main() {
         - >
          \t
          detected
-        ''',
-      );
+        ''');
     });
 
     test('[Example 8.3]', () {
@@ -1677,17 +1475,14 @@ void main() {
     });
 
     test('[Example 8.4]', () {
-      expectYamlLoads(
-        {'strip': 'text', 'clip': 'text\n', 'keep': 'text\n'},
-        '''
+      expectYamlLoads({'strip': 'text', 'clip': 'text\n', 'keep': 'text\n'}, '''
         strip: |-
           text
         clip: |
           text
         keep: |+
           text
-        ''',
-      );
+        ''');
     });
 
     test('[Example 8.5]', () {
@@ -1695,8 +1490,7 @@ void main() {
       // value, but as far as I can tell that's not how it's supposed to be
       // parsed according to the rest of the spec.
       expectYamlLoads(
-        {'strip': '# text', 'clip': '# text\n', 'keep': '# text\n\n'},
-        '''
+          {'strip': '# text', 'clip': '# text\n', 'keep': '# text\n\n'}, '''
          # Strip
           # Comments:
         strip: |-
@@ -1716,22 +1510,18 @@ void main() {
 
          # Trail
           # comments.
-        ''',
-      );
+        ''');
     });
 
     test('[Example 8.6]', () {
-      expectYamlLoads(
-        {'strip': '', 'clip': '', 'keep': '\n'},
-        '''
+      expectYamlLoads({'strip': '', 'clip': '', 'keep': '\n'}, '''
         strip: >-
 
         clip: >
 
         keep: |+
 
-        ''',
-      );
+        ''');
     });
 
     test('[Example 8.7]', () {
@@ -1764,8 +1554,7 @@ void main() {
     });
 
     test('[Example 8.10]', () {
-      expectYamlLoads(
-        cleanUpLiteral('''
+      expectYamlLoads(cleanUpLiteral('''
 
         folded line
         next line
@@ -1775,8 +1564,7 @@ void main() {
           * lines
 
         last line
-        '''),
-        '''
+        '''), '''
         >
 
          folded
@@ -1792,8 +1580,7 @@ void main() {
          last
          line
 
-        # Comment''',
-      );
+        # Comment''');
     });
 
     // Examples 8.11 through 8.13 are duplicates of 8.10.
@@ -1801,68 +1588,56 @@ void main() {
 
   group('8.2: Block Collection Styles', () {
     test('[Example 8.14]', () {
-      expectYamlLoads(
-        {
-          'block sequence': [
-            'one',
-            {'two': 'three'},
-          ],
-        },
-        '''
+      expectYamlLoads({
+        'block sequence': [
+          'one',
+          {'two': 'three'}
+        ]
+      }, '''
         block sequence:
           - one
-          - two : three''',
-      );
+          - two : three''');
     });
 
     test('[Example 8.15]', () {
-      expectYamlLoads(
-        [
-          null,
-          'block node\n',
-          ['one', 'two'],
-          {'one': 'two'},
-        ],
-        '''
+      expectYamlLoads([
+        null,
+        'block node\n',
+        ['one', 'two'],
+        {'one': 'two'}
+      ], '''
         - # Empty
         - |
          block node
         - - one # Compact
           - two # sequence
-        - one: two # Compact mapping''',
-      );
+        - one: two # Compact mapping''');
     });
 
     test('[Example 8.16]', () {
-      expectYamlLoads(
-        {
-          'block mapping': {'key': 'value'},
-        },
-        '''
+      expectYamlLoads({
+        'block mapping': {'key': 'value'}
+      }, '''
         block mapping:
-         key: value''',
-      );
+         key: value''');
     });
 
     test('[Example 8.17]', () {
-      expectYamlLoads(
-        {
-          'explicit key': null,
-          'block key\n': ['one', 'two'],
-        },
-        '''
+      expectYamlLoads({
+        'explicit key': null,
+        'block key\n': ['one', 'two']
+      }, '''
         ? explicit key # Empty value
         ? |
           block key
         : - one # Explicit compact
-          - two # block value''',
-      );
+          - two # block value''');
     });
 
     test('[Example 8.18]', () {
       var doc = deepEqualsMap({
         'plain key': 'in-line value',
-        'quoted key': ['entry'],
+        'quoted key': ['entry']
       });
       doc[null] = null;
       expectYamlLoads(doc, '''
@@ -1875,67 +1650,55 @@ void main() {
     test('[Example 8.19]', () {
       var el = deepEqualsMap();
       el[{'earth': 'blue'}] = {'moon': 'white'};
-      expectYamlLoads(
-        [
-          {'sun': 'yellow'},
-          el,
-        ],
-        '''
+      expectYamlLoads([
+        {'sun': 'yellow'},
+        el
+      ], '''
         - sun: yellow
         - ? earth: blue
-          : moon: white''',
-      );
+          : moon: white''');
     });
 
     test('[Example 8.20]', () {
-      expectYamlLoads(
-        [
-          'flow in block',
-          'Block scalar\n',
-          {'foo': 'bar'},
-        ],
-        '''
+      expectYamlLoads([
+        'flow in block',
+        'Block scalar\n',
+        {'foo': 'bar'}
+      ], '''
         -
           "flow in block"
         - >
          Block scalar
         - !!map # Block collection
-          foo : bar''',
-      );
+          foo : bar''');
     });
 
     test('[Example 8.21]', () {
       // The spec doesn't include a newline after "value" in the parsed map, but
       // the block scalar is clipped so it should be retained.
-      expectYamlLoads(
-        {'literal': 'value\n', 'folded': 'value'},
-        '''
+      expectYamlLoads({'literal': 'value\n', 'folded': 'value'}, '''
         literal: |2
           value
         folded:
            !!str
           >1
-         value''',
-      );
+         value''');
     });
 
     test('[Example 8.22]', () {
-      expectYamlLoads(
-        {
-          'sequence': [
-            'entry',
-            ['nested'],
-          ],
-          'mapping': {'foo': 'bar'},
-        },
-        '''
+      expectYamlLoads({
+        'sequence': [
+          'entry',
+          ['nested']
+        ],
+        'mapping': {'foo': 'bar'}
+      }, '''
         sequence: !!seq
         - entry
         - !!seq
          - nested
         mapping: !!map
-         foo: bar''',
-      );
+         foo: bar''');
     });
   });
 
@@ -1961,8 +1724,7 @@ void main() {
       // indented the same amount, the text would be part of the literal, which
       // implies that the spec's parse of this document is incorrect.
       expectYamlStreamLoads(
-        ['Bare document', '%!PS-Adobe-2.0 # Not the first line\n'],
-        '''
+          ['Bare document', '%!PS-Adobe-2.0 # Not the first line\n'], '''
         Bare
         document
         ...
@@ -1970,33 +1732,27 @@ void main() {
         ...
         |
         %!PS-Adobe-2.0 # Not the first line
-        ''',
-      );
+        ''');
     });
 
     test('[Example 9.4]', () {
-      expectYamlStreamLoads(
-        [
-          {'matches %': 20},
-          null,
-        ],
-        '''
+      expectYamlStreamLoads([
+        {'matches %': 20},
+        null
+      ], '''
         ---
         { matches
         % : 20 }
         ...
         ---
         # Empty
-        ...''',
-      );
+        ...''');
     });
 
     test('[Example 9.5]', () {
       // The spec doesn't have a space between the second
       // "YAML" and "1.2", but this seems to be a typo.
-      expectYamlStreamLoads(
-        ['%!PS-Adobe-2.0\n', null],
-        '''
+      expectYamlStreamLoads(['%!PS-Adobe-2.0\n', null], '''
         %YAML 1.2
         --- |
         %!PS-Adobe-2.0
@@ -2004,83 +1760,66 @@ void main() {
         %YAML 1.2
         ---
         # Empty
-        ...''',
-      );
+        ...''');
     });
 
     test('[Example 9.6]', () {
-      expectYamlStreamLoads(
-        [
-          'Document',
-          null,
-          {'matches %': 20},
-        ],
-        '''
+      expectYamlStreamLoads([
+        'Document',
+        null,
+        {'matches %': 20}
+      ], '''
         Document
         ---
         # Empty
         ...
         %YAML 1.2
         ---
-        matches %: 20''',
-      );
+        matches %: 20''');
     });
   });
 
   // Chapter 10: Recommended Schemas
   group('10.1: Failsafe Schema', () {
     test('[Example 10.1]', () {
-      expectYamlLoads(
-        {
-          'Block style': {
-            'Clark': 'Evans',
-            'Ingy': 'döt Net',
-            'Oren': 'Ben-Kiki',
-          },
-          'Flow style': {
-            'Clark': 'Evans',
-            'Ingy': 'döt Net',
-            'Oren': 'Ben-Kiki',
-          },
+      expectYamlLoads({
+        'Block style': {
+          'Clark': 'Evans',
+          'Ingy': 'döt Net',
+          'Oren': 'Ben-Kiki'
         },
-        '''
+        'Flow style': {'Clark': 'Evans', 'Ingy': 'döt Net', 'Oren': 'Ben-Kiki'}
+      }, '''
         Block style: !!map
           Clark : Evans
           Ingy  : döt Net
           Oren  : Ben-Kiki
 
-        Flow style: !!map { Clark: Evans, Ingy: döt Net, Oren: Ben-Kiki }''',
-      );
+        Flow style: !!map { Clark: Evans, Ingy: döt Net, Oren: Ben-Kiki }''');
     });
 
     test('[Example 10.2]', () {
-      expectYamlLoads(
-        {
-          'Block style': ['Clark Evans', 'Ingy döt Net', 'Oren Ben-Kiki'],
-          'Flow style': ['Clark Evans', 'Ingy döt Net', 'Oren Ben-Kiki'],
-        },
-        '''
+      expectYamlLoads({
+        'Block style': ['Clark Evans', 'Ingy döt Net', 'Oren Ben-Kiki'],
+        'Flow style': ['Clark Evans', 'Ingy döt Net', 'Oren Ben-Kiki']
+      }, '''
         Block style: !!seq
         - Clark Evans
         - Ingy döt Net
         - Oren Ben-Kiki
 
-        Flow style: !!seq [ Clark Evans, Ingy döt Net, Oren Ben-Kiki ]''',
-      );
+        Flow style: !!seq [ Clark Evans, Ingy döt Net, Oren Ben-Kiki ]''');
     });
 
     test('[Example 10.3]', () {
-      expectYamlLoads(
-        {
-          'Block style': 'String: just a theory.',
-          'Flow style': 'String: just a theory.',
-        },
-        '''
+      expectYamlLoads({
+        'Block style': 'String: just a theory.',
+        'Flow style': 'String: just a theory.'
+      }, '''
         Block style: !!str |-
           String: just a theory.
 
-        Flow style: !!str "String: just a theory."''',
-      );
+        Flow style: !!str "String: just a theory."''');
     });
   });
 
@@ -2088,101 +1827,83 @@ void main() {
     test('[Example 10.4]', () {
       var doc = deepEqualsMap({'key with null value': null});
       doc[null] = 'value for null key';
-      expectYamlStreamLoads(
-        [doc],
-        '''
+      expectYamlStreamLoads([doc], '''
         !!null null: value for null key
-        key with null value: !!null null''',
-      );
+        key with null value: !!null null''');
     });
 
     test('[Example 10.5]', () {
-      expectYamlStreamLoads(
-        [
-          {'YAML is a superset of JSON': true, 'Pluto is a planet': false},
-        ],
-        '''
+      expectYamlStreamLoads([
+        {'YAML is a superset of JSON': true, 'Pluto is a planet': false}
+      ], '''
         YAML is a superset of JSON: !!bool true
-        Pluto is a planet: !!bool false''',
-      );
+        Pluto is a planet: !!bool false''');
     });
 
     test('[Example 10.6]', () {
-      expectYamlStreamLoads(
-        [
-          {'negative': -12, 'zero': 0, 'positive': 34},
-        ],
-        '''
+      expectYamlStreamLoads([
+        {'negative': -12, 'zero': 0, 'positive': 34}
+      ], '''
         negative: !!int -12
         zero: !!int 0
-        positive: !!int 34''',
-      );
+        positive: !!int 34''');
     });
 
     test('[Example 10.7]', () {
-      expectYamlStreamLoads(
-        [
-          {
-            'negative': -1,
-            'zero': 0,
-            'positive': 23000,
-            'infinity': infinity,
-            'not a number': nan,
-          },
-        ],
-        '''
+      expectYamlStreamLoads([
+        {
+          'negative': -1,
+          'zero': 0,
+          'positive': 23000,
+          'infinity': infinity,
+          'not a number': nan
+        }
+      ], '''
         negative: !!float -1
         zero: !!float 0
         positive: !!float 2.3e4
         infinity: !!float .inf
-        not a number: !!float .nan''',
-      );
+        not a number: !!float .nan''');
     }, skip: 'Fails for single digit float');
 
     test('[Example 10.8]', () {
-      expectYamlStreamLoads(
-        [
-          {
-            'A null': null,
-            'Booleans': [true, false],
-            'Integers': [0, -0, 3, -19],
-            'Floats': [0, 0, 12000, -200000],
-            // Despite being invalid in the JSON schema, these values are valid in
-            // the core schema which this implementation supports.
-            'Invalid': [true, null, 7, 0x3A, 12.3],
-          },
-        ],
-        '''
+      expectYamlStreamLoads([
+        {
+          'A null': null,
+          'Booleans': [true, false],
+          'Integers': [0, -0, 3, -19],
+          'Floats': [0, 0, 12000, -200000],
+          // Despite being invalid in the JSON schema, these values are valid in
+          // the core schema which this implementation supports.
+          'Invalid': [true, null, 7, 0x3A, 12.3]
+        }
+      ], '''
         A null: null
         Booleans: [ true, false ]
         Integers: [ 0, -0, 3, -19 ]
         Floats: [ 0., -0.0, 12e03, -2E+05 ]
-        Invalid: [ True, Null, 0o7, 0x3A, +12.3 ]''',
-      );
+        Invalid: [ True, Null, 0o7, 0x3A, +12.3 ]''');
     });
   });
 
   group('10.3: Core Schema', () {
     test('[Example 10.9]', () {
-      expectYamlLoads(
-        {
-          'A null': null,
-          'Also a null': null,
-          'Not a null': '',
-          'Booleans': [true, true, false, false],
-          'Integers': [0, 7, 0x3A, -19],
-          'Floats': [0, 0, 0.5, 12000, -200000],
-          'Also floats': [infinity, -infinity, infinity, nan],
-        },
-        '''
+      expectYamlLoads({
+        'A null': null,
+        'Also a null': null,
+        'Not a null': '',
+        'Booleans': [true, true, false, false],
+        'Integers': [0, 7, 0x3A, -19],
+        'Floats': [0, 0, 0.5, 12000, -200000],
+        'Also floats': [infinity, -infinity, infinity, nan]
+      }, '''
         A null: null
         Also a null: # Empty
         Not a null: ""
         Booleans: [ true, True, false, FALSE ]
         Integers: [ 0, 0o7, 0x3A, -19 ]
         Floats: [ 0., -0.0, .5, +12e03, -2E+05 ]
-        Also floats: [ .inf, -.Inf, +.INF, .NAN ]''',
-      );
+        Also floats: [ .inf, -.Inf, +.INF, .NAN ]''');
     });
   });
 
@@ -2194,10 +1915,8 @@ void main() {
       expect(loadYaml(yaml).keys.toList(), permutation);
       sanityCheckCount++;
     }
-    final expectedPermutationCount = List.generate(
-      keys.length,
-      (i) => i + 1,
-    ).reduce((n, i) => n * i);
+    final expectedPermutationCount =
+        List.generate(keys.length, (i) => i + 1).reduce((n, i) => n * i);
     expect(sanityCheckCount, expectedPermutationCount);
   });
 }

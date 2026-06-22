@@ -66,11 +66,10 @@ class SharedStdIn extends Stream<List<int>> {
 
   StreamController<List<int>> _getCurrent() =>
       _current ??= StreamController<List<int>>(
-        onCancel: () {
-          _current = null;
-        },
-        sync: true,
-      );
+          onCancel: () {
+            _current = null;
+          },
+          sync: true);
 
   @override
   StreamSubscription<List<int>> listen(
@@ -85,11 +84,9 @@ class SharedStdIn extends Stream<List<int>> {
     // ignore: close_sinks
     final controller = _getCurrent();
     if (controller.hasListener) {
-      throw StateError(
-        ''
-        'Subscriber already listening. The existing subscriber must cancel '
-        'before another may be added.',
-      );
+      throw StateError(''
+          'Subscriber already listening. The existing subscriber must cancel '
+          'before another may be added.');
     }
     return controller.stream.listen(
       onData,

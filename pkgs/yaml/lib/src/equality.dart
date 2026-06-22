@@ -111,9 +111,8 @@ int deepHashCode(Object? obj) {
         return equality.hash(value.keys.map(deepHashCodeInner)) ^
             equality.hash(value.values.map(deepHashCodeInner));
       } else if (value is Iterable) {
-        return const IterableEquality<Object?>().hash(
-          value.map(deepHashCodeInner),
-        );
+        return const IterableEquality<Object?>()
+            .hash(value.map(deepHashCodeInner));
       } else if (value is YamlScalar) {
         return (value.value as Object?).hashCode;
       } else {

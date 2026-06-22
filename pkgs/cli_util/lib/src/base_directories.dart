@@ -228,15 +228,12 @@ final class BaseDirectories {
     // `$HOME/Library/Preferences/` may only contain `.plist` files, so use
     // `Application Support` instead.
     _XdgBaseDirectoryKind.data ||
-    _XdgBaseDirectoryKind.state => path.join(
-      _home,
-      'Library',
-      'Application Support',
-    ),
+    _XdgBaseDirectoryKind
+        .state => path.join(_home, 'Library', 'Application Support'),
     _XdgBaseDirectoryKind.cache => path.join(_home, 'Library', 'Caches'),
     _XdgBaseDirectoryKind.runtime =>
-      // https://stackoverflow.com/a/76799489
-      path.join(_home, 'Library', 'Caches', 'TemporaryItems'),
+    // https://stackoverflow.com/a/76799489
+    path.join(_home, 'Library', 'Caches', 'TemporaryItems'),
   };
 
   String? _baseDirectoryLinux(_XdgBaseDirectoryKind dir) {

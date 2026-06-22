@@ -49,7 +49,7 @@ final invalidSelectors = [
   {'name': 'Invalid [att=value] selector', 'selector': '[*|*=test]'},
   {
     'name': 'Invalid [att=value] selector',
-    'selector': '[class= space unquoted ]',
+    'selector': '[class= space unquoted ]'
   },
   {'name': 'Unknown pseudo-class', 'selector': 'div:example'},
   {'name': 'Unknown pseudo-class', 'selector': ':example'},
@@ -59,7 +59,7 @@ final invalidSelectors = [
   {'name': 'Undeclared namespace', 'selector': 'ns|div'},
   {'name': 'Undeclared namespace', 'selector': ':not(ns|div)'},
   {'name': 'Invalid namespace', 'selector': '^|div'},
-  {'name': 'Invalid namespace', 'selector': '\$|div'},
+  {'name': 'Invalid namespace', 'selector': '\$|div'}
 ];
 
 /*
@@ -86,7 +86,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': ['html'],
     'exclude': ['element', 'fragment', 'detached'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Type selector, matching html element',
@@ -94,7 +94,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': <String>[] /*no matches*/,
     'exclude': ['document'],
     'level': 1,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name': 'Type selector, matching body element',
@@ -102,7 +102,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': ['body'],
     'exclude': ['element', 'fragment', 'detached'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Type selector, matching body element',
@@ -110,7 +110,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': <String>[] /*no matches*/,
     'exclude': ['document'],
     'level': 1,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
 
   // Universal Selector
@@ -124,10 +124,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'universal-hr1',
       'universal-pre1',
       'universal-p2',
-      'universal-address1',
+      'universal-address1'
     ],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -137,10 +137,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'universal-code1',
       'universal-span1',
       'universal-a1',
-      'universal-code2',
+      'universal-code2'
     ],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -148,7 +148,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#empty>*',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -164,10 +164,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'universal-a1',
       'universal-address1',
       'universal-code2',
-      'universal-a2',
+      'universal-a2'
     ],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 
   // Attribute Selectors
@@ -177,7 +177,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.attr-presence-div1[align]',
     'expect': ['attr-presence-div1'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -185,7 +185,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.attr-presence-div2[align]',
     'expect': ['attr-presence-div2'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -194,7 +194,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': ['attr-presence-a1', 'attr-presence-span1'],
     'exclude': ['xhtml'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -203,14 +203,14 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': <String>[],
     'exclude': ['html'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Attribute presence selector, matching custom data-* attribute',
     'selector': '[data-attr-presence]',
     'expect': ['attr-presence-pre1', 'attr-presence-blockquote1'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -218,7 +218,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.attr-presence-div3[align], .attr-presence-div4[align]',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -226,7 +226,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': 'ul[data-中文]',
     'expect': ['attr-presence-ul1'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -234,7 +234,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-presence-select1 option[selected]',
     'expect': <String>[] /* no matches */,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -242,7 +242,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-presence-select2 option[selected]',
     'expect': ['attr-presence-select2-option4'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -250,10 +250,10 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-presence-select3 option[selected]',
     'expect': [
       'attr-presence-select3-option2',
-      'attr-presence-select3-option3',
+      'attr-presence-select3-option3'
     ],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 
   // - value                     [att=val]
@@ -262,7 +262,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-value [align="center"]',
     'expect': ['attr-value-div1'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -270,7 +270,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-value [align=""]',
     'expect': ['attr-value-div2'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -278,7 +278,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-value [align="c"]',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -286,7 +286,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-value [align="centera"]',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -294,7 +294,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '[data-attr-value="\\e9"]',
     'expect': ['attr-value-div3'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -302,7 +302,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '[data-attr-value_foo="\\e9"]',
     'expect': ['attr-value-div4'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -314,10 +314,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'attr-value-input4',
       'attr-value-input6',
       'attr-value-input8',
-      'attr-value-input9',
+      'attr-value-input9'
     ],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -329,10 +329,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'attr-value-input4',
       'attr-value-input6',
       'attr-value-input8',
-      'attr-value-input9',
+      'attr-value-input9'
     ],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -343,10 +343,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'attr-value-input4',
       'attr-value-input6',
       'attr-value-input8',
-      'attr-value-input9',
+      'attr-value-input9'
     ],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -354,7 +354,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '[data-attr-value=中文]',
     'expect': ['attr-value-div5'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 
   // - whitespace-separated list [att~=val]
@@ -364,7 +364,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-whitespace [class~="div1"]',
     'expect': ['attr-whitespace-div1'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -372,7 +372,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-whitespace [class~=""]',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -380,7 +380,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '[data-attr-whitespace~="div"]',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -388,7 +388,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '[data-attr-whitespace~="\\0000e9"]',
     'expect': ['attr-whitespace-div4'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -396,7 +396,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '[data-attr-whitespace_foo~="\\e9"]',
     'expect': ['attr-whitespace-div5'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -408,10 +408,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'attr-whitespace-a2',
       'attr-whitespace-a3',
       'attr-whitespace-a5',
-      'attr-whitespace-a7',
+      'attr-whitespace-a7'
     ],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -423,10 +423,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'attr-whitespace-a2',
       'attr-whitespace-a3',
       'attr-whitespace-a5',
-      'attr-whitespace-a7',
+      'attr-whitespace-a7'
     ],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -438,10 +438,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'attr-whitespace-a2',
       'attr-whitespace-a3',
       'attr-whitespace-a5',
-      'attr-whitespace-a7',
+      'attr-whitespace-a7'
     ],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -449,7 +449,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-whitespace a[rel~="book mark"]',
     'expect': <String>[] /* no matches */,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -457,7 +457,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-whitespace [title~=中文]',
     'expect': ['attr-whitespace-p1'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 
   // - hyphen-separated list     [att|=val]
@@ -467,7 +467,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-hyphen-div1[lang|="en"]',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -475,7 +475,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-hyphen-div2[lang|="fr"]',
     'expect': ['attr-hyphen-div2'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -483,7 +483,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-hyphen-div3[lang|="en"]',
     'expect': ['attr-hyphen-div3'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -491,7 +491,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-hyphen-div4[lang|="es-AR"]',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
 
   // - substring begins-with     [att^=val] (Level 3)
@@ -501,7 +501,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-begins a[href^="http://www"]',
     'expect': ['attr-begins-a1', 'attr-begins-a3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -509,7 +509,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-begins [lang^="en-"]',
     'expect': ['attr-begins-div2', 'attr-begins-div4'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -517,7 +517,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-begins [class^=apple]',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
   {
     'name':
@@ -525,7 +525,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': "#attr-begins [class^=' apple']",
     'expect': ['attr-begins-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -533,7 +533,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-begins [class^=" apple"]',
     'expect': ['attr-begins-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -541,7 +541,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-begins [class^= apple]',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
 
   // - substring ends-with       [att\$=val] (Level 3)
@@ -551,7 +551,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-ends a[href\$=".org"]',
     'expect': ['attr-ends-a1', 'attr-ends-a3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -559,7 +559,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-ends [lang\$="-CH"]',
     'expect': ['attr-ends-div2', 'attr-ends-div4'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -567,7 +567,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-ends [class\$=apple]',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
   {
     'name':
@@ -575,7 +575,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': "#attr-ends [class\$='apple ']",
     'expect': ['attr-ends-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -583,7 +583,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-ends [class\$="apple "]',
     'expect': ['attr-ends-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -591,7 +591,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-ends [class\$=apple ]',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
 
   // - substring contains        [att*=val] (Level 3)
@@ -601,7 +601,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-contains a[href*="http://www"]',
     'expect': ['attr-contains-a1', 'attr-contains-a3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -609,7 +609,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-contains a[href*=".org"]',
     'expect': ['attr-contains-a1', 'attr-contains-a2'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -617,7 +617,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-contains a[href*=".example."]',
     'expect': ['attr-contains-a1', 'attr-contains-a3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -625,7 +625,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-contains [lang*="en-"]',
     'expect': ['attr-contains-div2', 'attr-contains-div6'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -633,7 +633,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-contains [lang*="-CH"]',
     'expect': ['attr-contains-div3', 'attr-contains-div5'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -641,7 +641,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': "#attr-contains [class*=' apple']",
     'expect': ['attr-contains-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -649,7 +649,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': "#attr-contains [class*='orange ']",
     'expect': ['attr-contains-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -657,7 +657,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': "#attr-contains [class*='ple banana ora']",
     'expect': ['attr-contains-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -665,7 +665,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-contains [class*=" apple"]',
     'expect': ['attr-contains-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -673,7 +673,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-contains [class*="orange "]',
     'expect': ['attr-contains-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -681,7 +681,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-contains [class*="ple banana ora"]',
     'expect': ['attr-contains-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -689,7 +689,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-contains [class*= apple]',
     'expect': ['attr-contains-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -697,7 +697,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-contains [class*=orange ]',
     'expect': ['attr-contains-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -705,7 +705,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#attr-contains [class*= banana ]',
     'expect': ['attr-contains-p1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // Pseudo-classes
@@ -716,7 +716,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': ['html'],
     'exclude': ['element', 'fragment', 'detached'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name': ':root pseudo-class selector, not matching document root element',
@@ -724,7 +724,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': <String>[] /*no matches*/,
     'exclude': ['document'],
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
 
   // - :nth-child(n)         (Level 3)
@@ -735,10 +735,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'pseudo-nth-td3',
       'pseudo-nth-td9',
       'pseudo-nth-tr3',
-      'pseudo-nth-td15',
+      'pseudo-nth-td15'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name': ':nth-child selector, matching every third child element',
@@ -747,10 +747,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'pseudo-nth-li3',
       'pseudo-nth-li6',
       'pseudo-nth-li9',
-      'pseudo-nth-li12',
+      'pseudo-nth-li12'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -761,10 +761,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'pseudo-nth-li6',
       'pseudo-nth-li8',
       'pseudo-nth-li10',
-      'pseudo-nth-li12',
+      'pseudo-nth-li12'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -772,7 +772,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-p1 :nth-child(4n-1)',
     'expect': ['pseudo-nth-em2', 'pseudo-nth-span3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :nth-last-child       (Level 3)
@@ -783,10 +783,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'pseudo-nth-tr1',
       'pseudo-nth-td4',
       'pseudo-nth-td10',
-      'pseudo-nth-td16',
+      'pseudo-nth-td16'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -796,10 +796,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'pseudo-nth-li1',
       'pseudo-nth-li4',
       'pseudo-nth-li7',
-      'pseudo-nth-li10',
+      'pseudo-nth-li10'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -810,10 +810,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'pseudo-nth-li3',
       'pseudo-nth-li5',
       'pseudo-nth-li7',
-      'pseudo-nth-li9',
+      'pseudo-nth-li9'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -821,7 +821,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-p1 :nth-last-child(4n-1)',
     'expect': ['pseudo-nth-span2', 'pseudo-nth-span4'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :nth-of-type(n)       (Level 3)
@@ -830,7 +830,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-p1 em:nth-of-type(3)',
     'expect': ['pseudo-nth-em3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -841,10 +841,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'pseudo-nth-span2',
       'pseudo-nth-span4',
       'pseudo-nth-strong2',
-      'pseudo-nth-em4',
+      'pseudo-nth-em4'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -852,7 +852,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-p1 span:nth-of-type(2n-1)',
     'expect': ['pseudo-nth-span1', 'pseudo-nth-span3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :nth-last-of-type(n)  (Level 3)
@@ -861,7 +861,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-p1 em:nth-last-of-type(3)',
     'expect': ['pseudo-nth-em2'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -872,10 +872,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'pseudo-nth-em1',
       'pseudo-nth-strong1',
       'pseudo-nth-em3',
-      'pseudo-nth-span3',
+      'pseudo-nth-span3'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -883,7 +883,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-p1 span:nth-last-of-type(2n-1)',
     'expect': ['pseudo-nth-span2', 'pseudo-nth-span4'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :first-of-type        (Level 3)
@@ -892,7 +892,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-p1 em:first-of-type',
     'expect': ['pseudo-nth-em1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -900,7 +900,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-p1 :first-of-type',
     'expect': ['pseudo-nth-span1', 'pseudo-nth-em1', 'pseudo-nth-strong1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -908,7 +908,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-table1 tr :first-of-type',
     'expect': ['pseudo-nth-td1', 'pseudo-nth-td7', 'pseudo-nth-td13'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :last-of-type         (Level 3)
@@ -917,7 +917,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-p1 em:last-of-type',
     'expect': ['pseudo-nth-em4'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -925,7 +925,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-p1 :last-of-type',
     'expect': ['pseudo-nth-span4', 'pseudo-nth-strong2', 'pseudo-nth-em4'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -933,7 +933,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-nth-table1 tr :last-of-type',
     'expect': ['pseudo-nth-td6', 'pseudo-nth-td12', 'pseudo-nth-td18'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :first-child
@@ -943,7 +943,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-first-child div:first-child',
     'expect': ['pseudo-first-child-div1'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -952,7 +952,7 @@ final List<Map<String, dynamic>> validSelectors = [
         '.pseudo-first-child-div2:first-child, .pseudo-first-child-div3:first-child',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -961,10 +961,10 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': [
       'pseudo-first-child-span1',
       'pseudo-first-child-span3',
-      'pseudo-first-child-span5',
+      'pseudo-first-child-span5'
     ],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 
   // - :last-child           (Level 3)
@@ -974,7 +974,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-last-child div:last-child',
     'expect': ['pseudo-last-child-div3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -983,7 +983,7 @@ final List<Map<String, dynamic>> validSelectors = [
         '.pseudo-last-child-div1:last-child, .pseudo-last-child-div2:first-child',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
   {
     'name':
@@ -992,10 +992,10 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': [
       'pseudo-last-child-span2',
       'pseudo-last-child-span4',
-      'pseudo-last-child-span6',
+      'pseudo-last-child-span6'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :only-child           (Level 3)
@@ -1005,7 +1005,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-only :only-child',
     'expect': ['pseudo-only-span1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -1013,7 +1013,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-only em:only-child',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
 
   // - :only-of-type         (Level 3)
@@ -1023,7 +1023,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-only :only-of-type',
     'expect': ['pseudo-only-span1', 'pseudo-only-em1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -1031,7 +1031,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-only em:only-of-type',
     'expect': ['pseudo-only-em1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :empty                (Level 3)
@@ -1040,14 +1040,14 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-empty p:empty',
     'expect': ['pseudo-empty-p1', 'pseudo-empty-p2'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name': ':empty pseudo-class selector, matching all empty elements',
     'selector': '#pseudo-empty :empty',
     'expect': ['pseudo-empty-p1', 'pseudo-empty-p2', 'pseudo-empty-span1'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :link and :visited
@@ -1059,7 +1059,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-link :link, #pseudo-link :visited',
     'expect': ['pseudo-link-a1', 'pseudo-link-a2', 'pseudo-link-area1'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1068,7 +1068,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': ['pseudo-link-link1', 'pseudo-link-link2'],
     'exclude': ['element', 'fragment', 'detached'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1077,7 +1077,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': <String>[] /*no matches*/,
     'exclude': ['document'],
     'level': 1,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -1086,7 +1086,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': <String>[] /*no matches*/,
     'exclude': ['document'],
     'level': 1,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
 
   // - :target               (Level 3)
@@ -1097,7 +1097,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': <String>[] /*no matches*/,
     'exclude': ['document', 'element'],
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
   {
     'name':
@@ -1106,7 +1106,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': ['target'],
     'exclude': ['fragment', 'detached'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :lang()
@@ -1116,7 +1116,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': ['pseudo-lang-div1'],
     'exclude': ['detached', 'fragment'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1125,7 +1125,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': <String>[] /*no matches*/,
     'exclude': ['document', 'element'],
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -1133,7 +1133,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-lang-div2:lang(fr)',
     'expect': ['pseudo-lang-div2'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1141,14 +1141,14 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-lang-div3:lang(en)',
     'expect': ['pseudo-lang-div3'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': ':lang pseudo-class selector, not matching incorrect language',
     'selector': '#pseudo-lang-div4:lang(es-AR)',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
 
   // - :enabled              (Level 3)
@@ -1167,10 +1167,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'pseudo-ui-input8',
       'pseudo-ui-input9',
       'pseudo-ui-textarea1',
-      'pseudo-ui-button1',
+      'pseudo-ui-button1'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :disabled             (Level 3)
@@ -1189,10 +1189,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'pseudo-ui-input17',
       'pseudo-ui-input18',
       'pseudo-ui-textarea2',
-      'pseudo-ui-button2',
+      'pseudo-ui-button2'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :checked              (Level 3)
@@ -1204,10 +1204,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'pseudo-ui-input4',
       'pseudo-ui-input6',
       'pseudo-ui-input13',
-      'pseudo-ui-input15',
+      'pseudo-ui-input15'
     ],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // - :not(s)               (Level 3)
@@ -1216,28 +1216,28 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#not>:not(div)',
     'expect': ['not-p1', 'not-p2', 'not-p3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name': ':not pseudo-class selector, matching ',
     'selector': '#not * :not(:first-child)',
     'expect': ['not-em1', 'not-em2', 'not-em3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name': ':not pseudo-class selector, matching nothing',
     'selector': ':not(*)',
     'expect': <String>[] /* no matches */,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
   {
     'name': ':not pseudo-class selector, matching nothing',
     'selector': ':not(*|*)',
     'expect': <String>[] /* no matches */,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
 
   // Pseudo-elements
@@ -1248,7 +1248,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-element:first-line',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -1256,7 +1256,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-element::first-line',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
 
   // - ::first-letter
@@ -1266,7 +1266,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-element:first-letter',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -1274,7 +1274,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-element::first-letter',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
 
   // - ::before
@@ -1284,7 +1284,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-element:before',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -1292,7 +1292,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-element::before',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
 
   // - ::after
@@ -1302,7 +1302,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-element:after',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -1310,7 +1310,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#pseudo-element::after',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
 
   // Class Selectors
@@ -1319,7 +1319,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.class-p',
     'expect': ['class-p1', 'class-p2', 'class-p3'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1331,17 +1331,17 @@ final List<Map<String, dynamic>> validSelectors = [
       'class-p4',
       'class-div3',
       'class-p6',
-      'class-div4',
+      'class-div4'
     ],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Class Selector, chained, with type selector',
     'selector': 'div.apple.banana.orange',
     'expect': ['class-div1', 'class-div2', 'class-div3', 'class-div4'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   // Caution: If copying and pasting the folowing non-ASCII classes, ensure unicode normalisation is not performed in the process.
   {
@@ -1350,7 +1350,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.台北Táiběi',
     'expect': ['class-span1'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1358,7 +1358,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.台北',
     'expect': ['class-span1', 'class-span2'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1366,7 +1366,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.台北Táiběi.台北',
     'expect': ['class-span1'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1374,7 +1374,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.foo\\:bar',
     'expect': ['class-span3'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1382,7 +1382,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.test\\.foo\\[5\\]bar',
     'expect': ['class-span4'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 
   // ID Selectors
@@ -1391,42 +1391,42 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#id #id-div1',
     'expect': ['id-div1'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'ID selector, chained, matching element with specified id',
     'selector': '#id-div1, #id-div1',
     'expect': ['id-div1'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'ID selector, chained, matching element with specified id',
     'selector': '#id-div1, #id-div2',
     'expect': ['id-div1', 'id-div2'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'ID Selector, chained, with type selector',
     'selector': 'div#id-div1, div#id-div2',
     'expect': ['id-div1', 'id-div2'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'ID selector, not matching non-existent descendant',
     'selector': '#id #none',
     'expect': <String>[] /*no matches*/,
     'level': 1,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name': 'ID selector, not matching non-existent ancestor',
     'selector': '#none #id-div1',
     'expect': <String>[] /*no matches*/,
     'level': 1,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name': 'ID selector, matching multiple elements with duplicate id',
@@ -1435,10 +1435,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'id-li-duplicate',
       'id-li-duplicate',
       'id-li-duplicate',
-      'id-li-duplicate',
+      'id-li-duplicate'
     ],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 
   // Caution: If copying and pasting the folowing non-ASCII IDs, ensure unicode normalisation is not performed in the process.
@@ -1447,21 +1447,21 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#台北Táiběi',
     'expect': ['台北Táiběi'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'ID selector, matching id value using non-ASCII characters',
     'selector': '#台北',
     'expect': ['台北'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'ID selector, matching id values using non-ASCII characters',
     'selector': '#台北Táiběi, #台北',
     'expect': ['台北Táiběi', '台北'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 
   // XXX runMatchesTest() in level2-lib.js can't handle this because obtaining the expected nodes requires escaping characters when generating the selector from 'expect' values
@@ -1470,14 +1470,14 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#\\#foo\\:bar',
     'expect': ['#foo:bar'],
     'level': 1,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name': 'ID selector, matching element with id with escaped character',
     'selector': '#test\\.foo\\[5\\]bar',
     'expect': ['test.foo[5]bar'],
     'level': 1,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
 
   // Namespaces
@@ -1489,24 +1489,24 @@ final List<Map<String, dynamic>> validSelectors = [
       'any-namespace-div1',
       'any-namespace-div2',
       'any-namespace-div3',
-      'any-namespace-div4',
+      'any-namespace-div4'
     ],
     'level': 3,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name': 'Namespace selector, matching div elements in no namespace only',
     'selector': '#no-namespace |div',
     'expect': ['no-namespace-div3'],
     'level': 3,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name': 'Namespace selector, matching any elements in no namespace only',
     'selector': '#no-namespace |*',
     'expect': ['no-namespace-div3'],
     'level': 3,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
 
   // Combinators
@@ -1519,10 +1519,10 @@ final List<Map<String, dynamic>> validSelectors = [
       'descendant-div1',
       'descendant-div2',
       'descendant-div3',
-      'descendant-div4',
+      'descendant-div4'
     ],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1531,7 +1531,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'expect': ['descendant-div1'],
     'exclude': ['detached', 'fragment'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1539,7 +1539,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': 'div #descendant-div1',
     'expect': ['descendant-div1'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1547,7 +1547,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#descendant #descendant-div2',
     'expect': ['descendant-div2'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1555,7 +1555,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#descendant .descendant-div2',
     'expect': ['descendant-div2'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1563,7 +1563,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.descendant-div1 .descendant-div3',
     'expect': ['descendant-div3'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1571,14 +1571,14 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#descendant-div1 #descendant-div4',
     'expect': <String>[] /*no matches*/,
     'level': 1,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name': 'Descendant combinator, whitespace characters',
     'selector': '#descendant\t\r\n#descendant-div2',
     'expect': ['descendant-div2'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 
   // - Child combinator '>'
@@ -1588,7 +1588,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#child>div',
     'expect': ['child-div1', 'child-div4'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1596,7 +1596,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': 'div>#child-div1',
     'expect': ['child-div1'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1604,7 +1604,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#child>#child-div1',
     'expect': ['child-div1'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1612,7 +1612,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#child-div1>.child-div2',
     'expect': ['child-div2'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1620,7 +1620,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.child-div1>.child-div2',
     'expect': ['child-div2'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1628,7 +1628,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#child>#child-div3',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -1636,7 +1636,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#child-div1>.child-div3',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name':
@@ -1644,35 +1644,35 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.child-div1>.child-div3',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name': 'Child combinator, surrounded by whitespace',
     'selector': '#child-div1\t\r\n>\t\r\n#child-div2',
     'expect': ['child-div2'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Child combinator, whitespace after',
     'selector': '#child-div1>\t\r\n#child-div2',
     'expect': ['child-div2'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Child combinator, whitespace before',
     'selector': '#child-div1\t\r\n>#child-div2',
     'expect': ['child-div2'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Child combinator, no whitespace',
     'selector': '#child-div1>#child-div2',
     'expect': ['child-div2'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 
   // - Adjacent sibling combinator '+'
@@ -1682,7 +1682,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#adjacent-div2+div',
     'expect': ['adjacent-div4'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1690,7 +1690,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': 'div+#adjacent-div4',
     'expect': ['adjacent-div4'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1698,7 +1698,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#adjacent-div2+#adjacent-div4',
     'expect': ['adjacent-div4'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1706,7 +1706,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#adjacent-div2+.adjacent-div4',
     'expect': ['adjacent-div4'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1714,7 +1714,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '.adjacent-div2+.adjacent-div4',
     'expect': ['adjacent-div4'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1722,7 +1722,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#adjacent div+p',
     'expect': ['adjacent-p2'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name':
@@ -1730,35 +1730,35 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#adjacent-div2+#adjacent-p2, #adjacent-div2+#adjacent-div1',
     'expect': <String>[] /*no matches*/,
     'level': 2,
-    'testType': testQsaBaseline,
+    'testType': testQsaBaseline
   },
   {
     'name': 'Adjacent sibling combinator, surrounded by whitespace',
     'selector': '#adjacent-p2\t\r\n+\t\r\n#adjacent-p3',
     'expect': ['adjacent-p3'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Adjacent sibling combinator, whitespace after',
     'selector': '#adjacent-p2+\t\r\n#adjacent-p3',
     'expect': ['adjacent-p3'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Adjacent sibling combinator, whitespace before',
     'selector': '#adjacent-p2\t\r\n+#adjacent-p3',
     'expect': ['adjacent-p3'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Adjacent sibling combinator, no whitespace',
     'selector': '#adjacent-p2+#adjacent-p3',
     'expect': ['adjacent-p3'],
     'level': 2,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 
   // - General sibling combinator ~ (Level 3)
@@ -1768,7 +1768,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#sibling-div2~div',
     'expect': ['sibling-div4', 'sibling-div6'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -1776,7 +1776,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': 'div~#sibling-div4',
     'expect': ['sibling-div4'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -1784,7 +1784,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#sibling-div2~#sibling-div4',
     'expect': ['sibling-div4'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -1792,7 +1792,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#sibling-div2~.sibling-div',
     'expect': ['sibling-div4', 'sibling-div6'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -1800,7 +1800,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#sibling div~p',
     'expect': ['sibling-p2', 'sibling-p3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name':
@@ -1808,7 +1808,7 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#sibling>p~div',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
   {
     'name':
@@ -1816,35 +1816,35 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#sibling-div2~#sibling-div3, #sibling-div2~#sibling-div1',
     'expect': <String>[] /*no matches*/,
     'level': 3,
-    'testType': testQsaAdditional,
+    'testType': testQsaAdditional
   },
   {
     'name': 'General sibling combinator, surrounded by whitespace',
     'selector': '#sibling-p2\t\r\n~\t\r\n#sibling-p3',
     'expect': ['sibling-p3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name': 'General sibling combinator, whitespace after',
     'selector': '#sibling-p2~\t\r\n#sibling-p3',
     'expect': ['sibling-p3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name': 'General sibling combinator, whitespace before',
     'selector': '#sibling-p2\t\r\n~#sibling-p3',
     'expect': ['sibling-p3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
   {
     'name': 'General sibling combinator, no whitespace',
     'selector': '#sibling-p2~#sibling-p3',
     'expect': ['sibling-p3'],
     'level': 3,
-    'testType': testQsaAdditional | testMatchBaseline,
+    'testType': testQsaAdditional | testMatchBaseline
   },
 
   // Group of selectors (comma)
@@ -1853,27 +1853,27 @@ final List<Map<String, dynamic>> validSelectors = [
     'selector': '#group em\t\r \n,\t\r \n#group strong',
     'expect': ['group-em1', 'group-strong1'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Syntax, group of selectors separator, whitespace after',
     'selector': '#group em,\t\r\n#group strong',
     'expect': ['group-em1', 'group-strong1'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Syntax, group of selectors separator, whitespace before',
     'selector': '#group em\t\r\n,#group strong',
     'expect': ['group-em1', 'group-strong1'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
   {
     'name': 'Syntax, group of selectors separator, no whitespace',
     'selector': '#group em,#group strong',
     'expect': ['group-em1', 'group-strong1'],
     'level': 1,
-    'testType': testQsaBaseline | testMatchBaseline,
+    'testType': testQsaBaseline | testMatchBaseline
   },
 ];

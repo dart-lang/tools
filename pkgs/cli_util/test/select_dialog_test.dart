@@ -54,9 +54,10 @@ void main() {
           for (var multiSelect in [false, true]) {
             final dialogType = multiSelect ? 'MultiSelect' : 'SingleSelect';
             test('$dialogType - ${inputCombo.join(', ')}', () async {
-              final future = multiSelect
-                  ? showMultiSelectDialog(options, inputController.stream)
-                  : showSingleSelectDialog(options, inputController.stream);
+              final future =
+                  multiSelect
+                      ? showMultiSelectDialog(options, inputController.stream)
+                      : showSingleSelectDialog(options, inputController.stream);
               await pumpEventQueue();
               expect(mockStdin.lineMode, isFalse);
               expect(mockStdin.echoMode, isFalse);
@@ -247,9 +248,8 @@ void main() {
         group(multiSelect ? 'multi-select' : 'single-select', () {
           final uBox = multiSelect ? ' [ ]' : '';
           final sBox = multiSelect ? ' [x]' : '';
-          final renderer = multiSelect
-              ? showMultiSelectDialog
-              : showSingleSelectDialog;
+          final renderer =
+              multiSelect ? showMultiSelectDialog : showSingleSelectDialog;
 
           test('renders UI state correctly', () async {
             final future = renderer([
@@ -604,9 +604,8 @@ void main() {
     group('Terminal support edge cases', () {
       for (final multiselect in [true, false]) {
         group(multiselect ? 'multiselect' : 'single select', () {
-          final renderer = multiselect
-              ? showMultiSelectDialog
-              : showSingleSelectDialog;
+          final renderer =
+              multiselect ? showMultiSelectDialog : showSingleSelectDialog;
 
           test('returns null if no stdout terminal', () async {
             mockStdout.hasTerminal = false;

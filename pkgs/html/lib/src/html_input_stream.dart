@@ -61,13 +61,12 @@ class HtmlInputStream {
   /// element)
   ///
   /// [parseMeta] - Look for a <meta> element containing encoding information
-  HtmlInputStream(
-    dynamic source, [
-    String? encoding,
-    bool parseMeta = true,
-    this.generateSpans = false,
-    this.sourceUrl,
-  ]) : charEncodingName = codecName(encoding) {
+  HtmlInputStream(dynamic source,
+      [String? encoding,
+      bool parseMeta = true,
+      this.generateSpans = false,
+      this.sourceUrl])
+      : charEncodingName = codecName(encoding) {
     if (source is String) {
       _rawChars = source.codeUnits;
       charEncodingName = 'utf-8';
@@ -76,10 +75,7 @@ class HtmlInputStream {
       _rawBytes = source;
     } else {
       throw ArgumentError.value(
-        source,
-        'source',
-        'Must be a String or List<int>.',
-      );
+          source, 'source', 'Must be a String or List<int>.');
     }
 
     // Detect encoding iff no explicit "transport level" encoding is supplied
@@ -115,8 +111,7 @@ class HtmlInputStream {
         }
       }
 
-      final isSurrogatePair =
-          _isLeadSurrogate(c) &&
+      final isSurrogatePair = _isLeadSurrogate(c) &&
           i + 1 < charsLength &&
           _isTrailSurrogate(rawChars[i + 1]);
       if (!isSurrogatePair && !wasSurrogatePair) {
@@ -195,8 +190,7 @@ class HtmlInputStream {
       _rawChars = null;
       reset();
       throw ReparseException(
-        'Encoding changed from $charEncodingName to $newEncoding',
-      );
+          'Encoding changed from $charEncodingName to $newEncoding');
     }
   }
 
@@ -305,12 +299,8 @@ class HtmlInputStream {
     return String.fromCharCodes(_chars.sublist(start, _offset));
   }
 
-  String charsUntil3(
-    int charCode1,
-    int charCode2,
-    int charCode3, [
-    bool opposite = false,
-  ]) {
+  String charsUntil3(int charCode1, int charCode2, int charCode3,
+      [bool opposite = false]) {
     final start = _offset;
     int? c;
     while ((c = peekCodeUnit()) != null &&
@@ -415,8 +405,7 @@ bool _invalidUnicode(int c) {
 /// string doesn't correspond to a valid encoding.
 String? codecName(String? encoding) {
   final asciiPunctuation = RegExp(
-    '[\u0009-\u000D\u0020-\u002F\u003A-\u0040\u005B-\u0060\u007B-\u007E]',
-  );
+      '[\u0009-\u000D\u0020-\u002F\u003A-\u0040\u005B-\u0060\u007B-\u007E]');
 
   if (encoding == null) return null;
   final canonicalName = encoding.replaceAll(asciiPunctuation, '').toLowerCase();
@@ -444,6 +433,6 @@ List<int> _decodeBytes(String encoding, List<int> bytes) {
       // NOTE: To match the behavior of the other decode functions, we eat the
       // UTF-8 BOM here. This is the default behavior of `utf8.decode`.
       utf8.decode(bytes).codeUnits,
-    _ => throw ArgumentError('Encoding $encoding not supported'),
+    _ => throw ArgumentError('Encoding $encoding not supported')
   };
 }

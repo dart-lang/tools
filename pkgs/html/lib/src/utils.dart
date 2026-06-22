@@ -74,10 +74,8 @@ String formatStr(String format, Map<String, Object?>? data) {
           result.write(padWithZeros(number, numberSize));
           break;
         default:
-          throw UnsupportedError(
-            'formatStr does not support format '
-            'character ${format[match]}',
-          );
+          throw UnsupportedError('formatStr does not support format '
+              'character ${format[match]}');
       }
 
       last = match + 1;

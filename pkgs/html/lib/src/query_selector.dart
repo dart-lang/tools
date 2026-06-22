@@ -19,11 +19,8 @@ Element? querySelector(Node node, String selector) =>
 
 List<Element> querySelectorAll(Node node, String selector) {
   final results = <Element>[];
-  SelectorEvaluator().querySelectorAll(
-    node,
-    _parseSelectorList(selector),
-    results,
-  );
+  SelectorEvaluator()
+      .querySelectorAll(node, _parseSelectorList(selector), results);
   return results;
 }
 
@@ -56,10 +53,7 @@ class SelectorEvaluator extends Visitor {
   }
 
   void querySelectorAll(
-    Node root,
-    SelectorGroup selector,
-    List<Element> results,
-  ) {
+      Node root, SelectorGroup selector, List<Element> results) {
     for (var element in root.nodes.whereType<Element>()) {
       if (matches(element, selector)) results.add(element);
       querySelectorAll(element, selector, results);
@@ -137,10 +131,8 @@ class SelectorEvaluator extends Visitor {
   }
 
   UnimplementedError _unimplemented(SimpleSelector selector) =>
-      UnimplementedError(
-        "'$selector' selector of type "
-        '${selector.runtimeType} is not implemented',
-      );
+      UnimplementedError("'$selector' selector of type "
+          '${selector.runtimeType} is not implemented');
 
   FormatException _unsupported(TreeNode selector) =>
       FormatException("'$selector' is not a valid selector");
@@ -158,17 +150,13 @@ class SelectorEvaluator extends Visitor {
 
       // http://dev.w3.org/csswg/selectors-4/#the-empty-pseudo
       case 'empty':
-        return _element!.nodes.any(
-          (n) => !(n is Element || n is Text && n.text.isNotEmpty),
-        );
+        return _element!.nodes
+            .any((n) => !(n is Element || n is Text && n.text.isNotEmpty));
 
       // http://dev.w3.org/csswg/selectors-4/#the-blank-pseudo
       case 'blank':
-        return _element!.nodes.any(
-          (n) =>
-              !(n is Element ||
-                  n is Text && n.text.runes.any((r) => !isWhitespaceCC(r))),
-        );
+        return _element!.nodes.any((n) => !(n is Element ||
+            n is Text && n.text.runes.any((r) => !isWhitespaceCC(r))));
 
       // http://dev.w3.org/csswg/selectors-4/#the-first-child-pseudo
       case 'first-child':
@@ -312,13 +300,12 @@ class SelectorEvaluator extends Visitor {
       TokenKind.EQUALS => value == select,
       TokenKind.INCLUDES =>
         value.split(' ').any((v) => v.isNotEmpty && v == select),
-      TokenKind.DASH_MATCH =>
-        value.startsWith(select) &&
-            (value.length == select.length || value[select.length] == '-'),
+      TokenKind.DASH_MATCH => value.startsWith(select) &&
+          (value.length == select.length || value[select.length] == '-'),
       TokenKind.PREFIX_MATCH => value.startsWith(select),
       TokenKind.SUFFIX_MATCH => value.endsWith(select),
       TokenKind.SUBSTRING_MATCH => value.contains(select),
-      _ => throw _unsupported(node),
+      _ => throw _unsupported(node)
     };
   }
 }

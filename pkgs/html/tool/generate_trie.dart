@@ -22,10 +22,9 @@ void main() {
               'const entitiesTrieRoot = $root;'
           .replaceAll('{}', '<int, dynamic>{}');
   final formatted = DartFormatter(
-    languageVersion: DartFormatter.latestShortStyleLanguageVersion,
-  ).format(source);
+          languageVersion: DartFormatter.latestShortStyleLanguageVersion)
+      .format(source);
   final htmlDir = File(Platform.script.path).parent.parent;
-  File(
-    join(htmlDir.path, 'lib', 'src', 'trie.dart'),
-  ).writeAsStringSync(formatted);
+  File(join(htmlDir.path, 'lib', 'src', 'trie.dart'))
+      .writeAsStringSync(formatted);
 }

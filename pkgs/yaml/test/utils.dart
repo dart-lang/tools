@@ -16,9 +16,7 @@ final Matcher throwsYamlException = throwsA(isA<YamlException>());
 ///
 /// This handles recursive loops and considers `NaN` to equal itself.
 Matcher deepEquals(Object? expected) => predicate(
-  (actual) => equality.deepEquals(actual, expected),
-  'equals $expected',
-);
+    (actual) => equality.deepEquals(actual, expected), 'equals $expected');
 
 /// Constructs a new yaml.YamlMap, optionally from a normal Map.
 Map deepEqualsMap([Map? from]) {
@@ -29,11 +27,7 @@ Map deepEqualsMap([Map? from]) {
 
 /// Asserts that an error has the given message and starts at the given line/col.
 void expectErrorAtLineCol(
-  YamlException error,
-  String message,
-  int line,
-  int col,
-) {
+    YamlException error, String message, int line, int col) {
   expect(error.message, equals(message));
   expect(error.span!.start.line, equals(line));
   expect(error.span!.start.column, equals(col));
@@ -62,10 +56,7 @@ void expectYamlFails(String source) {
 /// Asserts that a string containing a single YAML document produces a given
 /// value and emits warnings when loaded.
 void expectYamlLoadsWithWarning(
-  Object? expected,
-  String source,
-  String expectedWarning,
-) {
+    Object? expected, String source, String expectedWarning) {
   final warnings = <String>[];
   final oldCallback = yamlWarningCallback;
   yamlWarningCallback = (message, [_]) {

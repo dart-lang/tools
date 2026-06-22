@@ -35,7 +35,7 @@ void setupSpecialElements(Element parent) {
     doc.createElement('div'),
     doc.createElementNS('http://www.w3.org/1999/xhtml', 'div'),
     doc.createElementNS('', 'div'),
-    doc.createElementNS('http://www.example.org/ns', 'div'),
+    doc.createElementNS('http://www.example.org/ns', 'div')
   ];
 
   div[0].id = 'any-namespace-div1';
@@ -52,7 +52,7 @@ void setupSpecialElements(Element parent) {
     doc.createElement('div'),
     doc.createElementNS('http://www.w3.org/1999/xhtml', 'div'),
     doc.createElementNS('', 'div'),
-    doc.createElementNS('http://www.example.org/ns', 'div'),
+    doc.createElementNS('http://www.example.org/ns', 'div')
   ];
 
   div[0].id = 'no-namespace-div1';
@@ -85,19 +85,13 @@ void verifyStaticList(String type, SelectorAdaptor root) {
     root.isDocument ? root.body!.append(div) : root.append(div);
 
     assertEquals(
-      pre.length,
-      preLength,
-      'The length of the NodeList should not change.',
-    );
+        pre.length, preLength, 'The length of the NodeList should not change.');
   }, '$type: static NodeList');
 
   runTest(() {
     post = root.querySelectorAll('div');
-    assertEquals(
-      post.length,
-      preLength + 1,
-      'The length of the new NodeList should be 1 more than the previous list.',
-    );
+    assertEquals(post.length, preLength + 1,
+        'The length of the new NodeList should be 1 more than the previous list.');
   }, '$type: new NodeList');
 }
 
@@ -108,20 +102,14 @@ void runSpecialSelectorTests(String type, SelectorAdaptor root) {
   // String like JavaScript does.
   runTest(() {
     // 1
-    assertEquals(
-      root.querySelectorAll('null').length,
-      1,
-      "This should find one element with the tag name 'NULL'.",
-    );
+    assertEquals(root.querySelectorAll('null').length, 1,
+        "This should find one element with the tag name 'NULL'.");
   }, '$type.querySelectorAll null');
 
   runTest(() {
     // 2
-    assertEquals(
-      root.querySelectorAll('undefined').length,
-      1,
-      "This should find one element with the tag name 'UNDEFINED'.",
-    );
+    assertEquals(root.querySelectorAll('undefined').length, 1,
+        "This should find one element with the tag name 'UNDEFINED'.");
   }, '$type.querySelectorAll undefined');
 
   // runTest(() {
@@ -136,11 +124,8 @@ void runSpecialSelectorTests(String type, SelectorAdaptor root) {
     final elm = root.querySelector('null');
     assertNotEquals(elm, null, 'This should find an element.');
     // TODO(jmesserly): change "localName" back to "tagName" once implemented.
-    assertEquals(
-      elm!.localName?.toUpperCase(),
-      'NULL',
-      "The tag name should be 'NULL'.",
-    );
+    assertEquals(elm!.localName?.toUpperCase(), 'NULL',
+        "The tag name should be 'NULL'.");
   }, '$type.querySelector null');
 
   runTest(() {
@@ -148,11 +133,8 @@ void runSpecialSelectorTests(String type, SelectorAdaptor root) {
     final elm = root.querySelector('undefined');
     assertNotEquals(elm, 'undefined', 'This should find an element.');
     // TODO(jmesserly): change "localName" back to "tagName" once implemented.
-    assertEquals(
-      elm!.localName?.toUpperCase(),
-      'UNDEFINED',
-      "The tag name should be 'UNDEFINED'.",
-    );
+    assertEquals(elm!.localName?.toUpperCase(), 'UNDEFINED',
+        "The tag name should be 'UNDEFINED'.");
   }, '$type.querySelector undefined');
 
   // runTest(() {
@@ -169,10 +151,7 @@ void runSpecialSelectorTests(String type, SelectorAdaptor root) {
     traverse(root.asNode!, (elem) {
       if (!identical(elem, root.asNode)) {
         assertEquals(
-          elem,
-          result[i],
-          'The result in index $i should be in tree order.',
-        );
+            elem, result[i], 'The result in index $i should be in tree order.');
         i++;
       }
     });
@@ -193,13 +172,8 @@ String? _getSkip(String name) {
  * Execute queries with the specified valid selectors for both querySelector() and querySelectorAll()
  * Only run these tests when results are expected. Don't run for syntax error tests.
  */
-void runValidSelectorTest(
-  String type,
-  SelectorAdaptor root,
-  List<Map<String, dynamic>> selectors,
-  int testType,
-  String docType,
-) {
+void runValidSelectorTest(String type, SelectorAdaptor root,
+    List<Map<String, dynamic>> selectors, int testType, String docType) {
   var nodeType = '';
   switch (root.nodeType) {
     case Node.DOCUMENT_NODE:
@@ -231,64 +205,37 @@ void runValidSelectorTest(
       late List<Element> foundall;
       Element? found;
 
-      runTest(
-        () {
-          foundall = root.querySelectorAll(q);
-          assertNotEquals(foundall, null, 'The method should not return null.');
-          assertEquals(
-            foundall.length,
-            e!.length,
-            'The method should return the expected number of matches.',
-          );
+      runTest(() {
+        foundall = root.querySelectorAll(q);
+        assertNotEquals(foundall, null, 'The method should not return null.');
+        assertEquals(foundall.length, e!.length,
+            'The method should return the expected number of matches.');
 
-          for (var i = 0; i < e.length; i++) {
-            assertNotEquals(
-              foundall[i],
-              null,
-              'The item in index $i should not be null.',
-            );
-            assertEquals(
-              foundall[i].attributes['id'],
-              e[i],
-              'The item in index $i should have the expected ID.',
-            );
-            assertFalse(
-              foundall[i].attributes.containsKey('data-clone'),
-              'This should not be a cloned element.',
-            );
-          }
-        },
-        '$type.querySelectorAll: $n:$q',
-        skip: skip,
-      );
+        for (var i = 0; i < e.length; i++) {
+          assertNotEquals(
+              foundall[i], null, 'The item in index $i should not be null.');
+          assertEquals(foundall[i].attributes['id'], e[i],
+              'The item in index $i should have the expected ID.');
+          assertFalse(foundall[i].attributes.containsKey('data-clone'),
+              'This should not be a cloned element.');
+        }
+      }, '$type.querySelectorAll: $n:$q', skip: skip);
 
-      runTest(
-        () {
-          found = root.querySelector(q);
+      runTest(() {
+        found = root.querySelector(q);
 
-          if (e!.isNotEmpty) {
-            assertNotEquals(found, null, 'The method should return a match.');
-            assertEquals(
-              found!.attributes['id'],
-              e[0],
-              'The method should return the first match.',
-            );
-            assertEquals(
-              found,
-              foundall[0],
-              'The result should match the first item from querySelectorAll.',
-            );
-            assertFalse(
-              found!.attributes.containsKey('data-clone'),
-              'This should not be annotated as a cloned element.',
-            );
-          } else {
-            assertEquals(found, null, 'The method should not match anything.');
-          }
-        },
-        '$type.querySelector: $n : $q',
-        skip: skip,
-      );
+        if (e!.isNotEmpty) {
+          assertNotEquals(found, null, 'The method should return a match.');
+          assertEquals(found!.attributes['id'], e[0],
+              'The method should return the first match.');
+          assertEquals(found, foundall[0],
+              'The result should match the first item from querySelectorAll.');
+          assertFalse(found!.attributes.containsKey('data-clone'),
+              'This should not be annotated as a cloned element.');
+        } else {
+          assertEquals(found, null, 'The method should not match anything.');
+        }
+      }, '$type.querySelector: $n : $q', skip: skip);
     } else {
       //console.log("Excluding for " + nodeType + ": " + s["testType"] + "&" + testType + "=" + (s["testType"] & testType) + ": " + JSON.stringify(s))
     }
@@ -300,10 +247,7 @@ void runValidSelectorTest(
  * Only run these tests when errors are expected. Don't run for valid selector tests.
  */
 void runInvalidSelectorTest(
-  String type,
-  SelectorAdaptor root,
-  List<Map<String, dynamic>> selectors,
-) {
+    String type, SelectorAdaptor root, List<Map<String, dynamic>> selectors) {
   for (var i = 0; i < selectors.length; i++) {
     final s = selectors[i];
     final n = s['name'] as String;
@@ -363,11 +307,17 @@ class SelectorAdaptor {
   final Element? element;
   final DocumentFragment? fragment;
 
-  SelectorAdaptor.document(this.document) : element = null, fragment = null;
+  SelectorAdaptor.document(this.document)
+      : element = null,
+        fragment = null;
 
-  SelectorAdaptor.element(this.element) : document = null, fragment = null;
+  SelectorAdaptor.element(this.element)
+      : document = null,
+        fragment = null;
 
-  SelectorAdaptor.fragment(this.fragment) : document = null, element = null;
+  SelectorAdaptor.fragment(this.fragment)
+      : document = null,
+        element = null;
 
   bool get isDocument => document != null;
 

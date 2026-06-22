@@ -37,18 +37,10 @@ class Loader {
   FileSpan _span;
 
   /// Creates a loader that loads [source].
-  factory Loader(
-    String source, {
-    Uri? sourceUrl,
-    bool recover = false,
-    ErrorListener? errorListener,
-  }) {
-    var parser = Parser(
-      source,
-      sourceUrl: sourceUrl,
-      recover: recover,
-      errorListener: errorListener,
-    );
+  factory Loader(String source,
+      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener}) {
+    var parser = Parser(source,
+        sourceUrl: sourceUrl, recover: recover, errorListener: errorListener);
     var event = parser.parse();
     assert(event.type == EventType.streamStart);
     return Loader._(parser, event.span);
@@ -82,23 +74,23 @@ class Loader {
     assert(lastEvent.type == EventType.documentEnd);
 
     return YamlDocument.internal(
-      contents,
-      firstEvent.span.expand(lastEvent.span),
-      firstEvent.versionDirective,
-      firstEvent.tagDirectives,
-      startImplicit: firstEvent.isImplicit,
-      endImplicit: lastEvent.isImplicit,
-    );
+        contents,
+        firstEvent.span.expand(lastEvent.span),
+        firstEvent.versionDirective,
+        firstEvent.tagDirectives,
+        startImplicit: firstEvent.isImplicit,
+        endImplicit: lastEvent.isImplicit);
   }
 
   /// Composes a node.
   YamlNode _loadNode(Event firstEvent) => switch (firstEvent.type) {
-    EventType.alias => _loadAlias(firstEvent as AliasEvent),
-    EventType.scalar => _loadScalar(firstEvent as ScalarEvent),
-    EventType.sequenceStart => _loadSequence(firstEvent as SequenceStartEvent),
-    EventType.mappingStart => _loadMapping(firstEvent as MappingStartEvent),
-    _ => throw StateError('Unreachable'),
-  };
+        EventType.alias => _loadAlias(firstEvent as AliasEvent),
+        EventType.scalar => _loadScalar(firstEvent as ScalarEvent),
+        EventType.sequenceStart =>
+          _loadSequence(firstEvent as SequenceStartEvent),
+        EventType.mappingStart => _loadMapping(firstEvent as MappingStartEvent),
+        _ => throw StateError('Unreachable')
+      };
 
   /// Registers an anchor.
   void _registerAnchor(String? anchor, YamlNode node) {
@@ -117,9 +109,7 @@ class Loader {
     if (alias != null) {
       if (_activeAnchors.contains(event.name)) {
         throw YamlException(
-          'Self-referential collections are not supported.',
-          event.span,
-        );
+            'Self-referential collections are not supported.', event.span);
       }
       return alias;
     }
@@ -251,7 +241,7 @@ class Loader {
       $t || $T => length == 4 ? _parseBool(scalar) : null,
       $f || $F => length == 5 ? _parseBool(scalar) : null,
       $tilde => length == 1 ? YamlScalar.internal(null, scalar) : null,
-      _ => (firstChar >= $0 && firstChar <= $9) ? _parseNumber(scalar) : null,
+      _ => (firstChar >= $0 && firstChar <= $9) ? _parseNumber(scalar) : null
     };
   }
 
@@ -259,47 +249,39 @@ class Loader {
   ///
   /// Returns a Dart `null` if parsing fails.
   YamlScalar? _parseNull(ScalarEvent scalar) => switch (scalar.value) {
-    '' ||
-    'null' ||
-    'Null' ||
-    'NULL' ||
-    '~' => YamlScalar.internal(null, scalar),
-    _ => null,
-  };
+        '' ||
+        'null' ||
+        'Null' ||
+        'NULL' ||
+        '~' =>
+          YamlScalar.internal(null, scalar),
+        _ => null
+      };
 
   /// Parse a boolean scalar.
   ///
   /// Returns `null` if parsing fails.
   YamlScalar? _parseBool(ScalarEvent scalar) => switch (scalar.value) {
-    'true' || 'True' || 'TRUE' => YamlScalar.internal(true, scalar),
-    'false' || 'False' || 'FALSE' => YamlScalar.internal(false, scalar),
-    _ => null,
-  };
+        'true' || 'True' || 'TRUE' => YamlScalar.internal(true, scalar),
+        'false' || 'False' || 'FALSE' => YamlScalar.internal(false, scalar),
+        _ => null
+      };
 
   /// Parses a numeric scalar.
   ///
   /// Returns `null` if parsing fails.
-  YamlScalar? _parseNumber(
-    ScalarEvent scalar, {
-    bool allowInt = true,
-    bool allowFloat = true,
-  }) {
-    var value = _parseNumberValue(
-      scalar.value,
-      allowInt: allowInt,
-      allowFloat: allowFloat,
-    );
+  YamlScalar? _parseNumber(ScalarEvent scalar,
+      {bool allowInt = true, bool allowFloat = true}) {
+    var value = _parseNumberValue(scalar.value,
+        allowInt: allowInt, allowFloat: allowFloat);
     return value == null ? null : YamlScalar.internal(value, scalar);
   }
 
   /// Parses the value of a number.
   ///
   /// Returns the number if it's parsed successfully, or `null` if it's not.
-  num? _parseNumberValue(
-    String contents, {
-    bool allowInt = true,
-    bool allowFloat = true,
-  }) {
+  num? _parseNumberValue(String contents,
+      {bool allowInt = true, bool allowFloat = true}) {
     assert(allowInt || allowFloat);
 
     var firstChar = contents.codeUnitAt(0);

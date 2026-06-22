@@ -16,9 +16,10 @@ void main() {
 
   final intRef = TypeReference((b) => b.symbol = 'int');
   TypeReference listRef(TypeReference argType) => TypeReference(
-    (b) => b
-      ..symbol = 'List'
-      ..types.add(argType),
+    (b) =>
+        b
+          ..symbol = 'List'
+          ..types.add(argType),
   );
 
   test('should create an empty record type', () {
@@ -28,12 +29,13 @@ void main() {
   test('should create a record type with positional fields', () {
     expect(
       RecordType(
-        (b) => b
-          ..positionalFieldTypes.addAll([
-            intRef,
-            listRef(intRef).rebuild((b) => b..isNullable = true),
-          ])
-          ..isNullable = true,
+        (b) =>
+            b
+              ..positionalFieldTypes.addAll([
+                intRef,
+                listRef(intRef).rebuild((b) => b..isNullable = true),
+              ])
+              ..isNullable = true,
       ),
       equalsDart('(int, List<int>?)?', emitter),
     );
@@ -49,8 +51,12 @@ void main() {
   test('should create a record type with named fields', () {
     expect(
       RecordType(
-        (b) => b
-          ..namedFieldTypes.addAll({'named': intRef, 'other': listRef(intRef)}),
+        (b) =>
+            b
+              ..namedFieldTypes.addAll({
+                'named': intRef,
+                'other': listRef(intRef),
+              }),
       ),
       equalsDart('({int named, List<int> other})', emitter),
     );
@@ -59,10 +65,11 @@ void main() {
   test('should create a record type with both positional and named fields', () {
     expect(
       RecordType(
-        (b) => b
-          ..positionalFieldTypes.add(listRef(intRef))
-          ..namedFieldTypes.addAll({'named': intRef})
-          ..isNullable = true,
+        (b) =>
+            b
+              ..positionalFieldTypes.add(listRef(intRef))
+              ..namedFieldTypes.addAll({'named': intRef})
+              ..isNullable = true,
       ),
       equalsDart('(List<int>, {int named})?', emitter),
     );
@@ -71,14 +78,19 @@ void main() {
   test('should create a nested record type', () {
     expect(
       RecordType(
-        (b) => b
-          ..positionalFieldTypes.add(
-            RecordType(
-              (b) => b
-                ..namedFieldTypes.addAll({'named': intRef, 'other': intRef})
-                ..isNullable = true,
-            ),
-          ),
+        (b) =>
+            b
+              ..positionalFieldTypes.add(
+                RecordType(
+                  (b) =>
+                      b
+                        ..namedFieldTypes.addAll({
+                          'named': intRef,
+                          'other': intRef,
+                        })
+                        ..isNullable = true,
+                ),
+              ),
       ),
       equalsDart('(({int named, int other})?,)', emitter),
     );

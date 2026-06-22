@@ -105,8 +105,9 @@ class Reference extends Expression implements Spec {
 
   /// Returns as a [TypeReference], which allows adding generic type parameters.
   Reference get type => TypeReference(
-    (b) => b
-      ..url = url
-      ..symbol = symbol,
+    (b) =>
+        b
+          ..url = url
+          ..symbol = symbol,
   );
 }

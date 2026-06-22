@@ -13,51 +13,59 @@ void main() {
   final $LinkedHashMap = refer('LinkedHashMap', 'dart:collection');
 
   final library = Library(
-    (b) => b
-      ..directives.add(Directive.export('../relative.dart'))
-      ..directives.add(Directive.export('package:foo/foo.dart'))
-      ..directives.add(Directive.part('lib.g.dart'))
-      ..body.add(
-        Field(
-          (b) => b
-            ..name = 'relativeRef'
-            ..modifier = FieldModifier.final$
-            ..assignment = refer(
-              'Relative',
-              '../relative.dart',
-            ).newInstance([]).code,
-        ),
-      )
-      ..body.add(
-        Field(
-          (b) => b
-            ..name = 'pkgRefFoo'
-            ..modifier = FieldModifier.final$
-            ..assignment = refer(
-              'Foo',
-              'package:foo/foo.dart',
-            ).newInstance([]).code,
-        ),
-      )
-      ..body.add(
-        Field(
-          (b) => b
-            ..name = 'pkgRefBar'
-            ..modifier = FieldModifier.final$
-            ..assignment = refer(
-              'Bar',
-              'package:foo/bar.dart',
-            ).newInstance([]).code,
-        ),
-      )
-      ..body.add(
-        Field(
-          (b) => b
-            ..name = 'collectionRef'
-            ..modifier = FieldModifier.final$
-            ..assignment = $LinkedHashMap.newInstance([]).code,
-        ),
-      ),
+    (b) =>
+        b
+          ..directives.add(Directive.export('../relative.dart'))
+          ..directives.add(Directive.export('package:foo/foo.dart'))
+          ..directives.add(Directive.part('lib.g.dart'))
+          ..body.add(
+            Field(
+              (b) =>
+                  b
+                    ..name = 'relativeRef'
+                    ..modifier = FieldModifier.final$
+                    ..assignment =
+                        refer(
+                          'Relative',
+                          '../relative.dart',
+                        ).newInstance([]).code,
+            ),
+          )
+          ..body.add(
+            Field(
+              (b) =>
+                  b
+                    ..name = 'pkgRefFoo'
+                    ..modifier = FieldModifier.final$
+                    ..assignment =
+                        refer(
+                          'Foo',
+                          'package:foo/foo.dart',
+                        ).newInstance([]).code,
+            ),
+          )
+          ..body.add(
+            Field(
+              (b) =>
+                  b
+                    ..name = 'pkgRefBar'
+                    ..modifier = FieldModifier.final$
+                    ..assignment =
+                        refer(
+                          'Bar',
+                          'package:foo/bar.dart',
+                        ).newInstance([]).code,
+            ),
+          )
+          ..body.add(
+            Field(
+              (b) =>
+                  b
+                    ..name = 'collectionRef'
+                    ..modifier = FieldModifier.final$
+                    ..assignment = $LinkedHashMap.newInstance([]).code,
+            ),
+          ),
   );
 
   test('should emit a source file with imports in defined order', () {

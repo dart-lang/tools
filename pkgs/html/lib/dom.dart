@@ -122,13 +122,9 @@ abstract mixin class _ElementAndDocument implements _ParentNode {
   List<Element> getElementsByTagName(String localName) =>
       querySelectorAll(localName);
 
-  List<Element> getElementsByClassName(String classNames) => querySelectorAll(
-    classNames.splitMapJoin(
-      ' ',
-      onNonMatch: (m) => m.isNotEmpty ? '.$m' : m,
-      onMatch: (m) => '',
-    ),
-  );
+  List<Element> getElementsByClassName(String classNames) =>
+      querySelectorAll(classNames.splitMapJoin(' ',
+          onNonMatch: (m) => m.isNotEmpty ? '.$m' : m, onMatch: (m) => ''));
 }
 
 /// Really basic implementation of a DOM-core like Node.
@@ -286,16 +282,13 @@ abstract class Node {
     if (_attributeSpans != null) return;
 
     final attributeSpans = _attributeSpans = LinkedHashMap<Object, FileSpan>();
-    final attributeValueSpans = _attributeValueSpans =
-        LinkedHashMap<Object, FileSpan>();
+    final attributeValueSpans =
+        _attributeValueSpans = LinkedHashMap<Object, FileSpan>();
 
     if (sourceSpan == null) return;
 
-    final tokenizer = HtmlTokenizer(
-      sourceSpan!.text,
-      generateSpans: true,
-      attributeSpans: true,
-    );
+    final tokenizer = HtmlTokenizer(sourceSpan!.text,
+        generateSpans: true, attributeSpans: true);
 
     tokenizer.moveNext();
     final token = tokenizer.current as StartTagToken;
@@ -305,15 +298,11 @@ abstract class Node {
     for (var attr in token.attributeSpans!) {
       final offset = sourceSpan!.start.offset;
       final name = attr.name!;
-      attributeSpans[name] = sourceSpan!.file.span(
-        offset + attr.start,
-        offset + attr.end,
-      );
+      attributeSpans[name] =
+          sourceSpan!.file.span(offset + attr.start, offset + attr.end);
       if (attr.startValue != null) {
-        attributeValueSpans[name] = sourceSpan!.file.span(
-          offset + attr.startValue!,
-          offset + attr.endValue,
-        );
+        attributeValueSpans[name] = sourceSpan!.file
+            .span(offset + attr.startValue!, offset + attr.endValue);
       }
     }
   }
@@ -443,7 +432,9 @@ class Text extends Node {
   /// It will flatten back to a String on read.
   Object _data;
 
-  Text(String? data) : _data = data ?? '', super._();
+  Text(String? data)
+      : _data = data ?? '',
+        super._();
 
   @override
   int get nodeType => Node.TEXT_NODE;
@@ -496,7 +487,9 @@ class Element extends Node with _ParentNode, _ElementAndDocument {
 
   Element._(this.localName, [this.namespaceUri]) : super._();
 
-  Element.tag(this.localName) : namespaceUri = Namespaces.html, super._();
+  Element.tag(this.localName)
+      : namespaceUri = Namespaces.html,
+        super._();
 
   static final _startTagRegexp = RegExp('<(\\w+)');
 
@@ -544,10 +537,8 @@ class Element extends Node with _ParentNode, _ElementAndDocument {
       // You'll always get a head and a body when starting from html.
       element = fragment.children[tag == 'head' ? 0 : 1];
     } else {
-      throw ArgumentError(
-        'HTML had ${fragment.children.length} '
-        'top level elements but 1 expected',
-      );
+      throw ArgumentError('HTML had ${fragment.children.length} '
+          'top level elements but 1 expected');
     }
     element.remove();
     return element;
@@ -809,12 +800,8 @@ class NodeList extends ListProxy<Node> {
   // TODO(jmesserly): These aren't implemented in DOM _NodeListImpl, see
   // http://code.google.com/p/dart/issues/detail?id=5371
   @override
-  void setRange(
-    int start,
-    int end,
-    Iterable<Node> iterable, [
-    int skipCount = 0,
-  ]) {
+  void setRange(int start, int end, Iterable<Node> iterable,
+      [int skipCount = 0]) {
     var fromVar = iterable as List<Node>;
     if (fromVar is NodeList) {
       // Note: this is presumed to make a copy
@@ -959,12 +946,8 @@ class FilteredElementList extends IterableBase<Element>
   }
 
   @override
-  void setRange(
-    int start,
-    int end,
-    Iterable<Element> iterable, [
-    int skipCount = 0,
-  ]) {
+  void setRange(int start, int end, Iterable<Element> iterable,
+      [int skipCount = 0]) {
     throw UnimplementedError();
   }
 
@@ -1041,9 +1024,7 @@ class FilteredElementList extends IterableBase<Element>
 
   @override
   T fold<T>(
-    T initialValue,
-    T Function(T previousValue, Element element) combine,
-  ) {
+      T initialValue, T Function(T previousValue, Element element) combine) {
     return _filtered.fold(initialValue, combine);
   }
 
@@ -1061,10 +1042,8 @@ class FilteredElementList extends IterableBase<Element>
   Set<Element> toSet() => Set<Element>.from(this);
 
   @override
-  Element firstWhere(
-    bool Function(Element) test, {
-    Element Function()? orElse,
-  }) {
+  Element firstWhere(bool Function(Element) test,
+      {Element Function()? orElse}) {
     return _filtered.firstWhere(test, orElse: orElse);
   }
 
@@ -1074,10 +1053,8 @@ class FilteredElementList extends IterableBase<Element>
   }
 
   @override
-  Element singleWhere(
-    bool Function(Element) test, {
-    Element Function()? orElse,
-  }) {
+  Element singleWhere(bool Function(Element) test,
+      {Element Function()? orElse}) {
     if (orElse != null) throw UnimplementedError('orElse');
     return _filtered.singleWhere(test);
   }
@@ -1156,9 +1133,9 @@ bool _isElementBr(Element element) {
 
 // For Element and DocumentFragment (legacy helper)
 String _getText(Node node, {bool convertBRsToNewlines = false}) =>
-    (_ConcatTextVisitor(
-      convertBRsToNewlines: convertBRsToNewlines,
-    )..visit(node)).toString();
+    (_ConcatTextVisitor(convertBRsToNewlines: convertBRsToNewlines)
+          ..visit(node))
+        .toString();
 
 void _setText(Node node, String? value) {
   node.nodes.clear();

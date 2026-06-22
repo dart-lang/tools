@@ -80,9 +80,8 @@ class MockWin32Console extends Win32Console {
       super.internal(
         (nStdHandle) => 123,
         (hConsoleInput, lpBuffer, nLength, lpNumberOfEventsRead) {
-          final count = nLength < mockEvents.length
-              ? nLength
-              : mockEvents.length;
+          final count =
+              nLength < mockEvents.length ? nLength : mockEvents.length;
           for (var i = 0; i < count; i++) {
             final event = mockEvents.removeAt(0);
             final record = (lpBuffer + i).ref;

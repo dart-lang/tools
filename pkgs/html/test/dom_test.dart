@@ -22,12 +22,10 @@ void main() {
   });
 
   group('Document', () {
-    final doc = parse(
-      '<div id=foo>'
-      '<div class=" bar baz"></div>'
-      '<div class="qux  baz "></div>'
-      '<div id=Foo>',
-    );
+    final doc = parse('<div id=foo>'
+        '<div class=" bar baz"></div>'
+        '<div class="qux  baz "></div>'
+        '<div id=Foo>');
 
     test('getElementById', () {
       final foo = doc.body!.nodes[0];

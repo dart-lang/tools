@@ -168,9 +168,10 @@ class StandardLogger implements Logger {
   Progress progress(String message) {
     _cancelProgress();
 
-    final progress = ansi.useAnsi
-        ? AnsiProgress(ansi, message)
-        : SimpleProgress(this, message);
+    final progress =
+        ansi.useAnsi
+            ? AnsiProgress(ansi, message)
+            : SimpleProgress(this, message);
     _currentProgress = progress;
     return progress;
   }

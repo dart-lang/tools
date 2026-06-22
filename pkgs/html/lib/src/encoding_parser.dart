@@ -138,8 +138,8 @@ class EncodingParser {
 
   /// [bytes] - the data to work on for encoding detection.
   EncodingParser(List<int> bytes)
-    // Note: this is intentionally interpreting bytes as codepoints.
-    : _data = EncodingBytes(String.fromCharCodes(bytes).toLowerCase());
+      // Note: this is intentionally interpreting bytes as codepoints.
+      : _data = EncodingBytes(String.fromCharCodes(bytes).toLowerCase());
 
   String? getEncoding() {
     final methodDispatch = [
