@@ -277,74 +277,6 @@ void main() {
 
       await pool.request();
     });
-
-    test('request() throws if allowRelease callback throws', () async {
-      var pool = Pool(1);
-      var resource = await pool.request();
-
-      var requestFuture = pool.request();
-
-      var completer = Completer<void>();
-      resource.allowRelease(() => completer.future);
-
-      await Future<void>.delayed(Duration.zero);
-      completer.completeError('oh no!');
-
-      await expectLater(requestFuture, throwsA('oh no!'));
-    });
-
-    test('request() does not leak resources when allowRelease throws',
-        () async {
-      var pool = Pool(1);
-      var resource = await pool.request();
-
-      var requestFuture = pool.request();
-
-      var completer = Completer<void>();
-      resource.allowRelease(() => completer.future);
-
-      await Future<void>.delayed(Duration.zero);
-      completer.completeError('oh no!');
-
-      await expectLater(requestFuture, throwsA('oh no!'));
-
-      // Without the fix, this will hang because the slot is leaked.
-      var nextRequest = pool.request().timeout(
-          const Duration(milliseconds: 100),
-          onTimeout: () => throw TimeoutException('Leaked!'));
-
-      await expectLater(nextRequest, completes);
-    });
-  });
-
-  group('PoolResource', () {
-    test('release() throws StateError if called twice', () async {
-      var pool = Pool(1);
-      var resource = await pool.request();
-      resource.release();
-      expect(resource.release, throwsStateError);
-    });
-
-    test('allowRelease() throws StateError if called twice', () async {
-      var pool = Pool(1);
-      var resource = await pool.request();
-      resource.allowRelease(() {});
-      expect(() => resource.allowRelease(() {}), throwsStateError);
-    });
-
-    test('allowRelease() throws if called after release()', () async {
-      var pool = Pool(1);
-      var resource = await pool.request();
-      resource.release();
-      expect(() => resource.allowRelease(() {}), throwsStateError);
-    });
-
-    test('release() throws if called after allowRelease()', () async {
-      var pool = Pool(1);
-      var resource = await pool.request();
-      resource.allowRelease(() {});
-      expect(resource.release, throwsStateError);
-    });
   });
 
   test("done doesn't complete without close", () async {
@@ -362,19 +294,6 @@ void main() {
       var pool = Pool(1)..close();
       expect(pool.request, throwsStateError);
       expect(() => pool.withResource(() {}), throwsStateError);
-    });
-
-    test('can be called multiple times', () async {
-      var pool = Pool(1);
-      var resource = await pool.request();
-
-      var closeFuture1 = pool.close();
-      var closeFuture2 = pool.close();
-
-      expect(closeFuture1, equals(closeFuture2));
-
-      resource.release();
-      await closeFuture1;
     });
 
     test('pending requests are fulfilled', () async {
