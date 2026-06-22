@@ -48,8 +48,9 @@ class SseClient extends StreamChannelMixin<String?> {
   /// incoming bi-directional SSE connections. [debugKey] is an optional key
   /// that can be used to identify the SSE connection.
   SseClient(String serverUrl, {String? debugKey})
-      : _clientId =
-            debugKey == null ? generateId() : '$debugKey-${generateId()}' {
+    : _clientId = debugKey == null
+          ? generateId()
+          : '$debugKey-${generateId()}' {
     _serverUrl = '$serverUrl?sseClientId=$_clientId';
     _eventSource = EventSource(
       _serverUrl,
