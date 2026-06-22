@@ -168,9 +168,10 @@ class StandardLogger implements Logger {
   Progress progress(String message) {
     _cancelProgress();
 
-    final progress = ansi.useAnsi
-        ? AnsiProgress(ansi, message)
-        : SimpleProgress(this, message);
+    final progress =
+        ansi.useAnsi
+            ? AnsiProgress(ansi, message)
+            : SimpleProgress(this, message);
     _currentProgress = progress;
     return progress;
   }
@@ -257,7 +258,7 @@ class VerboseLogger implements Logger {
   final _timer = Stopwatch()..start();
 
   VerboseLogger({Ansi? ansi, this.logTime = false})
-      : ansi = ansi ?? Ansi(Ansi.terminalSupportsAnsi);
+    : ansi = ansi ?? Ansi(Ansi.terminalSupportsAnsi);
 
   @override
   bool get isVerbose => true;

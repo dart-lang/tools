@@ -29,8 +29,9 @@ void main() {
 
   setUp(() {
     // Setup the filesystem with the home directory
-    final fsStyle =
-        io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
+    final fsStyle = io.Platform.isWindows
+        ? FileSystemStyle.windows
+        : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
 

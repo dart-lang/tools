@@ -88,7 +88,8 @@ void main() {
       'user_properties': <String, Object?>{},
     };
 
-    final expectedErrorMessage = 'Limit event names to 40 chars or less\n'
+    final expectedErrorMessage =
+        'Limit event names to 40 chars or less\n'
         'Event name: '
         '"hot_reload_timehot_reload_timehot_reload_timehot_reload_time"'
         ' is too long';
@@ -175,7 +176,8 @@ void main() {
     // Add the params to the first event in the body
     ((body['events'] as List).first as Map)['params'] = params;
 
-    final expectedErrorMessage = 'Limit params for each event to less than 25\n'
+    final expectedErrorMessage =
+        'Limit params for each event to less than 25\n'
         'Event: "hot_reload_time" has too many parameters';
     expect(
       () => checkBody(body),
@@ -266,7 +268,8 @@ void main() {
       'user_properties': <String, Object?>{},
     };
 
-    final expectedErrorMessage = 'Limit event param names to 40 chars or less\n'
+    final expectedErrorMessage =
+        'Limit event param names to 40 chars or less\n'
         'The key: "time_mstime_mstime_mstime_mstime_mstime_ms" '
         'under the event: "hot_reload_time" is too long';
     expect(
@@ -345,7 +348,8 @@ void main() {
         {
           'name': 'hot_reload_time',
           'params': {
-            'time_ns': 'dsfjlksdjfajlfdsfjlks'
+            'time_ns':
+                'dsfjlksdjfajlfdsfjlks'
                 'djfajlfdsfjlksdjfajlfdsfjlksdjfaj'
                 'lfdsfjlksdjfajlfdsfjlksdjfajlfdsf'
                 'jlksdjfajlfdsfjlksdjfajlf',

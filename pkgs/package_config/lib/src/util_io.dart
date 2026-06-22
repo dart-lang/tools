@@ -101,8 +101,9 @@ String pathJoinAll(Iterable<String> parts) {
     buffer
       ..write(separator)
       ..write(part);
-    separator =
-        part.endsWith(Platform.pathSeparator) ? '' : Platform.pathSeparator;
+    separator = part.endsWith(Platform.pathSeparator)
+        ? ''
+        : Platform.pathSeparator;
   }
   return buffer.toString();
 }

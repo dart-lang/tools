@@ -417,20 +417,24 @@ class LogItem {
     // Parse out the values from the top level key = 'user_properties`
     final sessionId =
         (userProps['session_id']! as Map<String, Object?>)['value'] as int?;
-    final flutterChannel = (userProps['flutter_channel']!
-        as Map<String, Object?>)['value'] as String?;
+    final flutterChannel =
+        (userProps['flutter_channel']! as Map<String, Object?>)['value']
+            as String?;
     final host =
         (userProps['host']! as Map<String, Object?>)['value'] as String?;
-    final flutterVersion = (userProps['flutter_version']!
-        as Map<String, Object?>)['value'] as String?;
-    final dartVersion = (userProps['dart_version']!
-        as Map<String, Object?>)['value'] as String?;
+    final flutterVersion =
+        (userProps['flutter_version']! as Map<String, Object?>)['value']
+            as String?;
+    final dartVersion =
+        (userProps['dart_version']! as Map<String, Object?>)['value']
+            as String?;
     final tool =
         (userProps['tool']! as Map<String, Object?>)['value'] as String?;
     final localTimeString =
         (userProps['local_time']! as Map<String, Object?>)['value'] as String?;
-    final hostOsVersion = (userProps['host_os_version']!
-        as Map<String, Object?>)['value'] as String?;
+    final hostOsVersion =
+        (userProps['host_os_version']! as Map<String, Object?>)['value']
+            as String?;
     final locale =
         (userProps['locale']! as Map<String, Object?>)['value'] as String?;
     final clientIde =

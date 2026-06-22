@@ -34,8 +34,9 @@ void main() {
 
   setUp(() {
     // Setup the filesystem with the home directory
-    final fsStyle =
-        io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
+    final fsStyle = io.Platform.isWindows
+        ? FileSystemStyle.windows
+        : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
 
@@ -76,10 +77,12 @@ void main() {
     analytics.clientShowedMessage();
 
     // The files that should have been generated that will be used for tests
-    sessionFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kSessionFileName);
-    logFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kLogFileName);
+    sessionFile = home
+        .childDirectory(kDartToolDirectoryName)
+        .childFile(kSessionFileName);
+    logFile = home
+        .childDirectory(kDartToolDirectoryName)
+        .childFile(kLogFileName);
   });
 
   group('Session handler:', () {

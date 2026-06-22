@@ -67,7 +67,8 @@ class FakeTerminal {
       if (_cursorCol < currentLine.length) {
         final end = _cursorCol + textToAppend.length;
         if (end <= currentLine.length) {
-          _lines[_cursorRow] = currentLine.substring(0, _cursorCol) +
+          _lines[_cursorRow] =
+              currentLine.substring(0, _cursorCol) +
               textToAppend +
               currentLine.substring(end);
         } else {

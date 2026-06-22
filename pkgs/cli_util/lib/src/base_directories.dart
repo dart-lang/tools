@@ -43,7 +43,7 @@ final class BaseDirectories {
   /// The [environment] map, if provided, is used to determine the base
   /// directories. If omitted, it defaults to using [Platform.environment].
   BaseDirectories(this.tool, {Map<String, String>? environment})
-      : _environment = environment ?? Platform.environment;
+    : _environment = environment ?? Platform.environment;
 
   /// Path of the directory where the tool will place its caches.
   ///
@@ -216,27 +216,25 @@ final class BaseDirectories {
   }
 
   String _baseDirectoryWindows(_XdgBaseDirectoryKind dir) => switch (dir) {
-        _XdgBaseDirectoryKind.config ||
-        _XdgBaseDirectoryKind.data =>
-          _requireEnv('APPDATA'),
-        _XdgBaseDirectoryKind.cache ||
-        _XdgBaseDirectoryKind.runtime ||
-        _XdgBaseDirectoryKind.state =>
-          _requireEnv('LOCALAPPDATA'),
-      };
+    _XdgBaseDirectoryKind.config ||
+    _XdgBaseDirectoryKind.data => _requireEnv('APPDATA'),
+    _XdgBaseDirectoryKind.cache ||
+    _XdgBaseDirectoryKind.runtime ||
+    _XdgBaseDirectoryKind.state => _requireEnv('LOCALAPPDATA'),
+  };
 
   String _baseDirectoryMacOs(_XdgBaseDirectoryKind dir) => switch (dir) {
-        _XdgBaseDirectoryKind.config ||
-        // `$HOME/Library/Preferences/` may only contain `.plist` files, so use
-        // `Application Support` instead.
-        _XdgBaseDirectoryKind.data ||
-        _XdgBaseDirectoryKind.state =>
-          path.join(_home, 'Library', 'Application Support'),
-        _XdgBaseDirectoryKind.cache => path.join(_home, 'Library', 'Caches'),
-        _XdgBaseDirectoryKind.runtime =>
-          // https://stackoverflow.com/a/76799489
-          path.join(_home, 'Library', 'Caches', 'TemporaryItems'),
-      };
+    _XdgBaseDirectoryKind.config ||
+    // `$HOME/Library/Preferences/` may only contain `.plist` files, so use
+    // `Application Support` instead.
+    _XdgBaseDirectoryKind.data ||
+    _XdgBaseDirectoryKind
+        .state => path.join(_home, 'Library', 'Application Support'),
+    _XdgBaseDirectoryKind.cache => path.join(_home, 'Library', 'Caches'),
+    _XdgBaseDirectoryKind.runtime =>
+    // https://stackoverflow.com/a/76799489
+    path.join(_home, 'Library', 'Caches', 'TemporaryItems'),
+  };
 
   String? _baseDirectoryLinux(_XdgBaseDirectoryKind dir) {
     if (Platform.isLinux) {

@@ -39,14 +39,13 @@ Future<Set<int>?> showMultiSelectDialog(
   Stream<List<int>> inputStream, {
   int maxVisibleItems = 5,
   Set<int> initialSelected = const {},
-}) =>
-    _runDialog(
-      options,
-      maxVisibleItems,
-      inputStream,
-      multiSelect: true,
-      initialSelected: initialSelected,
-    );
+}) => _runDialog(
+  options,
+  maxVisibleItems,
+  inputStream,
+  multiSelect: true,
+  initialSelected: initialSelected,
+);
 
 /// Shows a scrollable terminal selection dialog and returns the selected index.
 ///
@@ -308,9 +307,10 @@ void _render({
 }) {
   // Calculate the window of items to display.
   final isScrollable = items.length > height;
-  final start = isScrollable
-      ? (cursor - (height ~/ 2)).clamp(0, items.length - height)
-      : 0;
+  final start =
+      isScrollable
+          ? (cursor - (height ~/ 2)).clamp(0, items.length - height)
+          : 0;
   final end =
       isScrollable ? math.min(start + height, items.length) : items.length;
   final visibleCount = end - start;
@@ -326,9 +326,9 @@ void _render({
   if (isScrollable) {
     // Calculate thumb height proportional to visible area.
     thumbHeight = (visibleCount * visibleCount / items.length).round().clamp(
-          1,
-          math.max(1, visibleCount - 1),
-        );
+      1,
+      math.max(1, visibleCount - 1),
+    );
     // The max valid start index for the list window.
     final maxStart = items.length - visibleCount;
     // The max valid start index for the thumb based on its size.
@@ -369,7 +369,8 @@ void _render({
       final relativeI = i - start;
       final isThumb =
           relativeI >= thumbStart && relativeI < thumbStart + thumbHeight;
-      final scrollbarXPosition = _pointerWidth +
+      final scrollbarXPosition =
+          _pointerWidth +
           selectionMarker.length +
           maxItemLength +
           _scrollbarLeftMargin;
@@ -393,7 +394,8 @@ void _render({
 int _minimumTerminalWidth(bool multiSelect, bool isScrollable) {
   final checkboxWidth = multiSelect ? 4 : 0;
   final scrollbarWidth = isScrollable ? (1 + _scrollbarLeftMargin) : 0;
-  final totalNeeded = _pointerWidth +
+  final totalNeeded =
+      _pointerWidth +
       checkboxWidth +
       _minimumOptionLength +
       '...'.length +

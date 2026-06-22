@@ -118,7 +118,8 @@ void main() {
     expect(
       logFileStats,
       isNull,
-      reason: 'Null should be returned since only '
+      reason:
+          'Null should be returned since only '
           'one record is in there and it is malformed',
     );
 
@@ -243,8 +244,7 @@ void main() {
     expect(logFile.readAsLinesSync()[0].trim(), isNot('{{'));
   });
 
-  test(
-      'Catches and discards any FileSystemException raised from attempting '
+  test('Catches and discards any FileSystemException raised from attempting '
       'to write to the log file', () async {
     final logFilePath = 'log.txt';
     final fs = MemoryFileSystem.test(
@@ -265,8 +265,7 @@ void main() {
     logHandler.save(data: {});
   });
 
-  test(
-      'Catches and discards any exception raised from attempting '
+  test('Catches and discards any exception raised from attempting '
       'to write to the log file', () async {
     final logFilePath = 'log.txt';
     final fs = MemoryFileSystem.test(
@@ -308,9 +307,9 @@ void main() {
     const data = <String, Object?>{};
     final logFile = _FakeFile('log.txt')
       .._deleteSyncImpl = (() => fail(
-            'called logFile.deleteSync() when file was less than '
-            'kMaxLogFileSize',
-          ))
+        'called logFile.deleteSync() when file was less than '
+        'kMaxLogFileSize',
+      ))
       .._createSyncImpl = () {}
       .._readAsLinesSyncImpl = (() => ['three', 'previous', 'lines'])
       .._statSyncImpl = (() => _FakeFileStat(kMaxLogFileSize - 1))
@@ -345,13 +344,13 @@ void main() {
     expect(
       secondLogFileStats!.recordCount,
       countOfEventsToSend + 1,
-      reason: 'Plus one for the error event that is sent '
+      reason:
+          'Plus one for the error event that is sent '
           'from the first logFileStats call',
     );
   });
 
-  test(
-      'truncateStringToLength returns same string when '
+  test('truncateStringToLength returns same string when '
       'max length greater than string length', () {
     final testString = 'Version 14.1 (Build 23B74)';
     final maxLength = 100;
@@ -366,8 +365,7 @@ void main() {
     expect(newString, testString);
   });
 
-  test(
-      'truncateStringToLength returns truncated string when '
+  test('truncateStringToLength returns truncated string when '
       'max length less than string length', () {
     final testString = 'Version 14.1 (Build 23B74)';
     final maxLength = 10;
@@ -451,6 +449,5 @@ class _FakeFile extends Fake implements File {
     FileMode mode = FileMode.write,
     Encoding encoding = utf8,
     bool flush = false,
-  }) =>
-      _writeAsStringSync!(contents, mode: mode);
+  }) => _writeAsStringSync!(contents, mode: mode);
 }

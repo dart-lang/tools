@@ -328,7 +328,8 @@ abstract class Analytics {
       dartVersion: dartVersion,
       platform: platform,
       fs: fs,
-      surveyHandler: surveyHandler ??
+      surveyHandler:
+          surveyHandler ??
           FakeSurveyHandler.fromList(
             dismissedSurveyFile: homeDirectory
                 .childDirectory(kDartToolDirectoryName)
@@ -403,43 +404,43 @@ class AnalyticsImpl implements Analytics {
     required bool enableAsserts,
     required bool firstRun,
     String? agent,
-  })  : _gaClient = gaClient,
-        _surveyHandler = surveyHandler,
-        _enableAsserts = enableAsserts,
-        _clientIdFile = homeDirectory
-            .childDirectory(kDartToolDirectoryName)
-            .childFile(kClientIdFileName),
-        _userProperty = UserProperty(
-          sessionFile: homeDirectory
-              .childDirectory(kDartToolDirectoryName)
-              .childFile(kSessionFileName),
-          flutterChannel: flutterChannel,
-          host: platform.label,
-          flutterVersion: flutterVersion,
-          dartVersion: dartVersion,
-          tool: tool.label,
-          // We truncate this to a maximum of 36 characters since this can
-          // a very long string for some operating systems
-          hostOsVersion: truncateStringToLength(
-            io.Platform.operatingSystemVersion,
-            36,
-          ),
-          locale: io.Platform.localeName,
-          clientIde: clientIde,
-          aiAgent: agent != null ? truncateStringToLength(agent, 36) : null,
-        ),
-        _enabledFeatures = enabledFeatures,
-        _configHandler = ConfigHandler(
-          homeDirectory: homeDirectory,
-          configFile: homeDirectory
-              .childDirectory(kDartToolDirectoryName)
-              .childFile(kConfigFileName),
-        ),
-        _logHandler = LogHandler(
-          logFile: homeDirectory
-              .childDirectory(kDartToolDirectoryName)
-              .childFile(kLogFileName),
-        ) {
+  }) : _gaClient = gaClient,
+       _surveyHandler = surveyHandler,
+       _enableAsserts = enableAsserts,
+       _clientIdFile = homeDirectory
+           .childDirectory(kDartToolDirectoryName)
+           .childFile(kClientIdFileName),
+       _userProperty = UserProperty(
+         sessionFile: homeDirectory
+             .childDirectory(kDartToolDirectoryName)
+             .childFile(kSessionFileName),
+         flutterChannel: flutterChannel,
+         host: platform.label,
+         flutterVersion: flutterVersion,
+         dartVersion: dartVersion,
+         tool: tool.label,
+         // We truncate this to a maximum of 36 characters since this can
+         // a very long string for some operating systems
+         hostOsVersion: truncateStringToLength(
+           io.Platform.operatingSystemVersion,
+           36,
+         ),
+         locale: io.Platform.localeName,
+         clientIde: clientIde,
+         aiAgent: agent != null ? truncateStringToLength(agent, 36) : null,
+       ),
+       _enabledFeatures = enabledFeatures,
+       _configHandler = ConfigHandler(
+         homeDirectory: homeDirectory,
+         configFile: homeDirectory
+             .childDirectory(kDartToolDirectoryName)
+             .childFile(kConfigFileName),
+       ),
+       _logHandler = LogHandler(
+         logFile: homeDirectory
+             .childDirectory(kDartToolDirectoryName)
+             .childFile(kLogFileName),
+       ) {
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
     // on the first run
@@ -484,8 +485,8 @@ class AnalyticsImpl implements Analytics {
     // The command to swap in the consent message
     final commandString =
         tool == DashTool.flutterTool || tool == DashTool.devtools
-            ? 'flutter'
-            : 'dart';
+        ? 'flutter'
+        : 'dart';
 
     return kToolsMessage
         .replaceAll('{{ toolDescription }}', tool.description)
@@ -702,7 +703,9 @@ class AnalyticsImpl implements Analytics {
 
     // Pass to the google analytics client to send with a
     // timeout incase http clients hang
-    return _gaClient.sendData(body).timeout(
+    return _gaClient
+        .sendData(body)
+        .timeout(
           const Duration(milliseconds: kDelayDuration),
           onTimeout: () => Response('', 200),
         );
