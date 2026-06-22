@@ -15,7 +15,8 @@ Uri pkg(String packageName, String packagePath) {
 }
 
 // Remove if not used.
-String configFromPackages(List<List<String>> packages) => """
+String configFromPackages(List<List<String>> packages) =>
+    """
 {
   "configVersion": 2,
   "packages": [
