@@ -1,7 +1,3 @@
-## 3.0.1-wip
-
-- Run `dart format`.
-
 ## 3.0.0
 
 - Adds discovery API to find both a configuration and its location:
