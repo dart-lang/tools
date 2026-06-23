@@ -197,24 +197,16 @@ class Pool {
       iterator = elements.iterator;
 
       assert(doneFuture == null);
-      var futures = List<Future<void>>.generate(
-          _maxAllocatedResources, (i) => withResource(() => run(i)));
-
-      // Eagerly forward errors to the stream and trigger cancellation.
-      Future.wait(futures, eagerError: true)
-          .onError((Object error, StackTrace stack) {
+      void forwardFirstError(Object error, StackTrace stack) {
+        if (cancelPending) return;
         cancelPending = true;
         controller.addError(error, stack);
-        return <void>[];
-      });
+      }
 
-      // Wait for all work to actually complete before closing the stream.
-      doneFuture = Future.wait(futures, eagerError: false)
-          .then<void>((_) {})
-          .catchError((Object e) {
-        // We handle errors in the eager wait above, so we can ignore them here
-        // to avoid unhandled exceptions.
-      });
+      doneFuture = Iterable<Future<void>>.generate(
+        _maxAllocatedResources,
+        (i) => withResource(() => run(i)).onError<Object>(forwardFirstError),
+      ).wait;
 
       doneFuture!.whenComplete(controller.close);
     }
