@@ -708,7 +708,7 @@ void main() {
         await worker1Started.future;
         await errorCompleter.future;
 
-        await Future<void>.delayed(const Duration(milliseconds: 50));
+        await pumpEventQueue();
         expect(cancelCompleter.isCompleted, isFalse);
 
         worker1Finish.complete();
