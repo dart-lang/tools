@@ -53,4 +53,16 @@ a <!--
     final html = markdownToHtml(input);
     expect(html, '<p>$input</p>\n');
   });
+
+  test('autolink extension keeps existing percent escapes', () {
+    const input = 'https://uploads.swee.codes/swee/Djjaner%20-%20Hyperscan.opus';
+    final html = markdownToHtml(
+      input,
+      extensionSet: ExtensionSet.gitHubFlavored,
+    );
+    expect(
+      html,
+      '<p><a href="https://uploads.swee.codes/swee/Djjaner%20-%20Hyperscan.opus">$input</a></p>\n',
+    );
+  });
 }
