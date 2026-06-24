@@ -16,7 +16,8 @@ import 'uri_sorting.dart';
 String renderTextSummary(ApiSummary package) =>
     _ApiTextRenderer(package).render();
 
-class _JsonUniqueName {
+/// Represents a unique name with an optional numerical disambiguator suffix.
+final class _JsonUniqueName {
   final String _nameHint;
   int? _disambiguator;
 
@@ -39,7 +40,9 @@ class _JsonUniqueName {
   ].join();
 }
 
-class _JsonUniqueNamer {
+/// Tracks name hints and handles collisions by assigning disambiguation
+/// suffixes.
+final class _JsonUniqueNamer {
   final _names = <String, _JsonUniqueName>{};
   final _conflicts = <String, List<_JsonUniqueName>>{};
 
@@ -49,7 +52,8 @@ class _JsonUniqueNamer {
 
 enum _Kind { classDeclaration, enumDeclaration, mixinDeclaration }
 
-class _ApiTextRenderer {
+/// Internal renderer converting structured summary models into canonical text.
+final class _ApiTextRenderer {
   final ApiSummary _package;
   final _uniqueNamer = _JsonUniqueNamer();
   final _renderedTopLevelElements =
@@ -302,6 +306,8 @@ class _ApiTextRenderer {
     Node<MemberSortKey> node,
   ) {
     final parentheticals = <List<Object?>>[];
+    // Call _describeType for its side effect of registering dangling
+    // references.
     for (final bound in element.typeParameters.values) {
       if (bound != null) _describeType(bound);
     }

@@ -3,12 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'api_type.dart';
-
-/// Callback to render the text summary of an [ApiSummary].
-///
-/// This is set by the main package entry point to avoid circular dependencies
-/// between declaration models and formatting renderers.
-String Function(ApiSummary)? apiSummaryRenderer;
+import 'text_renderer.dart';
 
 /// The exposure status of an API declaration within the summarized package.
 enum ApiDeclarationStatus {
@@ -66,13 +61,7 @@ final class ApiSummary {
   };
 
   @override
-  String toString() {
-    final renderer = apiSummaryRenderer;
-    if (renderer != null) {
-      return renderer(this);
-    }
-    return 'ApiSummary(name: $name, libraries: ${libraries.length})';
-  }
+  String toString() => renderTextSummary(this);
 }
 
 /// A summary of the declarations exposed by a single library within a package.

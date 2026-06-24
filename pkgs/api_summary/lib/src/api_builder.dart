@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/results.dart';
@@ -26,7 +27,9 @@ Future<ApiSummary> buildApiPackage(
   ApiSummaryCustomizer customizer,
 ) => _ApiBuilder(packageName, customizer).build(context);
 
-class _ApiBuilder {
+/// Internal builder traversing analysis results to build structured API
+/// summaries.
+final class _ApiBuilder {
   final ApiSummaryCustomizer _customizer;
   final String _pkgName;
 
@@ -109,7 +112,13 @@ class _ApiBuilder {
         _ => null,
       };
 
-      if (apiElement == null) continue;
+      if (apiElement == null) {
+        stderr.writeln(
+          'Warning: Skipping unsupported top-level element "${element.name}" '
+          '(${element.runtimeType})',
+        );
+        continue;
+      }
 
       for (final library in libraries) {
         final builder = _libraryBuilders.putIfAbsent(
@@ -236,7 +245,11 @@ class _ApiBuilder {
       case InvalidType():
         return const ApiDynamicType();
       case dynamic(:final runtimeType):
-        throw UnimplementedError('Unexpected type: $runtimeType');
+        stderr.writeln(
+          'Warning: Encountered unexpected DartType "$runtimeType", '
+          'falling back to dynamic',
+        );
+        return const ApiDynamicType();
     }
   }
 
@@ -442,7 +455,8 @@ class _ApiBuilder {
   );
 }
 
-class _ApiLibraryBuilder {
+/// Mutable builder accumulating declarations for a single library.
+final class _ApiLibraryBuilder {
   final String uri;
   final bool isPublicEntryPoint;
   final classes = <ApiClass>[];

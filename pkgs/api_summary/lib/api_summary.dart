@@ -12,9 +12,7 @@ import 'package:yaml/yaml.dart';
 import 'src/api_builder.dart';
 import 'src/api_declaration.dart';
 import 'src/api_summary_customizer.dart';
-import 'src/text_renderer.dart';
-
-export 'src/api_declaration.dart' hide apiSummaryRenderer;
+export 'src/api_declaration.dart';
 export 'src/api_summary_customizer.dart'
     show ApiSummaryContext, ApiSummaryCustomizer;
 export 'src/api_type.dart' hide parseTypeParameters;
@@ -34,7 +32,6 @@ Future<ApiSummary> apiSummary(
   String? packageName,
   ApiSummaryCustomizer? customizer,
 }) async {
-  apiSummaryRenderer ??= renderTextSummary;
   final resolvedPackageName = packageName ?? _extractPackageName(packagePath);
   final provider = PhysicalResourceProvider.INSTANCE;
   final libPath = provider.pathContext.join(packagePath, 'lib');
