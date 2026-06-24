@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'json_utils.dart';
+
 enum _Kind {
   isDynamic('dynamic', ApiDynamicType.fromJson),
   isVoid('void', ApiVoidType.fromJson),
@@ -89,7 +91,7 @@ final class ApiInterfaceType implements ApiType {
       ApiInterfaceType(
         name: json['name'] as String,
         libraryUri: json['libraryUri'] as String?,
-        typeArguments: _parseList(json, 'typeArguments', ApiType.fromJson),
+        typeArguments: parseList(json, 'typeArguments', ApiType.fromJson),
         isNullable: json['isNullable'] as bool? ?? false,
       );
 
@@ -133,8 +135,8 @@ final class ApiRecordType implements ApiType {
   });
 
   factory ApiRecordType.fromJson(Map<String, dynamic> json) => ApiRecordType(
-    positionalFields: _parseList(json, 'positionalFields', ApiType.fromJson),
-    namedFields: _parseList(json, 'namedFields', ApiRecordNamedField.fromJson),
+    positionalFields: parseList(json, 'positionalFields', ApiType.fromJson),
+    namedFields: parseList(json, 'namedFields', ApiRecordNamedField.fromJson),
     isNullable: json['isNullable'] as bool? ?? false,
   );
 
@@ -169,7 +171,7 @@ final class ApiFunctionType implements ApiType {
           json['returnType'] as Map<String, dynamic>,
         ),
         typeParameters: parseTypeParameters(json, 'typeParameters'),
-        parameters: _parseList(json, 'parameters', ApiParameter.fromJson),
+        parameters: parseList(json, 'parameters', ApiParameter.fromJson),
         isNullable: json['isNullable'] as bool? ?? false,
       );
 
@@ -185,30 +187,6 @@ final class ApiFunctionType implements ApiType {
     if (parameters.isNotEmpty)
       'parameters': parameters.map((e) => e.toJson()).toList(),
     if (isNullable) 'isNullable': true,
-  };
-}
-
-List<T> _parseList<T>(
-  Map<String, dynamic> json,
-  String key,
-  T Function(Map<String, dynamic>) fromJson,
-) =>
-    (json[key] as List<dynamic>?)
-        ?.map((e) => fromJson(e as Map<String, dynamic>))
-        .toList() ??
-    [];
-
-Map<String, ApiType?> parseTypeParameters(
-  Map<String, dynamic> json,
-  String key,
-) {
-  final map = json[key];
-  if (map is! Map) return {};
-  return {
-    for (final entry in map.entries)
-      entry.key as String: entry.value == null
-          ? null
-          : ApiType.fromJson(entry.value as Map<String, dynamic>),
   };
 }
 

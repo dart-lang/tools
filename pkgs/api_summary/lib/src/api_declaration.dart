@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'api_type.dart';
+import 'json_utils.dart';
 import 'text_renderer.dart';
 
 /// The exposure status of an API declaration within the summarized package.
@@ -52,7 +53,7 @@ final class ApiSummary {
 
   factory ApiSummary.fromJson(Map<String, dynamic> json) => ApiSummary(
     name: json['name'] as String,
-    libraries: _parseList(json, 'libraries', ApiLibrary.fromJson),
+    libraries: parseList(json, 'libraries', ApiLibrary.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -91,17 +92,17 @@ final class ApiLibrary {
   factory ApiLibrary.fromJson(Map<String, dynamic> json) => ApiLibrary(
     uri: json['uri'] as String,
     isPublicEntryPoint: json['isPublicEntryPoint'] as bool,
-    classes: _parseList(json, 'classes', ApiClass.fromJson),
-    enums: _parseList(json, 'enums', ApiClass.fromJson),
-    mixins: _parseList(json, 'mixins', ApiClass.fromJson),
-    extensions: _parseList(json, 'extensions', ApiExtension.fromJson),
-    extensionTypes: _parseList(
+    classes: parseList(json, 'classes', ApiClass.fromJson),
+    enums: parseList(json, 'enums', ApiClass.fromJson),
+    mixins: parseList(json, 'mixins', ApiClass.fromJson),
+    extensions: parseList(json, 'extensions', ApiExtension.fromJson),
+    extensionTypes: parseList(
       json,
       'extensionTypes',
       ApiExtensionType.fromJson,
     ),
-    functions: _parseList(json, 'functions', ApiExecutable.fromJson),
-    typeAliases: _parseList(json, 'typeAliases', ApiTypeAlias.fromJson),
+    functions: parseList(json, 'functions', ApiExecutable.fromJson),
+    typeAliases: parseList(json, 'typeAliases', ApiTypeAlias.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -182,20 +183,20 @@ final class ApiClass extends ApiDeclaration {
     supertype: json['supertype'] != null
         ? ApiType.fromJson(json['supertype'] as Map<String, dynamic>)
         : null,
-    interfaces: _parseList(json, 'interfaces', ApiType.fromJson),
-    mixins: _parseList(json, 'mixins', ApiType.fromJson),
-    superclassConstraints: _parseList(
+    interfaces: parseList(json, 'interfaces', ApiType.fromJson),
+    mixins: parseList(json, 'mixins', ApiType.fromJson),
+    superclassConstraints: parseList(
       json,
       'superclassConstraints',
       ApiType.fromJson,
     ),
-    modifiers: _parseStringList(
+    modifiers: parseStringList(
       json,
       'modifiers',
     ).map(ApiClassModifier.parse).toList(),
-    immediateSubtypes: _parseStringList(json, 'immediateSubtypes'),
-    constructors: _parseList(json, 'constructors', ApiExecutable.fromJson),
-    methods: _parseList(json, 'methods', ApiExecutable.fromJson),
+    immediateSubtypes: parseStringList(json, 'immediateSubtypes'),
+    constructors: parseList(json, 'constructors', ApiExecutable.fromJson),
+    methods: parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
     isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
@@ -258,7 +259,7 @@ final class ApiExtension extends ApiDeclaration {
     extendedType: ApiType.fromJson(
       json['extendedType'] as Map<String, dynamic>,
     ),
-    methods: _parseList(json, 'methods', ApiExecutable.fromJson),
+    methods: parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
     isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
@@ -314,9 +315,9 @@ final class ApiExtensionType extends ApiDeclaration {
         representationType: ApiType.fromJson(
           json['representationType'] as Map<String, dynamic>,
         ),
-        interfaces: _parseList(json, 'interfaces', ApiType.fromJson),
-        constructors: _parseList(json, 'constructors', ApiExecutable.fromJson),
-        methods: _parseList(json, 'methods', ApiExecutable.fromJson),
+        interfaces: parseList(json, 'interfaces', ApiType.fromJson),
+        constructors: parseList(json, 'constructors', ApiExecutable.fromJson),
+        methods: parseList(json, 'methods', ApiExecutable.fromJson),
         isDeprecated: json['isDeprecated'] as bool? ?? false,
         isExperimental: json['isExperimental'] as bool? ?? false,
         isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
@@ -378,7 +379,7 @@ final class ApiExecutable extends ApiDeclaration {
     ),
     typeParameters: parseTypeParameters(json, 'typeParameters'),
     returnType: ApiType.fromJson(json['returnType'] as Map<String, dynamic>),
-    parameters: _parseList(json, 'parameters', ApiParameter.fromJson),
+    parameters: parseList(json, 'parameters', ApiParameter.fromJson),
     isStatic: json['isStatic'] as bool? ?? false,
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
@@ -449,19 +450,6 @@ final class ApiTypeAlias extends ApiDeclaration {
     if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
   };
 }
-
-List<T> _parseList<T>(
-  Map<String, dynamic> json,
-  String key,
-  T Function(Map<String, dynamic>) fromJson,
-) =>
-    (json[key] as List<dynamic>?)
-        ?.map((e) => fromJson(e as Map<String, dynamic>))
-        .toList() ??
-    [];
-
-List<String> _parseStringList(Map<String, dynamic> json, String key) =>
-    (json[key] as List<dynamic>?)?.map((e) => e as String).toList() ?? [];
 
 ApiDeclarationStatus _parseStatus(Map<String, dynamic> json) =>
     ApiDeclarationStatus.values.byName(json['status'] as String? ?? 'public');
