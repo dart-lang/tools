@@ -306,15 +306,18 @@ final class Event {
     // Assemble && build bundle implementation parameters
     String? buildBundleTargetPlatform,
     bool? buildBundleIsModule,
+    bool? buildBundleEnableHcpp,
 
     // Build aar implementation parameters
     String? buildAarProjectType,
     String? buildAarTargetPlatform,
+    bool? buildAarEnableHcpp,
 
     // Build apk implementation parameters
     String? buildApkTargetPlatform,
     String? buildApkBuildMode,
     bool? buildApkSplitPerAbi,
+    bool? buildApkEnableHcpp,
 
     // Build app bundle implementation parameters
     String? buildAppBundleTargetPlatform,
@@ -341,6 +344,7 @@ final class Event {
     bool? runEnableImpeller,
     String? runIOSInterfaceType,
     bool? runIsTest,
+    bool? runEnableHcpp,
   }) : this._(
          eventName: DashEvent.commandUsageValues,
          eventData: {
@@ -348,11 +352,14 @@ final class Event {
            'commandHasTerminal': commandHasTerminal,
            'buildBundleTargetPlatform': ?buildBundleTargetPlatform,
            'buildBundleIsModule': ?buildBundleIsModule,
+           'buildBundleEnableHcpp': ?buildBundleEnableHcpp,
            'buildAarProjectType': ?buildAarProjectType,
            'buildAarTargetPlatform': ?buildAarTargetPlatform,
+           'buildAarEnableHcpp': ?buildAarEnableHcpp,
            'buildApkTargetPlatform': ?buildApkTargetPlatform,
            'buildApkBuildMode': ?buildApkBuildMode,
            'buildApkSplitPerAbi': ?buildApkSplitPerAbi,
+           'buildApkEnableHcpp': ?buildApkEnableHcpp,
            'buildAppBundleTargetPlatform': ?buildAppBundleTargetPlatform,
            'buildAppBundleBuildMode': ?buildAppBundleBuildMode,
            'createProjectType': ?createProjectType,
@@ -371,6 +378,7 @@ final class Event {
            'runEnableImpeller': ?runEnableImpeller,
            'runIOSInterfaceType': ?runIOSInterfaceType,
            'runIsTest': ?runIsTest,
+           'runEnableHcpp': ?runEnableHcpp,
          },
        );
 
@@ -971,12 +979,24 @@ final class Event {
   /// * [parameters] - the names of the parameters passed to the `initialize`
   ///   request, or an empty string if the `initialize` request was not sent
   ///   or if there were no parameters given.
+  ///
+  /// * [ideName] - the name of the IDE, e.g. IntelliJ IDEA.
+  ///
+  /// * [ideVersion] - the version of the IDE platform.
+  ///
+  /// * [pluginName] - the name of the plugin, e.g. Dart.
+  ///
+  /// * [pluginVersion] - the version of the plugin.
   Event.serverSession({
     required String clientId,
     required String clientVersion,
     required int duration,
     required String flags,
     required String parameters,
+    String ideName = '',
+    String ideVersion = '',
+    String pluginName = '',
+    String pluginVersion = '',
   }) : this._(
          eventName: DashEvent.serverSession,
          eventData: {
@@ -984,6 +1004,10 @@ final class Event {
            'clientVersion': clientVersion,
            'duration': duration,
            'flags': flags,
+           'ideName': ideName,
+           'ideVersion': ideVersion,
+           'pluginName': pluginName,
+           'pluginVersion': pluginVersion,
            'parameters': parameters,
          },
        );

@@ -21,7 +21,7 @@ print('${tracker.duration} ${tracker.innerDuration} ${tracker.slices}');
 Use the following command to re-generate `lib/src/timing.g.dart` file:
 
 ```bash
-dart pub run build_runner build
+dart run build_runner build
 ```
 
 ## Publishing automation

@@ -627,34 +627,93 @@ void main() {
       );
     });
 
-    group('cancel', () {
+    group('cancel stops new work from starting', () {
       final dataSize = 32;
       for (var i = 1; i < 5; i++) {
         test('with pool size $i', () async {
           pool = Pool(i);
 
+          final stopAfter = dataSize ~/ 2;
+          var workStarted = -1;
           var stream =
-              pool.forEach(Iterable<int>.generate(dataSize), delayedToString);
-
-          var cancelCompleter = Completer<void>();
-
-          StreamSubscription subscription;
-
-          var eventCount = 0;
-          subscription = stream.listen((data) {
-            eventCount++;
-            if (int.parse(data) == dataSize ~/ 2) {
-              cancelCompleter.complete();
-            }
-          }, onError: registerException);
-
-          await cancelCompleter.future;
-
-          await subscription.cancel();
-
-          expect(eventCount, 1 + dataSize ~/ 2);
+              pool.forEach(Iterable<int>.generate(dataSize), (i) async {
+            if (i > workStarted) workStarted = i;
+            await pumpEventQueue();
+            return i;
+          });
+          await stream.take(stopAfter).drain<void>();
+          expect(workStarted, lessThanOrEqualTo(stopAfter + i),
+              reason: 'at most $i resources may be acquired '
+                  'during ongoing cancellation');
         });
       }
+
+      test('cancel while paused completes', () {
+        FakeAsync().run((async) {
+          pool = Pool(2);
+
+          var stream = pool.forEach(Iterable<int>.generate(10), (i) async {
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+            return i;
+          });
+
+          var subscription = stream.listen((_) {});
+
+          async.elapse(const Duration(milliseconds: 5)); // trigger onListen
+
+          subscription.pause();
+          async.elapse(const Duration(milliseconds: 50)); // let it pause
+
+          var cancelFuture = subscription.cancel();
+
+          expect(cancelFuture, completes);
+
+          async.elapse(const Duration(seconds: 1)); // let cancel proceed
+        });
+      });
+
+      test('cancel waits for all workers to finish on error', () async {
+        pool = Pool(2);
+
+        var worker1Started = Completer<void>();
+        var worker1Finish = Completer<void>();
+
+        var iterable = Iterable.generate(10, (i) {
+          if (i == 1) {
+            throw StateError('iterator error');
+          }
+          return i;
+        });
+
+        var stream = pool.forEach(iterable, (i) async {
+          if (i == 0) {
+            worker1Started.complete();
+            await worker1Finish.future;
+          }
+          return i;
+        });
+
+        var errorCompleter = Completer<void>();
+        var cancelCompleter = Completer<void>();
+
+        late StreamSubscription subscription;
+
+        subscription = stream.listen((data) {}, onError: (e) {
+          errorCompleter.complete();
+          subscription.cancel().then((_) {
+            cancelCompleter.complete();
+          });
+        });
+
+        await worker1Started.future;
+        await errorCompleter.future;
+
+        await pumpEventQueue();
+        expect(cancelCompleter.isCompleted, isFalse);
+
+        worker1Finish.complete();
+        await cancelCompleter.future;
+      });
     });
 
     group('errors', () {
@@ -684,6 +743,48 @@ void main() {
       });
       test('iteration, with onError', () async {
         await errorInIterator(onError: (i, e, s) => false);
+      });
+
+      test('iterator error stops processing other items', () async {
+        pool = Pool(2);
+
+        var pulledItems = <int>[];
+        var iterable = Iterable.generate(10, (i) {
+          pulledItems.add(i);
+          if (i == 3) {
+            throw StateError('iterator error');
+          }
+          return i;
+        });
+
+        var stream = pool.forEach(iterable, (i) async {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          return i;
+        });
+
+        await expectLater(stream.toList(), throwsStateError);
+
+        // Without optimization, it pulls all 10 items.
+        // With optimization, it should stop early.
+        expect(pulledItems.length, lessThan(10));
+      });
+
+      test(
+          'iterator error with advancing iterator stops processing other items',
+          () async {
+        pool = Pool(1);
+
+        var pulledItems = <int>[];
+        var stream = pool.forEach(_AdvancingThrowingIterable((i) {
+          pulledItems.add(i);
+        }), (i) async {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          return i;
+        });
+
+        await expectLater(stream.toList(), throwsException);
+
+        expect(pulledItems.length, lessThan(5));
       });
 
       test('error in action, no onError', () async {
@@ -743,3 +844,31 @@ Matcher get doesNotComplete => predicate((Future future) {
           TestFailure('Expected future not to complete.'), stack));
       return true;
     });
+
+class _AdvancingThrowingIterable extends Iterable<int> {
+  final void Function(int) onPull;
+  _AdvancingThrowingIterable(this.onPull);
+
+  @override
+  Iterator<int> get iterator => _AdvancingThrowingIterator(onPull);
+}
+
+class _AdvancingThrowingIterator implements Iterator<int> {
+  final void Function(int) onPull;
+  int _count = 0;
+
+  _AdvancingThrowingIterator(this.onPull);
+
+  @override
+  int get current => _count;
+
+  @override
+  bool moveNext() {
+    _count++;
+    onPull(_count);
+    if (_count == 2) {
+      throw Exception('Iterator failed');
+    }
+    return _count < 5;
+  }
+}

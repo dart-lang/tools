@@ -346,7 +346,40 @@ void main() {
     expect(constructedEvent.eventData['duration'], 5);
     expect(constructedEvent.eventData['flags'], 'flags');
     expect(constructedEvent.eventData['parameters'], 'parameters');
-    expect(constructedEvent.eventData.length, 5);
+    expect(constructedEvent.eventData['ideName'], '');
+    expect(constructedEvent.eventData['ideVersion'], '');
+    expect(constructedEvent.eventData['pluginName'], '');
+    expect(constructedEvent.eventData['pluginVersion'], '');
+    expect(constructedEvent.eventData.length, 9);
+  });
+
+  test('Event.serverSession constructed with optional parameters', () {
+    Event generateEvent() => Event.serverSession(
+      clientId: 'clientId',
+      clientVersion: 'clientVersion',
+      duration: 5,
+      flags: 'flags',
+      parameters: 'parameters',
+      ideName: 'ideName',
+      ideVersion: 'ideVersion',
+      pluginName: 'pluginName',
+      pluginVersion: 'pluginVersion',
+    );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.serverSession);
+    expect(constructedEvent.eventData['clientId'], 'clientId');
+    expect(constructedEvent.eventData['clientVersion'], 'clientVersion');
+    expect(constructedEvent.eventData['duration'], 5);
+    expect(constructedEvent.eventData['flags'], 'flags');
+    expect(constructedEvent.eventData['parameters'], 'parameters');
+    expect(constructedEvent.eventData['ideName'], 'ideName');
+    expect(constructedEvent.eventData['ideVersion'], 'ideVersion');
+    expect(constructedEvent.eventData['pluginName'], 'pluginName');
+    expect(constructedEvent.eventData['pluginVersion'], 'pluginVersion');
+    expect(constructedEvent.eventData.length, 9);
   });
 
   test('Event.severityAdjustment constructed', () {
@@ -679,11 +712,14 @@ void main() {
       commandHasTerminal: true,
       buildBundleTargetPlatform: 'buildBundleTargetPlatform',
       buildBundleIsModule: true,
+      buildBundleEnableHcpp: true,
       buildAarProjectType: 'buildAarProjectType',
       buildAarTargetPlatform: 'buildAarTargetPlatform',
+      buildAarEnableHcpp: true,
       buildApkTargetPlatform: 'buildApkTargetPlatform',
       buildApkBuildMode: 'buildApkBuildMode',
       buildApkSplitPerAbi: true,
+      buildApkEnableHcpp: true,
       buildAppBundleTargetPlatform: 'buildAppBundleTargetPlatform',
       buildAppBundleBuildMode: 'buildAppBundleBuildMode',
       createProjectType: 'createProjectType',
@@ -702,6 +738,7 @@ void main() {
       runEnableImpeller: true,
       runIOSInterfaceType: 'runIOSInterfaceType',
       runIsTest: true,
+      runEnableHcpp: true,
     );
 
     final constructedEvent = generateEvent();
@@ -713,6 +750,7 @@ void main() {
       constructedEvent.eventData['buildBundleTargetPlatform'],
       'buildBundleTargetPlatform',
     );
+    expect(constructedEvent.eventData['buildBundleEnableHcpp'], true);
     expect(constructedEvent.eventData['buildBundleIsModule'], true);
     expect(
       constructedEvent.eventData['buildAarProjectType'],
@@ -722,6 +760,7 @@ void main() {
       constructedEvent.eventData['buildAarTargetPlatform'],
       'buildAarTargetPlatform',
     );
+    expect(constructedEvent.eventData['buildAarEnableHcpp'], true);
     expect(
       constructedEvent.eventData['buildApkTargetPlatform'],
       'buildApkTargetPlatform',
@@ -731,6 +770,7 @@ void main() {
       'buildApkBuildMode',
     );
     expect(constructedEvent.eventData['buildApkSplitPerAbi'], true);
+    expect(constructedEvent.eventData['buildApkEnableHcpp'], true);
     expect(
       constructedEvent.eventData['buildAppBundleTargetPlatform'],
       'buildAppBundleTargetPlatform',
@@ -778,7 +818,8 @@ void main() {
       constructedEvent.eventData['runIOSInterfaceType'],
       'runIOSInterfaceType',
     );
-    expect(constructedEvent.eventData.length, 27);
+    expect(constructedEvent.eventData['runEnableHcpp'], true);
+    expect(constructedEvent.eventData.length, 31);
   });
 
   test('Event.analyticsException constructed', () {

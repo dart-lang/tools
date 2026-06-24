@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 // TODO(jmesserly): reconcile this with dart:web htmlEscape.
 // This one might be more useful, as it is HTML5 spec compliant.
 /// Escapes [text] for use in the

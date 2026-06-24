@@ -1,4 +1,4 @@
-// Copyright (c) 2019, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2019, the Dart project authors. Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -15,7 +15,8 @@ Uri pkg(String packageName, String packagePath) {
 }
 
 // Remove if not used.
-String configFromPackages(List<List<String>> packages) => """
+String configFromPackages(List<List<String>> packages) =>
+    """
 {
   "configVersion": 2,
   "packages": [

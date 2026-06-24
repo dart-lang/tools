@@ -430,6 +430,13 @@ void main() {
       expect(scanner.column, equals(1));
     });
 
+    test('backward from between CR LF to before CR LF', () {
+      scanner.expect('foo\nbar\r');
+      scanner.position = 1; // "f"
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(1));
+    });
+
     test('backward to after CR LF', () {
       scanner.expect('foo\nbar\r\nbaz');
       scanner.position = 9; // "foo\nbar\r\n"

@@ -1,3 +1,12 @@
+## 7.4.0
+
+* Adds `linkBuilder`/`imageLinkBuilder` alternatives to `linkResolver`/  
+  `imageLinkResolver` for handling unmatched reference links.
+  Allows access to the parsed markdown content of `[_content_][reference]`,
+  so that the created link can contain that content.
+* For testing the package, adds matchers for `Element` and `Text` to more
+  directly test the output parsing.
+
 ## 7.3.1
 
 * Preserve metadata passed to fenced code blocks as

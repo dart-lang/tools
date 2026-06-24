@@ -1,24 +1,26 @@
 ## 4.12.0-wip
 
 * Add `ForLoop`, `ForInLoop`, and `WhileLoop` classes to support control-flow loops.
-
 * Add `Conditional` and `BranchBuilder` classes to support `if` statements and trees.
-
 * Add `TryCatch` and `CatchBlock` classes to support `try`/`catch` blocks.
-
 * Add `Case`, `SwitchExpression`, and `SwitchStatement` classes to support `switch`
   expressions/statements.
-
 * Add `yielded`, `yieldStarred`, `ifThen`, `ifThenReturn`, `loopWhile`, `loopDoWhile`,
   and `loopForIn` methods to `Expression` via `ControlFlow` extension.
-
 * Add static constants `breakVoid`, `continueVoid`, `returnVoid`, and `rethrowVoid`
   (on `ControlFlow`) and `wildcard` (on `Expression`).
-
 * Add static methods `breakLabel`, `continueLabel`, `collectionIf`, `collectionElse`,
   `collectionFor`, `collectionForIn`, and `ifCase` to `ControlFlow`.
-
 * Simplify usage examples on the README.
+* Ensure scoped lint ignores
+  (such as `// ignore_for_file: no_leading_underscores_for_library_prefixes`)
+  are emitted at the top of the file before library annotations and directives.
+* Allow single quotes in strings passed to `literalString(raw:true)`. This
+  argument no longer guarantees a raw string is used, but results will have the
+  same behavior.
+* Correct type annotations on nullable and generic variables created with
+  `declareVar`, `declareFinal`, and `declareConst`.
+* Deprecate and remove uses of `Expression.expression`.
 
 ## 4.11.1
 
