@@ -76,5 +76,6 @@ jobs:
         run: dart test --platform chrome --compiler dart2js,dart2wasm
         if: always() && steps.install.outcome == 'success'
       - name: Run node tests
-        run: dart test --platform node --compiler dart2js,dart2wasm
+        # TODO: Add dart2wasm back once package:test Node runner supports Dart compile/compileStreaming exports
+        run: dart test --platform node --compiler dart2js
         if: always() && steps.install.outcome == 'success'

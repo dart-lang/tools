@@ -34,6 +34,7 @@ void main() {
 class TestReflectiveLoaderTest {
   static bool didSetUpClass = false;
   static bool didTearDownClass = false;
+  static bool? expectedToFailInFailingTest;
 
   // TODO(scheglov): Linter was updated to automatically ignore
   // this but needs time before it is actually used. Remove this
@@ -52,6 +53,7 @@ class TestReflectiveLoaderTest {
   static void tearDownClass() {
     expect(didSetUpClass, true);
     expect(didTearDownClass, false);
+    expect(expectedToFailInFailingTest, true);
     didTearDownClass = true;
   }
 
@@ -62,6 +64,7 @@ class TestReflectiveLoaderTest {
 
   @failingTest
   void test_fails() {
+    expectedToFailInFailingTest = currentTestIsExpectedToFail;
     expect(false, true);
   }
 
@@ -83,9 +86,11 @@ class TestReflectiveLoaderTest {
     //
     // This is a legit test failure and will be marked as such without
     // the `@failingTest` annotation.
-    unawaited(Future<void>.value()
-        .then((_) => throw UnimplementedError('foo'))
-        .whenComplete(completer.complete));
+    unawaited(
+      Future<void>.value()
+          .then((_) => throw UnimplementedError('foo'))
+          .whenComplete(completer.complete),
+    );
     await completer.future;
   }
 
@@ -95,6 +100,7 @@ class TestReflectiveLoaderTest {
   }
 
   void test_passes() {
+    expect(currentTestIsExpectedToFail, isFalse);
     expect(true, true);
   }
 
