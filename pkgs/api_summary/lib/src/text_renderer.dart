@@ -213,14 +213,7 @@ class _ApiTextRenderer {
     }
 
     if (element.typeParameters.isNotEmpty) {
-      for (final bound in element.typeParameterBounds) {
-        _describeType(bound);
-      }
-      instanceDescription.addAll(
-        element.typeParameters
-            .map((e) => [e])
-            .separatedBy(prefix: '<', suffix: '>'),
-      );
+      instanceDescription.addAll(_renderTypeParameters(element.typeParameters));
     }
 
     if (element.supertype != null) {
@@ -309,8 +302,8 @@ class _ApiTextRenderer {
     Node<MemberSortKey> node,
   ) {
     final parentheticals = <List<Object?>>[];
-    for (final bound in element.typeParameterBounds) {
-      _describeType(bound);
+    for (final bound in element.typeParameters.values) {
+      if (bound != null) _describeType(bound);
     }
     parentheticals.add([
       'extension on ',
@@ -334,14 +327,7 @@ class _ApiTextRenderer {
     final instanceDescription = <Object?>['extension type'];
 
     if (element.typeParameters.isNotEmpty) {
-      for (final bound in element.typeParameterBounds) {
-        _describeType(bound);
-      }
-      instanceDescription.addAll(
-        element.typeParameters
-            .map((e) => [e])
-            .separatedBy(prefix: '<', suffix: '>'),
-      );
+      instanceDescription.addAll(_renderTypeParameters(element.typeParameters));
     }
     if (element.interfaces.isNotEmpty) {
       instanceDescription.addAll(
@@ -367,8 +353,8 @@ class _ApiTextRenderer {
     bool isTopLevel = false,
   }) {
     final parentheticals = <List<Object?>>[];
-    for (final bound in element.typeParameterBounds) {
-      _describeType(bound);
+    for (final bound in element.typeParameters.values) {
+      if (bound != null) _describeType(bound);
     }
 
     final maybeStatic =
@@ -414,14 +400,7 @@ class _ApiTextRenderer {
     final parentheticals = <List<Object?>>[];
     final description = <Object?>['type alias'];
     if (element.typeParameters.isNotEmpty) {
-      for (final bound in element.typeParameterBounds) {
-        _describeType(bound);
-      }
-      description.addAll(
-        element.typeParameters
-            .map((e) => [e])
-            .separatedBy(prefix: '<', suffix: '>'),
-      );
+      description.addAll(_renderTypeParameters(element.typeParameters));
     }
     description.addAll([' for ', ..._describeType(element.aliasedType)]);
     parentheticals.add(description);
@@ -501,9 +480,7 @@ class _ApiTextRenderer {
       ..._describeType(element.returnType),
       ' Function',
       if (element.typeParameters.isNotEmpty)
-        ...element.typeParameters
-            .map((e) => <Object?>[e])
-            .separatedBy(prefix: '<', suffix: '>'),
+        ..._renderTypeParameters(element.typeParameters),
       '(',
       ...params.separatedBy(),
       ')',
@@ -554,8 +531,8 @@ class _ApiTextRenderer {
           if (type.isNullable) '?',
         ];
       case ApiFunctionType():
-        for (final bound in type.typeParameterBounds) {
-          _describeType(bound);
+        for (final bound in type.typeParameters.values) {
+          if (bound != null) _describeType(bound);
         }
         final params = <List<Object?>>[];
         final optionalParams = <List<Object?>>[];
@@ -594,9 +571,7 @@ class _ApiTextRenderer {
           ..._describeType(type.returnType),
           ' Function',
           if (type.typeParameters.isNotEmpty)
-            ...type.typeParameters
-                .map((e) => <Object?>[e])
-                .separatedBy(prefix: '<', suffix: '>'),
+            ..._renderTypeParameters(type.typeParameters),
           '(',
           ...params.separatedBy(),
           ')',
@@ -622,6 +597,18 @@ class _ApiTextRenderer {
     if (parentheticals.isNotEmpty) {
       node.text.addAll(parentheticals.separatedBy(prefix: ' (', suffix: ')'));
     }
+  }
+
+  List<Object?> _renderTypeParameters(Map<String, ApiType?> typeParameters) {
+    if (typeParameters.isEmpty) return const [];
+    return typeParameters.entries
+        .map(
+          (e) => <Object?>[
+            e.key,
+            if (e.value != null) ...[' extends ', ..._describeType(e.value!)],
+          ],
+        )
+        .separatedBy(prefix: '<', suffix: '>');
   }
 }
 

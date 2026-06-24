@@ -12,11 +12,11 @@ import 'package:yaml_edit/yaml_edit.dart';
 
 Future<void> main(List<String> arguments) async {
   try {
-    final results = parser.parse(arguments);
+    final results = _parser.parse(arguments);
 
     if (results.flag('help')) {
       print('Usage: api_summary [options]');
-      print(parser.usage);
+      print(_parser.usage);
       return;
     }
 
@@ -26,38 +26,40 @@ Future<void> main(List<String> arguments) async {
 
     final format = results.option('format');
     final package = await apiSummary(absolutePath);
-    switch (format) {
-      case 'json':
-        final summary = const JsonEncoder.withIndent(
-          '  ',
-        ).convert(package.toJson());
-        stdout.writeln(summary);
-      case 'yaml':
-        final editor = YamlEditor('');
-        editor.update([], package.toJson());
-        stdout.writeln(editor.toString());
-      case 'text':
-        stdout.write(package.toString());
-      default:
-        throw UnsupportedError('Unsupported output format: $format');
-    }
+    print(_format(package, format!));
   } on FormatException catch (e) {
     stderr.writeln('Error: ${e.message}');
     stderr.writeln('\nUsage: api_summary [options]');
-    stderr.writeln(parser.usage);
+    stderr.writeln(_parser.usage);
     exitCode = 64;
     return;
     // ignore: avoid_catching_errors
   } on ArgumentError catch (e) {
     stderr.writeln('Error: ${e.message}');
     stderr.writeln('\nUsage: api_summary [options]');
-    stderr.writeln(parser.usage);
+    stderr.writeln(_parser.usage);
     exitCode = 64;
     return;
   }
 }
 
-final parser = ArgParser()
+String _format(ApiSummary package, String format) => switch (format) {
+  'text' => package.toString(),
+  'json' => _formatJson(package),
+  'yaml' => _formatYaml(package),
+  _ => throw UnsupportedError('Unsupported output format: $format'),
+};
+
+String _formatYaml(ApiSummary package) {
+  final editor = YamlEditor('');
+  editor.update([], package.toJson());
+  return editor.toString();
+}
+
+String _formatJson(ApiSummary package) =>
+    const JsonEncoder.withIndent('  ').convert(package.toJson());
+
+final _parser = ArgParser()
   ..addOption(
     'package-path',
     abbr: 'p',

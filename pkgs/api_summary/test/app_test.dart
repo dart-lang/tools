@@ -10,10 +10,12 @@ import 'dart:io';
 import 'package:api_summary/api_summary.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:yaml_edit/yaml_edit.dart';
 
 void main() {
   late String jsonSummary;
   late String textSummary;
+  late String yamlSummary;
 
   setUpAll(() async {
     final apiPackage = await apiSummary(_pkgDir());
@@ -22,6 +24,9 @@ void main() {
       '  ',
     ).convert(apiPackage.toJson());
     textSummary = apiPackage.toString();
+    final editor = YamlEditor('');
+    editor.update([], apiPackage.toJson());
+    yamlSummary = editor.toString();
   });
 
   test('json output matches api.json', () {
@@ -30,6 +35,10 @@ void main() {
 
   test('text output matches api.txt', () {
     _verifyGolden(textSummary, 'api.txt');
+  });
+
+  test('yaml output matches api.yaml', () {
+    _verifyGolden(yamlSummary, 'api.yaml');
   });
 
   test('rehydrated json renders identical text summary', () {

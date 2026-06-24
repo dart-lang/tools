@@ -152,15 +152,13 @@ final class ApiRecordType implements ApiType {
 /// Represents a function type in Dart (e.g. `void Function(int)`).
 final class ApiFunctionType implements ApiType {
   final ApiType returnType;
-  final List<String> typeParameters;
-  final List<ApiType> typeParameterBounds;
+  final Map<String, ApiType?> typeParameters;
   final List<ApiParameter> parameters;
   final bool isNullable;
 
   ApiFunctionType({
     required this.returnType,
     required this.typeParameters,
-    this.typeParameterBounds = const [],
     required this.parameters,
     required this.isNullable,
   });
@@ -170,12 +168,7 @@ final class ApiFunctionType implements ApiType {
         returnType: ApiType.fromJson(
           json['returnType'] as Map<String, dynamic>,
         ),
-        typeParameters: _parseStringList(json, 'typeParameters'),
-        typeParameterBounds: _parseList(
-          json,
-          'typeParameterBounds',
-          ApiType.fromJson,
-        ),
+        typeParameters: parseTypeParameters(json, 'typeParameters'),
         parameters: _parseList(json, 'parameters', ApiParameter.fromJson),
         isNullable: json['isNullable'] as bool? ?? false,
       );
@@ -184,11 +177,11 @@ final class ApiFunctionType implements ApiType {
   Map<String, dynamic> toJson() => {
     'kind': _Kind.function.jsonName,
     'returnType': returnType.toJson(),
-    if (typeParameters.isNotEmpty) 'typeParameters': typeParameters,
-    if (typeParameterBounds.isNotEmpty)
-      'typeParameterBounds': typeParameterBounds
-          .map((e) => e.toJson())
-          .toList(),
+    if (typeParameters.isNotEmpty)
+      'typeParameters': {
+        for (final entry in typeParameters.entries)
+          entry.key: entry.value?.toJson(),
+      },
     if (parameters.isNotEmpty)
       'parameters': parameters.map((e) => e.toJson()).toList(),
     if (isNullable) 'isNullable': true,
@@ -205,8 +198,19 @@ List<T> _parseList<T>(
         .toList() ??
     [];
 
-List<String> _parseStringList(Map<String, dynamic> json, String key) =>
-    (json[key] as List<dynamic>?)?.map((e) => e as String).toList() ?? [];
+Map<String, ApiType?> parseTypeParameters(
+  Map<String, dynamic> json,
+  String key,
+) {
+  final map = json[key];
+  if (map is! Map) return {};
+  return {
+    for (final entry in map.entries)
+      entry.key as String: entry.value == null
+          ? null
+          : ApiType.fromJson(entry.value as Map<String, dynamic>),
+  };
+}
 
 /// Represents a parameter in a function or method signature.
 ///

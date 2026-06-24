@@ -188,8 +188,7 @@ class _ApiBuilder {
 
         return ApiFunctionType(
           returnType: _describeType(returnType),
-          typeParameters: typeParameters.map(_describeTypeParameter).toList(),
-          typeParameterBounds: _extractTypeParameterBounds(typeParameters),
+          typeParameters: _extractTypeParameters(typeParameters),
           parameters: apiParameters,
           isNullable: isNullable,
         );
@@ -241,25 +240,16 @@ class _ApiBuilder {
     }
   }
 
-  String _describeTypeParameter(TypeParameterElement element) {
-    final bound = element.bound;
-    if (bound != null) {
-      _describeType(bound);
-      return '${element.name} extends ${bound.getDisplayString()}';
-    }
-    return element.name ?? '';
-  }
-
-  List<ApiType> _extractTypeParameterBounds(
+  Map<String, ApiType?> _extractTypeParameters(
     List<TypeParameterElement> elements,
   ) {
-    final bounds = <ApiType>[];
+    final result = <String, ApiType?>{};
     for (final e in elements) {
-      if (e.bound != null) {
-        bounds.add(_describeType(e.bound!));
+      if (e.name != null) {
+        result[e.name!] = e.bound != null ? _describeType(e.bound!) : null;
       }
     }
-    return bounds;
+    return result;
   }
 
   Map<ClassElement, Set<InterfaceElement>>
@@ -338,10 +328,7 @@ class _ApiBuilder {
     return ApiClass(
       name: element.name ?? '',
       locationUri: element.library.uri.toString(),
-      typeParameters: element.typeParameters
-          .map(_describeTypeParameter)
-          .toList(),
-      typeParameterBounds: _extractTypeParameterBounds(element.typeParameters),
+      typeParameters: _extractTypeParameters(element.typeParameters),
       supertype: element is ClassElement
           ? (element.supertype != null
                 ? _describeType(element.supertype!)
@@ -373,10 +360,7 @@ class _ApiBuilder {
       name: element.name ?? '',
       locationUri: element.library.uri.toString(),
       extendedType: _describeType(element.extendedType),
-      typeParameters: element.typeParameters
-          .map(_describeTypeParameter)
-          .toList(),
-      typeParameterBounds: _extractTypeParameterBounds(element.typeParameters),
+      typeParameters: _extractTypeParameters(element.typeParameters),
       methods: methods,
       isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
@@ -400,10 +384,7 @@ class _ApiBuilder {
       name: element.name ?? '',
       locationUri: element.library.uri.toString(),
       representationType: _describeType(element.representation.type),
-      typeParameters: element.typeParameters
-          .map(_describeTypeParameter)
-          .toList(),
-      typeParameterBounds: _extractTypeParameterBounds(element.typeParameters),
+      typeParameters: _extractTypeParameters(element.typeParameters),
       interfaces: element.interfaces.map(_describeType).toList(),
       constructors: constructors,
       methods: methods,
@@ -430,10 +411,7 @@ class _ApiBuilder {
       locationUri: element.library.uri.toString(),
       kind: kind,
       returnType: _describeType(element.returnType),
-      typeParameters: element.typeParameters
-          .map(_describeTypeParameter)
-          .toList(),
-      typeParameterBounds: _extractTypeParameterBounds(element.typeParameters),
+      typeParameters: _extractTypeParameters(element.typeParameters),
       parameters: formalParameters
           .map(
             (e) => ApiParameter(
@@ -456,8 +434,7 @@ class _ApiBuilder {
   ApiTypeAlias _buildTypeAlias(TypeAliasElement element) => ApiTypeAlias(
     name: element.name ?? '',
     locationUri: element.library.uri.toString(),
-    typeParameters: element.typeParameters.map(_describeTypeParameter).toList(),
-    typeParameterBounds: _extractTypeParameterBounds(element.typeParameters),
+    typeParameters: _extractTypeParameters(element.typeParameters),
     aliasedType: _describeType(element.aliasedType),
     isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
     isExperimental: element.nonSynthetic.metadata.hasExperimental,

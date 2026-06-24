@@ -17,7 +17,7 @@ import 'src/text_renderer.dart';
 export 'src/api_declaration.dart' hide apiSummaryRenderer;
 export 'src/api_summary_customizer.dart'
     show ApiSummaryContext, ApiSummaryCustomizer;
-export 'src/api_type.dart';
+export 'src/api_type.dart' hide parseTypeParameters;
 
 /// Creates a canonical [ApiSummary] model of the public API of a package.
 ///

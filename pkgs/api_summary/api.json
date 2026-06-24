@@ -243,32 +243,22 @@
                   "isNamed": true
                 },
                 {
-                  "name": "typeParameterBounds",
-                  "type": {
-                    "kind": "interface",
-                    "name": "List",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "ApiType",
-                        "libraryUri": "package:api_summary/src/api_type.dart"
-                      }
-                    ]
-                  },
-                  "isNamed": true
-                },
-                {
                   "name": "typeParameters",
                   "type": {
                     "kind": "interface",
-                    "name": "List",
+                    "name": "Map",
                     "libraryUri": "dart:core",
                     "typeArguments": [
                       {
                         "kind": "interface",
                         "name": "String",
                         "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "interface",
+                        "name": "ApiType",
+                        "libraryUri": "package:api_summary/src/api_type.dart",
+                        "isNullable": true
                       }
                     ]
                   },
@@ -430,35 +420,24 @@
               }
             },
             {
-              "name": "typeParameterBounds",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "List",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "ApiType",
-                    "libraryUri": "package:api_summary/src/api_type.dart"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeParameters",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
-                "name": "List",
+                "name": "Map",
                 "libraryUri": "dart:core",
                 "typeArguments": [
                   {
                     "kind": "interface",
                     "name": "String",
                     "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "interface",
+                    "name": "ApiType",
+                    "libraryUri": "package:api_summary/src/api_type.dart",
+                    "isNullable": true
                   }
                 ]
               }
@@ -788,32 +767,22 @@
                   "isNamed": true
                 },
                 {
-                  "name": "typeParameterBounds",
-                  "type": {
-                    "kind": "interface",
-                    "name": "List",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "ApiType",
-                        "libraryUri": "package:api_summary/src/api_type.dart"
-                      }
-                    ]
-                  },
-                  "isNamed": true
-                },
-                {
                   "name": "typeParameters",
                   "type": {
                     "kind": "interface",
-                    "name": "List",
+                    "name": "Map",
                     "libraryUri": "dart:core",
                     "typeArguments": [
                       {
                         "kind": "interface",
                         "name": "String",
                         "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "interface",
+                        "name": "ApiType",
+                        "libraryUri": "package:api_summary/src/api_type.dart",
+                        "isNullable": true
                       }
                     ]
                   },
@@ -892,35 +861,24 @@
               }
             },
             {
-              "name": "typeParameterBounds",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "List",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "ApiType",
-                    "libraryUri": "package:api_summary/src/api_type.dart"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeParameters",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
-                "name": "List",
+                "name": "Map",
                 "libraryUri": "dart:core",
                 "typeArguments": [
                   {
                     "kind": "interface",
                     "name": "String",
                     "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "interface",
+                    "name": "ApiType",
+                    "libraryUri": "package:api_summary/src/api_type.dart",
+                    "isNullable": true
                   }
                 ]
               }
@@ -1064,32 +1022,22 @@
                   "isNamed": true
                 },
                 {
-                  "name": "typeParameterBounds",
-                  "type": {
-                    "kind": "interface",
-                    "name": "List",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "ApiType",
-                        "libraryUri": "package:api_summary/src/api_type.dart"
-                      }
-                    ]
-                  },
-                  "isNamed": true
-                },
-                {
                   "name": "typeParameters",
                   "type": {
                     "kind": "interface",
-                    "name": "List",
+                    "name": "Map",
                     "libraryUri": "dart:core",
                     "typeArguments": [
                       {
                         "kind": "interface",
                         "name": "String",
                         "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "interface",
+                        "name": "ApiType",
+                        "libraryUri": "package:api_summary/src/api_type.dart",
+                        "isNullable": true
                       }
                     ]
                   },
@@ -1148,35 +1096,24 @@
               }
             },
             {
-              "name": "typeParameterBounds",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "List",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "ApiType",
-                    "libraryUri": "package:api_summary/src/api_type.dart"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeParameters",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
-                "name": "List",
+                "name": "Map",
                 "libraryUri": "dart:core",
                 "typeArguments": [
                   {
                     "kind": "interface",
                     "name": "String",
                     "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "interface",
+                    "name": "ApiType",
+                    "libraryUri": "package:api_summary/src/api_type.dart",
+                    "isNullable": true
                   }
                 ]
               }
@@ -1354,32 +1291,22 @@
                   "isNamed": true
                 },
                 {
-                  "name": "typeParameterBounds",
-                  "type": {
-                    "kind": "interface",
-                    "name": "List",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "ApiType",
-                        "libraryUri": "package:api_summary/src/api_type.dart"
-                      }
-                    ]
-                  },
-                  "isNamed": true
-                },
-                {
                   "name": "typeParameters",
                   "type": {
                     "kind": "interface",
-                    "name": "List",
+                    "name": "Map",
                     "libraryUri": "dart:core",
                     "typeArguments": [
                       {
                         "kind": "interface",
                         "name": "String",
                         "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "interface",
+                        "name": "ApiType",
+                        "libraryUri": "package:api_summary/src/api_type.dart",
+                        "isNullable": true
                       }
                     ]
                   },
@@ -1472,35 +1399,24 @@
               }
             },
             {
-              "name": "typeParameterBounds",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "List",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "ApiType",
-                    "libraryUri": "package:api_summary/src/api_type.dart"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeParameters",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
-                "name": "List",
+                "name": "Map",
                 "libraryUri": "dart:core",
                 "typeArguments": [
                   {
                     "kind": "interface",
                     "name": "String",
                     "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "interface",
+                    "name": "ApiType",
+                    "libraryUri": "package:api_summary/src/api_type.dart",
+                    "isNullable": true
                   }
                 ]
               }
@@ -1605,32 +1521,22 @@
                   "isNamed": true
                 },
                 {
-                  "name": "typeParameterBounds",
-                  "type": {
-                    "kind": "interface",
-                    "name": "List",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "ApiType",
-                        "libraryUri": "package:api_summary/src/api_type.dart"
-                      }
-                    ]
-                  },
-                  "isNamed": true
-                },
-                {
                   "name": "typeParameters",
                   "type": {
                     "kind": "interface",
-                    "name": "List",
+                    "name": "Map",
                     "libraryUri": "dart:core",
                     "typeArguments": [
                       {
                         "kind": "interface",
                         "name": "String",
                         "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "interface",
+                        "name": "ApiType",
+                        "libraryUri": "package:api_summary/src/api_type.dart",
+                        "isNullable": true
                       }
                     ]
                   },
@@ -1699,35 +1605,24 @@
               }
             },
             {
-              "name": "typeParameterBounds",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "List",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "ApiType",
-                    "libraryUri": "package:api_summary/src/api_type.dart"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeParameters",
               "locationUri": "package:api_summary/src/api_type.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
-                "name": "List",
+                "name": "Map",
                 "libraryUri": "dart:core",
                 "typeArguments": [
                   {
                     "kind": "interface",
                     "name": "String",
                     "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "interface",
+                    "name": "ApiType",
+                    "libraryUri": "package:api_summary/src/api_type.dart",
+                    "isNullable": true
                   }
                 ]
               }
@@ -3356,32 +3251,22 @@
                   "isNamed": true
                 },
                 {
-                  "name": "typeParameterBounds",
-                  "type": {
-                    "kind": "interface",
-                    "name": "List",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "ApiType",
-                        "libraryUri": "package:api_summary/src/api_type.dart"
-                      }
-                    ]
-                  },
-                  "isNamed": true
-                },
-                {
                   "name": "typeParameters",
                   "type": {
                     "kind": "interface",
-                    "name": "List",
+                    "name": "Map",
                     "libraryUri": "dart:core",
                     "typeArguments": [
                       {
                         "kind": "interface",
                         "name": "String",
                         "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "interface",
+                        "name": "ApiType",
+                        "libraryUri": "package:api_summary/src/api_type.dart",
+                        "isNullable": true
                       }
                     ]
                   },
@@ -3423,35 +3308,24 @@
               }
             },
             {
-              "name": "typeParameterBounds",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "List",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "ApiType",
-                    "libraryUri": "package:api_summary/src/api_type.dart"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeParameters",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
-                "name": "List",
+                "name": "Map",
                 "libraryUri": "dart:core",
                 "typeArguments": [
                   {
                     "kind": "interface",
                     "name": "String",
                     "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "interface",
+                    "name": "ApiType",
+                    "libraryUri": "package:api_summary/src/api_type.dart",
+                    "isNullable": true
                   }
                 ]
               }

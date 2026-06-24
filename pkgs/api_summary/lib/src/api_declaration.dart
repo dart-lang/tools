@@ -157,8 +157,7 @@ sealed class ApiDeclaration {
 /// Models class modifiers, constructors, methods, type parameters, hierarchy
 /// relationships, deprecation status, and other element metadata.
 final class ApiClass extends ApiDeclaration {
-  final List<String> typeParameters;
-  final List<ApiType> typeParameterBounds;
+  final Map<String, ApiType?> typeParameters;
   final ApiType? supertype;
   final List<ApiType> interfaces;
   final List<ApiType> mixins;
@@ -173,7 +172,6 @@ final class ApiClass extends ApiDeclaration {
     super.locationUri,
     super.status,
     required this.typeParameters,
-    this.typeParameterBounds = const [],
     this.supertype,
     required this.interfaces,
     required this.mixins,
@@ -191,12 +189,7 @@ final class ApiClass extends ApiDeclaration {
     name: json['name'] as String,
     locationUri: json['locationUri'] as String?,
     status: _parseStatus(json),
-    typeParameters: _parseStringList(json, 'typeParameters'),
-    typeParameterBounds: _parseList(
-      json,
-      'typeParameterBounds',
-      ApiType.fromJson,
-    ),
+    typeParameters: parseTypeParameters(json, 'typeParameters'),
     supertype: json['supertype'] != null
         ? ApiType.fromJson(json['supertype'] as Map<String, dynamic>)
         : null,
@@ -223,11 +216,11 @@ final class ApiClass extends ApiDeclaration {
     'name': name,
     if (locationUri != null) 'locationUri': locationUri,
     if (status != ApiDeclarationStatus.public) 'status': status.name,
-    if (typeParameters.isNotEmpty) 'typeParameters': typeParameters,
-    if (typeParameterBounds.isNotEmpty)
-      'typeParameterBounds': typeParameterBounds
-          .map((e) => e.toJson())
-          .toList(),
+    if (typeParameters.isNotEmpty)
+      'typeParameters': {
+        for (final entry in typeParameters.entries)
+          entry.key: entry.value?.toJson(),
+      },
     if (supertype != null) 'supertype': supertype!.toJson(),
     if (interfaces.isNotEmpty)
       'interfaces': interfaces.map((e) => e.toJson()).toList(),
@@ -252,8 +245,7 @@ final class ApiClass extends ApiDeclaration {
 ///
 /// Models type parameters, the extended type, and extension methods.
 final class ApiExtension extends ApiDeclaration {
-  final List<String> typeParameters;
-  final List<ApiType> typeParameterBounds;
+  final Map<String, ApiType?> typeParameters;
   final ApiType extendedType;
   final List<ApiExecutable> methods;
 
@@ -262,7 +254,6 @@ final class ApiExtension extends ApiDeclaration {
     super.locationUri,
     super.status,
     required this.typeParameters,
-    this.typeParameterBounds = const [],
     required this.extendedType,
     required this.methods,
     super.isDeprecated,
@@ -274,12 +265,7 @@ final class ApiExtension extends ApiDeclaration {
     name: json['name'] as String,
     locationUri: json['locationUri'] as String?,
     status: _parseStatus(json),
-    typeParameters: _parseStringList(json, 'typeParameters'),
-    typeParameterBounds: _parseList(
-      json,
-      'typeParameterBounds',
-      ApiType.fromJson,
-    ),
+    typeParameters: parseTypeParameters(json, 'typeParameters'),
     extendedType: ApiType.fromJson(
       json['extendedType'] as Map<String, dynamic>,
     ),
@@ -293,11 +279,11 @@ final class ApiExtension extends ApiDeclaration {
     'name': name,
     if (locationUri != null) 'locationUri': locationUri,
     if (status != ApiDeclarationStatus.public) 'status': status.name,
-    if (typeParameters.isNotEmpty) 'typeParameters': typeParameters,
-    if (typeParameterBounds.isNotEmpty)
-      'typeParameterBounds': typeParameterBounds
-          .map((e) => e.toJson())
-          .toList(),
+    if (typeParameters.isNotEmpty)
+      'typeParameters': {
+        for (final entry in typeParameters.entries)
+          entry.key: entry.value?.toJson(),
+      },
     'extendedType': extendedType.toJson(),
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
@@ -310,8 +296,7 @@ final class ApiExtension extends ApiDeclaration {
 ///
 /// Models the representation type, implemented interfaces, and defined constructors/methods.
 final class ApiExtensionType extends ApiDeclaration {
-  final List<String> typeParameters;
-  final List<ApiType> typeParameterBounds;
+  final Map<String, ApiType?> typeParameters;
   final ApiType representationType;
   final List<ApiType> interfaces;
   final List<ApiExecutable> constructors;
@@ -322,7 +307,6 @@ final class ApiExtensionType extends ApiDeclaration {
     super.locationUri,
     super.status,
     required this.typeParameters,
-    this.typeParameterBounds = const [],
     required this.representationType,
     required this.interfaces,
     required this.constructors,
@@ -337,12 +321,7 @@ final class ApiExtensionType extends ApiDeclaration {
         name: json['name'] as String,
         locationUri: json['locationUri'] as String?,
         status: _parseStatus(json),
-        typeParameters: _parseStringList(json, 'typeParameters'),
-        typeParameterBounds: _parseList(
-          json,
-          'typeParameterBounds',
-          ApiType.fromJson,
-        ),
+        typeParameters: parseTypeParameters(json, 'typeParameters'),
         representationType: ApiType.fromJson(
           json['representationType'] as Map<String, dynamic>,
         ),
@@ -358,11 +337,11 @@ final class ApiExtensionType extends ApiDeclaration {
     'name': name,
     if (locationUri != null) 'locationUri': locationUri,
     if (status != ApiDeclarationStatus.public) 'status': status.name,
-    if (typeParameters.isNotEmpty) 'typeParameters': typeParameters,
-    if (typeParameterBounds.isNotEmpty)
-      'typeParameterBounds': typeParameterBounds
-          .map((e) => e.toJson())
-          .toList(),
+    if (typeParameters.isNotEmpty)
+      'typeParameters': {
+        for (final entry in typeParameters.entries)
+          entry.key: entry.value?.toJson(),
+      },
     'representationType': representationType.toJson(),
     if (interfaces.isNotEmpty)
       'interfaces': interfaces.map((e) => e.toJson()).toList(),
@@ -382,8 +361,7 @@ final class ApiExtensionType extends ApiDeclaration {
 /// and modifiers.
 final class ApiExecutable extends ApiDeclaration {
   final ApiExecutableKind kind;
-  final List<String> typeParameters;
-  final List<ApiType> typeParameterBounds;
+  final Map<String, ApiType?> typeParameters;
   final ApiType returnType;
   final List<ApiParameter> parameters;
   final bool isStatic;
@@ -394,7 +372,6 @@ final class ApiExecutable extends ApiDeclaration {
     super.status,
     required this.kind,
     required this.typeParameters,
-    this.typeParameterBounds = const [],
     required this.returnType,
     required this.parameters,
     required this.isStatic,
@@ -410,12 +387,7 @@ final class ApiExecutable extends ApiDeclaration {
     kind: ApiExecutableKind.values.byName(
       json['kind'] as String? ?? 'function',
     ),
-    typeParameters: _parseStringList(json, 'typeParameters'),
-    typeParameterBounds: _parseList(
-      json,
-      'typeParameterBounds',
-      ApiType.fromJson,
-    ),
+    typeParameters: parseTypeParameters(json, 'typeParameters'),
     returnType: ApiType.fromJson(json['returnType'] as Map<String, dynamic>),
     parameters: _parseList(json, 'parameters', ApiParameter.fromJson),
     isStatic: json['isStatic'] as bool? ?? false,
@@ -429,11 +401,11 @@ final class ApiExecutable extends ApiDeclaration {
     if (locationUri != null) 'locationUri': locationUri,
     if (status != ApiDeclarationStatus.public) 'status': status.name,
     'kind': kind.name,
-    if (typeParameters.isNotEmpty) 'typeParameters': typeParameters,
-    if (typeParameterBounds.isNotEmpty)
-      'typeParameterBounds': typeParameterBounds
-          .map((e) => e.toJson())
-          .toList(),
+    if (typeParameters.isNotEmpty)
+      'typeParameters': {
+        for (final entry in typeParameters.entries)
+          entry.key: entry.value?.toJson(),
+      },
     'returnType': returnType.toJson(),
     if (parameters.isNotEmpty)
       'parameters': parameters.map((e) => e.toJson()).toList(),
@@ -448,8 +420,7 @@ final class ApiExecutable extends ApiDeclaration {
 ///
 /// Models type parameters and the aliased target type.
 final class ApiTypeAlias extends ApiDeclaration {
-  final List<String> typeParameters;
-  final List<ApiType> typeParameterBounds;
+  final Map<String, ApiType?> typeParameters;
   final ApiType aliasedType;
 
   ApiTypeAlias({
@@ -457,7 +428,6 @@ final class ApiTypeAlias extends ApiDeclaration {
     super.locationUri,
     super.status,
     required this.typeParameters,
-    this.typeParameterBounds = const [],
     required this.aliasedType,
     super.isDeprecated,
     super.isExperimental,
@@ -468,12 +438,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     name: json['name'] as String,
     locationUri: json['locationUri'] as String?,
     status: _parseStatus(json),
-    typeParameters: _parseStringList(json, 'typeParameters'),
-    typeParameterBounds: _parseList(
-      json,
-      'typeParameterBounds',
-      ApiType.fromJson,
-    ),
+    typeParameters: parseTypeParameters(json, 'typeParameters'),
     aliasedType: ApiType.fromJson(json['aliasedType'] as Map<String, dynamic>),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
@@ -484,11 +449,11 @@ final class ApiTypeAlias extends ApiDeclaration {
     'name': name,
     if (locationUri != null) 'locationUri': locationUri,
     if (status != ApiDeclarationStatus.public) 'status': status.name,
-    if (typeParameters.isNotEmpty) 'typeParameters': typeParameters,
-    if (typeParameterBounds.isNotEmpty)
-      'typeParameterBounds': typeParameterBounds
-          .map((e) => e.toJson())
-          .toList(),
+    if (typeParameters.isNotEmpty)
+      'typeParameters': {
+        for (final entry in typeParameters.entries)
+          entry.key: entry.value?.toJson(),
+      },
     'aliasedType': aliasedType.toJson(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isExperimental) 'isExperimental': isExperimental,

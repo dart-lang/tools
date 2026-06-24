@@ -60,7 +60,11 @@ extension Ext on int {}
 
     final cls = library.classes.single;
     expect(cls.name, 'C');
-    expect(cls.typeParameters, contains('T extends Object'));
+    expect(cls.typeParameters, contains('T'));
+    expect(
+      cls.typeParameters['T'],
+      isA<ApiInterfaceType>().having((t) => t.name, 'name', 'Object'),
+    );
     expect(cls.methods.map((m) => m.name), containsAll(['m', 'x', 'x=']));
 
     final methodM = cls.methods.firstWhere((m) => m.name == 'm');

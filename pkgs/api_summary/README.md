@@ -49,6 +49,8 @@ dart run api_summary
 
 * `-p, --package-path`: The path to the package directory to summarize
   (defaults to the current working directory).
+* `-f, --format`: The output format for the summary (`text`, `json`, or
+  `yaml`). Defaults to `text`.
 * `-h, --help`: Prints usage instructions.
 
 ## Programmatic Usage
