@@ -463,7 +463,73 @@ Body2\r
   _testParse(message, 'xxx', null, [null, null], true);
 }
 
+void _testErrorAndCloseDuringParsing() {
+  test('error in source stream during parsing does not hang', () async {
+    final controller = StreamController<List<int>>();
+    final transformer = MimeMultipartTransformer('xxx');
+    final stream = controller.stream.transform(transformer);
+
+    controller.add('--xxx\r\n'.codeUnits);
+    controller.add('Header: value\r\n\r\npart data'.codeUnits);
+
+    final partCompleter = Completer<void>();
+    final mainCompleter = Completer<void>();
+
+    stream.listen((part) {
+      scheduleMicrotask(() {
+        controller.addError(Exception('source error'));
+      });
+      part.listen((data) {}, onError: (Object error) {
+        expect(error, isA<Exception>());
+        partCompleter.complete();
+      });
+    }, onError: (Object error) {
+      expect(error, isA<Exception>());
+      mainCompleter.complete();
+    });
+
+    await Future.wait([partCompleter.future, mainCompleter.future]).timeout(
+      const Duration(seconds: 3),
+      onTimeout: () => fail(
+        'Test hung: streams were not notified of source stream error',
+      ),
+    );
+  });
+
+  test('premature done in source stream during parsing does not hang',
+      () async {
+    final controller = StreamController<List<int>>();
+    final transformer = MimeMultipartTransformer('xxx');
+    final stream = controller.stream.transform(transformer);
+
+    controller.add('--xxx\r\n'.codeUnits);
+    controller.add('Header: value\r\n\r\npart data'.codeUnits);
+
+    final partCompleter = Completer<void>();
+    final mainCompleter = Completer<void>();
+
+    stream.listen((part) {
+      scheduleMicrotask(controller.close);
+      part.listen((data) {}, onError: (Object error) {
+        expect(error, isA<MimeMultipartException>());
+        partCompleter.complete();
+      });
+    }, onError: (Object error) {
+      expect(error, isA<MimeMultipartException>());
+      mainCompleter.complete();
+    });
+
+    await Future.wait([partCompleter.future, mainCompleter.future]).timeout(
+      const Duration(seconds: 3),
+      onTimeout: () => fail(
+        'Test hung: part stream was not closed or notified of premature onDone',
+      ),
+    );
+  });
+}
+
 void main() {
   _testParseValid();
   _testParseInvalid();
+  _testErrorAndCloseDuringParsing();
 }
