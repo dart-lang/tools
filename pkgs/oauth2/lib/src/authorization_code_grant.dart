@@ -12,6 +12,7 @@ import 'package:http_parser/http_parser.dart';
 
 import 'authorization_exception.dart';
 import 'client.dart';
+import 'client_authenticator.dart';
 import 'credentials.dart';
 import 'handle_access_token_response.dart';
 import 'parameters.dart';
@@ -80,6 +81,9 @@ class AuthorizationCodeGrant {
   /// This will be passed as-is to the constructed [Client].
   final CredentialsRefreshedCallback? _onCredentialsRefreshed;
 
+  /// Custom client authenticator for injecting assertions or specific headers.
+  final ClientAuthenticator? _customAuth;
+
   /// Whether to use HTTP Basic authentication for authorizing the client.
   final bool _basicAuth;
 
@@ -145,7 +149,14 @@ class AuthorizationCodeGrant {
   /// as its body as a UTF-8-decoded string. It should return a map in the same
   /// format as the [standard JSON response][].
   ///
+  /// [customAuth] is an optional callback to add additional client
+  /// authentication headers or body parameters to a token request for advanced
+  /// scenarios, such as when using a JWT Bearer token for client authentication
+  /// per [RFC 7523]. When provided, it replaces the default `basicAuth`
+  /// credentials integration in token requests.
+  ///
   /// [standard JSON response]: https://tools.ietf.org/html/rfc6749#section-5.1
+  /// [RFC 7523]: https://tools.ietf.org/html/rfc7523#section-2.2
   AuthorizationCodeGrant(
       this.identifier, this.authorizationEndpoint, this.tokenEndpoint,
       {this.secret,
@@ -155,12 +166,14 @@ class AuthorizationCodeGrant {
       CredentialsRefreshedCallback? onCredentialsRefreshed,
       Map<String, dynamic> Function(MediaType? contentType, String body)?
           getParameters,
-      String? codeVerifier})
+      String? codeVerifier,
+      ClientAuthenticator? customAuth})
       : _basicAuth = basicAuth,
         _httpClient = httpClient ?? http.Client(),
         _delimiter = delimiter ?? ' ',
         _getParameters = getParameters ?? parseJsonParameters,
         _onCredentialsRefreshed = onCredentialsRefreshed,
+        _customAuth = customAuth,
         _codeVerifier = codeVerifier ?? _createCodeVerifier();
 
   /// Returns the URL to which the resource owner should be redirected to
@@ -183,7 +196,7 @@ class AuthorizationCodeGrant {
   ///
   /// It is a [StateError] to call this more than once.
   Uri getAuthorizationUrl(Uri redirect,
-      {Iterable<String>? scopes, String? state}) {
+      {Iterable<String>? scopes, String? state, Iterable<Uri>? resources}) {
     if (_state != _State.initial) {
       throw StateError('The authorization URL has already been generated.');
     }
@@ -197,7 +210,7 @@ class AuthorizationCodeGrant {
     _redirectEndpoint = redirect;
     _scopes = scopeList;
     _stateString = state;
-    var parameters = {
+    var parameters = <String, dynamic>{
       'response_type': 'code',
       'client_id': identifier,
       'redirect_uri': redirect.toString(),
@@ -207,6 +220,9 @@ class AuthorizationCodeGrant {
 
     if (state != null) parameters['state'] = state;
     if (scopeList.isNotEmpty) parameters['scope'] = scopeList.join(_delimiter);
+    if (resources != null && resources.isNotEmpty) {
+      parameters['resource'] = resources.map((r) => r.toString()).toList();
+    }
 
     return addQueryParameters(authorizationEndpoint, parameters);
   }
@@ -297,15 +313,18 @@ class AuthorizationCodeGrant {
 
     var headers = <String, String>{};
 
-    var body = {
+    var body = <String, String>{
       'grant_type': 'authorization_code',
-      'code': authorizationCode,
-      'redirect_uri': _redirectEndpoint.toString(),
+      if (authorizationCode != null) 'code': authorizationCode,
+      if (_redirectEndpoint != null)
+        'redirect_uri': _redirectEndpoint.toString(),
       'code_verifier': _codeVerifier
     };
 
     var secret = this.secret;
-    if (_basicAuth && secret != null) {
+    if (_customAuth != null) {
+      await _customAuth(headers, body);
+    } else if (_basicAuth && secret != null) {
       headers['Authorization'] = basicAuthHeader(identifier, secret);
     } else {
       // The ID is required for this request any time basic auth isn't being
@@ -325,6 +344,7 @@ class AuthorizationCodeGrant {
         secret: secret,
         basicAuth: _basicAuth,
         httpClient: _httpClient,
+        customAuth: _customAuth,
         onCredentialsRefreshed: _onCredentialsRefreshed);
   }
 
