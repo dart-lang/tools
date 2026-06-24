@@ -71,13 +71,6 @@ final class _ApiBuilder {
           (_elementToLibraries[element] ??= []).add(library);
           _registerElement(element);
         }
-        for (final extension in library.extensions) {
-          if (extension.name == null) {
-            topLevelPublicElements.add(extension);
-            (_elementToLibraries[extension] ??= []).add(library);
-            _registerElement(extension);
-          }
-        }
         publicApiLibraries.add(library);
         _libraryBuilders.putIfAbsent(
           library.uri.toString(),

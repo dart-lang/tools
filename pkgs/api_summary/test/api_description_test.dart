@@ -793,14 +793,32 @@ dart:core:
 ''');
   }
 
-  Future<void> test_multiple_unnamed_extensions() async {
+  Future<void> test_unnamed_extensions_excluded() async {
     final summary = await _build({
       '$testPackageLibPath/file.dart': '''
 class C {}
 extension on C {
   void f1() {}
 }
-extension on C {
+''',
+    });
+    expect(summary, '''
+package:test/file.dart:
+  C (class extends Object):
+    new (constructor: C Function())
+dart:core:
+  Object (referenced)
+''');
+  }
+
+  Future<void> test_multiple_named_extensions() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+class C {}
+extension E1 on C {
+  void f1() {}
+}
+extension E2 on C {
   void f2() {}
 }
 ''',
@@ -809,9 +827,9 @@ extension on C {
 package:test/file.dart:
   C (class extends Object):
     new (constructor: C Function())
-  @1 (extension on C):
+  E1 (extension on C):
     f1 (method: void Function())
-  @2 (extension on C):
+  E2 (extension on C):
     f2 (method: void Function())
 dart:core:
   Object (referenced)
