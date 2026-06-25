@@ -2973,6 +2973,16 @@
               }
             },
             {
+              "name": "includeReferencedTypes",
+              "locationUri": "package:api_summary/src/api_summary_customizer.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
               "name": "initialScanComplete",
               "locationUri": "package:api_summary/src/api_summary_customizer.dart",
               "kind": "method",

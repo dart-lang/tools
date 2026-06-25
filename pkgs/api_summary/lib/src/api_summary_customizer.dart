@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// @docImport 'api_declaration.dart';
+library;
+
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/element/element.dart';
 
@@ -60,6 +63,13 @@ base class ApiSummaryCustomizer {
   /// Whether to include full member signatures (constructors, methods) for
   /// non-public declarations that are implicitly exposed via public signatures.
   bool get includeImplicitNonPublicMembers => false;
+
+  /// Whether to include declarations of referenced types from external packages
+  /// or SDK libraries.
+  ///
+  /// If true, referenced types will be included in the summary with a status of
+  /// [ApiDeclarationStatus.referenced] and without their members.
+  bool get includeReferencedTypes => false;
 
   /// Called after [initialScanComplete] to determine if details about an
   /// element should be shown in the API summary.

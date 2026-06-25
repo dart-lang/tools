@@ -113,6 +113,18 @@ void main() async {
 }
 ```
 
+You can also override `includeReferencedTypes` to transitively include skeleton declarations (containing type hierarchy but no members) of classes, enums, or mixins from other packages and the SDK that are referenced in your public API:
+
+```dart
+import 'package:api_summary/api_summary.dart';
+
+base class MyCustomizer extends ApiSummaryCustomizer {
+  @override
+  bool get includeReferencedTypes => true;
+}
+```
+
+
 ## Golden File / Diff Testing
 
 A common best practice with `api_summary` is to verify in a unit test that the

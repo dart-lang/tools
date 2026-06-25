@@ -247,6 +247,59 @@ class C {
     );
   }
 
+  Future<void> test_includeReferencedTypes() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+import 'package:foo/foo.dart';
+import 'src/private.dart';
+
+class MyClass extends Foo implements PrivateInterface {}
+''',
+      '$testPackageLibPath/src/private.dart': '''
+class PrivateInterface {}
+''',
+    }, customizer: _IncludeReferencedTypesCustomizer());
+
+    final decodedMap = jsonDecode(summary) as Map<String, dynamic>;
+    final rehydrated = ApiSummary.fromJson(decodedMap);
+
+    // Verify package:foo/foo.dart is in the summary libraries
+    final fooLib = rehydrated.libraries.firstWhere(
+      (l) => l.uri == 'package:foo/foo.dart',
+    );
+    expect(fooLib.isPublicEntryPoint, isFalse);
+    expect(fooLib.classes, hasLength(1));
+
+    final fooClass = fooLib.classes.single;
+    expect(fooClass.name, 'Foo');
+    expect(fooClass.status, ApiDeclarationStatus.referenced);
+    expect(fooClass.constructors, isEmpty);
+    expect(fooClass.methods, isEmpty);
+
+    // Verify private.dart is in the summary libraries
+    final privateLib = rehydrated.libraries.firstWhere(
+      (l) => l.uri == 'package:test/src/private.dart',
+    );
+    expect(privateLib.isPublicEntryPoint, isFalse);
+    expect(privateLib.classes, hasLength(1));
+
+    final privateClass = privateLib.classes.single;
+    expect(privateClass.name, 'PrivateInterface');
+    expect(privateClass.status, ApiDeclarationStatus.nonPublic);
+    expect(privateClass.constructors, isEmpty);
+    expect(privateClass.methods, isEmpty);
+
+    // Verify dart:core is also in the summary libraries for Object
+    final coreLib = rehydrated.libraries.firstWhere(
+      (l) => l.uri == 'dart:core',
+    );
+    expect(coreLib.isPublicEntryPoint, isFalse);
+    expect(coreLib.classes.map((c) => c.name), contains('Object'));
+    final objectClass = coreLib.classes.firstWhere((c) => c.name == 'Object');
+    expect(objectClass.status, ApiDeclarationStatus.referenced);
+    expect(objectClass.constructors, isEmpty);
+  }
+
   Future<String> _build(
     Map<String, String> files, {
     ApiSummaryCustomizer? customizer,
@@ -267,4 +320,9 @@ class C {
     final package = await buildApiPackage('test', context, resolvedCustomizer);
     return jsonEncode(package.toJson());
   }
+}
+
+base class _IncludeReferencedTypesCustomizer extends ApiSummaryCustomizer {
+  @override
+  bool get includeReferencedTypes => true;
 }

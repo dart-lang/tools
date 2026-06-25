@@ -87,21 +87,53 @@ final class _ApiBuilder {
       final element = _pendingElements.removeFirst();
       if (!_processedElements.add(element)) continue;
 
-      if (!_customizer.shouldShowDetails(element, scanContext)) continue;
+      final isReferenced = !(element.library?.uri.isIn(_pkgName) ?? false);
+
+      final ApiDeclarationStatus status;
+      if (topLevelPublicElements.contains(element)) {
+        status = ApiDeclarationStatus.public;
+      } else if (!isReferenced) {
+        status = ApiDeclarationStatus.nonPublic;
+      } else {
+        status = ApiDeclarationStatus.referenced;
+      }
+
+      final showDetails = _customizer.shouldShowDetails(element, scanContext);
+      if (!showDetails && !_customizer.includeReferencedTypes) continue;
 
       final libraries =
           _elementToLibraries[element] ??
           [if (element.library != null) element.library!];
 
       final apiElement = switch (element) {
-        EnumElement() => _buildClass(element),
-        MixinElement() => _buildClass(element),
-        ClassElement() => _buildClass(element),
-        ExtensionElement() => _buildExtension(element),
-        ExtensionTypeElement() => _buildExtensionType(element),
-        TopLevelFunctionElement() => _buildExecutable(element),
-        PropertyAccessorElement() => _buildExecutable(element),
-        TypeAliasElement() => _buildTypeAlias(element),
+        EnumElement() => _buildClass(
+          element,
+          includeMembers: showDetails,
+          status: status,
+        ),
+        MixinElement() => _buildClass(
+          element,
+          includeMembers: showDetails,
+          status: status,
+        ),
+        ClassElement() => _buildClass(
+          element,
+          includeMembers: showDetails,
+          status: status,
+        ),
+        ExtensionElement() => _buildExtension(
+          element,
+          includeMembers: showDetails,
+          status: status,
+        ),
+        ExtensionTypeElement() => _buildExtensionType(
+          element,
+          includeMembers: showDetails,
+          status: status,
+        ),
+        TopLevelFunctionElement() => _buildExecutable(element, status: status),
+        PropertyAccessorElement() => _buildExecutable(element, status: status),
+        TypeAliasElement() => _buildTypeAlias(element, status: status),
         _ => null,
       };
 
@@ -286,25 +318,31 @@ final class _ApiBuilder {
     return result;
   }
 
-  ApiClass _buildClass(InterfaceElement element) {
+  ApiClass _buildClass(
+    InterfaceElement element, {
+    required bool includeMembers,
+    required ApiDeclarationStatus status,
+  }) {
     final constructors = <ApiExecutable>[];
     final methods = <ApiExecutable>[];
 
-    for (final member in element.children.sortedBy((m) => m.name ?? '')) {
-      if (member.name?.startsWith('_') ?? false) continue;
+    if (includeMembers) {
+      for (final member in element.children.sortedBy((m) => m.name ?? '')) {
+        if (member.name?.startsWith('_') ?? false) continue;
 
-      switch (member) {
-        case ConstructorElement():
-          if (element is ClassElement &&
-              element.isAbstract &&
-              (element.isFinal || element.isInterface || element.isSealed) &&
-              !member.isFactory) {
-            continue;
-          }
-          if (element is EnumElement && !member.isFactory) continue;
-          constructors.add(_buildExecutable(member));
-        case ExecutableElement():
-          methods.add(_buildExecutable(member));
+        switch (member) {
+          case ConstructorElement():
+            if (element is ClassElement &&
+                element.isAbstract &&
+                (element.isFinal || element.isInterface || element.isSealed) &&
+                !member.isFactory) {
+              continue;
+            }
+            if (element is EnumElement && !member.isFactory) continue;
+            constructors.add(_buildExecutable(member, status: status));
+          case ExecutableElement():
+            methods.add(_buildExecutable(member, status: status));
+        }
       }
     }
 
@@ -334,6 +372,7 @@ final class _ApiBuilder {
     return ApiClass(
       name: element.name ?? '',
       locationUri: element.library.uri.toString(),
+      status: status,
       typeParameters: _extractTypeParameters(element.typeParameters),
       supertype: element is ClassElement
           ? (element.supertype != null
@@ -355,16 +394,25 @@ final class _ApiBuilder {
     );
   }
 
-  ApiExtension _buildExtension(ExtensionElement element) {
+  ApiExtension _buildExtension(
+    ExtensionElement element, {
+    required bool includeMembers,
+    required ApiDeclarationStatus status,
+  }) {
     final methods = <ApiExecutable>[];
-    for (final member in element.children.sortedBy((m) => m.name ?? '')) {
-      if (member.name?.startsWith('_') ?? false) continue;
-      if (member is FieldElement) continue;
-      if (member is ExecutableElement) methods.add(_buildExecutable(member));
+    if (includeMembers) {
+      for (final member in element.children.sortedBy((m) => m.name ?? '')) {
+        if (member.name?.startsWith('_') ?? false) continue;
+        if (member is FieldElement) continue;
+        if (member is ExecutableElement) {
+          methods.add(_buildExecutable(member, status: status));
+        }
+      }
     }
     return ApiExtension(
       name: element.name ?? '',
       locationUri: element.library.uri.toString(),
+      status: status,
       extendedType: _describeType(element.extendedType),
       typeParameters: _extractTypeParameters(element.typeParameters),
       methods: methods,
@@ -374,21 +422,28 @@ final class _ApiBuilder {
     );
   }
 
-  ApiExtensionType _buildExtensionType(ExtensionTypeElement element) {
+  ApiExtensionType _buildExtensionType(
+    ExtensionTypeElement element, {
+    required bool includeMembers,
+    required ApiDeclarationStatus status,
+  }) {
     final constructors = <ApiExecutable>[];
     final methods = <ApiExecutable>[];
-    for (final member in element.children.sortedBy((m) => m.name ?? '')) {
-      if (member.name?.startsWith('_') ?? false) continue;
-      if (member is FieldElement) continue;
-      if (member is ConstructorElement) {
-        constructors.add(_buildExecutable(member));
-      } else if (member is ExecutableElement) {
-        methods.add(_buildExecutable(member));
+    if (includeMembers) {
+      for (final member in element.children.sortedBy((m) => m.name ?? '')) {
+        if (member.name?.startsWith('_') ?? false) continue;
+        if (member is FieldElement) continue;
+        if (member is ConstructorElement) {
+          constructors.add(_buildExecutable(member, status: status));
+        } else if (member is ExecutableElement) {
+          methods.add(_buildExecutable(member, status: status));
+        }
       }
     }
     return ApiExtensionType(
       name: element.name ?? '',
       locationUri: element.library.uri.toString(),
+      status: status,
       representationType: _describeType(element.representation.type),
       typeParameters: _extractTypeParameters(element.typeParameters),
       interfaces: element.interfaces.map(_describeType).toList(),
@@ -400,7 +455,10 @@ final class _ApiBuilder {
     );
   }
 
-  ApiExecutable _buildExecutable(ExecutableElement element) {
+  ApiExecutable _buildExecutable(
+    ExecutableElement element, {
+    required ApiDeclarationStatus status,
+  }) {
     final nonSyntheticElement = element.nonSynthetic;
     final formalParameters = element.type.formalParameters;
 
@@ -415,6 +473,7 @@ final class _ApiBuilder {
     return ApiExecutable(
       name: element.apiName,
       locationUri: element.library.uri.toString(),
+      status: status,
       kind: kind,
       returnType: _describeType(element.returnType),
       typeParameters: _extractTypeParameters(element.typeParameters),
@@ -437,9 +496,13 @@ final class _ApiBuilder {
     );
   }
 
-  ApiTypeAlias _buildTypeAlias(TypeAliasElement element) => ApiTypeAlias(
+  ApiTypeAlias _buildTypeAlias(
+    TypeAliasElement element, {
+    required ApiDeclarationStatus status,
+  }) => ApiTypeAlias(
     name: element.name ?? '',
     locationUri: element.library.uri.toString(),
+    status: status,
     typeParameters: _extractTypeParameters(element.typeParameters),
     aliasedType: _describeType(element.aliasedType),
     isDeprecated: element.nonSynthetic.metadata.hasDeprecated,

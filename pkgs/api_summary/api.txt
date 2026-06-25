@@ -139,6 +139,7 @@ package:api_summary/api_summary.dart:
   ApiSummaryCustomizer (class extends Object, base):
     new (constructor: ApiSummaryCustomizer Function())
     includeImplicitNonPublicMembers (getter: bool)
+    includeReferencedTypes (getter: bool)
     initialScanComplete (method: Future<void> Function(ApiSummaryContext))
     setupComplete (method: Future<void> Function(ApiSummaryContext))
     shouldShowDetails (method: bool Function(Element, ApiSummaryContext))

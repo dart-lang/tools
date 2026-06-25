@@ -133,7 +133,7 @@ package:test/public.dart:
   shown1 (function: void Function(Shown2, Hidden2))
 package:test/src/private.dart:
   Hidden2 (non-public)
-  Shown2 (class extends Object):
+  Shown2 (class extends Object, non-public):
     new (constructor: Shown2 Function())
 dart:core:
   Object (referenced)
