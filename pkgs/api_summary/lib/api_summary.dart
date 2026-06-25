@@ -2,51 +2,73 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
-import 'src/api_description.dart';
+import 'package:path/path.dart' as p;
+import 'package:yaml/yaml.dart';
+
+import 'src/api_builder.dart';
+import 'src/api_declaration.dart';
 import 'src/api_summary_customizer.dart';
-import 'src/node.dart';
+export 'src/api_declaration.dart';
+export 'src/api_summary_customizer.dart'
+    show ApiSummaryContext, ApiSummaryCustomizer;
+export 'src/api_type.dart';
 
-export 'src/api_summary_customizer.dart' show ApiSummaryCustomizer;
-
-/// Creates a human-readable text summary of the public API of a package, in a
-/// format suitable for auditing with a `diff` tool.
+/// Creates a canonical [ApiSummary] model of the public API of a package.
 ///
 /// [packagePath] is the path to the directory containing the package's
 /// `pubspec.yaml` file.
 ///
-/// [packageName] is the name of the package.
+/// [packageName] is the name of the package, or extracted from `pubspec.yaml`
+/// if omitted.
 ///
-/// If [createCustomizer] is provided, it will be called to create an instance
-/// of [ApiSummaryCustomizer] which will be used to customize the behavior of
+/// If [customizer] is provided, it will be used to customize the behavior of
 /// the tool.
-Future<String> summarizePackage(
-  String packagePath,
-  String packageName, {
-  ApiSummaryCustomizer Function()? createCustomizer,
+Future<ApiSummary> apiSummary(
+  String packagePath, {
+  String? packageName,
+  ApiSummaryCustomizer? customizer,
 }) async {
+  final resolvedPackageName = packageName ?? _extractPackageName(packagePath);
   final provider = PhysicalResourceProvider.INSTANCE;
   final libPath = provider.pathContext.join(packagePath, 'lib');
   final collection = AnalysisContextCollection(
     resourceProvider: provider,
     includedPaths: [libPath],
   );
-  if (collection.contexts.isEmpty) {
-    throw ArgumentError('No analysis context found for "$packagePath".');
+  final context = collection.contextFor(libPath);
+  return buildApiPackage(
+    resolvedPackageName,
+    context,
+    customizer ?? const ApiSummaryCustomizer(),
+  );
+}
+
+String _extractPackageName(String packagePath) {
+  final pubspecFile = File(p.join(packagePath, 'pubspec.yaml'));
+  if (!pubspecFile.existsSync()) {
+    throw ArgumentError('No pubspec.yaml found at "$packagePath".');
   }
-  if (collection.contexts.length > 1) {
+  final content = pubspecFile.readAsStringSync();
+  final yaml = loadYaml(content);
+  if (yaml case {'name': final String name}) {
+    return name;
+  }
+  if (yaml is! Map) {
     throw ArgumentError(
-      'Multiple analysis contexts found for "$packagePath". '
-      'Only a single package is supported.',
+      'Expected pubspec.yaml at ${pubspecFile.path} to be a YAML map.',
     );
   }
-  final context = collection.contexts.single;
-  final publicApi = ApiDescription(
-    packageName,
-    createCustomizer?.call() ?? ApiSummaryCustomizer(),
+  if (yaml['name'] == null) {
+    throw ArgumentError(
+      'Could not find a "name" field in pubspec.yaml at ${pubspecFile.path}.',
+    );
+  }
+  throw ArgumentError(
+    'The "name" field in pubspec.yaml at ${pubspecFile.path} must be a '
+    'string.',
   );
-  final stringBuffer = StringBuffer();
-  printNodes(stringBuffer, await publicApi.build(context));
-  return stringBuffer.toString();
 }

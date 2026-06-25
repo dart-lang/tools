@@ -2,47 +2,64 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:api_summary/api_summary.dart';
 import 'package:args/args.dart';
 import 'package:path/path.dart' as p;
-import 'package:yaml/yaml.dart';
+import 'package:yaml_edit/yaml_edit.dart';
 
 Future<void> main(List<String> arguments) async {
   try {
-    final results = parser.parse(arguments);
+    final results = _parser.parse(arguments);
 
     if (results.flag('help')) {
       print('Usage: api_summary [options]');
-      print(parser.usage);
+      print(_parser.usage);
       return;
     }
 
     final packagePath =
         results.option('package-path') ?? Directory.current.path;
     final absolutePath = p.normalize(p.absolute(packagePath));
-    final pubspecFile = File(p.join(absolutePath, 'pubspec.yaml'));
 
-    if (!pubspecFile.existsSync()) {
-      stderr.writeln('Error: No pubspec.yaml found at "$absolutePath".');
-      exitCode = 1;
-      return;
-    }
-
-    final packageName = _extractPackageName(pubspecFile);
-    final summary = await summarizePackage(absolutePath, packageName);
-    stdout.write(summary);
+    final format = results.option('format');
+    final package = await apiSummary(absolutePath);
+    print(_format(package, format!));
   } on FormatException catch (e) {
     stderr.writeln('Error: ${e.message}');
     stderr.writeln('\nUsage: api_summary [options]');
-    stderr.writeln(parser.usage);
+    stderr.writeln(_parser.usage);
+    exitCode = 64;
+    return;
+    // ignore: avoid_catching_errors
+  } on ArgumentError catch (e) {
+    stderr.writeln('Error: ${e.message}');
+    stderr.writeln('\nUsage: api_summary [options]');
+    stderr.writeln(_parser.usage);
     exitCode = 64;
     return;
   }
 }
 
-final parser = ArgParser()
+String _format(ApiSummary package, String format) => switch (format) {
+  'text' => package.toString(),
+  'json' => _formatJson(package),
+  'yaml' => _formatYaml(package),
+  _ => throw UnsupportedError('Unsupported output format: $format'),
+};
+
+String _formatYaml(ApiSummary package) {
+  final editor = YamlEditor('');
+  editor.update([], package.toJson());
+  return editor.toString();
+}
+
+String _formatJson(ApiSummary package) =>
+    const JsonEncoder.withIndent('  ').convert(package.toJson());
+
+final _parser = ArgParser()
   ..addOption(
     'package-path',
     abbr: 'p',
@@ -50,32 +67,16 @@ final parser = ArgParser()
         'The path to the package to summarize. Defaults to the current '
         'directory.',
   )
+  ..addOption(
+    'format',
+    abbr: 'f',
+    help: 'The output format for the summary.',
+    allowed: ['text', 'json', 'yaml'],
+    defaultsTo: 'text',
+  )
   ..addFlag(
     'help',
     abbr: 'h',
     help: 'Print this usage information.',
     negatable: false,
   );
-
-String _extractPackageName(File pubspecFile) {
-  final content = pubspecFile.readAsStringSync();
-  final yaml = loadYaml(content);
-  if (yaml is! Map) {
-    throw ArgumentError(
-      'Expected pubspec.yaml at ${pubspecFile.path} to be a YAML map.',
-    );
-  }
-  final name = yaml['name'];
-  if (name == null) {
-    throw ArgumentError(
-      'Could not find a "name" field in pubspec.yaml at ${pubspecFile.path}.',
-    );
-  }
-  if (name is! String) {
-    throw ArgumentError(
-      'The "name" field in pubspec.yaml at ${pubspecFile.path} must be a '
-      'String.',
-    );
-  }
-  return name;
-}

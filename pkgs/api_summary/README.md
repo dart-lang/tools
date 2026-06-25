@@ -49,6 +49,8 @@ dart run api_summary
 
 * `-p, --package-path`: The path to the package directory to summarize
   (defaults to the current working directory).
+* `-f, --format`: The output format for the summary (`text`, `json`, or
+  `yaml`). Defaults to `text`.
 * `-h, --help`: Prints usage instructions.
 
 ## Programmatic Usage
@@ -65,7 +67,7 @@ dependencies:
 
 ### Basic Example
 
-Call the `summarizePackage` function to generate a package's public API
+Call the `apiSummary` function to generate a package's public API
 representation:
 
 ```dart
@@ -73,7 +75,7 @@ import 'dart:io';
 import 'package:api_summary/api_summary.dart';
 
 void main() async {
-  final summary = await summarizePackage('/path/to/package', 'my_package');
+  final summary = await apiSummary('/path/to/package');
   print(summary);
 }
 ```
@@ -93,24 +95,35 @@ import 'package:analyzer/dart/element/element.dart';
 
 base class MyCustomizer extends ApiSummaryCustomizer {
   @override
-  bool shouldShowDetails(Element element) {
+  bool shouldShowDetails(Element element, ApiSummaryContext context) {
     // Exclude elements named 'InternalHelper' from details printout
     if (element.name == 'InternalHelper') {
       return false;
     }
-    return super.shouldShowDetails(element);
+    return super.shouldShowDetails(element, context);
   }
 }
 
 void main() async {
-  final summary = await summarizePackage(
+  final summary = await apiSummary(
     '/path/to/package',
-    'my_package',
-    createCustomizer: () => MyCustomizer(),
+    customizer: MyCustomizer(),
   );
   print(summary);
 }
 ```
+
+You can also override `includeReferencedTypes` to transitively include skeleton declarations (containing type hierarchy but no members) of classes, enums, or mixins from other packages and the SDK that are referenced in your public API:
+
+```dart
+import 'package:api_summary/api_summary.dart';
+
+base class MyCustomizer extends ApiSummaryCustomizer {
+  @override
+  bool get includeReferencedTypes => true;
+}
+```
+
 
 ## Golden File / Diff Testing
 
@@ -134,16 +147,16 @@ void main() {
     final packageDir = Directory.current.path;
     final goldenFile = File(p.join(packageDir, 'api.txt'));
 
-    final actualOutput = await summarizePackage(packageDir, 'my_package');
+    final actualOutput = await apiSummary(packageDir);
 
     if (!goldenFile.existsSync()) {
       // In a new setup or after updates, generate the golden file first
-      goldenFile.writeAsStringSync(actualOutput);
+      goldenFile.writeAsStringSync(actualOutput.toString());
       fail('Golden file api.txt did not exist and has been generated. Please review and commit it.');
     }
 
     final expectedOutput = goldenFile.readAsStringSync();
-    expect(actualOutput, equals(expectedOutput));
+    expect(actualOutput.toString(), equals(expectedOutput));
   });
 }
 ```
