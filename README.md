@@ -41,6 +41,7 @@ don't naturally belong to other topic monorepos (like
 | [process](pkgs/process/) | A pluggable, mockable process invocation abstraction for Dart. | [![issues](https://img.shields.io/badge/issues-4774bc)][process_issues] | [![pub package](https://img.shields.io/pub/v/process.svg)](https://pub.dev/packages/process) |
 | [pub_semver](pkgs/pub_semver/) | Versions and version constraints implementing pub's versioning policy. This is very similar to vanilla semver, with a few corner cases. | [![issues](https://img.shields.io/badge/issues-4774bc)][pub_semver_issues] | [![pub package](https://img.shields.io/pub/v/pub_semver.svg)](https://pub.dev/packages/pub_semver) |
 | [pubspec_parse](pkgs/pubspec_parse/) | Simple package for parsing pubspec.yaml files with a type-safe API and rich error reporting. | [![issues](https://img.shields.io/badge/issues-4774bc)][pubspec_parse_issues] | [![pub package](https://img.shields.io/pub/v/pubspec_parse.svg)](https://pub.dev/packages/pubspec_parse) |
+| [snippets](pkgs/snippets/) | Update code excerpts in Markdown documentation from source files. | [![issues](https://img.shields.io/badge/issues-4774bc)][snippets_issues] | [![pub package](https://img.shields.io/pub/v/snippets.svg)](https://pub.dev/packages/snippets) |
 | [source_map_stack_trace](pkgs/source_map_stack_trace/) | A package for applying source maps to stack traces. | [![issues](https://img.shields.io/badge/issues-4774bc)][source_map_stack_trace_issues] | [![pub package](https://img.shields.io/pub/v/source_map_stack_trace.svg)](https://pub.dev/packages/source_map_stack_trace) |
 | [source_maps](pkgs/source_maps/) | A library to programmatically manipulate source map files. | [![issues](https://img.shields.io/badge/issues-4774bc)][source_maps_issues] | [![pub package](https://img.shields.io/pub/v/source_maps.svg)](https://pub.dev/packages/source_maps) |
 | [source_span](pkgs/source_span/) | Provides a standard representation for source code locations and spans. | [![issues](https://img.shields.io/badge/issues-4774bc)][source_span_issues] | [![pub package](https://img.shields.io/pub/v/source_span.svg)](https://pub.dev/packages/source_span) |
@@ -84,6 +85,7 @@ don't naturally belong to other topic monorepos (like
 [process_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aprocess
 [pub_semver_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Apub_semver
 [pubspec_parse_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Apubspec_parse
+[snippets_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Asnippets
 [source_map_stack_trace_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Asource_map_stack_trace
 [source_maps_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Asource_maps
 [source_span_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Asource_span
