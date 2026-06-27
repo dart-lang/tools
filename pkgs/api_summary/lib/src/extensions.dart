@@ -23,6 +23,10 @@ extension FormalParameterElementExtension on FormalParameterElement {
       metadata.hasDeprecated;
 }
 
+extension ElementAnnotationListExtension on List<ElementAnnotation> {
+  bool get hasVisibleForTesting => any((a) => a.isVisibleForTesting);
+}
+
 extension IterableIterableExtension on Iterable<Iterable<Object?>> {
   /// Forms a list containing [prefix], followed by the elements of `this`
   /// (separated by [separator]), followed by [suffix].
@@ -48,10 +52,6 @@ extension IterableIterableExtension on Iterable<Iterable<Object?>> {
     result.add(suffix);
     return result;
   }
-}
-
-extension StringExtension on String {
-  bool get isPublic => !startsWith('_');
 }
 
 extension UriExtension on Uri {
