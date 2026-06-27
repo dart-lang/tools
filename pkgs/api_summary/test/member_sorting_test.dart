@@ -182,13 +182,23 @@ typedef Z3 = int;
     required List<Element> elements,
     required List<String> expectedOrder,
   }) {
+    MemberSortKey createKey(Element e) => MemberSortKey(
+      isInstanceMember: MemberSortKey.computeIsInstanceMember(e),
+      category: MemberSortKey.computeCategory(e),
+      name: e.displayName,
+      isSetter: e is SetterElement,
+    );
+
     expect(
-      elements.sortedBy(MemberSortKey.new).map((e) => e.apiName).toList(),
+      elements
+          .sortedBy<MemberSortKey>(createKey)
+          .map((e) => e.apiName)
+          .toList(),
       expectedOrder,
     );
     expect(
       elements.reversed
-          .sortedBy(MemberSortKey.new)
+          .sortedBy<MemberSortKey>(createKey)
           .map((e) => e.apiName)
           .toList(),
       expectedOrder,

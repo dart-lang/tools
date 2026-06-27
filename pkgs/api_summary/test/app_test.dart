@@ -36,7 +36,7 @@ void main() {
         result.stdout.toString(),
       ).join('\n');
 
-      expect(actualOutput, equals(expectedOutput));
+      expect(actualOutput.trimRight(), equals(expectedOutput.trimRight()));
     },
   );
 

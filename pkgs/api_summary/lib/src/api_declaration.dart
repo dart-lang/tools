@@ -4,6 +4,7 @@
 
 import 'api_type.dart';
 import 'json_utils.dart';
+import 'text_renderer.dart';
 
 /// The exposure status of an API declaration within the summarized package.
 enum ApiDeclarationStatus {
@@ -61,8 +62,7 @@ final class ApiSummary {
   };
 
   @override
-  String toString() =>
-      'ApiSummary(name: $name, libraries: ${libraries.length})';
+  String toString() => renderTextSummary(this);
 }
 
 /// A summary of the declarations exposed by a single library within a package.
