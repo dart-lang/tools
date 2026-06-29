@@ -50,8 +50,8 @@ void main() {
   });
 
   test('throws ArgumentError on missing pubspec.yaml', () async {
-    expect(
-      () => apiSummary('/non_existent_directory_12345'),
+    await expectLater(
+      apiSummary('/non_existent_directory_12345'),
       throwsArgumentError,
     );
   });
