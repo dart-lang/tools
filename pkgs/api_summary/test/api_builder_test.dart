@@ -300,6 +300,86 @@ class PrivateInterface {}
     expect(objectClass.constructors, isEmpty);
   }
 
+  Future<void> test_constMembers() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+class MyClass {
+  static const int myConstField = 42;
+  final int myFinalField;
+  
+  const MyClass(this.myFinalField);
+  MyClass.nonConst() : myFinalField = 0;
+}
+const int myTopLevelConst = 100;
+enum MyEnum {
+  v1, v2;
+  static const int customConst = 3;
+}
+''',
+    });
+
+    final decodedMap = jsonDecode(summary) as Map<String, dynamic>;
+    final rehydrated = ApiSummary.fromJson(decodedMap);
+
+    final lib = rehydrated.libraries.single;
+
+    // Verify top-level const
+    final topLevelConst = lib.functions.firstWhere(
+      (e) => e.name == 'myTopLevelConst',
+    );
+    expect(topLevelConst.kind, ApiExecutableKind.getter);
+    expect(topLevelConst.isConst, isTrue);
+    expect(topLevelConst.isEnumConstant, isFalse);
+
+    final myClass = lib.classes.single;
+
+    // Verify static const field (getter)
+    final constField = myClass.methods.firstWhere(
+      (e) => e.name == 'myConstField',
+    );
+    expect(constField.kind, ApiExecutableKind.getter);
+    expect(constField.isConst, isTrue);
+    expect(constField.isEnumConstant, isFalse);
+
+    // Verify final field (getter)
+    final finalField = myClass.methods.firstWhere(
+      (e) => e.name == 'myFinalField',
+    );
+    expect(finalField.kind, ApiExecutableKind.getter);
+    expect(finalField.isConst, isFalse);
+    expect(finalField.isEnumConstant, isFalse);
+
+    // Verify const constructor
+    final constConstructor = myClass.constructors.firstWhere(
+      (e) => e.name == 'new',
+    );
+    expect(constConstructor.kind, ApiExecutableKind.constructor);
+    expect(constConstructor.isConst, isTrue);
+
+    // Verify non-const constructor
+    final nonConstConstructor = myClass.constructors.firstWhere(
+      (e) => e.name == 'nonConst',
+    );
+    expect(nonConstConstructor.kind, ApiExecutableKind.constructor);
+    expect(nonConstConstructor.isConst, isFalse);
+
+    // Verify enum constants
+    final myEnum = lib.enums.single;
+    final enumVal1 = myEnum.methods.firstWhere((e) => e.name == 'v1');
+    expect(enumVal1.isConst, isTrue);
+    expect(enumVal1.isEnumConstant, isTrue);
+
+    final enumCustomConst = myEnum.methods.firstWhere(
+      (e) => e.name == 'customConst',
+    );
+    expect(enumCustomConst.isConst, isTrue);
+    expect(enumCustomConst.isEnumConstant, isFalse);
+
+    final enumValues = myEnum.methods.firstWhere((e) => e.name == 'values');
+    expect(enumValues.isConst, isTrue);
+    expect(enumValues.isEnumConstant, isFalse);
+  }
+
   Future<String> _build(
     Map<String, String> files, {
     ApiSummaryCustomizer? customizer,

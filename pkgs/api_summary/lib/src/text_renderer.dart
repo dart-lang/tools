@@ -370,10 +370,17 @@ final class _ApiTextRenderer {
         : '';
     switch (element.kind) {
       case ApiExecutableKind.getter:
-        parentheticals.add([
-          '$maybeStatic${'getter: '}',
-          ..._describeType(element.returnType),
-        ]);
+        if (element.isEnumConstant) {
+          parentheticals.add([
+            'enum constant: ',
+            ..._describeType(element.returnType),
+          ]);
+        } else {
+          parentheticals.add([
+            '$maybeStatic${element.isConst ? 'const getter: ' : 'getter: '}',
+            ..._describeType(element.returnType),
+          ]);
+        }
       case ApiExecutableKind.setter:
         parentheticals.add([
           '$maybeStatic${'setter: '}',
@@ -386,7 +393,7 @@ final class _ApiTextRenderer {
         ]);
       case ApiExecutableKind.constructor:
         parentheticals.add([
-          'constructor: ',
+          element.isConst ? 'const constructor: ' : 'constructor: ',
           ..._describeFunctionLike(element),
         ]);
     }

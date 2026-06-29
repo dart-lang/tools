@@ -380,8 +380,8 @@ enum E {
     expect(summary, '''
 package:test/file.dart:
   E (enum):
-    v (static getter: E)
-    values (static getter: List<E>)
+    v (enum constant: E)
+    values (static const getter: List<E>)
     f (constructor: E Function())
 dart:core:
   List (referenced)
@@ -428,8 +428,8 @@ package:test/file.dart:
   C2 (class extends Object implements S):
     new (constructor: C2 Function())
   E1 (enum implements S):
-    v (static getter: E1)
-    values (static getter: List<E1>)
+    v (enum constant: E1)
+    values (static const getter: List<E1>)
   M1 (mixin on S)
   M2 (mixin on Object implements S)
   S (class extends Object, sealed (immediate subtypes: C1, C2, E1, M1, M2, T))
@@ -593,8 +593,8 @@ package:test/file.dart:
   C (class<T> extends B implements I):
     new (constructor: C<T> Function())
   E (enum implements I):
-    e1 (static getter: E)
-    values (static getter: List<E>)
+    e1 (enum constant: E)
+    values (static const getter: List<E>)
   I (class extends Object):
     new (constructor: I Function())
   M (mixin on B implements I)
