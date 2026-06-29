@@ -188,9 +188,7 @@ final class _ApiBuilder {
   bool _isNullable(NullabilitySuffix suffix) => switch (suffix) {
     NullabilitySuffix.none => false,
     NullabilitySuffix.question => true,
-    NullabilitySuffix.star => throw UnsupportedError(
-      'Legacy nullability (.star) is not supported.',
-    ),
+    NullabilitySuffix.star => false,
   };
 
   bool _isVisibleForTesting(Element element) =>
