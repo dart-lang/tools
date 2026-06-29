@@ -477,9 +477,8 @@ final class _ApiBuilder {
     };
 
     final isEnumConstant = switch (element) {
-      PropertyAccessorElement() =>
-        element.variable is FieldElement &&
-            (element.variable as FieldElement).isEnumConstant,
+      PropertyAccessorElement(:final variable) =>
+        variable is FieldElement && variable.isEnumConstant,
       _ => false,
     };
 
