@@ -74,4 +74,30 @@ void main() {
       await tempDir.delete(recursive: true);
     }
   });
+
+  test(
+    'exits with code 64 when no analysis context is found (missing lib/)',
+    () async {
+      final tempDir = await Directory.systemTemp.createTemp('api_summary_test');
+      ProcessResult? result;
+      try {
+        final pubspec = File(p.join(tempDir.path, 'pubspec.yaml'));
+        await pubspec.writeAsString('name: foo\n');
+
+        final packageDir = p.current;
+        result = await Process.run(Platform.resolvedExecutable, [
+          if (Platform.packageConfig != null)
+            '--packages=${Platform.packageConfig}',
+          p.join(packageDir, 'bin', 'api_summary.dart'),
+          '-p',
+          tempDir.path,
+        ], workingDirectory: packageDir);
+
+        expect(result.exitCode, equals(64));
+        expect(result.stderr, contains('No "lib" directory found'));
+      } finally {
+        await tempDir.delete(recursive: true);
+      }
+    },
+  );
 }
