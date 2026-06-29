@@ -39,13 +39,6 @@ Future<void> main(List<String> arguments) async {
     stderr.writeln(parser.usage);
     exitCode = 64;
     return;
-    // ignore: avoid_catching_errors
-  } on ArgumentError catch (e) {
-    stderr.writeln('Error: ${e.message}');
-    stderr.writeln('\nUsage: api_summary [options]');
-    stderr.writeln(parser.usage);
-    exitCode = 64;
-    return;
   }
 }
 
@@ -68,18 +61,18 @@ String _extractPackageName(File pubspecFile) {
   final content = pubspecFile.readAsStringSync();
   final yaml = loadYaml(content);
   if (yaml is! Map) {
-    throw ArgumentError(
+    throw FormatException(
       'Expected pubspec.yaml at ${pubspecFile.path} to be a YAML map.',
     );
   }
   final name = yaml['name'];
   if (name == null) {
-    throw ArgumentError(
+    throw FormatException(
       'Could not find a "name" field in pubspec.yaml at ${pubspecFile.path}.',
     );
   }
   if (name is! String) {
-    throw ArgumentError(
+    throw FormatException(
       'The "name" field in pubspec.yaml at ${pubspecFile.path} must be a '
       'String.',
     );

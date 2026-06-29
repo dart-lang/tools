@@ -52,4 +52,26 @@ void main() {
     expect(result.exitCode, equals(64));
     expect(result.stderr, contains('Usage: api_summary'));
   });
+
+  test('exits with code 64 on invalid pubspec.yaml', () async {
+    final tempDir = await Directory.systemTemp.createTemp('api_summary_test');
+    try {
+      final pubspec = File(p.join(tempDir.path, 'pubspec.yaml'));
+      await pubspec.writeAsString('not_a_map');
+
+      final packageDir = p.current;
+      final result = await Process.run(Platform.resolvedExecutable, [
+        if (Platform.packageConfig != null)
+          '--packages=${Platform.packageConfig}',
+        p.join(packageDir, 'bin', 'api_summary.dart'),
+        '-p',
+        tempDir.path,
+      ], workingDirectory: packageDir);
+
+      expect(result.exitCode, equals(64));
+      expect(result.stderr, contains('Expected pubspec.yaml'));
+    } finally {
+      await tempDir.delete(recursive: true);
+    }
+  });
 }
