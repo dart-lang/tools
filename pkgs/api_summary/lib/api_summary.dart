@@ -35,6 +35,9 @@ Future<ApiSummary> apiSummary(
   final resolvedPackageName = packageName ?? _extractPackageName(packagePath);
   final provider = PhysicalResourceProvider.INSTANCE;
   final libPath = provider.pathContext.join(packagePath, 'lib');
+  if (!provider.getFolder(libPath).exists) {
+    throw ArgumentError('No "lib" directory found for "$packagePath".');
+  }
   final collection = AnalysisContextCollection(
     resourceProvider: provider,
     includedPaths: [libPath],
