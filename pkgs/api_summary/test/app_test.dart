@@ -119,10 +119,12 @@ void _verifyGolden(String actual, String goldenFileName) {
 String _pkgDir() {
   var packageDir = p.normalize(p.absolute(Directory.current.path));
   if (!_isApiSummaryDir(packageDir)) {
-    // We might be running from the SDK root
-    final candidate = p.join(packageDir, 'pkg', 'api_summary');
-    if (_isApiSummaryDir(candidate)) {
-      packageDir = candidate;
+    for (final dir in ['pkgs', 'pkg']) {
+      final candidate = p.join(packageDir, dir, 'api_summary');
+      if (_isApiSummaryDir(candidate)) {
+        packageDir = candidate;
+        break;
+      }
     }
   }
 
