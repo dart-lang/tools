@@ -355,7 +355,12 @@ final class ApiExecutable extends ApiDeclaration {
   final ApiType returnType;
   final List<ApiParameter> parameters;
   final bool isStatic;
+
+  /// Whether this executable is a const constructor, field, or top-level
+  /// variable.
   final bool isConst;
+
+  /// Whether this executable represents an enum constant.
   final bool isEnumConstant;
 
   ApiExecutable({
