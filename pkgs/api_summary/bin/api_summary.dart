@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: avoid_catching_errors
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -33,7 +35,6 @@ Future<void> main(List<String> arguments) async {
     stderr.writeln(_parser.usage);
     exitCode = 64;
     return;
-    // ignore: avoid_catching_errors
   } on ArgumentError catch (e) {
     stderr.writeln('Error: ${e.message}');
     stderr.writeln('\nUsage: api_summary [options]');
