@@ -72,7 +72,6 @@ const _expectedFailures = <String>[
   'X38W-0',
   'ZYU8-2',
   'RHX7-0',
-  'UKK6-1',
   '2XXW-0',
   '9HCY-0',
   'KS4U-0',
