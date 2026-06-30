@@ -5,12 +5,13 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'dart:core';
+import 'dart:typed_data';
 
-import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:api_summary/src/api_description.dart';
-import 'package:api_summary/src/api_summary_customizer.dart';
-import 'package:api_summary/src/node.dart';
+import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer/file_system/memory_file_system.dart';
+import 'package:api_summary/api_summary.dart';
+import 'package:api_summary/src/api_builder.dart';
 import 'package:test/test.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';
 
@@ -19,6 +20,7 @@ import 'test_utils.dart';
 void main() {
   defineReflectiveSuite(() {
     defineReflectiveTests(ApiDescriptionTest);
+    defineReflectiveTests(ApiDescriptionDeletedFileTest);
   });
 }
 
@@ -81,15 +83,15 @@ package:test/file.dart:
     new (constructor: A Function())
   AB (class extends Object, abstract, base):
     new (constructor: AB Function())
-  ABM (class extends Object, abstract, base, mixin):
+  ABM (mixin class extends Object, abstract, base, mixin):
     new (constructor: ABM Function())
   AF (class extends Object, abstract, final)
   AI (class extends Object, abstract, interface)
-  AM (class extends Object, abstract, mixin):
+  AM (mixin class extends Object, abstract, mixin):
     new (constructor: AM Function())
   B (class extends Object, base):
     new (constructor: B Function())
-  BM (class extends Object, base, mixin):
+  BM (mixin class extends Object, base, mixin):
     new (constructor: BM Function())
   C (class extends Object):
     new (constructor: C Function())
@@ -97,7 +99,7 @@ package:test/file.dart:
     new (constructor: F Function())
   I (class extends Object, interface):
     new (constructor: I Function())
-  M (class extends Object, mixin):
+  M (mixin class extends Object, mixin):
     new (constructor: M Function())
 dart:core:
   Object (referenced)
@@ -120,7 +122,7 @@ class Shown3 {}
 class Hidden3 {}
 ''',
       },
-      createCustomizer: () => _ShouldShowDetailsCustomizer(
+      customizer: _ShouldShowDetailsCustomizer(
         (e) => e.name!.toLowerCase().contains('shown'),
       ),
     );
@@ -128,11 +130,10 @@ class Hidden3 {}
     // referenced by shown1. Details are only shown for shown1 and Shown2.
     expect(summary, '''
 package:test/public.dart:
-  hidden1 (non-public)
   shown1 (function: void Function(Shown2, Hidden2))
 package:test/src/private.dart:
   Hidden2 (non-public)
-  Shown2 (class extends Object):
+  Shown2 (class extends Object, non-public):
     new (constructor: Shown2 Function())
 dart:core:
   Object (referenced)
@@ -522,6 +523,42 @@ package:test/public.dart:
 ''');
   }
 
+  Future<void> test_topLevel_exportShow() async {
+    final summary = await _build({
+      '$testPackageLibPath/public.dart':
+          'export "src/private.dart" show Shown;',
+      '$testPackageLibPath/src/private.dart': '''
+class Shown {}
+class Hidden {}
+''',
+    });
+    expect(summary, '''
+package:test/public.dart:
+  Shown (class extends Object):
+    new (constructor: Shown Function())
+dart:core:
+  Object (referenced)
+''');
+  }
+
+  Future<void> test_topLevel_exportHide() async {
+    final summary = await _build({
+      '$testPackageLibPath/public.dart':
+          'export "src/private.dart" hide Hidden;',
+      '$testPackageLibPath/src/private.dart': '''
+class Shown {}
+class Hidden {}
+''',
+    });
+    expect(summary, '''
+package:test/public.dart:
+  Shown (class extends Object):
+    new (constructor: Shown Function())
+dart:core:
+  Object (referenced)
+''');
+  }
+
   Future<void> test_topLevel_getterSetterPair() async {
     // This test verifies that even if getter and a setter have the same name,
     // both are included in the summary output.
@@ -742,9 +779,89 @@ dart:core:
 ''');
   }
 
+  Future<void> test_type_never() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+Never get n => throw '';
+''',
+    });
+    expect(summary, '''
+package:test/file.dart:
+  n (static getter: Never)
+dart:core:
+  Never (referenced)
+''');
+  }
+
+  Future<void> test_unnamed_extensions_excluded() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+class C {}
+extension on C {
+  void f1() {}
+}
+''',
+    });
+    expect(summary, '''
+package:test/file.dart:
+  C (class extends Object):
+    new (constructor: C Function())
+dart:core:
+  Object (referenced)
+''');
+  }
+
+  Future<void> test_multiple_named_extensions() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+class C {}
+extension E1 on C {
+  void f1() {}
+}
+extension E2 on C {
+  void f2() {}
+}
+''',
+    });
+    expect(summary, '''
+package:test/file.dart:
+  C (class extends Object):
+    new (constructor: C Function())
+  E1 (extension on C):
+    f1 (method: void Function())
+  E2 (extension on C):
+    f2 (method: void Function())
+dart:core:
+  Object (referenced)
+''');
+  }
+
+  Future<void> test_visibleForTesting() async {
+    final description = await _build({
+      '$testPackageLibPath/temp.dart': '''
+import 'package:meta/meta.dart';
+
+@visibleForTesting
+class C {}
+
+@visibleForTesting
+void f() {}
+''',
+    });
+
+    expect(description, '''
+package:test/temp.dart:
+  f (function: void Function(), visible for testing)
+  C (class extends Object, visible for testing):
+    new (constructor: C Function(), visible for testing)
+dart:core:
+  Object (referenced)
+''');
+  }
+
   Future<String> _build(
     Map<String, String> files, {
-    _ValidatingCustomizer Function()? createCustomizer,
+    _ValidatingCustomizer? customizer,
   }) async {
     // Create all the files.
     files.forEach(newFile);
@@ -758,13 +875,10 @@ dart:core:
     final context = contextCollection.contextFor(
       convertPath(testPackageLibPath),
     );
-    final customizer = createCustomizer?.call() ?? _ValidatingCustomizer();
-    final apiDescription = ApiDescription('test', customizer);
-    final stringBuffer = StringBuffer();
-    final nodes = await apiDescription.build(context);
-    expect(customizer.initialScanCompleteCalled, isTrue);
-    printNodes(stringBuffer, nodes);
-    return stringBuffer.toString();
+    final resolvedCustomizer = customizer ?? _ValidatingCustomizer();
+    final package = await buildApiPackage('test', context, resolvedCustomizer);
+    expect(resolvedCustomizer.initialScanCompleteCalled, isTrue);
+    return package.toString();
   }
 }
 
@@ -774,69 +888,127 @@ final class _ShouldShowDetailsCustomizer extends _ValidatingCustomizer {
   _ShouldShowDetailsCustomizer(this._shouldShowDetails);
 
   @override
-  bool shouldShowDetails(Element element) {
+  bool shouldShowDetails(Element element, ApiSummaryContext context) {
     expect(initialScanCompleteCalled, isTrue);
     return _shouldShowDetails(element);
   }
 }
 
 base class _ValidatingCustomizer extends ApiSummaryCustomizer {
-  bool topLevelPublicElementsCalled = false;
-  bool analysisContextCalled = false;
-  bool packageNameCalled = false;
-  bool publicApiLibrariesCalled = false;
   bool initialScanCompleteCalled = false;
   bool setupCompleteCalled = false;
 
   @override
-  set analysisContext(AnalysisContext value) {
-    expect(analysisContextCalled, isFalse);
-    analysisContextCalled = true;
-    super.analysisContext = value;
-  }
-
-  @override
-  set packageName(String value) {
-    expect(packageNameCalled, isFalse);
-    packageNameCalled = true;
-    super.packageName = value;
-  }
-
-  @override
-  set publicApiLibraries(Iterable<LibraryElement> value) {
+  Future<void> initialScanComplete(ApiSummaryContext context) async {
     expect(setupCompleteCalled, isTrue);
-    expect(publicApiLibrariesCalled, isFalse);
-    publicApiLibrariesCalled = true;
-    super.publicApiLibraries = value;
-  }
-
-  @override
-  set topLevelPublicElements(Set<Element> value) {
-    expect(setupCompleteCalled, isTrue);
-    expect(topLevelPublicElementsCalled, isFalse);
-    topLevelPublicElementsCalled = true;
-    super.topLevelPublicElements = value;
-  }
-
-  @override
-  Future<void> initialScanComplete() async {
-    expect(topLevelPublicElementsCalled, isTrue);
-    expect(publicApiLibrariesCalled, isTrue);
+    expect(context.topLevelPublicElements, isNotNull);
+    expect(context.publicApiLibraries, isNotNull);
     initialScanCompleteCalled = true;
-    await super.initialScanComplete();
+    await super.initialScanComplete(context);
   }
 
   @override
-  Future<void> setupComplete() async {
-    expect(packageNameCalled, isTrue);
-    expect(analysisContextCalled, isTrue);
+  Future<void> setupComplete(ApiSummaryContext context) async {
+    expect(context.packageName, 'test');
+    expect(context.analysisContext, isNotNull);
     setupCompleteCalled = true;
-    await super.setupComplete();
+    await super.setupComplete(context);
   }
 
   @override
-  bool shouldShowDetails(Element element) {
+  bool shouldShowDetails(Element element, ApiSummaryContext context) {
     expect(initialScanCompleteCalled, isTrue);
-    return super.shouldShowDetails(element);
+    return super.shouldShowDetails(element, context);
+  }
+}
+
+@reflectiveTest
+class ApiDescriptionDeletedFileTest extends ApiSummaryTest {
+  @override
+  bool get addMetaPackageDep => true;
+
+  late final _myProvider = _MyResourceProvider();
+
+  @override
+  MemoryResourceProvider get resourceProvider => _myProvider;
+
+  Future<void> test_deletedFile_graceful() async {
+    final filePath1 = convertPath('$testPackageLibPath/temp1.dart');
+    final filePath2 = convertPath('$testPackageLibPath/temp2.dart');
+    newFile(filePath1, 'class Temp1 {}');
+    newFile(filePath2, 'class Temp2 {}');
+
+    // Make temp2.dart unreadable.
+    _myProvider.unreadables.add(filePath2);
+
+    final context = contextCollection.contextFor(
+      convertPath(testPackageLibPath),
+    );
+
+    // Verify it doesn't crash when summarizing.
+    final package = await buildApiPackage(
+      'test',
+      context,
+      _ValidatingCustomizer(),
+    );
+    // temp1.dart should be fully summarized.
+    expect(
+      package.libraries.map((l) => l.uri),
+      contains('package:test/temp1.dart'),
+    );
+
+    // temp2.dart was unreadable, so it should resolve as an empty library
+    // without crashing.
+    final temp2Lib = package.libraries.firstWhere(
+      (l) => l.uri == 'package:test/temp2.dart',
+    );
+
+    expect(temp2Lib.classes, isEmpty);
+    expect(temp2Lib.enums, isEmpty);
+    expect(temp2Lib.mixins, isEmpty);
+    expect(temp2Lib.extensions, isEmpty);
+    expect(temp2Lib.extensionTypes, isEmpty);
+    expect(temp2Lib.functions, isEmpty);
+    expect(temp2Lib.typeAliases, isEmpty);
+  }
+}
+
+final class _MyResourceProvider extends MemoryResourceProvider {
+  final Set<String> unreadables = {};
+
+  _MyResourceProvider() : super();
+
+  @override
+  File getFile(String path) {
+    final file = super.getFile(path);
+    if (unreadables.contains(path)) {
+      return _UnreadableFile(file);
+    }
+    return file;
+  }
+}
+
+final class _UnreadableFile implements File {
+  final File _delegate;
+  _UnreadableFile(this._delegate);
+
+  @override
+  String get path => _delegate.path;
+
+  @override
+  bool get exists => _delegate.exists;
+
+  @override
+  Folder get parent => _delegate.parent;
+
+  @override
+  String readAsStringSync() => throw FileSystemException(path, 'Cannot read');
+
+  @override
+  Uint8List readAsBytesSync() => throw FileSystemException(path, 'Cannot read');
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    throw UnimplementedError('noSuchMethod: ${invocation.memberName}');
   }
 }

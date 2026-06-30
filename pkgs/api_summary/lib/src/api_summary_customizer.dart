@@ -2,8 +2,41 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// @docImport 'api_declaration.dart';
+library;
+
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/element/element.dart';
+
+/// Contextual state provided to [ApiSummaryCustomizer] during an API summary
+/// scan.
+final class ApiSummaryContext {
+  /// The name of the package whose API is being summarized.
+  final String packageName;
+
+  /// The analysis context for the package being summarized.
+  final AnalysisContext analysisContext;
+
+  /// The libraries that comprise the package's public API.
+  ///
+  /// This is empty during [ApiSummaryCustomizer.setupComplete], and populated
+  /// before [ApiSummaryCustomizer.initialScanComplete] is called.
+  final List<LibraryElement> publicApiLibraries;
+
+  /// The top level elements exported by the libraries in [publicApiLibraries].
+  ///
+  /// This is empty during [ApiSummaryCustomizer.setupComplete], and populated
+  /// before [ApiSummaryCustomizer.initialScanComplete] is called.
+  final Set<Element> topLevelPublicElements;
+
+  ApiSummaryContext({
+    required this.packageName,
+    required this.analysisContext,
+    List<LibraryElement>? publicApiLibraries,
+    Set<Element>? topLevelPublicElements,
+  }) : publicApiLibraries = publicApiLibraries ?? [],
+       topLevelPublicElements = topLevelPublicElements ?? {};
+}
 
 /// Clients of the API summary tool may extend this class to customize its
 /// behavior.
@@ -11,43 +44,51 @@ import 'package:analyzer/dart/element/element.dart';
 /// Clients should not *implement* this class, however, because additional
 /// methods may be added in the future.
 base class ApiSummaryCustomizer {
-  /// The top level elements exported by the libraries in [publicApiLibraries].
-  ///
-  /// This value is set by the tool before [initialScanComplete] is called.
-  late final Set<Element> topLevelPublicElements;
+  const ApiSummaryCustomizer();
 
-  /// The analysis context for the package being summarized.
-  ///
-  /// This value is set by the tool before [setupComplete] is called.
-  set analysisContext(AnalysisContext analysisContext) {}
-
-  /// The name of the package whose API is being summarized.
-  ///
-  /// This value is set by the tool before [setupComplete] is called.
-  set packageName(String value) {}
-
-  /// The libraries that comprise the package's public API.
-  ///
-  /// This value is set by the tool before [initialScanComplete] is called.
-  set publicApiLibraries(Iterable<LibraryElement> value) {}
-
-  /// Called after [publicApiLibraries] and [topLevelPublicElements] have been
-  /// set, but before any analysis has been performed.
-  ///
-  /// Further analysis won't be performed until the returned Future completes.
-  Future<void> initialScanComplete() async {}
-
-  /// Called after [packageName] and [analysisContext] have been set, but before
-  /// any analysis has been performed.
+  /// Called after [ApiSummaryContext.packageName] and
+  /// [ApiSummaryContext.analysisContext] have been set, but before any analysis
+  /// has been performed.
   ///
   /// The initial scan won't be performed until the returned Future completes.
-  Future<void> setupComplete() async {}
+  Future<void> setupComplete(ApiSummaryContext context) async {}
+
+  /// Called after [ApiSummaryContext.publicApiLibraries] and
+  /// [ApiSummaryContext.topLevelPublicElements] have been populated, but before
+  /// declaration details are built.
+  ///
+  /// Further analysis won't be performed until the returned Future completes.
+  Future<void> initialScanComplete(ApiSummaryContext context) async {}
+
+  /// Whether to include full member signatures (constructors, methods) for
+  /// non-public declarations that are implicitly exposed via public signatures.
+  bool get includeImplicitNonPublicMembers => false;
+
+  /// Whether to include declarations of referenced types from external packages
+  /// or SDK libraries.
+  ///
+  /// If true, referenced types will be included in the summary with a status of
+  /// [ApiDeclarationStatus.referenced] and without their members.
+  bool get includeReferencedTypes => false;
 
   /// Called after [initialScanComplete] to determine if details about an
   /// element should be shown in the API summary.
   ///
   /// The default behavior is to show details about elements in
-  /// [topLevelPublicElements].
-  bool shouldShowDetails(Element element) =>
-      topLevelPublicElements.contains(element);
+  /// [ApiSummaryContext.topLevelPublicElements], or non-public package elements
+  /// when [includeImplicitNonPublicMembers] is true.
+  bool shouldShowDetails(Element element, ApiSummaryContext context) {
+    if (context.topLevelPublicElements.contains(element)) {
+      return true;
+    }
+    if (includeImplicitNonPublicMembers && element.library != null) {
+      final uri = element.library!.uri;
+      if (uri.scheme == 'package' &&
+          uri.pathSegments.isNotEmpty &&
+          uri.pathSegments[0] == context.packageName) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
