@@ -317,6 +317,36 @@ void main() {
     });
   });
 
+  group('PoolResource', () {
+    test('release() throws StateError if called twice', () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+      resource.release();
+      expect(resource.release, throwsStateError);
+    });
+
+    test('allowRelease() throws StateError if called twice', () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+      resource.allowRelease(() {});
+      expect(() => resource.allowRelease(() {}), throwsStateError);
+    });
+
+    test('allowRelease() throws if called after release()', () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+      resource.release();
+      expect(() => resource.allowRelease(() {}), throwsStateError);
+    });
+
+    test('release() throws if called after allowRelease()', () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+      resource.allowRelease(() {});
+      expect(resource.release, throwsStateError);
+    });
+  });
+
   test("done doesn't complete without close", () async {
     var pool = Pool(1);
     unawaited(pool.done.then(expectAsync1((_) {}, count: 0)));
@@ -332,6 +362,19 @@ void main() {
       var pool = Pool(1)..close();
       expect(pool.request, throwsStateError);
       expect(() => pool.withResource(() {}), throwsStateError);
+    });
+
+    test('can be called multiple times', () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
+
+      var closeFuture1 = pool.close();
+      var closeFuture2 = pool.close();
+
+      expect(closeFuture1, equals(closeFuture2));
+
+      resource.release();
+      await closeFuture1;
     });
 
     test('pending requests are fulfilled', () async {
