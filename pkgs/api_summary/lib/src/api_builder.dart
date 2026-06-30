@@ -482,6 +482,17 @@ final class _ApiBuilder {
       _ => ApiExecutableKind.function,
     };
 
+    final isConst = switch (element) {
+      ConstructorElement() => element.isConst,
+      PropertyAccessorElement() => element.variable.isConst,
+      _ => false,
+    };
+
+    final isEnumConstant = switch (element) {
+      PropertyAccessorElement(:final variable) =>
+        variable is FieldElement && variable.isEnumConstant,
+      _ => false,
+    };
     return ApiExecutable(
       name: element.apiName,
       locationUri: element.library.uri.toString(),
@@ -502,6 +513,8 @@ final class _ApiBuilder {
           )
           .toList(),
       isStatic: element.isStatic,
+      isConst: isConst,
+      isEnumConstant: isEnumConstant,
       isDeprecated: nonSyntheticElement.metadata.hasDeprecated,
       isExperimental: nonSyntheticElement.metadata.hasExperimental,
       isVisibleForTesting: _isVisibleForTesting(element),

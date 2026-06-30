@@ -54,11 +54,11 @@ String _format(ApiSummary package, String format) => switch (format) {
 String _formatYaml(ApiSummary package) {
   final editor = YamlEditor('');
   editor.update([], package.toJson());
-  return editor.toString();
+  return '$editor\n';
 }
 
 String _formatJson(ApiSummary package) =>
-    const JsonEncoder.withIndent('  ').convert(package.toJson());
+    '${const JsonEncoder.withIndent('  ').convert(package.toJson())}\n';
 
 final _parser = ArgParser()
   ..addOption(

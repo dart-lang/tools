@@ -356,6 +356,12 @@ final class ApiExecutable extends ApiDeclaration {
   final List<ApiParameter> parameters;
   final bool isStatic;
 
+  /// Whether this executable is a const constructor, field, or top-level
+  /// variable.
+  final bool isConst;
+
+  /// Whether this executable represents an enum constant.
+  final bool isEnumConstant;
   ApiExecutable({
     required super.name,
     super.locationUri,
@@ -365,6 +371,8 @@ final class ApiExecutable extends ApiDeclaration {
     required this.returnType,
     required this.parameters,
     required this.isStatic,
+    this.isConst = false,
+    this.isEnumConstant = false,
     super.isDeprecated,
     super.isExperimental,
     super.isVisibleForTesting,
@@ -381,6 +389,8 @@ final class ApiExecutable extends ApiDeclaration {
     returnType: ApiType.fromJson(json['returnType'] as Map<String, dynamic>),
     parameters: parseList(json, 'parameters', ApiParameter.fromJson),
     isStatic: json['isStatic'] as bool? ?? false,
+    isConst: json['isConst'] as bool? ?? false,
+    isEnumConstant: json['isEnumConstant'] as bool? ?? false,
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
     isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
@@ -400,6 +410,8 @@ final class ApiExecutable extends ApiDeclaration {
     if (parameters.isNotEmpty)
       'parameters': parameters.map((e) => e.toJson()).toList(),
     if (isStatic) 'isStatic': isStatic,
+    if (isConst) 'isConst': isConst,
+    if (isEnumConstant) 'isEnumConstant': isEnumConstant,
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isExperimental) 'isExperimental': isExperimental,
     if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,

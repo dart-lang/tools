@@ -20,13 +20,12 @@ void main() {
   setUpAll(() async {
     final apiPackage = await apiSummary(_pkgDir());
 
-    jsonSummary = const JsonEncoder.withIndent(
-      '  ',
-    ).convert(apiPackage.toJson());
+    jsonSummary =
+        '${const JsonEncoder.withIndent('  ').convert(apiPackage.toJson())}\n';
     textSummary = apiPackage.toString();
     final editor = YamlEditor('');
     editor.update([], apiPackage.toJson());
-    yamlSummary = editor.toString();
+    yamlSummary = '$editor\n';
   });
 
   test('json output matches api.json', () {
@@ -68,7 +67,6 @@ void main() {
     expect(result.exitCode, equals(64));
     expect(result.stderr, contains('Usage: api_summary'));
   });
-
   test('exits with code 64 on invalid pubspec.yaml', () async {
     final tempDir = await Directory.systemTemp.createTemp('api_summary_test');
     try {

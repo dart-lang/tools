@@ -584,7 +584,8 @@
                 "kind": "interface",
                 "name": "ApiDynamicType",
                 "libraryUri": "package:api_summary/src/api_type.dart"
-              }
+              },
+              "isConst": true
             }
           ],
           "methods": [
@@ -664,7 +665,25 @@
               },
               "parameters": [
                 {
+                  "name": "isConst",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "isDeprecated",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isEnumConstant",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -793,6 +812,26 @@
             }
           ],
           "methods": [
+            {
+              "name": "isConst",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isEnumConstant",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
             {
               "name": "isStatic",
               "locationUri": "package:api_summary/src/api_declaration.dart",
@@ -2958,7 +2997,8 @@
                 "kind": "interface",
                 "name": "ApiSummaryCustomizer",
                 "libraryUri": "package:api_summary/src/api_summary_customizer.dart"
-              }
+              },
+              "isConst": true
             }
           ],
           "methods": [
@@ -3526,7 +3566,8 @@
                 "kind": "interface",
                 "name": "ApiVoidType",
                 "libraryUri": "package:api_summary/src/api_type.dart"
-              }
+              },
+              "isConst": true
             }
           ],
           "methods": [
@@ -3567,7 +3608,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "isBase",
@@ -3578,7 +3621,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "isFinal",
@@ -3589,7 +3634,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "isInterface",
@@ -3600,7 +3647,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "isMixin",
@@ -3611,7 +3660,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "isSealed",
@@ -3622,7 +3673,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "jsonName",
@@ -3672,7 +3725,8 @@
                   }
                 ]
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true
             }
           ]
         },
@@ -3689,7 +3743,9 @@
                 "name": "ApiDeclarationStatus",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "public",
@@ -3700,7 +3756,9 @@
                 "name": "ApiDeclarationStatus",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "referenced",
@@ -3711,7 +3769,9 @@
                 "name": "ApiDeclarationStatus",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "values",
@@ -3729,7 +3789,8 @@
                   }
                 ]
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true
             }
           ]
         },
@@ -3746,7 +3807,9 @@
                 "name": "ApiExecutableKind",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "function",
@@ -3757,7 +3820,9 @@
                 "name": "ApiExecutableKind",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "getter",
@@ -3768,7 +3833,9 @@
                 "name": "ApiExecutableKind",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "method",
@@ -3779,7 +3846,9 @@
                 "name": "ApiExecutableKind",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "setter",
@@ -3790,7 +3859,9 @@
                 "name": "ApiExecutableKind",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true,
+              "isEnumConstant": true
             },
             {
               "name": "values",
@@ -3808,7 +3879,8 @@
                   }
                 ]
               },
-              "isStatic": true
+              "isStatic": true,
+              "isConst": true
             }
           ]
         }
