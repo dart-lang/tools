@@ -20,13 +20,12 @@ void main() {
   setUpAll(() async {
     final apiPackage = await apiSummary(_pkgDir());
 
-    jsonSummary = const JsonEncoder.withIndent(
-      '  ',
-    ).convert(apiPackage.toJson());
+    jsonSummary =
+        '${const JsonEncoder.withIndent('  ').convert(apiPackage.toJson())}\n';
     textSummary = apiPackage.toString();
     final editor = YamlEditor('');
     editor.update([], apiPackage.toJson());
-    yamlSummary = editor.toString();
+    yamlSummary = '$editor\n';
   });
 
   test('json output matches api.json', () {
