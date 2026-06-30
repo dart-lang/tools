@@ -613,6 +613,12 @@ void main() {
   // encoding.
 
   group('5.3: Indicator Characters', () {
+    test('can start a plain scalar if followed by a plain-safe character', () {
+      expectYamlLoads({':': null}, '::');
+      expectYamlLoads({'-': null}, '-:');
+      expectYamlLoads([':a', '-b', '?c'], '[ :a, -b, ?c ]');
+    });
+
     test('[Example 5.3]', () {
       expectYamlLoads({
         'sequence': ['one', 'two'],

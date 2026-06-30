@@ -362,7 +362,6 @@ final class ApiExecutable extends ApiDeclaration {
 
   /// Whether this executable represents an enum constant.
   final bool isEnumConstant;
-
   ApiExecutable({
     required super.name,
     super.locationUri,

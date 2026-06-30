@@ -54,33 +54,11 @@ final class _ApiBuilder {
     );
     await _customizer.setupComplete(scanContext);
 
-    for (final file in context.contextRoot.analyzedFiles().sorted()) {
-      if (!file.endsWith('.dart')) continue;
-      final fileResult = context.currentSession.getFile(file);
-      if (fileResult is! FileResult) continue;
-      final uri = fileResult.uri;
-      if (fileResult.isLibrary && uri.isInPublicLibOf(_pkgName)) {
-        final resolvedLibraryResult = await context.currentSession
-            .getResolvedLibrary(file);
-        if (resolvedLibraryResult is! ResolvedLibraryResult) continue;
-        final library = resolvedLibraryResult.element;
-        final definedNames = library.exportNamespace.definedNames2;
-        for (final key in definedNames.keys.sorted()) {
-          final element = definedNames[key]!;
-          topLevelPublicElements.add(element);
-          (_elementToLibraries[element] ??= []).add(library);
-          _registerElement(element);
-        }
-        publicApiLibraries.add(library);
-        _libraryBuilders.putIfAbsent(
-          library.uri.toString(),
-          () => _ApiLibraryBuilder(
-            library.uri.toString(),
-            isPublicEntryPoint: true,
-          ),
-        );
-      }
-    }
+    await _scanPublicApiLibraries(
+      context,
+      topLevelPublicElements,
+      publicApiLibraries,
+    );
     await _customizer.initialScanComplete(scanContext);
 
     while (_pendingElements.isNotEmpty) {
@@ -180,7 +158,41 @@ final class _ApiBuilder {
     return ApiSummary(name: _pkgName, libraries: libraries);
   }
 
-  void _registerElement(Element element) {
+  Future<void> _scanPublicApiLibraries(
+    AnalysisContext context,
+    Set<Element> topLevelPublicElements,
+    List<LibraryElement> publicApiLibraries,
+  ) async {
+    for (final file in context.contextRoot.analyzedFiles().sorted()) {
+      if (!file.endsWith('.dart')) continue;
+      final fileResult = context.currentSession.getFile(file);
+      if (fileResult is! FileResult) continue;
+      final uri = fileResult.uri;
+      if (fileResult.isLibrary && uri.isInPublicLibOf(_pkgName)) {
+        final resolvedLibraryResult = await context.currentSession
+            .getResolvedLibrary(file);
+        if (resolvedLibraryResult is! ResolvedLibraryResult) continue;
+        final library = resolvedLibraryResult.element;
+        final definedNames = library.exportNamespace.definedNames2;
+        for (final key in definedNames.keys.sorted()) {
+          final element = definedNames[key]!;
+          topLevelPublicElements.add(element);
+          (_elementToLibraries[element] ??= []).add(library);
+          _maybeAddPending(element);
+        }
+        publicApiLibraries.add(library);
+        _libraryBuilders.putIfAbsent(
+          library.uri.toString(),
+          () => _ApiLibraryBuilder(
+            library.uri.toString(),
+            isPublicEntryPoint: true,
+          ),
+        );
+      }
+    }
+  }
+
+  void _maybeAddPending(Element element) {
     if (_processedElements.contains(element)) return;
     _pendingElements.add(element);
   }
@@ -227,7 +239,7 @@ final class _ApiBuilder {
           isNullable: isNullable,
         );
       case InterfaceType(:final element, :final typeArguments):
-        _registerElement(element);
+        _maybeAddPending(element);
         return ApiInterfaceType(
           name: element.name ?? '',
           libraryUri: element.library.uri.toString(),
@@ -481,7 +493,6 @@ final class _ApiBuilder {
         variable is FieldElement && variable.isEnumConstant,
       _ => false,
     };
-
     return ApiExecutable(
       name: element.apiName,
       locationUri: element.library.uri.toString(),
