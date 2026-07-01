@@ -112,7 +112,15 @@ class IsolatePausedListener {
             await _service.resume(isolateRef.id!);
           } on SentinelException catch (_) {
           } on RPCError catch (e) {
-            if (e.code != 105 && e.code != 106) rethrow;
+            // Ignore expected VM service RPC errors when resuming an isolate
+            // that has already completed or exited:
+            // - 105: IsolateExited (isolate has exited)
+            // - 106: IsolateMustBePaused / CannotResume (isolate cannot be resumed)
+            const isolateExited = 105;
+            const isolateMustBePaused = 106;
+            if (e.code != isolateExited && e.code != isolateMustBePaused) {
+              rethrow;
+            }
           }
         }
       }
