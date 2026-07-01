@@ -75,6 +75,12 @@ dependency_overrides:
     await localPub.shouldExit(0);
   });
 
+  tearDownAll(() async {
+    if (Platform.isWindows) {
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    }
+  });
+
   test('dart run bin/test_with_coverage.dart -f', () async {
     final list = await _runTest(['run', _testWithCoveragePath, '-f']);
 
