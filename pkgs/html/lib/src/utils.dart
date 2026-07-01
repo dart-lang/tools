@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 import 'constants.dart';
 
 bool startsWithAny(String str, List<String> prefixes) =>

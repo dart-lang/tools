@@ -1,9 +1,12 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// Test for the Selectors API ported from
 /// <https://github.com/w3c/web-platform-tests/tree/master/selectors-api>
 ///
 /// Note, unlike the original we don't operate in-browser on a DOM loaded into
 /// an iframe, but instead operate over a parsed DOM.
-
 @TestOn('vm')
 library;
 

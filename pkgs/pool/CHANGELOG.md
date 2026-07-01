@@ -1,5 +1,6 @@
 ## 1.5.3-wip
 
+* Fix `Pool.forEach` to ensure all workers complete before the stream is closed, even on error or cancellation.
 * Added an example.
 * Fix a resource leak when `PoolResource.allowRelease` callback throws.
 

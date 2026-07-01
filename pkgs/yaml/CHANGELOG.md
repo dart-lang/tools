@@ -1,3 +1,10 @@
+## 3.1.4-wip
+
+* Fix parsing of plain scalars starting with indicator characters (`?`, `:`, and `-`).
+* Throw a `FormatException` when parsing self-referential collections instead of
+  a `StackOverflow`. Yaml definitions with collections nested within themselves
+  are unsupported.
+
 ## 3.1.3
 
 * Require Dart 3.4
