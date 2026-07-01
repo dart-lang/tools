@@ -7,8 +7,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:coverage/coverage.dart';
 import 'package:coverage/src/coverage_options.dart';
+
 import 'package:coverage/src/hitmap.dart';
 import 'package:coverage/src/util.dart';
 import 'package:meta/meta.dart';
@@ -178,8 +178,9 @@ Future<void> main(List<String> arguments) async {
     final testPkg = pkgConfig['test'] ?? pkgConfig['test_core'];
     if (testPkg == null) {
       stderr.writeln(
-        'warning: package:test is not listed in package_config.json for ${flags.packageDir}. '
-        'Make sure to run "dart pub get" in the package directory.',
+        'warning: package:test is not listed in package_config.json for '
+        '${flags.packageDir}. Make sure to run "dart pub get" in the package '
+        'directory.',
       );
     }
   }
