@@ -77,8 +77,18 @@ dependency_overrides:
 
   tearDownAll(() async {
     if (Platform.isWindows) {
+      try {
+        await Process.run('taskkill', [
+          '/F',
+          '/FI',
+          'PID ne $pid',
+          '/IM',
+          'dart.exe',
+        ]);
+      } catch (_) {}
+
       final sandboxDir = Directory(d.sandbox);
-      for (var i = 0; i < 10; i++) {
+      for (var i = 0; i < 20; i++) {
         await Future<void>.delayed(const Duration(seconds: 1));
         try {
           if (sandboxDir.existsSync()) {
