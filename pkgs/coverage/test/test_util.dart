@@ -92,7 +92,7 @@ Map<String, Map<int, int>> lineHitsFromSources(
   return {
     for (var entry in sources.entries)
       entry.key: entry.value.fold(
-        {},
+        <int, int>{},
         (previousValue, element) {
           final hits = getHits(element['hits'] as List);
           for (var pair in hits.entries) {

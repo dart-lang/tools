@@ -104,4 +104,27 @@ void main() {
       tempDir.deleteSync(recursive: true);
     }
   });
+
+  test('HitMap.parseFiles handles raw V8 list with providers', () async {
+    final preciseCoverage = json.decode(
+        await File('test/test_files/chrome_precise_report.txt')
+            .readAsString()) as List;
+    final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_raw_test_');
+    final tempFile = File('${tempDir.path}/raw_v8.json');
+    tempFile.writeAsStringSync(jsonEncode(preciseCoverage));
+    try {
+      final hitmap = await HitMap.parseFiles(
+        [tempFile],
+        sourceProvider: (scriptId) async => sourceProvider(scriptId),
+        sourceMapProvider: (scriptId) async => sourceMapProvider(scriptId),
+      );
+      expect(hitmap.keys, anyElement(contains('main_test.dart')));
+      final key = hitmap.keys.firstWhere((k) => k.contains('main_test.dart'));
+      final fileHitMap = hitmap[key]!;
+      expect(fileHitMap.lineHits[7], equals(1));
+      expect(fileHitMap.lineHits[11], equals(1));
+    } finally {
+      tempDir.deleteSync(recursive: true);
+    }
+  });
 }

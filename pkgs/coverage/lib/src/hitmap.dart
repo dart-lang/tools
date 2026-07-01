@@ -151,6 +151,8 @@ class HitMap {
     bool checkIgnoredLines = false,
     @Deprecated('Use packagePath') String? packagesPath,
     String? packagePath,
+    Future<String?> Function(String scriptId)? sourceProvider,
+    Future<String?> Function(String scriptId)? sourceMapProvider,
   }) async {
     final globalHitmap = <String, HitMap>{};
     for (var file in files) {
@@ -170,8 +172,8 @@ class HitMap {
         // Raw Chrome V8 precise coverage JSON list.
         final chromeReport = await parseChromeCoverage(
           jsonObject.cast<Map<String, dynamic>>(),
-          (scriptId) async => null,
-          (scriptId) async => null,
+          sourceProvider ?? ((scriptId) async => null),
+          sourceMapProvider ?? ((scriptId) async => null),
           (sourceUrl, scriptId) async => Uri.tryParse(sourceUrl),
         );
         if (chromeReport.containsKey('coverage')) {

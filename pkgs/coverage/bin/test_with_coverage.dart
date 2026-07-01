@@ -300,9 +300,14 @@ Future<void> main(List<String> arguments) async {
               (uri.scheme == 'package' &&
                   scopes.contains(uri.pathSegments.first)) ||
               (uri.scheme == 'file' &&
-                  scopes.any((scope) =>
-                      uri.path.contains('/$scope/lib/') ||
-                      uri.path.contains('/$scope/')));
+                  scopes.any((scope) {
+                    final package = pkgConfig?[scope];
+                    if (package != null) {
+                      return uri.toString().startsWith(package.root.toString());
+                    }
+                    return uri.path.contains('/$scope/lib/') ||
+                        uri.path.contains('/$scope/');
+                  }));
           if (isIncluded) {
             allCoverage.add(hitmapToJson(map, uri));
           }
@@ -311,6 +316,9 @@ Future<void> main(List<String> arguments) async {
         final jsonOutput =
             jsonEncode({'type': 'CodeCoverage', 'coverage': allCoverage});
         File(outJson).writeAsStringSync(jsonOutput);
+      } else {
+        File(outJson).writeAsStringSync(jsonEncode(
+            {'type': 'CodeCoverage', 'coverage': <Map<String, dynamic>>[]}));
       }
     } finally {
       try {
