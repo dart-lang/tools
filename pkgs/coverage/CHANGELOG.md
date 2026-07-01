@@ -1,3 +1,11 @@
+## 1.16.0-wip
+
+- Support collecting and formatting Web (V8 / Chrome) coverage reports in
+  `test_with_coverage` via `-p` / `--platform` flag.
+- Support parsing raw Chrome V8 coverage JSON lists in `HitMap.parseFiles`.
+- Pre-flight `package:test` verification and `file:` URI normalization using
+  `package:package_config`.
+
 ## 1.15.1
 
 - Allow package_config `3.x.x`.

@@ -173,7 +173,6 @@ dependency_overrides:
   test(
       'dart run bin/test_with_coverage.dart -b --fail-under fails'
       'when coverage is below threshold', () async {
-    // This should throw an exit(1) as percentage_covered=95.23 .
     final process = await _run([
       'run',
       _testWithCoveragePath,
@@ -183,6 +182,20 @@ dependency_overrides:
       '${_port++}',
     ]);
     await process.shouldExit(1);
+  });
+
+  test('dart run bin/test_with_coverage.dart -p chrome',
+      onPlatform: const {'windows': Skip('Chrome tests skipped on Windows')},
+      () async {
+    final list = await _runTest(['run', _testWithCoveragePath, '-p', 'chrome']);
+    final sources = list.sources();
+    final lineHits = lineHitsFromSources(sources);
+
+    final libHits = lineHits['package:$_testPackageName/validate_lib.dart'];
+    expect(libHits, isNotNull);
+    expect(libHits![6], greaterThanOrEqualTo(1));
+    expect(libHits[14], greaterThanOrEqualTo(1));
+    expect(libHits[22], greaterThanOrEqualTo(1));
   });
 }
 

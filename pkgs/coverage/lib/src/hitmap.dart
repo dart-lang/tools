@@ -5,6 +5,7 @@
 import 'dart:convert' show json;
 import 'dart:io';
 
+import 'chrome.dart';
 import 'resolver.dart';
 import 'util.dart';
 
@@ -154,9 +155,10 @@ class HitMap {
     final globalHitmap = <String, HitMap>{};
     for (var file in files) {
       final contents = file.readAsStringSync();
-      final jsonMap = json.decode(contents) as Map<String, dynamic>;
-      if (jsonMap.containsKey('coverage')) {
-        final jsonResult = jsonMap['coverage'] as List;
+      final jsonObject = json.decode(contents);
+      if (jsonObject is Map<String, dynamic> &&
+          jsonObject.containsKey('coverage')) {
+        final jsonResult = jsonObject['coverage'] as List;
         globalHitmap.merge(await HitMap.parseJson(
           jsonResult.cast<Map<String, dynamic>>(),
           checkIgnoredLines: checkIgnoredLines,
@@ -164,6 +166,24 @@ class HitMap {
           packagesPath: packagesPath,
           packagePath: packagePath,
         ));
+      } else if (jsonObject is List) {
+        // Raw Chrome V8 precise coverage JSON list.
+        final chromeReport = await parseChromeCoverage(
+          jsonObject.cast<Map<String, dynamic>>(),
+          (scriptId) async => null,
+          (scriptId) async => null,
+          (sourceUrl, scriptId) async => Uri.tryParse(sourceUrl),
+        );
+        if (chromeReport.containsKey('coverage')) {
+          final jsonResult = chromeReport['coverage'] as List;
+          globalHitmap.merge(await HitMap.parseJson(
+            jsonResult.cast<Map<String, dynamic>>(),
+            checkIgnoredLines: checkIgnoredLines,
+            // ignore: deprecated_member_use_from_same_package
+            packagesPath: packagesPath,
+            packagePath: packagePath,
+          ));
+        }
       }
     }
     return globalHitmap;
