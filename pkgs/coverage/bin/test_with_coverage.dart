@@ -39,7 +39,8 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
   )
   ..addOption(
     'package-name',
-    help: 'Name of the package to test. '
+    help:
+        'Name of the package to test. '
         'Deduced from --package if not provided. '
         'DEPRECATED: use --scope-output',
   )
@@ -50,9 +51,11 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
     abbr: 'o',
     help: 'Output directory. Defaults to <package-dir>/coverage.',
   )
-  ..addOption('test',
-      help: 'Test script or directory to run.',
-      defaultsTo: defaultOptions.testScript)
+  ..addOption(
+    'test',
+    help: 'Test script or directory to run.',
+    defaultsTo: defaultOptions.testScript,
+  )
   ..addFlag(
     'function-coverage',
     abbr: 'f',
@@ -69,15 +72,20 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
     'fail-under',
     help: 'Fail if coverage is less than the given percentage (0-100)',
   )
-  ..addMultiOption('scope-output',
-      defaultsTo: defaultOptions.scopeOutput,
-      help: 'restrict coverage results so that only scripts that start with '
-          'the provided package path are considered. Defaults to the name of '
-          'the current package (including all subpackages, if this is a '
-          'workspace).')
-  ..addOption('platform',
-      abbr: 'p',
-      help: 'The platform(s) on which to run the tests (e.g. vm, chrome).')
+  ..addMultiOption(
+    'scope-output',
+    defaultsTo: defaultOptions.scopeOutput,
+    help:
+        'restrict coverage results so that only scripts that start with '
+        'the provided package path are considered. Defaults to the name of '
+        'the current package (including all subpackages, if this is a '
+        'workspace).',
+  )
+  ..addOption(
+    'platform',
+    abbr: 'p',
+    help: 'The platform(s) on which to run the tests (e.g. vm, chrome).',
+  )
   ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
 
 class Flags {
@@ -108,7 +116,9 @@ class Flags {
 
 @visibleForTesting
 Future<Flags> parseArgs(
-    List<String> arguments, CoverageOptions defaultOptions) async {
+  List<String> arguments,
+  CoverageOptions defaultOptions,
+) async {
   final parser = _createArgParser(defaultOptions);
   final args = parser.parse(arguments);
 
@@ -201,23 +211,22 @@ Future<void> main(List<String> arguments) async {
   if (flags.functionCoverage &&
       (flags.platform == null || flags.platform == 'vm')) {
     final serviceUriCompleter = Completer<Uri>();
-    final process = await Process.start(
-      Platform.executable,
-      [
-        if (flags.branchCoverage) '--branch-coverage',
-        'run',
-        '--pause-isolates-on-exit',
-        '--disable-service-auth-codes',
-        '--enable-vm-service=${flags.port}',
-        flags.testScript,
-        ...flags.rest,
-      ],
-      workingDirectory: flags.packageDir,
-    );
+    final process = await Process.start(Platform.executable, [
+      if (flags.branchCoverage) '--branch-coverage',
+      'run',
+      '--pause-isolates-on-exit',
+      '--disable-service-auth-codes',
+      '--enable-vm-service=${flags.port}',
+      flags.testScript,
+      ...flags.rest,
+    ], workingDirectory: flags.packageDir);
     _allProcesses.add(process);
 
     void listen(
-        Stream<List<int>> stream, IOSink sink, void Function(String) onLine) {
+      Stream<List<int>> stream,
+      IOSink sink,
+      void Function(String) onLine,
+    ) {
       final broadStream = stream.asBroadcastStream();
       broadStream.listen(sink.add);
       broadStream.lines().listen(onLine);
@@ -254,7 +263,13 @@ Future<void> main(List<String> arguments) async {
       '-o',
       outJson,
     ]);
-    exitCode = await process.exitCode;
+    exitCode = await process.exitCode.timeout(
+      const Duration(seconds: 3),
+      onTimeout: () {
+        process.kill();
+        return 0;
+      },
+    );
   } else {
     final tempDir = Directory.systemTemp.createTempSync('coverage_');
     try {
@@ -289,10 +304,11 @@ Future<void> main(List<String> arguments) async {
           packagePath: flags.packageDir,
         );
 
-        final scopes = (flags.scopeOutput.isEmpty
-                ? getAllWorkspaceNames(flags.packageDir)
-                : flags.scopeOutput)
-            .toSet();
+        final scopes =
+            (flags.scopeOutput.isEmpty
+                    ? getAllWorkspaceNames(flags.packageDir)
+                    : flags.scopeOutput)
+                .toSet();
 
         final allCoverage = <Map<String, dynamic>>[];
         hitmap.forEach((uriStr, map) {
@@ -304,7 +320,8 @@ Future<void> main(List<String> arguments) async {
           }
 
           final targetUri = uri;
-          final isIncluded = scopes.isEmpty ||
+          final isIncluded =
+              scopes.isEmpty ||
               (targetUri.scheme == 'package' &&
                   targetUri.pathSegments.isNotEmpty &&
                   scopes.contains(targetUri.pathSegments.first)) ||
@@ -312,9 +329,9 @@ Future<void> main(List<String> arguments) async {
                   scopes.any((scope) {
                     final package = pkgConfig?[scope];
                     if (package != null) {
-                      return targetUri
-                          .toString()
-                          .startsWith(package.root.toString());
+                      return targetUri.toString().startsWith(
+                        package.root.toString(),
+                      );
                     }
                     return targetUri.path.contains('/$scope/');
                   }));
@@ -323,12 +340,18 @@ Future<void> main(List<String> arguments) async {
           }
         });
 
-        final jsonOutput =
-            jsonEncode({'type': 'CodeCoverage', 'coverage': allCoverage});
+        final jsonOutput = jsonEncode({
+          'type': 'CodeCoverage',
+          'coverage': allCoverage,
+        });
         File(outJson).writeAsStringSync(jsonOutput);
       } else {
-        File(outJson).writeAsStringSync(jsonEncode(
-            {'type': 'CodeCoverage', 'coverage': <Map<String, dynamic>>[]}));
+        File(outJson).writeAsStringSync(
+          jsonEncode({
+            'type': 'CodeCoverage',
+            'coverage': <Map<String, dynamic>>[],
+          }),
+        );
       }
     } finally {
       try {
@@ -348,7 +371,5 @@ Future<void> main(List<String> arguments) async {
     if (flags.failUnder != null) '--fail-under=${flags.failUnder}',
   ]);
 
-  if (exitCode != 0) {
-    exit(exitCode);
-  }
+  exit(exitCode);
 }
