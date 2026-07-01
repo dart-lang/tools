@@ -77,7 +77,16 @@ dependency_overrides:
 
   tearDownAll(() async {
     if (Platform.isWindows) {
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(const Duration(seconds: 1));
+        try {
+          final dir = Directory(d.sandbox);
+          if (dir.existsSync()) {
+            dir.deleteSync(recursive: true);
+          }
+          break;
+        } catch (_) {}
+      }
     }
   });
 
