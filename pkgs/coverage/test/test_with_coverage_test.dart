@@ -77,10 +77,16 @@ dependency_overrides:
 
   tearDownAll(() async {
     if (Platform.isWindows) {
-      await Future<void>.delayed(const Duration(seconds: 3));
-      final dir = Directory(d.sandbox);
-      if (!dir.existsSync()) {
-        dir.createSync(recursive: true);
+      for (var i = 0; i < 10; i++) {
+        await Future<void>.delayed(const Duration(seconds: 1));
+        try {
+          final dir = Directory(d.sandbox);
+          if (dir.existsSync()) {
+            dir.deleteSync(recursive: true);
+          }
+          dir.createSync(recursive: true);
+          break;
+        } catch (_) {}
       }
     }
   });
@@ -196,7 +202,7 @@ dependency_overrides:
 
   test('dart run bin/test_with_coverage.dart -p chrome',
       onPlatform: const {'windows': Skip('Chrome tests skipped on Windows')},
-      () async {
+      timeout: const Timeout(Duration(minutes: 5)), () async {
     final list = await _runTest(['run', _testWithCoveragePath, '-p', 'chrome']);
     final sources = list.sources();
     final lineHits = lineHitsFromSources(sources);
