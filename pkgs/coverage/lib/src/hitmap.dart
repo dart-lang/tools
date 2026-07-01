@@ -162,7 +162,7 @@ class HitMap {
           jsonObject.containsKey('coverage')) {
         final jsonResult = jsonObject['coverage'] as List;
         globalHitmap.merge(await HitMap.parseJson(
-          jsonResult.cast<Map<String, dynamic>>(),
+          jsonResult.whereType<Map<String, dynamic>>().toList(),
           checkIgnoredLines: checkIgnoredLines,
           // ignore: deprecated_member_use_from_same_package
           packagesPath: packagesPath,
@@ -171,7 +171,7 @@ class HitMap {
       } else if (jsonObject is List) {
         // Raw Chrome V8 precise coverage JSON list.
         final chromeReport = await parseChromeCoverage(
-          jsonObject.cast<Map<String, dynamic>>(),
+          jsonObject.whereType<Map<String, dynamic>>().toList(),
           sourceProvider ?? ((scriptId) async => null),
           sourceMapProvider ?? ((scriptId) async => null),
           (sourceUrl, scriptId) async => Uri.tryParse(sourceUrl),
@@ -179,7 +179,7 @@ class HitMap {
         if (chromeReport.containsKey('coverage')) {
           final jsonResult = chromeReport['coverage'] as List;
           globalHitmap.merge(await HitMap.parseJson(
-            jsonResult.cast<Map<String, dynamic>>(),
+            jsonResult.whereType<Map<String, dynamic>>().toList(),
             checkIgnoredLines: checkIgnoredLines,
             // ignore: deprecated_member_use_from_same_package
             packagesPath: packagesPath,

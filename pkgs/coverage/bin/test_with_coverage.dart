@@ -289,31 +289,37 @@ Future<void> main(List<String> arguments) async {
           packagePath: flags.packageDir,
         );
 
-        final scopes = flags.scopeOutput.isEmpty
-            ? getAllWorkspaceNames(flags.packageDir)
-            : flags.scopeOutput.toSet();
+        final scopes = (flags.scopeOutput.isEmpty
+                ? getAllWorkspaceNames(flags.packageDir)
+                : flags.scopeOutput)
+            .toSet();
 
         final allCoverage = <Map<String, dynamic>>[];
         hitmap.forEach((uriStr, map) {
-          var uri = Uri.parse(uriStr);
+          var uri = Uri.tryParse(uriStr);
+          if (uri == null) return;
           if (uri.scheme == 'file' && pkgConfig != null) {
             final packageUri = pkgConfig.toPackageUri(uri);
             if (packageUri != null) uri = packageUri;
           }
 
+          final targetUri = uri;
           final isIncluded = scopes.isEmpty ||
-              (uri.scheme == 'package' &&
-                  scopes.contains(uri.pathSegments.first)) ||
-              (uri.scheme == 'file' &&
+              (targetUri.scheme == 'package' &&
+                  targetUri.pathSegments.isNotEmpty &&
+                  scopes.contains(targetUri.pathSegments.first)) ||
+              (targetUri.scheme == 'file' &&
                   scopes.any((scope) {
                     final package = pkgConfig?[scope];
                     if (package != null) {
-                      return uri.toString().startsWith(package.root.toString());
+                      return targetUri
+                          .toString()
+                          .startsWith(package.root.toString());
                     }
-                    return uri.path.contains('/$scope/');
+                    return targetUri.path.contains('/$scope/');
                   }));
           if (isIncluded) {
-            allCoverage.add(hitmapToJson(map, uri));
+            allCoverage.add(hitmapToJson(map, targetUri));
           }
         });
 
