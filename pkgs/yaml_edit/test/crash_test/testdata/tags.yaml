@@ -1,0 +1,5 @@
+string_tag: !!str 42
+int_tag: !!int "42"
+custom_tag: !MyApp/Type
+  property: value
+
