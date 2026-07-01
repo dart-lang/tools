@@ -22,11 +22,12 @@ class HitMap {
   /// Constructs an empty hitmap, optionally with function and branch coverage
   /// tables.
   HitMap.empty({bool functionCoverage = false, bool branchCoverage = false})
-      : this(
-            null,
-            functionCoverage ? <int, int>{} : null,
-            functionCoverage ? <int, String>{} : null,
-            branchCoverage ? <int, int>{} : null);
+    : this(
+        null,
+        functionCoverage ? <int, int>{} : null,
+        functionCoverage ? <int, String>{} : null,
+        branchCoverage ? <int, int>{} : null,
+      );
 
   /// Map from line to hit count for that line.
   final Map<int, int> lineHits;
@@ -138,11 +139,15 @@ class HitMap {
     String? packagePath,
   }) async {
     final resolver = await Resolver.create(
-        packagesPath: packagesPath, packagePath: packagePath);
-    return parseJsonSync(jsonResult,
-        checkIgnoredLines: checkIgnoredLines,
-        ignoredLinesInFilesCache: {},
-        resolver: resolver);
+      packagesPath: packagesPath,
+      packagePath: packagePath,
+    );
+    return parseJsonSync(
+      jsonResult,
+      checkIgnoredLines: checkIgnoredLines,
+      ignoredLinesInFilesCache: {},
+      resolver: resolver,
+    );
   }
 
   /// Generates a merged hitmap from a set of coverage JSON files.
@@ -161,13 +166,15 @@ class HitMap {
       if (jsonObject is Map<String, dynamic> &&
           jsonObject.containsKey('coverage')) {
         final jsonResult = jsonObject['coverage'] as List;
-        globalHitmap.merge(await HitMap.parseJson(
-          jsonResult.whereType<Map<String, dynamic>>().toList(),
-          checkIgnoredLines: checkIgnoredLines,
-          // ignore: deprecated_member_use_from_same_package
-          packagesPath: packagesPath,
-          packagePath: packagePath,
-        ));
+        globalHitmap.merge(
+          await HitMap.parseJson(
+            jsonResult.whereType<Map<String, dynamic>>().toList(),
+            checkIgnoredLines: checkIgnoredLines,
+            // ignore: deprecated_member_use_from_same_package
+            packagesPath: packagesPath,
+            packagePath: packagePath,
+          ),
+        );
       } else if (jsonObject is List) {
         // Raw Chrome V8 precise coverage JSON list.
         final chromeReport = await parseChromeCoverage(
@@ -178,13 +185,15 @@ class HitMap {
         );
         if (chromeReport.containsKey('coverage')) {
           final jsonResult = chromeReport['coverage'] as List;
-          globalHitmap.merge(await HitMap.parseJson(
-            jsonResult.whereType<Map<String, dynamic>>().toList(),
-            checkIgnoredLines: checkIgnoredLines,
-            // ignore: deprecated_member_use_from_same_package
-            packagesPath: packagesPath,
-            packagePath: packagePath,
-          ));
+          globalHitmap.merge(
+            await HitMap.parseJson(
+              jsonResult.whereType<Map<String, dynamic>>().toList(),
+              checkIgnoredLines: checkIgnoredLines,
+              // ignore: deprecated_member_use_from_same_package
+              packagesPath: packagesPath,
+              packagePath: packagePath,
+            ),
+          );
         }
       }
     }
@@ -301,7 +310,9 @@ Future<Map<String, Map<int, int>>> createHitmap(
 /// Merges [newMap] into [result].
 @Deprecated('Migrate to FileHitMaps.merge')
 void mergeHitmaps(
-    Map<String, Map<int, int>> newMap, Map<String, Map<int, int>> result) {
+  Map<String, Map<int, int>> newMap,
+  Map<String, Map<int, int>> result,
+) {
   newMap.forEach((file, v) {
     final fileResult = result[file];
     if (fileResult != null) {
@@ -328,10 +339,12 @@ Future<Map<String, Map<int, int>>> parseCoverage(
   @Deprecated('Use packagePath') String? packagesPath,
   String? packagePath,
 }) async {
-  final result = await HitMap.parseFiles(files,
-      checkIgnoredLines: checkIgnoredLines,
-      packagesPath: packagesPath,
-      packagePath: packagePath);
+  final result = await HitMap.parseFiles(
+    files,
+    checkIgnoredLines: checkIgnoredLines,
+    packagesPath: packagesPath,
+    packagePath: packagePath,
+  );
   return result.map((key, value) => MapEntry(key, value.lineHits));
 }
 
@@ -351,25 +364,25 @@ List<T> _flattenMap<T>(Map map) {
 }
 
 /// Returns a JSON hit map backward-compatible with pre-1.16.0 SDKs.
-Map<String, dynamic> hitmapToJson(HitMap hitmap, Uri scriptUri) =>
-    <String, dynamic>{
-      'source': '$scriptUri',
-      'script': {
-        'type': '@Script',
-        'fixedId': true,
-        'id':
-            'libraries/1/scripts/${Uri.encodeComponent(scriptUri.toString())}',
-        'uri': '$scriptUri',
-        '_kind': 'library',
-      },
-      'hits': _flattenMap<int>(hitmap.lineHits),
-      if (hitmap.funcHits != null)
-        'funcHits': _flattenMap<int>(hitmap.funcHits!),
-      if (hitmap.funcNames != null)
-        'funcNames': _flattenMap<dynamic>(hitmap.funcNames!),
-      if (hitmap.branchHits != null)
-        'branchHits': _flattenMap<int>(hitmap.branchHits!),
-    };
+Map<String, dynamic> hitmapToJson(
+  HitMap hitmap,
+  Uri scriptUri,
+) => <String, dynamic>{
+  'source': '$scriptUri',
+  'script': {
+    'type': '@Script',
+    'fixedId': true,
+    'id': 'libraries/1/scripts/${Uri.encodeComponent(scriptUri.toString())}',
+    'uri': '$scriptUri',
+    '_kind': 'library',
+  },
+  'hits': _flattenMap<int>(hitmap.lineHits),
+  if (hitmap.funcHits != null) 'funcHits': _flattenMap<int>(hitmap.funcHits!),
+  if (hitmap.funcNames != null)
+    'funcNames': _flattenMap<dynamic>(hitmap.funcNames!),
+  if (hitmap.branchHits != null)
+    'branchHits': _flattenMap<int>(hitmap.branchHits!),
+};
 
 /// Sorts the hits array based on the line numbers.
 List _sortHits(List hits) {

@@ -36,19 +36,23 @@ void main() {
     checkHitmap(hitMap);
     final resolver = await Resolver.create();
     final ignoredLinesInFilesCache = <String, List<List<int>>?>{};
-    final hitMap2 = HitMap.parseJsonSync(coverage,
-        checkIgnoredLines: true,
-        ignoredLinesInFilesCache: ignoredLinesInFilesCache,
-        resolver: resolver);
+    final hitMap2 = HitMap.parseJsonSync(
+      coverage,
+      checkIgnoredLines: true,
+      ignoredLinesInFilesCache: ignoredLinesInFilesCache,
+      resolver: resolver,
+    );
     checkHitmap(hitMap2);
     checkIgnoredLinesInFilesCache(ignoredLinesInFilesCache);
 
     // Asking again the cache should answer questions about ignored lines,
     // so providing a resolver that throws when asked for files should be ok.
-    final hitMap3 = HitMap.parseJsonSync(coverage,
-        checkIgnoredLines: true,
-        ignoredLinesInFilesCache: ignoredLinesInFilesCache,
-        resolver: ThrowingResolver());
+    final hitMap3 = HitMap.parseJsonSync(
+      coverage,
+      checkIgnoredLines: true,
+      ignoredLinesInFilesCache: ignoredLinesInFilesCache,
+      resolver: ThrowingResolver(),
+    );
     checkHitmap(hitMap3);
     checkIgnoredLinesInFilesCache(ignoredLinesInFilesCache);
   });
@@ -75,12 +79,15 @@ class ThrowingResolver implements Resolver {
 }
 
 void checkIgnoredLinesInFilesCache(
-    Map<String, List<List<int>>?> ignoredLinesInFilesCache) {
+  Map<String, List<List<int>>?> ignoredLinesInFilesCache,
+) {
   final keys = ignoredLinesInFilesCache.keys.toList();
-  final testAppKey =
-      keys.where((element) => element.endsWith('test_app.dart')).single;
-  final testAppIsolateKey =
-      keys.where((element) => element.endsWith('test_app_isolate.dart')).single;
+  final testAppKey = keys
+      .where((element) => element.endsWith('test_app.dart'))
+      .single;
+  final testAppIsolateKey = keys
+      .where((element) => element.endsWith('test_app_isolate.dart'))
+      .single;
   final packageUtilKey = keys
       .where((element) => element.endsWith('package:coverage/src/util.dart'))
       .single;
@@ -90,7 +97,7 @@ void checkIgnoredLinesInFilesCache(
     [52, 52],
     [54, 58],
     [63, 66],
-    [67, 73]
+    [67, 73],
   ]);
 }
 
@@ -122,7 +129,7 @@ void checkHitmap(Map<String, HitMap> hitMap) {
     49: 1,
     50: 1,
     60: 1,
-    61: 1
+    61: 1,
   };
 
   expect(actualLineHits, expectedLineHits);

@@ -28,8 +28,9 @@ void main() {
     final resultString = await _getCoverageResult();
 
     // analyze the output json
-    final coverage =
-        coverageDataFromJson(json.decode(resultString) as Map<String, dynamic>);
+    final coverage = coverageDataFromJson(
+      json.decode(resultString) as Map<String, dynamic>,
+    );
 
     expect(coverage, isNotEmpty);
 
@@ -48,30 +49,14 @@ void main() {
     final coverage = [
       {
         'source': 'foo',
-        'script': '{type: @Script, fixedId: true, '
+        'script':
+            '{type: @Script, fixedId: true, '
             'id: bar.dart, uri: bar.dart, _kind: library}',
-        'hits': [
-          45,
-          1,
-          46,
-          1,
-          49,
-          0,
-          50,
-          0,
-          15,
-          1,
-          16,
-          2,
-          17,
-          2,
-        ]
-      }
+        'hits': [45, 1, 46, 1, 49, 0, 50, 0, 15, 1, 16, 2, 17, 2],
+      },
     ];
     // ignore: deprecated_member_use_from_same_package
-    final hitMap = await createHitmap(
-      coverage.cast<Map<String, dynamic>>(),
-    );
+    final hitMap = await createHitmap(coverage.cast<Map<String, dynamic>>());
     final expectedHits = {15: 1, 16: 2, 17: 2, 45: 1, 46: 1, 49: 0, 50: 0};
     expect(hitMap['foo'], expectedHits);
   });
@@ -80,25 +65,11 @@ void main() {
     final coverage = [
       {
         'source': 'foo',
-        'script': '{type: @Script, fixedId: true, '
+        'script':
+            '{type: @Script, fixedId: true, '
             'id: bar.dart, uri: bar.dart, _kind: library}',
-        'hits': [
-          45,
-          1,
-          46,
-          1,
-          49,
-          0,
-          50,
-          0,
-          15,
-          1,
-          16,
-          2,
-          17,
-          2,
-        ]
-      }
+        'hits': [45, 1, 46, 1, 49, 0, 50, 0, 15, 1, 16, 2, 17, 2],
+      },
     ];
     final hitMap = await HitMap.parseJson(
       coverage.cast<Map<String, dynamic>>(),
@@ -160,24 +131,21 @@ void main() {
       19: 'BarClass.BarClass',
       23: 'BarClass.baz',
       28: 'fooAsync',
-      38: 'isolateTask'
+      38: 'isolateTask',
     });
-    expect(
-      isolateFile?.branchHits,
-      {
-        11: 1,
-        12: 1,
-        15: 0,
-        19: 1,
-        23: 1,
-        28: 1,
-        29: 1,
-        32: 0,
-        38: 1,
-        42: 1,
-        72: 1,
-      },
-    );
+    expect(isolateFile?.branchHits, {
+      11: 1,
+      12: 1,
+      15: 0,
+      19: 1,
+      23: 1,
+      28: 1,
+      29: 1,
+      32: 0,
+      38: 1,
+      42: 1,
+      72: 1,
+    });
   });
 
   test('parseCoverage', () async {
@@ -226,8 +194,11 @@ void main() {
       final coverageResults = await _getCoverageResult();
       await outputFile.writeAsString(coverageResults, flush: true);
 
-      final parsedResult = await HitMap.parseFiles([outputFile],
-          packagePath: '.', checkIgnoredLines: true);
+      final parsedResult = await HitMap.parseFiles(
+        [outputFile],
+        packagePath: '.',
+        checkIgnoredLines: true,
+      );
 
       // This file has ignore:coverage-file.
       expect(parsedResult, isNot(contains(_sampleAppFileUri)));
@@ -257,31 +228,50 @@ void main() {
 
   test('FileHitMaps.merge', () {
     final resultMap = <String, HitMap>{
-      'foo.dart':
-          HitMap({10: 2, 20: 0}, {15: 0, 25: 1}, {15: 'bobble', 25: 'cobble'}),
-      'bar.dart': HitMap(
-          {10: 3, 20: 1, 30: 0}, {15: 5, 25: 0}, {15: 'gobble', 25: 'wobble'}),
+      'foo.dart': HitMap({10: 2, 20: 0}, {15: 0, 25: 1}, {
+        15: 'bobble',
+        25: 'cobble',
+      }),
+      'bar.dart': HitMap({10: 3, 20: 1, 30: 0}, {15: 5, 25: 0}, {
+        15: 'gobble',
+        25: 'wobble',
+      }),
     };
     final newMap = <String, HitMap>{
-      'bar.dart': HitMap(
-          {10: 2, 20: 0, 40: 3}, {15: 1, 35: 4}, {15: 'gobble', 35: 'dobble'}),
-      'baz.dart': HitMap(
-          {10: 1, 20: 0, 30: 1}, {15: 0, 25: 2}, {15: 'lobble', 25: 'zobble'}),
+      'bar.dart': HitMap({10: 2, 20: 0, 40: 3}, {15: 1, 35: 4}, {
+        15: 'gobble',
+        35: 'dobble',
+      }),
+      'baz.dart': HitMap({10: 1, 20: 0, 30: 1}, {15: 0, 25: 2}, {
+        15: 'lobble',
+        25: 'zobble',
+      }),
     };
     resultMap.merge(newMap);
     expect(resultMap['foo.dart']?.lineHits, <int, int>{10: 2, 20: 0});
     expect(resultMap['foo.dart']?.funcHits, <int, int>{15: 0, 25: 1});
-    expect(resultMap['foo.dart']?.funcNames,
-        <int, String>{15: 'bobble', 25: 'cobble'});
-    expect(resultMap['bar.dart']?.lineHits,
-        <int, int>{10: 5, 20: 1, 30: 0, 40: 3});
+    expect(resultMap['foo.dart']?.funcNames, <int, String>{
+      15: 'bobble',
+      25: 'cobble',
+    });
+    expect(resultMap['bar.dart']?.lineHits, <int, int>{
+      10: 5,
+      20: 1,
+      30: 0,
+      40: 3,
+    });
     expect(resultMap['bar.dart']?.funcHits, <int, int>{15: 6, 25: 0, 35: 4});
-    expect(resultMap['bar.dart']?.funcNames,
-        <int, String>{15: 'gobble', 25: 'wobble', 35: 'dobble'});
+    expect(resultMap['bar.dart']?.funcNames, <int, String>{
+      15: 'gobble',
+      25: 'wobble',
+      35: 'dobble',
+    });
     expect(resultMap['baz.dart']?.lineHits, <int, int>{10: 1, 20: 0, 30: 1});
     expect(resultMap['baz.dart']?.funcHits, <int, int>{15: 0, 25: 2});
-    expect(resultMap['baz.dart']?.funcNames,
-        <int, String>{15: 'lobble', 25: 'zobble'});
+    expect(resultMap['baz.dart']?.funcNames, <int, String>{
+      15: 'lobble',
+      25: 'zobble',
+    });
   });
 }
 
@@ -291,7 +281,9 @@ Future<String> _getCoverageResult() async =>
     _coverageData ??= await _collectCoverage(false, false);
 
 Future<String> _collectCoverage(
-    bool functionCoverage, bool branchCoverage) async {
+  bool functionCoverage,
+  bool branchCoverage,
+) async {
   expect(FileSystemEntity.isFileSync(testAppPath), isTrue);
 
   // Run the sample app with the right flags.
@@ -309,10 +301,12 @@ Future<String> _collectCoverage(
     '--uri',
     '$serviceUri',
     '--resume-isolates',
-    '--wait-paused'
+    '--wait-paused',
   ]);
 
-  await toolResult.shouldExit(0).timeout(
+  await toolResult
+      .shouldExit(0)
+      .timeout(
         timeout,
         onTimeout: () =>
             throw StateError('We timed out waiting for the tool to finish.'),

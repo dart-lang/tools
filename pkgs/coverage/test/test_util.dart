@@ -13,15 +13,13 @@ final String testAppPath = p.join('test', 'test_files', 'test_app.dart');
 
 const Duration timeout = Duration(seconds: 60);
 
-Future<TestProcess> runTestApp() => TestProcess.start(
-      Platform.resolvedExecutable,
-      [
-        '--enable-vm-service=0',
-        '--pause_isolates_on_exit',
-        '--branch-coverage',
-        testAppPath
-      ],
-    );
+Future<TestProcess> runTestApp() =>
+    TestProcess.start(Platform.resolvedExecutable, [
+      '--enable-vm-service=0',
+      '--pause_isolates_on_exit',
+      '--branch-coverage',
+      testAppPath,
+    ]);
 
 List<Map<String, dynamic>> coverageDataFromJson(Map<String, dynamic> json) {
   expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
@@ -61,21 +59,18 @@ Map<String, Map<String, int>> functionInfoFromSources(
 
   return {
     for (var entry in sources.entries)
-      entry.key: entry.value.fold(
-        {},
-        (previousValue, element) {
-          expect(element['source'], entry.key);
-          final names = getFuncNames(element['funcNames'] as List);
-          final hits = getFuncHits(element['funcHits'] as List);
+      entry.key: entry.value.fold({}, (previousValue, element) {
+        expect(element['source'], entry.key);
+        final names = getFuncNames(element['funcNames'] as List);
+        final hits = getFuncHits(element['funcHits'] as List);
 
-          for (var pair in hits.entries) {
-            previousValue[names[pair.key]!] =
-                (previousValue[names[pair.key]!] ?? 0) + pair.value;
-          }
+        for (var pair in hits.entries) {
+          previousValue[names[pair.key]!] =
+              (previousValue[names[pair.key]!] ?? 0) + pair.value;
+        }
 
-          return previousValue;
-        },
-      ),
+        return previousValue;
+      }),
   };
 }
 
@@ -91,27 +86,23 @@ Map<String, Map<int, int>> lineHitsFromSources(
 
   return {
     for (var entry in sources.entries)
-      entry.key: entry.value.fold(
-        <int, int>{},
-        (previousValue, element) {
-          final hits = getHits(element['hits'] as List);
-          for (var pair in hits.entries) {
-            previousValue[pair.key] =
-                (previousValue[pair.key] ?? 0) + pair.value;
-          }
-          return previousValue;
-        },
-      ),
+      entry.key: entry.value.fold(<int, int>{}, (previousValue, element) {
+        final hits = getHits(element['hits'] as List);
+        for (var pair in hits.entries) {
+          previousValue[pair.key] = (previousValue[pair.key] ?? 0) + pair.value;
+        }
+        return previousValue;
+      }),
   };
 }
 
 extension ListTestExtension on List {
   Map<String, List<Map<dynamic, dynamic>>> sources() => cast<Map>().fold(
-        <String, List<Map>>{},
-        (Map<String, List<Map>> map, value) {
-          final sourceUri = value['source'] as String;
-          map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
-          return map;
-        },
-      );
+    <String, List<Map>>{},
+    (Map<String, List<Map>> map, value) {
+      final sourceUri = value['source'] as String;
+      map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
+      return map;
+    },
+  );
 }

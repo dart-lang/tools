@@ -8,11 +8,13 @@ import 'dart:io';
 import 'collect.dart';
 import 'util.dart';
 
-Future<Map<String, dynamic>> runAndCollect(String scriptPath,
-    {List<String>? scriptArgs,
-    bool checked = false,
-    bool includeDart = false,
-    Duration? timeout}) async {
+Future<Map<String, dynamic>> runAndCollect(
+  String scriptPath, {
+  List<String>? scriptArgs,
+  bool checked = false,
+  bool includeDart = false,
+  Duration? timeout,
+}) async {
   final dartArgs = [
     '--enable-vm-service',
     '--pause_isolates_on_exit',

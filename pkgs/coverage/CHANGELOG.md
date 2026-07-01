@@ -1,6 +1,6 @@
 ## 1.16.0-wip
 
-- Require Dart ^3.8.0.
+- Require Dart ^3.9.0.
 - Support collecting and formatting Web (V8 / Chrome) coverage reports in
   `test_with_coverage` via `-p` / `--platform` flag.
 - Support parsing raw Chrome V8 coverage JSON lists in `HitMap.parseFiles`.

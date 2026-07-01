@@ -20,8 +20,9 @@ final _sampleGeneratedPath = p.join('test', 'test_files', 'test_app.g.dart');
 final _isolateLibPath = p.join('test', 'test_files', 'test_app_isolate.dart');
 
 final _sampleAppFileUri = p.toUri(p.absolute(_sampleAppPath)).toString();
-final _sampleGeneratedFileUri =
-    p.toUri(p.absolute(_sampleGeneratedPath)).toString();
+final _sampleGeneratedFileUri = p
+    .toUri(p.absolute(_sampleGeneratedPath))
+    .toString();
 final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 void main() {
@@ -39,20 +40,41 @@ void main() {
     final sampleAppFuncNames = sampleAppHitMap?.funcNames;
     final sampleAppBranchHits = sampleAppHitMap?.branchHits;
 
-    expect(sampleAppHitLines, containsPair(53, greaterThanOrEqualTo(1)),
-        reason: 'be careful if you modify the test file');
-    expect(sampleAppHitLines, containsPair(57, 0),
-        reason: 'be careful if you modify the test file');
-    expect(sampleAppHitLines, isNot(contains(39)),
-        reason: 'be careful if you modify the test file');
-    expect(sampleAppHitFuncs, containsPair(52, 1),
-        reason: 'be careful if you modify the test file');
-    expect(sampleAppHitFuncs, containsPair(56, 0),
-        reason: 'be careful if you modify the test file');
-    expect(sampleAppFuncNames, containsPair(52, 'usedMethod'),
-        reason: 'be careful if you modify the test file');
-    expect(sampleAppBranchHits, containsPair(48, 1),
-        reason: 'be careful if you modify the test file');
+    expect(
+      sampleAppHitLines,
+      containsPair(53, greaterThanOrEqualTo(1)),
+      reason: 'be careful if you modify the test file',
+    );
+    expect(
+      sampleAppHitLines,
+      containsPair(57, 0),
+      reason: 'be careful if you modify the test file',
+    );
+    expect(
+      sampleAppHitLines,
+      isNot(contains(39)),
+      reason: 'be careful if you modify the test file',
+    );
+    expect(
+      sampleAppHitFuncs,
+      containsPair(52, 1),
+      reason: 'be careful if you modify the test file',
+    );
+    expect(
+      sampleAppHitFuncs,
+      containsPair(56, 0),
+      reason: 'be careful if you modify the test file',
+    );
+    expect(
+      sampleAppFuncNames,
+      containsPair(52, 'usedMethod'),
+      reason: 'be careful if you modify the test file',
+    );
+    expect(
+      sampleAppBranchHits,
+      containsPair(48, 1),
+      reason: 'be careful if you modify the test file',
+    );
   });
 
   test('validate hitMap, old VM without branch coverage', () async {
@@ -68,18 +90,36 @@ void main() {
     final sampleAppHitFuncs = sampleAppHitMap?.funcHits;
     final sampleAppFuncNames = sampleAppHitMap?.funcNames;
 
-    expect(sampleAppHitLines, containsPair(53, greaterThanOrEqualTo(1)),
-        reason: 'be careful if you modify the test file');
-    expect(sampleAppHitLines, containsPair(57, 0),
-        reason: 'be careful if you modify the test file');
-    expect(sampleAppHitLines, isNot(contains(39)),
-        reason: 'be careful if you modify the test file');
-    expect(sampleAppHitFuncs, containsPair(52, 1),
-        reason: 'be careful if you modify the test file');
-    expect(sampleAppHitFuncs, containsPair(56, 0),
-        reason: 'be careful if you modify the test file');
-    expect(sampleAppFuncNames, containsPair(52, 'usedMethod'),
-        reason: 'be careful if you modify the test file');
+    expect(
+      sampleAppHitLines,
+      containsPair(53, greaterThanOrEqualTo(1)),
+      reason: 'be careful if you modify the test file',
+    );
+    expect(
+      sampleAppHitLines,
+      containsPair(57, 0),
+      reason: 'be careful if you modify the test file',
+    );
+    expect(
+      sampleAppHitLines,
+      isNot(contains(39)),
+      reason: 'be careful if you modify the test file',
+    );
+    expect(
+      sampleAppHitFuncs,
+      containsPair(52, 1),
+      reason: 'be careful if you modify the test file',
+    );
+    expect(
+      sampleAppHitFuncs,
+      containsPair(56, 0),
+      reason: 'be careful if you modify the test file',
+    );
+    expect(
+      sampleAppFuncNames,
+      containsPair(52, 'usedMethod'),
+      reason: 'be careful if you modify the test file',
+    );
   });
 
   group('LcovFormatter', () {
@@ -90,8 +130,9 @@ void main() {
       // ignore: deprecated_member_use_from_same_package
       final formatter = LcovFormatter(resolver);
 
-      final res = await formatter
-          .format(hitmap.map((key, value) => MapEntry(key, value.lineHits)));
+      final res = await formatter.format(
+        hitmap.map((key, value) => MapEntry(key, value.lineHits)),
+      );
 
       expect(res, contains(p.absolute(_sampleAppPath)));
       expect(res, contains(p.absolute(_sampleGeneratedPath)));
@@ -154,21 +195,23 @@ void main() {
     });
 
     test(
-        'formatLcov() excludes files matching glob patterns regardless of their'
-        'presence on reportOn list', () async {
-      final hitmap = await _getHitMap();
+      'formatLcov() excludes files matching glob patterns regardless of their'
+      'presence on reportOn list',
+      () async {
+        final hitmap = await _getHitMap();
 
-      final resolver = await Resolver.create(packagePath: '.');
-      final res = hitmap.formatLcov(
-        resolver,
-        reportOn: ['test/'],
-        ignoreGlobs: {Glob('**/*.g.dart')},
-      );
+        final resolver = await Resolver.create(packagePath: '.');
+        final res = hitmap.formatLcov(
+          resolver,
+          reportOn: ['test/'],
+          ignoreGlobs: {Glob('**/*.g.dart')},
+        );
 
-      expect(res, contains(p.absolute(_sampleAppPath)));
-      expect(res, isNot(contains(p.absolute(_sampleGeneratedPath))));
-      expect(res, contains(p.absolute(_isolateLibPath)));
-    });
+        expect(res, contains(p.absolute(_sampleAppPath)));
+        expect(res, isNot(contains(p.absolute(_sampleGeneratedPath))));
+        expect(res, contains(p.absolute(_isolateLibPath)));
+      },
+    );
 
     test('formatLcov() uses paths relative to basePath', () async {
       final hitmap = await _getHitMap();
@@ -177,7 +220,9 @@ void main() {
       final res = hitmap.formatLcov(resolver, basePath: p.absolute('lib'));
 
       expect(
-          res, isNot(contains(p.absolute(p.join('lib', 'src', 'util.dart')))));
+        res,
+        isNot(contains(p.absolute(p.join('lib', 'src', 'util.dart')))),
+      );
       expect(res, contains(p.join('src', 'util.dart')));
     });
   });
@@ -190,8 +235,9 @@ void main() {
       // ignore: deprecated_member_use_from_same_package
       final formatter = PrettyPrintFormatter(resolver, Loader());
 
-      final res = await formatter
-          .format(hitmap.map((key, value) => MapEntry(key, value.lineHits)));
+      final res = await formatter.format(
+        hitmap.map((key, value) => MapEntry(key, value.lineHits)),
+      );
 
       expect(res, contains(p.absolute(_sampleAppPath)));
       expect(res, contains(p.absolute(_sampleGeneratedPath)));
@@ -201,8 +247,11 @@ void main() {
       // be very careful if you change the test file
       expect(res, contains('      0|  return a - b;'));
 
-      expect(res, contains('|  return withTimeout(() async {'),
-          reason: 'be careful if you change lib/src/util.dart');
+      expect(
+        res,
+        contains('|  return withTimeout(() async {'),
+        reason: 'be careful if you change lib/src/util.dart',
+      );
 
       final hitLineRegexp = RegExp(r'\s+(\d+)\|  return a \+ b;');
       final match = hitLineRegexp.allMatches(res).single;
@@ -225,8 +274,11 @@ void main() {
       // be very careful if you change the test file
       expect(res, contains('      0|  return a - b;'));
 
-      expect(res, contains('|  return withTimeout(() async {'),
-          reason: 'be careful if you change lib/src/util.dart');
+      expect(
+        res,
+        contains('|  return withTimeout(() async {'),
+        reason: 'be careful if you change lib/src/util.dart',
+      );
 
       final hitLineRegexp = RegExp(r'\s+(\d+)\|  return a \+ b;');
       final match = hitLineRegexp.allMatches(res).single;
@@ -239,8 +291,11 @@ void main() {
       final hitmap = await _getHitMap();
 
       final resolver = await Resolver.create(packagePath: '.');
-      final res = await hitmap
-          .prettyPrint(resolver, Loader(), reportOn: ['lib/', 'test/']);
+      final res = await hitmap.prettyPrint(
+        resolver,
+        Loader(),
+        reportOn: ['lib/', 'test/'],
+      );
 
       expect(res, contains(p.absolute(_sampleAppPath)));
       expect(res, contains(p.absolute(_sampleGeneratedPath)));
@@ -252,8 +307,11 @@ void main() {
       final hitmap = await _getHitMap();
 
       final resolver = await Resolver.create(packagePath: '.');
-      final res =
-          await hitmap.prettyPrint(resolver, Loader(), reportOn: ['lib/']);
+      final res = await hitmap.prettyPrint(
+        resolver,
+        Loader(),
+        reportOn: ['lib/'],
+      );
 
       expect(res, isNot(contains(p.absolute(_sampleAppPath))));
       expect(res, isNot(contains(p.absolute(_sampleGeneratedPath))));
@@ -280,8 +338,7 @@ void main() {
       );
     });
 
-    test(
-        'prettyPrint() excludes files matching glob patterns regardless of'
+    test('prettyPrint() excludes files matching glob patterns regardless of'
         'their presence on reportOn list', () async {
       final hitmap = await _getHitMap();
 
@@ -302,8 +359,11 @@ void main() {
       final hitmap = await _getHitMap();
 
       final resolver = await Resolver.create(packagePath: '.');
-      final res =
-          await hitmap.prettyPrint(resolver, Loader(), reportFuncs: true);
+      final res = await hitmap.prettyPrint(
+        resolver,
+        Loader(),
+        reportFuncs: true,
+      );
 
       expect(res, contains(p.absolute(_sampleAppPath)));
       expect(res, contains(p.absolute(_sampleGeneratedPath)));
@@ -321,8 +381,11 @@ void main() {
       final hitmap = await _getHitMap();
 
       final resolver = await Resolver.create(packagePath: '.');
-      final res =
-          await hitmap.prettyPrint(resolver, Loader(), reportBranches: true);
+      final res = await hitmap.prettyPrint(
+        resolver,
+        Loader(),
+        reportBranches: true,
+      );
 
       expect(res, contains(p.absolute(_sampleAppPath)));
       expect(res, contains(p.absolute(_sampleGeneratedPath)));
@@ -345,17 +408,27 @@ Future<Map<String, HitMap>> _getHitMap() async {
     '--pause-isolates-on-exit',
     '--enable-vm-service=0',
     '--branch-coverage',
-    _sampleAppPath
+    _sampleAppPath,
   ];
-  final sampleProcess =
-      await TestProcess.start(Platform.resolvedExecutable, sampleAppArgs);
+  final sampleProcess = await TestProcess.start(
+    Platform.resolvedExecutable,
+    sampleAppArgs,
+  );
 
   final serviceUri = await serviceUriFromProcess(sampleProcess.stdoutStream());
 
   // collect hit map.
-  final coverageJson = (await collect(serviceUri, true, true, false, <String>{},
-      functionCoverage: true,
-      branchCoverage: true))['coverage'] as List<Map<String, dynamic>>;
+  final coverageJson =
+      (await collect(
+            serviceUri,
+            true,
+            true,
+            false,
+            <String>{},
+            functionCoverage: true,
+            branchCoverage: true,
+          ))['coverage']
+          as List<Map<String, dynamic>>;
   final hitMap = HitMap.parseJson(coverageJson);
 
   await sampleProcess.shouldExit(0);

@@ -22,9 +22,7 @@ void main() {
         {1: 'abc', 2: 'def'},
         {1: 1, 2: 2, 3: 3},
       ),
-      fileUri('another_nonexistent_file.dart'): HitMap(
-        {1: 1, 2: 2, 3: 3},
-      ),
+      fileUri('another_nonexistent_file.dart'): HitMap({1: 1, 2: 2, 3: 3}),
       fileUri('test/test_files/test_app.dart'): HitMap(
         {1: 1, 2: 2, 3: 3},
         {1: 1, 2: 2, 3: 3},
@@ -67,30 +65,30 @@ void main() {
         {1: 'abc', 2: 'def'},
         {1: 1, 2: 2, 3: 3},
       ),
-      fileUri('another_nonexistent_file.dart'): HitMap(
-        {1: 1, 2: 2, 3: 3},
-      ),
+      fileUri('another_nonexistent_file.dart'): HitMap({1: 1, 2: 2, 3: 3}),
       fileUri('test/test_files/test_app_isolate.dart'): HitMap(
         {
           for (var i = 50; i < 100; ++i)
-            if (!ignores.contains(i)) i: i
+            if (!ignores.contains(i)) i: i,
         },
         {
           for (var i = 50; i < 100; ++i)
-            if (!ignores.contains(i)) i: i
+            if (!ignores.contains(i)) i: i,
         },
         {for (var i = 50; i < 100; ++i) i: '$i'},
         {
           for (var i = 50; i < 100; ++i)
-            if (!ignores.contains(i)) i: i
+            if (!ignores.contains(i)) i: i,
         },
       ),
     };
 
     final resolver = await Resolver.create(packagePath: '.');
 
-    final actual =
-        hitmaps.filterIgnored(ignoredLinesInFilesCache: {}, resolver: resolver);
+    final actual = hitmaps.filterIgnored(
+      ignoredLinesInFilesCache: {},
+      resolver: resolver,
+    );
 
     expect(actual.keys.toList(), expected.keys.toList());
     for (final source in expected.keys) {

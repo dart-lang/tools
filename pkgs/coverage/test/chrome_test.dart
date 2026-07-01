@@ -32,9 +32,13 @@ Future<Uri> sourceUriProvider(String sourceUrl, String scriptId) async =>
 
 void main() {
   test('reports correctly', () async {
-    final preciseCoverage = json.decode(
-        await File('test/test_files/chrome_precise_report.txt')
-            .readAsString()) as List;
+    final preciseCoverage =
+        json.decode(
+              await File(
+                'test/test_files/chrome_precise_report.txt',
+              ).readAsString(),
+            )
+            as List;
 
     final report = await parseChromeCoverage(
       preciseCoverage.cast(),
@@ -43,11 +47,11 @@ void main() {
       sourceUriProvider,
     );
 
-    final sourceReport =
-        (report['coverage'] as List<Map<String, dynamic>>).firstWhere(
-      (Map<String, dynamic> report) =>
-          report['source'].toString().contains('main_test.dart'),
-    );
+    final sourceReport = (report['coverage'] as List<Map<String, dynamic>>)
+        .firstWhere(
+          (Map<String, dynamic> report) =>
+              report['source'].toString().contains('main_test.dart'),
+        );
 
     final expectedHits = {
       7: 1,
@@ -77,9 +81,13 @@ void main() {
   });
 
   test('HitMap.parseFiles parses Chrome coverage reports', () async {
-    final preciseCoverage = json.decode(
-        await File('test/test_files/chrome_precise_report.txt')
-            .readAsString()) as List;
+    final preciseCoverage =
+        json.decode(
+              await File(
+                'test/test_files/chrome_precise_report.txt',
+              ).readAsString(),
+            )
+            as List;
 
     final report = await parseChromeCoverage(
       preciseCoverage.cast(),
@@ -106,9 +114,13 @@ void main() {
   });
 
   test('HitMap.parseFiles handles raw V8 list with providers', () async {
-    final preciseCoverage = json.decode(
-        await File('test/test_files/chrome_precise_report.txt')
-            .readAsString()) as List;
+    final preciseCoverage =
+        json.decode(
+              await File(
+                'test/test_files/chrome_precise_report.txt',
+              ).readAsString(),
+            )
+            as List;
     final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_raw_test_');
     final tempFile = File('${tempDir.path}/raw_v8.json');
     tempFile.writeAsStringSync(jsonEncode(preciseCoverage));
