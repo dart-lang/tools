@@ -315,6 +315,51 @@ void main() {
 
       await expectLater(nextRequest, completes);
     });
+
+    test('throwing in request listener does not corrupt state', () async {
+      var pool = Pool(2);
+      var resource1 = await pool.request();
+      var resource2 = await pool.request();
+
+      var completer1 = Completer<void>();
+      resource1.allowRelease(() => completer1.future);
+      var completer2 = Completer<void>();
+      resource2.allowRelease(() => completer2.future);
+
+      var requestFuture1 = pool.request();
+      var requestFuture2 = pool.request();
+
+      var request1Threw = false;
+      var requestFuture1WithListener = requestFuture1.then((_) {
+        request1Threw = true;
+        throw StateError('Listener 1 threw!');
+      });
+
+      expect(requestFuture1WithListener, throwsA(isA<StateError>()));
+
+      var request2Completed = false;
+      var request2Error = false;
+      unawaited(requestFuture2.then((_) {
+        request2Completed = true;
+      }, onError: (Object e) {
+        request2Error = true;
+      }));
+
+      await Future<void>.delayed(Duration.zero);
+
+      completer1.complete();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(request1Threw, isTrue);
+      expect(request2Completed, isFalse);
+      expect(request2Error, isFalse);
+
+      completer2.complete();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(request2Completed, isTrue);
+      expect(request2Error, isFalse);
+    });
   });
 
   group('PoolResource', () {
