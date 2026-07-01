@@ -1,0 +1,12 @@
+# This is the root comment
+a:
+  # comment in a
+  b:
+    c: # inline comment in c
+      d:
+        # Before e
+        e:
+          - f:
+              # Before g
+              - g:
+                  - h: 42 # end comment
