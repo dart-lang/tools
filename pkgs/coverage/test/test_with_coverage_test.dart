@@ -32,11 +32,6 @@ final _env = {'PUB_CACHE': _pubCachePathInTestPkgSubDir};
 
 const _testPackageName = 'coverage_integration_test_for_test_with_coverage';
 
-final _supportsBranchCoverage = () {
-  final result = Process.runSync(Platform.executable, ['test', '--help']);
-  return (result.stdout as String).contains('branch-coverage');
-}();
-
 int _port = 9300;
 
 Iterable<File> _dartFiles(String dir) =>
@@ -201,10 +196,7 @@ dependency_overrides:
       '${_port++}',
     ]);
     await process.shouldExit(0);
-  },
-      skip: _supportsBranchCoverage
-          ? null
-          : 'dart test does not support --branch-coverage on this SDK');
+  });
   test(
       'dart run bin/test_with_coverage.dart -b --fail-under fails'
       'when coverage is below threshold', () async {
@@ -217,10 +209,7 @@ dependency_overrides:
       '${_port++}',
     ]);
     await process.shouldExit(1);
-  },
-      skip: _supportsBranchCoverage
-          ? null
-          : 'dart test does not support --branch-coverage on this SDK');
+  });
 
   test('dart run bin/test_with_coverage.dart -p chrome',
       onPlatform: const {'windows': Skip('Chrome tests skipped on Windows')},
