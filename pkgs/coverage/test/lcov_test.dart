@@ -42,37 +42,37 @@ void main() {
 
     expect(
       sampleAppHitLines,
-      containsPair(53, greaterThanOrEqualTo(1)),
+      containsPair(55, greaterThanOrEqualTo(1)),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppHitLines,
-      containsPair(57, 0),
+      containsPair(59, 0),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppHitLines,
-      isNot(contains(39)),
+      isNot(contains(42)),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppHitFuncs,
-      containsPair(52, 1),
+      containsPair(55, 1),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppHitFuncs,
-      containsPair(56, 0),
+      containsPair(59, 0),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppFuncNames,
-      containsPair(52, 'usedMethod'),
+      containsPair(55, 'usedMethod'),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppBranchHits,
-      containsPair(48, 1),
+      containsPair(51, 1),
       reason: 'be careful if you modify the test file',
     );
   });
@@ -92,32 +92,32 @@ void main() {
 
     expect(
       sampleAppHitLines,
-      containsPair(53, greaterThanOrEqualTo(1)),
+      containsPair(55, greaterThanOrEqualTo(1)),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppHitLines,
-      containsPair(57, 0),
+      containsPair(59, 0),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppHitLines,
-      isNot(contains(39)),
+      isNot(contains(42)),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppHitFuncs,
-      containsPair(52, 1),
+      containsPair(55, 1),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppHitFuncs,
-      containsPair(56, 0),
+      containsPair(59, 0),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppFuncNames,
-      containsPair(52, 'usedMethod'),
+      containsPair(55, 'usedMethod'),
       reason: 'be careful if you modify the test file',
     );
   });

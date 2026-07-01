@@ -111,7 +111,9 @@ class IsolatePausedListener {
           try {
             await _service.resume(isolateRef.id!);
           } on SentinelException catch (_) {
-          } on RPCError catch (_) {}
+          } on RPCError catch (e) {
+            if (e.code != 105 && e.code != 106) rethrow;
+          }
         }
       }
     }

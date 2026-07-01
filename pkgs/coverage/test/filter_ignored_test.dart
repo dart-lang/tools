@@ -39,14 +39,12 @@ void main() {
 
     // Lines ignored in test/test_files/test_app_isolate.dart.
     const ignores = [
-      52,
       54,
-      55,
       56,
       57,
       58,
-      63,
-      64,
+      59,
+      60,
       65,
       66,
       67,
@@ -56,6 +54,8 @@ void main() {
       71,
       72,
       73,
+      74,
+      75,
     ];
 
     final expected = {

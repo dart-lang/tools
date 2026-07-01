@@ -94,10 +94,10 @@ void checkIgnoredLinesInFilesCache(
   expect(ignoredLinesInFilesCache[packageUtilKey], isEmpty);
   expect(ignoredLinesInFilesCache[testAppKey], null /* means whole file */);
   expect(ignoredLinesInFilesCache[testAppIsolateKey], [
-    [52, 52],
-    [54, 58],
-    [63, 66],
-    [67, 73],
+    [54, 54],
+    [56, 60],
+    [65, 68],
+    [69, 75],
   ]);
 }
 
@@ -121,15 +121,16 @@ void checkHitmap(Map<String, HitMap> hitMap) {
     38: 1,
     39: 1,
     41: 1,
-    42: 4,
-    43: 2,
-    44: 1,
-    45: 3,
-    46: 1,
-    49: 1,
-    50: 1,
-    60: 1,
-    61: 1,
+    42: 1,
+    43: 3,
+    44: 2,
+    45: 1,
+    46: 3,
+    47: 1,
+    51: 1,
+    52: 1,
+    62: 1,
+    63: 1,
   };
 
   expect(actualLineHits, expectedLineHits);
