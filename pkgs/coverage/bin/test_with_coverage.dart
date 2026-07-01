@@ -174,7 +174,12 @@ Future<void> main(List<String> arguments) async {
   }
 
   final pkgConfig = await findPackageConfig(Directory(flags.packageDir));
-  if (pkgConfig != null) {
+  if (pkgConfig == null) {
+    stderr.writeln(
+      'warning: package_config.json was not found for ${flags.packageDir}. '
+      'Make sure to run "dart pub get" in the package directory.',
+    );
+  } else {
     final testPkg = pkgConfig['test'] ?? pkgConfig['test_core'];
     if (testPkg == null) {
       stderr.writeln(
@@ -305,8 +310,7 @@ Future<void> main(List<String> arguments) async {
                     if (package != null) {
                       return uri.toString().startsWith(package.root.toString());
                     }
-                    return uri.path.contains('/$scope/lib/') ||
-                        uri.path.contains('/$scope/');
+                    return uri.path.contains('/$scope/');
                   }));
           if (isIncluded) {
             allCoverage.add(hitmapToJson(map, uri));
