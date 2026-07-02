@@ -11,15 +11,15 @@ import 'package:path/path.dart' as p;
 class Resolver {
   @Deprecated('Use Resolver.create')
   Resolver({this.packagesPath, this.sdkRoot})
-      : _packages = packagesPath != null ? _parsePackages(packagesPath) : null,
-        packagePath = null;
+    : _packages = packagesPath != null ? _parsePackages(packagesPath) : null,
+      packagePath = null;
 
-  Resolver._(
-      {this.packagesPath,
-      this.packagePath,
-      this.sdkRoot,
-      Map<String, Uri>? packages})
-      : _packages = packages;
+  Resolver._({
+    this.packagesPath,
+    this.packagePath,
+    this.sdkRoot,
+    Map<String, Uri>? packages,
+  }) : _packages = packages;
 
   static Future<Resolver> create({
     String? packagesPath,
@@ -63,11 +63,7 @@ class Resolver {
         }
         // Canonicalize path. For instance: _collection-dev => _collection_dev.
         path = path.replaceAll('-', '_');
-        final pathSegments = [
-          sdkRoot,
-          path,
-          ...uri.pathSegments.sublist(1),
-        ];
+        final pathSegments = [sdkRoot, path, ...uri.pathSegments.sublist(1)];
         filePath = p.joinAll(pathSegments);
       } else {
         // Resolve 'dart:something' to be something/something.dart in the SDK.
@@ -111,10 +107,12 @@ class Resolver {
   static Map<String, Uri> _parsePackages(String packagesPath) {
     final content = File(packagesPath).readAsStringSync();
     final packagesUri = p.toUri(packagesPath);
-    final parsed =
-        PackageConfig.parseString(content, Uri.base.resolveUri(packagesUri));
+    final parsed = PackageConfig.parseString(
+      content,
+      Uri.base.resolveUri(packagesUri),
+    );
     return {
-      for (var package in parsed.packages) package.name: package.packageUriRoot
+      for (var package in parsed.packages) package.name: package.packageUriRoot,
     };
   }
 
@@ -122,7 +120,7 @@ class Resolver {
     final parsed = await findPackageConfig(Directory(packagePath));
     if (parsed == null) return null;
     return {
-      for (var package in parsed.packages) package.name: package.packageUriRoot
+      for (var package in parsed.packages) package.name: package.packageUriRoot,
     };
   }
 }
@@ -148,8 +146,10 @@ class BazelResolver extends Resolver {
       return _resolveBazelPackage(uri.pathSegments);
     }
     if (uri.scheme == 'file') {
-      final runfilesPathSegment =
-          '.runfiles/$workspacePath'.replaceAll(RegExp(r'/*$'), '/');
+      final runfilesPathSegment = '.runfiles/$workspacePath'.replaceAll(
+        RegExp(r'/*$'),
+        '/',
+      );
       final runfilesPos = uri.path.indexOf(runfilesPathSegment);
       if (runfilesPos >= 0) {
         final pathStart = runfilesPos + runfilesPathSegment.length;

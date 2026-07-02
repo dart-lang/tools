@@ -56,7 +56,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        sdk: [3.6, dev]
+        sdk: [3.9, dev]
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
@@ -68,6 +68,7 @@ jobs:
       - name: Run VM tests
         run: dart test --platform vm
         if: always() && steps.install.outcome == 'success'
+
 
   coverage:
     needs: test

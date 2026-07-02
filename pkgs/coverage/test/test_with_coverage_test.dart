@@ -32,15 +32,11 @@ final _env = {'PUB_CACHE': _pubCachePathInTestPkgSubDir};
 
 const _testPackageName = 'coverage_integration_test_for_test_with_coverage';
 
-int _port = 9300;
-
 Iterable<File> _dartFiles(String dir) =>
     Directory(p.join(_testPkgDirPath, dir)).listSync().whereType<File>();
 
-String _fixTestFile(String content) => content.replaceAll(
-      "import '../lib/",
-      "import 'package:$_testPackageName/",
-    );
+String _fixTestFile(String content) =>
+    content.replaceAll("import '../lib/", "import 'package:$_testPackageName/");
 
 void main() {
   setUpAll(() async {
@@ -54,8 +50,9 @@ void main() {
       ]).create();
     }
 
-    var pubspecContent =
-        File(p.join(_testPkgDirPath, 'pubspec.yaml')).readAsStringSync();
+    var pubspecContent = File(
+      p.join(_testPkgDirPath, 'pubspec.yaml'),
+    ).readAsStringSync();
 
     expect(
       pubspecContent.replaceAll('\r\n', '\n'),
@@ -66,13 +63,32 @@ dependency_overrides:
 '''),
     );
 
-    pubspecContent =
-        pubspecContent.replaceFirst('path: ../../', 'path: $_pkgDir');
+    pubspecContent = pubspecContent.replaceFirst(
+      'path: ../../',
+      'path: $_pkgDir',
+    );
 
     await d.file('pubspec.yaml', pubspecContent).create();
 
     final localPub = await _run(['pub', 'get']);
     await localPub.shouldExit(0);
+  });
+
+  tearDownAll(() async {
+    if (Platform.isWindows) {
+      final sandboxDir = Directory(d.sandbox);
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        try {
+          if (sandboxDir.existsSync()) {
+            for (final entity in sandboxDir.listSync()) {
+              entity.deleteSync(recursive: true);
+            }
+          }
+          break;
+        } catch (_) {}
+      }
+    }
   });
 
   test('dart run bin/test_with_coverage.dart -f', () async {
@@ -81,14 +97,11 @@ dependency_overrides:
     final sources = list.sources();
     final functionHits = functionInfoFromSources(sources);
 
-    expect(
-      functionHits['package:$_testPackageName/validate_lib.dart'],
-      {
-        'product': 1,
-        'sum': 1,
-        'evaluateScore': 1,
-      },
-    );
+    expect(functionHits['package:$_testPackageName/validate_lib.dart'], {
+      'product': 1,
+      'sum': 1,
+      'evaluateScore': 1,
+    });
   });
 
   test('dart run bin/test_with_coverage.dart -f -- -N sum', () async {
@@ -100,15 +113,11 @@ dependency_overrides:
     final sources = list.sources();
     final functionHits = functionInfoFromSources(sources);
 
-    expect(
-      functionHits['package:$_testPackageName/validate_lib.dart'],
-      {
-        'product': 0,
-        'sum': 1,
-        'evaluateScore': 0,
-      },
-      reason: 'only `sum` tests should be run',
-    );
+    expect(functionHits['package:$_testPackageName/validate_lib.dart'], {
+      'product': 0,
+      'sum': 1,
+      'evaluateScore': 0,
+    }, reason: 'only `sum` tests should be run');
   });
 
   test('dart run coverage:test_with_coverage', () async {
@@ -116,17 +125,20 @@ dependency_overrides:
   });
 
   test('dart pub global run coverage:test_with_coverage', () async {
-    final globalPub =
-        await _run(['pub', 'global', 'activate', '-s', 'path', _pkgDir]);
+    final globalPub = await _run([
+      'pub',
+      'global',
+      'activate',
+      '-s',
+      'path',
+      _pkgDir,
+    ]);
     await globalPub.shouldExit(0);
 
-    await _runTest(
-      ['pub', 'global', 'run', 'coverage:test_with_coverage'],
-    );
+    await _runTest(['pub', 'global', 'run', 'coverage:test_with_coverage']);
   });
 
-  test(
-      'dart run bin/test_with_coverage.dart --fail-under succeeds'
+  test('dart run bin/test_with_coverage.dart --fail-under succeeds'
       'when coverage meets threshold', () async {
     // This should pass as coverage=100% when all tests run.
     final process = await _run([
@@ -134,12 +146,11 @@ dependency_overrides:
       _testWithCoveragePath,
       '--fail-under=100',
       '--port',
-      '${_port++}',
+      '0',
     ]);
     await process.shouldExit(0);
   });
-  test(
-      'dart run bin/test_with_coverage.dart --fail-under fails'
+  test('dart run bin/test_with_coverage.dart --fail-under fails'
       'when coverage is below threshold', () async {
     // This should throw an exit(1) as coverage =27.27% when only the `sum` test
     // is run i.e. out of 11 lines only 3 lines i.e. [5,7,8]will have hits>0.
@@ -148,15 +159,14 @@ dependency_overrides:
       _testWithCoveragePath,
       '--fail-under=90',
       '--port',
-      '${_port++}',
+      '0',
       '--',
       '-N',
       'sum',
     ]);
     await process.shouldExit(1);
   });
-  test(
-      'dart run bin/test_with_coverage.dart -b --fail-under succeeds'
+  test('dart run bin/test_with_coverage.dart -b --fail-under succeeds'
       'when coverage meets threshold', () async {
     // This should pass as total lines+branches covered=20 and total lines(11)+
     // branches covered(10)=21 => percentage_covered=95.23.
@@ -166,50 +176,65 @@ dependency_overrides:
       '-b',
       '--fail-under=90',
       '--port',
-      '${_port++}',
+      '0',
     ]);
     await process.shouldExit(0);
   });
-  test(
-      'dart run bin/test_with_coverage.dart -b --fail-under fails'
+  test('dart run bin/test_with_coverage.dart -b --fail-under fails'
       'when coverage is below threshold', () async {
-    // This should throw an exit(1) as percentage_covered=95.23 .
     final process = await _run([
       'run',
       _testWithCoveragePath,
       '-b',
       '--fail-under=99',
       '--port',
-      '${_port++}',
+      '0',
     ]);
     await process.shouldExit(1);
   });
+
+  test(
+    'dart run bin/test_with_coverage.dart -p chrome',
+    onPlatform: const {'windows': Skip('Chrome tests skipped on Windows')},
+    timeout: const Timeout(Duration(minutes: 5)),
+    () async {
+      final list = await _runTest([
+        'run',
+        _testWithCoveragePath,
+        '-p',
+        'chrome',
+      ]);
+      final sources = list.sources();
+      final lineHits = lineHitsFromSources(sources);
+
+      final libHits = lineHits['package:$_testPackageName/validate_lib.dart'];
+      expect(libHits, isNotNull);
+      expect(libHits![6], greaterThanOrEqualTo(1));
+      expect(libHits[14], greaterThanOrEqualTo(1));
+      expect(libHits[22], greaterThanOrEqualTo(1));
+    },
+  );
 }
 
 Future<TestProcess> _run(List<String> args) => TestProcess.start(
-      Platform.executable,
-      args,
-      workingDirectory: d.sandbox,
-      environment: _env,
-    );
+  Platform.executable,
+  args,
+  workingDirectory: d.sandbox,
+  environment: _env,
+);
 
 Future<List<Map<String, dynamic>>> _runTest(
   List<String> invokeArgs, {
   List<String>? extraArgs,
 }) async {
-  final process = await _run([
-    ...invokeArgs,
-    '--port',
-    '${_port++}',
-    ...?extraArgs,
-  ]);
+  final process = await _run([...invokeArgs, '--port', '0', ...?extraArgs]);
 
   await process.shouldExit(0);
 
-  await d.dir(
-    'coverage',
-    [d.file('coverage.json', isNotEmpty), d.file('lcov.info', isNotEmpty)],
-  ).validate();
+  await d.dir('coverage', [
+    d.file('coverage.json', isNotEmpty),
+    d.file('lcov.info', isNotEmpty),
+  ]).validate();
 
   final coverageDataFile = File(p.join(d.sandbox, 'coverage', 'coverage.json'));
 

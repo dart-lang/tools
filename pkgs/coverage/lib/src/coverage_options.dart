@@ -17,30 +17,40 @@ class CoverageOptions {
   });
 
   factory CoverageOptions.fromConfig(
-      Config options, CoverageOptions defaultOptions, String? optionsFilePath) {
-    var outputDirectory = options.optionalString('output_directory') ??
+    Config options,
+    CoverageOptions defaultOptions,
+    String? optionsFilePath,
+  ) {
+    var outputDirectory =
+        options.optionalString('output_directory') ??
         defaultOptions.outputDirectory;
-    var packageDirectory = options.optionalString('package_directory') ??
+    var packageDirectory =
+        options.optionalString('package_directory') ??
         defaultOptions.packageDirectory;
 
     if (optionsFilePath != null) {
       if (outputDirectory != null && !path.isAbsolute(outputDirectory)) {
         outputDirectory = path.normalize(
-            path.absolute(path.dirname(optionsFilePath), outputDirectory));
+          path.absolute(path.dirname(optionsFilePath), outputDirectory),
+        );
       }
       if (!path.isAbsolute(packageDirectory)) {
         packageDirectory = path.normalize(
-            path.absolute(path.dirname(optionsFilePath), packageDirectory));
+          path.absolute(path.dirname(optionsFilePath), packageDirectory),
+        );
       }
     }
 
     return CoverageOptions(
       outputDirectory: outputDirectory,
-      scopeOutput: options.optionalStringList('scope_output') ??
+      scopeOutput:
+          options.optionalStringList('scope_output') ??
           defaultOptions.scopeOutput,
-      functionCoverage: options.optionalBool('function_coverage') ??
+      functionCoverage:
+          options.optionalBool('function_coverage') ??
           defaultOptions.functionCoverage,
-      branchCoverage: options.optionalBool('branch_coverage') ??
+      branchCoverage:
+          options.optionalBool('branch_coverage') ??
           defaultOptions.branchCoverage,
       packageDirectory: packageDirectory,
       testScript:
@@ -57,9 +67,7 @@ class CoverageOptions {
 }
 
 class CoverageOptionsProvider {
-  CoverageOptionsProvider({
-    String? filePath,
-  }) {
+  CoverageOptionsProvider({String? filePath}) {
     final file = _getOptionsFile(filePath);
     final fileContents = file?.readAsStringSync();
 
@@ -69,8 +77,11 @@ class CoverageOptionsProvider {
       fileSourceUri: file?.uri,
     );
 
-    coverageOptions =
-        CoverageOptions.fromConfig(options, defaultOptions, optionsFilePath);
+    coverageOptions = CoverageOptions.fromConfig(
+      options,
+      defaultOptions,
+      optionsFilePath,
+    );
   }
 
   late final CoverageOptions coverageOptions;
@@ -80,8 +91,9 @@ class CoverageOptionsProvider {
   File? _getOptionsFile(String? filePath) {
     filePath ??= findOptionsFilePath();
 
-    optionsFilePath =
-        filePath != null ? path.normalize(path.absolute(filePath)) : null;
+    optionsFilePath = filePath != null
+        ? path.normalize(path.absolute(filePath))
+        : null;
 
     if (optionsFilePath == null) {
       return null;

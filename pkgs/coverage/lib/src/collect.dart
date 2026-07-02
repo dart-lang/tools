@@ -53,14 +53,19 @@ const _debugTokenPositions = bool.fromEnvironment('DEBUG_COVERAGE');
 ///
 /// [serviceOverrideForTesting] is for internal testing only, and should not be
 /// set by users.
-Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
-    bool waitPaused, bool includeDart, Set<String>? scopedOutput,
-    {Set<String>? isolateIds,
-    Duration? timeout,
-    bool functionCoverage = false,
-    bool branchCoverage = false,
-    Map<String, Set<int>>? coverableLineCache,
-    VmService? serviceOverrideForTesting}) async {
+Future<Map<String, dynamic>> collect(
+  Uri serviceUri,
+  bool resume,
+  bool waitPaused,
+  bool includeDart,
+  Set<String>? scopedOutput, {
+  Set<String>? isolateIds,
+  Duration? timeout,
+  bool functionCoverage = false,
+  bool branchCoverage = false,
+  Map<String, Set<int>>? coverableLineCache,
+  VmService? serviceOverrideForTesting,
+}) async {
   scopedOutput ??= <String>{};
 
   late VmService service;
@@ -72,37 +77,49 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
         serviceUri.pathSegments.where((c) => c.isNotEmpty).toList()..add('ws');
     final uri = serviceUri.replace(scheme: 'ws', pathSegments: pathSegments);
 
-    await retry(() async {
-      try {
-        final options = const CompressionOptions(enabled: false);
-        final socket = await WebSocket.connect('$uri', compression: options);
-        final controller = StreamController<String>();
-        socket.listen((data) => controller.add(data as String), onDone: () {
-          controller.close();
-          service.dispose();
-        });
-        service = VmService(controller.stream, socket.add,
-            log: StdoutLog(), disposeHandler: socket.close);
-        await service.getVM().timeout(_retryInterval);
-      } on TimeoutException {
-        // The signature changed in vm_service version 6.0.0.
-        // ignore: await_only_futures
-        await service.dispose();
-        rethrow;
-      }
-    }, _retryInterval, timeout: timeout);
+    await retry(
+      () async {
+        try {
+          final options = const CompressionOptions(enabled: false);
+          final socket = await WebSocket.connect('$uri', compression: options);
+          final controller = StreamController<String>();
+          socket.listen(
+            (data) => controller.add(data as String),
+            onDone: () {
+              controller.close();
+              service.dispose();
+            },
+          );
+          service = VmService(
+            controller.stream,
+            socket.add,
+            log: StdoutLog(),
+            disposeHandler: socket.close,
+          );
+          await service.getVM().timeout(_retryInterval);
+        } on TimeoutException {
+          // The signature changed in vm_service version 6.0.0.
+          // ignore: await_only_futures
+          await service.dispose();
+          rethrow;
+        }
+      },
+      _retryInterval,
+      timeout: timeout,
+    );
   }
 
   try {
     return await _getAllCoverage(
-        service,
-        includeDart,
-        functionCoverage,
-        branchCoverage,
-        scopedOutput,
-        isolateIds,
-        coverableLineCache,
-        waitPaused);
+      service,
+      includeDart,
+      functionCoverage,
+      branchCoverage,
+      scopedOutput,
+      isolateIds,
+      coverableLineCache,
+      waitPaused,
+    );
   } finally {
     if (resume && !waitPaused) {
       await _resumeIsolates(service);
@@ -114,14 +131,15 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
 }
 
 Future<Map<String, dynamic>> _getAllCoverage(
-    VmService service,
-    bool includeDart,
-    bool functionCoverage,
-    bool branchCoverage,
-    Set<String> scopedOutput,
-    Set<String>? isolateIds,
-    Map<String, Set<int>>? coverableLineCache,
-    bool waitPaused) async {
+  VmService service,
+  bool includeDart,
+  bool functionCoverage,
+  bool branchCoverage,
+  Set<String> scopedOutput,
+  Set<String>? isolateIds,
+  Map<String, Set<int>>? coverableLineCache,
+  bool waitPaused,
+) async {
   final allCoverage = <Map<String, dynamic>>[];
 
   final sourceReportKinds = [
@@ -162,28 +180,32 @@ Future<Map<String, dynamic>> _getAllCoverage(
       );
     } on SentinelException {
       return;
+    } on RPCError {
+      return;
     }
 
     final coverage = await _processSourceReport(
-        service,
-        isolateRef,
-        isolateReport,
-        includeDart,
-        functionCoverage,
-        branchCoverage,
-        coverableLineCache,
-        scopedOutput);
+      service,
+      isolateRef,
+      isolateReport,
+      includeDart,
+      functionCoverage,
+      branchCoverage,
+      coverableLineCache,
+      scopedOutput,
+    );
     allCoverage.addAll(coverage);
   }
 
   if (waitPaused) {
-    await IsolatePausedListener(service,
-            (IsolateRef isolateRef, bool isLastIsolateInGroup) async {
+    await IsolatePausedListener(service, (
+      IsolateRef isolateRef,
+      bool isLastIsolateInGroup,
+    ) async {
       if (isLastIsolateInGroup) {
         await collectIsolate(isolateRef);
       }
-    }, stderr.writeln)
-        .waitUntilAllExited();
+    }, stderr.writeln).waitUntilAllExited();
   } else {
     for (final isolateRef in await getAllIsolates(service)) {
       await collectIsolate(isolateRef);
@@ -200,12 +222,14 @@ Future _resumeIsolates(VmService service) async {
     // Guard against sync as well as async errors: sync - when we are writing
     // message to the socket, the socket might be closed; async - when we are
     // waiting for the response, the socket again closes.
-    futures.add(Future.sync(() async {
-      final isolate = await service.getIsolate(isolateRef.id!);
-      if (isolate.pauseEvent!.kind != EventKind.kResume) {
-        await service.resume(isolateRef.id!);
-      }
-    }));
+    futures.add(
+      Future.sync(() async {
+        final isolate = await service.getIsolate(isolateRef.id!);
+        if (isolate.pauseEvent!.kind != EventKind.kResume) {
+          await service.resume(isolateRef.id!);
+        }
+      }),
+    );
   }
   try {
     await Future.wait(futures);
@@ -240,14 +264,15 @@ int? _getLineFromTokenPos(Script script, int tokenPos) {
 
 /// Returns a JSON coverage list backward-compatible with pre-1.16.0 SDKs.
 Future<List<Map<String, dynamic>>> _processSourceReport(
-    VmService service,
-    IsolateRef isolateRef,
-    SourceReport report,
-    bool includeDart,
-    bool functionCoverage,
-    bool branchCoverage,
-    Map<String, Set<int>>? coverableLineCache,
-    Set<String> scopedOutput) async {
+  VmService service,
+  IsolateRef isolateRef,
+  SourceReport report,
+  bool includeDart,
+  bool functionCoverage,
+  bool branchCoverage,
+  Map<String, Set<int>>? coverableLineCache,
+  Set<String> scopedOutput,
+) async {
   final hitMaps = <Uri, HitMap>{};
   final scripts = <ScriptRef, Script>{};
   final libraries = <LibraryRef>{};
@@ -258,19 +283,35 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
       return null;
     }
     if (!scripts.containsKey(scriptRef)) {
-      scripts[scriptRef] =
-          await service.getObject(isolateRef.id!, scriptRef.id!) as Script;
+      try {
+        scripts[scriptRef] =
+            await service.getObject(isolateRef.id!, scriptRef.id!) as Script;
+      } on SentinelException {
+        return null;
+      } on RPCError {
+        return null;
+      }
     }
     return scripts[scriptRef];
   }
 
   HitMap getHitMap(Uri scriptUri) => hitMaps.putIfAbsent(
-      scriptUri,
-      () => HitMap.empty(
-          functionCoverage: functionCoverage, branchCoverage: branchCoverage));
+    scriptUri,
+    () => HitMap.empty(
+      functionCoverage: functionCoverage,
+      branchCoverage: branchCoverage,
+    ),
+  );
 
   Future<void> processFunction(FuncRef funcRef) async {
-    final func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;
+    late final Func func;
+    try {
+      func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;
+    } on SentinelException {
+      return;
+    } on RPCError {
+      return;
+    }
     if ((func.implicit ?? false) || (func.isAbstract ?? false)) {
       return;
     }
@@ -289,8 +330,9 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
     if (line == null) {
       if (_debugTokenPositions) {
         stderr.writeln(
-            'tokenPos $tokenPos in function ${funcRef.name} has no line '
-            'mapping for script ${script.uri!}');
+          'tokenPos $tokenPos in function ${funcRef.name} has no line '
+          'mapping for script ${script.uri!}',
+        );
       }
       return;
     }
@@ -314,8 +356,10 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
     // the lines that don't have a hit. Afterwards, add all the lines that were
     // hit or missed to the cache, so that the next coverage collection won't
     // need to compile this library.
-    final coverableLines =
-        coverableLineCache?.putIfAbsent(scriptUriString, () => <int>{});
+    final coverableLines = coverableLineCache?.putIfAbsent(
+      scriptUriString,
+      () => <int>{},
+    );
 
     // Not returned in scripts section of source report.
     if (scriptUri.scheme == 'evaluate') continue;
@@ -413,7 +457,10 @@ extension _MapExtension<T> on Map<T, int> {
 }
 
 Future<String> _getFuncName(
-    VmService service, IsolateRef isolateRef, Func func) async {
+  VmService service,
+  IsolateRef isolateRef,
+  Func func,
+) async {
   if (func.name == null) {
     return '${func.type}:${func.location!.tokenPos}';
   }

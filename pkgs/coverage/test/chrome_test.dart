@@ -32,9 +32,13 @@ Future<Uri> sourceUriProvider(String sourceUrl, String scriptId) async =>
 
 void main() {
   test('reports correctly', () async {
-    final preciseCoverage = json.decode(
-        await File('test/test_files/chrome_precise_report.txt')
-            .readAsString()) as List;
+    final preciseCoverage =
+        json.decode(
+              await File(
+                'test/test_files/chrome_precise_report.txt',
+              ).readAsString(),
+            )
+            as List;
 
     final report = await parseChromeCoverage(
       preciseCoverage.cast(),
@@ -43,11 +47,11 @@ void main() {
       sourceUriProvider,
     );
 
-    final sourceReport =
-        (report['coverage'] as List<Map<String, dynamic>>).firstWhere(
-      (Map<String, dynamic> report) =>
-          report['source'].toString().contains('main_test.dart'),
-    );
+    final sourceReport = (report['coverage'] as List<Map<String, dynamic>>)
+        .firstWhere(
+          (Map<String, dynamic> report) =>
+              report['source'].toString().contains('main_test.dart'),
+        );
 
     final expectedHits = {
       7: 1,
@@ -73,6 +77,66 @@ void main() {
     expect(hitMap.length, equals(expectedHits.keys.length * 2));
     for (var i = 0; i < hitMap.length; i += 2) {
       expect(expectedHits[hitMap[i]], equals(hitMap[i + 1]));
+    }
+  });
+
+  test('HitMap.parseFiles parses Chrome coverage reports', () async {
+    final preciseCoverage =
+        json.decode(
+              await File(
+                'test/test_files/chrome_precise_report.txt',
+              ).readAsString(),
+            )
+            as List;
+
+    final report = await parseChromeCoverage(
+      preciseCoverage.cast(),
+      sourceProvider,
+      sourceMapProvider,
+      sourceUriProvider,
+    );
+
+    final tempDir = Directory.systemTemp.createTempSync('hitmap_chrome_test_');
+    final tempFile = File('${tempDir.path}/report.chrome.json');
+    tempFile.writeAsStringSync(jsonEncode(report));
+    try {
+      final hitmap = await HitMap.parseFiles([tempFile]);
+      expect(hitmap.keys, anyElement(contains('main_test.dart')));
+      final key = hitmap.keys.firstWhere((k) => k.contains('main_test.dart'));
+      final fileHitMap = hitmap[key]!;
+      expect(fileHitMap.lineHits[7], equals(1));
+      expect(fileHitMap.lineHits[11], equals(1));
+      expect(fileHitMap.lineHits[17], equals(0));
+      expect(fileHitMap.lineHits[36], equals(1));
+    } finally {
+      tempDir.deleteSync(recursive: true);
+    }
+  });
+
+  test('HitMap.parseFiles handles raw V8 list with providers', () async {
+    final preciseCoverage =
+        json.decode(
+              await File(
+                'test/test_files/chrome_precise_report.txt',
+              ).readAsString(),
+            )
+            as List;
+    final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_raw_test_');
+    final tempFile = File('${tempDir.path}/raw_v8.json');
+    tempFile.writeAsStringSync(jsonEncode(preciseCoverage));
+    try {
+      final hitmap = await HitMap.parseFiles(
+        [tempFile],
+        sourceProvider: (scriptId) async => sourceProvider(scriptId),
+        sourceMapProvider: (scriptId) async => sourceMapProvider(scriptId),
+      );
+      expect(hitmap.keys, anyElement(contains('main_test.dart')));
+      final key = hitmap.keys.firstWhere((k) => k.contains('main_test.dart'));
+      final fileHitMap = hitmap[key]!;
+      expect(fileHitMap.lineHits[7], equals(1));
+      expect(fileHitMap.lineHits[11], equals(1));
+    } finally {
+      tempDir.deleteSync(recursive: true);
     }
   });
 }
