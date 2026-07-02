@@ -55,8 +55,6 @@ jobs:
       matrix:
         # Add macos-latest and/or windows-latest if relevant for this package.
         os: [ubuntu-latest]
-        # Have to put `'3.10'` instead of `3.10` because of
-        # https://github.com/dart-lang/setup-dart/issues/161
         sdk: ['3.10', dev]
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
