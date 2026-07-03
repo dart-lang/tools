@@ -1,0 +1,9 @@
+single_quotes: 'It''s a beautiful day'
+double_quotes_escaped: "Line 1\nLine 2\t\u263A"
+folded_keep: >+
+  Keep trailing
+  newlines
+
+literal_strip: |-
+  Strip trailing
+  newlines

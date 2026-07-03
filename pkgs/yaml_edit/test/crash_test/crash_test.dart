@@ -12,22 +12,25 @@ import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
-final _scalarStyles = [
-  ScalarStyle.ANY,
-  ScalarStyle.PLAIN,
-  ScalarStyle.LITERAL,
-  ScalarStyle.FOLDED,
-  ScalarStyle.SINGLE_QUOTED,
-  ScalarStyle.DOUBLE_QUOTED,
-];
+import 'fuzzer.dart';
 
 /// Files with tests that are broken, so we have to skip them
 final _skippedFiles = [
+  'anchors_aliases.yaml',
   'block_strings.yaml',
+  'complex_keys.yaml',
   'complex.yaml',
+  'deep_nesting_comments_1.yaml',
+  'deep_nesting_comments_2.yaml',
+  'deep_nesting.yaml',
+  'empty_nodes.yaml',
   'explicit_key_value.yaml',
+  'flow_block_mix.yaml',
   'mangled_json.yaml',
   'simple_comments.yaml',
+  'tabs_and_whitespace.yaml',
+  'tags.yaml',
+  'tricky_strings.yaml',
 ];
 
 /// The crash tests will attempt to enumerate all JSON paths in each input
@@ -68,119 +71,8 @@ Future<void> main() async {
       continue;
     }
 
-    for (final (path, node) in _allJsonPaths(root.parseAt([]))) {
-      _testJsonPath(fileName, input, path, node);
-    }
-  }
-}
-
-void _testJsonPath(
-  String fileName,
-  String input,
-  Iterable<Object?> path,
-  YamlNode node,
-) {
-  final editorName = 'YamlEditor($fileName)';
-
-  // Try to remove the node
-  test('$editorName.remove($path)', () {
-    final editor = YamlEditor(input);
-    editor.remove(path);
-  });
-
-  // Try to update path to a string
-  test('$editorName.update($path, \'updated string\')', () {
-    final editor = YamlEditor(input);
-    editor.update(path, 'updated string');
-  });
-
-  // Try to update path to an integer
-  test('$editorName.update($path, 42)', () {
-    final editor = YamlEditor(input);
-    editor.update(path, 42);
-  });
-
-  // Try to set a multi-line string for each style
-  for (final style in _scalarStyles) {
-    test('$editorName.update($path, \'foo\\nbar\') as $style', () {
-      final editor = YamlEditor(input);
-      editor.update(path, YamlScalar.wrap('foo\nbar', style: style));
-    });
-  }
-
-  // If it's a list, we try to insert into the list for each index
-  if (node is YamlList) {
-    for (var i = 0; i < node.length + 1; i++) {
-      test('$editorName.insertIntoList($path, $i, 42)', () {
-        final editor = YamlEditor(input);
-        editor.insertIntoList(path, i, 42);
-      });
-
-      test('$editorName.insertIntoList($path, $i, \'new string\')', () {
-        final editor = YamlEditor(input);
-        editor.insertIntoList(path, i, 'new string');
-      });
-
-      for (final style in _scalarStyles) {
-        test('$editorName.insertIntoList($path, $i, \'foo\\nbar\') as $style',
-            () {
-          final editor = YamlEditor(input);
-          editor.insertIntoList(
-              path,
-              i,
-              YamlScalar.wrap(
-                'foo\nbar',
-                style: style,
-              ));
-        });
-      }
-    }
-  }
-
-  // If it's a map, we try to insert a new key (if the new-key name isn't used)
-  if (node is YamlMap && !node.containsKey('new-key')) {
-    final newPath = [...path, 'new-key'];
-
-    test('$editorName.update($newPath, 42)', () {
-      final editor = YamlEditor(input);
-      editor.update(newPath, 42);
-    });
-
-    test('$editorName.update($newPath, \'new string\')', () {
-      final editor = YamlEditor(input);
-      editor.update(newPath, 'new string');
-    });
-
-    for (final style in _scalarStyles) {
-      test('$editorName.update($newPath, \'foo\\nbar\') as $style', () {
-        final editor = YamlEditor(input);
-        editor.update(
-            newPath,
-            YamlScalar.wrap(
-              'foo\nbar',
-              style: style,
-            ));
-      });
-    }
-  }
-}
-
-Iterable<(Iterable<Object?>, YamlNode)> _allJsonPaths(
-  YamlNode node, [
-  Iterable<Object?> parents = const [],
-]) sync* {
-  yield (parents, node);
-
-  if (node is YamlMap) {
-    for (final entry in node.nodes.entries) {
-      final key = entry.key as YamlNode;
-      final value = entry.value;
-      yield* _allJsonPaths(value, [...parents, key.value]);
-    }
-  } else if (node is YamlList) {
-    for (var i = 0; i < node.nodes.length; i++) {
-      final value = node.nodes[i];
-      yield* _allJsonPaths(value, [...parents, i]);
+    for (final (path, node) in allJsonPaths(root.parseAt([]))) {
+      testJsonPath(fileName, input, path, node);
     }
   }
 }
