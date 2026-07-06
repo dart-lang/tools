@@ -1032,6 +1032,12 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         }),
         <String>{'Claude Code', 'Copilot', 'MyCustomAgent'},
       );
+      expect(
+        AiAgent.detectAgentNames(<String, String>{
+          'AGENT': ' Aider , Cursor , Aider ',
+        }),
+        <String>{'Aider', 'Cursor'},
+      );
     },
   );
 

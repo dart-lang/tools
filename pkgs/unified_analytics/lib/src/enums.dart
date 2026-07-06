@@ -370,11 +370,19 @@ enum AiAgent {
 
     final agent = environment['AGENT'];
     if (agent != null && agent.isNotEmpty) {
-      agents.add(agent == '1' ? genericAiAgentLabel : agent);
+      if (agent == '1') {
+        agents.add(genericAiAgentLabel);
+      } else {
+        agents.addAll(agent.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty));
+      }
     }
     final aiAgent = environment['AI_AGENT'];
     if (aiAgent != null && aiAgent.isNotEmpty) {
-      agents.add(aiAgent == '1' ? genericAiAgentLabel : aiAgent);
+      if (aiAgent == '1') {
+        agents.add(genericAiAgentLabel);
+      } else {
+        agents.addAll(aiAgent.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty));
+      }
     }
     if (environment.containsKey('SWE_AGENT')) {
       agents.add(genericAiAgentLabel);
