@@ -373,7 +373,9 @@ enum AiAgent {
       if (agent == '1') {
         agents.add(genericAiAgentLabel);
       } else {
-        agents.addAll(agent.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty));
+        agents.addAll(
+          agent.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty),
+        );
       }
     }
     final aiAgent = environment['AI_AGENT'];
@@ -381,7 +383,9 @@ enum AiAgent {
       if (aiAgent == '1') {
         agents.add(genericAiAgentLabel);
       } else {
-        agents.addAll(aiAgent.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty));
+        agents.addAll(
+          aiAgent.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty),
+        );
       }
     }
     if (environment.containsKey('SWE_AGENT')) {
