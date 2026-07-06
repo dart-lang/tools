@@ -346,6 +346,30 @@ String truncateStringToLength(String str, int maxLength) {
   return str.substring(0, maxLength);
 }
 
+/// Truncates a joined [input] string (separated by [separator]) to a
+/// maximum length by discarding entire elements from the end if they would
+/// exceed [maxLength].
+///
+/// If even the first element exceeds [maxLength], it will be truncated.
+String? truncateJoinedString(String? input, String separator, int maxLength) {
+  if (input == null || input.isEmpty) return null;
+
+  final elements = input.split(separator);
+  final result = <String>[];
+
+  for (final element in elements) {
+    final candidate = <String>[...result, element].join(separator);
+    if (candidate.length > maxLength) break;
+    result.add(element);
+  }
+
+  // Fallback to truncating the first element if even it didn't fit.
+  if (result.isEmpty) {
+    return truncateStringToLength(elements.first, maxLength);
+  }
+  return result.join(separator);
+}
+
 /// Writes the JSON string payload to the provided [sessionFile].
 ///
 /// The `last_ping` key:value pair has been deprecated, it remains included

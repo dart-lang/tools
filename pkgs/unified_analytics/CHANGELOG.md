@@ -1,5 +1,6 @@
-## 8.0.16-wip
+## 8.0.16
 
+- Added `AiAgent.detectAgentNames` to return the `Set<String>` of all matched agents.
 - Run `dart format`.
 
 ## 8.0.15
