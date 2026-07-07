@@ -81,8 +81,8 @@ class Chrome {
   /// the default profile with extensions enabled if [signIn]
   /// is also true.
   ///
-  /// When launging, all [additionalArguments] will be passed directly to Chrome
-  /// as command line arguments.
+  /// When launching, all [additionalArguments] will be passed directly to
+  /// Chrome as command line arguments.
   static Future<Chrome> startWithDebugPort(
     List<String> urls, {
     int debugPort = 0,
