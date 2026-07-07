@@ -80,12 +80,16 @@ class Chrome {
   /// as a user data directory. Chrome will start signed into
   /// the default profile with extensions enabled if [signIn]
   /// is also true.
+  ///
+  /// When launging, all [additionalArguments] will be passed directly to Chrome
+  /// as command line arguments.
   static Future<Chrome> startWithDebugPort(
     List<String> urls, {
     int debugPort = 0,
     bool headless = false,
     String? userDataDir,
     bool signIn = false,
+    List<String> additionalArguments = const [],
   }) async {
     Directory dataDir;
     if (userDataDir == null) {
@@ -124,6 +128,7 @@ class Chrome {
       // Dev runs of the browser should be considered independent of one
       // another, don't announce when the previous session crashed.
       '--disable-session-crashed-bubble',
+      ...additionalArguments,
     ];
     if (headless) {
       args.add('--headless');
