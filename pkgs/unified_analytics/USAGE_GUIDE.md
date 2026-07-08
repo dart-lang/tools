@@ -124,6 +124,27 @@ if (analytics.shouldShowMessage) {
 It is important to note events will not be sent if there is a new version of
 the consent message.
 
+## Dependency Telemetry & GA4 Parameter Chunking
+
+When transmitting CLI command execution events via
+`Event.dartCliCommandExecuted`, CLI tools (`dart-tool`, `flutter-tool`) may pass
+optional project dependency lists (`pubspecDependencies`) and SDK flags
+(`pubspecHasFlutterSdk`).
+
+To comply with Google Analytics 4 (GA4) string length restrictions (maximum 100
+characters per event parameter), `unified_analytics` deterministically sorts
+and shuffles the dependency list using a 64-bit FNV-1a hash before partitioning
+it across 20 distinct event parameters (`pubspec_dep_0` through
+`pubspec_dep_19`). This eliminates alphabetical bias (where packages starting
+with 'a' or 'b' consistently fill the parameter budget while later packages are
+dropped) and ensures statistically uniform ecosystem sampling.
+
+**Note for CLI Tool Authors**: Because an analytics `session_id` rolls over only
+after 30 minutes of inactivity, CLI tools collecting dependency telemetry across
+workspace directories should perform their own project-level caching and privacy
+filtering (e.g., against `.dart_tool/package_config.json`) before passing
+dependency data to `Event.dartCliCommandExecuted`.
+
 ## Developing Within `package:unified_analytics`
 
 ### Adding new data classes
