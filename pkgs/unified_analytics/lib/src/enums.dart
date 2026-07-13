@@ -298,89 +298,112 @@ enum AiAgent {
 
   const AiAgent(this.label);
 
-  /// Returns the name of the AI agent executing the tool, if any,
+  /// Returns a set of the names of the AI agents executing the tool, if any,
   /// by parsing the environment variables.
-  ///
-  /// Returns `null` if no AI agent is detected.
-  static String? detectAgentName(Map<String, String> environment) {
+  static Set<String> detectAgentNames(Map<String, String> environment) {
+    final agents = <String>{};
     const genericAiAgentLabel = 'Generic AI Agent';
 
     if (environment.containsKey('CLAUDECODE') ||
         environment.containsKey('CLAUDE_CODE') ||
         environment.containsKey('CLAUDE_CODE_IS_COWORK')) {
-      return claudeCode.label;
+      agents.add(claudeCode.label);
     }
 
     if (environment.containsKey('ANTIGRAVITY_AGENT')) {
-      return antigravity.label;
+      agents.add(antigravity.label);
     }
 
     if (environment.containsKey('GEMINI_AGENT') ||
         environment.containsKey('GEMINI_CLI')) {
-      return gemini.label;
+      agents.add(gemini.label);
     }
 
     if (environment['TERM_PROGRAM'] == 'cursor' ||
         environment.keys.any((String key) => key.startsWith('CURSOR_'))) {
-      return cursor.label;
+      agents.add(cursor.label);
     }
 
     if (environment.keys.any(
       (String key) =>
           key.startsWith('COPILOT_') || key.startsWith('GITHUB_COPILOT'),
     )) {
-      return copilot.label;
+      agents.add(copilot.label);
     }
 
     if (environment.containsKey('AIDER') ||
         environment.keys.any((String key) => key.startsWith('AIDER_'))) {
-      return aider.label;
+      agents.add(aider.label);
     }
 
     if (environment.containsKey('DEVIN') ||
         environment.containsKey('DEVIN_WORKSPACE_ID')) {
-      return devin.label;
+      agents.add(devin.label);
     }
 
     if (environment.containsKey('AMP_CURRENT_THREAD_ID')) {
-      return amp.label;
+      agents.add(amp.label);
     }
 
     if (environment.containsKey('AUGMENT_AGENT')) {
-      return augment.label;
+      agents.add(augment.label);
     }
 
     if (environment.containsKey('CODEX_CI') ||
         environment.containsKey('CODEX_SANDBOX') ||
         environment.containsKey('CODEX_THREAD_ID')) {
-      return codex.label;
+      agents.add(codex.label);
     }
 
     if (environment.containsKey('OPENCODE') ||
         environment.containsKey('OPENCODE_CLIENT')) {
-      return openCode.label;
+      agents.add(openCode.label);
     }
 
     if (environment.containsKey('PI_CODING_AGENT')) {
-      return pi.label;
+      agents.add(pi.label);
     }
 
     if (environment.containsKey('REPL_ID')) {
-      return replit.label;
+      agents.add(replit.label);
     }
 
-    var agent = environment['AGENT'];
+    final agent = environment['AGENT'];
     if (agent != null && agent.isNotEmpty) {
-      return agent == '1' ? genericAiAgentLabel : agent;
+      if (agent == '1') {
+        agents.add(genericAiAgentLabel);
+      } else {
+        agents.addAll(
+          agent.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty),
+        );
+      }
     }
-    agent = environment['AI_AGENT'];
-    if (agent != null && agent.isNotEmpty) {
-      return agent == '1' ? genericAiAgentLabel : agent;
+    final aiAgent = environment['AI_AGENT'];
+    if (aiAgent != null && aiAgent.isNotEmpty) {
+      if (aiAgent == '1') {
+        agents.add(genericAiAgentLabel);
+      } else {
+        agents.addAll(
+          aiAgent.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty),
+        );
+      }
     }
     if (environment.containsKey('SWE_AGENT')) {
-      return genericAiAgentLabel;
+      agents.add(genericAiAgentLabel);
     }
 
-    return null;
+    return agents;
+  }
+
+  /// Returns the name of the AI agent executing the tool, if any,
+  /// by parsing the environment variables.
+  ///
+  /// Returns `null` if no AI agent is detected.
+  ///
+  /// If multiple AI agents are detected, they are returned as a
+  /// comma-separated string.
+  static String? detectAgentName(Map<String, String> environment) {
+    final agents = detectAgentNames(environment);
+    return agents.isEmpty ? null : agents.join(',');
   }
 }

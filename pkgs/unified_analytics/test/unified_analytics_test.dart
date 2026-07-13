@@ -882,6 +882,36 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     },
   );
 
+  test(
+    'The UserProperty class truncates the ai_agent list by discarding entire agent strings from the end if they exceed 36 characters',
+    () {
+      // "Aider" (5), "Antigravity" (11), "Claude Code" (11), "Generic AI Agent" (16)
+      // "Aider,Antigravity,Claude Code" -> 5 + 1 + 11 + 1 + 11 = 29 chars
+      // Adding "Generic AI Agent" would make it 29 + 1 + 16 = 46 chars, which exceeds 36.
+      // So "Generic AI Agent" should be discarded completely, resulting in "Aider,Antigravity,Claude Code".
+      final longListAnalytics = Analytics.fake(
+        tool: initialTool,
+        homeDirectory: home,
+        flutterChannel: flutterChannel,
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: flutterVersion,
+        dartVersion: dartVersion,
+        fs: fs,
+        platform: platform,
+        clientIde: 'CursorIDE',
+        agent: 'Aider,Antigravity,Claude Code,Generic AI Agent',
+      );
+
+      expect(
+        longListAnalytics.userPropertyMap['ai_agent']?['value'],
+        'Aider,Antigravity,Claude Code',
+        reason:
+            'The ai_agent user property should omit Generic AI Agent to fit within 36 characters',
+      );
+    },
+  );
+
   test('AiAgent.detectAgentName detects AI agents based on environment', () {
     expect(AiAgent.detectAgentName(<String, String>{}), isNull);
 
@@ -973,7 +1003,43 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       AiAgent.detectAgentName(<String, String>{'AI_AGENT': 'MyCustomAgent'}),
       'MyCustomAgent',
     );
+
+    // Multiple agents detected (comma separated)
+    expect(
+      AiAgent.detectAgentName(<String, String>{
+        'CLAUDECODE': '1',
+        'GITHUB_COPILOT': '1',
+        'AGENT': 'MyCustomAgent',
+      }),
+      'Claude Code,Copilot,MyCustomAgent',
+    );
   });
+
+  test(
+    'AiAgent.detectAgentNames detects multiple AI agents based on environment',
+    () {
+      expect(AiAgent.detectAgentNames(<String, String>{}), isEmpty);
+
+      expect(
+        AiAgent.detectAgentNames(<String, String>{'CLAUDECODE': '1'}),
+        <String>{'Claude Code'},
+      );
+      expect(
+        AiAgent.detectAgentNames(<String, String>{
+          'CLAUDECODE': '1',
+          'GITHUB_COPILOT': '1',
+          'AGENT': 'MyCustomAgent',
+        }),
+        <String>{'Claude Code', 'Copilot', 'MyCustomAgent'},
+      );
+      expect(
+        AiAgent.detectAgentNames(<String, String>{
+          'AGENT': ' Aider , Cursor , Aider ',
+        }),
+        <String>{'Aider', 'Cursor'},
+      );
+    },
+  );
 
   test('The minimum session duration should be at least 30 minutes', () {
     expect(
@@ -1717,6 +1783,36 @@ Privacy Policy (https://policies.google.com/privacy).
 
     expect(eventList.contains(eventToMatch), true);
     expect(eventList.where((element) => element == eventToMatch).length, 1);
+  });
+
+  group('Unit tests for util truncateJoinedString', () {
+    test('returns null for null or empty input', () {
+      expect(truncateJoinedString(null, ',', 10), isNull);
+      expect(truncateJoinedString('', ',', 10), isNull);
+    });
+
+    test('returns whole elements if they fit', () {
+      expect(truncateJoinedString('one,two,three', ',', 15), 'one,two,three');
+    });
+
+    test('omits elements from the end that exceed maxLength', () {
+      // 'one,two' is 7 chars.
+      // 'one,two,three' is 13 chars.
+      // With maxLength 10, 'three' should be omitted completely, returning 'one,two'.
+      expect(truncateJoinedString('one,two,three', ',', 10), 'one,two');
+    });
+
+    test('truncates the first element if it is longer than maxLength', () {
+      expect(
+        truncateJoinedString('extremely_long_element', ',', 10),
+        'extremely_',
+      );
+    });
+
+    test('works with different separators', () {
+      expect(truncateJoinedString('one;two;three', ';', 10), 'one;two');
+      expect(truncateJoinedString('one two three', ' ', 10), 'one two');
+    });
   });
 
   group('Unit tests for util dartSDKVersion', () {

@@ -427,7 +427,7 @@ class AnalyticsImpl implements Analytics {
          ),
          locale: io.Platform.localeName,
          clientIde: clientIde,
-         aiAgent: agent != null ? truncateStringToLength(agent, 36) : null,
+         aiAgent: truncateJoinedString(agent, ',', 36),
        ),
        _enabledFeatures = enabledFeatures,
        _configHandler = ConfigHandler(
