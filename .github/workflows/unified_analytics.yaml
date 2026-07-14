@@ -27,6 +27,8 @@ jobs:
         include:
           - sdk: dev
             run-tests: true
+          - sdk: dev
+            check-formatting: true
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
@@ -38,7 +40,7 @@ jobs:
       - run: dart analyze --fatal-infos
 
       - run: dart format --output=none --set-exit-if-changed .
-        if: ${{matrix.run-tests}}
+        if: ${{matrix.check-formatting}}
 
       - run: dart test
         if: ${{matrix.run-tests}}
