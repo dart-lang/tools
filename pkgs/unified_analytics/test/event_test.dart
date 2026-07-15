@@ -955,7 +955,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 34;
+    final eventsAccountedForInTests = 35;
     expect(
       eventsAccountedForInTests,
       constructorCount,
