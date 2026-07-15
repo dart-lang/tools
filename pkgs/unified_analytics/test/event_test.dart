@@ -921,6 +921,28 @@ void main() {
     );
   });
 
+  test('Event.packageSkillsEvent constructed', () {
+    final event = Event.packageSkillsEvent(
+      version: '1.1.1',
+      type: 'some_event',
+      additionalData: _TestMetrics(
+        boolField: true,
+        stringField: 'hello',
+        intField: 1,
+      ),
+    );
+    expect(
+      event.eventData,
+      equals({
+        'version': '1.1.1',
+        'type': 'some_event',
+        'boolField': true,
+        'stringField': 'hello',
+        'intField': 1,
+      }),
+    );
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (final declaration in reflectClass(Event).declarations.keys) {
