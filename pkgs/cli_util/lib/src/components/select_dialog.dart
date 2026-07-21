@@ -393,6 +393,8 @@ void _render({
   }
 }
 
+/// The legend text displayed at the bottom of multi-select dialogs, trimmed
+/// to the terminal width.
 @visibleForTesting
 String get multiSelectLegend {
   const fullText =
