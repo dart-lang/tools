@@ -214,9 +214,9 @@ class HtmlRenderer implements NodeVisitor {
   // HTML output, so there should not be a dedicated syntax for this extension.
   String _filterTags(String content) => content.replaceAll(
     RegExp(
-      '<(?=(?:'
+      '<(?=/?(?:'
       'title|textarea|style|xmp|iframe|noembed|noframes|script|plaintext'
-      ')>)',
+      ')(?:\\s|/|>))',
       caseSensitive: false,
       multiLine: true,
     ),

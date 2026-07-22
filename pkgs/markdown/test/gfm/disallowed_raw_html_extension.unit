@@ -9,3 +9,35 @@
 <blockquote>
 &lt;xmp> is disallowed.  &lt;XMP> is also disallowed.
 </blockquote>
+>>> Tags with attributes (block)
+<script src="foo.js"></script>
+<<<
+&lt;script src="foo.js">&lt;/script>
+>>> Tags with spaces (block)
+<script >
+<<<
+&lt;script >
+>>> Self-closing tags (block)
+<script/>
+<<<
+&lt;script/>
+>>> Closing tags (block)
+</script>
+<<<
+&lt;/script>
+>>> Tags with attributes (inline)
+foo <script src="foo.js"></script>
+<<<
+<p>foo &lt;script src="foo.js">&lt;/script></p>
+>>> Tags with spaces (inline)
+foo <script >
+<<<
+<p>foo &lt;script ></p>
+>>> Self-closing tags (inline)
+foo <script/>
+<<<
+<p>foo &lt;script/></p>
+>>> Closing tags (inline)
+foo </script>
+<<<
+<p>foo &lt;/script></p>
