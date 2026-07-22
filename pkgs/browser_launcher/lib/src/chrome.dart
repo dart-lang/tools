@@ -134,7 +134,7 @@ class Chrome {
       args.add('--headless');
     }
 
-    final process = await _startProcess(urls, args: args);
+    final process = await start(urls, args: args);
 
     // Wait until the DevTools are listening before trying to connect.
     final errorLines = <String>[];
@@ -177,16 +177,8 @@ class Chrome {
   static Future<Process> start(
     List<String> urls, {
     List<String> args = const [],
-  }) async =>
-      await _startProcess(urls, args: args);
-
-  static Future<Process> _startProcess(
-    List<String> urls, {
-    List<String> args = const [],
-  }) async {
-    final processArgs = args.toList()..addAll(urls);
-    return await Process.start(_executable, processArgs);
-  }
+  }) =>
+      Process.start(_executable, [...args, '--', ...urls]);
 
   static Future<Chrome> _connect(Chrome chrome) async {
     // The connection is lazy. Try a simple call to make sure the provided
