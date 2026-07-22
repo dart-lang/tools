@@ -164,8 +164,7 @@ class GitDependency extends Dependency {
   };
 }
 
-Uri? _parseUriOrNull(String? value) =>
-    value == null ? null : Uri.parse(value);
+Uri? _parseUriOrNull(String? value) => value == null ? null : Uri.parse(value);
 
 Uri parseGitUri(String value) => _tryParseScpUri(value) ?? Uri.parse(value);
 
