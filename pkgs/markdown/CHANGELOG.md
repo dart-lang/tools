@@ -8,6 +8,7 @@
   directly test the output parsing.
 * Fixes an issue such that `markdownToHtml`, when given `inlineOnly: true`,
   now respects `enableTagfilter: true`.
+* Improve the HTML tag filtering.
 
 ## 7.3.1
 
