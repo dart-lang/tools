@@ -126,6 +126,18 @@ line 4, column 10: Unsupported value for "dep". Could not parse version "not a v
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
+  test('map w/ hosted url parsed as non-git URI', () async {
+    final dep = await _dependency<HostedDependency>(
+      {
+        'version': '^1.0.0',
+        'hosted': {'name': 'hosted_name', 'url': 'pub.example.com:8080'},
+      },
+      skipTryPub: true,
+    );
+    expect(dep.hosted!.url, Uri.parse('pub.example.com:8080'));
+    expect(dep.hosted!.url!.scheme, 'pub.example.com');
+  });
+
   test('map w/ bad version value', () {
     _expectThrows(
       {
