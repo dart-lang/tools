@@ -25,6 +25,14 @@
 </script>
 <<<
 &lt;/script>
+>>> HTML attributes with unquoted values (block)
+<script src=//evil/x.js>
+<<<
+&lt;script src=//evil/x.js>
+>>> Other disallowed tags like iframe (block)
+<iframe srcdoc="evil">
+<<<
+&lt;iframe srcdoc="evil">
 >>> Tags with attributes (inline)
 foo <script src="foo.js"></script>
 <<<
@@ -41,3 +49,11 @@ foo <script/>
 foo </script>
 <<<
 <p>foo &lt;/script></p>
+>>> HTML attributes with unquoted values (inline)
+foo <script src=//evil/x.js>
+<<<
+<p>foo &lt;script src=//evil/x.js></p>
+>>> Other disallowed tags like iframe (inline)
+foo <iframe srcdoc="evil">
+<<<
+<p>foo &lt;iframe srcdoc="evil"></p>
