@@ -9,6 +9,9 @@
 * Fixes an issue such that `markdownToHtml`, when given `inlineOnly: true`,
   now respects `enableTagfilter: true`.
 * Improve the HTML tag filtering.
+* Optimize email autolink regex parsing in `AutolinkExtensionSyntax` by bounding
+  quantifiers to RFC limits, improving performance on inputs with long sequences
+  of dots or alphanumeric characters.
 
 ## 7.3.1
 
