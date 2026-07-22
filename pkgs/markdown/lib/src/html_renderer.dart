@@ -208,18 +208,20 @@ class HtmlRenderer implements NodeVisitor {
     return suffixedId;
   }
 
+  static final _tagfilterPattern = RegExp(
+    '<(?=/?(?:'
+    'title|textarea|style|xmp|iframe|noembed|noframes|script|plaintext'
+    ')(?:\\s|/|>))',
+    caseSensitive: false,
+    multiLine: true,
+  );
+
   /// Filters some particular tags, see:
   /// https://github.github.com/gfm/#disallowed-raw-html-extension-
   // As said in the specification, this process should happen when rendering
   // HTML output, so there should not be a dedicated syntax for this extension.
   String _filterTags(String content) => content.replaceAll(
-    RegExp(
-      '<(?=/?(?:'
-      'title|textarea|style|xmp|iframe|noembed|noframes|script|plaintext'
-      ')(?:\\s|/|>))',
-      caseSensitive: false,
-      multiLine: true,
-    ),
+    _tagfilterPattern,
     '&lt;',
   );
 }
