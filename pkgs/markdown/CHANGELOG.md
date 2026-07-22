@@ -6,6 +6,8 @@
   so that the created link can contain that content.
 * For testing the package, adds matchers for `Element` and `Text` to more
   directly test the output parsing.
+* Fix a bug such that `markdownToHtml`, when given `inlineOnly: true`, will now
+  respect `enableTagfilter: true`.
 
 ## 7.3.1
 

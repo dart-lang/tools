@@ -39,7 +39,12 @@ String markdownToHtml(
     withDefaultInlineSyntaxes: withDefaultInlineSyntaxes,
   );
 
-  if (inlineOnly) return renderToHtml(document.parseInline(markdown));
+  if (inlineOnly) {
+    return renderToHtml(
+      document.parseInline(markdown),
+      enableTagfilter: enableTagfilter,
+    );
+  }
 
   final nodes = document.parse(markdown);
 
