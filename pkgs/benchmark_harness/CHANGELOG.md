@@ -1,3 +1,21 @@
+## 2.5.0
+
+- Added an opt-in detailed measurement path for benchmarks where one
+  `run()` is at or above the timer noise floor (~100 µs).
+  - `BenchmarkBase.measureDetailed({minimumMillis})` returns a new
+    `DetailedMeasurement` that retains every per-call elapsed time and
+    exposes `meanMicros`, `medianMicros`, `minMicros`, `stddevMicros`,
+    and `coefficientOfVariation`.
+  - `BenchmarkBase.reportDetailed({minimumMillis})` prints the mean,
+    median, coefficient of variation, sample count, and minimum to
+    stdout via a new top-level `printDetailedMeasurement(name,
+    measurement)` helper.
+  - The detailed path bypasses any `exercise` override and times each
+    `run()` call individually, so the reported mean is per `run()`, not
+    per batch of 10.
+- Existing APIs (`measure`, `report`, `Measurement`, `PrintEmitter`,
+  `PrintEmitterV2`, `ScoreEmitter`, `ScoreEmitterV2`) are unchanged.
+
 ## 2.4.0
 
 - Added a `bench` command.
