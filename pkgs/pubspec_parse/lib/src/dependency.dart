@@ -164,8 +164,7 @@ class GitDependency extends Dependency {
   };
 }
 
-Uri? parseGitUriOrNull(String? value) =>
-    value == null ? null : parseGitUri(value);
+Uri? _parseUriOrNull(String? value) => value == null ? null : Uri.parse(value);
 
 Uri parseGitUri(String value) => _tryParseScpUri(value) ?? Uri.parse(value);
 
@@ -265,7 +264,7 @@ class HostedDetails {
   @JsonKey(name: 'name')
   final String? declaredName;
 
-  @JsonKey(fromJson: parseGitUriOrNull, disallowNullValue: true)
+  @JsonKey(fromJson: _parseUriOrNull, disallowNullValue: true)
   final Uri? url;
 
   @JsonKey(includeFromJson: false, includeToJson: false)
