@@ -64,10 +64,11 @@ class SequenceNode extends AstNode {
   /// glob is listed.
   static const _maxFlattenedOptions = 10000;
 
-  static void _checkFlattenedSize(int product) {
+  void _checkFlattenedSize(int product) {
     if (product > _maxFlattenedOptions) {
-      throw const FormatException(
-          'Glob pattern expands to more than $_maxFlattenedOptions options');
+      throw FormatException(
+          'Glob pattern expands to more than $_maxFlattenedOptions options',
+          toString());
     }
   }
 
