@@ -9,6 +9,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:meta/meta.dart';
+
 import 'keys.dart';
 
 /// Shows a scrollable terminal selection dialog and returns the set of
@@ -142,12 +144,13 @@ Future<Set<int>?> _runDialog(
   final cleanupTasks = <FutureOr<void> Function()>[
     () {
       // Try to clear the dialog from the terminal
-      final visibleCount = math.min(options.length, maxVisibleItems);
-      stdout.write('\x1b[${visibleCount}A'); // Move cursor to top
-      for (var i = 0; i < visibleCount; i++) {
+      var linesToClear = math.min(options.length, maxVisibleItems);
+      if (multiSelect) linesToClear++;
+      stdout.write('\x1b[${linesToClear}A'); // Move cursor to top
+      for (var i = 0; i < linesToClear; i++) {
         stdout.write('\x1b[2K\n'); // Clear each line
       }
-      stdout.write('\x1b[${visibleCount}A'); // Move back
+      stdout.write('\x1b[${linesToClear}A'); // Move back
     },
   ];
   try {
@@ -317,7 +320,8 @@ void _render({
 
   // Move the cursor to the top of the dialog if we're not on the first render.
   if (!isFirstRender) {
-    stdout.write('\x1b[${visibleCount}A');
+    final linesToMoveUp = multiSelect ? visibleCount + 1 : visibleCount;
+    stdout.write('\x1b[${linesToMoveUp}A');
   }
 
   var thumbHeight = 0;
@@ -383,6 +387,21 @@ void _render({
       stdout.write('$line\n');
     }
   }
+
+  if (multiSelect) {
+    stdout.write('\x1b[2m$multiSelectLegend\x1b[0m\n');
+  }
+}
+
+/// The legend text displayed at the bottom of multi-select dialogs, trimmed
+/// to the terminal width.
+@visibleForTesting
+String get multiSelectLegend {
+  const fullText =
+      'Toggle: Space | Toggle All: Ctrl+A | Submit: Enter | Abort: Esc';
+  final width = _terminalWidth;
+  final limit = math.max(0, width - 1);
+  return fullText.length > limit ? fullText.substring(0, limit) : fullText;
 }
 
 /// Returns the minimum width required to display a dialog with the given

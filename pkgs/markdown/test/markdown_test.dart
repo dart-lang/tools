@@ -434,6 +434,13 @@ nyan''',
         ''',
       inlineOnly: true,
     );
+    validateCore(
+      'filters disallowed html tags when enableTagfilter is true',
+      'foo <title> bar',
+      'foo &lt;title> bar',
+      inlineOnly: true,
+      enableTagfilter: true,
+    );
   });
 
   group('ExtensionSet', () {

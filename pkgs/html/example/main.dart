@@ -1,6 +1,6 @@
-// Copyright (c) 2023, the Dart project authors.  Please see the AUTHORS file
-// for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
 
 import 'package:html/dom.dart';
 import 'package:html/dom_parsing.dart';

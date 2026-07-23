@@ -25,7 +25,7 @@ class FakeTerminal {
   void write(String text) {
     // Regex for the specific escape sequences used in select_dialog.dart
     final seqRegex = RegExp(
-      r'(\x1b\[\d*A|\x1b\[2K|\x1b\[1m|\x1b\[0m|\x1b\[\?25[lh])',
+      r'(\x1b\[\d*A|\x1b\[2K|\x1b\[1m|\x1b\[2m|\x1b\[0m|\x1b\[\?25[lh])',
     );
 
     var lastEnd = 0;

@@ -1,0 +1,12 @@
+a:
+  b:
+    c:
+      d:
+        e:
+          - f:
+              - g:
+                  - h: 42
+# A very deep comment right at the end of the file
+# that spans multiple lines
+                  # and has weird indentation
+            # randomly placed comment
