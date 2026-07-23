@@ -278,7 +278,7 @@ void main() {
       await pool.request();
     });
 
-    test('request() throws if allowRelease callback throws', () async {
+    test('request() completes if allowRelease callback throws', () async {
       var pool = Pool(1);
       var resource = await pool.request();
 
@@ -290,7 +290,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       completer.completeError('oh no!');
 
-      await expectLater(requestFuture, throwsA('oh no!'));
+      await expectLater(requestFuture, completes);
     });
 
     test('request() does not leak resources when allowRelease throws',
@@ -306,7 +306,8 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       completer.completeError('oh no!');
 
-      await expectLater(requestFuture, throwsA('oh no!'));
+      var resource2 = await requestFuture;
+      resource2.release();
 
       // Without the fix, this will hang because the slot is leaked.
       var nextRequest = pool.request().timeout(
