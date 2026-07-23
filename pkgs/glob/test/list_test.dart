@@ -314,6 +314,12 @@ void main() {
             equals([p.join('foo', 'baz', 'qux')]));
       });
     });
+
+    group('options expansion limit', () {
+      test('throws FormatException when options expansion exceeds limit', () {
+        expect(() => list('{a,b}' * 14), throwsFormatException);
+      });
+    });
   });
 }
 
