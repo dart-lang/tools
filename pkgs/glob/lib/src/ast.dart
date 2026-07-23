@@ -56,6 +56,22 @@ class SequenceNode extends AstNode {
   /// The nodes in the sequence.
   final List<AstNode> nodes;
 
+  /// The maximum number of branches that [flattenOptions] will materialize.
+  ///
+  /// Each `{a,b}` group multiplies the number of expanded sequences, so a
+  /// pattern like `{a,b}{a,b}...` produces `2^k` [SequenceNode]s. Bounding the
+  /// product prevents tiny hostile patterns from exhausting memory when the
+  /// glob is listed.
+  static const _maxFlattenedOptions = 10000;
+
+  void _checkFlattenedSize(int product) {
+    if (product > _maxFlattenedOptions) {
+      throw FormatException(
+          'Glob pattern expands to more than $_maxFlattenedOptions options',
+          toString());
+    }
+  }
+
   @override
   bool get canMatchAbsolute => nodes.first.canMatchAbsolute;
 
@@ -72,12 +88,16 @@ class SequenceNode extends AstNode {
       return OptionsNode([this], caseSensitive: caseSensitive);
     }
 
-    var sequences =
-        nodes.first.flattenOptions().options.map((sequence) => sequence.nodes);
+    var firstOptions = nodes.first.flattenOptions().options;
+    var product = firstOptions.length;
+    _checkFlattenedSize(product);
+    var sequences = firstOptions.map((sequence) => sequence.nodes);
     for (var node in nodes.skip(1)) {
       // Concatenate all sequences in the next options node ([nextSequences])
       // onto all previous sequences ([sequences]).
       var nextSequences = node.flattenOptions().options;
+      product *= nextSequences.length;
+      _checkFlattenedSize(product);
       sequences = sequences.expand((sequence) {
         return nextSequences.map((nextSequence) {
           return sequence.toList()..addAll(nextSequence.nodes);
