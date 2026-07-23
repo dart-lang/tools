@@ -1190,7 +1190,11 @@ class Scanner {
       // libyaml always reads a line here, but this breaks on block scalars at
       // the end of the document that end without newlines. See example 8.1:
       // http://yaml.org/spec/1.2/spec.html#id2793888.
-      if (!_scanner.isDone) leadingBreak = _readLine();
+      if (!_scanner.isDone) {
+        leadingBreak = _readLine();
+      } else {
+        leadingBreak = '\n';
+      }
 
       // Eat the following indentation and spaces.
       var pair = _scanBlockScalarBreaks(indent);
