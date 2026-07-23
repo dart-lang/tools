@@ -23,6 +23,17 @@ String escapeHtml(String html, {bool escapeApos = true}) => HtmlEscape(
 String escapeHtmlAttribute(String text) =>
     const HtmlEscape(HtmlEscapeMode.attribute).convert(text);
 
+/// Escapes raw `"` (double quote), `'` (single quote), `<` (less than) and
+/// `>` (greater than) characters.
+///
+/// Unlike [escapeHtmlAttribute], this does not escape `&` (ampersand) to
+/// avoid double-escaping already-escaped HTML entities.
+String escapeAttributeCharactersValue(String text) => text
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#x27;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+
 /// "Normalizes" a link label, according to the [CommonMark spec].
 ///
 /// [CommonMark spec] https://spec.commonmark.org/0.30/#link-label

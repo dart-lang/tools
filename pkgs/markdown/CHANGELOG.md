@@ -12,6 +12,7 @@
 * Optimize email autolink regex parsing in `AutolinkExtensionSyntax` by bounding
   quantifiers to RFC limits, improving performance on inputs with long sequences
   of dots or alphanumeric characters.
+* Escape image description text when assigning it to the `alt` attribute.
 
 ## 7.3.1
 
