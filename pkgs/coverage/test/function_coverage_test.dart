@@ -55,8 +55,9 @@ void main() {
     });
 
     // test_library.dart.
-    final testLibraryPath =
-        p.absolute(p.join('test', 'test_files', 'test_library.dart'));
+    final testLibraryPath = p.absolute(
+      p.join('test', 'test_files', 'test_library.dart'),
+    );
     final testLibraryUri = p.toUri(testLibraryPath).toString();
     expect(hitMap, contains(testLibraryUri));
     final libraryfile = hitMap[testLibraryUri]!;
@@ -64,8 +65,9 @@ void main() {
     expect(libraryfile.funcNames, {7: 'libraryFunction'});
 
     // test_library_part.dart.
-    final testLibraryPartPath =
-        p.absolute(p.join('test', 'test_files', 'test_library_part.dart'));
+    final testLibraryPartPath = p.absolute(
+      p.join('test', 'test_files', 'test_library_part.dart'),
+    );
     final testLibraryPartUri = p.toUri(testLibraryPartPath).toString();
     expect(hitMap, contains(testLibraryPartUri));
     final libraryPartFile = hitMap[testLibraryPartUri]!;
@@ -78,8 +80,11 @@ Future<String> _collectCoverage() async {
   expect(FileSystemEntity.isFileSync(_funcCovApp), isTrue);
 
   // Run the sample app with the right flags.
-  final sampleProcess = await TestProcess.start(Platform.resolvedExecutable,
-      ['--enable-vm-service=0', '--pause_isolates_on_exit', _funcCovApp]);
+  final sampleProcess = await TestProcess.start(Platform.resolvedExecutable, [
+    '--enable-vm-service=0',
+    '--pause_isolates_on_exit',
+    _funcCovApp,
+  ]);
 
   final serviceUri = await serviceUriFromProcess(sampleProcess.stdoutStream());
 
@@ -90,10 +95,12 @@ Future<String> _collectCoverage() async {
     '--uri',
     '$serviceUri',
     '--resume-isolates',
-    '--wait-paused'
+    '--wait-paused',
   ]);
 
-  await toolResult.shouldExit(0).timeout(
+  await toolResult
+      .shouldExit(0)
+      .timeout(
         timeout,
         onTimeout: () =>
             throw StateError('We timed out waiting for the tool to finish.'),

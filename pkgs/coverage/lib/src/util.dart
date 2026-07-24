@@ -13,8 +13,11 @@ import 'package:yaml/yaml.dart';
 // TODO(cbracken) make generic
 /// Retries the specified function with the specified interval and returns
 /// the result on successful completion.
-Future<dynamic> retry(Future Function() f, Duration interval,
-    {Duration? timeout}) async {
+Future<dynamic> retry(
+  Future Function() f,
+  Duration interval, {
+  Duration? timeout,
+}) async {
   var keepGoing = true;
 
   Future<dynamic> withTimeout(Future Function() f, {Duration? duration}) {
@@ -22,13 +25,16 @@ Future<dynamic> retry(Future Function() f, Duration interval,
       return f();
     }
 
-    return f().timeout(duration, onTimeout: () {
-      keepGoing = false;
-      final msg = duration.inSeconds == 0
-          ? '${duration.inMilliseconds}ms'
-          : '${duration.inSeconds}s';
-      throw StateError('Failed to complete within $msg');
-    });
+    return f().timeout(
+      duration,
+      onTimeout: () {
+        keepGoing = false;
+        final msg = duration.inSeconds == 0
+            ? '${duration.inMilliseconds}ms'
+            : '${duration.inSeconds}s';
+        throw StateError('Failed to complete within $msg');
+      },
+    );
   }
 
   return withTimeout(() async {
