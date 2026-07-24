@@ -337,7 +337,11 @@ void main() {
   });
 }
 
-Future<Map<String, HitMap>> _getHitMap() async {
+Future<Map<String, HitMap>>? _hitMapFuture;
+
+Future<Map<String, HitMap>> _getHitMap() => _hitMapFuture ??= _createHitMap();
+
+Future<Map<String, HitMap>> _createHitMap() async {
   expect(FileSystemEntity.isFileSync(_sampleAppPath), isTrue);
 
   // start sample app.

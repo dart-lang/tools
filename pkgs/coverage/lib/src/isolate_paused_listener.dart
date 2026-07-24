@@ -105,7 +105,20 @@ class IsolatePausedListener {
         _oldCollectionTasks.remove(collectionTask);
         group.exit(isolateRef);
         if (!_finishedListening) {
-          await _service.resume(isolateRef.id!);
+          try {
+            await _service.resume(isolateRef.id!);
+          } on SentinelException catch (_) {
+          } on RPCError catch (e) {
+            // Ignore expected VM service RPC errors when resuming an isolate
+            // that has already completed or exited:
+            // - 105: IsolateExited (isolate has exited)
+            // - 106: IsolateMustBePaused / CannotResume (isolate cannot be resumed)
+            const isolateExited = 105;
+            const isolateMustBePaused = 106;
+            if (e.code != isolateExited && e.code != isolateMustBePaused) {
+              rethrow;
+            }
+          }
         }
       }
     }
