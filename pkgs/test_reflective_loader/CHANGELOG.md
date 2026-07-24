@@ -4,6 +4,8 @@
   `group()` function to produce a hierarchy of groups/tests rather than a flat
   set of tests with concatenated names. This may improve the display of tests
   in IDEs test explorers.
+- Add `currentTestIsExpectedToFail` to allow test helpers to detect when the
+  currently running reflective test is marked as expected to fail.
 
 ## 0.5.0
 

@@ -1,3 +1,8 @@
+## 8.0.16
+
+- Added `Event.packageSkillsEvent` to track events from package:skills.
+- Run `dart format`.
+
 ## 8.0.15
 - Added IDE and plugin information to `Event.serverSession`.
 - Discard any `Exception` or `Error` thrown while reading or writing analytics logs.
@@ -11,7 +16,7 @@
 
 ## 8.0.12
 - Require Dart 3.10
-- Added `success` indicator and `label` to `Event.flutterTrackAndroidDependencies` 
+- Added `success` indicator and `label` to `Event.flutterTrackAndroidDependencies`
 
 ## 8.0.11
 - Added `Event.flutterTrackAndroidDependencies` to track android dependencies.

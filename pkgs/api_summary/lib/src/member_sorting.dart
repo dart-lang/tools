@@ -15,35 +15,44 @@ enum MemberCategory {
 }
 
 /// Sort key used to sort elements in the output.
-class MemberSortKey implements Comparable<MemberSortKey> {
-  final bool _isInstanceMember;
-  final MemberCategory _category;
-  final String _name;
-  final bool _isSetter;
+final class MemberSortKey implements Comparable<MemberSortKey> {
+  final bool isInstanceMember;
+  final MemberCategory category;
+  final String name;
+  final bool isSetter;
 
-  MemberSortKey(Element element)
-    : _isInstanceMember = _computeIsInstanceMember(element),
-      _category = _computeCategory(element),
-      _name = element.displayName,
-      _isSetter = element is SetterElement;
+  MemberSortKey({
+    required this.isInstanceMember,
+    required this.category,
+    required this.name,
+    required this.isSetter,
+  });
 
   @override
   int compareTo(MemberSortKey other) {
-    if ((_isInstanceMember ? 1 : 0).compareTo(other._isInstanceMember ? 1 : 0)
+    if ((isInstanceMember ? 1 : 0).compareTo(other.isInstanceMember ? 1 : 0)
         case final value when value != 0) {
       return value;
     }
-    if (_category.index.compareTo(other._category.index) case final value
+    if (category.index.compareTo(other.category.index) case final value
         when value != 0) {
       return value;
     }
-    if (_name.compareTo(other._name) case final value when value != 0) {
+    if (category == MemberCategory.constructor &&
+        other.category == MemberCategory.constructor) {
+      if (name == 'new') {
+        return other.name == 'new' ? 0 : -1;
+      } else if (other.name == 'new') {
+        return 1;
+      }
+    }
+    if (name.compareTo(other.name) case final value when value != 0) {
       return value;
     }
-    return (_isSetter ? 1 : 0).compareTo(other._isSetter ? 1 : 0);
+    return (isSetter ? 1 : 0).compareTo(other.isSetter ? 1 : 0);
   }
 
-  static MemberCategory _computeCategory(Element element) => switch (element) {
+  static MemberCategory computeCategory(Element element) => switch (element) {
     ConstructorElement() => MemberCategory.constructor,
     PropertyAccessorElement() => MemberCategory.propertyAccessor,
     TopLevelFunctionElement() => MemberCategory.topLevelFunctionOrMethod,
@@ -56,7 +65,7 @@ class MemberSortKey implements Comparable<MemberSortKey> {
     ),
   };
 
-  static bool _computeIsInstanceMember(Element element) =>
+  static bool computeIsInstanceMember(Element element) =>
       element.enclosingElement is InstanceElement &&
       switch (element) {
         ExecutableElement(:final isStatic) => !isStatic,

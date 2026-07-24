@@ -417,14 +417,14 @@ class Scanner {
 
       // These characters may sometimes begin plain scalars.
       case HYPHEN:
-        if (_isPlainCharAt(1)) {
+        if (_isPlainSafeAt(1)) {
           _fetchPlainScalar();
         } else {
           _fetchBlockEntry();
         }
         return;
       case QUESTION:
-        if (_isPlainCharAt(1)) {
+        if (_isPlainSafeAt(1)) {
           _fetchPlainScalar();
         } else {
           _fetchKey();
@@ -445,7 +445,7 @@ class Scanner {
           }
         }
 
-        if (_isPlainCharAt(1)) {
+        if (_isPlainSafeAt(1)) {
           _fetchPlainScalar();
         } else {
           _fetchValue();

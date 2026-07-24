@@ -11,7 +11,7 @@ enum UriCategory { inPackage, notInPackage }
 ///
 /// Libraries in the specified package will be output first (sorted by URI),
 /// followed by libraries not in the package.
-class UriSortKey implements Comparable<UriSortKey> {
+final class UriSortKey implements Comparable<UriSortKey> {
   final UriCategory _category;
   final String _uriString;
 

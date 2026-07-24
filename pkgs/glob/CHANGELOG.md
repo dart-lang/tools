@@ -1,3 +1,10 @@
+## 2.1.4-wip
+
+- Limit option expansion during glob listing (`list()` and `listSync()`) to a
+  maximum of 10,000 branches. Globs with combinatorial option expansions
+  exceeding 10,000 will now throw a `FormatException` to prevent out-of-memory
+  exhaustion. `Glob.matches()` uses regular expressions and is unaffected.
+
 ## 2.1.3
 
 - Require Dart 3.3.

@@ -5,40 +5,81 @@
 
 A fluent, builder-based library for generating valid Dart code.
 
-## Usage
+## Basic Usage
 
 `code_builder` has a narrow and user-friendly API.
 
-See the `example` and `test` folders for additional examples.
-
-For example creating a class with a method:
+Most Dart syntax structures are created using builders. For example, an empty class:
 
 ```dart
-import 'package:code_builder/code_builder.dart';
-import 'package:dart_style/dart_style.dart';
-
-void main() {
-  final animal = Class((b) => b
+final animal = Class((builder) => builder
     ..name = 'Animal'
     ..extend = refer('Organism')
-    ..methods.add(Method.returnsVoid((b) => b
-      ..name = 'eat'
-      ..body = const Code("print('Yum!');"))));
-  final emitter = DartEmitter();
-  print(
-    DartFormatter(languageVersion: DartFormatter.latestLanguageVersion)
-        .format('${animal.accept(emitter)}'),
-  );
-}
+);
 ```
 
-Outputs:
+Will produce:
+
+```dart
+class Animal extends Organism {}
+```
+
+If you're not a fan of nesting, you can create a builder directly and then call the `build` function. For example, adding a method to our class:
+
+```dart
+final method = MethodBuilder()
+  ..name = 'eat'
+  ..body = refer('print').call([literal('Yum!')]).statement // print('Yum!');
+  ..lambda = true;
+
+final animal = Class((builder) => builder
+    ..name = 'Animal'
+    ..extend = refer('Organism')
+    ..methods.add(method.build()) // MethodBuilder -> Method
+);
+```
+
+Will produce:
 
 ```dart
 class Animal extends Organism {
   void eat() => print('Yum!');
 }
 ```
+
+Then, when finished, use a `DartEmitter` and the `accept` method to build the `code_builder` structures into valid Dart code. For example:
+
+```dart
+import 'package:dart_style/dart_style.dart';
+
+// ... //
+
+final emitter = DartEmitter();
+
+// Generate code for 'animal' into a new StringBuffer 
+final StringSink result = animal.accept(emitter);
+
+// or, add it to an existing one
+final buffer = StringBuffer();
+animal.accept(emitter, buffer);
+
+// format the output using package:dart_style
+final String formatted = DartFormatter(
+  languageVersion: DartFormatter.latestLanguageVersion)
+    .format(result.toString());
+
+// voilà
+print(formatted);
+```
+
+Will output the code from above.
+
+For more usage examples see the [example] and [test] folders.
+
+[example]: https://github.com/dart-lang/tools/tree/main/pkgs/code_builder/example
+[test]: https://github.com/dart-lang/tools/tree/main/pkgs/code_builder/test
+
+## Automatic Scoping
 
 Have a complicated set of dependencies for your generated code? `code_builder`
 supports automatic scoping of your ASTs to automatically use prefixes to avoid
@@ -59,15 +100,20 @@ void main() {
           ..name = 'doOther'
           ..returns = refer('Other', 'package:b/b.dart')),
       ]));
+
+  // use a scoped DartEmitter to enable automatic prefixing
+  // using Allocator.simplePrefixing
   final emitter = DartEmitter.scoped();
-  print(
-    DartFormatter(languageVersion: DartFormatter.latestLanguageVersion)
-        .format('${library.accept(emitter)}'),
-  );
+
+  final formatted = DartFormatter(
+    languageVersion: DartFormatter.latestLanguageVersion)
+        .format(library.accept(emitter).toString());
+
+  print(formatted);
 }
 ```
 
-Outputs:
+Will output:
 
 ```dart
 import 'package:a/a.dart' as _i1;
@@ -91,11 +137,12 @@ will be on a best-effort basis.
 > format this repository. You can run it simply from the command-line:
 >
 > ```sh
-> $ dart run dart_style:format -w .
+> dart run dart_style:format -w .
 > ```
 
 [issue]: https://github.com/dart-lang/tools/issues
 [pull]: https://github.com/dart-lang/tools/pulls
+[docs]: https://pub.dev/documentation/code_builder/latest/
 
 ### Updating generated (`.g.dart`) files
 

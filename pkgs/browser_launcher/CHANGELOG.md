@@ -2,6 +2,7 @@
 
 - Add `--test-type` and `--disable-session-crashed-bubble` flags when launching
   chrome to prevent some warnings.
+- Allow passing arbitrary command line arguments when starting Chrome.
 
 ## 1.1.3
 

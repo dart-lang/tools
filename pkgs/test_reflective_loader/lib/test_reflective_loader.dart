@@ -25,6 +25,12 @@ const Object skippedTest = SkippedTest();
 /// A marker annotation used to annotate "solo" groups and tests.
 const Object soloTest = _SoloTest();
 
+/// Whether the currently running reflective test is expected to fail.
+bool get currentTestIsExpectedToFail =>
+    Zone.current[_currentTestIsExpectedToFailKey] == true;
+
+const _currentTestIsExpectedToFailKey = #currentTestIsExpectedToFail;
+
 /// The current group stack of nested [defineReflectiveSuite] calls.
 List<_Group> _currentGroupStack = [];
 
@@ -72,56 +78,70 @@ void defineReflectiveSuite(void Function() define, {String? name}) {
 /// behavior, then `tearDown` will be invoked in `Future.complete`.
 void defineReflectiveTests(Type type) {
   var classMirror = reflectClass(type);
-  if (!classMirror.metadata.any((InstanceMirror annotation) =>
-      annotation.type.reflectedType == _ReflectiveTest)) {
+  if (!classMirror.metadata.any(
+    (InstanceMirror annotation) =>
+        annotation.type.reflectedType == _ReflectiveTest,
+  )) {
     var name = MirrorSystem.getName(classMirror.qualifiedName);
-    throw Exception('Class $name must have annotation "@reflectiveTest" '
-        'in order to be run by runReflectiveTests.');
+    throw Exception(
+      'Class $name must have annotation "@reflectiveTest" '
+      'in order to be run by runReflectiveTests.',
+    );
   }
 
   var isSolo = _hasAnnotationInstance(classMirror, soloTest);
   var className = MirrorSystem.getName(classMirror.simpleName);
 
   _addGroup(
-      _Group(className,
-          solo: isSolo,
-          location: classMirror.testLocation,
-          classMirror: classMirror), () {
-    classMirror.instanceMembers
-        .forEach((Symbol symbol, MethodMirror memberMirror) {
-      // we need only methods
-      if (!memberMirror.isRegularMethod) {
-        return;
-      }
-      // prepare information about the method
-      var memberName = MirrorSystem.getName(symbol);
-      var isTest = memberName.startsWith(RegExp('(solo_|fail_|skip_)*test_'));
-      if (isTest) {
-        var isSolo = memberName.startsWith('solo_') ||
-            _hasAnnotationInstance(memberMirror, soloTest);
-        var isSkipped = memberName.startsWith('skip_') ||
-            _hasSkippedTestAnnotation(memberMirror);
-        var expectFail = memberName.startsWith('fail_') ||
-            memberName.startsWith('solo_fail_') ||
-            _hasFailingTestAnnotation(memberMirror) ||
-            _isCheckedMode && _hasAssertFailingTestAnnotation(memberMirror);
-        var timeout =
-            _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
+    _Group(
+      className,
+      solo: isSolo,
+      location: classMirror.testLocation,
+      classMirror: classMirror,
+    ),
+    () {
+      classMirror.instanceMembers.forEach((
+        Symbol symbol,
+        MethodMirror memberMirror,
+      ) {
+        // we need only methods
+        if (!memberMirror.isRegularMethod) {
+          return;
+        }
+        // prepare information about the method
+        var memberName = MirrorSystem.getName(symbol);
+        var isTest = memberName.startsWith(RegExp('(solo_|fail_|skip_)*test_'));
+        if (isTest) {
+          var isSolo = memberName.startsWith('solo_') ||
+              _hasAnnotationInstance(memberMirror, soloTest);
+          var isSkipped = memberName.startsWith('skip_') ||
+              _hasSkippedTestAnnotation(memberMirror);
+          var expectFail = memberName.startsWith('fail_') ||
+              memberName.startsWith('solo_fail_') ||
+              _hasFailingTestAnnotation(memberMirror) ||
+              _isCheckedMode && _hasAssertFailingTestAnnotation(memberMirror);
+          var timeout =
+              _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
 
-        _addTest(
-          _Test(
+          _addTest(
+            _Test(
               memberName,
               timeout: timeout?._timeout,
               location: memberMirror.testLocation,
               solo: isSolo,
               skip: isSkipped,
-              () => expectFail
-                  ? _runFailingTest(classMirror, symbol)
-                  : _runTest(classMirror, symbol)),
-        );
-      }
-    });
-  });
+              () => runZoned(
+                () => expectFail
+                    ? _runFailingTest(classMirror, symbol)
+                    : _runTest(classMirror, symbol),
+                zoneValues: {_currentTestIsExpectedToFailKey: expectFail},
+              ),
+            ),
+          );
+        }
+      });
+    },
+  );
 
   _addTestsIfTopLevelSuite();
 }
@@ -160,13 +180,14 @@ void _addTestsIfTopLevelSuite() {
           break;
         case _Test test:
           test_package.test(
-              test.name,
-              timeout: test.timeout,
-              location: test.location,
-              // ignore: deprecated_member_use, invalid_use_of_do_not_submit_member
-              solo: test.solo,
-              skip: test.skip,
-              test.function);
+            test.name,
+            timeout: test.timeout,
+            location: test.location,
+            // ignore: deprecated_member_use, invalid_use_of_do_not_submit_member
+            solo: test.solo,
+            skip: test.skip,
+            test.function,
+          );
           break;
       }
     }
@@ -186,8 +207,9 @@ Object? _getAnnotationInstance(DeclarationMirror declaration, Type type) {
 }
 
 bool _hasAnnotationInstance(DeclarationMirror declaration, Object instance) =>
-    declaration.metadata.any((InstanceMirror annotation) =>
-        identical(annotation.reflectee, instance));
+    declaration.metadata.any(
+      (InstanceMirror annotation) => identical(annotation.reflectee, instance),
+    );
 
 bool _hasAssertFailingTestAnnotation(MethodMirror method) =>
     _hasAnnotationInstance(method, assertFailingTest);
@@ -199,7 +221,9 @@ bool _hasSkippedTestAnnotation(MethodMirror method) =>
     _hasAnnotationInstance(method, skippedTest);
 
 Future<Object?> _invokeSymbolIfExists(
-    ObjectMirror objectMirror, Symbol symbol) {
+  ObjectMirror objectMirror,
+  Symbol symbol,
+) {
   Object? invocationResult;
   InstanceMirror? closure;
   try {
@@ -246,24 +270,27 @@ void _addTest(_Test test) {
 Future<void> _runFailingTest(ClassMirror classMirror, Symbol symbol) async {
   _FailedTestResult? result;
 
-  await runZonedGuarded(() {
-    // ignore: void_checks
-    return Future.sync(() => _runTest(classMirror, symbol)).then<void>((_) {
-      // We can't throw async exceptions inside here because `runZoneGuarded`
-      // will never complete (see docs on `runZonedGuarded`), so we need to
-      // capture this state and throw later if there wasn't otherwise an
-      // exception.
+  await runZonedGuarded(
+    () {
+      // ignore: void_checks
+      return Future.sync(() => _runTest(classMirror, symbol)).then<void>((_) {
+        // We can't throw async exceptions inside here because `runZoneGuarded`
+        // will never complete (see docs on `runZonedGuarded`), so we need to
+        // capture this state and throw later if there wasn't otherwise an
+        // exception.
 
-      // If we didn't already have a failure (eg. an unawaited exception) then
-      // this successful completion is an unexpected pass state.
-      result ??= _FailedTestResult.pass;
-    }).catchError((Object e) {
-      // an awaited exception is always expected failure.
+        // If we didn't already have a failure (eg. an unawaited exception) then
+        // this successful completion is an unexpected pass state.
+        result ??= _FailedTestResult.pass;
+      }).catchError((Object e) {
+        // an awaited exception is always expected failure.
+        result = _FailedTestResult.expectedFail;
+      });
+    },
+    (e, st) {
       result = _FailedTestResult.expectedFail;
-    });
-  }, (e, st) {
-    result = _FailedTestResult.expectedFail;
-  });
+    },
+  );
 
   // We can safely throw exceptions back outside of the error zone.
   if (result == _FailedTestResult.pass) {
@@ -340,11 +367,7 @@ abstract class _GroupEntry {
   final test_package.TestLocation? location;
   final bool solo;
 
-  _GroupEntry(
-    this.name, {
-    this.location,
-    this.solo = false,
-  });
+  _GroupEntry(this.name, {this.location, this.solo = false});
 }
 
 /// Information about a test group which could be from a call to
@@ -354,20 +377,17 @@ class _Group extends _GroupEntry {
   final ClassMirror? classMirror;
   Future<Object?>? _setUpCompletion;
 
-  _Group(
-    super.name, {
-    super.location,
-    super.solo,
-    this.classMirror,
-  });
+  _Group(super.name, {super.location, super.solo, this.classMirror});
 
   /// Runs group-wide setup if it has not been started yet,
   /// ensuring it only runs once for a group. Set up runs and
   /// completes before any test of the group runs
   Future<Object?> ensureSetUpClass() {
     if (classMirror == null) return Future.value();
-    return _setUpCompletion ??=
-        _invokeSymbolIfExists(classMirror!, #setUpClass);
+    return _setUpCompletion ??= _invokeSymbolIfExists(
+      classMirror!,
+      #setUpClass,
+    );
   }
 
   /// Runs group-wide tear down if [ensureSetUpClass] was called at least once.
@@ -402,7 +422,10 @@ extension on DeclarationMirror {
   test_package.TestLocation? get testLocation {
     if (location case var location?) {
       return test_package.TestLocation(
-          location.sourceUri, location.line, location.column);
+        location.sourceUri,
+        location.line,
+        location.column,
+      );
     } else {
       return null;
     }

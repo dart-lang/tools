@@ -54,6 +54,7 @@ void main() {
     String? userDataDir,
     bool signIn = false,
     bool headless = false,
+    List<String> additionalArguments = const [],
   }) async {
     chrome = await Chrome.startWithDebugPort(
       [_googleUrl],
@@ -61,6 +62,7 @@ void main() {
       userDataDir: userDataDir,
       signIn: signIn,
       headless: headless,
+      additionalArguments: additionalArguments,
     );
   }
 
@@ -89,6 +91,21 @@ void main() {
         test('can launch chrome with debug port', () async {
           await launchChromeWithDebugPort(headless: headless);
           expect(chrome, isNotNull);
+        });
+
+        test('can launch with additional arguments', () async {
+          await launchChromeWithDebugPort(
+            headless: headless,
+            additionalArguments: ['--user-agent=CustomTestAgent'],
+          );
+          expect(chrome, isNotNull);
+          // Validate that the additional argument was applied.
+          final wipConnection = await connectToTab(_googleUrl);
+          await wipConnection.debugger.enable();
+          await wipConnection.runtime.enable();
+          final userAgent =
+              await _evaluate(wipConnection.page, 'navigator.userAgent');
+          expect(userAgent, contains('CustomTestAgent'));
         });
 
         test('has a working debugger', () async {

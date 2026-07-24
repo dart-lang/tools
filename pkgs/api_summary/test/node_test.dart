@@ -21,16 +21,16 @@ class NodeTest {
     printNodes(buf, [
       (
         1,
-        _SimpleNode('one', [
-          (2, _SimpleNode('two')),
-          (3, _SimpleNode('three')),
+        _simpleNode('one', [
+          (2, _simpleNode('two')),
+          (3, _simpleNode('three')),
         ]),
       ),
       (
         4,
-        _SimpleNode('four', [
-          (5, _SimpleNode('five')),
-          (6, _SimpleNode('six')),
+        _simpleNode('four', [
+          (5, _simpleNode('five')),
+          (6, _simpleNode('six')),
         ]),
       ),
     ]);
@@ -59,10 +59,10 @@ x0
     printNodes(buf, [
       (
         0,
-        _SimpleNode('zero', [
-          (2, _SimpleNode('two')),
-          (1, _SimpleNode('one')),
-          (3, _SimpleNode('three')),
+        _simpleNode('zero', [
+          (2, _simpleNode('two')),
+          (1, _simpleNode('one')),
+          (3, _simpleNode('three')),
         ]),
       ),
     ]);
@@ -77,9 +77,9 @@ zero
   void test_printNodes_sortedByKey() {
     final buf = StringBuffer();
     printNodes(buf, [
-      (2, _SimpleNode('two')),
-      (1, _SimpleNode('one')),
-      (3, _SimpleNode('three')),
+      (2, _simpleNode('two')),
+      (1, _simpleNode('one')),
+      (3, _simpleNode('three')),
     ]);
     expect(buf.toString(), '''
 one
@@ -89,9 +89,12 @@ three
   }
 }
 
-class _SimpleNode extends Node<num> {
-  _SimpleNode(String text, [List<(num, Node<num>)> childNodes = const []]) {
-    this.text.add(text);
-    this.childNodes.addAll(childNodes);
-  }
+Node<num> _simpleNode(
+  String text, [
+  List<(num, Node<num>)> childNodes = const [],
+]) {
+  final node = Node<num>();
+  node.text.add(text);
+  node.childNodes.addAll(childNodes);
+  return node;
 }
