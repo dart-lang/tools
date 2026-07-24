@@ -177,8 +177,11 @@ class Chrome {
   static Future<Process> start(
     List<String> urls, {
     List<String> args = const [],
-  }) =>
-      Process.start(_executable, [...args, if (urls.isNotEmpty) '--', ...urls]);
+  }) {
+    assert(!args.contains('--'));
+    assert(!urls.contains('--'));
+    return Process.start(_executable, [...args, '--', ...urls]);
+  }
 
   static Future<Chrome> _connect(Chrome chrome) async {
     // The connection is lazy. Try a simple call to make sure the provided
