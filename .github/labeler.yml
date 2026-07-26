@@ -48,6 +48,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/extension_discovery/**'
 
+'package:snippets':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/snippets/**'
+
 'package:file':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/file/**'

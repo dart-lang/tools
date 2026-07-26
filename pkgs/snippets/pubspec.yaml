@@ -1,0 +1,22 @@
+name: snippets
+description: Update code excerpts in Markdown documentation from source files.
+version: 0.1.0-wip
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  args: ^2.6.0
+  collection: ^1.19.0
+  meta: ^1.16.0
+  path: ^1.9.0
+  source_span: ^1.10.2
+
+dev_dependencies:
+  dart_flutter_team_lints: ^3.0.0
+  io: ^1.0.5
+  test: ^1.28.0
+  test_descriptor: ^2.0.0
+
+executables:
+  snippets: snippets
