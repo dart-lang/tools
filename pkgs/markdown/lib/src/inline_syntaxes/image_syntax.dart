@@ -29,8 +29,8 @@ class ImageSyntax extends LinkSyntax {
           // See https://spec.commonmark.org/0.30/#image-description.
           // An image description may contain links. Fetch text from the alt
           // attribute if this nested link is an image.
-          if (node is Element && node.tag == 'img') {
-            return node.attributes['alt'];
+          if (node case Element(tag: 'img', attributes: {'alt': final alt})) {
+            return alt;
           }
           return node.textContent;
         })
