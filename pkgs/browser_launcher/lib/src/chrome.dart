@@ -129,10 +129,8 @@ class Chrome {
       // another, don't announce when the previous session crashed.
       '--disable-session-crashed-bubble',
       ...additionalArguments,
+      if (headless) '--headless',
     ];
-    if (headless) {
-      args.add('--headless');
-    }
 
     final process = await start(urls, args: args);
 
