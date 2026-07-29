@@ -147,6 +147,32 @@ void main() async {
     );
 
     validateCore(
+      'Image alt attribute breakout XSS',
+      '![<b x=" onerror=alert(1) y=">](bad)',
+      '<p><img src="bad" alt="&lt;b x=&quot; onerror=alert(1) y=&quot;&gt;" /></p>\n',
+      inlineSyntaxes: [InlineHtmlSyntax()],
+    );
+
+    validateCore(
+      'Image alt attribute escaping ampersand and quotes',
+      '![a & " b](bad)',
+      '<p><img src="bad" alt="a &amp; &quot; b" /></p>\n',
+    );
+
+    validateCore(
+      'Image alt attribute double-encoded entity',
+      '![&amp;amp;](bad)',
+      '<p><img src="bad" alt="&amp;amp;" /></p>\n',
+    );
+
+    validateCore(
+      'Image alt attribute with raw HTML tag under GFM',
+      '![foo <a> bar](bad)',
+      '<p><img src="bad" alt="foo &lt;a&gt; bar" /></p>\n',
+      inlineSyntaxes: [InlineHtmlSyntax()],
+    );
+
+    validateCore(
       'Unicode ellipsis as punctuation',
       '''
 "Connecting dot **A** to **B.**…"
