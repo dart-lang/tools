@@ -12,6 +12,9 @@
 * Optimize email autolink regex parsing in `AutolinkExtensionSyntax` by bounding
   quantifiers to RFC limits, improving performance on inputs with long sequences
   of dots or alphanumeric characters.
+* Fix `AutolinkExtensionSyntax` double-encoding percent-encoded sequences in
+  the destination, for example `https://example.com/%40foo` no longer turns
+  into `https://example.com/%2540foo`.
 
 ## 7.3.1
 
