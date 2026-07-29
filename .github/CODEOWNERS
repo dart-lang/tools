@@ -9,7 +9,7 @@
 third_party/yaml-test-suite     @dart-lang/dart-pub-team
 tool/update-yaml-test-suite.sh  @dart-lang/dart-pub-team
 
-pkgs/api_summary                @dart-lang/dart-ecosystem-team #tbd
+pkgs/api_summary                @kevmoo
 pkgs/bazel_worker               @dart-lang/dart-bat
 pkgs/benchmark_harness          @dart-lang/dart-native-runtime-team
 pkgs/boolean_selector           @dart-lang/dart-ecosystem-team
@@ -20,7 +20,7 @@ pkgs/clock                      @dart-lang/dart-ecosystem-team
 pkgs/code_builder               @dart-lang/dart-ecosystem-team
 pkgs/coverage                   @liamappelbe @dart-lang/dart-native-runtime-team
 pkgs/csslib                     @dart-lang/dart-ecosystem-team #formerly @leonsenft
-pkgs/extension_discovery        @dart-lang/dart-pub-team
+pkgs/extension_discovery        @dart-lang/dart-ecosystem-team @dart-lang/dart-pub-team
 pkgs/file                       @dart-lang/dart-ecosystem-team
 pkgs/file_testing               @dart-lang/dart-ecosystem-team
 pkgs/glob                       @dart-lang/dart-ecosystem-team
