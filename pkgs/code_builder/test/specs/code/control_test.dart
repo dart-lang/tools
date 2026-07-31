@@ -15,12 +15,12 @@ void main() {
     // general
 
     test('should insert a single body element', () {
-      final expr = ControlExpression('test', body: [literal(1)]);
+      final expr = BaseControlExpression('test', body: [literal(1)]);
       expect(expr, equalsDart('test (1)'));
     });
 
     test('should insert multiple body elements with a separator', () {
-      final expr = ControlExpression(
+      final expr = BaseControlExpression(
         'test',
         body: [literal(1), literal(2)],
         separator: ',',
@@ -30,7 +30,7 @@ void main() {
 
     test('should throw on multiple body elements w/o a separator', () {
       expect(
-        () => ControlExpression(
+        () => BaseControlExpression(
           'test',
           body: [literal(1), literal(2)],
           // separator: null // default
@@ -40,7 +40,7 @@ void main() {
     });
 
     test('should not wrap body in parens if parenthesised is false', () {
-      final expr = ControlExpression(
+      final expr = BaseControlExpression(
         'else',
         body: [refer('block')],
         parenthesised: false,
@@ -49,7 +49,7 @@ void main() {
     });
 
     test('should still insert separator for nulls in body', () {
-      final expr = ControlExpression(
+      final expr = BaseControlExpression(
         'for',
         body: [null, refer('middle'), null],
         separator: ';',
@@ -58,27 +58,30 @@ void main() {
     });
 
     test('should allow null/empty body and still emit control keyword', () {
-      expect(const ControlExpression('while'), equalsDart('while'));
-      expect(const ControlExpression('while', body: []), equalsDart('while'));
+      expect(const BaseControlExpression('while'), equalsDart('while'));
+      expect(
+        const BaseControlExpression('while', body: []),
+        equalsDart('while'),
+      );
     });
 
     // specific constructors
 
     test('should emit an if statement', () {
       expect(
-        ControlExpression.ifStatement(literal(1).equalTo(literal(2))),
+        BaseControlExpression.ifStatement(literal(1).equalTo(literal(2))),
         equalsDart('if (1 == 2)'),
       );
     });
 
     test('should emit an else statement', () {
-      expect(ControlExpression.elseStatement(null), equalsDart('else'));
+      expect(BaseControlExpression.elseStatement(null), equalsDart('else'));
     });
 
     test('should emit an else if statement', () {
       expect(
-        ControlExpression.elseStatement(
-          ControlExpression.ifStatement(literal(false)),
+        BaseControlExpression.elseStatement(
+          BaseControlExpression.ifStatement(literal(false)),
         ),
         equalsDart('else if (false)'),
       );
@@ -86,7 +89,7 @@ void main() {
 
     test('should emit a for loop with all parts', () {
       expect(
-        ControlExpression.forLoop(
+        BaseControlExpression.forLoop(
           declareVar('i', type: refer('int')).assign(literal(0)),
           refer('i').lessThan(literal(10)),
           refer('i').operatorUnaryPostfixIncrement(),
@@ -97,7 +100,7 @@ void main() {
 
     test('should emit a for loop with only init', () {
       expect(
-        ControlExpression.forLoop(
+        BaseControlExpression.forLoop(
           declareVar('i', type: refer('int')).assign(literal(0)),
           null,
           null,
@@ -108,14 +111,14 @@ void main() {
 
     test('should emit a for loop with only condition', () {
       expect(
-        ControlExpression.forLoop(null, refer('running'), null),
+        BaseControlExpression.forLoop(null, refer('running'), null),
         equalsDart('for (; running;)'),
       );
     });
 
     test('should emit a for loop with only advance', () {
       expect(
-        ControlExpression.forLoop(
+        BaseControlExpression.forLoop(
           null,
           null,
           refer('i').operatorUnaryPostfixIncrement(),
@@ -126,74 +129,77 @@ void main() {
 
     test('should emit a for loop with all null body entries', () {
       expect(
-        ControlExpression.forLoop(null, null, null),
+        BaseControlExpression.forLoop(null, null, null),
         equalsDart('for (;;)'),
       );
     });
 
     test('should emit a for-in loop', () {
       expect(
-        ControlExpression.forInLoop(refer('x'), refer('list')),
+        BaseControlExpression.forInLoop(refer('x'), refer('list')),
         equalsDart('for (x in list)'),
       );
     });
 
     test('should emit an await for loop', () {
       expect(
-        ControlExpression.awaitForLoop(refer('x'), refer('stream')),
+        BaseControlExpression.awaitForLoop(refer('x'), refer('stream')),
         equalsDart('await for (x in stream)'),
       );
     });
 
     test('should emit a while loop', () {
       expect(
-        ControlExpression.whileLoop(literal(true)),
+        BaseControlExpression.whileLoop(literal(true)),
         equalsDart('while (true)'),
       );
     });
 
     test('should emit a do statement', () {
-      expect(ControlExpression.doStatement, equalsDart('do'));
+      expect(BaseControlExpression.doStatement, equalsDart('do'));
     });
 
     test('should emit a try statement', () {
-      expect(ControlExpression.tryStatement, equalsDart('try'));
+      expect(BaseControlExpression.tryStatement, equalsDart('try'));
     });
 
     test('should emit a catch statement with only error', () {
-      expect(ControlExpression.catchStatement('e'), equalsDart('catch (e)'));
+      expect(
+        BaseControlExpression.catchStatement('e'),
+        equalsDart('catch (e)'),
+      );
     });
 
     test('should emit a catch statement with error and stacktrace', () {
       expect(
-        ControlExpression.catchStatement('e', 's'),
+        BaseControlExpression.catchStatement('e', 's'),
         equalsDart('catch (e, s)'),
       );
     });
 
     test('should emit an on statement', () {
       expect(
-        ControlExpression.onStatement(refer('FormatException')),
+        BaseControlExpression.onStatement(refer('FormatException')),
         equalsDart('on FormatException'),
       );
     });
 
     test('should emit an on statement with catch', () {
       expect(
-        ControlExpression.onStatement(
+        BaseControlExpression.onStatement(
           refer('FormatException'),
-          ControlExpression.catchStatement('e'),
+          BaseControlExpression.catchStatement('e'),
         ),
         equalsDart('on FormatException catch (e)'),
       );
     });
 
     test('should emit a finally statement', () {
-      expect(ControlExpression.finallyStatement, equalsDart('finally'));
+      expect(BaseControlExpression.finallyStatement, equalsDart('finally'));
     });
 
     test('should emit a switch expression', () {
-      final expression = ControlExpression.switchStatement(refer('object'));
+      final expression = BaseControlExpression.switchStatement(refer('object'));
       expect(expression, equalsDart('switch (object)'));
     });
   });

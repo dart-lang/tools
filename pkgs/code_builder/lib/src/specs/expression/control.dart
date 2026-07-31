@@ -4,13 +4,10 @@
 
 part of '../expression.dart';
 
-/// **INTERNAL**
-///
-/// Represents a control expression.
+/// Represents a control-flow expression.
 ///
 /// {@category controlFlow}
-@internal
-class ControlExpression extends Expression {
+abstract class ControlExpression extends Expression {
   /// The control statement (e.g. `if`, `for`).
   final String control;
 
@@ -41,7 +38,6 @@ class ControlExpression extends Expression {
   /// Whether or not the body should be wrapped in parenthesis (default: `true`)
   final bool parenthesised;
 
-  @visibleForTesting
   const ControlExpression(
     this.control, {
     this.body,
@@ -52,75 +48,70 @@ class ControlExpression extends Expression {
   @override
   R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
       visitor.visitControlExpression(this, context);
+}
 
-  factory ControlExpression.ifStatement(Expression condition) =>
-      ControlExpression('if', body: [condition]);
+/// Base [ControlExpression] implementation.
+///
+/// ** INTERNAL**
+class BaseControlExpression extends ControlExpression {
+  BaseControlExpression.ifStatement(Expression condition)
+    : super('if', body: [condition]);
 
-  factory ControlExpression.elseStatement(Expression? condition) =>
-      ControlExpression(
+  BaseControlExpression.elseStatement(Expression? condition)
+    : super(
         'else',
         body: condition != null ? [condition] : null,
         parenthesised: false,
       );
 
-  factory ControlExpression.forLoop(
+  BaseControlExpression.forLoop(
     Expression? initialize,
     Expression? condition,
     Expression? advance,
-  ) => ControlExpression(
-    'for',
-    body: [initialize, condition, advance],
-    separator: ';',
-  );
+  ) : super('for', body: [initialize, condition, advance], separator: ';');
 
-  factory ControlExpression.forInLoop(
+  BaseControlExpression.forInLoop(Expression identifier, Expression expression)
+    : super('for', body: [identifier, expression], separator: ' in');
+
+  BaseControlExpression.awaitForLoop(
     Expression identifier,
     Expression expression,
-  ) => ControlExpression(
-    'for',
-    body: [identifier, expression],
-    separator: ' in',
-  );
+  ) : super('await for', body: [identifier, expression], separator: ' in');
 
-  factory ControlExpression.awaitForLoop(
-    Expression identifier,
-    Expression expression,
-  ) => ControlExpression(
-    'await for',
-    body: [identifier, expression],
-    separator: ' in',
-  );
+  BaseControlExpression.whileLoop(Expression condition)
+    : super('while', body: [condition]);
 
-  factory ControlExpression.whileLoop(Expression condition) =>
-      ControlExpression('while', body: [condition]);
+  BaseControlExpression.catchStatement(String error, [String? stacktrace])
+    : super(
+        'catch',
+        body: [refer(error), if (stacktrace != null) refer(stacktrace)],
+        separator: ',',
+      );
 
-  static const doStatement = ControlExpression('do');
-
-  static const tryStatement = ControlExpression('try');
-
-  factory ControlExpression.catchStatement(
-    String error, [
-    String? stacktrace,
-  ]) => ControlExpression(
-    'catch',
-    body: [refer(error), if (stacktrace != null) refer(stacktrace)],
-    separator: ',',
-  );
-
-  factory ControlExpression.onStatement(
+  BaseControlExpression.onStatement(
     Reference type, [
-    ControlExpression? statement,
-  ]) => ControlExpression(
-    'on',
-    body: [type, if (statement != null) statement],
-    parenthesised: false,
-    separator: '',
-  );
+    BaseControlExpression? statement,
+  ]) : super(
+         'on',
+         body: [type, if (statement != null) statement],
+         parenthesised: false,
+         separator: '',
+       );
 
-  static const finallyStatement = ControlExpression('finally');
+  BaseControlExpression.switchStatement(Expression value)
+    : super('switch', body: [value]);
 
-  factory ControlExpression.switchStatement(Expression value) =>
-      ControlExpression('switch', body: [value]);
+  @visibleForTesting
+  const BaseControlExpression(
+    super.control, {
+    super.body,
+    super.parenthesised,
+    super.separator,
+  });
+
+  static const doStatement = BaseControlExpression('do');
+  static const tryStatement = BaseControlExpression('try');
+  static const finallyStatement = BaseControlExpression('finally');
 }
 
 /// **INTERNAL**
@@ -256,7 +247,7 @@ extension ControlFlow on Expression {
 
   /// Returns `if (this) return value`
   Expression ifThenReturn([Expression? value]) => BinaryExpression._(
-    ControlExpression.ifStatement(this),
+    BaseControlExpression.ifStatement(this),
     value == null ? ControlFlow.returnVoid : value.returned,
     '',
   );
@@ -353,7 +344,7 @@ extension ControlFlow on Expression {
     required Expression value,
   }) => CollectionExpression._(
     chainTarget: true,
-    control: ControlExpression.ifStatement(condition),
+    control: BaseControlExpression.ifStatement(condition),
     value: value,
   );
 
@@ -374,8 +365,8 @@ extension ControlFlow on Expression {
     chain: true,
     chainTarget: condition != null,
     // only chainable if this is an else-if statement
-    control: ControlExpression.elseStatement(
-      condition == null ? null : ControlExpression.ifStatement(condition),
+    control: BaseControlExpression.elseStatement(
+      condition == null ? null : BaseControlExpression.ifStatement(condition),
     ),
     value: value,
   );
@@ -420,7 +411,7 @@ extension ControlFlow on Expression {
     required Expression value,
   }) => CollectionExpression._(
     chainTarget: true,
-    control: ControlExpression.forLoop(initialize, condition, advance),
+    control: BaseControlExpression.forLoop(initialize, condition, advance),
     value: value,
   );
 
@@ -437,7 +428,7 @@ extension ControlFlow on Expression {
     required Expression value,
   }) => CollectionExpression._(
     chainTarget: value is CollectionExpression && value.chainTarget,
-    control: ControlExpression.forInLoop(identifier, expression),
+    control: BaseControlExpression.forInLoop(identifier, expression),
     value: value,
   );
 }

@@ -24,7 +24,7 @@ part './control/switch.dart';
 @internal
 class ControlBlock {
   /// The full control-flow expression that precedes this block.
-  final ControlExpression expression;
+  final BaseControlExpression expression;
 
   /// The body of this block.
   ///
@@ -91,12 +91,12 @@ abstract mixin class ControlBlockEmitter
   StringSink visitWhileLoop(WhileLoop loop, [StringSink? output]) {
     output ??= StringBuffer();
 
-    final expression = ControlExpression.whileLoop(loop.condition);
+    final expression = BaseControlExpression.whileLoop(loop.condition);
 
     _visitControlBlock(
       ControlBlock.fromLabelled(
         loop,
-        loop.doWhile == true ? ControlExpression.doStatement : expression,
+        loop.doWhile == true ? BaseControlExpression.doStatement : expression,
       ),
       output,
     );
@@ -115,8 +115,8 @@ abstract mixin class ControlBlockEmitter
         ControlBlock.fromLabelled(
           loop,
           loop.async == true
-              ? ControlExpression.awaitForLoop(loop.variable, loop.object)
-              : ControlExpression.forInLoop(loop.variable, loop.object),
+              ? BaseControlExpression.awaitForLoop(loop.variable, loop.object)
+              : BaseControlExpression.forInLoop(loop.variable, loop.object),
         ),
         output,
       );
@@ -126,7 +126,7 @@ abstract mixin class ControlBlockEmitter
       _visitControlBlock(
         ControlBlock.fromLabelled(
           loop,
-          ControlExpression.forLoop(
+          BaseControlExpression.forLoop(
             loop.initialize,
             loop.condition,
             loop.advance,
@@ -136,9 +136,9 @@ abstract mixin class ControlBlockEmitter
       );
 
   @visibleForTesting
-  ControlExpression visitCatchBlock(CatchBlock block) {
+  BaseControlExpression visitCatchBlock(CatchBlock block) {
     if (block.type == null) {
-      return ControlExpression.catchStatement(
+      return BaseControlExpression.catchStatement(
         block.exception ?? '_',
         block.stacktrace,
       );
@@ -146,12 +146,12 @@ abstract mixin class ControlBlockEmitter
 
     // omit catch clause if exception and stacktrace are unspecified
     if (block.exception == null && block.stacktrace == null) {
-      return ControlExpression.onStatement(block.type!);
+      return BaseControlExpression.onStatement(block.type!);
     }
 
-    return ControlExpression.onStatement(
+    return BaseControlExpression.onStatement(
       block.type!,
-      ControlExpression.catchStatement(
+      BaseControlExpression.catchStatement(
         block.exception ?? '_',
         block.stacktrace,
       ),
@@ -161,7 +161,7 @@ abstract mixin class ControlBlockEmitter
   @override
   StringSink visitTryCatch(TryCatch block, [StringSink? output]) => _visitAll(
     (() sync* {
-      yield ControlBlock.from(block, ControlExpression.tryStatement);
+      yield ControlBlock.from(block, BaseControlExpression.tryStatement);
 
       yield* block.handlers.map(
         (h) => ControlBlock.from(h, visitCatchBlock(h)),
@@ -170,7 +170,7 @@ abstract mixin class ControlBlockEmitter
       if (block.handleAll == null) return;
 
       yield ControlBlock(
-        expression: ControlExpression.finallyStatement,
+        expression: BaseControlExpression.finallyStatement,
         body: block.handleAll,
       );
     })(),
@@ -188,10 +188,10 @@ abstract mixin class ControlBlockEmitter
     return output;
   }
 
-  ControlExpression _visitBranch(Branch branch, bool first) {
+  BaseControlExpression _visitBranch(Branch branch, bool first) {
     final condition =
         branch.condition != null
-            ? ControlExpression.ifStatement(branch.condition!)
+            ? BaseControlExpression.ifStatement(branch.condition!)
             : null;
 
     if (first) {
@@ -202,7 +202,7 @@ abstract mixin class ControlBlockEmitter
           ));
     }
 
-    return ControlExpression.elseStatement(condition);
+    return BaseControlExpression.elseStatement(condition);
   }
 
   @override
@@ -282,7 +282,7 @@ abstract mixin class ControlBlockEmitter
   ]) {
     output ??= StringBuffer();
 
-    ControlExpression.switchStatement(block.value).accept(this, output);
+    BaseControlExpression.switchStatement(block.value).accept(this, output);
 
     output.writeln(' {');
 
@@ -299,7 +299,7 @@ abstract mixin class ControlBlockEmitter
   StringSink visitSwitchStatement(SwitchStatement block, [StringSink? output]) {
     output ??= StringBuffer();
 
-    ControlExpression.switchStatement(block.value).accept(this, output);
+    BaseControlExpression.switchStatement(block.value).accept(this, output);
 
     output.writeln(' {');
 
