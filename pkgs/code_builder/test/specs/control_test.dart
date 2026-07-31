@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 
 import '../common.dart';
 
-extension on CatchBlock {
+extension on Catch {
   TryCatch get blank => TryCatch((builder) {
     builder.addCatch(this);
   });
@@ -150,7 +150,7 @@ void main() {
             (b) =>
                 b
                   ..condition = refer('x').equalTo(literal(1))
-                  ..body = refer('print').call([literal('one')]).statement,
+                  ..addExpression(refer('print').call([literal('one')])),
           ),
         ),
       );
@@ -202,9 +202,12 @@ void main() {
             ),
           )
           ..add(
-            Branch.from(
-              refer('x').equalTo(literal(2)),
-              refer('print').call([literal('two')]).statement,
+            Branch(
+              (branch) =>
+                  branch
+                    ..condition = refer('x').equalTo(literal(2))
+                    ..addExpression(refer('print').call([literal('two')]))
+                    ..addCode(const Code('// do something else\n')),
             ),
           )
           ..addElse(refer('print').call([literal('other')]).statement);
@@ -217,6 +220,7 @@ if (x == 1) {
   print('one');
 } else if (x == 2) {
   print('two');
+  // do something else
 } else {
   print('other');
 }'''),
@@ -227,7 +231,9 @@ if (x == 1) {
       final tree = Branch((b) {
         b
           ..condition = refer('loggedIn')
-          ..body = refer('showDashboard').call([]).statement;
+          ..body = refer('getDashboard').call([]).awaited.statement
+          ..addExpression(refer('showDashboard').call([]))
+          ..addCode(const Code('// comment\n'));
       }).asConditional.elseIf(
         Branch((b) {
           b
@@ -240,7 +246,9 @@ if (x == 1) {
         tree,
         equalsDart('''
 if (loggedIn) {
+  await getDashboard();
   showDashboard();
+  // comment
 } else if (isGuest) {
   showGuest();
 }'''),
@@ -276,12 +284,12 @@ if (ready) {
 
   group('catch block', () {
     test('should emit catch with default exception name', () {
-      final catchBlock = CatchBlock((b) => b..body = literal(1).statement);
+      final catchBlock = Catch((b) => b..body = literal(1).statement);
       expect(catchBlock.blank, equalsDart('try {} catch (_) {\n  1;\n}'));
     });
 
     test('should emit catch with custom exception name', () {
-      final catchBlock = CatchBlock(
+      final catchBlock = Catch(
         (b) =>
             b
               ..exception = 'err'
@@ -291,7 +299,7 @@ if (ready) {
     });
 
     test('should emit catch with exception and stacktrace', () {
-      final catchBlock = CatchBlock(
+      final catchBlock = Catch(
         (b) =>
             b
               ..exception = 'e'
@@ -305,7 +313,7 @@ if (ready) {
     });
 
     test('should emit an on block', () {
-      final catchBlock = CatchBlock(
+      final catchBlock = Catch(
         (b) =>
             b
               ..type = refer('FormatException')
@@ -318,7 +326,7 @@ if (ready) {
     });
 
     test('should emit on-type catch block', () {
-      final catchBlock = CatchBlock(
+      final catchBlock = Catch(
         (b) =>
             b
               ..type = refer('FormatException')
@@ -345,9 +353,7 @@ if (ready) {
         b
           ..body = refer('mightFail').call([]).statement
           ..addCatch(
-            CatchBlock(
-              (cb) => cb.body = refer('handleError').call([]).statement,
-            ),
+            Catch((cb) => cb.body = refer('handleError').call([]).statement),
           );
       });
 
@@ -368,7 +374,7 @@ try {
             b
               ..body = refer('mightFail').call([]).statement
               ..addCatch(
-                CatchBlock(
+                Catch(
                   (c) =>
                       c
                         ..type = refer('HttpException')
@@ -394,7 +400,7 @@ try {
         b
           ..body = refer('mightFail').call([]).statement
           ..addCatch(
-            CatchBlock(
+            Catch(
               (cb) =>
                   cb
                     ..type = refer('HttpException')
@@ -424,7 +430,7 @@ try {
         b
           ..body = refer('foo').call([]).statement
           ..addCatch(
-            CatchBlock(
+            Catch(
               (cb) =>
                   cb
                     ..type = refer('FormatException')
@@ -433,7 +439,7 @@ try {
             ),
           )
           ..addCatch(
-            CatchBlock(
+            Catch(
               (cb) =>
                   cb
                     ..type = refer('SocketException')
@@ -442,7 +448,7 @@ try {
             ),
           )
           ..addCatch(
-            CatchBlock((cb) => cb.body = ControlFlow.rethrowVoid.statement),
+            Catch((cb) => cb.body = ControlFlow.rethrowVoid.statement),
           );
       });
 
@@ -467,7 +473,7 @@ try {
       final result =
           (TryCatchBuilder()
                 ..body = literal(0).statement
-                ..addCatch(CatchBlock((cb) => cb.body = literal(1).statement)))
+                ..addCatch(Catch((cb) => cb.body = literal(1).statement)))
               .build();
       expect(result.handlers, hasLength(1));
       expect(
@@ -486,7 +492,7 @@ try {
       final builder =
           TryCatchBuilder()
             ..body = literal(0).statement
-            ..addCatch(CatchBlock((cb) => cb.body = literal(1).statement))
+            ..addCatch(Catch((cb) => cb.body = literal(1).statement))
             ..addFinally(refer('done').statement);
 
       final result = builder.build();
@@ -1123,5 +1129,125 @@ switch (otherValue) {
 '''),
       );
     });
+  });
+
+  test('control flow blocks should be nestable', () {
+    final list = ['foo', 'bar', 'baz', 100];
+
+    final expr = TryCatch((builder) {
+      builder.body = const Code('// Parse the list\n');
+
+      for (final (index, item) in list.indexed) {
+        builder
+          ..addCode(Code('// Handle item ${index + 1}'))
+          ..addCode(
+            refer('list')
+                .property('elementAt')
+                .call([literal(index)])
+                .notEqualTo(literal(item))
+                .ifThen(literal('Invalid element $index').thrown.statement),
+          )
+          ..addCode(const Code('\n'));
+      }
+
+      builder
+        ..addExpression(refer('doSomething').call([refer('list')]))
+        ..addCatch(
+          Catch(
+            (builder) =>
+                builder
+                  ..exception = 'error'
+                  ..body = SwitchStatement(
+                    (s) =>
+                        s
+                          ..value = refer('error')
+                          ..add(
+                            Case.from(
+                              declareFinal(
+                                'error',
+                                type: refer('DoSomethingError'),
+                              ),
+                              refer(
+                                'fixSomething',
+                              ).call([refer('error')]).statement,
+                            ),
+                          )
+                          ..add(
+                            Case(
+                              (builder) =>
+                                  builder
+                                    ..pattern = declareFinal(
+                                      '_',
+                                      type: refer('String'),
+                                    )
+                                    ..body = refer('null').returned.statement
+                                    ..guard = refer(
+                                      'list',
+                                    ).property('isNotEmpty'),
+                            ),
+                          )
+                          ..add(Case.any(ControlFlow.rethrowVoid.statement)),
+                  ),
+          ),
+        );
+    });
+
+    final func = Method((b) {
+      b
+        ..name = 'handleList'
+        ..annotations.add(refer('internal'))
+        ..requiredParameters.add(
+          Parameter(
+            (p) =>
+                p
+                  ..name = 'list'
+                  ..type = refer('List'),
+          ),
+        )
+        ..body = expr;
+    });
+
+    expect(
+      func,
+      equalsDart('''
+@internal
+handleList(List list) {
+  try {
+    // Parse the list
+
+    // Handle item 1
+    if (list.elementAt(0) != 'foo') {
+      throw 'Invalid element 0';
+    }
+
+    // Handle item 2
+    if (list.elementAt(1) != 'bar') {
+      throw 'Invalid element 1';
+    }
+
+    // Handle item 3
+    if (list.elementAt(2) != 'baz') {
+      throw 'Invalid element 2';
+    }
+
+    // Handle item 4
+    if (list.elementAt(3) != 100) {
+      throw 'Invalid element 3';
+    }
+
+    doSomething(list);
+  } catch (error) {
+    switch (error) {
+      case final DoSomethingError error:
+        fixSomething(error);
+      case final String _ when list.isNotEmpty:
+        return null;
+      default:
+        rethrow;
+    }
+  }
+}
+'''),
+    );
   });
 }

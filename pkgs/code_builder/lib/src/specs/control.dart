@@ -135,27 +135,24 @@ abstract mixin class ControlBlockEmitter
         output,
       );
 
-  @visibleForTesting
-  BaseControlExpression visitCatchBlock(CatchBlock block) {
-    if (block.type == null) {
-      return BaseControlExpression.catchStatement(
-        block.exception ?? '_',
-        block.stacktrace,
-      );
-    }
-
+  BaseControlExpression _catchExpression(Catch block) {
     // omit catch clause if exception and stacktrace are unspecified
-    if (block.exception == null && block.stacktrace == null) {
+    if (block.type != null &&
+        block.exception == null &&
+        block.stacktrace == null) {
       return BaseControlExpression.onStatement(block.type!);
     }
 
-    return BaseControlExpression.onStatement(
-      block.type!,
-      BaseControlExpression.catchStatement(
-        block.exception ?? '_',
-        block.stacktrace,
-      ),
+    final statement = BaseControlExpression.catchStatement(
+      block.exception ?? '_',
+      block.stacktrace,
     );
+
+    if (block.type == null) {
+      return statement;
+    }
+
+    return BaseControlExpression.onStatement(block.type!, statement);
   }
 
   @override
@@ -164,7 +161,7 @@ abstract mixin class ControlBlockEmitter
       yield ControlBlock.from(block, BaseControlExpression.tryStatement);
 
       yield* block.handlers.map(
-        (h) => ControlBlock.from(h, visitCatchBlock(h)),
+        (h) => ControlBlock.from(h, _catchExpression(h)),
       );
 
       if (block.handleAll == null) return;

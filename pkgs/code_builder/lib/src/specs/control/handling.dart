@@ -9,12 +9,9 @@ part of '../control.dart';
 /// See [TryCatch]
 ///
 /// {@category controlFlow}
-abstract class CatchBlock
-    with ControlBody
-    implements Built<CatchBlock, CatchBlockBuilder> {
-  CatchBlock._();
-  factory CatchBlock([void Function(CatchBlockBuilder builder) updates]) =
-      _$CatchBlock;
+abstract class Catch with ControlBody implements Built<Catch, CatchBuilder> {
+  Catch._();
+  factory Catch([void Function(CatchBuilder builder) updates]) = _$Catch;
 
   /// The optional type of exception to catch (`on` clause).
   ///
@@ -76,7 +73,7 @@ abstract class TryCatch
   Code? get body;
 
   /// The `catch` clauses for this block.
-  BuiltList<CatchBlock> get handlers;
+  BuiltList<Catch> get handlers;
 
   /// The optional `finally` clause body.
   ///
@@ -104,7 +101,9 @@ abstract class TryCatch
 /// Builds a [TryCatch] block.
 ///
 /// {@category controlFlow}
-abstract class TryCatchBuilder implements Builder<TryCatch, TryCatchBuilder> {
+abstract class TryCatchBuilder
+    with ControlBodyBuilder
+    implements Builder<TryCatch, TryCatchBuilder> {
   TryCatchBuilder._();
   factory TryCatchBuilder() = _$TryCatchBuilder;
 
@@ -115,6 +114,8 @@ abstract class TryCatchBuilder implements Builder<TryCatch, TryCatchBuilder> {
   ///   body
   /// }
   /// ```
+  @override
+  // ignore: overridden_fields
   Code? body;
 
   /// The optional `finally` clause body.
@@ -127,10 +128,10 @@ abstract class TryCatchBuilder implements Builder<TryCatch, TryCatchBuilder> {
   Code? handleAll;
 
   /// The `catch` clauses for this block.
-  ListBuilder<CatchBlock> handlers = ListBuilder();
+  ListBuilder<Catch> handlers = ListBuilder();
 
   /// Build a `catch` clause and add it to [handlers].
-  void addCatch(CatchBlock block) => handlers.add(block);
+  void addCatch(Catch block) => handlers.add(block);
 
   /// Build a `finally` clause and update [handleAll].
   void addFinally(Code? code) => handleAll = code;

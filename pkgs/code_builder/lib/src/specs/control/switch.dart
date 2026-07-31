@@ -122,7 +122,7 @@ abstract class Case<T extends Spec?> implements Built<Case<T>, CaseBuilder<T>> {
 @internal
 @optionalTypeArgs
 @BuiltValue(instantiable: false)
-sealed class Switch<T extends Spec?> implements Code, Spec {
+abstract mixin class Switch<T extends Spec?> implements Code, Spec {
   /// The value being matched against.
   ///
   /// ```dart
@@ -140,7 +140,7 @@ sealed class Switch<T extends Spec?> implements Code, Spec {
 /// Base class for `switch` builders
 @internal
 @optionalTypeArgs
-sealed class SwitchBuilder<T extends Spec?> {
+abstract mixin class SwitchBuilder<T extends Spec?> {
   /// The value being matched against.
   ///
   /// ```dart
@@ -152,6 +152,11 @@ sealed class SwitchBuilder<T extends Spec?> {
 
   /// The cases in the `switch` body.
   ListBuilder<Case<T>> cases = ListBuilder();
+
+  /// Add a [Case] to this switch.
+  ///
+  /// Shorthand for `cases.add`.
+  void add(Case<T> item) => cases.add(item);
 }
 
 /// Represents a `switch` statement.
@@ -181,7 +186,8 @@ sealed class SwitchBuilder<T extends Spec?> {
 /// and guard clauses ([Case.guard]).
 ///
 abstract class SwitchStatement
-    implements Switch<Code?>, Built<SwitchStatement, SwitchStatementBuilder> {
+    with Switch<Code?>
+    implements Built<SwitchStatement, SwitchStatementBuilder> {
   SwitchStatement._();
 
   /// Build a [SwitchStatement].
@@ -224,9 +230,8 @@ abstract class SwitchStatement
 /// label is specified, it will be ignored.
 ///
 abstract class SwitchExpression extends Expression
-    implements
-        Switch<Expression>,
-        Built<SwitchExpression, SwitchExpressionBuilder> {
+    with Switch<Expression>
+    implements Built<SwitchExpression, SwitchExpressionBuilder> {
   SwitchExpression._();
 
   /// Build a [SwitchExpression].

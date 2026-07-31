@@ -70,28 +70,32 @@ class _$ForLoop extends ForLoop {
   }
 }
 
-class ForLoopBuilder implements Builder<ForLoop, ForLoopBuilder> {
+class ForLoopBuilder
+    with ControlBodyBuilder, ControlLabelBuilder
+    implements Builder<ForLoop, ForLoopBuilder> {
   _$ForLoop? _$v;
 
   Expression? _initialize;
   Expression? get initialize => _$this._initialize;
-  set initialize(Expression? initialize) => _$this._initialize = initialize;
+  set initialize(covariant Expression? initialize) =>
+      _$this._initialize = initialize;
 
   Expression? _condition;
   Expression? get condition => _$this._condition;
-  set condition(Expression? condition) => _$this._condition = condition;
+  set condition(covariant Expression? condition) =>
+      _$this._condition = condition;
 
   Expression? _advance;
   Expression? get advance => _$this._advance;
-  set advance(Expression? advance) => _$this._advance = advance;
+  set advance(covariant Expression? advance) => _$this._advance = advance;
 
   Code? _body;
   Code? get body => _$this._body;
-  set body(Code? body) => _$this._body = body;
+  set body(covariant Code? body) => _$this._body = body;
 
   String? _label;
   String? get label => _$this._label;
-  set label(String? label) => _$this._label = label;
+  set label(covariant String? label) => _$this._label = label;
 
   ForLoopBuilder();
 
@@ -109,7 +113,8 @@ class ForLoopBuilder implements Builder<ForLoop, ForLoopBuilder> {
   }
 
   @override
-  void replace(ForLoop other) {
+  // ignore: override_on_non_overriding_method
+  void replace(covariant ForLoop other) {
     _$v = other as _$ForLoop;
   }
 
@@ -200,28 +205,30 @@ class _$ForInLoop extends ForInLoop {
   }
 }
 
-class ForInLoopBuilder implements Builder<ForInLoop, ForInLoopBuilder> {
+class ForInLoopBuilder
+    with ControlBodyBuilder, ControlLabelBuilder
+    implements Builder<ForInLoop, ForInLoopBuilder> {
   _$ForInLoop? _$v;
 
   bool? _async;
   bool? get async => _$this._async;
-  set async(bool? async) => _$this._async = async;
+  set async(covariant bool? async) => _$this._async = async;
 
   Expression? _variable;
   Expression? get variable => _$this._variable;
-  set variable(Expression? variable) => _$this._variable = variable;
+  set variable(covariant Expression? variable) => _$this._variable = variable;
 
   Expression? _object;
   Expression? get object => _$this._object;
-  set object(Expression? object) => _$this._object = object;
+  set object(covariant Expression? object) => _$this._object = object;
 
   Code? _body;
   Code? get body => _$this._body;
-  set body(Code? body) => _$this._body = body;
+  set body(covariant Code? body) => _$this._body = body;
 
   String? _label;
   String? get label => _$this._label;
-  set label(String? label) => _$this._label = label;
+  set label(covariant String? label) => _$this._label = label;
 
   ForInLoopBuilder();
 
@@ -239,7 +246,8 @@ class ForInLoopBuilder implements Builder<ForInLoop, ForInLoopBuilder> {
   }
 
   @override
-  void replace(ForInLoop other) {
+  // ignore: override_on_non_overriding_method
+  void replace(covariant ForInLoop other) {
     _$v = other as _$ForInLoop;
   }
 
@@ -328,24 +336,27 @@ class _$WhileLoop extends WhileLoop {
   }
 }
 
-class WhileLoopBuilder implements Builder<WhileLoop, WhileLoopBuilder> {
+class WhileLoopBuilder
+    with ControlBodyBuilder, ControlLabelBuilder
+    implements Builder<WhileLoop, WhileLoopBuilder> {
   _$WhileLoop? _$v;
 
   bool? _doWhile;
   bool? get doWhile => _$this._doWhile;
-  set doWhile(bool? doWhile) => _$this._doWhile = doWhile;
+  set doWhile(covariant bool? doWhile) => _$this._doWhile = doWhile;
 
   Expression? _condition;
   Expression? get condition => _$this._condition;
-  set condition(Expression? condition) => _$this._condition = condition;
+  set condition(covariant Expression? condition) =>
+      _$this._condition = condition;
 
   Code? _body;
   Code? get body => _$this._body;
-  set body(Code? body) => _$this._body = body;
+  set body(covariant Code? body) => _$this._body = body;
 
   String? _label;
   String? get label => _$this._label;
-  set label(String? label) => _$this._label = label;
+  set label(covariant String? label) => _$this._label = label;
 
   WhileLoopBuilder();
 
@@ -362,7 +373,8 @@ class WhileLoopBuilder implements Builder<WhileLoop, WhileLoopBuilder> {
   }
 
   @override
-  void replace(WhileLoop other) {
+  // ignore: override_on_non_overriding_method
+  void replace(covariant WhileLoop other) {
     _$v = other as _$WhileLoop;
   }
 
@@ -475,7 +487,7 @@ class _$BranchBuilder extends BranchBuilder {
   }
 
   @override
-  void replace(Branch other) {
+  void replace(covariant Branch other) {
     _$v = other as _$Branch;
   }
 
@@ -592,7 +604,7 @@ class _$ConditionalBuilder extends ConditionalBuilder {
   }
 }
 
-class _$CatchBlock extends CatchBlock {
+class _$Catch extends Catch {
   @override
   final Reference? type;
   @override
@@ -602,22 +614,22 @@ class _$CatchBlock extends CatchBlock {
   @override
   final Code? body;
 
-  factory _$CatchBlock([void Function(CatchBlockBuilder)? updates]) =>
-      (CatchBlockBuilder()..update(updates))._build();
+  factory _$Catch([void Function(CatchBuilder)? updates]) =>
+      (CatchBuilder()..update(updates))._build();
 
-  _$CatchBlock._({this.type, this.exception, this.stacktrace, this.body})
+  _$Catch._({this.type, this.exception, this.stacktrace, this.body})
     : super._();
   @override
-  CatchBlock rebuild(void Function(CatchBlockBuilder) updates) =>
+  Catch rebuild(void Function(CatchBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  CatchBlockBuilder toBuilder() => CatchBlockBuilder()..replace(this);
+  CatchBuilder toBuilder() => CatchBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CatchBlock &&
+    return other is Catch &&
         type == other.type &&
         exception == other.exception &&
         stacktrace == other.stacktrace &&
@@ -637,7 +649,7 @@ class _$CatchBlock extends CatchBlock {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'CatchBlock')
+    return (newBuiltValueToStringHelper(r'Catch')
           ..add('type', type)
           ..add('exception', exception)
           ..add('stacktrace', stacktrace)
@@ -646,28 +658,31 @@ class _$CatchBlock extends CatchBlock {
   }
 }
 
-class CatchBlockBuilder implements Builder<CatchBlock, CatchBlockBuilder> {
-  _$CatchBlock? _$v;
+class CatchBuilder
+    with ControlBodyBuilder
+    implements Builder<Catch, CatchBuilder> {
+  _$Catch? _$v;
 
   Reference? _type;
   Reference? get type => _$this._type;
-  set type(Reference? type) => _$this._type = type;
+  set type(covariant Reference? type) => _$this._type = type;
 
   String? _exception;
   String? get exception => _$this._exception;
-  set exception(String? exception) => _$this._exception = exception;
+  set exception(covariant String? exception) => _$this._exception = exception;
 
   String? _stacktrace;
   String? get stacktrace => _$this._stacktrace;
-  set stacktrace(String? stacktrace) => _$this._stacktrace = stacktrace;
+  set stacktrace(covariant String? stacktrace) =>
+      _$this._stacktrace = stacktrace;
 
   Code? _body;
   Code? get body => _$this._body;
-  set body(Code? body) => _$this._body = body;
+  set body(covariant Code? body) => _$this._body = body;
 
-  CatchBlockBuilder();
+  CatchBuilder();
 
-  CatchBlockBuilder get _$this {
+  CatchBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _type = $v.type;
@@ -680,22 +695,22 @@ class CatchBlockBuilder implements Builder<CatchBlock, CatchBlockBuilder> {
   }
 
   @override
-  void replace(CatchBlock other) {
-    _$v = other as _$CatchBlock;
+  void replace(covariant Catch other) {
+    _$v = other as _$Catch;
   }
 
   @override
-  void update(void Function(CatchBlockBuilder)? updates) {
+  void update(void Function(CatchBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  CatchBlock build() => _build();
+  Catch build() => _build();
 
-  _$CatchBlock _build() {
+  _$Catch _build() {
     final _$result =
         _$v ??
-        _$CatchBlock._(
+        _$Catch._(
           type: type,
           exception: exception,
           stacktrace: stacktrace,
@@ -710,7 +725,7 @@ class _$TryCatch extends TryCatch {
   @override
   final Code? body;
   @override
-  final BuiltList<CatchBlock> handlers;
+  final BuiltList<Catch> handlers;
   @override
   final Code? handleAll;
 
@@ -770,13 +785,13 @@ class _$TryCatchBuilder extends TryCatchBuilder {
   }
 
   @override
-  ListBuilder<CatchBlock> get handlers {
+  ListBuilder<Catch> get handlers {
     _$this;
     return super.handlers;
   }
 
   @override
-  set handlers(ListBuilder<CatchBlock> handlers) {
+  set handlers(ListBuilder<Catch> handlers) {
     _$this;
     super.handlers = handlers;
   }
@@ -807,7 +822,7 @@ class _$TryCatchBuilder extends TryCatchBuilder {
   }
 
   @override
-  void replace(TryCatch other) {
+  void replace(covariant TryCatch other) {
     _$v = other as _$TryCatch;
   }
 
@@ -1018,9 +1033,8 @@ class _$SwitchStatement extends SwitchStatement {
 }
 
 class SwitchStatementBuilder
-    implements
-        Builder<SwitchStatement, SwitchStatementBuilder>,
-        SwitchBuilder<Code?> {
+    with SwitchBuilder<Code?>
+    implements Builder<SwitchStatement, SwitchStatementBuilder> {
   _$SwitchStatement? _$v;
 
   Expression? _value;
@@ -1135,9 +1149,8 @@ class _$SwitchExpression extends SwitchExpression {
 }
 
 class SwitchExpressionBuilder
-    implements
-        Builder<SwitchExpression, SwitchExpressionBuilder>,
-        SwitchBuilder<Expression> {
+    with SwitchBuilder<Expression>
+    implements Builder<SwitchExpression, SwitchExpressionBuilder> {
   _$SwitchExpression? _$v;
 
   Expression? _value;

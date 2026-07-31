@@ -27,7 +27,9 @@ abstract class Branch with ControlBody implements Built<Branch, BranchBuilder> {
 }
 
 /// Builds a [Conditional] branch.
-abstract class BranchBuilder implements Builder<Branch, BranchBuilder> {
+abstract class BranchBuilder
+    with ControlBodyBuilder
+    implements Builder<Branch, BranchBuilder> {
   BranchBuilder._();
   factory BranchBuilder() = _$BranchBuilder;
 
@@ -38,6 +40,8 @@ abstract class BranchBuilder implements Builder<Branch, BranchBuilder> {
   Expression? condition;
 
   /// The branch body.
+  @override
+  // ignore: overridden_fields
   Code? body;
 
   /// Set [condition] to an `if-case` expression, matching [object] against
