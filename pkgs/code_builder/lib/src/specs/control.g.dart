@@ -835,7 +835,6 @@ class _$TryBuilder extends TryBuilder {
   Try build() => _build();
 
   _$Try _build() {
-    Try._build(this);
     _$Try _$result;
     try {
       _$result =

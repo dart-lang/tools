@@ -11,7 +11,28 @@ part of '../control.dart';
 /// {@category controlFlow}
 abstract class Catch with ControlBody implements Built<Catch, CatchBuilder> {
   Catch._();
+
+  /// Build a catch block.
   factory Catch([void Function(CatchBuilder builder) updates]) = _$Catch;
+
+  /// Build a catch block from [body].
+  ///
+  /// Optionally, specify the exception and stacktrace variable names
+  /// using [exception] and [stacktrace]. Use [type] to specify an `on`
+  /// clause type.
+  factory Catch.from(
+    Code? body, {
+    Reference? type,
+    String? exception,
+    String? stacktrace,
+  }) => Catch(
+    (builder) =>
+        builder
+          ..body = body
+          ..type = type
+          ..exception = exception
+          ..stacktrace = stacktrace,
+  );
 
   /// The optional type of exception to catch (`on` clause).
   ///
@@ -56,7 +77,14 @@ abstract class Catch with ControlBody implements Built<Catch, CatchBuilder> {
 abstract class Try
     with ControlBody
     implements Built<Try, TryBuilder>, Code, Spec {
-  Try._();
+  Try._() {
+    if (handlers.isEmpty) {
+      throw ArgumentError(
+        'One or more `catch` clauses must be specified.',
+        'handlers',
+      );
+    }
+  }
 
   /// Build a [Try].
   factory Try([void Function(TryBuilder builder) updates]) = _$Try;
@@ -82,15 +110,6 @@ abstract class Try
   /// }
   /// ```
   Code? get handleAll;
-
-  /// Ensure [handlers] is not empty
-  @BuiltValueHook(finalizeBuilder: true)
-  static void _build(TryBuilder builder) =>
-      builder.handlers.isNotEmpty ||
-      (throw ArgumentError(
-        'One or more `catch` clauses must be specified.',
-        'handlers',
-      ));
 
   @override
   R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>

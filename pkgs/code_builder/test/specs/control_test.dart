@@ -1151,41 +1151,32 @@ switch (otherValue) {
       builder
         ..addExpression(refer('doSomething').call([refer('list')]))
         ..addCatch(
-          Catch(
-            (builder) =>
-                builder
-                  ..exception = 'error'
-                  ..body = SwitchStatement(
-                    (s) =>
-                        s
-                          ..value = refer('error')
-                          ..add(
-                            Case.from(
-                              declareFinal(
-                                'error',
-                                type: refer('DoSomethingError'),
-                              ),
-                              refer(
-                                'fixSomething',
-                              ).call([refer('error')]).statement,
-                            ),
-                          )
-                          ..add(
-                            Case(
-                              (builder) =>
-                                  builder
-                                    ..pattern = declareFinal(
-                                      '_',
-                                      type: refer('String'),
-                                    )
-                                    ..body = refer('null').returned.statement
-                                    ..guard = refer(
-                                      'list',
-                                    ).property('isNotEmpty'),
-                            ),
-                          )
-                          ..add(Case.any(Expression.rethrowVoid.statement)),
-                  ),
+          Catch.from(
+            SwitchStatement(
+              (s) =>
+                  s
+                    ..value = refer('error')
+                    ..add(
+                      Case.from(
+                        declareFinal('error', type: refer('DoSomethingError')),
+                        refer('fixSomething').call([refer('error')]).statement,
+                      ),
+                    )
+                    ..add(
+                      Case(
+                        (builder) =>
+                            builder
+                              ..pattern = declareFinal(
+                                '_',
+                                type: refer('String'),
+                              )
+                              ..body = refer('null').returned.statement
+                              ..guard = refer('list').property('isNotEmpty'),
+                      ),
+                    )
+                    ..add(Case.any(Expression.rethrowVoid.statement)),
+            ),
+            exception: 'error',
           ),
         );
     });
