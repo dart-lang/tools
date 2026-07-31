@@ -122,8 +122,15 @@ SourceEdit _appendToBlockList(
   // exists
   if (list.isNotEmpty) {
     final lastValueSpanEnd = list.nodes.last.span.end.offset;
-    final realEnd = yaml.substring(0, lastValueSpanEnd).trimRight().length;
-    final nextNewLineIndex = yaml.indexOf('\n', realEnd - 1);
+    var realEnd = lastValueSpanEnd;
+    while (realEnd > 0) {
+      if (yaml[realEnd - 1].trim().isEmpty) {
+        realEnd--;
+      } else {
+        break;
+      }
+    }
+    final nextNewLineIndex = yaml.indexOf('\n', realEnd > 0 ? realEnd - 1 : 0);
     if (nextNewLineIndex == -1) {
       formattedValue = getLineEnding(yaml) + formattedValue;
     } else {
