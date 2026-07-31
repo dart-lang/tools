@@ -6,7 +6,22 @@ part of '../control.dart';
 
 /// Represents a `catch` block.
 ///
-/// See [Try]
+/// Used within a [Try] block to handle exceptions of a specific type or generally.
+///
+/// Example:
+/// ```dart
+/// final catchBlock = Catch.from(
+///   refer('print').call([refer('e')]).statement,
+///   type: refer('FormatException'),
+///   exception: 'e',
+/// );
+///```
+/// Which represents:
+/// ```dart
+///  on FormatException catch (e) {
+///   print(e);
+/// }
+/// ```
 ///
 /// {@category controlFlow}
 abstract class Catch with ControlBody implements Built<Catch, CatchBuilder> {
@@ -72,6 +87,35 @@ abstract class Catch with ControlBody implements Built<Catch, CatchBuilder> {
 }
 
 /// Represents a `try`/`catch` block.
+///
+/// Constructs a `try` block with optional `catch` and `finally` clauses.
+///
+/// Example:
+/// ```dart
+/// final block = Try((b) {
+///   b
+///     ..body = refer('mightFail').call([]).statement
+///     ..addCatch(
+///       Catch.from(
+///         refer('print').call([refer('s')]).statement,
+///         type: refer('HttpException'),
+///         exception: 'e',
+///         stacktrace: 's',
+///       ),
+///     )
+///     ..addFinally(refer('cleanup').call([]).statement);
+/// });
+/// ```
+/// Which will produce:
+/// ```dart
+/// try {
+///   mightFail();
+/// } on HttpException catch (e, s) {
+///   print(s);
+/// } finally {
+///   cleanup();
+/// }
+/// ```
 ///
 /// {@category controlFlow}
 abstract class Try

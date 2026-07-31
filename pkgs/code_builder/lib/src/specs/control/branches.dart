@@ -5,6 +5,23 @@
 part of '../control.dart';
 
 /// Represents a [Conditional] branch.
+///
+/// Represents a single branch within an `if`/`else if`/`else` conditional tree.
+///
+/// Example:
+/// ```dart
+/// final branch = Branch.from(
+///   refer('x').equalTo(literal(1)),
+///   refer('print').call([literal('one')]).statement,
+/// );
+/// ```
+/// Which represents:
+/// ```dart
+/// if (x == 1) {
+///   print('one');
+/// }
+/// ```
+///
 abstract class Branch with ControlBody implements Built<Branch, BranchBuilder> {
   Branch._();
 

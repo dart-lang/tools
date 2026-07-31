@@ -494,13 +494,11 @@ try {
         b
           ..body = refer('mightFail').call([]).statement
           ..addCatch(
-            Catch(
-              (cb) =>
-                  cb
-                    ..type = refer('HttpException')
-                    ..exception = 'e'
-                    ..stacktrace = 's'
-                    ..body = refer('print').call([refer('s')]).statement,
+            Catch.from(
+              refer('print').call([refer('s')]).statement,
+              type: refer('HttpException'),
+              exception: 'e',
+              stacktrace: 's',
             ),
           )
           ..addFinally(refer('cleanup').call([]).statement);
