@@ -28,8 +28,8 @@ export 'src/specs/control.dart'
         SwitchExpressionBuilder,
         SwitchStatement,
         SwitchStatementBuilder,
-        TryCatch,
-        TryCatchBuilder,
+        Try,
+        TryBuilder,
         WhileLoop,
         WhileLoopBuilder;
 export 'src/specs/directive.dart'

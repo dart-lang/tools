@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 import '../common.dart';
 
 extension on Catch {
-  TryCatch get blank => TryCatch((builder) {
+  Try get blank => Try((builder) {
     builder.addCatch(this);
   });
 }
@@ -343,13 +343,13 @@ if (ready) {
   group('try-catch', () {
     test('should throw if no catch handlers are defined', () {
       expect(
-        () => TryCatch((b) => b.body = literal(1).statement),
+        () => Try((b) => b.body = literal(1).statement),
         throwsArgumentError,
       );
     });
 
     test('should emit try/catch block', () {
-      final block = TryCatch((b) {
+      final block = Try((b) {
         b
           ..body = refer('mightFail').call([]).statement
           ..addCatch(
@@ -369,7 +369,7 @@ try {
     });
 
     test('should emit an on block', () {
-      final block = TryCatch(
+      final block = Try(
         (b) =>
             b
               ..body = refer('mightFail').call([]).statement
@@ -396,7 +396,7 @@ try {
     });
 
     test('should emit try/on-type/catch with finally', () {
-      final block = TryCatch((b) {
+      final block = Try((b) {
         b
           ..body = refer('mightFail').call([]).statement
           ..addCatch(
@@ -426,7 +426,7 @@ try {
     });
 
     test('should emit try with multiple catch clauses', () {
-      final block = TryCatch((b) {
+      final block = Try((b) {
         b
           ..body = refer('foo').call([]).statement
           ..addCatch(
@@ -471,7 +471,7 @@ try {
   group('try-catch builder', () {
     test('addCatch should append to handlers', () {
       final result =
-          (TryCatchBuilder()
+          (TryBuilder()
                 ..body = literal(0).statement
                 ..addCatch(Catch((cb) => cb.body = literal(1).statement)))
               .build();
@@ -490,7 +490,7 @@ try {
 
     test('addFinally should update handleAll', () {
       final builder =
-          TryCatchBuilder()
+          TryBuilder()
             ..body = literal(0).statement
             ..addCatch(Catch((cb) => cb.body = literal(1).statement))
             ..addFinally(refer('done').statement);
@@ -1134,7 +1134,7 @@ switch (otherValue) {
   test('control flow blocks should be nestable', () {
     final list = ['foo', 'bar', 'baz', 100];
 
-    final expr = TryCatch((builder) {
+    final expr = Try((builder) {
       builder.body = const Code('// Parse the list\n');
 
       for (final (index, item) in list.indexed) {

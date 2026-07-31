@@ -6,7 +6,7 @@ part of '../control.dart';
 
 /// Represents a `catch` block.
 ///
-/// See [TryCatch]
+/// See [Try]
 ///
 /// {@category controlFlow}
 abstract class Catch with ControlBody implements Built<Catch, CatchBuilder> {
@@ -53,14 +53,13 @@ abstract class Catch with ControlBody implements Built<Catch, CatchBuilder> {
 /// Represents a `try`/`catch` block.
 ///
 /// {@category controlFlow}
-abstract class TryCatch
+abstract class Try
     with ControlBody
-    implements Built<TryCatch, TryCatchBuilder>, Code, Spec {
-  TryCatch._();
+    implements Built<Try, TryBuilder>, Code, Spec {
+  Try._();
 
-  /// Build a [TryCatch].
-  factory TryCatch([void Function(TryCatchBuilder builder) updates]) =
-      _$TryCatch;
+  /// Build a [Try].
+  factory Try([void Function(TryBuilder builder) updates]) = _$Try;
 
   /// The body of the `try` clause.
   ///
@@ -86,7 +85,7 @@ abstract class TryCatch
 
   /// Ensure [handlers] is not empty
   @BuiltValueHook(finalizeBuilder: true)
-  static void _build(TryCatchBuilder builder) =>
+  static void _build(TryBuilder builder) =>
       builder.handlers.isNotEmpty ||
       (throw ArgumentError(
         'One or more `catch` clauses must be specified.',
@@ -95,17 +94,17 @@ abstract class TryCatch
 
   @override
   R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
-      visitor.visitTryCatch(this, context);
+      visitor.visitTry(this, context);
 }
 
-/// Builds a [TryCatch] block.
+/// Builds a [Try] block.
 ///
 /// {@category controlFlow}
-abstract class TryCatchBuilder
+abstract class TryBuilder
     with ControlBodyBuilder
-    implements Builder<TryCatch, TryCatchBuilder> {
-  TryCatchBuilder._();
-  factory TryCatchBuilder() = _$TryCatchBuilder;
+    implements Builder<Try, TryBuilder> {
+  TryBuilder._();
+  factory TryBuilder() = _$TryBuilder;
 
   /// The body of the `try` clause.
   ///

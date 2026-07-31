@@ -721,7 +721,7 @@ class CatchBuilder
   }
 }
 
-class _$TryCatch extends TryCatch {
+class _$Try extends Try {
   @override
   final Code? body;
   @override
@@ -729,21 +729,21 @@ class _$TryCatch extends TryCatch {
   @override
   final Code? handleAll;
 
-  factory _$TryCatch([void Function(TryCatchBuilder)? updates]) =>
-      (TryCatchBuilder()..update(updates)).build() as _$TryCatch;
+  factory _$Try([void Function(TryBuilder)? updates]) =>
+      (TryBuilder()..update(updates)).build() as _$Try;
 
-  _$TryCatch._({this.body, required this.handlers, this.handleAll}) : super._();
+  _$Try._({this.body, required this.handlers, this.handleAll}) : super._();
   @override
-  TryCatch rebuild(void Function(TryCatchBuilder) updates) =>
+  Try rebuild(void Function(TryBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$TryCatchBuilder toBuilder() => _$TryCatchBuilder()..replace(this);
+  _$TryBuilder toBuilder() => _$TryBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is TryCatch &&
+    return other is Try &&
         body == other.body &&
         handlers == other.handlers &&
         handleAll == other.handleAll;
@@ -761,7 +761,7 @@ class _$TryCatch extends TryCatch {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'TryCatch')
+    return (newBuiltValueToStringHelper(r'Try')
           ..add('body', body)
           ..add('handlers', handlers)
           ..add('handleAll', handleAll))
@@ -769,8 +769,8 @@ class _$TryCatch extends TryCatch {
   }
 }
 
-class _$TryCatchBuilder extends TryCatchBuilder {
-  _$TryCatch? _$v;
+class _$TryBuilder extends TryBuilder {
+  _$Try? _$v;
 
   @override
   Code? get body {
@@ -808,9 +808,9 @@ class _$TryCatchBuilder extends TryCatchBuilder {
     super.handleAll = handleAll;
   }
 
-  _$TryCatchBuilder() : super._();
+  _$TryBuilder() : super._();
 
-  TryCatchBuilder get _$this {
+  TryBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       super.body = $v.body;
@@ -822,40 +822,32 @@ class _$TryCatchBuilder extends TryCatchBuilder {
   }
 
   @override
-  void replace(covariant TryCatch other) {
-    _$v = other as _$TryCatch;
+  void replace(covariant Try other) {
+    _$v = other as _$Try;
   }
 
   @override
-  void update(void Function(TryCatchBuilder)? updates) {
+  void update(void Function(TryBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  TryCatch build() => _build();
+  Try build() => _build();
 
-  _$TryCatch _build() {
-    TryCatch._build(this);
-    _$TryCatch _$result;
+  _$Try _build() {
+    Try._build(this);
+    _$Try _$result;
     try {
       _$result =
           _$v ??
-          _$TryCatch._(
-            body: body,
-            handlers: handlers.build(),
-            handleAll: handleAll,
-          );
+          _$Try._(body: body, handlers: handlers.build(), handleAll: handleAll);
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'handlers';
         handlers.build();
       } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'TryCatch',
-          _$failedField,
-          e.toString(),
-        );
+        throw BuiltValueNestedFieldError(r'Try', _$failedField, e.toString());
       }
       rethrow;
     }

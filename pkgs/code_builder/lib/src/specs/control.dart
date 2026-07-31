@@ -59,7 +59,7 @@ abstract class ControlBlockVisitor<T>
   T visitWhileLoop(WhileLoop loop, [T? context]);
   T visitForInLoop(ForInLoop loop, [T? context]);
   T visitForLoop(ForLoop loop, [T? context]);
-  T visitTryCatch(TryCatch block, [T? context]);
+  T visitTry(Try block, [T? context]);
   T visitConditional(Conditional block, [T? context]);
   T visitControlExpression(ControlExpression expression, [T? context]);
   T visitSwitchExpression(SwitchExpression block, [T? context]);
@@ -156,7 +156,7 @@ abstract mixin class ControlBlockEmitter
   }
 
   @override
-  StringSink visitTryCatch(TryCatch block, [StringSink? output]) => _visitAll(
+  StringSink visitTry(Try block, [StringSink? output]) => _visitAll(
     (() sync* {
       yield ControlBlock.from(block, BaseControlExpression.tryStatement);
 

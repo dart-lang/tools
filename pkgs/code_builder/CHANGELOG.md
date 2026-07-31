@@ -1,8 +1,8 @@
 ## 4.12.0-wip
 
 * Add `ForLoop`, `ForInLoop`, and `WhileLoop` classes to support control-flow loops.
-* Add `Conditional` and `BranchBuilder` classes to support `if` statements and trees.
-* Add `TryCatch` and `CatchBlock` classes to support `try`/`catch` blocks.
+* Add `Conditional`, `Branch`, and `BranchBuilder` classes to support `if` statements and trees.
+* Add `Try` and `Catch` classes to support `try`/`catch` blocks.
 * Add `Case`, `SwitchExpression`, and `SwitchStatement` classes to support `switch`
   expressions/statements.
 * Add `yielded`, `yieldStarred`, `ifThen`, `ifThenReturn`, `loopWhile`, `loopDoWhile`,
