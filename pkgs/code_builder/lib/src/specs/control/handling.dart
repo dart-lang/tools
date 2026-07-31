@@ -78,9 +78,10 @@ abstract class Try
     with ControlBody
     implements Built<Try, TryBuilder>, Code, Spec {
   Try._() {
-    if (handlers.isEmpty) {
+    if (handlers.isEmpty && handleAll == null) {
       throw ArgumentError(
-        'One or more `catch` clauses must be specified.',
+        'Either one or more `catch` clauses or a `finally` clause '
+            'must be specified',
         'handlers',
       );
     }

@@ -75,7 +75,31 @@ abstract class BranchBuilder
 /// {@category controlFlow}
 abstract class Conditional
     implements Built<Conditional, ConditionalBuilder>, Code, Spec {
-  Conditional._();
+  Conditional._() {
+    if (branches.isEmpty) {
+      throw ArgumentError(
+        'A conditional tree must have one or more branches',
+        'branches',
+      );
+    }
+
+    if (branches.first.condition == null) {
+      throw ArgumentError(
+        'The first branch in a conditional tree must specify a condition',
+        'Branch.condition',
+      );
+    }
+
+    for (final branch in branches.take(branches.length - 1)) {
+      if (branch.condition == null) {
+        throw ArgumentError(
+          'Only the last branch in a conditional tree can omit '
+              'the condition',
+          'Branch.condition',
+        );
+      }
+    }
+  }
 
   /// Build a [Conditional]
   factory Conditional(void Function(ConditionalBuilder tree) builder) =

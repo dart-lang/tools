@@ -143,6 +143,87 @@ void main() {
   });
 
   group('conditional', () {
+    test('should require one or more branches', () {
+      expect(
+        () => Conditional((tree) {}),
+        throwsA(
+          allOf(
+            isArgumentError,
+            predicate(
+              (e) => e.toString().contains('must have one or more branches'),
+              'has correct error message',
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('should require a condition on the first branch', () {
+      expect(
+        () => Conditional((tree) {
+          tree.add(Branch((branch) {}));
+        }),
+        throwsA(
+          allOf(
+            isArgumentError,
+            predicate(
+              (e) => e.toString().contains(
+                'The first branch in a conditional tree must specify a '
+                'condition',
+              ),
+              'has correct error message',
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('should throw error with multiple else blocks', () {
+      expect(
+        () => Conditional((tree) {
+          tree
+            ..add(Branch((branch) => branch..condition = literalTrue))
+            ..add(Branch((branch) {}))
+            ..add(Branch((branch) {}));
+        }),
+        throwsA(
+          allOf(
+            isArgumentError,
+            predicate(
+              (e) => e.toString().contains(
+                'Only the last branch in a conditional tree can omit the '
+                'condition',
+              ),
+              'has correct error message',
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('should throw error with misplaced else block', () {
+      expect(
+        () => Conditional((tree) {
+          tree
+            ..add(Branch((branch) => branch..condition = literalTrue))
+            ..add(Branch((branch) {}))
+            ..add(Branch((branch) => branch..condition = literalTrue));
+        }),
+        throwsA(
+          allOf(
+            isArgumentError,
+            predicate(
+              (e) => e.toString().contains(
+                'Only the last branch in a conditional tree can omit the '
+                'condition',
+              ),
+              'has correct error message',
+            ),
+          ),
+        ),
+      );
+    });
+
     test('should emit a single if block', () {
       final tree = Conditional(
         (tree) => tree.add(
@@ -274,12 +355,6 @@ if (ready) {
 }'''),
       );
     });
-
-    test('should throw an argument error', () {
-      final tree = Conditional.from([Branch((branch) {})]);
-
-      expect(() => tree.accept(DartEmitter()), throwsArgumentError);
-    });
   });
 
   group('catch block', () {
@@ -345,6 +420,25 @@ if (ready) {
       expect(
         () => Try((b) => b.body = literal(1).statement),
         throwsArgumentError,
+      );
+    });
+
+    test('should allow finally with no catch handlers', () {
+      final block = Try((b) {
+        b
+          ..body = refer('mightFail').call([]).statement
+          ..addFinally(Expression.returnVoid.statement);
+      });
+
+      expect(
+        block,
+        equalsDart('''
+try {
+  mightFail();
+} finally {
+  return;
+}
+'''),
       );
     });
 

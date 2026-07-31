@@ -192,11 +192,8 @@ abstract mixin class ControlBlockEmitter
             : null;
 
     if (first) {
-      return condition ??
-          (throw ArgumentError(
-            'The first branch in a conditional must specify a condition',
-            'condition',
-          ));
+      // not null - checked when conditional is built
+      return condition!;
     }
 
     return BaseControlExpression.elseStatement(condition);
