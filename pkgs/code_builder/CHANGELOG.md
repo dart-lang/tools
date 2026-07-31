@@ -3,14 +3,12 @@
 * Add `ForLoop`, `ForInLoop`, and `WhileLoop` classes to support control-flow loops.
 * Add `Conditional`, `Branch`, and `BranchBuilder` classes to support `if` statements and trees.
 * Add `Try` and `Catch` classes to support `try`/`catch` blocks.
-* Add `Case`, `SwitchExpression`, and `SwitchStatement` classes to support `switch`
-  expressions/statements.
+* Add `Case`, `SwitchExpression`, and `SwitchStatement` classes to support `switch` expressions/statements.
 * Add `yielded`, `yieldStarred`, `ifThen`, `ifThenReturn`, `loopWhile`, `loopDoWhile`,
-  and `loopForIn` methods to `Expression` via `ControlFlow` extension.
-* Add static constants `breakVoid`, `continueVoid`, `returnVoid`, and `rethrowVoid`
-  (on `ControlFlow`) and `wildcard` (on `Expression`).
+  and `loopForIn` methods to `Expression`.
+* Add static constants `breakVoid`, `continueVoid`, `returnVoid`, `rethrowVoid`, and `wildcard` on `Expression`.
 * Add static methods `breakLabel`, `continueLabel`, `collectionIf`, `collectionElse`,
-  `collectionFor`, `collectionForIn`, and `ifCase` to `ControlFlow`.
+  `collectionFor`, `collectionForIn`, and `ifCase` to `Expression`.
 * Simplify usage examples on the README.
 * Ensure scoped lint ignores
   (such as `// ignore_for_file: no_leading_underscores_for_library_prefixes`)

@@ -165,7 +165,7 @@ void main() {
             (b) =>
                 b
                   ..ifCase(object: refer('x'), pattern: refer('y'))
-                  ..body = ControlFlow.returnVoid.statement,
+                  ..body = Expression.returnVoid.statement,
           ),
         ),
       );
@@ -184,7 +184,7 @@ void main() {
                     pattern: refer('y'),
                     guard: refer('z'),
                   )
-                  ..body = ControlFlow.returnVoid.statement,
+                  ..body = Expression.returnVoid.statement,
           ),
         ),
       );
@@ -378,7 +378,7 @@ try {
                   (c) =>
                       c
                         ..type = refer('HttpException')
-                        ..body = ControlFlow.rethrowVoid.statement,
+                        ..body = Expression.rethrowVoid.statement,
                 ),
               ),
       );
@@ -447,9 +447,7 @@ try {
                     ..body = refer('handleSocket').call([]).statement,
             ),
           )
-          ..addCatch(
-            Catch((cb) => cb.body = ControlFlow.rethrowVoid.statement),
-          );
+          ..addCatch(Catch((cb) => cb.body = Expression.rethrowVoid.statement));
       });
 
       expect(
@@ -619,7 +617,7 @@ switch (x) {
               ..body = Block.of([
                 refer('print').call([literal('one')]).statement,
                 refer('print').call([literal('two')]).statement,
-                ControlFlow.breakVoid.statement,
+                Expression.breakVoid.statement,
               ]);
           }),
         );
@@ -853,7 +851,7 @@ switch (cmd) {
               (cb) =>
                   cb
                     ..pattern = literal(0)
-                    ..body = ControlFlow.continueLabel('other').statement,
+                    ..body = Expression.continueLabel('other').statement,
             ),
             Case(
               (cb) =>
@@ -1186,7 +1184,7 @@ switch (otherValue) {
                                     ).property('isNotEmpty'),
                             ),
                           )
-                          ..add(Case.any(ControlFlow.rethrowVoid.statement)),
+                          ..add(Case.any(Expression.rethrowVoid.statement)),
                   ),
           ),
         );

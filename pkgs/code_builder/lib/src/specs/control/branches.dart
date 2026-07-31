@@ -54,13 +54,13 @@ abstract class BranchBuilder
   /// if (object case pattern when guard)
   /// ```
   ///
-  /// Equivalent to using [ControlFlow.ifCase].
+  /// Equivalent to using [Expression.ifCase].
   void ifCase({
     required Expression object,
     required Expression pattern,
     Expression? guard,
   }) =>
-      condition = ControlFlow.ifCase(
+      condition = Expression.ifCase(
         object: object,
         pattern: pattern,
         guard: guard,

@@ -42,7 +42,6 @@ export 'src/specs/expression.dart'
         ClosureExpression,
         CodeExpression,
         ControlExpression,
-        ControlFlow,
         Expression,
         ExpressionEmitter,
         ExpressionVisitor,
