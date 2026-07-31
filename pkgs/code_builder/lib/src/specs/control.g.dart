@@ -14,7 +14,7 @@ class _$ForLoop extends ForLoop {
   @override
   final Expression? advance;
   @override
-  final Block body;
+  final Code? body;
   @override
   final String? label;
 
@@ -25,7 +25,7 @@ class _$ForLoop extends ForLoop {
     this.initialize,
     this.condition,
     this.advance,
-    required this.body,
+    this.body,
     this.label,
   }) : super._();
   @override
@@ -85,9 +85,9 @@ class ForLoopBuilder implements Builder<ForLoop, ForLoopBuilder> {
   Expression? get advance => _$this._advance;
   set advance(Expression? advance) => _$this._advance = advance;
 
-  BlockBuilder? _body;
-  BlockBuilder get body => _$this._body ??= BlockBuilder();
-  set body(BlockBuilder? body) => _$this._body = body;
+  Code? _body;
+  Code? get body => _$this._body;
+  set body(Code? body) => _$this._body = body;
 
   String? _label;
   String? get label => _$this._label;
@@ -101,7 +101,7 @@ class ForLoopBuilder implements Builder<ForLoop, ForLoopBuilder> {
       _initialize = $v.initialize;
       _condition = $v.condition;
       _advance = $v.advance;
-      _body = $v.body.toBuilder();
+      _body = $v.body;
       _label = $v.label;
       _$v = null;
     }
@@ -122,31 +122,15 @@ class ForLoopBuilder implements Builder<ForLoop, ForLoopBuilder> {
   ForLoop build() => _build();
 
   _$ForLoop _build() {
-    _$ForLoop _$result;
-    try {
-      _$result =
-          _$v ??
-          _$ForLoop._(
-            initialize: initialize,
-            condition: condition,
-            advance: advance,
-            body: body.build(),
-            label: label,
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'body';
-        body.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'ForLoop',
-          _$failedField,
-          e.toString(),
+    final _$result =
+        _$v ??
+        _$ForLoop._(
+          initialize: initialize,
+          condition: condition,
+          advance: advance,
+          body: body,
+          label: label,
         );
-      }
-      rethrow;
-    }
     replace(_$result);
     return _$result;
   }
@@ -160,7 +144,7 @@ class _$ForInLoop extends ForInLoop {
   @override
   final Expression object;
   @override
-  final Block body;
+  final Code? body;
   @override
   final String? label;
 
@@ -171,7 +155,7 @@ class _$ForInLoop extends ForInLoop {
     this.async,
     required this.variable,
     required this.object,
-    required this.body,
+    this.body,
     this.label,
   }) : super._();
   @override
@@ -231,9 +215,9 @@ class ForInLoopBuilder implements Builder<ForInLoop, ForInLoopBuilder> {
   Expression? get object => _$this._object;
   set object(Expression? object) => _$this._object = object;
 
-  BlockBuilder? _body;
-  BlockBuilder get body => _$this._body ??= BlockBuilder();
-  set body(BlockBuilder? body) => _$this._body = body;
+  Code? _body;
+  Code? get body => _$this._body;
+  set body(Code? body) => _$this._body = body;
 
   String? _label;
   String? get label => _$this._label;
@@ -247,7 +231,7 @@ class ForInLoopBuilder implements Builder<ForInLoop, ForInLoopBuilder> {
       _async = $v.async;
       _variable = $v.variable;
       _object = $v.object;
-      _body = $v.body.toBuilder();
+      _body = $v.body;
       _label = $v.label;
       _$v = null;
     }
@@ -268,39 +252,23 @@ class ForInLoopBuilder implements Builder<ForInLoop, ForInLoopBuilder> {
   ForInLoop build() => _build();
 
   _$ForInLoop _build() {
-    _$ForInLoop _$result;
-    try {
-      _$result =
-          _$v ??
-          _$ForInLoop._(
-            async: async,
-            variable: BuiltValueNullFieldError.checkNotNull(
-              variable,
-              r'ForInLoop',
-              'variable',
-            ),
-            object: BuiltValueNullFieldError.checkNotNull(
-              object,
-              r'ForInLoop',
-              'object',
-            ),
-            body: body.build(),
-            label: label,
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'body';
-        body.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'ForInLoop',
-          _$failedField,
-          e.toString(),
+    final _$result =
+        _$v ??
+        _$ForInLoop._(
+          async: async,
+          variable: BuiltValueNullFieldError.checkNotNull(
+            variable,
+            r'ForInLoop',
+            'variable',
+          ),
+          object: BuiltValueNullFieldError.checkNotNull(
+            object,
+            r'ForInLoop',
+            'object',
+          ),
+          body: body,
+          label: label,
         );
-      }
-      rethrow;
-    }
     replace(_$result);
     return _$result;
   }
@@ -312,19 +280,15 @@ class _$WhileLoop extends WhileLoop {
   @override
   final Expression condition;
   @override
-  final Block body;
+  final Code? body;
   @override
   final String? label;
 
   factory _$WhileLoop([void Function(WhileLoopBuilder)? updates]) =>
       (WhileLoopBuilder()..update(updates))._build();
 
-  _$WhileLoop._({
-    this.doWhile,
-    required this.condition,
-    required this.body,
-    this.label,
-  }) : super._();
+  _$WhileLoop._({this.doWhile, required this.condition, this.body, this.label})
+    : super._();
   @override
   WhileLoop rebuild(void Function(WhileLoopBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -375,9 +339,9 @@ class WhileLoopBuilder implements Builder<WhileLoop, WhileLoopBuilder> {
   Expression? get condition => _$this._condition;
   set condition(Expression? condition) => _$this._condition = condition;
 
-  BlockBuilder? _body;
-  BlockBuilder get body => _$this._body ??= BlockBuilder();
-  set body(BlockBuilder? body) => _$this._body = body;
+  Code? _body;
+  Code? get body => _$this._body;
+  set body(Code? body) => _$this._body = body;
 
   String? _label;
   String? get label => _$this._label;
@@ -390,7 +354,7 @@ class WhileLoopBuilder implements Builder<WhileLoop, WhileLoopBuilder> {
     if ($v != null) {
       _doWhile = $v.doWhile;
       _condition = $v.condition;
-      _body = $v.body.toBuilder();
+      _body = $v.body;
       _label = $v.label;
       _$v = null;
     }
@@ -411,34 +375,18 @@ class WhileLoopBuilder implements Builder<WhileLoop, WhileLoopBuilder> {
   WhileLoop build() => _build();
 
   _$WhileLoop _build() {
-    _$WhileLoop _$result;
-    try {
-      _$result =
-          _$v ??
-          _$WhileLoop._(
-            doWhile: doWhile,
-            condition: BuiltValueNullFieldError.checkNotNull(
-              condition,
-              r'WhileLoop',
-              'condition',
-            ),
-            body: body.build(),
-            label: label,
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'body';
-        body.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'WhileLoop',
-          _$failedField,
-          e.toString(),
+    final _$result =
+        _$v ??
+        _$WhileLoop._(
+          doWhile: doWhile,
+          condition: BuiltValueNullFieldError.checkNotNull(
+            condition,
+            r'WhileLoop',
+            'condition',
+          ),
+          body: body,
+          label: label,
         );
-      }
-      rethrow;
-    }
     replace(_$result);
     return _$result;
   }
@@ -448,12 +396,12 @@ class _$Branch extends Branch {
   @override
   final Expression? condition;
   @override
-  final Block body;
+  final Code? body;
 
   factory _$Branch([void Function(BranchBuilder)? updates]) =>
       (BranchBuilder()..update(updates)).build() as _$Branch;
 
-  _$Branch._({this.condition, required this.body}) : super._();
+  _$Branch._({this.condition, this.body}) : super._();
   @override
   Branch rebuild(void Function(BranchBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -503,13 +451,13 @@ class _$BranchBuilder extends BranchBuilder {
   }
 
   @override
-  BlockBuilder get body {
+  Code? get body {
     _$this;
     return super.body;
   }
 
   @override
-  set body(BlockBuilder body) {
+  set body(Code? body) {
     _$this;
     super.body = body;
   }
@@ -520,7 +468,7 @@ class _$BranchBuilder extends BranchBuilder {
     final $v = _$v;
     if ($v != null) {
       super.condition = $v.condition;
-      super.body = $v.body.toBuilder();
+      super.body = $v.body;
       _$v = null;
     }
     return this;
@@ -540,23 +488,7 @@ class _$BranchBuilder extends BranchBuilder {
   Branch build() => _build();
 
   _$Branch _build() {
-    _$Branch _$result;
-    try {
-      _$result = _$v ?? _$Branch._(condition: condition, body: body.build());
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'body';
-        body.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'Branch',
-          _$failedField,
-          e.toString(),
-        );
-      }
-      rethrow;
-    }
+    final _$result = _$v ?? _$Branch._(condition: condition, body: body);
     replace(_$result);
     return _$result;
   }
@@ -564,7 +496,7 @@ class _$BranchBuilder extends BranchBuilder {
 
 class _$Conditional extends Conditional {
   @override
-  final BuiltList<BranchBuilder> branches;
+  final BuiltList<Branch> branches;
 
   factory _$Conditional([void Function(ConditionalBuilder)? updates]) =>
       (ConditionalBuilder()..update(updates)).build() as _$Conditional;
@@ -602,13 +534,13 @@ class _$ConditionalBuilder extends ConditionalBuilder {
   _$Conditional? _$v;
 
   @override
-  ListBuilder<BranchBuilder> get branches {
+  ListBuilder<Branch> get branches {
     _$this;
     return super.branches;
   }
 
   @override
-  set branches(ListBuilder<BranchBuilder> branches) {
+  set branches(ListBuilder<Branch> branches) {
     _$this;
     super.branches = branches;
   }
@@ -668,17 +600,13 @@ class _$CatchBlock extends CatchBlock {
   @override
   final String? stacktrace;
   @override
-  final Block body;
+  final Code? body;
 
   factory _$CatchBlock([void Function(CatchBlockBuilder)? updates]) =>
       (CatchBlockBuilder()..update(updates))._build();
 
-  _$CatchBlock._({
-    this.type,
-    this.exception,
-    this.stacktrace,
-    required this.body,
-  }) : super._();
+  _$CatchBlock._({this.type, this.exception, this.stacktrace, this.body})
+    : super._();
   @override
   CatchBlock rebuild(void Function(CatchBlockBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -733,9 +661,9 @@ class CatchBlockBuilder implements Builder<CatchBlock, CatchBlockBuilder> {
   String? get stacktrace => _$this._stacktrace;
   set stacktrace(String? stacktrace) => _$this._stacktrace = stacktrace;
 
-  BlockBuilder? _body;
-  BlockBuilder get body => _$this._body ??= BlockBuilder();
-  set body(BlockBuilder? body) => _$this._body = body;
+  Code? _body;
+  Code? get body => _$this._body;
+  set body(Code? body) => _$this._body = body;
 
   CatchBlockBuilder();
 
@@ -745,7 +673,7 @@ class CatchBlockBuilder implements Builder<CatchBlock, CatchBlockBuilder> {
       _type = $v.type;
       _exception = $v.exception;
       _stacktrace = $v.stacktrace;
-      _body = $v.body.toBuilder();
+      _body = $v.body;
       _$v = null;
     }
     return this;
@@ -765,30 +693,14 @@ class CatchBlockBuilder implements Builder<CatchBlock, CatchBlockBuilder> {
   CatchBlock build() => _build();
 
   _$CatchBlock _build() {
-    _$CatchBlock _$result;
-    try {
-      _$result =
-          _$v ??
-          _$CatchBlock._(
-            type: type,
-            exception: exception,
-            stacktrace: stacktrace,
-            body: body.build(),
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'body';
-        body.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'CatchBlock',
-          _$failedField,
-          e.toString(),
+    final _$result =
+        _$v ??
+        _$CatchBlock._(
+          type: type,
+          exception: exception,
+          stacktrace: stacktrace,
+          body: body,
         );
-      }
-      rethrow;
-    }
     replace(_$result);
     return _$result;
   }
@@ -796,17 +708,16 @@ class CatchBlockBuilder implements Builder<CatchBlock, CatchBlockBuilder> {
 
 class _$TryCatch extends TryCatch {
   @override
-  final Block body;
+  final Code? body;
   @override
   final BuiltList<CatchBlock> handlers;
   @override
-  final Block? handleAll;
+  final Code? handleAll;
 
   factory _$TryCatch([void Function(TryCatchBuilder)? updates]) =>
       (TryCatchBuilder()..update(updates)).build() as _$TryCatch;
 
-  _$TryCatch._({required this.body, required this.handlers, this.handleAll})
-    : super._();
+  _$TryCatch._({this.body, required this.handlers, this.handleAll}) : super._();
   @override
   TryCatch rebuild(void Function(TryCatchBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -847,13 +758,13 @@ class _$TryCatchBuilder extends TryCatchBuilder {
   _$TryCatch? _$v;
 
   @override
-  BlockBuilder get body {
+  Code? get body {
     _$this;
     return super.body;
   }
 
   @override
-  set body(BlockBuilder body) {
+  set body(Code? body) {
     _$this;
     super.body = body;
   }
@@ -871,13 +782,13 @@ class _$TryCatchBuilder extends TryCatchBuilder {
   }
 
   @override
-  BlockBuilder get handleAll {
+  Code? get handleAll {
     _$this;
-    return super.handleAll ??= BlockBuilder();
+    return super.handleAll;
   }
 
   @override
-  set handleAll(BlockBuilder? handleAll) {
+  set handleAll(Code? handleAll) {
     _$this;
     super.handleAll = handleAll;
   }
@@ -887,9 +798,9 @@ class _$TryCatchBuilder extends TryCatchBuilder {
   TryCatchBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      super.body = $v.body.toBuilder();
+      super.body = $v.body;
       super.handlers = $v.handlers.toBuilder();
-      super.handleAll = $v.handleAll?.toBuilder();
+      super.handleAll = $v.handleAll;
       _$v = null;
     }
     return this;
@@ -915,19 +826,15 @@ class _$TryCatchBuilder extends TryCatchBuilder {
       _$result =
           _$v ??
           _$TryCatch._(
-            body: body.build(),
+            body: body,
             handlers: handlers.build(),
-            handleAll: super.handleAll?.build(),
+            handleAll: handleAll,
           );
     } catch (_) {
       late String _$failedField;
       try {
-        _$failedField = 'body';
-        body.build();
         _$failedField = 'handlers';
         handlers.build();
-        _$failedField = 'handleAll';
-        super.handleAll?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'TryCatch',
@@ -942,20 +849,22 @@ class _$TryCatchBuilder extends TryCatchBuilder {
   }
 }
 
-class _$Case<T> extends Case<T> {
+class _$Case<T extends Spec?> extends Case<T> {
   @override
-  final Expression pattern;
+  final Expression? pattern;
   @override
   final Expression? guard;
   @override
   final String? label;
+  @override
+  final bool? isDefault;
   @override
   final T? body;
 
   factory _$Case([void Function(CaseBuilder<T>)? updates]) =>
       (CaseBuilder<T>()..update(updates))._build();
 
-  _$Case._({required this.pattern, this.guard, this.label, this.body})
+  _$Case._({this.pattern, this.guard, this.label, this.isDefault, this.body})
     : super._();
   @override
   Case<T> rebuild(void Function(CaseBuilder<T>) updates) =>
@@ -971,6 +880,7 @@ class _$Case<T> extends Case<T> {
         pattern == other.pattern &&
         guard == other.guard &&
         label == other.label &&
+        isDefault == other.isDefault &&
         body == other.body;
   }
 
@@ -980,6 +890,7 @@ class _$Case<T> extends Case<T> {
     _$hash = $jc(_$hash, pattern.hashCode);
     _$hash = $jc(_$hash, guard.hashCode);
     _$hash = $jc(_$hash, label.hashCode);
+    _$hash = $jc(_$hash, isDefault.hashCode);
     _$hash = $jc(_$hash, body.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -991,12 +902,13 @@ class _$Case<T> extends Case<T> {
           ..add('pattern', pattern)
           ..add('guard', guard)
           ..add('label', label)
+          ..add('isDefault', isDefault)
           ..add('body', body))
         .toString();
   }
 }
 
-class CaseBuilder<T> implements Builder<Case<T>, CaseBuilder<T>> {
+class CaseBuilder<T extends Spec?> implements Builder<Case<T>, CaseBuilder<T>> {
   _$Case<T>? _$v;
 
   Expression? _pattern;
@@ -1011,6 +923,10 @@ class CaseBuilder<T> implements Builder<Case<T>, CaseBuilder<T>> {
   String? get label => _$this._label;
   set label(String? label) => _$this._label = label;
 
+  bool? _isDefault;
+  bool? get isDefault => _$this._isDefault;
+  set isDefault(bool? isDefault) => _$this._isDefault = isDefault;
+
   T? _body;
   T? get body => _$this._body;
   set body(T? body) => _$this._body = body;
@@ -1023,6 +939,7 @@ class CaseBuilder<T> implements Builder<Case<T>, CaseBuilder<T>> {
       _pattern = $v.pattern;
       _guard = $v.guard;
       _label = $v.label;
+      _isDefault = $v.isDefault;
       _body = $v.body;
       _$v = null;
     }
@@ -1046,13 +963,10 @@ class CaseBuilder<T> implements Builder<Case<T>, CaseBuilder<T>> {
     final _$result =
         _$v ??
         _$Case<T>._(
-          pattern: BuiltValueNullFieldError.checkNotNull(
-            pattern,
-            r'Case',
-            'pattern',
-          ),
+          pattern: pattern,
           guard: guard,
           label: label,
+          isDefault: isDefault,
           body: body,
         );
     replace(_$result);

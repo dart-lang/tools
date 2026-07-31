@@ -6,12 +6,15 @@ part of '../control.dart';
 
 /// Represents a `catch` block.
 ///
+/// See [TryCatch]
+///
 /// {@category controlFlow}
 abstract class CatchBlock
-    with ControlBlock
+    with ControlBody
     implements Built<CatchBlock, CatchBlockBuilder> {
   CatchBlock._();
-  factory CatchBlock([void Function(CatchBlockBuilder) updates]) = _$CatchBlock;
+  factory CatchBlock([void Function(CatchBlockBuilder builder) updates]) =
+      _$CatchBlock;
 
   /// The optional type of exception to catch (`on` clause).
   ///
@@ -48,52 +51,19 @@ abstract class CatchBlock
   /// catch (exception, stacktrace)
   /// ```
   String? get stacktrace;
-
-  ControlExpression get _catch =>
-      ControlExpression.catchStatement(exception ?? '_', stacktrace);
-
-  @override
-  ControlExpression get _expression {
-    if (type == null) return _catch;
-
-    // omit catch clause if exception and stacktrace are unspecified
-    if (exception == null && stacktrace == null) {
-      return ControlExpression.onStatement(type!);
-    }
-
-    return ControlExpression.onStatement(type!, _catch);
-  }
-}
-
-/// Represents a `try` or `finally` block.
-///
-/// **INTERNAL ONLY**.
-@internal
-class TryBlock with ControlBlock {
-  @override
-  final Block body;
-  final bool isFinally;
-
-  const TryBlock._(this.body) : isFinally = false;
-  const TryBlock._finally(this.body) : isFinally = true;
-
-  @override
-  ControlExpression get _expression =>
-      isFinally
-          ? ControlExpression.finallyStatement
-          : ControlExpression.tryStatement;
 }
 
 /// Represents a `try`/`catch` block.
 ///
 /// {@category controlFlow}
 abstract class TryCatch
-    with ControlTree
-    implements Built<TryCatch, TryCatchBuilder> {
+    with ControlBody
+    implements Built<TryCatch, TryCatchBuilder>, Code, Spec {
   TryCatch._();
 
   /// Build a [TryCatch].
-  factory TryCatch([void Function(TryCatchBuilder) updates]) = _$TryCatch;
+  factory TryCatch([void Function(TryCatchBuilder builder) updates]) =
+      _$TryCatch;
 
   /// The body of the `try` clause.
   ///
@@ -102,7 +72,8 @@ abstract class TryCatch
   ///   body
   /// }
   /// ```
-  Block get body;
+  @override
+  Code? get body;
 
   /// The `catch` clauses for this block.
   BuiltList<CatchBlock> get handlers;
@@ -114,14 +85,7 @@ abstract class TryCatch
   ///   handleAll
   /// }
   /// ```
-  Block? get handleAll;
-
-  TryBlock get _try => TryBlock._(body);
-  TryBlock? get _finally =>
-      handleAll == null ? null : TryBlock._finally(handleAll!);
-
-  @override
-  List<ControlBlock?> get _blocks => [_try, ...handlers, _finally];
+  Code? get handleAll;
 
   /// Ensure [handlers] is not empty
   @BuiltValueHook(finalizeBuilder: true)
@@ -131,6 +95,10 @@ abstract class TryCatch
         'One or more `catch` clauses must be specified.',
         'handlers',
       ));
+
+  @override
+  R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
+      visitor.visitTryCatch(this, context);
 }
 
 /// Builds a [TryCatch] block.
@@ -147,7 +115,7 @@ abstract class TryCatchBuilder implements Builder<TryCatch, TryCatchBuilder> {
   ///   body
   /// }
   /// ```
-  BlockBuilder body = BlockBuilder();
+  Code? body;
 
   /// The optional `finally` clause body.
   ///
@@ -156,16 +124,14 @@ abstract class TryCatchBuilder implements Builder<TryCatch, TryCatchBuilder> {
   ///   handleAll
   /// }
   /// ```
-  BlockBuilder? handleAll;
+  Code? handleAll;
 
   /// The `catch` clauses for this block.
   ListBuilder<CatchBlock> handlers = ListBuilder();
 
   /// Build a `catch` clause and add it to [handlers].
-  void addCatch(void Function(CatchBlockBuilder block) builder) =>
-      handlers.add((CatchBlockBuilder()..update(builder)).build());
+  void addCatch(CatchBlock block) => handlers.add(block);
 
   /// Build a `finally` clause and update [handleAll].
-  void addFinally(void Function(BlockBuilder body) builder) =>
-      handleAll = BlockBuilder()..update(builder);
+  void addFinally(Code? code) => handleAll = code;
 }

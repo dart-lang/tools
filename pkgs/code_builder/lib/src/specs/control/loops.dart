@@ -16,8 +16,8 @@ part of '../control.dart';
 ///
 /// {@category controlFlow}
 abstract class ForLoop
-    with ControlBlock, LabeledControlBlock
-    implements Built<ForLoop, ForLoopBuilder> {
+    with ControlBody, ControlLabel
+    implements Built<ForLoop, ForLoopBuilder>, Code, Spec {
   ForLoop._();
 
   /// The initializer expression.
@@ -35,11 +35,11 @@ abstract class ForLoop
   /// Leave `null` to omit.
   Expression? get advance;
 
-  @override
-  ControlExpression get _expression =>
-      ControlExpression.forLoop(initialize, condition, advance);
-
   factory ForLoop(void Function(ForLoopBuilder loop) builder) = _$ForLoop;
+
+  @override
+  R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
+      visitor.visitForLoop(this, context);
 }
 
 /// Represents a `for-in` loop.
@@ -61,8 +61,8 @@ abstract class ForLoop
 ///
 /// {@category controlFlow}
 abstract class ForInLoop
-    with ControlBlock, LabeledControlBlock
-    implements Built<ForInLoop, ForInLoopBuilder> {
+    with ControlBody, ControlLabel
+    implements Built<ForInLoop, ForInLoopBuilder>, Code, Spec {
   ForInLoop._();
   factory ForInLoop(void Function(ForInLoopBuilder loop) builder) = _$ForInLoop;
 
@@ -76,10 +76,8 @@ abstract class ForInLoop
   Expression get object;
 
   @override
-  ControlExpression get _expression =>
-      async == true
-          ? ControlExpression.awaitForLoop(variable, object)
-          : ControlExpression.forInLoop(variable, object);
+  R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
+      visitor.visitForInLoop(this, context);
 }
 
 /// Represents a `while` loop.
@@ -101,8 +99,8 @@ abstract class ForInLoop
 ///
 /// {@category controlFlow}
 abstract class WhileLoop
-    with ControlBlock, LabeledControlBlock
-    implements Built<WhileLoop, WhileLoopBuilder> {
+    with ControlBody, ControlLabel
+    implements Built<WhileLoop, WhileLoopBuilder>, Code, Spec {
   WhileLoop._();
   factory WhileLoop(void Function(WhileLoopBuilder loop) builder) = _$WhileLoop;
 
@@ -111,14 +109,6 @@ abstract class WhileLoop
 
   /// The loop condition.
   Expression get condition;
-
-  /// Always returns the `while` statement, regardless
-  /// of the value of [doWhile].
-  ControlExpression get _statement => ControlExpression.whileLoop(condition);
-
-  @override
-  ControlExpression get _expression =>
-      doWhile == true ? ControlExpression.doStatement : _statement;
 
   @override
   R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>

@@ -20,23 +20,50 @@ part './control/branches.dart';
 part './control/handling.dart';
 part './control/switch.dart';
 
+@immutable
+@internal
+class ControlBlock {
+  /// The full control-flow expression that precedes this block.
+  final ControlExpression expression;
+
+  /// The body of this block.
+  ///
+  /// *Note: will always be wrapped in `{`braces`}`*.
+  final Code? body;
+
+  /// An (optional) label for this block.
+  ///
+  /// ```dart
+  /// label: {block}
+  /// ```
+  ///
+  /// https://dart.dev/language/loops#labels
+  final String? label;
+
+  const ControlBlock({required this.expression, this.body, this.label});
+
+  ControlBlock.from(ControlBody block, this.expression)
+    : body = block.body,
+      label = null;
+
+  ControlBlock.fromLabelled(ControlLabel block, this.expression)
+    : body = block.body,
+      label = block.label;
+}
+
 /// Knowledge of different types of control blocks.
 ///
 @internal
 abstract class ControlBlockVisitor<T>
     implements ExpressionVisitor<T>, CodeVisitor<T> {
-  T visitControlBlock(ControlBlock block, [T? context]);
-  T visitLabeledBlock(LabeledControlBlock block, [T? context]);
   T visitWhileLoop(WhileLoop loop, [T? context]);
-  T visitControlTree(ControlTree tree, [T? context]);
+  T visitForInLoop(ForInLoop loop, [T? context]);
+  T visitForLoop(ForLoop loop, [T? context]);
+  T visitTryCatch(TryCatch block, [T? context]);
+  T visitConditional(Conditional block, [T? context]);
   T visitControlExpression(ControlExpression expression, [T? context]);
-  T visitSwitch(Switch statement, [T? context]);
-  // [context] is actually used, but the analyzer doesn't detect it.
-  // ignore: unused_element_parameter
-  T _visitCaseStatement(CaseStatement statement, [T? context]);
-  // [context] is actually used, but the analyzer doesn't detect it.
-  // ignore: unused_element_parameter
-  T _visitCaseExpression(CaseExpression expression, [T? context]);
+  T visitSwitchExpression(SwitchExpression block, [T? context]);
+  T visitSwitchStatement(SwitchStatement block, [T? context]);
 }
 
 /// Knowledge of how to write valid Dart code from [ControlBlockVisitor].
@@ -44,55 +71,149 @@ abstract class ControlBlockVisitor<T>
 @internal
 abstract mixin class ControlBlockEmitter
     implements ControlBlockVisitor<StringSink> {
-  @override
-  StringSink visitControlBlock(ControlBlock block, [StringSink? output]) {
+  StringSink _visitControlBlock(ControlBlock block, StringSink? output) {
     output ??= StringBuffer();
-    block._expression.accept(this, output);
-    output.writeln(' {');
-    block.body.accept(this, output);
 
+    if (block.label != null) {
+      output.writeln('${block.label!}:');
+    }
+
+    block.expression.accept(this, output);
+
+    output.writeln(' {');
+    block.body?.accept(this, output);
     output.write(' }');
 
     return output;
   }
 
   @override
-  StringSink visitLabeledBlock(
-    LabeledControlBlock block, [
-    StringSink? output,
-  ]) {
-    output ??= StringBuffer();
-    if (block.label != null) {
-      output.writeln('${block.label!}:');
-    }
-
-    return visitControlBlock(block, output);
-  }
-
-  @override
   StringSink visitWhileLoop(WhileLoop loop, [StringSink? output]) {
     output ??= StringBuffer();
-    visitLabeledBlock(loop, output);
+
+    final expression = ControlExpression.whileLoop(loop.condition);
+
+    _visitControlBlock(
+      ControlBlock.fromLabelled(
+        loop,
+        loop.doWhile == true ? ControlExpression.doStatement : expression,
+      ),
+      output,
+    );
 
     if (loop.doWhile != true) return output;
 
     output.write(' ');
-    loop._statement.statement.accept(this, output);
+    expression.statement.accept(this, output);
     output.writeln();
     return output;
   }
 
   @override
-  StringSink visitControlTree(ControlTree tree, [StringSink? output]) {
+  StringSink visitForInLoop(ForInLoop loop, [StringSink? output]) =>
+      _visitControlBlock(
+        ControlBlock.fromLabelled(
+          loop,
+          loop.async == true
+              ? ControlExpression.awaitForLoop(loop.variable, loop.object)
+              : ControlExpression.forInLoop(loop.variable, loop.object),
+        ),
+        output,
+      );
+
+  @override
+  StringSink visitForLoop(ForLoop loop, [StringSink? output]) =>
+      _visitControlBlock(
+        ControlBlock.fromLabelled(
+          loop,
+          ControlExpression.forLoop(
+            loop.initialize,
+            loop.condition,
+            loop.advance,
+          ),
+        ),
+        output,
+      );
+
+  @visibleForTesting
+  ControlExpression visitCatchBlock(CatchBlock block) {
+    if (block.type == null) {
+      return ControlExpression.catchStatement(
+        block.exception ?? '_',
+        block.stacktrace,
+      );
+    }
+
+    // omit catch clause if exception and stacktrace are unspecified
+    if (block.exception == null && block.stacktrace == null) {
+      return ControlExpression.onStatement(block.type!);
+    }
+
+    return ControlExpression.onStatement(
+      block.type!,
+      ControlExpression.catchStatement(
+        block.exception ?? '_',
+        block.stacktrace,
+      ),
+    );
+  }
+
+  @override
+  StringSink visitTryCatch(TryCatch block, [StringSink? output]) => _visitAll(
+    (() sync* {
+      yield ControlBlock.from(block, ControlExpression.tryStatement);
+
+      yield* block.handlers.map(
+        (h) => ControlBlock.from(h, visitCatchBlock(h)),
+      );
+
+      if (block.handleAll == null) return;
+
+      yield ControlBlock(
+        expression: ControlExpression.finallyStatement,
+        body: block.handleAll,
+      );
+    })(),
+    output,
+  );
+
+  StringSink _visitAll(Iterable<ControlBlock> blocks, StringSink? output) {
     output ??= StringBuffer();
 
-    for (final item in tree._blocks.nonNulls) {
-      item.accept(this, output);
+    for (final block in blocks) {
+      _visitControlBlock(block, output);
       output.write(' ');
     }
 
     return output;
   }
+
+  ControlExpression _visitBranch(Branch branch, bool first) {
+    final condition =
+        branch.condition != null
+            ? ControlExpression.ifStatement(branch.condition!)
+            : null;
+
+    if (first) {
+      return condition ??
+          (throw ArgumentError(
+            'The first branch in a conditional must specify a condition',
+            'condition',
+          ));
+    }
+
+    return ControlExpression.elseStatement(condition);
+  }
+
+  @override
+  StringSink visitConditional(Conditional block, [StringSink? output]) =>
+      _visitAll(
+        block.branches.mapIndexed(
+          (index, branch) =>
+              ControlBlock.from(branch, _visitBranch(branch, index == 0)),
+        ),
+        output,
+      );
 
   @override
   StringSink visitControlExpression(
@@ -155,33 +276,52 @@ abstract mixin class ControlBlockEmitter
   }
 
   @override
-  StringSink visitSwitch(Switch statement, [StringSink? output]) {
-    output ??= StringBuffer();
-
-    final buildable = BuildableSwitch(
-      value: statement.value,
-      cases: statement._cases,
-    );
-
-    return visitControlBlock(buildable, output);
-  }
-
-  @override
-  StringSink _visitCaseStatement(
-    CaseStatement statement, [
+  StringSink visitSwitchExpression(
+    SwitchExpression block, [
     StringSink? output,
   ]) {
     output ??= StringBuffer();
 
+    ControlExpression.switchStatement(block.value).accept(this, output);
+
+    output.writeln(' {');
+
+    for (final item in block.cases) {
+      _visitCaseExpression(item, output);
+    }
+
+    output.write(' }');
+
+    return output;
+  }
+
+  @override
+  StringSink visitSwitchStatement(SwitchStatement block, [StringSink? output]) {
+    output ??= StringBuffer();
+
+    ControlExpression.switchStatement(block.value).accept(this, output);
+
+    output.writeln(' {');
+
+    for (final item in block.cases) {
+      _visitCaseStatement(item, output);
+    }
+
+    output.write(' }');
+
+    return output;
+  }
+
+  StringSink _visitCaseStatement(Case<Code?> statement, StringSink output) {
     if (statement.label case final String label) {
       output.writeln('$label:');
     }
 
-    if (statement._default) {
+    if (statement.isDefault == true) {
       output.writeln('default:');
     } else {
       output.write('case ');
-      statement.pattern.accept(this, output);
+      statement.pattern!.accept(this, output);
 
       if (statement.guard case final Expression guard) {
         output.write(' when ');
@@ -198,13 +338,12 @@ abstract mixin class ControlBlockEmitter
     return output;
   }
 
-  @override
   StringSink _visitCaseExpression(
-    CaseExpression expression, [
-    StringSink? output,
-  ]) {
-    output ??= StringBuffer();
-    expression.pattern.accept(this, output);
+    Case<Expression> expression,
+    StringSink output,
+  ) {
+    (expression.isDefault == true ? Expression.wildcard : expression.pattern!)
+        .accept(this, output);
 
     if (expression.guard case final Expression guard) {
       output.write(' when ');
@@ -212,8 +351,15 @@ abstract mixin class ControlBlockEmitter
     }
 
     output.write(' => ');
-    // body will never be null; CaseExpression ensures a value is
-    // provided when it is constructed
+
+    if (expression.body == null) {
+      throw ArgumentError(
+        'Cases in `switch` expressions must provide '
+            'a non-null body.',
+        'body',
+      );
+    }
+
     expression.body!.accept(this, output);
     output.writeln(',');
 

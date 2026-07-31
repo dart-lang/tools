@@ -35,11 +35,20 @@ part of '../control.dart';
 /// ```
 ///
 /// {@category controlFlow}
-abstract class Case<T> implements Built<Case<T>, CaseBuilder<T>> {
-  Case._();
+abstract class Case<T extends Spec?> implements Built<Case<T>, CaseBuilder<T>> {
+  Case._() {
+    if (isDefault == true) return;
+
+    if (pattern == null) {
+      throw ArgumentError(
+        '`pattern` must be set if `isDefault` is not `true`',
+        'pattern',
+      );
+    }
+  }
 
   /// Build a new [Case].
-  factory Case([void Function(CaseBuilder<T>) updates]) = _$Case<T>;
+  factory Case([void Function(CaseBuilder<T> builder) updates]) = _$Case<T>;
 
   /// Create a catch-all case, either `default` or wildcard (`_`).
   ///
@@ -49,10 +58,27 @@ abstract class Case<T> implements Built<Case<T>, CaseBuilder<T>> {
   ///
   /// For [SwitchExpression], a wildcard case will be created, as `switch`
   /// expressions don't support `default`. [label] will be ignored.
-  factory Case.any(T body, {String? label}) = DefaultCase._;
+  factory Case.any(T body, {String? label}) => Case<T>(
+    (b) =>
+        b
+          ..isDefault = true
+          ..label = label
+          ..body = body,
+  );
+
+  /// Create a [Case] from [pattern] and [body].
+  factory Case.from(Expression pattern, T body) => Case<T>(
+    (builder) =>
+        builder
+          ..pattern = pattern
+          ..body = body,
+  );
 
   /// The pattern to match.
-  Expression get pattern;
+  ///
+  /// Must not be `null`, unless [isDefault] is set to `true`.
+  ///
+  Expression? get pattern;
 
   /// The optional guard (`when`) clause.
   Expression? get guard;
@@ -64,8 +90,18 @@ abstract class Case<T> implements Built<Case<T>, CaseBuilder<T>> {
   /// effect; the label will be silently ignored.
   String? get label;
 
-  /// Whether or not to use the `default` keyword
-  bool get _default => false;
+  /// Whether or not this case is the default case.
+  ///
+  /// Note that setting [isDefault] to `true` will cause the value of
+  /// [pattern] to be ignored.
+  ///
+  /// For [SwitchStatement], the `default` keyword will be used. For
+  /// [SwitchExpression], this is equivalent to setting [pattern] to
+  /// [Expression.wildcard].
+  ///
+  /// See also: [Case.any]
+  ///
+  bool? get isDefault;
 
   /// The body of this case.
   ///
@@ -82,69 +118,11 @@ abstract class Case<T> implements Built<Case<T>, CaseBuilder<T>> {
 }
 
 /// **INTERNAL**
-/// Case with `default` keyword
-@internal
-class DefaultCase<T> extends _$Case<T> {
-  DefaultCase._(T body, {super.label})
-    : super._(body: body, pattern: Expression.wildcard);
-
-  @override
-  bool get _default => true;
-}
-
-/// **INTERNAL**
-/// Buildable case statement
-@internal
-class CaseStatement extends _$Case<Code?> implements Code {
-  final Case<Code?> item;
-
-  CaseStatement._(this.item)
-    : super._(
-        pattern: item.pattern,
-        body: item.body,
-        guard: item.guard,
-        label: item.label,
-      );
-
-  @override
-  bool get _default => item._default;
-
-  @override
-  R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
-      visitor._visitCaseStatement(this, context);
-}
-
-/// **INTERNAL**
-/// Buildable case expression
-@internal
-class CaseExpression extends _$Case<Expression> implements Code {
-  // no need to store item, as _default functionality is not needed
-  // (case/switch expressions don't support the `default` keyword)
-
-  CaseExpression._(Case<Expression> item)
-    : super._(
-        pattern: item.pattern,
-        body:
-            item.body ??
-            (throw ArgumentError(
-              'Cases in `switch` expressions must provide '
-                  'a non-null body.',
-              'body',
-            )),
-        guard: item.guard,
-      );
-
-  @override
-  R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
-      visitor._visitCaseExpression(this, context);
-}
-
-/// **INTERNAL**
 /// Base class for `switch` types.
 @internal
 @optionalTypeArgs
 @BuiltValue(instantiable: false)
-abstract class Switch<T> implements Code, Spec {
+sealed class Switch<T extends Spec?> implements Code, Spec {
   /// The value being matched against.
   ///
   /// ```dart
@@ -156,23 +134,13 @@ abstract class Switch<T> implements Code, Spec {
 
   /// The cases in the `switch` body.
   BuiltList<Case<T>> get cases;
-
-  /// Convert generic [Case] into an implementation-specific buildable
-  /// subtype.
-  //* ignore from test coverage as there is no way to call this.
-  //* it can't be abstract, otherwise built_value will treat it
-  //* as a field on the class and throw an error because it's private.
-  // coverage:ignore-start
-  Iterable<Code> get _cases =>
-      throw UnsupportedError('Must be implemented by subclasses');
-  // coverage:ignore-end
 }
 
 /// **INTERNAL**
 /// Base class for `switch` builders
 @internal
 @optionalTypeArgs
-abstract class SwitchBuilder<T> {
+sealed class SwitchBuilder<T extends Spec?> {
   /// The value being matched against.
   ///
   /// ```dart
@@ -184,26 +152,6 @@ abstract class SwitchBuilder<T> {
 
   /// The cases in the `switch` body.
   ListBuilder<Case<T>> cases = ListBuilder();
-}
-
-/// **INTERNAL**
-///
-/// A buildable switch class. [Switch] subtypes are converted into
-/// this by [ControlBlockVisitor.visitSwitch] in order to be built.
-///
-@internal
-@optionalTypeArgs
-class BuildableSwitch<T> with ControlBlock {
-  final Expression value;
-  final Iterable<Code> cases;
-
-  BuildableSwitch({required this.value, required this.cases});
-
-  @override
-  ControlExpression get _expression => ControlExpression.switchStatement(value);
-
-  @override
-  Block get body => Block.of(cases);
 }
 
 /// Represents a `switch` statement.
@@ -237,15 +185,22 @@ abstract class SwitchStatement
   SwitchStatement._();
 
   /// Build a [SwitchStatement].
-  factory SwitchStatement([void Function(SwitchStatementBuilder) updates]) =
-      _$SwitchStatement;
+  factory SwitchStatement([
+    void Function(SwitchStatementBuilder statement) updates,
+  ]) = _$SwitchStatement;
 
-  @override
-  Iterable<Code> get _cases => cases.map(CaseStatement._);
+  /// Build a [SwitchStatement] from [value] and [cases].
+  factory SwitchStatement.from(Expression value, Iterable<Case<Code?>> cases) =>
+      SwitchStatement(
+        (statement) =>
+            statement
+              ..cases.addAll(cases)
+              ..value = value,
+      );
 
   @override
   T accept<T>(covariant ControlBlockVisitor<T> visitor, [T? context]) =>
-      visitor.visitSwitch(this, context);
+      visitor.visitSwitchStatement(this, context);
 }
 
 /// Represents a `switch` expression.
@@ -275,13 +230,22 @@ abstract class SwitchExpression extends Expression
   SwitchExpression._();
 
   /// Build a [SwitchExpression].
-  factory SwitchExpression([void Function(SwitchExpressionBuilder) updates]) =
-      _$SwitchExpression;
+  factory SwitchExpression([
+    void Function(SwitchExpressionBuilder expression) updates,
+  ]) = _$SwitchExpression;
+
+  /// Build a [SwitchExpression] from [value] and [cases].
+  factory SwitchExpression.from(
+    Expression value,
+    Iterable<Case<Expression>> cases,
+  ) => SwitchExpression(
+    (expression) =>
+        expression
+          ..cases.addAll(cases)
+          ..value = value,
+  );
 
   @override
   T accept<T>(covariant ControlBlockVisitor<T> visitor, [T? context]) =>
-      visitor.visitSwitch(this, context);
-
-  @override
-  Iterable<Code> get _cases => cases.map(CaseExpression._);
+      visitor.visitSwitchExpression(this, context);
 }

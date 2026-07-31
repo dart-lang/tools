@@ -456,9 +456,9 @@ void main() {
 
   group('expression helpers', () {
     test('should build a while loop with loopWhile', () {
-      final expr = refer('isRunning').loopWhile((b) {
-        b.addExpression(refer('tick').call([]));
-      });
+      final expr = refer(
+        'isRunning',
+      ).loopWhile(refer('tick').call([]).statement);
 
       expect(
         expr,
@@ -470,9 +470,9 @@ while (isRunning) {
     });
 
     test('should build a do-while loop with loopDoWhile', () {
-      final expr = refer('conditionMet').loopDoWhile((b) {
-        b.addExpression(refer('step').call([]));
-      });
+      final expr = refer(
+        'conditionMet',
+      ).loopDoWhile(refer('step').call([]).statement);
 
       expect(
         expr,
@@ -484,9 +484,10 @@ do {
     });
 
     test('should build a for-in loop with loopForIn', () {
-      final expr = refer('item').loopForIn(refer('items'), (b) {
-        b.addExpression(refer('print').call([refer('item')]));
-      });
+      final expr = refer('item').loopForIn(
+        refer('items'),
+        refer('print').call([refer('item')]).statement,
+      );
 
       expect(
         expr,
@@ -498,9 +499,7 @@ for (item in items) {
     });
 
     test('should build if statement with ifThen', () {
-      final tree = refer('isTrue').ifThen((b) {
-        b.addExpression(refer('execute').call([]));
-      });
+      final tree = refer('isTrue').ifThen(refer('execute').call([]).statement);
 
       expect(
         tree,
@@ -534,17 +533,15 @@ if (isTrue) return value'''),
     test('should support chaining', () {
       final tree = literal(1)
           .equalTo(literal(2))
-          .ifThen((b) {
-            b.addExpression(refer('print').call([literal('Bad')]));
-          })
-          .elseIf((b) {
-            b
-              ..condition = literal(2).equalTo(literal(2))
-              ..body.addExpression(refer('print').call([literal('Good')]));
-          })
-          .orElse((b) {
-            b.addExpression(refer('print').call([literal('What?')]));
-          });
+          .ifThen(refer('print').call([literal('Bad')]).statement)
+          .elseIf(
+            Branch((b) {
+              b
+                ..condition = literal(2).equalTo(literal(2))
+                ..body = refer('print').call([literal('Good')]).statement;
+            }),
+          )
+          .orElse(refer('print').call([literal('What?')]).statement);
 
       expect(
         tree,

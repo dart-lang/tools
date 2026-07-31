@@ -168,11 +168,11 @@ extension ControlFlow on Expression {
   ///   body
   /// }
   /// ```
-  WhileLoop loopWhile(void Function(BlockBuilder block) builder) => WhileLoop(
+  WhileLoop loopWhile(Code? body) => WhileLoop(
     (loop) =>
         loop
           ..condition = this
-          ..body.update(builder),
+          ..body = body,
   );
 
   /// Build a `do-while` loop from this expression.
@@ -182,12 +182,12 @@ extension ControlFlow on Expression {
   ///   body
   /// } while (this);
   /// ```
-  WhileLoop loopDoWhile(void Function(BlockBuilder block) builder) => WhileLoop(
+  WhileLoop loopDoWhile(Code? body) => WhileLoop(
     (loop) =>
         loop
           ..doWhile = true
           ..condition = this
-          ..body.update(builder),
+          ..body = body,
   );
 
   /// Build a `for-in` loop from this expression in [object].
@@ -197,15 +197,12 @@ extension ControlFlow on Expression {
   ///   body
   /// }
   /// ```
-  ForInLoop loopForIn(
-    Expression object,
-    void Function(BlockBuilder block) builder,
-  ) => ForInLoop(
+  ForInLoop loopForIn(Expression object, Code? body) => ForInLoop(
     (loop) =>
         loop
           ..object = object
           ..variable = this
-          ..body.update(builder),
+          ..body = body,
   );
 
   /// Build this expression into a [Conditional]
@@ -245,13 +242,15 @@ extension ControlFlow on Expression {
   ///   print('What?');
   /// }
   /// ```
-  Conditional ifThen(void Function(BlockBuilder body) builder) => Conditional(
+  Conditional ifThen(Code? body) => Conditional(
     (tree) =>
         tree..add(
-          (branch) =>
-              branch
-                ..condition = this
-                ..body.update(builder),
+          Branch(
+            (branch) =>
+                branch
+                  ..condition = this
+                  ..body = body,
+          ),
         ),
   );
 

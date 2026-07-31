@@ -12,6 +12,7 @@ export 'src/specs/code.dart'
 export 'src/specs/constructor.dart' show Constructor, ConstructorBuilder;
 export 'src/specs/control.dart'
     show
+        Branch,
         BranchBuilder,
         Case,
         CaseBuilder,
