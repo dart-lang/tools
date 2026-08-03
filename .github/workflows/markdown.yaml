@@ -98,7 +98,7 @@ jobs:
     - name: Collect and report coverage
       run: dart pub global run coverage:test_with_coverage
     - name: Upload coverage
-      uses: coverallsapp/github-action@master
+      uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: pkgs/markdown/coverage/lcov.info
