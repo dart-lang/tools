@@ -165,9 +165,7 @@ final class Version implements VersionConstraint, VersionRange {
       .map((part) =>
           // Return an integer part if possible, otherwise return the string
           // as-is.
-          _digitsPattern.hasMatch(part)
-              ? (int.tryParse(part, radix: 10) ?? part)
-              : part)
+          _digitsPattern.hasMatch(part) ? (int.tryParse(part) ?? part) : part)
       .toList();
 
   @override
