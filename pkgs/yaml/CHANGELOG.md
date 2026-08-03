@@ -1,5 +1,6 @@
 ## 3.1.4-wip
-
+* Fix a bug where block strings terminated by `EOF` were not given an implicit
+  newline.
 * Fix parsing of plain scalars starting with indicator characters (`?`, `:`, and `-`).
 * Throw a `FormatException` when parsing self-referential collections instead of
   a `StackOverflow`. Yaml definitions with collections nested within themselves
