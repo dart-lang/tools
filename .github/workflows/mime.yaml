@@ -1,5 +1,6 @@
 name: package:mime
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   schedule:

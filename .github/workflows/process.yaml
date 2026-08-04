@@ -1,5 +1,6 @@
 name: package:process
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   schedule:

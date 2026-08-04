@@ -1,5 +1,6 @@
 name: package:timing
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   # Run on PRs and pushes to the default branch.

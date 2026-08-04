@@ -1,5 +1,6 @@
 name: Health
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   pull_request:
@@ -8,7 +9,7 @@ on:
 
 jobs:
   health:
-    uses: dart-lang/ecosystem/.github/workflows/health.yaml@main
+    uses: dart-lang/ecosystem/.github/workflows/health.yaml@main # zizmor: ignore[unpinned-uses]
     with:
       ignore_coverage: "**.mock.dart,**.g.dart"
       ignore_license: "**.mock.dart,**.g.dart,**.mocks.dart,pkgs/markdown/**"

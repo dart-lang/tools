@@ -1,5 +1,6 @@
 name: package:io
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   # Run on PRs and pushes to the default branch.

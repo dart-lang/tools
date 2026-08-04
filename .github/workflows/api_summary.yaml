@@ -1,5 +1,6 @@
 name: package:api_summary
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   pull_request:

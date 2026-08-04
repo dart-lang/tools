@@ -1,7 +1,8 @@
 # A CI configuration to auto-publish pub packages.
 
 name: Publish
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   pull_request:
@@ -13,7 +14,7 @@ on:
 jobs:
   publish:
     if: ${{ github.repository_owner == 'dart-lang' }}
-    uses: dart-lang/ecosystem/.github/workflows/publish.yaml@main
+    uses: dart-lang/ecosystem/.github/workflows/publish.yaml@main # zizmor: ignore[unpinned-uses]
     with:
       write-comments: false
     permissions:

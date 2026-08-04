@@ -1,5 +1,6 @@
 name: package:cli_config
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   pull_request:

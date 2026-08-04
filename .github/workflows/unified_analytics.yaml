@@ -1,5 +1,6 @@
 name: package:unified_analytics
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   pull_request:

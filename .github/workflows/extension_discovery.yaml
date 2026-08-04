@@ -1,5 +1,6 @@
 name: package:extension_discovery
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   pull_request:
