@@ -28,7 +28,7 @@ import '../stream_channel.dart';
 ///
 /// // Second endpoint
 /// multiChannel.stream.listen((message) {
-///   var virtual = multiChannel.virtualChannel(message);
+///   var virtual = multiChannel.virtualChannel(message as int);
 ///   // ...
 /// });
 /// ```
