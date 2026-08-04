@@ -14,7 +14,7 @@ on:
 jobs:
   publish:
     if: ${{ github.repository_owner == 'dart-lang' }}
-    uses: dart-lang/ecosystem/.github/workflows/publish.yaml@main # zizmor: ignore[unpinned-uses]
+    uses: dart-lang/ecosystem/.github/workflows/publish.yaml@edfdb3b4063b9034b708144633a700204f865f43
     with:
       write-comments: false
     permissions:
