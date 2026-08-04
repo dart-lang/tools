@@ -133,10 +133,14 @@ class Scanner {
   /// before it.
   var _tokenAvailable = false;
 
-  /// The stack of indent levels for the current nested block contexts.
+  /// The stack of indent levels and their associated token types for the
+  /// current nested block contexts.
   ///
   /// The YAML spec specifies that the initial indentation level is -1 spaces.
-  final _indents = <int>[-1];
+  /// The base level (`-1`) has no associated token, so its entry is `null`.
+  final _indentLevels = <({int column, TokenType? type})>[
+    (column: -1, type: null),
+  ];
 
   /// Whether a simple key is allowed in this context.
   ///
@@ -154,7 +158,7 @@ class Scanner {
   final _simpleKeys = <_SimpleKey?>[null];
 
   /// The current indentation level.
-  int get _indent => _indents.last;
+  int get _indent => _indentLevels.last.column;
 
   /// Whether the scanner's currently positioned in a block-level structure (as
   /// opposed to flow-level).
@@ -482,7 +486,15 @@ class Scanner {
       if (key.line == _scanner.line) continue;
 
       if (key.required) {
-        _reportError(YamlException("Expected ':'.", _scanner.emptySpan));
+        final keyIndentIdx = _indentLevels
+            .lastIndexWhere((indent) => indent.column == key.column);
+        final inBlockSequence = keyIndentIdx >= 0 &&
+            _indentLevels[keyIndentIdx].type == TokenType.blockSequenceStart;
+        final message = StringBuffer("Expected ':'.");
+        if (inBlockSequence) {
+          message.write(" If this is a list entry, it must start with '- '.");
+        }
+        _reportError(YamlException(message.toString(), _scanner.emptySpan));
         _tokens.insert(key.tokenNumber - _tokensParsed,
             Token(TokenType.key, key.location.pointSpan() as FileSpan));
       }
@@ -550,7 +562,7 @@ class Scanner {
 
     // Push the current indentation level to the stack and set the new
     // indentation level.
-    _indents.add(column);
+    _indentLevels.add((column: column, type: type));
 
     // Create a token and insert it into the queue.
     var token = Token(type, location.pointSpan() as FileSpan);
@@ -561,8 +573,8 @@ class Scanner {
     }
   }
 
-  /// Pops indentation levels from [_indents] until the current level becomes
-  /// less than or equal to [column].
+  /// Pops indentation levels from [_indentLevels] until the current level
+  /// becomes less than or equal to [column].
   ///
   /// For each indentation level, appends a [TokenType.blockEnd] token.
   void _unrollIndent(int column) {
@@ -570,12 +582,12 @@ class Scanner {
 
     while (_indent > column) {
       _tokens.add(Token(TokenType.blockEnd, _scanner.emptySpan));
-      _indents.removeLast();
+      _indentLevels.removeLast();
     }
   }
 
-  /// Pops indentation levels from [_indents] until the current level resets to
-  /// -1.
+  /// Pops indentation levels from [_indentLevels] until the current level
+  /// resets to -1.
   ///
   /// For each indentation level, appends a [TokenType.blockEnd] token.
   void _resetIndent() => _unrollIndent(-1);
