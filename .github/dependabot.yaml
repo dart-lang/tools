@@ -19,6 +19,8 @@ updates:
       - "/pkgs/*"
     schedule:
       interval: monthly
+    allow:
+      - update-types: ["version-update:semver-major"]
     cooldown:
       default-days: 7
     labels:
