@@ -96,21 +96,27 @@ Future<void> main(List<String> arguments) async {
         );
   final loader = Loader();
   if (env.prettyPrint) {
-    output = await hitmap.prettyPrint(resolver, loader,
-        reportOn: env.reportOn,
-        ignoreGlobs: ignoreGlobs,
-        reportFuncs: env.prettyPrintFunc,
-        reportBranches: env.prettyPrintBranch);
+    output = await hitmap.prettyPrint(
+      resolver,
+      loader,
+      reportOn: env.reportOn,
+      ignoreGlobs: ignoreGlobs,
+      reportFuncs: env.prettyPrintFunc,
+      reportBranches: env.prettyPrintBranch,
+    );
   } else {
     assert(env.lcov);
-    output = hitmap.formatLcov(resolver,
-        reportOn: env.reportOn,
-        ignoreGlobs: ignoreGlobs,
-        basePath: env.baseDirectory);
+    output = hitmap.formatLcov(
+      resolver,
+      reportOn: env.reportOn,
+      ignoreGlobs: ignoreGlobs,
+      basePath: env.baseDirectory,
+    );
   }
 
-  final outputSink =
-      env.output == null ? stdout : File(env.output!).openWrite();
+  final outputSink = env.output == null
+      ? stdout
+      : File(env.output!).openWrite();
 
   outputSink.write(output);
   await outputSink.flush();
@@ -138,22 +144,26 @@ Future<void> main(List<String> arguments) async {
   final failUnder = env.failUnder;
   if (failUnder != null) {
     // Calculate the overall coverage percentage using the utility function.
-    final result = calculateCoveragePercentage(
-      hitmap,
-    );
+    final result = calculateCoveragePercentage(hitmap);
 
     if (env.verbose) {
-      print('Coverage: ${result.percentage.toStringAsFixed(2)}% '
-          '(${result.coveredLines} of ${result.totalLines} lines)');
+      print(
+        'Coverage: ${result.percentage.toStringAsFixed(2)}% '
+        '(${result.coveredLines} of ${result.totalLines} lines)',
+      );
     }
 
     if (result.percentage < failUnder) {
-      print('Error: Coverage ${result.percentage.toStringAsFixed(2)}% '
-          'is less than required ${failUnder.toStringAsFixed(2)}%');
+      print(
+        'Error: Coverage ${result.percentage.toStringAsFixed(2)}% '
+        'is less than required ${failUnder.toStringAsFixed(2)}%',
+      );
       exit(1);
     } else if (env.verbose) {
-      print('Coverage ${result.percentage.toStringAsFixed(2)}% meets or exceeds'
-          'the required ${failUnder.toStringAsFixed(2)}%');
+      print(
+        'Coverage ${result.percentage.toStringAsFixed(2)}% meets or exceeds'
+        'the required ${failUnder.toStringAsFixed(2)}%',
+      );
     }
   }
 }
@@ -164,27 +174,18 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser();
 
   parser
-    ..addOption(
-      'sdk-root',
-      abbr: 's',
-      help: 'path to the SDK root',
-    )
+    ..addOption('sdk-root', abbr: 's', help: 'path to the SDK root')
     ..addOption(
       'fail-under',
       help: 'Fail if coverage is less than the given percentage (0-100)',
     )
+    ..addOption('packages', help: '[DEPRECATED] path to the package spec file')
     ..addOption(
-      'packages',
-      help: '[DEPRECATED] path to the package spec file',
+      'package',
+      help: 'root directory of the package',
+      defaultsTo: defaultOptions.packageDirectory,
     )
-    ..addOption('package',
-        help: 'root directory of the package',
-        defaultsTo: defaultOptions.packageDirectory)
-    ..addOption(
-      'in',
-      abbr: 'i',
-      help: 'input(s): may be file or directory',
-    )
+    ..addOption('in', abbr: 'i', help: 'input(s): may be file or directory')
     ..addOption('out', abbr: 'o', help: 'output: may be file or stdout')
     ..addMultiOption(
       'report-on',
@@ -196,34 +197,51 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
       defaultsTo: '1',
       help: 'number of workers',
     )
-    ..addOption('bazel-workspace',
-        defaultsTo: '', help: 'Bazel workspace directory')
-    ..addOption('base-directory',
-        abbr: 'b',
-        help: 'the base directory relative to which source paths are output')
-    ..addFlag('bazel',
-        defaultsTo: false, help: 'use Bazel-style path resolution')
-    ..addFlag('pretty-print',
-        abbr: 'r',
-        negatable: false,
-        help: 'convert line coverage data to pretty print format')
-    ..addFlag('pretty-print-func',
-        abbr: 'f',
-        negatable: false,
-        help: 'convert function coverage data to pretty print format')
-    ..addFlag('pretty-print-branch',
-        negatable: false,
-        help: 'convert branch coverage data to pretty print format')
-    ..addFlag('lcov',
-        abbr: 'l',
-        negatable: false,
-        help: 'convert coverage data to lcov format')
+    ..addOption(
+      'bazel-workspace',
+      defaultsTo: '',
+      help: 'Bazel workspace directory',
+    )
+    ..addOption(
+      'base-directory',
+      abbr: 'b',
+      help: 'the base directory relative to which source paths are output',
+    )
+    ..addFlag(
+      'bazel',
+      defaultsTo: false,
+      help: 'use Bazel-style path resolution',
+    )
+    ..addFlag(
+      'pretty-print',
+      abbr: 'r',
+      negatable: false,
+      help: 'convert line coverage data to pretty print format',
+    )
+    ..addFlag(
+      'pretty-print-func',
+      abbr: 'f',
+      negatable: false,
+      help: 'convert function coverage data to pretty print format',
+    )
+    ..addFlag(
+      'pretty-print-branch',
+      negatable: false,
+      help: 'convert branch coverage data to pretty print format',
+    )
+    ..addFlag(
+      'lcov',
+      abbr: 'l',
+      negatable: false,
+      help: 'convert coverage data to lcov format',
+    )
     ..addFlag('verbose', abbr: 'v', negatable: false, help: 'verbose output')
     ..addFlag(
       'check-ignore',
       abbr: 'c',
       negatable: false,
-      help: 'check for coverage ignore comments.'
+      help:
+          'check for coverage ignore comments.'
           ' Not supported in web coverage.',
     )
     ..addMultiOption(
@@ -255,8 +273,10 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   if (sdkRoot != null) {
     sdkRoot = p.normalize(p.join(p.absolute(sdkRoot), 'lib'));
     if (!FileSystemEntity.isDirectorySync(sdkRoot)) {
-      fail('Provided SDK root "${args["sdk-root"]}" is not a valid SDK '
-          'top-level directory');
+      fail(
+        'Provided SDK root "${args["sdk-root"]}" is not a valid SDK '
+        'top-level directory',
+      );
     }
   }
 
@@ -275,8 +295,10 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   if (args['in'] == null && defaultOptions.outputDirectory == null) {
     fail('No input files given.');
   }
-  final input = p.normalize((args['in'] as String?) ??
-      p.absolute(defaultOptions.outputDirectory!, 'coverage.json'));
+  final input = p.normalize(
+    (args['in'] as String?) ??
+        p.absolute(defaultOptions.outputDirectory!, 'coverage.json'),
+  );
   if (!FileSystemEntity.isDirectorySync(input) &&
       !FileSystemEntity.isFileSync(input)) {
     fail('Provided input "${args["in"]}" is neither a directory nor a file.');
@@ -289,7 +311,8 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
     output = null;
   } else {
     final outFilePath = p.normalize(
-        outPath ?? p.absolute(defaultOptions.outputDirectory!, 'lcov.info'));
+      outPath ?? p.absolute(defaultOptions.outputDirectory!, 'lcov.info'),
+    );
 
     final outfile = File(outFilePath);
     if (!FileSystemEntity.isDirectorySync(outFilePath) &&
@@ -317,7 +340,8 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   var prettyPrint = args['pretty-print'] as bool;
   final prettyPrintFunc = args['pretty-print-func'] as bool;
   final prettyPrintBranch = args['pretty-print-branch'] as bool;
-  final numModesChosen = (prettyPrint ? 1 : 0) +
+  final numModesChosen =
+      (prettyPrint ? 1 : 0) +
       (prettyPrintFunc ? 1 : 0) +
       (prettyPrintBranch ? 1 : 0) +
       (lcov ? 1 : 0);
