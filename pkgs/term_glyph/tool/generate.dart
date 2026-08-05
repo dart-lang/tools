@@ -32,8 +32,9 @@ const _generatedDir = 'lib/src/generated';
 
 /// Writes `lib/src/generated/glyph_set.dart`.
 void _writeGlyphSetInterface(List<List<dynamic>> data) {
-  final file =
-      File('$_generatedDir/glyph_set.dart').openSync(mode: FileMode.write);
+  final file = File(
+    '$_generatedDir/glyph_set.dart',
+  ).openSync(mode: FileMode.write);
   file.writeStringSync(_header);
   file.writeStringSync(r'''
 
@@ -83,9 +84,9 @@ void _writeGlyphSetInterface(List<List<dynamic>> data) {
 /// If [ascii] is `true`, this writes the ASCII glyph set. Otherwise it writes
 /// the Unicode glyph set.
 void _writeGlyphSet(List<List<dynamic>> data, {required bool ascii}) {
-  final file =
-      File('$_generatedDir/${ascii ? "ascii" : "unicode"}_glyph_set.dart')
-          .openSync(mode: FileMode.write);
+  final file = File(
+    '$_generatedDir/${ascii ? "ascii" : "unicode"}_glyph_set.dart',
+  ).openSync(mode: FileMode.write);
 
   final className = '${ascii ? "Ascii" : "Unicode"}GlyphSet';
   file.writeStringSync('''
@@ -118,8 +119,9 @@ void _writeGlyphSet(List<List<dynamic>> data, {required bool ascii}) {
 
 /// Writes `lib/src/generated/top_level.dart`.
 void _writeTopLevel(List<List<dynamic>> data) {
-  final file =
-      File('$_generatedDir/top_level.dart').openSync(mode: FileMode.write);
+  final file = File(
+    '$_generatedDir/top_level.dart',
+  ).openSync(mode: FileMode.write);
 
   file.writeStringSync('''
     $_header
