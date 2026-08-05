@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:csv/csv.dart';
 
 void main() {
-  final csv = CsvCodec(eol: '\n');
+  final csv = Csv(lineDelimiter: '\n');
   final data = csv.decoder.convert(File('data.csv').readAsStringSync());
 
   // Remove comments and empty lines.
