@@ -21,7 +21,7 @@ class _$Directive extends Directive {
   final bool deferred;
 
   factory _$Directive([void Function(DirectiveBuilder)? updates]) =>
-      (new DirectiveBuilder()..update(updates)).build() as _$Directive;
+      (DirectiveBuilder()..update(updates)).build() as _$Directive;
 
   _$Directive._({
     this.as,
@@ -30,20 +30,13 @@ class _$Directive extends Directive {
     required this.show,
     required this.hide,
     required this.deferred,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(url, r'Directive', 'url');
-    BuiltValueNullFieldError.checkNotNull(type, r'Directive', 'type');
-    BuiltValueNullFieldError.checkNotNull(show, r'Directive', 'show');
-    BuiltValueNullFieldError.checkNotNull(hide, r'Directive', 'hide');
-    BuiltValueNullFieldError.checkNotNull(deferred, r'Directive', 'deferred');
-  }
-
+  }) : super._();
   @override
   Directive rebuild(void Function(DirectiveBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$DirectiveBuilder toBuilder() => new _$DirectiveBuilder()..replace(this);
+  _$DirectiveBuilder toBuilder() => _$DirectiveBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -176,7 +169,6 @@ class _$DirectiveBuilder extends DirectiveBuilder {
 
   @override
   void replace(Directive other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Directive;
   }
 
@@ -191,7 +183,7 @@ class _$DirectiveBuilder extends DirectiveBuilder {
   _$Directive _build() {
     final _$result =
         _$v ??
-        new _$Directive._(
+        _$Directive._(
           as: as,
           url: BuiltValueNullFieldError.checkNotNull(url, r'Directive', 'url'),
           type: BuiltValueNullFieldError.checkNotNull(

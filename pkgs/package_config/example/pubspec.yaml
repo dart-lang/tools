@@ -1,0 +1,14 @@
+name: package_config_example
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  package_config:
+    path: ..
+  path: ^1.8.0
+
+dev_dependencies:
+  dart_flutter_team_lints: ^3.4.0

@@ -1,0 +1,11 @@
+base: &base_node
+  name: "default"
+  timeout: 30
+
+production:
+  <<: *base_node
+  timeout: 60
+
+list_of_bases:
+  - *base_node
+  - *base_node

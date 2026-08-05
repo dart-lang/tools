@@ -14,6 +14,7 @@ class CycleException<T> implements Exception {
   CycleException(Iterable<T> cycle) : cycle = List.unmodifiable(cycle);
 
   @override
-  String toString() => 'A cycle was detected in a graph that must be acyclic:\n'
+  String toString() =>
+      'A cycle was detected in a graph that must be acyclic:\n'
       '${cycle.map((node) => '* $node').join('\n')}';
 }

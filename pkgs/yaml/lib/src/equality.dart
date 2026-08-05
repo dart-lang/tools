@@ -101,26 +101,25 @@ class _DeepEquals {
 /// self-referential structures, and returns the same hash code for
 /// [YamlScalar]s and their values.
 int deepHashCode(Object? obj) {
-  var parents = <Object?>[];
+  final parents = Set<Object?>.identity();
 
   int deepHashCodeInner(Object? value) {
-    if (parents.any((parent) => identical(parent, value))) return -1;
-
-    parents.add(value);
+    if (!parents.add(value)) return -1;
     try {
       if (value is Map) {
         var equality = const UnorderedIterableEquality<Object?>();
         return equality.hash(value.keys.map(deepHashCodeInner)) ^
             equality.hash(value.values.map(deepHashCodeInner));
       } else if (value is Iterable) {
-        return const IterableEquality<Object?>().hash(value.map(deepHashCode));
+        return const IterableEquality<Object?>()
+            .hash(value.map(deepHashCodeInner));
       } else if (value is YamlScalar) {
         return (value.value as Object?).hashCode;
       } else {
         return value.hashCode;
       }
     } finally {
-      parents.removeLast();
+      parents.remove(value);
     }
   }
 

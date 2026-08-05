@@ -3,19 +3,24 @@
 # These are suggestions; it is fine to have your changes reviewed by someone
 # else.
 
-.github/                        @dart-lang/dart-ecosystem-team
-README.md                       @dart-lang/dart-ecosystem-team
+# Global owners
+*                               @dart-lang/dart-ecosystem-team
+
+third_party/yaml-test-suite     @dart-lang/dart-pub-team
+tool/update-yaml-test-suite.sh  @dart-lang/dart-pub-team
+
+pkgs/api_summary                @kevmoo
 pkgs/bazel_worker               @dart-lang/dart-bat
 pkgs/benchmark_harness          @dart-lang/dart-native-runtime-team
 pkgs/boolean_selector           @dart-lang/dart-ecosystem-team
 pkgs/browser_launcher           @dart-lang/dart-ecosystem-team
 pkgs/cli_config                 @dcharkes
-pkgs/cli_util                   @devoncarew
+pkgs/cli_util                   @dcharkes
 pkgs/clock                      @dart-lang/dart-ecosystem-team
 pkgs/code_builder               @dart-lang/dart-ecosystem-team
 pkgs/coverage                   @liamappelbe @dart-lang/dart-native-runtime-team
 pkgs/csslib                     @dart-lang/dart-ecosystem-team #formerly @leonsenft
-pkgs/extension_discovery        @dart-lang/dart-ecosystem-team #tbd
+pkgs/extension_discovery        @dart-lang/dart-ecosystem-team @dart-lang/dart-pub-team
 pkgs/file                       @dart-lang/dart-ecosystem-team
 pkgs/file_testing               @dart-lang/dart-ecosystem-team
 pkgs/glob                       @dart-lang/dart-ecosystem-team
@@ -42,7 +47,7 @@ pkgs/string_scanner             @dart-lang/dart-ecosystem-team
 pkgs/term_glyph                 @dart-lang/dart-bat
 pkgs/test_reflective_loader     @scheglov
 pkgs/timing                     @dart-lang/dart-bat
-pkgs/unified_analytics          @bkonyi @dart-lang/dash-developer-services
+pkgs/unified_analytics          @dart-lang/analyzer-team
 pkgs/watcher                    @davidmorgan @dart-lang/dart-model-team
 pkgs/yaml                       @dart-lang/dart-pub-team
 pkgs/yaml_edit                  @dart-lang/dart-pub-team

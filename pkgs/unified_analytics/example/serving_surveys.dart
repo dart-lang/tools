@@ -47,47 +47,48 @@ void main() async {
 
     // ignore: invalid_use_of_visible_for_testing_member
     analytics = Analytics.fake(
-        tool: DashTool.flutterTool,
-        homeDirectory: home,
-        dartVersion: 'dartVersion',
-        fs: fs,
-        platform: DevicePlatform.macos,
-        surveyHandler: FakeSurveyHandler.fromList(
-          dismissedSurveyFile: home
-              .childDirectory(kDartToolDirectoryName)
-              .childFile(kDismissedSurveyFileName),
-          initializedSurveys: [
-            Survey(
-              uniqueId: 'uniqueId',
-              startDate: DateTime(2023, 1, 1),
-              endDate: DateTime(2023, 5, 31),
-              description: 'description',
-              snoozeForMinutes: 10,
-              samplingRate: 1.0,
-              excludeDashToolList: [],
-              conditionList: [],
-              buttonList: [
-                SurveyButton(
-                  buttonText: 'View Survey',
-                  action: 'accept',
-                  promptRemainsVisible: false,
-                  url: 'http://example.com',
-                ),
-                SurveyButton(
-                  buttonText: 'More Info',
-                  action: 'snooze',
-                  promptRemainsVisible: true,
-                  url: 'http://example2.com',
-                ),
-                SurveyButton(
-                  buttonText: 'Dismiss Survey',
-                  action: 'dismiss',
-                  promptRemainsVisible: false,
-                )
-              ],
-            ),
-          ],
-        ));
+      tool: DashTool.flutterTool,
+      homeDirectory: home,
+      dartVersion: 'dartVersion',
+      fs: fs,
+      platform: DevicePlatform.macos,
+      surveyHandler: FakeSurveyHandler.fromList(
+        dismissedSurveyFile: home
+            .childDirectory(kDartToolDirectoryName)
+            .childFile(kDismissedSurveyFileName),
+        initializedSurveys: [
+          Survey(
+            uniqueId: 'uniqueId',
+            startDate: DateTime(2023, 1, 1),
+            endDate: DateTime(2023, 5, 31),
+            description: 'description',
+            snoozeForMinutes: 10,
+            samplingRate: 1.0,
+            excludeDashToolList: [],
+            conditionList: [],
+            buttonList: [
+              SurveyButton(
+                buttonText: 'View Survey',
+                action: 'accept',
+                promptRemainsVisible: false,
+                url: 'http://example.com',
+              ),
+              SurveyButton(
+                buttonText: 'More Info',
+                action: 'snooze',
+                promptRemainsVisible: true,
+                url: 'http://example2.com',
+              ),
+              SurveyButton(
+                buttonText: 'Dismiss Survey',
+                action: 'dismiss',
+                promptRemainsVisible: false,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   });
 
   // Each client of this package will be able to fetch all of
@@ -116,8 +117,10 @@ void main() async {
   final persistedSurveyFile = home
       .childDirectory(kDartToolDirectoryName)
       .childFile(kDismissedSurveyFileName);
-  print('The contents of the json file '
-      'after invoking `analytics.surveyShown(survey);`');
+  print(
+    'The contents of the json file '
+    'after invoking `analytics.surveyShown(survey);`',
+  );
   print('${persistedSurveyFile.readAsStringSync()}\n');
 
   // Change the index below to decide which button to simulate pressing
@@ -131,9 +134,11 @@ void main() async {
   // Get the survey button by index that will need to be passed along with
   // the survey to simulate an interaction with the survey
   final selectedSurveyButton = survey.buttonList[selectedButtonIndex];
-  print('The simulated button pressed was: '
-      '"${selectedSurveyButton.buttonText}" '
-      '(action = ${selectedSurveyButton.action})\n');
+  print(
+    'The simulated button pressed was: '
+    '"${selectedSurveyButton.buttonText}" '
+    '(action = ${selectedSurveyButton.action})\n',
+  );
 
   // The below method will handle whatever action the button
   analytics.surveyInteracted(
@@ -143,20 +148,26 @@ void main() async {
 
   // Conditional to check if there is a URl to route to
   if (selectedSurveyButton.url != null) {
-    print('***This button also has a survey URL link '
-        'to route to at "${selectedSurveyButton.url}"***\n');
+    print(
+      '***This button also has a survey URL link '
+      'to route to at "${selectedSurveyButton.url}"***\n',
+    );
   }
 
   // Conditional to check what simulating a popup to stay up
   if (selectedSurveyButton.promptRemainsVisible) {
-    print('***This button has its promptRemainsVisible field set to `true` '
-        'so this simulates what seeing a pop up again would look like***\n');
+    print(
+      '***This button has its promptRemainsVisible field set to `true` '
+      'so this simulates what seeing a pop up again would look like***\n',
+    );
   }
 
-  print('The contents of the json file '
-      'after invoking '
-      '`analytics.surveyInteracted(survey: survey, '
-      'surveyButton: selectedSurveyButton);`');
+  print(
+    'The contents of the json file '
+    'after invoking '
+    '`analytics.surveyInteracted(survey: survey, '
+    'surveyButton: selectedSurveyButton);`',
+  );
   print('${persistedSurveyFile.readAsStringSync()}\n');
 
   // Demonstrating that the survey doesn't get returned again

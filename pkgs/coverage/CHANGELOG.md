@@ -1,3 +1,7 @@
+## 1.15.1
+
+- Allow package_config `3.x.x`.
+
 ## 1.15.0
 
 - Expose `filterIgnored` function, which filters the coverage data according to
@@ -30,7 +34,7 @@
   format_coverage.
 - Fix a bug where we attempt to resume an isolate after the VM service has been
   shut down.
-  
+
 ## 1.12.0
 
 - Introduced support for specifying coverage flags through a YAML file.

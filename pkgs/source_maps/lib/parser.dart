@@ -399,7 +399,7 @@ class SingleMapping extends Mapping {
         entries.add(TargetEntry(column));
       } else {
         srcUrlId += tokenizer._consumeValue();
-        if (srcUrlId >= urls.length) {
+        if (srcUrlId < 0 || srcUrlId >= urls.length) {
           throw StateError(
               'Invalid source url id. $targetUrl, $line, $srcUrlId');
         }
@@ -411,7 +411,7 @@ class SingleMapping extends Mapping {
           entries.add(TargetEntry(column, srcUrlId, srcLine, srcColumn));
         } else {
           srcNameId += tokenizer._consumeValue();
-          if (srcNameId >= names.length) {
+          if (srcNameId < 0 || srcNameId >= names.length) {
             throw StateError('Invalid name id: $targetUrl, $line, $srcNameId');
           }
           entries.add(

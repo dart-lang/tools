@@ -1,5 +1,5 @@
 name: json_rpc_2
-version: 4.1.0-wip
+version: 4.1.0
 description: >-
   Utilities to write a client or server using the JSON-RPC 2.0 spec.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/json_rpc_2

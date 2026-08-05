@@ -1,5 +1,7 @@
 ## 2.1.2-wip
 
+- Fix an exception when a subscription to a `combineLatest` stream is canceled
+  while there is an ongoing asynchronous combine callback.
 - Require Dart 3.4 or greater.
 
 ## 2.1.1

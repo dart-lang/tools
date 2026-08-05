@@ -47,22 +47,18 @@ class Condition {
   /// 	"value": 1000
   /// }
   /// ```
-  Condition(
-    this.field,
-    this.operatorString,
-    this.value,
-  );
+  Condition(this.field, this.operatorString, this.value);
 
   Condition.fromJson(Map<String, dynamic> json)
-      : field = json['field'] as String,
-        operatorString = json['operator'] as String,
-        value = json['value'] as int;
+    : field = json['field'] as String,
+      operatorString = json['operator'] as String,
+      value = json['value'] as int;
 
   Map<String, Object?> toMap() => <String, Object?>{
-        'field': field,
-        'operator': operatorString,
-        'value': value,
-      };
+    'field': field,
+    'operator': operatorString,
+    'value': value,
+  };
 
   @override
   String toString() => jsonEncode(toMap());
@@ -89,10 +85,10 @@ class PersistedSurvey {
 
   @override
   String toString() => jsonEncode({
-        'uniqueId': uniqueId,
-        'snoozed': snoozed,
-        'timestamp': timestamp.toString(),
-      });
+    'uniqueId': uniqueId,
+    'snoozed': snoozed,
+    'timestamp': timestamp.toString(),
+  });
 }
 
 class Survey {
@@ -122,27 +118,27 @@ class Survey {
 
   /// Parse the contents of the json metadata file hosted externally.
   Survey.fromJson(Map<String, dynamic> json)
-      : uniqueId = json['uniqueId'] as String,
-        startDate = DateTime.parse(json['startDate'] as String),
-        endDate = DateTime.parse(json['endDate'] as String),
-        description = json['description'] as String,
-        // Handle both string and integer fields
-        snoozeForMinutes = json['snoozeForMinutes'] is String
-            ? int.parse(json['snoozeForMinutes'] as String)
-            : json['snoozeForMinutes'] as int,
-        // Handle both string and double fields
-        samplingRate = json['samplingRate'] is String
-            ? double.parse(json['samplingRate'] as String)
-            : json['samplingRate'] as double,
-        excludeDashToolList = (json['excludeDashTools'] as List<dynamic>)
-            .map((e) => DashTool.fromLabel(e as String))
-            .toList(),
-        conditionList = (json['conditions'] as List<dynamic>).map((e) {
-          return Condition.fromJson(e as Map<String, dynamic>);
-        }).toList(),
-        buttonList = (json['buttons'] as List<dynamic>).map((e) {
-          return SurveyButton.fromJson(e as Map<String, dynamic>);
-        }).toList();
+    : uniqueId = json['uniqueId'] as String,
+      startDate = DateTime.parse(json['startDate'] as String),
+      endDate = DateTime.parse(json['endDate'] as String),
+      description = json['description'] as String,
+      // Handle both string and integer fields
+      snoozeForMinutes = json['snoozeForMinutes'] is String
+          ? int.parse(json['snoozeForMinutes'] as String)
+          : json['snoozeForMinutes'] as int,
+      // Handle both string and double fields
+      samplingRate = json['samplingRate'] is String
+          ? double.parse(json['samplingRate'] as String)
+          : json['samplingRate'] as double,
+      excludeDashToolList = (json['excludeDashTools'] as List<dynamic>)
+          .map((e) => DashTool.fromLabel(e as String))
+          .toList(),
+      conditionList = (json['conditions'] as List<dynamic>).map((e) {
+        return Condition.fromJson(e as Map<String, dynamic>);
+      }).toList(),
+      buttonList = (json['buttons'] as List<dynamic>).map((e) {
+        return SurveyButton.fromJson(e as Map<String, dynamic>);
+      }).toList();
 
   @override
   String toString() {
@@ -174,17 +170,17 @@ class SurveyButton {
   });
 
   SurveyButton.fromJson(Map<String, dynamic> json)
-      : buttonText = json['buttonText'] as String,
-        action = json['action'] as String,
-        promptRemainsVisible = json['promptRemainsVisible'] as bool,
-        url = json['url'] as String?;
+    : buttonText = json['buttonText'] as String,
+      action = json['action'] as String,
+      promptRemainsVisible = json['promptRemainsVisible'] as bool,
+      url = json['url'] as String?;
 
   Map<String, Object?> toMap() => <String, Object?>{
-        'buttonText': buttonText,
-        'action': action,
-        'promptRemainsVisible': promptRemainsVisible,
-        'url': url,
-      };
+    'buttonText': buttonText,
+    'action': action,
+    'promptRemainsVisible': promptRemainsVisible,
+    'url': url,
+  };
 }
 
 class SurveyHandler {
@@ -235,8 +231,9 @@ class SurveyHandler {
 
       final uniqueId = key;
       final snoozed = value['status'] == 'snoozed' ? true : false;
-      final timestamp =
-          DateTime.fromMillisecondsSinceEpoch(value['timestamp'] as int);
+      final timestamp = DateTime.fromMillisecondsSinceEpoch(
+        value['timestamp'] as int,
+      );
 
       persistedSurveys[uniqueId] = PersistedSurvey(
         uniqueId: uniqueId,
@@ -275,8 +272,9 @@ class SurveyHandler {
   Map<String, dynamic> _parseJsonFile() {
     Map<String, dynamic> contents;
     try {
-      contents = jsonDecode(dismissedSurveyFile.readAsStringSync())
-          as Map<String, dynamic>;
+      contents =
+          jsonDecode(dismissedSurveyFile.readAsStringSync())
+              as Map<String, dynamic>;
     } on FormatException {
       createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
       contents = {};

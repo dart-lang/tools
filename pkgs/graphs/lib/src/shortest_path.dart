@@ -25,14 +25,13 @@ Iterable<T>? shortestPath<T extends Object>(
   Iterable<T> Function(T) edges, {
   bool Function(T, T)? equals,
   int Function(T)? hashCode,
-}) =>
-    _shortestPaths<T>(
-      start,
-      edges,
-      target: target,
-      equals: equals,
-      hashCode: hashCode,
-    )[target];
+}) => _shortestPaths<T>(
+  start,
+  edges,
+  target: target,
+  equals: equals,
+  hashCode: hashCode,
+)[target];
 
 /// Returns a [Map] of the shortest paths from [start] to all of the nodes in
 /// the directed graph defined by [edges].
@@ -58,13 +57,7 @@ Map<T, Iterable<T>> shortestPaths<T extends Object>(
   Iterable<T> Function(T) edges, {
   bool Function(T, T)? equals,
   int Function(T)? hashCode,
-}) =>
-    _shortestPaths<T>(
-      start,
-      edges,
-      equals: equals,
-      hashCode: hashCode,
-    );
+}) => _shortestPaths<T>(start, edges, equals: equals, hashCode: hashCode);
 
 Map<T, Iterable<T>> _shortestPaths<T extends Object>(
   T start,
@@ -77,8 +70,9 @@ Map<T, Iterable<T>> _shortestPaths<T extends Object>(
   distances[start] = _Tail<T>();
 
   final nonNullEquals = equals ??= _defaultEquals;
-  final isTarget =
-      target == null ? _neverTarget : (T node) => nonNullEquals(node, target);
+  final isTarget = target == null
+      ? _neverTarget
+      : (T node) => nonNullEquals(node, target);
   if (isTarget(start)) {
     return distances;
   }
@@ -122,10 +116,7 @@ class _Tail<T extends Object> extends Iterable<T> {
   final _Tail<T>? head;
   @override
   final int length;
-  _Tail()
-      : tail = null,
-        head = null,
-        length = 0;
+  _Tail() : tail = null, head = null, length = 0;
   _Tail._(this.tail, this.head, this.length);
   _Tail<T> append(T value) => _Tail._(value, this, length + 1);
 

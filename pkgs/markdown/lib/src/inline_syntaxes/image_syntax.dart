@@ -10,7 +10,7 @@ import 'link_syntax.dart';
 /// Matches images like `![alternate text](url "optional title")` and
 /// `![alternate text][label]`.
 class ImageSyntax extends LinkSyntax {
-  ImageSyntax({super.linkResolver})
+  ImageSyntax({super.linkResolver, super.linkBuilder})
     : super(pattern: r'!\[', startCharacter: $exclamation);
 
   @override
@@ -24,15 +24,19 @@ class ImageSyntax extends LinkSyntax {
     element.attributes['src'] = normalizeLinkDestination(
       escapePunctuation(destination),
     );
-    element.attributes['alt'] = children.map((node) {
-      // See https://spec.commonmark.org/0.30/#image-description.
-      // An image description may contain links. Fetch text from the alt
-      // attribute if this nested link is an image.
-      if (node is Element && node.tag == 'img') {
-        return node.attributes['alt'];
-      }
-      return node.textContent;
-    }).join();
+    final alt = children
+        .map((node) {
+          // See https://spec.commonmark.org/0.30/#image-description.
+          // An image description may contain links. Fetch text from the alt
+          // attribute if this nested link is an image.
+          if (node case Element(tag: 'img', attributes: {'alt': final alt})) {
+            return alt;
+          }
+          return node.textContent;
+        })
+        .nonNulls
+        .join();
+    element.attributes['alt'] = escapeAttributeCharactersValue(alt);
     if (title != null && title.isNotEmpty) {
       element.attributes['title'] = normalizeLinkTitle(title);
     }

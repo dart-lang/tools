@@ -1,6 +1,7 @@
-## 2.3.3-wip
+## 2.4.0-wip
 
 - Add an example usage to the README.
+- Update dependencies and minimum SDK version.
 
 ## 2.3.2
 

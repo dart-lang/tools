@@ -7,7 +7,6 @@ import 'package:meta/meta.dart';
 
 import '../base.dart';
 import '../visitors.dart';
-import 'code.dart';
 import 'expression.dart';
 import 'type_reference.dart';
 
@@ -96,9 +95,6 @@ class Reference extends Expression implements Spec {
     typeArguments,
     name,
   );
-
-  @override
-  Expression get expression => CodeExpression(Code.scope((a) => a(this)));
 
   @override
   String toString() =>

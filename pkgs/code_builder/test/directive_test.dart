@@ -73,6 +73,7 @@ void main() {
       library,
       equalsDart(r'''
           // ignore_for_file: no_leading_underscores_for_library_prefixes
+
           import '../relative.dart' as _i1;
           import 'package:foo/foo.dart' as _i2;
           import 'package:foo/bar.dart' as _i3;
@@ -94,6 +95,7 @@ void main() {
       equalsDart(
         r'''
           // ignore_for_file: no_leading_underscores_for_library_prefixes
+
           import 'dart:collection' as _i4;
 
           import 'package:foo/bar.dart' as _i3;

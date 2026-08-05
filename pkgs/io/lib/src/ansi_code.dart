@@ -34,7 +34,7 @@ T overrideAnsiOutput<T>(bool enableAnsiOutput, T Function() body) =>
     runZoned(body, zoneValues: <Object, Object>{AnsiCode: enableAnsiOutput});
 
 /// The type of code represented by [AnsiCode].
-class AnsiCodeType {
+final class AnsiCodeType {
   final String _name;
 
   /// A foreground color.
@@ -58,7 +58,7 @@ class AnsiCodeType {
 /// Standard ANSI escape code for customizing terminal text output.
 ///
 /// [Source](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors)
-class AnsiCode {
+final class AnsiCode {
   /// The numeric value associated with this code.
   final int code;
 

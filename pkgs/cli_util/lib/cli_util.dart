@@ -43,7 +43,7 @@ String getSdkPath() => sdkPath;
 ///
 /// [1]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 /// [2]: https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html#//apple_ref/doc/uid/TP40010672-CH2-SW1
-@Deprecated('Use BaseDirectories(tool: productName).configHome() instead.')
+@Deprecated('Use BaseDirectories(productName).configHome instead.')
 String applicationConfigHome(String productName) =>
     path.join(_configHome, productName);
 

@@ -147,6 +147,32 @@ void main() async {
     );
 
     validateCore(
+      'Image alt attribute breakout XSS',
+      '![<b x=" onerror=alert(1) y=">](bad)',
+      '<p><img src="bad" alt="&lt;b x=&quot; onerror=alert(1) y=&quot;&gt;" /></p>\n',
+      inlineSyntaxes: [InlineHtmlSyntax()],
+    );
+
+    validateCore(
+      'Image alt attribute escaping ampersand and quotes',
+      '![a & " b](bad)',
+      '<p><img src="bad" alt="a &amp; &quot; b" /></p>\n',
+    );
+
+    validateCore(
+      'Image alt attribute double-encoded entity',
+      '![&amp;amp;](bad)',
+      '<p><img src="bad" alt="&amp;amp;" /></p>\n',
+    );
+
+    validateCore(
+      'Image alt attribute with raw HTML tag under GFM',
+      '![foo <a> bar](bad)',
+      '<p><img src="bad" alt="foo &lt;a&gt; bar" /></p>\n',
+      inlineSyntaxes: [InlineHtmlSyntax()],
+    );
+
+    validateCore(
       'Unicode ellipsis as punctuation',
       '''
 "Connecting dot **A** to **B.**…"
@@ -157,9 +183,13 @@ void main() async {
     );
   });
 
+  const nyanTail = '~=[,,_';
+  const nyanHead = '_,,]:3';
   group('Resolver', () {
+    // Simple resolver.
     Node? nyanResolver(String text, [_]) =>
         text.isEmpty ? null : Text('~=[,,_${text}_,,]:3');
+
     validateCore(
       'simple link resolver',
       '''
@@ -224,6 +254,112 @@ resolve [[]] thing
 <p>resolve ~=[,,_[]_,,]:3 thing</p>
 ''',
       linkResolver: nyanResolver,
+    );
+  });
+
+  group('LinkBuilder', () {
+    // More complicated builder with access to text content.
+    List<Node>? nyanBuilder(
+      String label,
+      String? title,
+      List<Node> Function() getChildren,
+    ) {
+      if (label.isEmpty) return null;
+      // Special case labels starting with `_`.
+      if (label.startsWith('_')) return null;
+      final children = getChildren();
+      if (children.isEmpty) return [Text('$nyanTail$label$nyanHead')];
+      return children
+        ..insert(0, Text(nyanTail))
+        ..add(Text(nyanHead));
+    }
+
+    validateCore(
+      'raw reference link builder',
+      '''
+resolve [this] thing
+''',
+      '''
+<p>resolve ~=[,,_this_,,]:3 thing</p>
+''',
+      linkBuilder: nyanBuilder,
+    );
+
+    validateCore(
+      'simple reference link builder',
+      '''
+resolve [this][] thing
+''',
+      '''
+<p>resolve ~=[,,_this_,,]:3 thing</p>
+''',
+      linkBuilder: nyanBuilder,
+    );
+
+    validateCore(
+      'content reference link builder',
+      '''
+resolve [_content_][label] thing
+''',
+      '''
+<p>resolve ~=[,,_<em>content</em>_,,]:3 thing</p>
+''',
+      linkBuilder: nyanBuilder,
+    );
+
+    validateCore(
+      'can resolve link containing inline tags',
+      '''
+resolve [*star* _underline_] thing
+''',
+      '''
+<p>resolve ~=[,,_<em>star</em> <em>underline</em>_,,]:3 thing</p>
+''',
+      linkBuilder: nyanBuilder,
+    );
+
+    validateCore(
+      'link builder uses un-normalized link label',
+      '''
+resolve [TH  IS] thing
+''',
+      '''
+<p>resolve ~=[,,_TH  IS_,,]:3 thing</p>
+''',
+      linkBuilder: nyanBuilder,
+    );
+
+    validateCore(
+      'link builder uses the same text object as the content',
+      '''
+resolve [TH  IS][label] thing
+''',
+      '''
+<p>resolve ~=[,,_TH  IS_,,]:3 thing</p>
+''',
+      linkBuilder: nyanBuilder,
+    );
+
+    validateCore(
+      'can resolve escaped brackets',
+      r'''
+resolve [\[\]] thing
+''',
+      '''
+<p>resolve ~=[,,_[]_,,]:3 thing</p>
+''',
+      linkBuilder: nyanBuilder,
+    );
+
+    validateCore(
+      'can choose to _not_ resolve something',
+      '''
+resolve [banana][_private] thing
+''',
+      '''
+<p>resolve [banana][_private] thing</p>
+''',
+      linkBuilder: nyanBuilder,
     );
   });
 
@@ -323,6 +459,13 @@ nyan''',
         1. This will not be an <ol>.
         ''',
       inlineOnly: true,
+    );
+    validateCore(
+      'filters disallowed html tags when enableTagfilter is true',
+      'foo <title> bar',
+      'foo &lt;title> bar',
+      inlineOnly: true,
+      enableTagfilter: true,
     );
   });
 

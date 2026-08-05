@@ -1,4 +1,20 @@
-## 7.3.1-wip
+## 7.4.0
+
+* Adds `linkBuilder`/`imageLinkBuilder` alternatives to `linkResolver`/  
+  `imageLinkResolver` for handling unmatched reference links.
+  Allows access to the parsed markdown content of `[_content_][reference]`,
+  so that the created link can contain that content.
+* For testing the package, adds matchers for `Element` and `Text` to more
+  directly test the output parsing.
+* Fixes an issue such that `markdownToHtml`, when given `inlineOnly: true`,
+  now respects `enableTagfilter: true`.
+* Improve the HTML tag filtering.
+* Optimize email autolink regex parsing in `AutolinkExtensionSyntax` by bounding
+  quantifiers to RFC limits, improving performance on inputs with long sequences
+  of dots or alphanumeric characters.
+* Escape image description text when assigning it to the `alt` attribute.
+
+## 7.3.1
 
 * Preserve metadata passed to fenced code blocks as
   `data-metadata` on the created `pre` element.

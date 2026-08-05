@@ -1,5 +1,6 @@
 name: Health
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   pull_request:
@@ -8,9 +9,14 @@ on:
 
 jobs:
   health:
-    uses: dart-lang/ecosystem/.github/workflows/health.yaml@main
+    uses: dart-lang/ecosystem/.github/workflows/health.yaml@edfdb3b4063b9034b708144633a700204f865f43
     with:
       ignore_coverage: "**.mock.dart,**.g.dart"
       ignore_license: "**.mock.dart,**.g.dart,**.mocks.dart,pkgs/markdown/**"
+      license_test_string: "// Copyright"
+      license: |
+        // Copyright (c) %YEAR%, the Dart project authors. Please see the AUTHORS file
+        // for details. All rights reserved. Use of this source code is governed by a
+        // BSD-style license that can be found in the LICENSE file.
     permissions:
       pull-requests: write

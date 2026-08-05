@@ -80,12 +80,16 @@ class Chrome {
   /// as a user data directory. Chrome will start signed into
   /// the default profile with extensions enabled if [signIn]
   /// is also true.
+  ///
+  /// When launching, all [additionalArguments] will be passed directly to
+  /// Chrome as command line arguments.
   static Future<Chrome> startWithDebugPort(
     List<String> urls, {
     int debugPort = 0,
     bool headless = false,
     String? userDataDir,
     bool signIn = false,
+    List<String> additionalArguments = const [],
   }) async {
     Directory dataDir;
     if (userDataDir == null) {
@@ -118,12 +122,17 @@ class Chrome {
       // credentials. This uses a mock keychain to avoid that dialog from
       // blocking.
       '--use-mock-keychain',
+      // Prevent warnings for using flags that are not recommended for general
+      // browsing but are applicable for use in dev-focused workflows.
+      '--test-type',
+      // Dev runs of the browser should be considered independent of one
+      // another, don't announce when the previous session crashed.
+      '--disable-session-crashed-bubble',
+      ...additionalArguments,
+      if (headless) '--headless',
     ];
-    if (headless) {
-      args.add('--headless');
-    }
 
-    final process = await _startProcess(urls, args: args);
+    final process = await start(urls, args: args);
 
     // Wait until the DevTools are listening before trying to connect.
     final errorLines = <String>[];
@@ -166,15 +175,10 @@ class Chrome {
   static Future<Process> start(
     List<String> urls, {
     List<String> args = const [],
-  }) async =>
-      await _startProcess(urls, args: args);
-
-  static Future<Process> _startProcess(
-    List<String> urls, {
-    List<String> args = const [],
-  }) async {
-    final processArgs = args.toList()..addAll(urls);
-    return await Process.start(_executable, processArgs);
+  }) {
+    assert(!args.contains('--'));
+    assert(!urls.contains('--'));
+    return Process.start(_executable, [...args, '--', ...urls]);
   }
 
   static Future<Chrome> _connect(Chrome chrome) async {

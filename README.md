@@ -14,6 +14,7 @@ don't naturally belong to other topic monorepos (like
 
 | Package | Description | Issues | Version |
 | --- | --- | --- | --- |
+| [api_summary](pkgs/api_summary/) | Creates an API summary for a package. | [![issues](https://img.shields.io/badge/issues-4774bc)][api_summary_issues] | [![pub package](https://img.shields.io/pub/v/api_summary.svg)](https://pub.dev/packages/api_summary) |
 | [bazel_worker](pkgs/bazel_worker/) | Protocol and utilities to implement or invoke persistent bazel workers. | [![issues](https://img.shields.io/badge/issues-4774bc)][bazel_worker_issues] | [![pub package](https://img.shields.io/pub/v/bazel_worker.svg)](https://pub.dev/packages/bazel_worker) |
 | [benchmark_harness](pkgs/benchmark_harness/) | The official Dart project benchmark harness. | [![issues](https://img.shields.io/badge/issues-4774bc)][benchmark_harness_issues] | [![pub package](https://img.shields.io/pub/v/benchmark_harness.svg)](https://pub.dev/packages/benchmark_harness) |
 | [boolean_selector](pkgs/boolean_selector/) | A flexible syntax for boolean expressions, based on a simplified version of Dart's expression syntax. | [![issues](https://img.shields.io/badge/issues-4774bc)][boolean_selector_issues] | [![pub package](https://img.shields.io/pub/v/boolean_selector.svg)](https://pub.dev/packages/boolean_selector) |
@@ -56,6 +57,7 @@ don't naturally belong to other topic monorepos (like
 | [yaml](pkgs/yaml/) | A parser for YAML, a human-friendly data serialization standard | [![issues](https://img.shields.io/badge/issues-4774bc)][yaml_issues] | [![pub package](https://img.shields.io/pub/v/yaml.svg)](https://pub.dev/packages/yaml) |
 | [yaml_edit](pkgs/yaml_edit/) | A library for YAML manipulation with comment and whitespace preservation. | [![issues](https://img.shields.io/badge/issues-4774bc)][yaml_edit_issues] | [![pub package](https://img.shields.io/pub/v/yaml_edit.svg)](https://pub.dev/packages/yaml_edit) |
 
+[api_summary_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aapi_summary
 [bazel_worker_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Abazel_worker
 [benchmark_harness_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Abenchmark_harness
 [boolean_selector_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aboolean_selector

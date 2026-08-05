@@ -143,6 +143,28 @@ void main() {
             }
           }));
     });
+    test('from list elements with missing "- " prefix', () {
+      final yaml = cleanUpLiteral(r'''
+        linter:
+          rules:
+            - annotate_overrides
+            alway
+            ''');
+      var result = loadYaml(yaml, recover: true, errorListener: collector);
+      expect(
+          result,
+          deepEquals({
+            'linter': {
+              'rules': ['annotate_overrides', 'alway'],
+            }
+          }));
+      expect(collector.errors.length, equals(1));
+      expectErrorAtLineCol(
+          collector.errors[0],
+          "Expected ':'. If this is a list entry, it must start with '- '.",
+          4,
+          4);
+    });
   });
 
   test('includes source span information', () {
@@ -613,6 +635,12 @@ void main() {
   // encoding.
 
   group('5.3: Indicator Characters', () {
+    test('can start a plain scalar if followed by a plain-safe character', () {
+      expectYamlLoads({':': null}, '::');
+      expectYamlLoads({'-': null}, '-:');
+      expectYamlLoads([':a', '-b', '?c'], '[ :a, -b, ?c ]');
+    });
+
     test('[Example 5.3]', () {
       expectYamlLoads({
         'sequence': ['one', 'two'],
@@ -992,21 +1020,25 @@ void main() {
   });
 
   group('6.8: Directives', () {
-    // TODO(nweiz): assert that this produces a warning
     test('[Example 6.13]', () {
-      expectYamlLoads('foo', '''
+      expectYamlLoadsWithWarning(
+          'foo',
+          '''
         %FOO  bar baz # Should be ignored
                       # with a warning.
-        --- "foo"''');
+        --- "foo"''',
+          'unknown directive.');
     });
 
-    // TODO(nweiz): assert that this produces a warning.
     test('[Example 6.14]', () {
-      expectYamlLoads('foo', '''
+      expectYamlLoadsWithWarning(
+          'foo',
+          '''
         %YAML 1.3 # Attempt parsing
                    # with a warning
         ---
-        "foo"''');
+        "foo"''',
+          'this parser only supports YAML 1.1 and 1.2.');
     });
 
     test('[Example 6.15]', () {
@@ -1116,6 +1148,17 @@ void main() {
       anchorList = doc.keys.first;
       aliasList = doc[['a', 'b', 'c']].keys.first;
       expect(anchorList, same(aliasList));
+    });
+
+    test('self-referential list throws FormatException', () {
+      expect(() => loadYaml(cleanUpLiteral('''
+        ? &anchor [*anchor]
+        : value''')), throwsA(isA<FormatException>()));
+    });
+
+    test('self-referential map throws FormatException', () {
+      expect(() => loadYaml('&map { *map : *map }'),
+          throwsA(isA<FormatException>()));
     });
 
     test('[Example 7.1]', () {

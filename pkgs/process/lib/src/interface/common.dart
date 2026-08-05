@@ -60,15 +60,22 @@ String? getExecutablePath(
     extensions = platform.environment['PATHEXT']!.split(pathSeparator);
   }
 
-  List<String> candidates = <String>[];
-  List<String> searchPath;
-  if (executable.contains(context.separator)) {
-    // Deal with commands that specify a relative or absolute path differently.
-    searchPath = <String>[workingDirectory];
-  } else {
-    searchPath = platform.environment['PATH']!.split(pathSeparator);
+  bool executableContainsSeparator = executable.contains(context.separator);
+
+  // On Windows both '/' and '\' are valid path separators. Normalize to '\'
+  // so that path operations are consistent.
+  if (platform.isWindows && executable.contains('/')) {
+    executableContainsSeparator = true;
+    executable = context.normalize(executable);
   }
-  candidates = _getCandidatePaths(executable, searchPath, extensions, context);
+
+  // Deal with commands that specify a relative or absolute path differently.
+  final List<String> searchPath = executableContainsSeparator
+      ? <String>[workingDirectory]
+      : platform.environment['PATH']!.split(pathSeparator);
+
+  final List<String> candidates =
+      _getCandidatePaths(executable, searchPath, extensions, context);
   final List<String> foundCandidates = <String>[];
   for (final String path in candidates) {
     final File candidate = fs.file(path);

@@ -30,20 +30,6 @@ void fileTest(
   });
 }
 
-/// Creates a set of files under a new temporary directory.
-/// Returns the temporary directory.
-///
-/// The [description] is a map from file names to content.
-/// If the content is again a map, it represents a subdirectory
-/// with the content as description.
-/// Otherwise the content should be a string,
-/// which is written to the file as UTF-8.
-// Directory createTestFiles(Map<String, Object> description) {
-//   var target = Directory.systemTemp.createTempSync("pkgcfgtest");
-//   _createFiles(target, description);
-//   return target;
-// }
-
 // Creates temporary files in the target directory.
 void _createFiles(Directory target, Map<Object?, Object?> description) {
   description.forEach((name, content) {
@@ -55,11 +41,3 @@ void _createFiles(Directory target, Map<Object?, Object?> description) {
     }
   });
 }
-
-/// Creates a [Directory] for a subdirectory of [parent].
-Directory subdir(Directory parent, String dirName) =>
-    Directory(pathJoinAll([parent.path, ...dirName.split('/')]));
-
-/// Creates a [File] for an entry in the [directory] directory.
-File dirFile(Directory directory, String fileName) =>
-    File(pathJoin(directory.path, fileName));

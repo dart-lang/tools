@@ -768,7 +768,7 @@ void main() {
               ..body = const Code(''),
       ).closure,
       equalsDart(r'''
-        (a) { }
+        (a) {}
       '''),
     );
   });

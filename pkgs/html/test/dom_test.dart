@@ -1,3 +1,7 @@
+// Copyright (c) project authors. All rights reserved.
+// Licensed under the MIT license.
+// See LICENSE file in the project root for details.
+
 /// Additional feature tests that aren't based on test data.
 library;
 

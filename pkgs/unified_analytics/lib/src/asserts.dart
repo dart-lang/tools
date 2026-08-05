@@ -145,8 +145,10 @@ void checkBody(Map<String, Object?> body) {
     // GA4 Limitation:
     // User property names must be 24 characters or fewer
     if (key.length > 24) {
-      throw AnalyticsException('Limit user property names to 24 chars or less\n'
-          'The user property key: "$key" is too long');
+      throw AnalyticsException(
+        'Limit user property names to 24 chars or less\n'
+        'The user property key: "$key" is too long',
+      );
     }
 
     // GA4 Limitation:

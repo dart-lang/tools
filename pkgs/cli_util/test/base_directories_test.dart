@@ -28,10 +28,7 @@ void main() {
       // We expect that first two segments of the path exist. This is really
       // just a dummy check that some part of the path exists.
       final ancestorPath = p.joinAll(p.split(path).take(2));
-      expect(
-        Directory(ancestorPath).existsSync(),
-        isTrue,
-      );
+      expect(Directory(ancestorPath).existsSync(), isTrue);
     }
 
     expectAncestorExists(baseDirectories.cacheHome);

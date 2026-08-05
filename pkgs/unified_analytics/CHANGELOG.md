@@ -1,10 +1,27 @@
+## 8.0.16
+
+- Added `Event.packageSkillsEvent` to track events from package:skills.
+- Run `dart format`.
+
+## 8.0.15
+- Added IDE and plugin information to `Event.serverSession`.
+- Discard any `Exception` or `Error` thrown while reading or writing analytics logs.
+- Added `agent` parameter to `Analytics` constructors to track the AI coding assistant/agent executing the tool.
+
+## 8.0.14
+- Added HCPP related analytics to `Event.commandUsageValues`.
+
 ## 8.0.13
-- Deprecated `Event.flutterWasmDryRun` in favor of `Event.flutterWasmDryRunPackage`.
+- Added `DashEnvVar` utilities for environment variable handling.
 
 ## 8.0.12
-- Added `Event.plugins` to track new analyzer plugins
+- Require Dart 3.10
+- Added `success` indicator and `label` to `Event.flutterTrackAndroidDependencies`
 
 ## 8.0.11
+- Added `Event.flutterTrackAndroidDependencies` to track android dependencies.
+- Deprecated `Event.flutterWasmDryRun` in favor of `Event.flutterWasmDryRunPackage`.
+- Added `Event.plugins` to track new analyzer plugins
 - Added `DashEvent.ideEvent` to track IDE reported events.
 
 ## 8.0.10

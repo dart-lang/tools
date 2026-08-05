@@ -17,7 +17,9 @@ String markdownToHtml(
   Iterable<InlineSyntax> inlineSyntaxes = const [],
   ExtensionSet? extensionSet,
   Resolver? linkResolver,
+  LinkBuilder? linkBuilder,
   Resolver? imageLinkResolver,
+  LinkBuilder? imageLinkBuilder,
   bool inlineOnly = false,
   bool encodeHtml = true,
   bool enableTagfilter = false,
@@ -30,12 +32,19 @@ String markdownToHtml(
     extensionSet: extensionSet,
     linkResolver: linkResolver,
     imageLinkResolver: imageLinkResolver,
+    linkBuilder: linkBuilder,
+    imageLinkBuilder: imageLinkBuilder,
     encodeHtml: encodeHtml,
     withDefaultBlockSyntaxes: withDefaultBlockSyntaxes,
     withDefaultInlineSyntaxes: withDefaultInlineSyntaxes,
   );
 
-  if (inlineOnly) return renderToHtml(document.parseInline(markdown));
+  if (inlineOnly) {
+    return renderToHtml(
+      document.parseInline(markdown),
+      enableTagfilter: enableTagfilter,
+    );
+  }
 
   final nodes = document.parse(markdown);
 
@@ -199,18 +208,18 @@ class HtmlRenderer implements NodeVisitor {
     return suffixedId;
   }
 
+  static final _tagfilterPattern = RegExp(
+    '<(?=/?(?:'
+    'title|textarea|style|xmp|iframe|noembed|noframes|script|plaintext'
+    r')(?:\s|/|>))',
+    caseSensitive: false,
+    multiLine: true,
+  );
+
   /// Filters some particular tags, see:
   /// https://github.github.com/gfm/#disallowed-raw-html-extension-
   // As said in the specification, this process should happen when rendering
   // HTML output, so there should not be a dedicated syntax for this extension.
-  String _filterTags(String content) => content.replaceAll(
-    RegExp(
-      '<(?=(?:'
-      'title|textarea|style|xmp|iframe|noembed|noframes|script|plaintext'
-      ')>)',
-      caseSensitive: false,
-      multiLine: true,
-    ),
-    '&lt;',
-  );
+  String _filterTags(String content) =>
+      content.replaceAll(_tagfilterPattern, '&lt;');
 }

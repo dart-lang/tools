@@ -1,6 +1,9 @@
-## 1.5.1-wip
+## 1.6.0-wip
 
+- Added `toJson` method to `Pubspec` to serialize the object back to a `Map`.
+- Parse `HostedDetails.url` as a non-git URI.
 - Require Dart 3.8
+- Fix analysis issues caused by new lints.
 
 ## 1.5.0
 

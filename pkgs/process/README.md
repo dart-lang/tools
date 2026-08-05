@@ -15,3 +15,11 @@ Unlike `dart:io`, `package:process` requires processes to be started with
 spawns processes in a hermetic way.
 
 [ProcessManager]: https://pub.dev/documentation/process/latest/process/ProcessManager-class.html
+
+## Example
+
+Run the example app from this package:
+
+```bash
+dart run example/main.dart
+```

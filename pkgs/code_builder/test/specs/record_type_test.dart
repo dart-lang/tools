@@ -95,4 +95,39 @@ void main() {
       equalsDart('(({int named, int other})?,)', emitter),
     );
   });
+
+  group('RecordType API contracts', () {
+    test('properties should be correct', () {
+      final recordType = RecordType();
+      expect(recordType.url, isNull);
+      expect(recordType.symbol, isNull);
+      expect(recordType.type, same(recordType));
+    });
+
+    test('newInstance should throw UnsupportedError', () {
+      final recordType = RecordType();
+      expect(() => recordType.newInstance([]), throwsUnsupportedError);
+    });
+
+    test('newInstanceNamed should throw UnsupportedError', () {
+      final recordType = RecordType();
+      expect(
+        () => recordType.newInstanceNamed('name', []),
+        throwsUnsupportedError,
+      );
+    });
+
+    test('constInstance should throw UnsupportedError', () {
+      final recordType = RecordType();
+      expect(() => recordType.constInstance([]), throwsUnsupportedError);
+    });
+
+    test('constInstanceNamed should throw UnsupportedError', () {
+      final recordType = RecordType();
+      expect(
+        () => recordType.constInstanceNamed('name', []),
+        throwsUnsupportedError,
+      );
+    });
+  });
 }
