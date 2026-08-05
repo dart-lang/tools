@@ -4,4 +4,5 @@
 
 export 'src/async_benchmark_base.dart';
 export 'src/benchmark_base.dart' show BenchmarkBase;
+export 'src/blackhole.dart' show blackhole;
 export 'src/score_emitter.dart';
