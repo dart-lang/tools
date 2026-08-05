@@ -25,6 +25,13 @@ class BenchOptions {
     required this.target,
     this.help = false,
     this.verbose = false,
+    this.json = false,
+    this.failOnUnstable = false,
+    this.forceRun = false,
+    this.isolateMode = false,
+    this.validate = false,
+    this.compilerFlags = const [],
+    this.vmFlags = const [],
   }) {
     if (!help && flavor.isEmpty) {
       // This is the wrong exception to use, except that it's caught in the
@@ -34,7 +41,9 @@ class BenchOptions {
   }
 
   factory BenchOptions.fromArgs(List<String> args) {
-    final result = _parserForBenchOptions.parse(args);
+    final isValidate = args.contains('validate');
+    final cleanArgs = List<String>.from(args)..remove('validate');
+    final result = _parserForBenchOptions.parse(cleanArgs);
 
     if (result.rest.isNotEmpty) {
       throw FormatException(
@@ -51,6 +60,13 @@ class BenchOptions {
       target: result.option('target')!,
       help: result.flag('help'),
       verbose: result.flag('verbose'),
+      json: result.flag('json'),
+      failOnUnstable: result.flag('fail-on-unstable'),
+      forceRun: result.flag('force-run'),
+      isolateMode: result.flag('isolate-mode'),
+      validate: isValidate,
+      compilerFlags: result.multiOption('compiler-flag'),
+      vmFlags: result.multiOption('vm-flag'),
     );
   }
 
@@ -61,6 +77,20 @@ class BenchOptions {
   final bool help;
 
   final bool verbose;
+
+  final bool json;
+
+  final bool failOnUnstable;
+
+  final bool forceRun;
+
+  final bool isolateMode;
+
+  final bool validate;
+
+  final List<String> compilerFlags;
+
+  final List<String> vmFlags;
 
   static String get usage => _parserForBenchOptions.usage;
 
@@ -91,5 +121,39 @@ class BenchOptions {
       negatable: false,
       help: 'Print the full stack trace if an exception is thrown.',
       abbr: 'v',
+    )
+    ..addFlag(
+      'json',
+      defaultsTo: false,
+      negatable: false,
+      help: 'Output results as JSON for aggregation.',
+    )
+    ..addFlag(
+      'fail-on-unstable',
+      defaultsTo: false,
+      negatable: false,
+      help: 'Exit with a non-zero code if any benchmark is unstable.',
+    )
+    ..addFlag(
+      'force-run',
+      defaultsTo: false,
+      negatable: false,
+      help: 'Force running the benchmark even if guidelines are violated.',
+    )
+    ..addFlag(
+      'isolate-mode',
+      defaultsTo: false,
+      negatable: false,
+      help:
+          'Run JIT sweeps in parallel Dart isolates rather than '
+          'subprocesses.',
+    )
+    ..addMultiOption(
+      'compiler-flag',
+      help: 'Extra flags to pass to the compiler.',
+    )
+    ..addMultiOption(
+      'vm-flag',
+      help: 'Extra flags to pass to the runtime vm/node.',
     );
 }
