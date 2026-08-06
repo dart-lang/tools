@@ -62,7 +62,7 @@ Future<void> main() async {
   //
   // A MultiChannel<T> splits events into numbered channels, which are
   // instances of VirtualChannel<T>.
-  var dummyCtrl1 = StreamChannelController<dynamic>();
+  var dummyCtrl1 = StreamChannelController<Object>();
   var multiChannel = MultiChannel<String>(dummyCtrl1.foreign);
   var channel1 = multiChannel.virtualChannel();
   await multiChannel.sink.close();
