@@ -1,6 +1,6 @@
 ## 2.1.5-wip
 
-* Fix bugs in the example so it runs though it's entirety and would not surface
+* Fix bugs in the example so it runs though its entirety and would not surface
   type errors from multichannels.
 
 ## 2.1.4
