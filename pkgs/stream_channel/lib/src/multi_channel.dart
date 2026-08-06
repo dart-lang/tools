@@ -57,12 +57,10 @@ abstract class MultiChannel<T> implements StreamChannel<T> {
   /// Creates a new [MultiChannel] that sends and receives messages over
   /// [inner].
   ///
-  /// The inner channel must take JSON-like objects (e.g. `List`s).
-  ///
-  /// Note: The underlying [inner] channel must be capable of transmitting `List`
+  /// The [inner] channel must be capable of transmitting `List`
   /// envelopes. Even if you intend to use a strictly typed [MultiChannel]
-  /// (e.g. `MultiChannel<String>`), the [inner] channel MUST be typed to
-  /// accept `List` or `dynamic`, otherwise a runtime `TypeError` will occur.
+  /// (for example `MultiChannel<String>`), the [inner] channel MUST be typed to
+  /// accept `List` or a supertype, otherwise a runtime `TypeError` will occur.
   factory MultiChannel(StreamChannel<dynamic> inner) => _MultiChannel<T>(inner);
 
   /// Creates a new virtual channel.
