@@ -37,8 +37,10 @@ Future<void> main() async {
   });
 
   // You can also pipe events from one channel to another.
+  var otherCtrl = StreamChannelController<String>();
+  otherCtrl.local.stream.listen(stdout.write);
   ctrl
-    ..foreign.pipe(stringChannel)
+    ..foreign.pipe(otherCtrl.foreign)
     ..local.sink.add('Piped!\n');
   await ctrl.local.sink.close();
 
@@ -49,8 +51,10 @@ Future<void> main() async {
   // By calling `StreamChannel<T>.withGuarantees()`, you can create a
   // StreamChannel<T> that provides all guarantees.
   var dummyCtrl0 = StreamChannelController<String>();
+  dummyCtrl0.local.stream.listen((_) {});
   var guaranteedChannel = StreamChannel.withGuarantees(
       dummyCtrl0.foreign.stream, dummyCtrl0.foreign.sink);
+  guaranteedChannel.stream.listen((_) {});
 
   // To close a StreamChannel, use `sink.close()`.
   await guaranteedChannel.sink.close();
@@ -63,6 +67,7 @@ Future<void> main() async {
   // A MultiChannel<T> splits events into numbered channels, which are
   // instances of VirtualChannel<T>.
   var dummyCtrl1 = StreamChannelController<Object>();
+  dummyCtrl1.local.stream.listen((_) {});
   var multiChannel = MultiChannel<String>(dummyCtrl1.foreign);
   var channel1 = multiChannel.virtualChannel();
   await multiChannel.sink.close();
@@ -72,6 +77,7 @@ Future<void> main() async {
   // their respective channels. It is up to you how to communicate channel ID's
   // across different endpoints.
   var dummyCtrl2 = StreamChannelController<Object>();
+  dummyCtrl2.local.stream.listen((_) {});
   var multiChannel2 = MultiChannel<String>(dummyCtrl2.foreign);
   var channel2 = multiChannel2.virtualChannel(channel1.id);
   await channel2.sink.close();
@@ -94,7 +100,9 @@ Future<void> main() async {
   // You can use the `Disconnector` transformer to cause a channel to act as
   // though the remote end of its transport had disconnected.
   var disconnector = Disconnector<String>();
-  var disconnectable = stringChannel.transform(disconnector);
+  var disconnectorCtrl = StreamChannelController<String>();
+  disconnectorCtrl.local.stream.listen((_) {});
+  var disconnectable = disconnectorCtrl.foreign.transform(disconnector);
   disconnectable.sink.add('Still connected!');
   await disconnector.disconnect();
 
@@ -107,4 +115,5 @@ Future<void> main() async {
   //     `package:stream_channel`, so any compatible transport can be used to
   //      create interactive client/server or peer-to-peer applications (i.e.
   //      language servers, microservices, etc.
+  print('Done');
 }
