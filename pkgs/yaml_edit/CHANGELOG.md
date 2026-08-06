@@ -1,3 +1,8 @@
+## 2.2.5
+
+- Exception thrown "Failed to produce valid YAML after modification." on adding to list
+  ([#2481](https://github.com/dart-lang/tools/issues/2481))
+
 ## 2.2.4
 
 -  Removes comments associated with a node when `remove` is called.
