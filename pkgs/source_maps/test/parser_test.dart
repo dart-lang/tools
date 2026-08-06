@@ -187,6 +187,28 @@ void main() {
         Uri.parse('file:///path/to/pkg/input.dart'));
   });
 
+  test('parse throws StateError on negative source url id', () {
+    expect(
+        () => parse(jsonEncode({
+              'version': 3,
+              'sources': ['a.dart'],
+              'names': ['x'],
+              'mappings': 'AAAAA,ADAAA'
+            })),
+        throwsA(isA<StateError>()));
+  });
+
+  test('parse throws StateError on negative source name id', () {
+    expect(
+        () => parse(jsonEncode({
+              'version': 3,
+              'sources': ['a.dart'],
+              'names': ['x'],
+              'mappings': 'AAAAA,AAAAD'
+            })),
+        throwsA(isA<StateError>()));
+  });
+
   group('parse with bundle', () {
     var mapping =
         parseJsonExtended(_sourceMapBundle, mapUrl: 'file:///path/to/map');

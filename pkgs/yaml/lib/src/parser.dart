@@ -379,6 +379,16 @@ class Parser {
       return Event(EventType.sequenceEnd, token.span);
     }
 
+    // The scanner may insert a `key` token (its own recovery for a required
+    // simple key without `:`) when a scalar appears at the current indent level
+    // inside a block sequence. Consume it and treat the scalar as a sequence
+    // entry; the scanner already reported the appropriate error.
+    if (token.type == TokenType.key) {
+      _scanner.scan();
+      _states.add(_State.BLOCK_SEQUENCE_ENTRY);
+      return _parseNode(block: true);
+    }
+
     throw YamlException("While parsing a block collection, expected '-'.",
         token.span.start.pointSpan());
   }
