@@ -9,6 +9,7 @@
 - Correct type annotations on nullable and generic variables created with
   `declareVar`, `declareFinal`, and `declareConst`.
 - Deprecate and remove uses of `Expression.expression`.
+- Require Dart `^3.10.0`
 
 ## 4.11.1
 

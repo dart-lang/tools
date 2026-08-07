@@ -22,10 +22,9 @@ void main() {
   test('should create a base mixin', () {
     expect(
       Mixin(
-        (b) =>
-            b
-              ..name = 'Foo'
-              ..base = true,
+        (b) => b
+          ..name = 'Foo'
+          ..base = true,
       ),
       equalsDart(r'''
         base mixin Foo {}
@@ -36,10 +35,9 @@ void main() {
   test('should create a mixin with documentations', () {
     expect(
       Mixin(
-        (b) =>
-            b
-              ..name = 'Foo'
-              ..docs.addAll(const ['/// My favorite mixin.']),
+        (b) => b
+          ..name = 'Foo'
+          ..docs.addAll(const ['/// My favorite mixin.']),
       ),
       equalsDart(r'''
         /// My favorite mixin.
@@ -51,15 +49,12 @@ void main() {
   test('should create a mixin with annotations', () {
     expect(
       Mixin(
-        (b) =>
-            b
-              ..name = 'Foo'
-              ..annotations.addAll([
-                refer('deprecated'),
-                refer(
-                  'Deprecated',
-                ).call([literalString('This is an old mixin')]),
-              ]),
+        (b) => b
+          ..name = 'Foo'
+          ..annotations.addAll([
+            refer('deprecated'),
+            refer('Deprecated').call([literalString('This is an old mixin')]),
+          ]),
       ),
       equalsDart(r'''
         @deprecated
@@ -72,10 +67,9 @@ void main() {
   test('should create a mixin with a generic type', () {
     expect(
       Mixin(
-        (b) =>
-            b
-              ..name = 'List'
-              ..types.add(refer('T')),
+        (b) => b
+          ..name = 'List'
+          ..types.add(refer('T')),
       ),
       equalsDart(r'''
         mixin List<T> {}
@@ -86,10 +80,9 @@ void main() {
   test('should create a mixin with multiple generic types', () {
     expect(
       Mixin(
-        (b) =>
-            b
-              ..name = 'Map'
-              ..types.addAll([refer('K'), refer('V')]),
+        (b) => b
+          ..name = 'Map'
+          ..types.addAll([refer('K'), refer('V')]),
       ),
       equalsDart(r'''
         mixin Map<K, V> {}
@@ -100,22 +93,19 @@ void main() {
   test('should create a mixin with a bound generic type', () {
     expect(
       Mixin(
-        (b) =>
-            b
-              ..name = 'Comparable'
-              ..types.add(
-                TypeReference(
-                  (b) =>
-                      b
-                        ..symbol = 'T'
-                        ..bound = TypeReference(
-                          (b) =>
-                              b
-                                ..symbol = 'Comparable'
-                                ..types.add(refer('T').type),
-                        ),
+        (b) => b
+          ..name = 'Comparable'
+          ..types.add(
+            TypeReference(
+              (b) => b
+                ..symbol = 'T'
+                ..bound = TypeReference(
+                  (b) => b
+                    ..symbol = 'Comparable'
+                    ..types.add(refer('T').type),
                 ),
-              ),
+            ),
+          ),
       ),
       equalsDart(r'''
         mixin Comparable<T extends Comparable<T>> {}
@@ -126,10 +116,9 @@ void main() {
   test('should create a mixin on another mixin', () {
     expect(
       Mixin(
-        (b) =>
-            b
-              ..name = 'Foo'
-              ..on = TypeReference((b) => b.symbol = 'Bar'),
+        (b) => b
+          ..name = 'Foo'
+          ..on = TypeReference((b) => b.symbol = 'Bar'),
       ),
       equalsDart(r'''
         mixin Foo on Bar {}
@@ -140,11 +129,10 @@ void main() {
   test('should create a mixin implementing another mixin', () {
     expect(
       Mixin(
-        (b) =>
-            b
-              ..name = 'Foo'
-              ..on = TypeReference((b) => b.symbol = 'Bar')
-              ..implements.add(TypeReference((b) => b.symbol = 'Foo')),
+        (b) => b
+          ..name = 'Foo'
+          ..on = TypeReference((b) => b.symbol = 'Bar')
+          ..implements.add(TypeReference((b) => b.symbol = 'Foo')),
       ),
       equalsDart(r'''
         mixin Foo on Bar implements Foo {}
@@ -155,17 +143,15 @@ void main() {
   test('should create a mixin with a method', () {
     expect(
       Mixin(
-        (b) =>
-            b
-              ..name = 'Foo'
-              ..methods.add(
-                Method(
-                  (b) =>
-                      b
-                        ..name = 'foo'
-                        ..body = const Code('return 1+ 2;'),
-                ),
-              ),
+        (b) => b
+          ..name = 'Foo'
+          ..methods.add(
+            Method(
+              (b) => b
+                ..name = 'foo'
+                ..body = const Code('return 1+ 2;'),
+            ),
+          ),
       ),
       equalsDart(r'''
         mixin Foo {
