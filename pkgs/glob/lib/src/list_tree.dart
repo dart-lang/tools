@@ -494,7 +494,7 @@ SequenceNode _join(Iterable<AstNode> components) {
   var componentsList = components.toList();
   var first = componentsList.removeAt(0);
   var nodes = <AstNode>[];
-  
+
   void addNode(AstNode node) {
     if (node is SequenceNode) {
       nodes.addAll(node.nodes);

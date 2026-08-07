@@ -1,5 +1,8 @@
 ## 2.1.4-wip
 
+- Fix `**` matching for directory boundaries so it can match zero directories
+  at the start of the string or following a separator.
+
 - Limit option expansion during glob listing (`list()` and `listSync()`) to a
   maximum of 10,000 branches. Globs with combinatorial option expansions
   exceeding 10,000 will now throw a `FormatException` to prevent out-of-memory

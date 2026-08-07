@@ -211,15 +211,29 @@ class SequenceNode extends AstNode {
       if (node is DoubleStarNode && i + 1 < nodes.length) {
         var next = nodes[i + 1];
         if (next is LiteralNode && next.text.startsWith('/')) {
-          var regex = node._toRegExp();
-          // Replace `[^]*` at the end with `(?:[^]*/)?`
-          regExps.add(regex.substring(0, regex.length - 4) + r'(?:[^]*/)?');
-          var nextText = next.text.substring(1);
-          if (nextText.isNotEmpty) {
-            regExps.add(regExpQuote(nextText));
+          var isDirectoryBoundary = false;
+          if (i == 0) {
+            isDirectoryBoundary = true;
+          } else {
+            var prev = nodes[i - 1];
+            if (prev is LiteralNode && prev.text.endsWith('/')) {
+              isDirectoryBoundary = true;
+            }
           }
-          i++;
-          continue;
+
+          if (isDirectoryBoundary) {
+            var regex = node._toRegExp();
+            if (regex.endsWith(r'[^]*')) {
+              // Replace `[^]*` at the end with `(?:[^]*/)?`
+              regExps.add(regex.substring(0, regex.length - 4) + r'(?:[^]*/)?');
+              var nextText = next.text.substring(1);
+              if (nextText.isNotEmpty) {
+                regExps.add(regExpQuote(nextText));
+              }
+              i++;
+              continue;
+            }
+          }
         }
       }
       regExps.add(node._toRegExp());
