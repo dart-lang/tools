@@ -15,22 +15,13 @@ abstract class CaseStatement
   factory CaseStatement([void Function(CaseStatementBuilder) updates]) =
       _$CaseStatement;
 
-  CaseStatement._() {
-    if (isDefault != true && pattern == null) {
-      throw ArgumentError(
-        'A case statement must specify a pattern unless isDefault is true.',
-      );
-    }
-  }
+  CaseStatement._();
 
   /// An optional label for this case.
   String? get label;
 
-  /// Whether this is the `default:` case.
-  bool get isDefault;
-
   /// The pattern to match against.
-  Pattern? get pattern;
+  Pattern get pattern;
 
   /// The optional guard (`when`) expression.
   Expression? get guard;
@@ -47,7 +38,6 @@ abstract class CaseStatementBuilder
   CaseStatementBuilder._();
 
   String? label;
-  bool isDefault = false;
   Pattern? pattern;
   Expression? guard;
   Code? body;
@@ -80,6 +70,9 @@ abstract class SwitchStatement
   /// The cases in the switch statement.
   BuiltList<CaseStatement> get cases;
 
+  /// The optional `default:` body.
+  Code? get defaultCase;
+
   @override
   R accept<R>(covariant ControlVisitor<R> visitor, [R? context]) =>
       visitor.visitSwitchStatement(this, context);
@@ -93,6 +86,7 @@ abstract class SwitchStatementBuilder
   String? label;
   Expression? value;
   ListBuilder<CaseStatement> cases = ListBuilder<CaseStatement>();
+  Code? defaultCase;
 }
 
 /// A case within a [SwitchExpression].

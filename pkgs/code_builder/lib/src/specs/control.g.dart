@@ -1033,9 +1033,7 @@ class _$CaseStatement extends CaseStatement {
   @override
   final String? label;
   @override
-  final bool isDefault;
-  @override
-  final Pattern? pattern;
+  final Pattern pattern;
   @override
   final Expression? guard;
   @override
@@ -1044,13 +1042,8 @@ class _$CaseStatement extends CaseStatement {
   factory _$CaseStatement([void Function(CaseStatementBuilder)? updates]) =>
       (CaseStatementBuilder()..update(updates)).build() as _$CaseStatement;
 
-  _$CaseStatement._({
-    this.label,
-    required this.isDefault,
-    this.pattern,
-    this.guard,
-    this.body,
-  }) : super._();
+  _$CaseStatement._({this.label, required this.pattern, this.guard, this.body})
+    : super._();
   @override
   CaseStatement rebuild(void Function(CaseStatementBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -1063,7 +1056,6 @@ class _$CaseStatement extends CaseStatement {
     if (identical(other, this)) return true;
     return other is CaseStatement &&
         label == other.label &&
-        isDefault == other.isDefault &&
         pattern == other.pattern &&
         guard == other.guard &&
         body == other.body;
@@ -1073,7 +1065,6 @@ class _$CaseStatement extends CaseStatement {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, label.hashCode);
-    _$hash = $jc(_$hash, isDefault.hashCode);
     _$hash = $jc(_$hash, pattern.hashCode);
     _$hash = $jc(_$hash, guard.hashCode);
     _$hash = $jc(_$hash, body.hashCode);
@@ -1085,7 +1076,6 @@ class _$CaseStatement extends CaseStatement {
   String toString() {
     return (newBuiltValueToStringHelper(r'CaseStatement')
           ..add('label', label)
-          ..add('isDefault', isDefault)
           ..add('pattern', pattern)
           ..add('guard', guard)
           ..add('body', body))
@@ -1106,18 +1096,6 @@ class _$CaseStatementBuilder extends CaseStatementBuilder {
   set label(String? label) {
     _$this;
     super.label = label;
-  }
-
-  @override
-  bool get isDefault {
-    _$this;
-    return super.isDefault;
-  }
-
-  @override
-  set isDefault(bool isDefault) {
-    _$this;
-    super.isDefault = isDefault;
   }
 
   @override
@@ -1162,7 +1140,6 @@ class _$CaseStatementBuilder extends CaseStatementBuilder {
     final $v = _$v;
     if ($v != null) {
       super.label = $v.label;
-      super.isDefault = $v.isDefault;
       super.pattern = $v.pattern;
       super.guard = $v.guard;
       super.body = $v.body;
@@ -1189,12 +1166,11 @@ class _$CaseStatementBuilder extends CaseStatementBuilder {
         _$v ??
         _$CaseStatement._(
           label: label,
-          isDefault: BuiltValueNullFieldError.checkNotNull(
-            isDefault,
+          pattern: BuiltValueNullFieldError.checkNotNull(
+            pattern,
             r'CaseStatement',
-            'isDefault',
+            'pattern',
           ),
-          pattern: pattern,
           guard: guard,
           body: body,
         );
@@ -1210,12 +1186,18 @@ class _$SwitchStatement extends SwitchStatement {
   final Expression value;
   @override
   final BuiltList<CaseStatement> cases;
+  @override
+  final Code? defaultCase;
 
   factory _$SwitchStatement([void Function(SwitchStatementBuilder)? updates]) =>
       (SwitchStatementBuilder()..update(updates)).build() as _$SwitchStatement;
 
-  _$SwitchStatement._({this.label, required this.value, required this.cases})
-    : super._();
+  _$SwitchStatement._({
+    this.label,
+    required this.value,
+    required this.cases,
+    this.defaultCase,
+  }) : super._();
   @override
   SwitchStatement rebuild(void Function(SwitchStatementBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -1230,7 +1212,8 @@ class _$SwitchStatement extends SwitchStatement {
     return other is SwitchStatement &&
         label == other.label &&
         value == other.value &&
-        cases == other.cases;
+        cases == other.cases &&
+        defaultCase == other.defaultCase;
   }
 
   @override
@@ -1239,6 +1222,7 @@ class _$SwitchStatement extends SwitchStatement {
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, value.hashCode);
     _$hash = $jc(_$hash, cases.hashCode);
+    _$hash = $jc(_$hash, defaultCase.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -1248,7 +1232,8 @@ class _$SwitchStatement extends SwitchStatement {
     return (newBuiltValueToStringHelper(r'SwitchStatement')
           ..add('label', label)
           ..add('value', value)
-          ..add('cases', cases))
+          ..add('cases', cases)
+          ..add('defaultCase', defaultCase))
         .toString();
   }
 }
@@ -1292,6 +1277,18 @@ class _$SwitchStatementBuilder extends SwitchStatementBuilder {
     super.cases = cases;
   }
 
+  @override
+  Code? get defaultCase {
+    _$this;
+    return super.defaultCase;
+  }
+
+  @override
+  set defaultCase(Code? defaultCase) {
+    _$this;
+    super.defaultCase = defaultCase;
+  }
+
   _$SwitchStatementBuilder() : super._();
 
   SwitchStatementBuilder get _$this {
@@ -1300,6 +1297,7 @@ class _$SwitchStatementBuilder extends SwitchStatementBuilder {
       super.label = $v.label;
       super.value = $v.value;
       super.cases = $v.cases.toBuilder();
+      super.defaultCase = $v.defaultCase;
       _$v = null;
     }
     return this;
@@ -1331,6 +1329,7 @@ class _$SwitchStatementBuilder extends SwitchStatementBuilder {
               'value',
             ),
             cases: cases.build(),
+            defaultCase: defaultCase,
           );
     } catch (_) {
       late String _$failedField;

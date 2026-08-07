@@ -189,20 +189,21 @@ abstract mixin class ControlEmitter implements ControlVisitor<StringSink> {
       if (c.label != null) {
         output.writeln('${c.label}:');
       }
-      if (c.isDefault == true) {
-        output.writeln('default:');
-      } else {
-        output.write('case ');
-        c.pattern!.accept(this, output);
-        if (c.guard != null) {
-          output.write(' when ');
-          c.guard!.accept(this, output);
-        }
-        output.writeln(':');
+      output.write('case ');
+      c.pattern.accept(this, output);
+      if (c.guard != null) {
+        output.write(' when ');
+        c.guard!.accept(this, output);
       }
+      output.writeln(':');
       if (c.body != null) {
         c.body!.accept(this, output);
       }
+    }
+
+    if (statement.defaultCase != null) {
+      output.writeln('default:');
+      statement.defaultCase!.accept(this, output);
     }
 
     output.write(' }');

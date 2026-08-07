@@ -436,18 +436,14 @@ void main() {
         SwitchStatement(
           (b) => b
             ..value = refer('value')
-            ..cases.addAll([
+            ..cases.add(
               .new(
                 (b) => b
                   ..pattern = .literal(1)
                   ..body = refer('print').call([literal('one')]).statement,
               ),
-              .new(
-                (b) => b
-                  ..isDefault = true
-                  ..body = refer('print').call([literal('other')]).statement,
-              ),
-            ]),
+            )
+            ..defaultCase = refer('print').call([literal('other')]).statement,
         ),
         equalsDart(r'''
           switch (value) {
@@ -509,10 +505,6 @@ void main() {
           }
         '''),
       );
-    });
-
-    test('throws if pattern is omitted when not default', () {
-      expect(() => CaseStatement((b) => b), throwsArgumentError);
     });
   });
 
