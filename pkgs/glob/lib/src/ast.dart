@@ -204,7 +204,28 @@ class SequenceNode extends AstNode {
   }
 
   @override
-  String _toRegExp() => nodes.map((node) => node._toRegExp()).join();
+  String _toRegExp() {
+    var regExps = <String>[];
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (node is DoubleStarNode && i + 1 < nodes.length) {
+        var next = nodes[i + 1];
+        if (next is LiteralNode && next.text.startsWith('/')) {
+          var regex = node._toRegExp();
+          // Replace `[^]*` at the end with `(?:[^]*/)?`
+          regExps.add(regex.substring(0, regex.length - 4) + r'(?:[^]*/)?');
+          var nextText = next.text.substring(1);
+          if (nextText.isNotEmpty) {
+            regExps.add(regExpQuote(nextText));
+          }
+          i++;
+          continue;
+        }
+      }
+      regExps.add(node._toRegExp());
+    }
+    return regExps.join();
+  }
 
   @override
   bool operator ==(Object other) =>

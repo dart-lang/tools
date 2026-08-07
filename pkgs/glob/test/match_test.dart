@@ -70,6 +70,13 @@ void main() {
       expect('foo/..bar', contains(Glob('**')));
       expect('foo/bar..', contains(Glob('**')));
     });
+
+    test('matches a file in the root when followed by a slash', () {
+      expect('foo', contains(Glob('**/foo')));
+      expect('bar/foo', contains(Glob('**/foo')));
+      expect('foo.dart', contains(Glob('**/*.dart')));
+      expect('bar/foo.dart', contains(Glob('**/*.dart')));
+    });
   });
 
   group('any char', () {
