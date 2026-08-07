@@ -51,7 +51,7 @@ abstract class Pattern implements Spec {
 
   /// Variable pattern: `var name` or `type name`.
   static VariablePattern var_(String name, {Reference? type}) =>
-      VariablePattern._(name, type: type, isVar: type == null);
+      VariablePattern._(name, type: type);
 
   /// Variable pattern: `final name` or `final type name`.
   static VariablePattern final_(String name, {Reference? type}) =>
@@ -66,13 +66,7 @@ abstract class Pattern implements Spec {
     String name, {
     Reference? type,
     bool isFinal = false,
-    bool isVar = false,
-  }) => VariablePattern._(
-    name,
-    type: type,
-    isFinal: isFinal,
-    isVar: isVar || (!isFinal && type == null),
-  );
+  }) => VariablePattern._(name, type: type, isFinal: isFinal);
 
   /// Constant pattern from [expression].
   static ConstantPattern constant(
@@ -122,22 +116,33 @@ abstract class Pattern implements Spec {
     Reference? type,
     Pattern? rest,
     int? restIndex,
-  }) => ListPattern._(
-    elements.toList(),
-    type: type,
-    rest: rest,
-    restIndex: restIndex ?? (rest != null ? elements.length : null),
-  );
+  }) {
+    final elementsList = elements.toList();
+    final resolvedRestIndex =
+        restIndex ?? (rest != null ? elementsList.length : null);
+    if (resolvedRestIndex != null) {
+      RangeError.checkValidIndex(
+        resolvedRestIndex,
+        elementsList,
+        'restIndex',
+        elementsList.length + 1,
+      );
+    }
+    return ListPattern._(
+      elementsList,
+      type: type,
+      rest: rest,
+      restIndex: resolvedRestIndex,
+    );
+  }
 
   /// Map pattern: `{'key': pattern}`.
   static MapPattern map(
     Map<Expression, Pattern> entries, {
-    Reference? keyType,
-    Reference? valueType,
+    (Reference, Reference)? type,
   }) => MapPattern._(
     entries.entries.map((e) => MapPatternEntry(e.key, e.value)).toList(),
-    keyType: keyType,
-    valueType: valueType,
+    type: type,
   );
 
   /// Record pattern: `(p1, name: p2)`.
@@ -238,8 +243,7 @@ abstract mixin class PatternEmitter implements PatternVisitor<StringSink> {
     output ??= StringBuffer();
     if (pattern.isFinal) {
       output.write('final ');
-    }
-    if (pattern.isVar) {
+    } else if (pattern.type == null) {
       output.write('var ');
     }
     if (pattern.type != null) {
@@ -306,11 +310,11 @@ abstract mixin class PatternEmitter implements PatternVisitor<StringSink> {
   @override
   StringSink visitMapPattern(MapPattern pattern, [StringSink? output]) {
     output ??= StringBuffer();
-    if (pattern.keyType != null && pattern.valueType != null) {
+    if (pattern.type != null) {
       output.write('<');
-      pattern.keyType!.accept(this, output);
+      pattern.type!.$1.accept(this, output);
       output.write(', ');
-      pattern.valueType!.accept(this, output);
+      pattern.type!.$2.accept(this, output);
       output.write('>');
     }
     output.write('{');
@@ -334,6 +338,9 @@ abstract mixin class PatternEmitter implements PatternVisitor<StringSink> {
       if (!first) output.write(', ');
       p.accept(this, output);
       first = false;
+    }
+    if (pattern.positional.length == 1 && pattern.named.isEmpty) {
+      output.write(',');
     }
     for (final entry in pattern.named.entries) {
       if (!first) output.write(', ');

@@ -354,6 +354,17 @@ void main() {
       );
     });
 
+    test('list pattern validates restIndex', () {
+      expect(
+        () => Pattern.list([.var_('a')], rest: .wildcard, restIndex: 2),
+        throwsRangeError,
+      );
+      expect(
+        () => Pattern.list([.var_('a')], rest: .wildcard, restIndex: -1),
+        throwsRangeError,
+      );
+    });
+
     test('typed list pattern with anonymous rest element', () {
       expect(
         SwitchStatement(
@@ -416,8 +427,7 @@ void main() {
                 (b) => b
                   ..pattern = .map(
                     {literal('key'): .var_('v')},
-                    keyType: refer('String'),
-                    valueType: refer('dynamic'),
+                    type: (refer('String'), refer('dynamic')),
                   )
                   ..body = refer('print').call([refer('v')]).statement,
               ),
@@ -427,6 +437,28 @@ void main() {
           switch (map) {
             case <String, dynamic>{'key': var v}:
               print(v);
+          }
+        '''),
+      );
+    });
+
+    test('record pattern with single positional field', () {
+      expect(
+        SwitchStatement(
+          (b) => b
+            ..value = refer('record')
+            ..cases.add(
+              .new(
+                (b) => b
+                  ..pattern = .record(positional: [.var_('a')])
+                  ..body = refer('print').call([refer('a')]).statement,
+              ),
+            ),
+        ),
+        equalsDart(r'''
+          switch (record) {
+            case (var a,):
+              print(a);
           }
         '''),
       );

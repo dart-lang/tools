@@ -60,6 +60,7 @@ export 'src/specs/expression.dart'
         declareConst,
         declareFinal,
         declareVar,
+        IfCaseExpression,
         ifCase,
         literal,
         literalBool,

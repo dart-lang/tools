@@ -31,10 +31,9 @@ class MapPatternEntry {
 /// A map pattern `{'key': pattern}`.
 class MapPattern extends Pattern {
   final List<MapPatternEntry> entries;
-  final Reference? keyType;
-  final Reference? valueType;
+  final (Reference, Reference)? type;
 
-  const MapPattern._(this.entries, {this.keyType, this.valueType});
+  const MapPattern._(this.entries, {this.type});
 
   @override
   R accept<R>(covariant PatternVisitor<R> visitor, [R? context]) =>

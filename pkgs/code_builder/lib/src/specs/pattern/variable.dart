@@ -9,14 +9,8 @@ class VariablePattern extends Pattern {
   final String name;
   final Reference? type;
   final bool isFinal;
-  final bool isVar;
 
-  const VariablePattern._(
-    this.name, {
-    this.type,
-    this.isFinal = false,
-    this.isVar = false,
-  });
+  const VariablePattern._(this.name, {this.type, this.isFinal = false});
 
   @override
   R accept<R>(covariant PatternVisitor<R> visitor, [R? context]) =>
