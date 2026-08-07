@@ -13,10 +13,15 @@ Most Dart syntax structures are created using builders. For example, an empty
 class:
 
 ```dart
-final animal = Class((builder) => builder
-    ..name = 'Animal'
-    ..extend = refer('Organism')
-);
+import 'package:code_builder/code_builder.dart';
+
+void main() {
+  final animal = Class((builder) => builder
+      ..name = 'Animal'
+      ..extend = refer('Organism')
+  );
+  // ...
+}
 ```
 
 Will produce:
@@ -29,26 +34,29 @@ Then use a `DartEmitter` and the `accept` method to build the `code_builder`
 structures into valid Dart code. For example:
 
 ```dart
+import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
 
-// ... //
+void main() {
+  // ...
 
-final emitter = DartEmitter();
+  final emitter = DartEmitter();
 
-// Generate code for 'animal' into a new StringBuffer
-final StringSink result = animal.accept(emitter);
+  // Generate code for 'animal' into a new StringBuffer
+  final StringSink result = animal.accept(emitter);
 
-// or, add it to an existing one
-final buffer = StringBuffer();
-animal.accept(emitter, buffer);
+  // or, add it to an existing one
+  final buffer = StringBuffer();
+  animal.accept(emitter, buffer);
 
-// format the output using package:dart_style
-final String formatted = DartFormatter(
-  languageVersion: DartFormatter.latestLanguageVersion)
-    .format(result.toString());
+  // format the output using package:dart_style
+  final String formatted = DartFormatter(
+    languageVersion: DartFormatter.latestLanguageVersion,
+  ).format(result.toString());
 
-// voilà
-print(formatted);
+  // voilà
+  print(formatted);
+}
 ```
 
 Will output the code from above.
