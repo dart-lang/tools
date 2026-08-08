@@ -50,11 +50,11 @@ abstract class Pattern implements Spec {
   static const wildcard = WildcardPattern._();
 
   /// Variable pattern: `var name` or `type name`.
-  static VariablePattern var_(String name, {Reference? type}) =>
+  static VariablePattern declareVar(String name, {Reference? type}) =>
       VariablePattern._(name, type: type);
 
   /// Variable pattern: `final name` or `final type name`.
-  static VariablePattern final_(String name, {Reference? type}) =>
+  static VariablePattern declareFinal(String name, {Reference? type}) =>
       VariablePattern._(name, type: type, isFinal: true);
 
   /// Typed variable pattern: `type name`.

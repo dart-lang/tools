@@ -91,7 +91,7 @@ void main() {
             ..branches.add(
               .new(
                 (b) => b
-                  ..condition = .case_(refer('x'), .refer('Pattern'))
+                  ..condition = .ifCase(refer('x'), .refer('Pattern'))
                   ..body = refer('print').call([literal('matched')]).statement,
               ),
             ),
@@ -111,7 +111,7 @@ void main() {
             ..branches.add(
               .new(
                 (b) => b
-                  ..condition = .case_(
+                  ..condition = .ifCase(
                     refer('x'),
                     .refer('Pattern'),
                     guard: refer('y').greaterThan(literal(0)),
@@ -550,7 +550,7 @@ void main() {
             ..cases.addAll([
               .new(
                 (b) => b
-                  ..pattern = .var_('x')
+                  ..pattern = .declareVar('x')
                   ..guard = refer('x').greaterThan(literal(0))
                   ..body = literal('positive'),
               ),

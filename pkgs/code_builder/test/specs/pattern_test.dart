@@ -138,7 +138,7 @@ void main() {
             ..cases.add(
               .new(
                 (b) => b
-                  ..pattern = .var_('s').nullChecked
+                  ..pattern = .declareVar('s').nullChecked
                   ..body = refer('print').call([refer('s')]).statement,
               ),
             ),
@@ -162,7 +162,7 @@ void main() {
                 (b) => b
                   ..pattern = .list([
                     .literal('user'),
-                    .var_('name').nullAsserted,
+                    .declareVar('name').nullAsserted,
                   ])
                   ..body = refer('print').call([refer('name')]).statement,
               ),
@@ -187,8 +187,8 @@ void main() {
                 (b) => b
                   ..pattern = .record(
                     positional: [
-                      .var_('i').asA(refer('int')),
-                      .var_('s').asA(refer('String')),
+                      .declareVar('i').asA(refer('int')),
+                      .declareVar('s').asA(refer('String')),
                     ],
                   )
                   ..body = refer('print').call([refer('i')]).statement,
@@ -269,12 +269,12 @@ void main() {
             ..cases.addAll([
               .new(
                 (b) => b
-                  ..pattern = .var_('a')
+                  ..pattern = .declareVar('a')
                   ..body = refer('print').call([refer('a')]).statement,
               ),
               .new(
                 (b) => b
-                  ..pattern = .final_('b')
+                  ..pattern = .declareFinal('b')
                   ..body = refer('print').call([refer('b')]).statement,
               ),
               .new(
@@ -284,7 +284,7 @@ void main() {
               ),
               .new(
                 (b) => b
-                  ..pattern = .final_('d', type: refer('String'))
+                  ..pattern = .declareFinal('d', type: refer('String'))
                   ..body = refer('print').call([refer('d')]).statement,
               ),
             ]),
@@ -337,8 +337,8 @@ void main() {
               .new(
                 (b) => b
                   ..pattern = .list(
-                    [.var_('a'), .var_('b'), .var_('c')],
-                    rest: .var_('rest'),
+                    [.declareVar('a'), .declareVar('b'), .declareVar('c')],
+                    rest: .declareVar('rest'),
                     restIndex: 2,
                   )
                   ..body = refer('print').call([refer('rest')]).statement,
@@ -356,11 +356,11 @@ void main() {
 
     test('list pattern validates restIndex', () {
       expect(
-        () => Pattern.list([.var_('a')], rest: .wildcard, restIndex: 2),
+        () => Pattern.list([.declareVar('a')], rest: .wildcard, restIndex: 2),
         throwsRangeError,
       );
       expect(
-        () => Pattern.list([.var_('a')], rest: .wildcard, restIndex: -1),
+        () => Pattern.list([.declareVar('a')], rest: .wildcard, restIndex: -1),
         throwsRangeError,
       );
     });
@@ -374,7 +374,7 @@ void main() {
               .new(
                 (b) => b
                   ..pattern = .list(
-                    [.var_('first')],
+                    [.declareVar('first')],
                     type: refer('int'),
                     rest: .wildcard,
                     restIndex: 1,
@@ -401,7 +401,7 @@ void main() {
               .new(
                 (b) => b
                   ..pattern = .map({
-                    literal('name'): .var_('name'),
+                    literal('name'): .declareVar('name'),
                     literal('age'): .typed('age', refer('int')),
                   })
                   ..body = refer('print').call([refer('name')]).statement,
@@ -426,7 +426,7 @@ void main() {
               .new(
                 (b) => b
                   ..pattern = .map(
-                    {literal('key'): .var_('v')},
+                    {literal('key'): .declareVar('v')},
                     type: (refer('String'), refer('dynamic')),
                   )
                   ..body = refer('print').call([refer('v')]).statement,
@@ -450,7 +450,7 @@ void main() {
             ..cases.add(
               .new(
                 (b) => b
-                  ..pattern = .record(positional: [.var_('a')])
+                  ..pattern = .record(positional: [.declareVar('a')])
                   ..body = refer('print').call([refer('a')]).statement,
               ),
             ),
@@ -473,8 +473,11 @@ void main() {
               .new(
                 (b) => b
                   ..pattern = .record(
-                    positional: [.var_('a')],
-                    named: {'b': .var_('b'), 'c': .typed('c', refer('int'))},
+                    positional: [.declareVar('a')],
+                    named: {
+                      'b': .declareVar('b'),
+                      'c': .typed('c', refer('int')),
+                    },
                   )
                   ..body = refer('print').call([refer('a')]).statement,
               ),
@@ -532,7 +535,7 @@ void main() {
                 (b) => b
                   ..pattern = .object(
                     refer('Square'),
-                    named: {'length': .var_('l')},
+                    named: {'length': .declareVar('l')},
                   )
                   ..body = refer('l').operatorMultiply(refer('l')),
               ),
@@ -540,7 +543,7 @@ void main() {
                 (b) => b
                   ..pattern = .object(
                     refer('Circle'),
-                    named: {'radius': .var_('r')},
+                    named: {'radius': .declareVar('r')},
                   )
                   ..body = refer('r').operatorMultiply(refer('r')),
               ),
