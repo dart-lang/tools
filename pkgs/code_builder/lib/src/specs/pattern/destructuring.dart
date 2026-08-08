@@ -8,7 +8,18 @@ part of '../pattern.dart';
 class ListPattern extends Pattern {
   final List<Pattern> elements;
   final Reference? type;
+
+  /// An optional pattern to match against the rest of the elements in the list
+  /// (e.g. `...rest` or `..._`).
+  ///
+  /// If `null`, an anonymous rest element `...` is emitted at [restIndex] if
+  /// [restIndex] is specified.
   final Pattern? rest;
+
+  /// The index at which the [rest] element appears among [elements].
+  ///
+  /// If [rest] is provided and [restIndex] is omitted, the rest element is
+  /// placed at the end of the list pattern (index `elements.length`).
   final int? restIndex;
 
   const ListPattern._(this.elements, {this.type, this.rest, this.restIndex});

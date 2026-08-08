@@ -111,6 +111,16 @@ abstract class Pattern implements Spec {
       RelationalPattern._('<=', operand);
 
   /// List pattern: `[p1, p2, ...rest]`.
+  ///
+  /// Pass [rest] to match the rest of the list elements (e.g. `...rest` or
+  /// `..._`). If [restIndex] is omitted, [rest] defaults to appearing at the
+  /// end of [elements]. If [restIndex] is provided without [rest], an anonymous
+  /// `...` rest element is emitted at that index.
+  ///
+  /// ```dart
+  /// .list([.declareVar('a'), .declareVar('b')], rest: .declareVar('rest'), restIndex: 1)
+  /// // Emits: [var a, ...var rest, var b]
+  /// ```
   static ListPattern list(
     Iterable<Pattern> elements, {
     Reference? type,
