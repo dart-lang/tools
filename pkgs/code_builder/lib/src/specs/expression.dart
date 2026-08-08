@@ -8,7 +8,6 @@ import '../base.dart';
 import '../emitter.dart';
 import '../visitors.dart';
 import 'code.dart';
-import 'control.dart';
 import 'method.dart';
 import 'reference.dart';
 import 'type_function.dart';
@@ -19,7 +18,6 @@ part 'expression/code.dart';
 part 'expression/invoke.dart';
 part 'expression/literal.dart';
 part 'expression/parenthesized.dart';
-part 'expression/control.dart';
 
 /// Represents a [code] block that wraps an [Expression].
 
@@ -352,9 +350,6 @@ abstract class Expression implements Spec {
 
   /// Returns this expression wrapped in parenthesis.
   ParenthesizedExpression get parenthesized => ParenthesizedExpression._(this);
-
-  /// Wildcard expression (`_`).
-  static const wildcard = LiteralExpression._('_');
 }
 
 /// Declare a const variable named [variableName].
@@ -383,10 +378,10 @@ Expression declareFinal(
   type == null
       ? LiteralExpression._('final $variableName')
       : BinaryExpression._(
-        const LiteralExpression._('final'),
-        _typedVar(variableName, type),
-        '',
-      ),
+          const LiteralExpression._('final'),
+          _typedVar(variableName, type),
+          '',
+        ),
 );
 
 /// Declare a variable named [variableName].
@@ -407,18 +402,16 @@ Expression declareVar(
 Expression _typedVar(String variableName, Reference type) =>
     BinaryExpression._(type, LiteralExpression._(variableName), '');
 
-Expression _late(bool late, Expression expression) =>
-    late
-        ? BinaryExpression._(const LiteralExpression._('late'), expression, '')
-        : expression;
+Expression _late(bool late, Expression expression) => late
+    ? BinaryExpression._(const LiteralExpression._('late'), expression, '')
+    : expression;
 
 /// Creates `typedef {name} =`.
-Code createTypeDef(String name, FunctionType type) =>
-    BinaryExpression._(
-      LiteralExpression._('typedef $name'),
-      type,
-      '=',
-    ).statement;
+Code createTypeDef(String name, FunctionType type) => BinaryExpression._(
+  LiteralExpression._('typedef $name'),
+  type,
+  '=',
+).statement;
 
 class ToCodeExpression implements Code {
   final Expression code;
@@ -435,25 +428,6 @@ class ToCodeExpression implements Code {
 
   @override
   String toString() => code.toString();
-}
-
-extension on Iterable<dynamic> {
-  /// Get the length of the iterable counting any chained
-  /// [CollectionExpression]s as a single item.
-  int get adjustedLength {
-    var chain = false;
-    return where((element) {
-      if (element is! CollectionExpression) {
-        chain = false;
-        return true;
-      }
-
-      final skip = element.chain && chain;
-      chain = element.chainTarget;
-
-      return !skip;
-    }).length;
-  }
 }
 
 /// Knowledge of different types of expressions in Dart.
@@ -616,7 +590,7 @@ abstract mixin class ExpressionEmitter
       visitAll<Object?>(expression.values, out, (value) {
         _acceptLiteral(value, out);
       });
-      if (expression.values.adjustedLength > 1) {
+      if (expression.values.length > 1) {
         out.write(', ');
       }
       return out..write(']');
@@ -640,7 +614,7 @@ abstract mixin class ExpressionEmitter
       visitAll<Object?>(expression.values, out, (value) {
         _acceptLiteral(value, out);
       });
-      if (expression.values.adjustedLength > 1) {
+      if (expression.values.length > 1) {
         out.write(', ');
       }
       return out..write('}');
@@ -674,7 +648,7 @@ abstract mixin class ExpressionEmitter
         }
         _acceptLiteral(value, out);
       });
-      if (expression.values.keys.adjustedLength > 1) {
+      if (expression.values.length > 1) {
         out.write(', ');
       }
       return out..write('}');
