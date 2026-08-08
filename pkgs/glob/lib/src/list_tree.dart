@@ -493,10 +493,20 @@ class _ListTreeNode {
 SequenceNode _join(Iterable<AstNode> components) {
   var componentsList = components.toList();
   var first = componentsList.removeAt(0);
-  var nodes = [first];
+  var nodes = <AstNode>[];
+
+  void addNode(AstNode node) {
+    if (node is SequenceNode) {
+      nodes.addAll(node.nodes);
+    } else {
+      nodes.add(node);
+    }
+  }
+
+  addNode(first);
   for (var component in componentsList) {
     nodes.add(LiteralNode('/', caseSensitive: first.caseSensitive));
-    nodes.add(component);
+    addNode(component);
   }
   return SequenceNode(nodes, caseSensitive: first.caseSensitive);
 }
