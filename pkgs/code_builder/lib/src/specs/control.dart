@@ -26,6 +26,8 @@ abstract class ControlVisitor<T>
   T visitForInLoop(ForInLoop spec, [T? context]);
   T visitWhileLoop(WhileLoop spec, [T? context]);
   T visitConditional(Conditional spec, [T? context]);
+  T visitBooleanCondition(BooleanCondition condition, [T? context]);
+  T visitCaseCondition(CaseCondition condition, [T? context]);
   T visitTry(Try spec, [T? context]);
   T visitSwitchStatement(SwitchStatement spec, [T? context]);
   T visitSwitchExpression(SwitchExpression spec, [T? context]);
@@ -35,6 +37,29 @@ abstract class ControlVisitor<T>
 abstract mixin class ControlEmitter implements ControlVisitor<StringSink> {
   @protected
   Allocator get allocator;
+
+  @override
+  StringSink visitBooleanCondition(
+    BooleanCondition condition, [
+    StringSink? output,
+  ]) {
+    output ??= StringBuffer();
+    condition.expression.accept(this, output);
+    return output;
+  }
+
+  @override
+  StringSink visitCaseCondition(CaseCondition condition, [StringSink? output]) {
+    output ??= StringBuffer();
+    condition.object.accept(this, output);
+    output.write(' case ');
+    condition.pattern.accept(this, output);
+    if (condition.guard != null) {
+      output.write(' when ');
+      condition.guard!.accept(this, output);
+    }
+    return output;
+  }
 
   @override
   StringSink visitForLoop(ForLoop loop, [StringSink? output]) {

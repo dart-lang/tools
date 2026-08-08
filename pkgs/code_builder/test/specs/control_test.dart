@@ -18,7 +18,7 @@ void main() {
             ..branches.add(
               .new(
                 (b) => b
-                  ..condition = refer('x').equalTo(literal(1))
+                  ..condition = .expression(refer('x').equalTo(literal(1)))
                   ..body = refer('print').call([literal('one')]).statement,
               ),
             ),
@@ -38,7 +38,7 @@ void main() {
             ..branches.add(
               .new(
                 (b) => b
-                  ..condition = refer('x').equalTo(literal(1))
+                  ..condition = .expression(refer('x').equalTo(literal(1)))
                   ..body = refer('print').call([literal('one')]).statement,
               ),
             )
@@ -61,12 +61,12 @@ void main() {
             ..branches.addAll([
               .new(
                 (b) => b
-                  ..condition = refer('x').equalTo(literal(1))
+                  ..condition = .expression(refer('x').equalTo(literal(1)))
                   ..body = refer('print').call([literal('one')]).statement,
               ),
               .new(
                 (b) => b
-                  ..condition = refer('x').equalTo(literal(2))
+                  ..condition = .expression(refer('x').equalTo(literal(2)))
                   ..body = refer('print').call([literal('two')]).statement,
               ),
             ])
@@ -91,7 +91,7 @@ void main() {
             ..branches.add(
               .new(
                 (b) => b
-                  ..condition = ifCase(refer('x'), .refer('Pattern'))
+                  ..condition = .case_(refer('x'), .refer('Pattern'))
                   ..body = refer('print').call([literal('matched')]).statement,
               ),
             ),
@@ -111,7 +111,7 @@ void main() {
             ..branches.add(
               .new(
                 (b) => b
-                  ..condition = ifCase(
+                  ..condition = .case_(
                     refer('x'),
                     .refer('Pattern'),
                     guard: refer('y').greaterThan(literal(0)),

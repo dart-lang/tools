@@ -9,7 +9,6 @@ import '../emitter.dart';
 import '../visitors.dart';
 import 'code.dart';
 import 'method.dart';
-import 'pattern.dart';
 import 'reference.dart';
 import 'type_function.dart';
 
@@ -355,24 +354,6 @@ abstract class Expression implements Spec {
   /// Wildcard expression (`_`).
   static const wildcard = LiteralExpression._('_');
 }
-
-/// Represents an `if-case` match condition: `object case pattern [when guard]`.
-class IfCaseExpression extends Expression {
-  final Expression object;
-  final Pattern pattern;
-  final Expression? guard;
-
-  const IfCaseExpression._(this.object, this.pattern, [this.guard]);
-
-  @override
-  R accept<R>(ExpressionVisitor<R> visitor, [R? context]) =>
-      (visitor as PatternVisitor<R>).visitIfCaseExpression(this, context);
-}
-
-/// Returns an `if-case` match expression: `object case pattern` or
-/// `object case pattern when guard`.
-Expression ifCase(Expression object, Pattern pattern, {Expression? guard}) =>
-    IfCaseExpression._(object, pattern, guard);
 
 /// Declare a const variable named [variableName].
 ///

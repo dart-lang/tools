@@ -8,7 +8,7 @@ part of 'control.dart';
 
 class _$Branch extends Branch {
   @override
-  final Expression condition;
+  final Condition condition;
   @override
   final Code? body;
 
@@ -53,13 +53,13 @@ class _$BranchBuilder extends BranchBuilder {
   _$Branch? _$v;
 
   @override
-  Expression? get condition {
+  Condition? get condition {
     _$this;
     return super.condition;
   }
 
   @override
-  set condition(Expression? condition) {
+  set condition(Condition? condition) {
     _$this;
     super.condition = condition;
   }

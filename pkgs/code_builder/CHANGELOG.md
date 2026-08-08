@@ -9,10 +9,10 @@
 - Correct type annotations on nullable and generic variables created with
   `declareVar`, `declareFinal`, and `declareConst`.
 - Deprecate and remove uses of `Expression.expression`.
-- Add control flow specs: `Conditional`, `Branch`, `ForLoop`, `ForInLoop`,
-  `WhileLoop`, `Try`, `Catch`, `SwitchStatement`, and `CaseStatement`.
-- Add `SwitchExpression`, `CaseExpression`, and `ifCase` for pattern matching
-  expressions.
+- Add control flow specs: `Conditional`, `Branch`, `Condition`,
+  `BooleanCondition`, `CaseCondition`, `ForLoop`, `ForInLoop`, `WhileLoop`,
+  `Try`, `Catch`, `SwitchStatement`, and `CaseStatement`.
+- Add `SwitchExpression` and `CaseExpression` for switch expressions.
 - Add `Pattern` AST and static methods for generating Dart 3 pattern matching
   syntax.
 - Require Dart `^3.10.0`

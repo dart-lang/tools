@@ -174,7 +174,6 @@ abstract class PatternVisitor<T>
   T visitMapPattern(MapPattern pattern, [T? context]);
   T visitRecordPattern(RecordPattern pattern, [T? context]);
   T visitObjectPattern(ObjectPattern pattern, [T? context]);
-  T visitIfCaseExpression(IfCaseExpression expression, [T? context]);
 }
 
 /// Knowledge of how to write valid Dart code from [PatternVisitor].
@@ -370,22 +369,6 @@ abstract mixin class PatternEmitter implements PatternVisitor<StringSink> {
       first = false;
     }
     output.write(')');
-    return output;
-  }
-
-  @override
-  StringSink visitIfCaseExpression(
-    IfCaseExpression expression, [
-    StringSink? output,
-  ]) {
-    output ??= StringBuffer();
-    expression.object.accept(this, output);
-    output.write(' case ');
-    expression.pattern.accept(this, output);
-    if (expression.guard != null) {
-      output.write(' when ');
-      expression.guard!.accept(this, output);
-    }
     return output;
   }
 }

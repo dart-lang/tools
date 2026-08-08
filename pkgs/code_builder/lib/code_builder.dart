@@ -12,14 +12,17 @@ export 'src/specs/code.dart'
 export 'src/specs/constructor.dart' show Constructor, ConstructorBuilder;
 export 'src/specs/control.dart'
     show
+        BooleanCondition,
         Branch,
         BranchBuilder,
+        CaseCondition,
         CaseExpression,
         CaseExpressionBuilder,
         CaseStatement,
         CaseStatementBuilder,
         Catch,
         CatchBuilder,
+        Condition,
         Conditional,
         ConditionalBuilder,
         ControlEmitter,
@@ -48,7 +51,6 @@ export 'src/specs/expression.dart'
         Expression,
         ExpressionEmitter,
         ExpressionVisitor,
-        IfCaseExpression,
         InvokeExpression,
         InvokeExpressionType,
         LiteralExpression,
@@ -61,7 +63,6 @@ export 'src/specs/expression.dart'
         declareConst,
         declareFinal,
         declareVar,
-        ifCase,
         literal,
         literalBool,
         literalConstList,
