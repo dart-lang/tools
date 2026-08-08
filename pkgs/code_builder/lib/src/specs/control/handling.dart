@@ -17,6 +17,8 @@ abstract class Catch implements Built<Catch, CatchBuilder> {
   Catch._();
 
   /// The type of exception to catch (`on` clause).
+  ///
+  /// A `null` value indicates that this is a `catch` without an `on` clause.
   Reference? get on;
 
   /// The exception variable name.
