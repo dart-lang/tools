@@ -118,7 +118,11 @@ abstract class Pattern implements Spec {
   /// `...` rest element is emitted at that index.
   ///
   /// ```dart
-  /// .list([.declareVar('a'), .declareVar('b')], rest: .declareVar('rest'), restIndex: 1)
+  /// .list(
+  ///   [.declareVar('a'), .declareVar('b')],
+  ///   rest: .declareVar('rest'),
+  ///   restIndex: 1,
+  /// )
   /// // Emits: [var a, ...var rest, var b]
   /// ```
   static ListPattern list(

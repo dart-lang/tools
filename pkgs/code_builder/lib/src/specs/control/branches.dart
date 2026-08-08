@@ -12,7 +12,8 @@ abstract class Condition implements Spec {
   static BooleanCondition expression(Expression expression) =>
       BooleanCondition._(expression);
 
-  /// An if-case pattern matching condition: `if (object case pattern [when guard])`.
+  /// An if-case pattern matching condition:
+  /// `if (object case pattern [when guard])`.
   static CaseCondition ifCase(
     Expression object,
     Pattern pattern, {
