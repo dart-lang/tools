@@ -10,6 +10,35 @@ export 'src/specs/class.dart' show Class, ClassBuilder, ClassModifier;
 export 'src/specs/code.dart'
     show Block, BlockBuilder, Code, ScopedCode, StaticCode, lazyCode;
 export 'src/specs/constructor.dart' show Constructor, ConstructorBuilder;
+export 'src/specs/control.dart'
+    show
+        BooleanCondition,
+        Branch,
+        BranchBuilder,
+        CaseCondition,
+        CaseExpression,
+        CaseExpressionBuilder,
+        CaseStatement,
+        CaseStatementBuilder,
+        Catch,
+        CatchBuilder,
+        Condition,
+        Conditional,
+        ConditionalBuilder,
+        ControlEmitter,
+        ControlVisitor,
+        ForInLoop,
+        ForInLoopBuilder,
+        ForLoop,
+        ForLoopBuilder,
+        SwitchExpression,
+        SwitchExpressionBuilder,
+        SwitchStatement,
+        SwitchStatementBuilder,
+        Try,
+        TryBuilder,
+        WhileLoop,
+        WhileLoopBuilder;
 export 'src/specs/directive.dart'
     show Directive, DirectiveBuilder, DirectiveType;
 export 'src/specs/enum.dart'
@@ -69,6 +98,24 @@ export 'src/specs/method.dart'
         Parameter,
         ParameterBuilder;
 export 'src/specs/mixin.dart' show Mixin, MixinBuilder;
+export 'src/specs/pattern.dart'
+    show
+        BinaryPattern,
+        CastPattern,
+        ConstantPattern,
+        ListPattern,
+        MapPattern,
+        MapPatternEntry,
+        ObjectPattern,
+        ParenthesizedPattern,
+        Pattern,
+        PatternEmitter,
+        PatternVisitor,
+        RecordPattern,
+        RelationalPattern,
+        UnaryPattern,
+        VariablePattern,
+        WildcardPattern;
 export 'src/specs/reference.dart' show Reference, refer;
 export 'src/specs/type_function.dart' show FunctionType, FunctionTypeBuilder;
 export 'src/specs/type_record.dart' show RecordType, RecordTypeBuilder;
