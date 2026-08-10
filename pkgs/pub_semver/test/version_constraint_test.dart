@@ -181,5 +181,13 @@ void main() {
 
       expect(constraint.toString(), equals('^0.7.2'));
     });
+
+    test('does not allow pre-releases of the next breaking version', () {
+      var constraint = VersionConstraint.compatibleWith(v123);
+
+      expect(constraint.allows(Version.parse('2.0.0--1')), isFalse);
+      expect(constraint.allows(Version.parse('2.0.0-0xA')), isFalse);
+      expect(constraint.allows(Version.parse('2.0.0-0')), isFalse);
+    });
   });
 }
