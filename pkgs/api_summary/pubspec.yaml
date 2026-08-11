@@ -11,7 +11,6 @@ dependencies:
   collection: ^1.19.0
   path: ^1.9.0
   pubspec_parse: ^1.5.0
-  yaml: ^3.1.2
   yaml_edit: ^2.2.0
 
 dev_dependencies:
