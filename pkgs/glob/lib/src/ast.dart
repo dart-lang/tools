@@ -206,7 +206,8 @@ class SequenceNode extends AstNode {
   @override
   String _toRegExp() {
     var buffer = StringBuffer();
-    for (var i = 0; i < nodes.length; i++) {
+    var i = 0;
+    while (i < nodes.length) {
       var node = nodes[i];
       if (node is DoubleStarNode && _isDirBoundary(i)) {
         buffer.write(node._toRegExp(followedBySlash: true));
@@ -216,6 +217,7 @@ class SequenceNode extends AstNode {
       } else {
         buffer.write(node._toRegExp());
       }
+      i++;
     }
     return buffer.toString();
   }

@@ -492,11 +492,10 @@ class _ListTreeNode {
 /// Joins each [components] into a new glob where each component is separated by
 /// a path separator.
 SequenceNode _join(Iterable<SequenceNode> components) {
-  var componentsList = components.toList();
-  var first = componentsList.removeAt(0);
+  var first = components.first;
   return SequenceNode([
     ...first.nodes,
-    for (var component in componentsList) ...[
+    for (var component in components.skip(1)) ...[
       LiteralNode('/', caseSensitive: first.caseSensitive),
       ...component.nodes,
     ],
