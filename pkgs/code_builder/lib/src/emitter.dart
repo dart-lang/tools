@@ -7,6 +7,7 @@ import 'base.dart';
 import 'specs/class.dart';
 import 'specs/code.dart';
 import 'specs/constructor.dart';
+import 'specs/control.dart';
 import 'specs/directive.dart';
 import 'specs/enum.dart';
 import 'specs/expression.dart';
@@ -16,6 +17,7 @@ import 'specs/field.dart';
 import 'specs/library.dart';
 import 'specs/method.dart';
 import 'specs/mixin.dart';
+import 'specs/pattern.dart';
 import 'specs/reference.dart';
 import 'specs/type_function.dart';
 import 'specs/type_record.dart';
@@ -51,7 +53,7 @@ StringSink visitAll<T>(
 }
 
 class DartEmitter extends Object
-    with CodeEmitter, ExpressionEmitter
+    with CodeEmitter, ExpressionEmitter, PatternEmitter, ControlEmitter
     implements SpecVisitor<StringSink> {
   @override
   final Allocator allocator;
