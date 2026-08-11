@@ -204,7 +204,34 @@ class SequenceNode extends AstNode {
   }
 
   @override
-  String _toRegExp() => nodes.map((node) => node._toRegExp()).join();
+  String _toRegExp() {
+    var buffer = StringBuffer();
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (node is DoubleStarNode && _isDirBoundary(i)) {
+        buffer.write(node._toRegExp(followedBySlash: true));
+        var next = nodes[++i] as LiteralNode;
+        var remaining = next.text.substring(1);
+        if (remaining.isNotEmpty) buffer.write(regExpQuote(remaining));
+      } else {
+        buffer.write(node._toRegExp());
+      }
+    }
+    return buffer.toString();
+  }
+
+  bool _isDirBoundary(int i) {
+    if (i + 1 >= nodes.length) return false;
+    if (nodes[i + 1] case LiteralNode(text: final nextText)
+        when nextText.startsWith('/')) {
+      if (i == 0) return true;
+      if (nodes[i - 1] case LiteralNode(text: final prevText)
+          when prevText.endsWith('/')) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -246,7 +273,7 @@ class DoubleStarNode extends AstNode {
       : super._(caseSensitive);
 
   @override
-  String _toRegExp() {
+  String _toRegExp({bool followedBySlash = false}) {
     // Double star shouldn't match paths with a leading "../", since these paths
     // wouldn't be listed with this glob. We only check for "../" at the
     // beginning since the paths are normalized before being checked against the
@@ -266,7 +293,7 @@ class DoubleStarNode extends AstNode {
     }
 
     // Use `[^]` rather than `.` so that it matches newlines as well.
-    buffer.write(r'))[^]*');
+    buffer.write(followedBySlash ? r'))(?:[^]*/)?' : r'))[^]*');
 
     return buffer.toString();
   }
