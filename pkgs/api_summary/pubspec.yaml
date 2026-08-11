@@ -10,6 +10,7 @@ dependencies:
   args: ^2.6.0
   collection: ^1.19.0
   path: ^1.9.0
+  pub_semver: ^2.1.5
   yaml: ^3.1.2
   yaml_edit: ^2.2.0
 

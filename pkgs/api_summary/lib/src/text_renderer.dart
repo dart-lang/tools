@@ -104,6 +104,24 @@ final class _ApiTextRenderer {
     ];
 
     final stringBuffer = StringBuffer();
+    if (_package.environment.isNotEmpty) {
+      stringBuffer.writeln('environment:');
+      for (final entry in _package.environment.entries) {
+        stringBuffer.writeln('  ${entry.key}: ${entry.value}');
+      }
+    }
+
+    if (_package.executables.isNotEmpty) {
+      stringBuffer.writeln('executables:');
+      for (final entry in _package.executables.entries) {
+        if (entry.value != null && entry.value != entry.key) {
+          stringBuffer.writeln('  ${entry.key}: ${entry.value}');
+        } else {
+          stringBuffer.writeln('  ${entry.key}');
+        }
+      }
+    }
+
     printNodes(stringBuffer, sortedNodes);
     return stringBuffer.toString();
   }
