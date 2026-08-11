@@ -46,8 +46,16 @@ enum ApiClassModifier {
 /// and the collection of [libraries] that make up its public API surface.
 final class ApiSummary {
   final String name;
+
+  /// The SDK and platform environment constraints of the package, mapping
+  /// environment names (such as 'sdk' or 'flutter') to their version
+  /// constraints.
   final Map<String, String> environment;
+
+  /// The executables exposed by the package, mapping executable names to
+  /// their target script paths within `bin/`.
   final Map<String, String?> executables;
+
   final List<ApiLibrary> libraries;
 
   ApiSummary({
@@ -55,7 +63,7 @@ final class ApiSummary {
     Map<String, String>? environment,
     Map<String, String?>? executables,
     required this.libraries,
-  }) : environment = environment == null
+  }) : environment = environment == null || environment.isEmpty
            ? const {}
            : Map.unmodifiable(
                Map.fromEntries(
@@ -63,7 +71,7 @@ final class ApiSummary {
                    ..sort((a, b) => a.key.compareTo(b.key)),
                ),
              ),
-       executables = executables == null
+       executables = executables == null || executables.isEmpty
            ? const {}
            : Map.unmodifiable(
                Map.fromEntries(
