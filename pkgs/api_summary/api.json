@@ -4030,28 +4030,6 @@
             }
           ],
           "isStatic": true
-        },
-        {
-          "name": "canonicalizeConstraint",
-          "locationUri": "package:api_summary/api_summary.dart",
-          "kind": "function",
-          "returnType": {
-            "kind": "interface",
-            "name": "String",
-            "libraryUri": "dart:core"
-          },
-          "parameters": [
-            {
-              "name": "rawConstraint",
-              "type": {
-                "kind": "interface",
-                "name": "String",
-                "libraryUri": "dart:core"
-              },
-              "isRequired": true
-            }
-          ],
-          "isStatic": true
         }
       ]
     }

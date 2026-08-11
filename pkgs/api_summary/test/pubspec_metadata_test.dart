@@ -7,56 +7,13 @@ import 'package:test/test.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
 void main() {
-  group('canonicalizeConstraint', () {
-    test('canonicalizes caret syntax', () {
-      expect(canonicalizeConstraint('^1.2.3'), equals('^1.2.3'));
-      expect(canonicalizeConstraint('^1.2.3-alpha'), equals('^1.2.3-alpha'));
-      expect(canonicalizeConstraint('^0.1.2'), equals('^0.1.2'));
-      expect(canonicalizeConstraint('^0.0.3'), equals('^0.0.3'));
-    });
-
-    test('canonicalizes compatible ranges to caret syntax', () {
-      expect(canonicalizeConstraint('>=1.2.3 <2.0.0'), equals('^1.2.3'));
-      expect(canonicalizeConstraint('>=1.2.3 <2.0.0-0'), equals('^1.2.3'));
-      expect(canonicalizeConstraint('>=0.1.2 <0.2.0'), equals('^0.1.2'));
-      expect(canonicalizeConstraint('>=0.0.3 <0.1.0'), equals('^0.0.3'));
-      expect(canonicalizeConstraint('>=3.12.0 <4.0.0'), equals('^3.12.0'));
-    });
-
-    test('preserves non-caret compatible ranges and exact versions', () {
-      expect(
-        canonicalizeConstraint('>=3.0.0 <3.5.0'),
-        equals('>=3.0.0 <3.5.0'),
-      );
-      expect(
-        canonicalizeConstraint('>=0.0.3 <0.0.4'),
-        equals('>=0.0.3 <0.0.4'),
-      );
-      expect(canonicalizeConstraint('>=3.0.0'), equals('>=3.0.0'));
-      expect(
-        canonicalizeConstraint('>1.0.0 <=2.0.0'),
-        equals('>1.0.0 <=2.0.0'),
-      );
-      expect(canonicalizeConstraint('any'), equals('any'));
-      expect(canonicalizeConstraint('1.2.3'), equals('1.2.3'));
-    });
-
-    test('throws ArgumentError on invalid constraint', () {
-      expect(
-        () => canonicalizeConstraint('invalid_version'),
-        throwsArgumentError,
-      );
-      expect(() => canonicalizeConstraint('>=1.0.0 <'), throwsArgumentError);
-    });
-  });
-
   group('ApiSummary environment and executables', () {
     test('sorts environment and executables keys alphabetically', () {
       final summary = ApiSummary(
         name: 'test_pkg',
         environment: {
           'sdk': '^3.12.0',
-          'flutter': '^3.10.0',
+          'flutter': '>=3.2.0 <3.9.0',
           'fuchsia': '>=1.0.0',
         },
         executables: {'z_tool': null, 'a_tool': 'main_a', 'm_tool': 'm_tool'},
@@ -73,10 +30,32 @@ void main() {
       );
     });
 
+    test(
+      'produces identical output regardless of input map insertion order',
+      () {
+        final summaryA = ApiSummary(
+          name: 'test_pkg',
+          environment: {'sdk': '^3.12.0', 'flutter': '>=3.2.0 <3.9.0'},
+          executables: {'z_tool': null, 'a_tool': 'main_a'},
+          libraries: [],
+        );
+
+        final summaryB = ApiSummary(
+          name: 'test_pkg',
+          environment: {'flutter': '>=3.2.0 <3.9.0', 'sdk': '^3.12.0'},
+          executables: {'a_tool': 'main_a', 'z_tool': null},
+          libraries: [],
+        );
+
+        expect(summaryA.toString(), equals(summaryB.toString()));
+        expect(summaryA.toJson(), equals(summaryB.toJson()));
+      },
+    );
+
     test('toJson and fromJson round-trip with environment and executables', () {
       final summary = ApiSummary(
         name: 'test_pkg',
-        environment: {'sdk': '^3.12.0', 'flutter': '^3.10.0'},
+        environment: {'sdk': '^3.12.0', 'flutter': '>=3.2.0 <3.9.0'},
         executables: {'cli_a': null, 'cli_b': 'custom_b'},
         libraries: [],
       );
@@ -85,7 +64,7 @@ void main() {
       expect(json['name'], equals('test_pkg'));
       expect(
         json['environment'],
-        equals({'flutter': '^3.10.0', 'sdk': '^3.12.0'}),
+        equals({'flutter': '>=3.2.0 <3.9.0', 'sdk': '^3.12.0'}),
       );
       expect(json['executables'], equals({'cli_a': null, 'cli_b': 'custom_b'}));
 
@@ -110,7 +89,7 @@ void main() {
     test('text rendering formats environment and executables', () {
       final summary = ApiSummary(
         name: 'test_pkg',
-        environment: {'sdk': '^3.12.0', 'flutter': '^3.10.0'},
+        environment: {'sdk': '^3.12.0', 'flutter': '>=3.2.0 <3.9.0'},
         executables: {
           'simple_tool': null,
           'same_name_tool': 'same_name_tool',
@@ -124,7 +103,7 @@ void main() {
         rendered,
         equals(
           'environment:\n'
-          '  flutter: ^3.10.0\n'
+          '  flutter: >=3.2.0 <3.9.0\n'
           '  sdk: ^3.12.0\n'
           'executables:\n'
           '  custom_tool: custom_script\n'

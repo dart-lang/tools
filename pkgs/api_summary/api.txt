@@ -4,7 +4,6 @@ executables:
   api_summary
 package:api_summary/api_summary.dart:
   apiSummary (function: Future<ApiSummary> Function(String, {ApiSummaryCustomizer? customizer, String? packageName}))
-  canonicalizeConstraint (function: String Function(String))
   ApiClass (class extends ApiDeclaration, final):
     new (constructor: ApiClass Function({required List<ApiExecutable> constructors, required List<String> immediateSubtypes, required List<ApiType> interfaces, bool isDeprecated, bool isExperimental, bool isVisibleForTesting, String? locationUri, required List<ApiExecutable> methods, required List<ApiType> mixins, required List<ApiClassModifier> modifiers, required String name, ApiDeclarationStatus status, List<ApiType> superclassConstraints, ApiType? supertype, required Map<String, ApiType?> typeParameters}))
     fromJson (constructor: ApiClass Function(Map<String, dynamic>))
