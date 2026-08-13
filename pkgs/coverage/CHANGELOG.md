@@ -4,6 +4,8 @@
 - Fixed a race condition in isolate teardown: ignore the benign errors
   produced when an isolate exits between its pause-on-exit callback
   completing and the resume request reaching the VM service.
+- Also ignore `SentinelException` when resuming the main isolate after
+  collection, matching the existing `RPCError` handling there.
 
 ## 1.15.1
 
