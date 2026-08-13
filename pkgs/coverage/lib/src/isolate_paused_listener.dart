@@ -105,17 +105,20 @@ class IsolatePausedListener {
         _oldCollectionTasks.remove(collectionTask);
         group.exit(isolateRef);
         if (!_finishedListening) {
+          // The isolate can exit in the window between the pause callback
+          // completing and this resume request reaching the VM. Ignore the
+          // errors that this benign race produces:
+          // - SentinelException: the isolate has exited and been collected.
+          // - kIsolateMustBePaused: the isolate is no longer paused (e.g. it
+          //   was already resumed and is running toward exit).
+          // Any other error may indicate a logical bug in isolate lifecycle
+          // management, so let it propagate.
           try {
             await _service.resume(isolateRef.id!);
-          } on SentinelException catch (_) {
+          } on SentinelException {
+            // Ignore.
           } on RPCError catch (e) {
-            // Ignore expected VM service RPC errors when resuming an isolate
-            // that has already completed or exited:
-            // - 105: IsolateExited (isolate has exited)
-            // - 106: IsolateMustBePaused / CannotResume (isolate cannot be resumed)
-            const isolateExited = 105;
-            const isolateMustBePaused = 106;
-            if (e.code != isolateExited && e.code != isolateMustBePaused) {
+            if (e.code != RPCErrorKind.kIsolateMustBePaused.code) {
               rethrow;
             }
           }

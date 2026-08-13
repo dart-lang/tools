@@ -1,3 +1,9 @@
+## 1.15.2-wip
+
+- Fixed a race condition in isolate teardown: ignore the benign errors
+  produced when an isolate exits between its pause-on-exit callback
+  completing and the resume request reaching the VM service.
+
 ## 1.15.1
 
 - Allow package_config `3.x.x`.
