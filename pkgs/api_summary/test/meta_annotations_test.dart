@@ -201,12 +201,12 @@ class Target {
     final methodJson = (classJson['methods'] as List)
         .cast<Map<String, dynamic>>()[0];
 
-    expect(methodJson['isProtected'], isTrue);
-    expect(methodJson['isMustCallSuper'], isTrue);
-    expect(methodJson['isNonVirtual'], isTrue);
-    expect(methodJson['isUseResult'], isTrue);
-    expect(methodJson.containsKey('isMustBeOverridden'), isFalse);
-    expect(methodJson.containsKey('isVisibleForOverriding'), isFalse);
+    expect(methodJson, containsPair('isProtected', true));
+    expect(methodJson, containsPair('isMustCallSuper', true));
+    expect(methodJson, containsPair('isNonVirtual', true));
+    expect(methodJson, containsPair('isUseResult', true));
+    expect(methodJson, isNot(contains('isMustBeOverridden')));
+    expect(methodJson, isNot(contains('isVisibleForOverriding')));
   }
 }
 

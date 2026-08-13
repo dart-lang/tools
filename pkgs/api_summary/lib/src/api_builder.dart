@@ -496,14 +496,10 @@ final class _ApiBuilder {
   bool _hasAnnotation(
     ExecutableElement element,
     bool Function(Metadata metadata) predicate,
-  ) {
-    if (predicate(element.nonSynthetic.metadata)) return true;
-    if (element is PropertyAccessorElement &&
-        predicate(element.variable.nonSynthetic.metadata)) {
-      return true;
-    }
-    return false;
-  }
+  ) =>
+      predicate(element.nonSynthetic.metadata) ||
+      (element is PropertyAccessorElement &&
+          predicate(element.variable.nonSynthetic.metadata));
 
   ApiExecutable _buildExecutable(
     ExecutableElement element, {

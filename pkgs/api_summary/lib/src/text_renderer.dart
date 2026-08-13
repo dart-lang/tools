@@ -611,46 +611,32 @@ final class _ApiTextRenderer {
     }
   }
 
+  /// Renders declaration metadata flags (deprecation, visibility, meta
+  /// annotations) into [parentheticals].
+  ///
+  /// Each inner list in [parentheticals] represents an individual
+  /// comma-separated segment formatted via `separatedBy` (e.g.
+  /// `(class extends Object, protected, internal)`).
   void _renderParentheticals({
     required List<List<Object?>> parentheticals,
     required ApiDeclaration element,
     required Node<MemberSortKey> node,
   }) {
-    if (element.isInternal) {
-      parentheticals.add(['internal']);
-    }
-    if (element is ApiClass && element.isImmutable) {
-      parentheticals.add(['immutable']);
-    }
-    if (element is ApiExecutable) {
-      if (element.isProtected) {
-        parentheticals.add(['protected']);
-      }
-      if (element.isVisibleForOverriding) {
-        parentheticals.add(['visible for overriding']);
-      }
-      if (element.isNonVirtual) {
-        parentheticals.add(['non-virtual']);
-      }
-      if (element.isMustCallSuper) {
-        parentheticals.add(['must call super']);
-      }
-      if (element.isMustBeOverridden) {
-        parentheticals.add(['must be overridden']);
-      }
-      if (element.isUseResult) {
-        parentheticals.add(['use result']);
-      }
-    }
-    if (element.isDeprecated) {
-      parentheticals.add(['deprecated']);
-    }
-    if (element.isExperimental) {
-      parentheticals.add(['experimental']);
-    }
-    if (element.isVisibleForTesting) {
-      parentheticals.add(['visible for testing']);
-    }
+    parentheticals.addAll([
+      if (element.isInternal) ['internal'],
+      if (element is ApiClass && element.isImmutable) ['immutable'],
+      if (element is ApiExecutable) ...[
+        if (element.isProtected) ['protected'],
+        if (element.isVisibleForOverriding) ['visible for overriding'],
+        if (element.isNonVirtual) ['non-virtual'],
+        if (element.isMustCallSuper) ['must call super'],
+        if (element.isMustBeOverridden) ['must be overridden'],
+        if (element.isUseResult) ['use result'],
+      ],
+      if (element.isDeprecated) ['deprecated'],
+      if (element.isExperimental) ['experimental'],
+      if (element.isVisibleForTesting) ['visible for testing'],
+    ]);
     if (parentheticals.isNotEmpty) {
       node.text.addAll(parentheticals.separatedBy(prefix: ' (', suffix: ')'));
     }
