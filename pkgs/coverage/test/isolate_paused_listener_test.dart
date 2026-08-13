@@ -489,6 +489,7 @@ void main() {
     Future<void> Function(String)? delayTheOnPauseCallback;
     late bool stopped;
     late Set<String> resumeFailures;
+    Exception Function(String id)? resumeErrorBuilder;
 
     void startEvent(String id, String groupId, [String? name]) =>
         allEvents.add(event(
@@ -518,6 +519,7 @@ void main() {
     }
 
     setUp(() {
+      lastError = null;
       Zone.current.fork(
         specification: ZoneSpecification(
           handleUncaughtError: (Zone self, ZoneDelegate parent, Zone zone,
@@ -535,11 +537,13 @@ void main() {
         received = <String>[];
         delayTheOnPauseCallback = null;
         resumeFailures = <String>{};
+        resumeErrorBuilder = null;
         when(service.resume(any)).thenAnswer((invocation) async {
-          final id = invocation.positionalArguments[0];
+          final id = invocation.positionalArguments[0] as String;
           received.add('Resume $id');
           if (resumeFailures.contains(id)) {
-            throw RPCError('resume', -32000, id);
+            throw resumeErrorBuilder?.call(id) ??
+                RPCError('resume', -32000, id);
           }
           return Success();
         });
@@ -929,6 +933,69 @@ void main() {
 
     test('throw when resuming other isolate is not ignored', () async {
       resumeFailures = {'other'};
+
+      startEvent('main', '1');
+      startEvent('other', '2');
+      pauseEvent('other', '2');
+      exitEvent('other', '2');
+      pauseEvent('main', '1');
+      exitEvent('main', '1');
+
+      await endTest();
+      expect(lastError, isA<RPCError>());
+    });
+
+    // Reproduces the teardown race where an isolate exits in the window
+    // between the pause callback completing and resume() being sent. The VM
+    // service reports this as a SentinelException (isolate collected) or
+    // RPCError kIsolateMustBePaused (isolate already resumed and running
+    // toward exit). These errors are benign and must not crash the listener
+    // or prevent the remaining isolates from resuming.
+    for (final (description, errorBuilder) in [
+      (
+        'RPCError ${RPCErrorKind.kIsolateMustBePaused.code} '
+            '(isolate must be paused)',
+        (String id) => RPCError(
+            'resume',
+            RPCErrorKind.kIsolateMustBePaused.code,
+            'Isolate must be paused: $id'),
+      ),
+      (
+        'SentinelException (isolate collected)',
+        (String id) => SentinelException.parse(
+            'resume', {'type': 'Sentinel', 'kind': 'Collected'}),
+      ),
+    ]) {
+      test('$description when resuming exited isolate is ignored', () async {
+        resumeFailures = {'other'};
+        resumeErrorBuilder = errorBuilder;
+
+        startEvent('main', '1');
+        startEvent('other', '2');
+        pauseEvent('other', '2');
+        exitEvent('other', '2');
+        pauseEvent('main', '1');
+        exitEvent('main', '1');
+
+        await endTest();
+        expect(lastError, isNull);
+
+        expect(received, [
+          'Pause other. Collect group 2? Yes',
+          'Resume other',
+          'Pause main. Collect group 1? Yes',
+          'Resume main',
+        ]);
+      });
+    }
+
+    test(
+        'RPCError ${RPCErrorKind.kIsolateMustBeRunnable.code} '
+        '(isolate must be runnable) when resuming other isolate is not '
+        'ignored', () async {
+      resumeFailures = {'other'};
+      resumeErrorBuilder = (id) => RPCError('resume',
+          RPCErrorKind.kIsolateMustBeRunnable.code, 'Isolate must be runnable');
 
       startEvent('main', '1');
       startEvent('other', '2');

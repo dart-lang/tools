@@ -105,7 +105,23 @@ class IsolatePausedListener {
         _oldCollectionTasks.remove(collectionTask);
         group.exit(isolateRef);
         if (!_finishedListening) {
-          await _service.resume(isolateRef.id!);
+          // The isolate can exit in the window between the pause callback
+          // completing and this resume request reaching the VM. Ignore the
+          // errors that this benign race produces:
+          // - SentinelException: the isolate has exited and been collected.
+          // - kIsolateMustBePaused: the isolate is no longer paused (e.g. it
+          //   was already resumed and is running toward exit).
+          // Any other error may indicate a logical bug in isolate lifecycle
+          // management, so let it propagate.
+          try {
+            await _service.resume(isolateRef.id!);
+          } on SentinelException {
+            // Ignore.
+          } on RPCError catch (e) {
+            if (e.code != RPCErrorKind.kIsolateMustBePaused.code) {
+              rethrow;
+            }
+          }
         }
       }
     }
