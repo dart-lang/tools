@@ -160,41 +160,30 @@ class HitMap {
     Future<String?> Function(String scriptId)? sourceMapProvider,
   }) async {
     final globalHitmap = <String, HitMap>{};
+    Future<Map<String, HitMap>> parse(List jsonResult) => HitMap.parseJson(
+      jsonResult.whereType<Map<String, dynamic>>().toList(),
+      checkIgnoredLines: checkIgnoredLines,
+      // ignore: deprecated_member_use_from_same_package
+      packagesPath: packagesPath,
+      packagePath: packagePath,
+    );
     for (var file in files) {
       final contents = file.readAsStringSync();
-      final jsonObject = json.decode(contents);
-      if (jsonObject is Map<String, dynamic> &&
-          jsonObject.containsKey('coverage')) {
-        final jsonResult = jsonObject['coverage'] as List;
-        globalHitmap.merge(
-          await HitMap.parseJson(
-            jsonResult.whereType<Map<String, dynamic>>().toList(),
-            checkIgnoredLines: checkIgnoredLines,
-            // ignore: deprecated_member_use_from_same_package
-            packagesPath: packagesPath,
-            packagePath: packagePath,
-          ),
-        );
-      } else if (jsonObject is List) {
+      switch (json.decode(contents)) {
+        // VM-service-style {"coverage": [...]} report.
+        case {'coverage': final List jsonResult}:
+          globalHitmap.merge(await parse(jsonResult));
         // Raw Chrome V8 precise coverage JSON list.
-        final chromeReport = await parseChromeCoverage(
-          jsonObject.whereType<Map<String, dynamic>>().toList(),
-          sourceProvider ?? ((scriptId) async => null),
-          sourceMapProvider ?? ((scriptId) async => null),
-          (sourceUrl, scriptId) async => Uri.tryParse(sourceUrl),
-        );
-        if (chromeReport.containsKey('coverage')) {
-          final jsonResult = chromeReport['coverage'] as List;
-          globalHitmap.merge(
-            await HitMap.parseJson(
-              jsonResult.whereType<Map<String, dynamic>>().toList(),
-              checkIgnoredLines: checkIgnoredLines,
-              // ignore: deprecated_member_use_from_same_package
-              packagesPath: packagesPath,
-              packagePath: packagePath,
-            ),
+        case final List v8Entries:
+          final chromeReport = await parseChromeCoverage(
+            v8Entries.whereType<Map<String, dynamic>>().toList(),
+            sourceProvider ?? ((scriptId) async => null),
+            sourceMapProvider ?? ((scriptId) async => null),
+            (sourceUrl, scriptId) async => Uri.tryParse(sourceUrl),
           );
-        }
+          if (chromeReport case {'coverage': final List jsonResult}) {
+            globalHitmap.merge(await parse(jsonResult));
+          }
       }
     }
     return globalHitmap;
