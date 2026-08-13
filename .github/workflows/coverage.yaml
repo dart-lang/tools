@@ -74,7 +74,6 @@ jobs:
         run: dart test --platform vm
         if: always() && steps.install.outcome == 'success'
 
-
   coverage:
     needs: test
     runs-on: ubuntu-latest
