@@ -616,6 +616,32 @@ final class _ApiTextRenderer {
     required ApiDeclaration element,
     required Node<MemberSortKey> node,
   }) {
+    if (element.isInternal) {
+      parentheticals.add(['internal']);
+    }
+    if (element is ApiClass && element.isImmutable) {
+      parentheticals.add(['immutable']);
+    }
+    if (element is ApiExecutable) {
+      if (element.isProtected) {
+        parentheticals.add(['protected']);
+      }
+      if (element.isVisibleForOverriding) {
+        parentheticals.add(['visible for overriding']);
+      }
+      if (element.isNonVirtual) {
+        parentheticals.add(['non-virtual']);
+      }
+      if (element.isMustCallSuper) {
+        parentheticals.add(['must call super']);
+      }
+      if (element.isMustBeOverridden) {
+        parentheticals.add(['must be overridden']);
+      }
+      if (element.isUseResult) {
+        parentheticals.add(['use result']);
+      }
+    }
     if (element.isDeprecated) {
       parentheticals.add(['deprecated']);
     }
