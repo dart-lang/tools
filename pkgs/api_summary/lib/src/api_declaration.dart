@@ -168,6 +168,8 @@ sealed class ApiDeclaration {
   final bool isDeprecated;
   final bool isExperimental;
   final bool isVisibleForTesting;
+
+  /// Whether this declaration is annotated with `@internal`.
   final bool isInternal;
 
   const ApiDeclaration({
@@ -195,6 +197,8 @@ final class ApiClass extends ApiDeclaration {
   final List<String> immediateSubtypes;
   final List<ApiExecutable> constructors;
   final List<ApiExecutable> methods;
+
+  /// Whether this class is annotated with `@immutable`.
   final bool isImmutable;
 
   ApiClass({
@@ -415,11 +419,22 @@ final class ApiExecutable extends ApiDeclaration {
   /// Whether this executable represents an enum constant.
   final bool isEnumConstant;
 
+  /// Whether this executable is annotated with `@protected`.
   final bool isProtected;
+
+  /// Whether this executable is annotated with `@mustCallSuper`.
   final bool isMustCallSuper;
+
+  /// Whether this executable is annotated with `@visibleForOverriding`.
   final bool isVisibleForOverriding;
+
+  /// Whether this executable is annotated with `@nonVirtual`.
   final bool isNonVirtual;
+
+  /// Whether this executable is annotated with `@mustBeOverridden`.
   final bool isMustBeOverridden;
+
+  /// Whether this executable is annotated with `@useResult`.
   final bool isUseResult;
 
   ApiExecutable({
