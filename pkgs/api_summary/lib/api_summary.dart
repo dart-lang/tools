@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:path/path.dart' as p;
-import 'package:yaml/yaml.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 
 import 'src/api_builder.dart';
 import 'src/api_declaration.dart';
@@ -32,7 +32,8 @@ Future<ApiSummary> apiSummary(
   String? packageName,
   ApiSummaryCustomizer? customizer,
 }) async {
-  final resolvedPackageName = packageName ?? _extractPackageName(packagePath);
+  final pubspec = _extractPubspecDetails(packagePath);
+  final resolvedPackageName = packageName ?? pubspec.name;
   final provider = PhysicalResourceProvider.INSTANCE;
   final libPath = provider.pathContext.join(packagePath, 'lib');
   if (!provider.getFolder(libPath).exists) {
@@ -47,31 +48,40 @@ Future<ApiSummary> apiSummary(
     resolvedPackageName,
     context,
     customizer ?? const ApiSummaryCustomizer(),
+    environment: pubspec.environment,
+    executables: pubspec.executables,
   );
 }
 
-String _extractPackageName(String packagePath) {
+typedef _PubspecDetails = ({
+  String name,
+  Map<String, String> environment,
+  Map<String, String?> executables,
+});
+
+_PubspecDetails _extractPubspecDetails(String packagePath) {
   final pubspecFile = File(p.join(packagePath, 'pubspec.yaml'));
   if (!pubspecFile.existsSync()) {
     throw ArgumentError('No pubspec.yaml found at "$packagePath".');
   }
   final content = pubspecFile.readAsStringSync();
-  final yaml = loadYaml(content);
-  if (yaml case {'name': final String name}) {
-    return name;
-  }
-  if (yaml is! Map) {
+  final Pubspec pubspec;
+  try {
+    pubspec = Pubspec.parse(content, sourceUrl: pubspecFile.uri);
+  } on Exception catch (e) {
     throw ArgumentError(
-      'Expected pubspec.yaml at ${pubspecFile.path} to be a YAML map.',
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: $e',
     );
   }
-  if (yaml['name'] == null) {
-    throw ArgumentError(
-      'Could not find a "name" field in pubspec.yaml at ${pubspecFile.path}.',
-    );
-  }
-  throw ArgumentError(
-    'The "name" field in pubspec.yaml at ${pubspecFile.path} must be a '
-    'string.',
+
+  final environment = <String, String>{
+    for (final entry in pubspec.environment.entries)
+      if (entry.value case final constraint?) entry.key: constraint.toString(),
+  };
+
+  return (
+    name: pubspec.name,
+    environment: environment,
+    executables: pubspec.executables,
   );
 }

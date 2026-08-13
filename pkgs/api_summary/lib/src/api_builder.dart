@@ -21,17 +21,32 @@ import 'extensions.dart';
 /// a canonical [ApiSummary] representation.
 ///
 /// Filtering and discovery behaviors are customized using [customizer].
+///
+/// [environment] defines the SDK and platform environment constraints of the
+/// package (such as 'sdk' or 'flutter').
+///
+/// [executables] defines the executables exposed by the package, mapping
+/// executable names to their target script paths within `bin/`.
 Future<ApiSummary> buildApiPackage(
   String packageName,
   AnalysisContext context,
-  ApiSummaryCustomizer customizer,
-) => _ApiBuilder(packageName, customizer).build(context);
+  ApiSummaryCustomizer customizer, {
+  Map<String, String> environment = const {},
+  Map<String, String?> executables = const {},
+}) => _ApiBuilder(
+  packageName,
+  customizer,
+  environment: environment,
+  executables: executables,
+).build(context);
 
 /// Internal builder traversing analysis results to build structured API
 /// summaries.
 final class _ApiBuilder {
   final ApiSummaryCustomizer _customizer;
   final String _pkgName;
+  final Map<String, String> _environment;
+  final Map<String, String?> _executables;
 
   final _immediateSubinterfaceCache =
       <LibraryElement, Map<ClassElement, Set<InterfaceElement>>>{};
@@ -41,7 +56,12 @@ final class _ApiBuilder {
   final _libraryBuilders = <String, _ApiLibraryBuilder>{};
   final _elementToLibraries = <Element, List<LibraryElement>>{};
 
-  _ApiBuilder(this._pkgName, this._customizer);
+  _ApiBuilder(
+    this._pkgName,
+    this._customizer, {
+    this._environment = const {},
+    this._executables = const {},
+  });
 
   Future<ApiSummary> build(AnalysisContext context) async {
     final publicApiLibraries = <LibraryElement>[];
@@ -155,7 +175,12 @@ final class _ApiBuilder {
 
     final libraries = _libraryBuilders.values.map((e) => e.build()).toList();
 
-    return ApiSummary(name: _pkgName, libraries: libraries);
+    return ApiSummary(
+      name: _pkgName,
+      environment: _environment,
+      executables: _executables,
+      libraries: libraries,
+    );
   }
 
   Future<void> _scanPublicApiLibraries(

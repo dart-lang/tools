@@ -1,4 +1,8 @@
 name: api_summary
+environment:
+  sdk: ^3.12.0
+executables:
+  api_summary: null
 libraries:
   - uri: package:api_summary/api_summary.dart
     isPublicEntryPoint: true
@@ -1795,6 +1799,35 @@ libraries:
               name: ApiSummary
               libraryUri: package:api_summary/src/api_declaration.dart
             parameters:
+              - name: environment
+                type:
+                  kind: interface
+                  name: Map
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: String
+                      libraryUri: dart:core
+                    - kind: interface
+                      name: String
+                      libraryUri: dart:core
+                  isNullable: true
+                isNamed: true
+              - name: executables
+                type:
+                  kind: interface
+                  name: Map
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: String
+                      libraryUri: dart:core
+                    - kind: interface
+                      name: String
+                      libraryUri: dart:core
+                      isNullable: true
+                  isNullable: true
+                isNamed: true
               - name: libraries
                 type:
                   kind: interface
@@ -1814,6 +1847,35 @@ libraries:
                 isRequired: true
                 isNamed: true
         methods:
+          - name: environment
+            locationUri: package:api_summary/src/api_declaration.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: Map
+              libraryUri: dart:core
+              typeArguments:
+                - kind: interface
+                  name: String
+                  libraryUri: dart:core
+                - kind: interface
+                  name: String
+                  libraryUri: dart:core
+          - name: executables
+            locationUri: package:api_summary/src/api_declaration.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: Map
+              libraryUri: dart:core
+              typeArguments:
+                - kind: interface
+                  name: String
+                  libraryUri: dart:core
+                - kind: interface
+                  name: String
+                  libraryUri: dart:core
+                  isNullable: true
           - name: libraries
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter

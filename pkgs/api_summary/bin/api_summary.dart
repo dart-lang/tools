@@ -28,7 +28,7 @@ Future<void> main(List<String> arguments) async {
 
     final format = results.option('format');
     final package = await apiSummary(absolutePath);
-    print(_format(package, format!));
+    stdout.write(_format(package, format!));
   } on FormatException catch (e) {
     stderr.writeln('Error: ${e.message}');
     stderr.writeln('\nUsage: api_summary [options]');

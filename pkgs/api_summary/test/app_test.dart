@@ -83,7 +83,7 @@ void main() {
       ], workingDirectory: packageDir);
 
       expect(result.exitCode, equals(64));
-      expect(result.stderr, contains('Expected pubspec.yaml'));
+      expect(result.stderr, contains('Failed to parse pubspec.yaml'));
     } finally {
       await tempDir.delete(recursive: true);
     }

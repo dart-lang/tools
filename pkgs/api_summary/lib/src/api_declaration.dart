@@ -47,17 +47,54 @@ enum ApiClassModifier {
 final class ApiSummary {
   final String name;
 
+  /// The SDK and platform environment constraints of the package, mapping
+  /// environment names (such as 'sdk' or 'flutter') to their version
+  /// constraints.
+  final Map<String, String> environment;
+
+  /// The executables exposed by the package, mapping executable names to
+  /// their target script paths within `bin/`.
+  final Map<String, String?> executables;
+
   final List<ApiLibrary> libraries;
 
-  ApiSummary({required this.name, required this.libraries});
+  ApiSummary({
+    required this.name,
+    Map<String, String>? environment,
+    Map<String, String?>? executables,
+    required this.libraries,
+  }) : environment = environment == null || environment.isEmpty
+           ? const {}
+           : Map.unmodifiable(
+               Map.fromEntries(
+                 environment.entries.toList()
+                   ..sort((a, b) => a.key.compareTo(b.key)),
+               ),
+             ),
+       executables = executables == null || executables.isEmpty
+           ? const {}
+           : Map.unmodifiable(
+               Map.fromEntries(
+                 executables.entries.toList()
+                   ..sort((a, b) => a.key.compareTo(b.key)),
+               ),
+             );
 
   factory ApiSummary.fromJson(Map<String, dynamic> json) => ApiSummary(
     name: json['name'] as String,
+    environment: (json['environment'] as Map<String, dynamic>?)?.map(
+      (k, v) => MapEntry(k, v as String),
+    ),
+    executables: (json['executables'] as Map<String, dynamic>?)?.map(
+      (k, v) => MapEntry(k, v as String?),
+    ),
     libraries: parseList(json, 'libraries', ApiLibrary.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
     'name': name,
+    if (environment.isNotEmpty) 'environment': environment,
+    if (executables.isNotEmpty) 'executables': executables,
     'libraries': libraries.map((e) => e.toJson()).toList(),
   };
 
