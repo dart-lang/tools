@@ -24,13 +24,11 @@ import '../stream_channel.dart';
 /// ```dart
 /// // First endpoint
 /// var virtual = multiChannel.virtualChannel();
-/// multiChannel.sink.add({
-///   "channel": virtual.id
-/// });
+/// multiChannel.sink.add(virtual.id);
 ///
 /// // Second endpoint
 /// multiChannel.stream.listen((message) {
-///   var virtual = multiChannel.virtualChannel(message["channel"]);
+///   var virtual = multiChannel.virtualChannel(message as int);
 ///   // ...
 /// });
 /// ```
@@ -59,7 +57,10 @@ abstract class MultiChannel<T> implements StreamChannel<T> {
   /// Creates a new [MultiChannel] that sends and receives messages over
   /// [inner].
   ///
-  /// The inner channel must take JSON-like objects.
+  /// The [inner] channel must be capable of transmitting `List`
+  /// envelopes. Even if you intend to use a strictly typed [MultiChannel]
+  /// (for example `MultiChannel<String>`), the [inner] channel MUST be typed to
+  /// accept `List` or a supertype, otherwise a runtime `TypeError` will occur.
   factory MultiChannel(StreamChannel<dynamic> inner) => _MultiChannel<T>(inner);
 
   /// Creates a new virtual channel.
@@ -137,36 +138,39 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
     // This allows it to begin connected without having to send over an id.
     _controllers[0] = _mainController;
     _mainController.local.stream.listen(
-        (message) => _inner!.sink.add(<Object?>[0, message]),
-        onDone: () => _closeChannel(0, 0));
+      (message) => _inner!.sink.add(<Object?>[0, message]),
+      onDone: () => _closeChannel(0, 0),
+    );
 
-    _innerStreamSubscription = _inner!.stream.cast<List>().listen((message) {
-      var id = (message[0] as num).toInt();
+    _innerStreamSubscription = _inner!.stream.cast<List>().listen(
+      (message) {
+        var id = (message[0] as num).toInt();
 
-      // If the channel was closed before an incoming message was processed,
-      // ignore that message.
-      if (_closedIds.contains(id)) return;
+        // If the channel was closed before an incoming message was processed,
+        // ignore that message.
+        if (_closedIds.contains(id)) return;
 
-      var controller = _controllers.putIfAbsent(id, () {
-        // If we receive a message for a controller that doesn't have a local
-        // counterpart yet, create a controller for it to buffer incoming
-        // messages for when a local connection is created.
-        _pendingIds.add(id);
-        return StreamChannelController(sync: true);
-      });
+        var controller = _controllers.putIfAbsent(id, () {
+          // If we receive a message for a controller that doesn't have a local
+          // counterpart yet, create a controller for it to buffer incoming
+          // messages for when a local connection is created.
+          _pendingIds.add(id);
+          return StreamChannelController(sync: true);
+        });
 
-      if (message.length > 1) {
-        controller.local.sink.add(message[1] as T);
-      } else {
-        // A message without data indicates that the channel has been closed. We
-        // can just close the sink here without doing any more cleanup, because
-        // the sink closing will cause the stream to emit a done event which
-        // will trigger more cleanup.
-        controller.local.sink.close();
-      }
-    },
-        onDone: _closeInnerChannel,
-        onError: _mainController.local.sink.addError);
+        if (message.length > 1) {
+          controller.local.sink.add(message[1] as T);
+        } else {
+          // A message without data indicates that the channel has been closed. We
+          // can just close the sink here without doing any more cleanup, because
+          // the sink closing will cause the stream to emit a done event which
+          // will trigger more cleanup.
+          controller.local.sink.close();
+        }
+      },
+      onDone: _closeInnerChannel,
+      onError: _mainController.local.sink.addError,
+    );
   }
 
   @override
@@ -192,7 +196,11 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
     // closed state.
     if (_inner == null) {
       return VirtualChannel._(
-          this, inputId, const Stream.empty(), NullStreamSink());
+        this,
+        inputId,
+        const Stream.empty(),
+        NullStreamSink(),
+      );
     }
 
     late StreamChannelController<T> controller;
@@ -209,10 +217,15 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
     }
 
     controller.local.stream.listen(
-        (message) => _inner!.sink.add(<Object?>[outputId, message]),
-        onDone: () => _closeChannel(inputId, outputId));
+      (message) => _inner!.sink.add(<Object?>[outputId, message]),
+      onDone: () => _closeChannel(inputId, outputId),
+    );
     return VirtualChannel._(
-        this, outputId, controller.foreign.stream, controller.foreign.sink);
+      this,
+      outputId,
+      controller.foreign.stream,
+      controller.foreign.sink,
+    );
   }
 
   /// Closes the virtual channel for which incoming messages have [inputId] and

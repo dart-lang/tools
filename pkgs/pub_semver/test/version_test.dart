@@ -21,7 +21,7 @@ void main() {
       '1.0.0+build',
       '1.0.1',
       '1.1.0',
-      '2.0.0'
+      '2.0.0',
     ];
 
     // Ensure that every pair of versions is prioritized in the order that it
@@ -44,7 +44,7 @@ void main() {
       '1.1.0',
       '1.0.1',
       '1.0.0+build',
-      '1.0.0'
+      '1.0.0',
     ];
 
     // Ensure that every pair of versions is prioritized in the order that it
@@ -84,7 +84,7 @@ void main() {
       '2.1.0',
       '2.2.0',
       '2.11.0',
-      '2.11.1'
+      '2.11.1',
     ];
 
     test('compareTo()', () {
@@ -120,19 +120,43 @@ void main() {
       expect(Version.parse('1.2.03'), equals(Version.parse('1.2.3')));
       expect(Version.parse('1.2.3-01'), equals(Version.parse('1.2.3-1')));
       expect(Version.parse('1.2.3+01'), equals(Version.parse('1.2.3+1')));
+      expect(
+        Version.parse('1.0.0-0xA'),
+        isNot(equals(Version.parse('1.0.0-10'))),
+      );
+      expect(
+        Version.parse('1.0.0+0xFF'),
+        isNot(equals(Version.parse('1.0.0+255'))),
+      );
+    });
+
+    test('numeric vs alphanumeric prerelease identifiers', () {
+      final v10 = Version.parse('1.0.0-10');
+      final v0xA = Version.parse('1.0.0-0xA');
+      expect(v10 < v0xA, isTrue);
+      expect(v0xA > v10, isTrue);
+      expect(v10 == v0xA, isFalse);
+
+      final v0 = Version.parse('2.0.0-0');
+      final vNeg1 = Version.parse('2.0.0--1');
+      expect(v0 < vNeg1, isTrue);
+      expect(vNeg1 > v0, isTrue);
+      expect(v0 == vNeg1, isFalse);
     });
   });
 
   test('allows()', () {
     expect(v123, allows(v123));
     expect(
-        v123,
-        doesNotAllow(
-            Version.parse('2.2.3'),
-            Version.parse('1.3.3'),
-            Version.parse('1.2.4'),
-            Version.parse('1.2.3-dev'),
-            Version.parse('1.2.3+build')));
+      v123,
+      doesNotAllow(
+        Version.parse('2.2.3'),
+        Version.parse('1.3.3'),
+        Version.parse('1.2.4'),
+        Version.parse('1.2.3-dev'),
+        Version.parse('1.2.3+build'),
+      ),
+    );
   });
 
   test('allowsAll()', () {
@@ -186,19 +210,24 @@ void main() {
 
     test('with a range with the version on the edge, expands the range', () {
       expect(
-          v124.union(VersionRange(
-              min: v114, max: v124, alwaysIncludeMaxPreRelease: true)),
-          equals(VersionRange(min: v114, max: v124, includeMax: true)));
+        v124.union(
+          VersionRange(min: v114, max: v124, alwaysIncludeMaxPreRelease: true),
+        ),
+        equals(VersionRange(min: v114, max: v124, includeMax: true)),
+      );
       expect(
-          v124.firstPreRelease.union(VersionRange(min: v114, max: v124)),
-          equals(VersionRange(
-              min: v114, max: v124.firstPreRelease, includeMax: true)));
-      expect(v114.union(VersionRange(min: v114, max: v124)),
-          equals(VersionRange(min: v114, max: v124, includeMin: true)));
+        v124.firstPreRelease.union(VersionRange(min: v114, max: v124)),
+        equals(
+          VersionRange(min: v114, max: v124.firstPreRelease, includeMax: true),
+        ),
+      );
+      expect(
+        v114.union(VersionRange(min: v114, max: v124)),
+        equals(VersionRange(min: v114, max: v124, includeMin: true)),
+      );
     });
 
-    test(
-        'with a range allows both the range and the version if the range '
+    test('with a range allows both the range and the version if the range '
         "doesn't contain the version", () {
       var result = v123.union(VersionRange(min: v003, max: v114));
       expect(result, allows(v123));
@@ -215,15 +244,22 @@ void main() {
       expect(v123.difference(v080), equals(v123));
     });
 
-    test('returns an empty constraint with a range that contains the version',
-        () {
-      expect(v123.difference(VersionRange(min: v114, max: v124)), isEmpty);
-    });
+    test(
+      'returns an empty constraint with a range that contains the version',
+      () {
+        expect(v123.difference(VersionRange(min: v114, max: v124)), isEmpty);
+      },
+    );
 
-    test("returns the version constraint with a range that doesn't contain it",
-        () {
-      expect(v123.difference(VersionRange(min: v140, max: v300)), equals(v123));
-    });
+    test(
+      "returns the version constraint with a range that doesn't contain it",
+      () {
+        expect(
+          v123.difference(VersionRange(min: v140, max: v300)),
+          equals(v123),
+        );
+      },
+    );
   });
 
   test('isEmpty', () {
@@ -286,18 +322,37 @@ void main() {
     expect(Version.parse('0.0.0'), equals(Version(0, 0, 0)));
     expect(Version.parse('12.34.56'), equals(Version(12, 34, 56)));
 
-    expect(Version.parse('1.2.3-alpha.1'),
-        equals(Version(1, 2, 3, pre: 'alpha.1')));
-    expect(Version.parse('1.2.3-x.7.z-92'),
-        equals(Version(1, 2, 3, pre: 'x.7.z-92')));
+    expect(
+      Version.parse('1.2.3-alpha.1'),
+      equals(Version(1, 2, 3, pre: 'alpha.1')),
+    );
+    expect(
+      Version.parse('1.2.3-x.7.z-92'),
+      equals(Version(1, 2, 3, pre: 'x.7.z-92')),
+    );
 
-    expect(Version.parse('1.2.3+build.1'),
-        equals(Version(1, 2, 3, build: 'build.1')));
-    expect(Version.parse('1.2.3+x.7.z-92'),
-        equals(Version(1, 2, 3, build: 'x.7.z-92')));
+    expect(
+      Version.parse('1.2.3+build.1'),
+      equals(Version(1, 2, 3, build: 'build.1')),
+    );
+    expect(
+      Version.parse('1.2.3+x.7.z-92'),
+      equals(Version(1, 2, 3, build: 'x.7.z-92')),
+    );
 
-    expect(Version.parse('1.0.0-rc-1+build-1'),
-        equals(Version(1, 0, 0, pre: 'rc-1', build: 'build-1')));
+    expect(
+      Version.parse('1.0.0-rc-1+build-1'),
+      equals(Version(1, 0, 0, pre: 'rc-1', build: 'build-1')),
+    );
+
+    expect(Version.parse('1.0.0-0xA+0xFF').preRelease, equals(['0xA']));
+    expect(Version.parse('1.0.0-0xA+0xFF').build, equals(['0xFF']));
+    expect(Version.parse('2.0.0--1+-2').preRelease, equals(['-1']));
+    expect(Version.parse('2.0.0--1+-2').build, equals(['-2']));
+    expect(
+      Version.parse('1.0.0-alpha.1.0xA.-1').preRelease,
+      equals(['alpha', 1, '0xA', '-1']),
+    );
 
     expect(() => Version.parse('1.0'), throwsFormatException);
     expect(() => Version.parse('1a2b3'), throwsFormatException);
@@ -315,19 +370,29 @@ void main() {
       expect(Version(12, 34, 56).toString(), equals('12.34.56'));
 
       expect(
-          Version(1, 2, 3, pre: 'alpha.1').toString(), equals('1.2.3-alpha.1'));
-      expect(Version(1, 2, 3, pre: 'x.7.z-92').toString(),
-          equals('1.2.3-x.7.z-92'));
+        Version(1, 2, 3, pre: 'alpha.1').toString(),
+        equals('1.2.3-alpha.1'),
+      );
+      expect(
+        Version(1, 2, 3, pre: 'x.7.z-92').toString(),
+        equals('1.2.3-x.7.z-92'),
+      );
 
-      expect(Version(1, 2, 3, build: 'build.1').toString(),
-          equals('1.2.3+build.1'));
-      expect(Version(1, 2, 3, pre: 'pre', build: 'bui').toString(),
-          equals('1.2.3-pre+bui'));
+      expect(
+        Version(1, 2, 3, build: 'build.1').toString(),
+        equals('1.2.3+build.1'),
+      );
+      expect(
+        Version(1, 2, 3, pre: 'pre', build: 'bui').toString(),
+        equals('1.2.3-pre+bui'),
+      );
     });
 
     test('preserves leading zeroes', () {
-      expect(Version.parse('001.02.0003-01.dev+pre.002').toString(),
-          equals('001.02.0003-01.dev+pre.002'));
+      expect(
+        Version.parse('001.02.0003-01.dev+pre.002').toString(),
+        equals('001.02.0003-01.dev+pre.002'),
+      );
     });
   });
 
@@ -336,20 +401,30 @@ void main() {
       expect(Version(0, 0, 0).canonicalizedVersion, equals('0.0.0'));
       expect(Version(12, 34, 56).canonicalizedVersion, equals('12.34.56'));
 
-      expect(Version(1, 2, 3, pre: 'alpha.1').canonicalizedVersion,
-          equals('1.2.3-alpha.1'));
-      expect(Version(1, 2, 3, pre: 'x.7.z-92').canonicalizedVersion,
-          equals('1.2.3-x.7.z-92'));
+      expect(
+        Version(1, 2, 3, pre: 'alpha.1').canonicalizedVersion,
+        equals('1.2.3-alpha.1'),
+      );
+      expect(
+        Version(1, 2, 3, pre: 'x.7.z-92').canonicalizedVersion,
+        equals('1.2.3-x.7.z-92'),
+      );
 
-      expect(Version(1, 2, 3, build: 'build.1').canonicalizedVersion,
-          equals('1.2.3+build.1'));
-      expect(Version(1, 2, 3, pre: 'pre', build: 'bui').canonicalizedVersion,
-          equals('1.2.3-pre+bui'));
+      expect(
+        Version(1, 2, 3, build: 'build.1').canonicalizedVersion,
+        equals('1.2.3+build.1'),
+      );
+      expect(
+        Version(1, 2, 3, pre: 'pre', build: 'bui').canonicalizedVersion,
+        equals('1.2.3-pre+bui'),
+      );
     });
 
     test('discards leading zeroes', () {
-      expect(Version.parse('001.02.0003-01.dev+pre.002').canonicalizedVersion,
-          equals('1.2.3-1.dev+pre.2'));
+      expect(
+        Version.parse('001.02.0003-01.dev+pre.002').canonicalizedVersion,
+        equals('1.2.3-1.dev+pre.2'),
+      );
     });
 
     test('example from documentation', () {
@@ -363,42 +438,22 @@ void main() {
 
   group('primary', () {
     test('single', () {
-      expect(
-        _primary([
-          '1.2.3',
-        ]).toString(),
-        '1.2.3',
-      );
+      expect(_primary(['1.2.3']).toString(), '1.2.3');
     });
 
     test('normal', () {
-      expect(
-        _primary([
-          '1.2.3',
-          '1.2.2',
-        ]).toString(),
-        '1.2.3',
-      );
+      expect(_primary(['1.2.3', '1.2.2']).toString(), '1.2.3');
     });
 
     test('all prerelease', () {
       expect(
-        _primary([
-          '1.2.2-dev.1',
-          '1.2.2-dev.2',
-        ]).toString(),
+        _primary(['1.2.2-dev.1', '1.2.2-dev.2']).toString(),
         '1.2.2-dev.2',
       );
     });
 
     test('later prerelease', () {
-      expect(
-        _primary([
-          '1.2.3',
-          '1.2.3-dev',
-        ]).toString(),
-        '1.2.3',
-      );
+      expect(_primary(['1.2.3', '1.2.3-dev']).toString(), '1.2.3');
     });
 
     test('empty', () {

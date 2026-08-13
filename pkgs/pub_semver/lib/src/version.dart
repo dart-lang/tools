@@ -96,20 +96,30 @@ final class Version implements VersionConstraint, VersionRange {
   @override
   bool get includeMax => true;
 
-  Version._(this.major, this.minor, this.patch, String? preRelease,
-      String? build, this._text)
-      : preRelease = preRelease == null || preRelease.isEmpty
-            ? []
-            : _splitParts(preRelease),
-        build = build == null || build.isEmpty ? [] : _splitParts(build) {
+  Version._(
+    this.major,
+    this.minor,
+    this.patch,
+    String? preRelease,
+    String? build,
+    this._text,
+  ) : preRelease = preRelease == null || preRelease.isEmpty
+          ? []
+          : _splitParts(preRelease),
+      build = build == null || build.isEmpty ? [] : _splitParts(build) {
     if (major < 0) throw ArgumentError('Major version must be non-negative.');
     if (minor < 0) throw ArgumentError('Minor version must be non-negative.');
     if (patch < 0) throw ArgumentError('Patch version must be non-negative.');
   }
 
   /// Creates a new [Version] object.
-  factory Version(int major, int minor, int patch,
-      {String? pre, String? build}) {
+  factory Version(
+    int major,
+    int minor,
+    int patch, {
+    String? pre,
+    String? build,
+  }) {
     var text = '$major.$minor.$patch';
     if (pre != null) text += '-$pre';
     if (build != null) text += '+$build';
@@ -155,15 +165,19 @@ final class Version implements VersionConstraint, VersionRange {
     return primary;
   }
 
+  static final _digitsPattern = RegExp(r'^\d+$');
+
   /// Splits a string of dot-delimited identifiers into their component parts.
   ///
   /// Identifiers that are numeric are converted to numbers.
   static List<Object> _splitParts(String text) => text
       .split('.')
-      .map((part) =>
-          // Return an integer part if possible, otherwise return the string
-          // as-is
-          int.tryParse(part) ?? part)
+      .map(
+        (part) =>
+            // Return an integer part if possible, otherwise return the string
+            // as-is.
+            _digitsPattern.hasMatch(part) ? (int.tryParse(part) ?? part) : part,
+      )
       .toList();
 
   @override
@@ -279,20 +293,22 @@ final class Version implements VersionConstraint, VersionRange {
     if (other is VersionRange) {
       if (other.min == this) {
         return VersionRange(
-            min: other.min,
-            max: other.max,
-            includeMin: true,
-            includeMax: other.includeMax,
-            alwaysIncludeMaxPreRelease: true);
+          min: other.min,
+          max: other.max,
+          includeMin: true,
+          includeMax: other.includeMax,
+          alwaysIncludeMaxPreRelease: true,
+        );
       }
 
       if (other.max == this) {
         return VersionRange(
-            min: other.min,
-            max: other.max,
-            includeMin: other.includeMin,
-            includeMax: true,
-            alwaysIncludeMaxPreRelease: true);
+          min: other.min,
+          max: other.max,
+          includeMin: other.includeMin,
+          includeMax: true,
+          alwaysIncludeMaxPreRelease: true,
+        );
       }
     }
 
@@ -348,12 +364,12 @@ final class Version implements VersionConstraint, VersionRange {
   /// assert(Version.parse(v.canonicalizedVersion) == v);
   /// ```
   String get canonicalizedVersion => Version(
-        major,
-        minor,
-        patch,
-        pre: preRelease.isNotEmpty ? preRelease.join('.') : null,
-        build: build.isNotEmpty ? build.join('.') : null,
-      ).toString();
+    major,
+    minor,
+    patch,
+    pre: preRelease.isNotEmpty ? preRelease.join('.') : null,
+    build: build.isNotEmpty ? build.join('.') : null,
+  ).toString();
 
   /// Compares a dot-separated component of two versions.
   ///

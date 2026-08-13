@@ -1,0 +1,6 @@
+? - list_item_1
+  - list_item_2
+: value_for_list_key
+
+? { key: value }
+: value_for_map_key

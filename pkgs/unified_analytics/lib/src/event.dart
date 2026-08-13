@@ -1105,6 +1105,28 @@ final class Event {
          },
        );
 
+  /// An event that is sent from package:skills.
+  ///
+  /// The [version] is the version of the skills package.
+  ///
+  /// The [type] identifies the kind of event this is, and [additionalData] is
+  /// the actual data for the event.
+  ///
+  /// See https://github.com/dart-lang/ai/tree/main/pkgs/skills for the actual
+  /// events sent by this package.
+  Event.packageSkillsEvent({
+    required String version,
+    required String type,
+    CustomMetrics? additionalData,
+  }) : this._(
+         eventName: DashEvent.packageSkillsEvent,
+         eventData: {
+           'version': version,
+           'type': type,
+           ...?additionalData?.toMap(),
+         },
+       );
+
   @override
   int get hashCode => Object.hash(eventName, jsonEncode(eventData));
 

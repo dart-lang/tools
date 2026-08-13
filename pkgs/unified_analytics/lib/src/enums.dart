@@ -66,6 +66,10 @@ enum DashEvent {
     description: 'Information for a Dart MCP server event',
     toolOwner: DashTool.dartTool,
   ),
+  packageSkillsEvent(
+    label: 'package_skills',
+    description: 'Information for a package:skills event',
+  ),
 
   // Events for Flutter devtools
 
@@ -133,8 +137,7 @@ enum DashEvent {
   ),
   flutterTrackAndroidDependencies(
     label: 'flutter_android_dependencies',
-    description:
-        'Information related to min/target/compile SDK, JDK, NDK, Gradle version',
+    description: 'Information related to min/target/compile SDK, JDK, NDK, Gradle version',
     toolOwner: DashTool.flutterTool,
   ),
   hotReloadTime(

@@ -1,14 +1,32 @@
 # Dependabot configuration file.
 version: 2
+enable-beta-ecosystems: true
 
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 7
     labels:
       - autosubmit
+      - skip-changelog-check
     groups:
       github-actions:
         patterns:
           - "*"
+
+  - package-ecosystem: "pub"
+    directories:
+      - "/pkgs/*"
+    schedule:
+      interval: monthly
+    allow:
+      - update-types: ["version-update:semver-major"]
+    cooldown:
+      default-days: 7
+    labels:
+      - autosubmit
+      - skip-changelog-check
+    versioning-strategy: increase-if-necessary

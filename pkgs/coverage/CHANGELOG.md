@@ -1,11 +1,14 @@
 ## 1.16.0-wip
 
-- Require Dart ^3.9.0.
+- Require Dart 3.9.
 - Support collecting and formatting Web (V8 / Chrome) coverage reports in
   `test_with_coverage` via `-p` / `--platform` flag.
 - Support parsing raw Chrome V8 coverage JSON lists in `HitMap.parseFiles`.
 - Pre-flight `package:test` verification and `file:` URI normalization using
   `package:package_config`.
+- Fixed a race condition in isolate teardown: ignore the benign errors
+  produced when an isolate exits between its pause-on-exit callback
+  completing and the resume request reaching the VM service.
 
 ## 1.15.1
 

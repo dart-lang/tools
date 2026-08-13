@@ -42,12 +42,12 @@ void main() {
 
     expect(
       sampleAppHitLines,
-      containsPair(55, greaterThanOrEqualTo(1)),
+      containsPair(56, greaterThanOrEqualTo(1)),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppHitLines,
-      containsPair(59, 0),
+      containsPair(60, 0),
       reason: 'be careful if you modify the test file',
     );
     expect(
@@ -92,12 +92,12 @@ void main() {
 
     expect(
       sampleAppHitLines,
-      containsPair(55, greaterThanOrEqualTo(1)),
+      containsPair(56, greaterThanOrEqualTo(1)),
       reason: 'be careful if you modify the test file',
     );
     expect(
       sampleAppHitLines,
-      containsPair(59, 0),
+      containsPair(60, 0),
       reason: 'be careful if you modify the test file',
     );
     expect(

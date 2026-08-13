@@ -39,13 +39,14 @@ abstract class AstNode {
   /// For example, given the glob `{foo,bar}/{click/clack}`, this would return
   /// `{foo/click,foo/clack,bar/click,bar/clack}`.
   OptionsNode flattenOptions() => OptionsNode([
-        SequenceNode([this], caseSensitive: caseSensitive)
-      ], caseSensitive: caseSensitive);
+    SequenceNode([this], caseSensitive: caseSensitive),
+  ], caseSensitive: caseSensitive);
 
   /// Returns whether this glob matches [string].
-  bool matches(String string) =>
-      (_regExp ??= RegExp('^${_toRegExp()}\$', caseSensitive: caseSensitive))
-          .hasMatch(string);
+  bool matches(String string) => (_regExp ??= RegExp(
+    '^${_toRegExp()}\$',
+    caseSensitive: caseSensitive,
+  )).hasMatch(string);
 
   /// Subclasses should override this to return a regular expression component.
   String _toRegExp();
@@ -56,6 +57,23 @@ class SequenceNode extends AstNode {
   /// The nodes in the sequence.
   final List<AstNode> nodes;
 
+  /// The maximum number of branches that [flattenOptions] will materialize.
+  ///
+  /// Each `{a,b}` group multiplies the number of expanded sequences, so a
+  /// pattern like `{a,b}{a,b}...` produces `2^k` [SequenceNode]s. Bounding the
+  /// product prevents tiny hostile patterns from exhausting memory when the
+  /// glob is listed.
+  static const _maxFlattenedOptions = 10000;
+
+  void _checkFlattenedSize(int product) {
+    if (product > _maxFlattenedOptions) {
+      throw FormatException(
+        'Glob pattern expands to more than $_maxFlattenedOptions options',
+        toString(),
+      );
+    }
+  }
+
   @override
   bool get canMatchAbsolute => nodes.first.canMatchAbsolute;
 
@@ -63,8 +81,8 @@ class SequenceNode extends AstNode {
   bool get canMatchRelative => nodes.first.canMatchRelative;
 
   SequenceNode(Iterable<AstNode> nodes, {bool caseSensitive = true})
-      : nodes = nodes.toList(),
-        super._(caseSensitive);
+    : nodes = nodes.toList(),
+      super._(caseSensitive);
 
   @override
   OptionsNode flattenOptions() {
@@ -72,12 +90,16 @@ class SequenceNode extends AstNode {
       return OptionsNode([this], caseSensitive: caseSensitive);
     }
 
-    var sequences =
-        nodes.first.flattenOptions().options.map((sequence) => sequence.nodes);
+    var firstOptions = nodes.first.flattenOptions().options;
+    var product = firstOptions.length;
+    _checkFlattenedSize(product);
+    var sequences = firstOptions.map((sequence) => sequence.nodes);
     for (var node in nodes.skip(1)) {
       // Concatenate all sequences in the next options node ([nextSequences])
       // onto all previous sequences ([sequences]).
       var nextSequences = node.flattenOptions().options;
+      product *= nextSequences.length;
+      _checkFlattenedSize(product);
       sequences = sequences.expand((sequence) {
         return nextSequences.map((nextSequence) {
           return sequence.toList()..addAll(nextSequence.nodes);
@@ -85,9 +107,10 @@ class SequenceNode extends AstNode {
       });
     }
 
-    return OptionsNode(sequences.map((sequence) {
-      // Combine any adjacent LiteralNodes in [sequence].
-      return SequenceNode(
+    return OptionsNode(
+      sequences.map((sequence) {
+        // Combine any adjacent LiteralNodes in [sequence].
+        return SequenceNode(
           sequence.fold<List<AstNode>>([], (combined, node) {
             if (combined.isEmpty ||
                 combined.last is! LiteralNode ||
@@ -96,12 +119,16 @@ class SequenceNode extends AstNode {
             }
 
             combined[combined.length - 1] = LiteralNode(
-                (combined.last as LiteralNode).text + node.text,
-                caseSensitive: caseSensitive);
+              (combined.last as LiteralNode).text + node.text,
+              caseSensitive: caseSensitive,
+            );
             return combined;
           }),
-          caseSensitive: caseSensitive);
-    }), caseSensitive: caseSensitive);
+          caseSensitive: caseSensitive,
+        );
+      }),
+      caseSensitive: caseSensitive,
+    );
   }
 
   /// Splits this glob into components along its path separators.
@@ -125,8 +152,9 @@ class SequenceNode extends AstNode {
 
     void finishComponent() {
       if (currentComponent == null) return;
-      componentsToReturn
-          .add(SequenceNode(currentComponent!, caseSensitive: caseSensitive));
+      componentsToReturn.add(
+        SequenceNode(currentComponent!, caseSensitive: caseSensitive),
+      );
       currentComponent = null;
     }
 
@@ -223,7 +251,7 @@ class DoubleStarNode extends AstNode {
   final p.Context _context;
 
   DoubleStarNode(this._context, {bool caseSensitive = true})
-      : super._(caseSensitive);
+    : super._(caseSensitive);
 
   @override
   String _toRegExp() {
@@ -288,10 +316,12 @@ class RangeNode extends AstNode {
   /// Whether this range was negated.
   final bool negated;
 
-  RangeNode(Iterable<Range> ranges,
-      {required this.negated, bool caseSensitive = true})
-      : ranges = ranges.toSet(),
-        super._(caseSensitive);
+  RangeNode(
+    Iterable<Range> ranges, {
+    required this.negated,
+    bool caseSensitive = true,
+  }) : ranges = ranges.toSet(),
+       super._(caseSensitive);
 
   @override
   OptionsNode flattenOptions() {
@@ -301,12 +331,17 @@ class RangeNode extends AstNode {
 
     // If a range explicitly lists a set of characters, return each character as
     // a separate expansion.
-    return OptionsNode(ranges.map((range) {
-      return SequenceNode([
-        LiteralNode(String.fromCharCodes([range.min]),
-            caseSensitive: caseSensitive)
-      ], caseSensitive: caseSensitive);
-    }), caseSensitive: caseSensitive);
+    return OptionsNode(
+      ranges.map((range) {
+        return SequenceNode([
+          LiteralNode(
+            String.fromCharCodes([range.min]),
+            caseSensitive: caseSensitive,
+          ),
+        ], caseSensitive: caseSensitive);
+      }),
+      caseSensitive: caseSensitive,
+    );
   }
 
   @override
@@ -375,13 +410,14 @@ class OptionsNode extends AstNode {
   bool get canMatchRelative => options.any((node) => node.canMatchRelative);
 
   OptionsNode(Iterable<SequenceNode> options, {bool caseSensitive = true})
-      : options = options.toList(),
-        super._(caseSensitive);
+    : options = options.toList(),
+      super._(caseSensitive);
 
   @override
-  OptionsNode flattenOptions() =>
-      OptionsNode(options.expand((option) => option.flattenOptions().options),
-          caseSensitive: caseSensitive);
+  OptionsNode flattenOptions() => OptionsNode(
+    options.expand((option) => option.flattenOptions().options),
+    caseSensitive: caseSensitive,
+  );
 
   @override
   String _toRegExp() =>
@@ -390,8 +426,10 @@ class OptionsNode extends AstNode {
   @override
   bool operator ==(Object other) =>
       other is OptionsNode &&
-      const UnorderedIterableEquality<SequenceNode>()
-          .equals(options, other.options);
+      const UnorderedIterableEquality<SequenceNode>().equals(
+        options,
+        other.options,
+      );
 
   @override
   int get hashCode =>
@@ -413,8 +451,9 @@ class LiteralNode extends AstNode {
 
   @override
   bool get canMatchAbsolute {
-    var nativeText =
-        _context!.style == p.Style.windows ? text.replaceAll('/', '\\') : text;
+    var nativeText = _context!.style == p.Style.windows
+        ? text.replaceAll('/', '\\')
+        : text;
     return _context.isAbsolute(nativeText);
   }
 
@@ -422,8 +461,8 @@ class LiteralNode extends AstNode {
   bool get canMatchRelative => !canMatchAbsolute;
 
   LiteralNode(this.text, {p.Context? context, bool caseSensitive = true})
-      : _context = context,
-        super._(caseSensitive);
+    : _context = context,
+      super._(caseSensitive);
 
   @override
   String _toRegExp() => regExpQuote(text);

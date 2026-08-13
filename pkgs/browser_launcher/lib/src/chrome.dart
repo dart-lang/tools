@@ -31,14 +31,11 @@ String get _executable {
       Platform.environment['PROGRAMFILES(X86)'],
     ];
     return p.join(
-      windowsPrefixes.firstWhere(
-        (prefix) {
-          if (prefix == null) return false;
-          final path = p.join(prefix, _windowsExecutable);
-          return File(path).existsSync();
-        },
-        orElse: () => '.',
-      )!,
+      windowsPrefixes.firstWhere((prefix) {
+        if (prefix == null) return false;
+        final path = p.join(prefix, _windowsExecutable);
+        return File(path).existsSync();
+      }, orElse: () => '.')!,
       _windowsExecutable,
     );
   }
@@ -55,8 +52,8 @@ class Chrome {
     Process? process,
     Directory? dataDir,
     this.deleteDataDir = false,
-  })  : _process = process,
-        _dataDir = dataDir;
+  }) : _process = process,
+       _dataDir = dataDir;
 
   final int debugPort;
   final ChromeConnection chromeConnection;
@@ -80,12 +77,16 @@ class Chrome {
   /// as a user data directory. Chrome will start signed into
   /// the default profile with extensions enabled if [signIn]
   /// is also true.
+  ///
+  /// When launching, all [additionalArguments] will be passed directly to
+  /// Chrome as command line arguments.
   static Future<Chrome> startWithDebugPort(
     List<String> urls, {
     int debugPort = 0,
     bool headless = false,
     String? userDataDir,
     bool signIn = false,
+    List<String> additionalArguments = const [],
   }) async {
     Directory dataDir;
     if (userDataDir == null) {
@@ -124,12 +125,11 @@ class Chrome {
       // Dev runs of the browser should be considered independent of one
       // another, don't announce when the previous session crashed.
       '--disable-session-crashed-bubble',
+      ...additionalArguments,
+      if (headless) '--headless',
     ];
-    if (headless) {
-      args.add('--headless');
-    }
 
-    final process = await _startProcess(urls, args: args);
+    final process = await start(urls, args: args);
 
     // Wait until the DevTools are listening before trying to connect.
     final errorLines = <String>[];
@@ -144,9 +144,10 @@ class Chrome {
           .transform(utf8.decoder)
           .transform(const LineSplitter())
           .firstWhere((line) {
-        errorLines.add(line);
-        return line.startsWith('DevTools listening');
-      }).timeout(const Duration(seconds: 60));
+            errorLines.add(line);
+            return line.startsWith('DevTools listening');
+          })
+          .timeout(const Duration(seconds: 60));
     } on TimeoutException catch (e, s) {
       _logger.severe('Unable to connect to Chrome DevTools', e, s);
       throw Exception(
@@ -172,15 +173,10 @@ class Chrome {
   static Future<Process> start(
     List<String> urls, {
     List<String> args = const [],
-  }) async =>
-      await _startProcess(urls, args: args);
-
-  static Future<Process> _startProcess(
-    List<String> urls, {
-    List<String> args = const [],
-  }) async {
-    final processArgs = args.toList()..addAll(urls);
-    return await Process.start(_executable, processArgs);
+  }) {
+    assert(!args.contains('--'));
+    assert(!urls.contains('--'));
+    return Process.start(_executable, [...args, '--', ...urls]);
   }
 
   static Future<Chrome> _connect(Chrome chrome) async {
@@ -232,8 +228,11 @@ Future<int> findUnusedPort() async {
   int port;
   ServerSocket socket;
   try {
-    socket =
-        await ServerSocket.bind(InternetAddress.loopbackIPv6, 0, v6Only: true);
+    socket = await ServerSocket.bind(
+      InternetAddress.loopbackIPv6,
+      0,
+      v6Only: true,
+    );
   } on SocketException {
     socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
   }

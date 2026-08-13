@@ -9,25 +9,29 @@ import 'dart:isolate';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
+import 'utils.dart';
+
 void main() {
-  test("reports correct locations in the JSON output from 'dart test'",
-      () async {
+  test("reports correct locations in the JSON output from 'dart test'", () async {
     var testPackagePath = (await Isolate.resolvePackageUri(
-            Uri.parse('package:test_reflective_loader/')))!
-        .toFilePath();
-    var testFilePath = path.normalize(path.join(
-        testPackagePath, '..', 'test', 'test_reflective_loader_test.dart'));
+      Uri.parse('package:test_reflective_loader/'),
+    ))!.toFilePath();
+    var testFilePath = path.normalize(
+      path.join(
+        testPackagePath,
+        '..',
+        'test',
+        'test_reflective_loader_test.dart',
+      ),
+    );
     var testFileContent = File(testFilePath).readAsLinesSync();
-    var result = await Process.run(
-        Platform.resolvedExecutable, ['test', '-r', 'json', testFilePath]);
 
-    var error = result.stderr.toString().trim();
-    var output = result.stdout.toString().trim();
+    var (:stdout, :stderr) = await runTestFile(testFilePath, reporter: 'json');
 
-    expect(error, isEmpty);
-    expect(output, isNotEmpty);
+    expect(stderr, isEmpty);
+    expect(stdout, isNotEmpty);
 
-    for (var event in LineSplitter.split(output).map(jsonDecode)) {
+    for (var event in LineSplitter.split(stdout).map(jsonDecode)) {
       if (event case {'type': 'testStart', 'test': Map<String, Object?> test}) {
         var name = test['name'] as String;
 
@@ -40,9 +44,14 @@ void main() {
         // the source code to ensure the locations match up.
         name = name.split(' ').last.trim();
 
-        // Skip "tearDownAll" or "setUpAll", it never has a location.
-        if (name case '(tearDownAll)' || '(setUpAll)') {
-          continue;
+        // The test names "(setUpAll)" and "(tearDownAll)" can be calls to
+        // setUpAll() and tearDownAll() or methods named "setUpClass" and
+        // "tearDownClass" so just expect to find "setUp" or "tearDown" on lines
+        // at the provided locations.
+        if (name == '(setUpAll)') {
+          name = 'setUp';
+        } else if (name == '(tearDownAll)') {
+          name = 'tearDown';
         }
 
         // Expect locations for all remaining fields.
@@ -59,15 +68,23 @@ void main() {
         if (lineContent.trim().startsWith('@')) {
           lineContent = testFileContent[line];
         }
-        expect(lineContent, contains(name),
-            reason: 'JSON reports test $name on line $line, '
-                'but line content is "$lineContent"');
+        expect(
+          lineContent,
+          contains(name),
+          reason:
+              'JSON reports test $name on line $line, '
+              'but line content is "$lineContent"',
+        );
 
         // Verify the column too.
         var columnContent = lineContent.substring(column - 1);
-        expect(columnContent, contains(name),
-            reason: 'JSON reports test $name at column $column, '
-                'but text at column is "$columnContent"');
+        expect(
+          columnContent,
+          contains(name),
+          reason:
+              'JSON reports test $name at column $column, '
+              'but text at column is "$columnContent"',
+        );
       }
     }
   });

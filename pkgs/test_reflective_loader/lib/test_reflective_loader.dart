@@ -112,11 +112,14 @@ void defineReflectiveTests(Type type) {
         var memberName = MirrorSystem.getName(symbol);
         var isTest = memberName.startsWith(RegExp('(solo_|fail_|skip_)*test_'));
         if (isTest) {
-          var isSolo = memberName.startsWith('solo_') ||
+          var isSolo =
+              memberName.startsWith('solo_') ||
               _hasAnnotationInstance(memberMirror, soloTest);
-          var isSkipped = memberName.startsWith('skip_') ||
+          var isSkipped =
+              memberName.startsWith('skip_') ||
               _hasSkippedTestAnnotation(memberMirror);
-          var expectFail = memberName.startsWith('fail_') ||
+          var expectFail =
+              memberName.startsWith('fail_') ||
               memberName.startsWith('solo_fail_') ||
               _hasFailingTestAnnotation(memberMirror) ||
               _isCheckedMode && _hasAssertFailingTestAnnotation(memberMirror);
@@ -166,10 +169,24 @@ void _addTestsIfTopLevelSuite() {
               solo: group.solo,
               () {
                 // If this group is a class, it may have class-wide
-                // setUp/tearDown.
-                if (group.classMirror != null) {
-                  test_package.setUpAll(group.ensureSetUpClass);
-                  test_package.tearDownAll(group.tearDownClass);
+                // setUp/tearDown. Only add the methods if they exist so that
+                // they don't show in the results/IDE if not.
+                if (group.classMirror case var classMirror?) {
+                  var setUp = _getClosureMember(classMirror, #setUpClass);
+                  if (setUp != null) {
+                    test_package.setUpAll(
+                      group.ensureSetUpClass,
+                      location: setUp.function.testLocation,
+                    );
+                  }
+
+                  var tearDown = _getClosureMember(classMirror, #tearDownClass);
+                  if (tearDown != null) {
+                    test_package.tearDownAll(
+                      group.tearDownClass,
+                      location: tearDown.function.testLocation,
+                    );
+                  }
                 }
                 addGroupsAndTests(group.children);
               },
@@ -220,23 +237,29 @@ bool _hasFailingTestAnnotation(MethodMirror method) =>
 bool _hasSkippedTestAnnotation(MethodMirror method) =>
     _hasAnnotationInstance(method, skippedTest);
 
+/// Invokes [symbol] on [objectMirror] if it is a closure and returns the
+/// result.
 Future<Object?> _invokeSymbolIfExists(
   ObjectMirror objectMirror,
   Symbol symbol,
 ) {
   Object? invocationResult;
-  InstanceMirror? closure;
+  var closure = _getClosureMember(objectMirror, symbol);
+  invocationResult = closure?.apply([]).reflectee;
+  return Future.value(invocationResult);
+}
+
+/// Gets [symbol] from [objectMirror] if it is a closure.
+ClosureMirror? _getClosureMember(ObjectMirror objectMirror, Symbol symbol) {
   try {
-    closure = objectMirror.getField(symbol);
+    var member = objectMirror.getField(symbol);
+    return member is ClosureMirror ? member : null;
     // ignore: avoid_catching_errors
   } on NoSuchMethodError {
     // ignore: empty_catches
   }
 
-  if (closure is ClosureMirror) {
-    invocationResult = closure.apply([]).reflectee;
-  }
-  return Future.value(invocationResult);
+  return null;
 }
 
 /// Adds a group to the current stack and executes [define] for child group
@@ -273,19 +296,21 @@ Future<void> _runFailingTest(ClassMirror classMirror, Symbol symbol) async {
   await runZonedGuarded(
     () {
       // ignore: void_checks
-      return Future.sync(() => _runTest(classMirror, symbol)).then<void>((_) {
-        // We can't throw async exceptions inside here because `runZoneGuarded`
-        // will never complete (see docs on `runZonedGuarded`), so we need to
-        // capture this state and throw later if there wasn't otherwise an
-        // exception.
+      return Future.sync(() => _runTest(classMirror, symbol))
+          .then<void>((_) {
+            // We can't throw async exceptions inside here because `runZoneGuarded`
+            // will never complete (see docs on `runZonedGuarded`), so we need to
+            // capture this state and throw later if there wasn't otherwise an
+            // exception.
 
-        // If we didn't already have a failure (eg. an unawaited exception) then
-        // this successful completion is an unexpected pass state.
-        result ??= _FailedTestResult.pass;
-      }).catchError((Object e) {
-        // an awaited exception is always expected failure.
-        result = _FailedTestResult.expectedFail;
-      });
+            // If we didn't already have a failure (eg. an unawaited exception) then
+            // this successful completion is an unexpected pass state.
+            result ??= _FailedTestResult.pass;
+          })
+          .catchError((Object e) {
+            // an awaited exception is always expected failure.
+            result = _FailedTestResult.expectedFail;
+          });
     },
     (e, st) {
       result = _FailedTestResult.expectedFail;

@@ -1,171 +1,88 @@
-// Copyright (c) 2025, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file
+// BSD-style license that can be found in the LICENSE file.
 
 part of '../control.dart';
 
-/// Represents a `catch` block.
+/// A `catch` or `on` clause in a [Try] statement.
 ///
-/// {@category controlFlow}
-abstract class CatchBlock
-    with ControlBlock
-    implements Built<CatchBlock, CatchBlockBuilder> {
-  CatchBlock._();
-  factory CatchBlock([void Function(CatchBlockBuilder) updates]) = _$CatchBlock;
+/// ```dart
+/// on FormatException catch (e, s) {
+///   body
+/// }
+/// ```
+abstract class Catch implements Built<Catch, CatchBuilder> {
+  factory Catch([void Function(CatchBuilder) updates]) = _$Catch;
 
-  /// The optional type of exception to catch (`on` clause).
-  ///
-  /// When [type] is set, leave [exception] and [stacktrace]
-  /// `null` to omit the `catch` statement.
-  ///
-  /// ``` dart
-  /// on type
-  /// on type catch (exception)
-  /// on type catch (exception, stacktrace)
-  /// ```
-  Reference? get type;
+  Catch._();
 
-  /// The optional name of the exception parameter.
+  /// The type of exception to catch (`on` clause).
   ///
-  /// If a [type] is specified, leaving this and [stacktrace] null
-  /// will omit the `catch` statement entirely.
-  ///
-  /// If left `null` otherwise, a wildcard (`_`) will be used
-  /// as the exception name.
-  ///
-  /// ```dart
-  /// catch (exception)
-  /// catch (exception, stacktrace)
-  /// ```
+  /// A `null` value indicates that this is a `catch` without an `on` clause.
+  Reference? get on;
+
+  /// The exception variable name.
   String? get exception;
 
-  /// The optional name of the stacktrace parameter.
-  ///
-  /// Will be excluded if left `null`.
-  ///
-  /// ```dart
-  /// catch (exception)
-  /// catch (exception, stacktrace)
-  /// ```
-  String? get stacktrace;
+  /// The stack trace variable name.
+  String? get stackTrace;
 
-  ControlExpression get _catch =>
-      ControlExpression.catchStatement(exception ?? '_', stacktrace);
+  /// The catch block body.
+  Code? get body;
+}
 
-  @override
-  ControlExpression get _expression {
-    if (type == null) return _catch;
+abstract class CatchBuilder implements Builder<Catch, CatchBuilder> {
+  factory CatchBuilder() = _$CatchBuilder;
+  CatchBuilder._();
 
-    // omit catch clause if exception and stacktrace are unspecified
-    if (exception == null && stacktrace == null) {
-      return ControlExpression.onStatement(type!);
+  Reference? on;
+  String? exception;
+  String? stackTrace;
+  Code? body;
+}
+
+/// A `try` statement with optional `catch` and `finally` blocks.
+///
+/// ```dart
+/// try {
+///   body
+/// } on FormatException catch (e, s) {
+///   catchBody
+/// } finally {
+///   finallyBody
+/// }
+/// ```
+abstract class Try implements Built<Try, TryBuilder>, Code, Spec {
+  factory Try([void Function(TryBuilder) updates]) = _$Try;
+
+  Try._() {
+    if (catches.isEmpty && finallyBlock == null) {
+      throw ArgumentError(
+        'A try statement must specify at least one catch clause or a finally '
+        'block.',
+      );
     }
-
-    return ControlExpression.onStatement(type!, _catch);
   }
-}
 
-/// Represents a `try` or `finally` block.
-///
-/// **INTERNAL ONLY**.
-@internal
-class TryBlock with ControlBlock {
-  @override
-  final Block body;
-  final bool isFinally;
+  /// The body of the `try` block.
+  Code? get body;
 
-  const TryBlock._(this.body) : isFinally = false;
-  const TryBlock._finally(this.body) : isFinally = true;
+  /// The `catch` clauses for this try block.
+  BuiltList<Catch> get catches;
+
+  /// The optional `finally` block.
+  Code? get finallyBlock;
 
   @override
-  ControlExpression get _expression =>
-      isFinally
-          ? ControlExpression.finallyStatement
-          : ControlExpression.tryStatement;
+  R accept<R>(covariant ControlVisitor<R> visitor, [R? context]) =>
+      visitor.visitTry(this, context);
 }
 
-/// Represents a `try`/`catch` block.
-///
-/// {@category controlFlow}
-abstract class TryCatch
-    with ControlTree
-    implements Built<TryCatch, TryCatchBuilder> {
-  TryCatch._();
+abstract class TryBuilder implements Builder<Try, TryBuilder> {
+  factory TryBuilder() = _$TryBuilder;
+  TryBuilder._();
 
-  /// Build a [TryCatch].
-  factory TryCatch([void Function(TryCatchBuilder) updates]) = _$TryCatch;
-
-  /// The body of the `try` clause.
-  ///
-  /// ```dart
-  /// try {
-  ///   body
-  /// }
-  /// ```
-  Block get body;
-
-  /// The `catch` clauses for this block.
-  BuiltList<CatchBlock> get handlers;
-
-  /// The optional `finally` clause body.
-  ///
-  /// ```dart
-  /// finally {
-  ///   handleAll
-  /// }
-  /// ```
-  Block? get handleAll;
-
-  TryBlock get _try => TryBlock._(body);
-  TryBlock? get _finally =>
-      handleAll == null ? null : TryBlock._finally(handleAll!);
-
-  @override
-  List<ControlBlock?> get _blocks => [_try, ...handlers, _finally];
-
-  /// Ensure [handlers] is not empty
-  @BuiltValueHook(finalizeBuilder: true)
-  static void _build(TryCatchBuilder builder) =>
-      builder.handlers.isNotEmpty ||
-      (throw ArgumentError(
-        'One or more `catch` clauses must be specified.',
-        'handlers',
-      ));
-}
-
-/// Builds a [TryCatch] block.
-///
-/// {@category controlFlow}
-abstract class TryCatchBuilder implements Builder<TryCatch, TryCatchBuilder> {
-  TryCatchBuilder._();
-  factory TryCatchBuilder() = _$TryCatchBuilder;
-
-  /// The body of the `try` clause.
-  ///
-  /// ```dart
-  /// try {
-  ///   body
-  /// }
-  /// ```
-  BlockBuilder body = BlockBuilder();
-
-  /// The optional `finally` clause body.
-  ///
-  /// ```dart
-  /// finally {
-  ///   handleAll
-  /// }
-  /// ```
-  BlockBuilder? handleAll;
-
-  /// The `catch` clauses for this block.
-  ListBuilder<CatchBlock> handlers = ListBuilder();
-
-  /// Build a `catch` clause and add it to [handlers].
-  void addCatch(void Function(CatchBlockBuilder block) builder) =>
-      handlers.add((CatchBlockBuilder()..update(builder)).build());
-
-  /// Build a `finally` clause and update [handleAll].
-  void addFinally(void Function(BlockBuilder body) builder) =>
-      handleAll = BlockBuilder()..update(builder);
+  Code? body;
+  ListBuilder<Catch> catches = ListBuilder<Catch>();
+  Code? finallyBlock;
 }

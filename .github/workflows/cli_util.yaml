@@ -1,5 +1,6 @@
 name: package:cli_util
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   # Run on PRs and pushes to the default branch.
@@ -28,7 +29,9 @@ jobs:
       matrix:
         sdk: [dev]
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
     - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
       with:
         sdk: ${{ matrix.sdk }}
@@ -51,7 +54,9 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         sdk: ['3.7', dev]
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
     - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
       with:
         sdk: ${{ matrix.sdk }}

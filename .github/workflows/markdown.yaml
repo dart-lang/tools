@@ -1,5 +1,6 @@
 name: package:markdown
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   # Run on PRs and pushes to the default branch.
@@ -30,7 +31,9 @@ jobs:
       matrix:
         sdk: [dev]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
         with:
           sdk: ${{ matrix.sdk }}
@@ -52,7 +55,9 @@ jobs:
       matrix:
         sdk: [stable]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
         with:
           sdk: ${{ matrix.sdk }}
@@ -72,7 +77,9 @@ jobs:
         os: [ubuntu-latest]
         sdk: [3.9, dev]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
         with:
           sdk: ${{ matrix.sdk }}
@@ -87,7 +94,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
     - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
       with:
         sdk: dev
@@ -98,7 +107,7 @@ jobs:
     - name: Collect and report coverage
       run: dart pub global run coverage:test_with_coverage
     - name: Upload coverage
-      uses: coverallsapp/github-action@master
+      uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: pkgs/markdown/coverage/lcov.info

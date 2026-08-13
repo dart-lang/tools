@@ -1,5 +1,6 @@
 name: package:benchmark_harness
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   # Run on PRs and pushes to the default branch.
@@ -30,7 +31,9 @@ jobs:
       matrix:
         sdk: [dev]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
         with:
           sdk: ${{ matrix.sdk }}
@@ -59,13 +62,15 @@ jobs:
         # https://github.com/dart-lang/setup-dart/issues/161
         sdk: ['3.10', dev]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
         with:
           sdk: ${{ matrix.sdk }}
       # Node 22 has wasmGC enabled, which allows the wasm tests to run!
       - name: Setup Node.js 22
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 22
       - id: install

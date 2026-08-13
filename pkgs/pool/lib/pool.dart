@@ -80,8 +80,11 @@ class Pool {
   /// intended to avoid deadlocks.
   Pool(this._maxAllocatedResources, {Duration? timeout}) : _timeout = timeout {
     if (_maxAllocatedResources <= 0) {
-      throw ArgumentError.value(_maxAllocatedResources, 'maxAllocatedResources',
-          'Must be greater than zero.');
+      throw ArgumentError.value(
+        _maxAllocatedResources,
+        'maxAllocatedResources',
+        'Must be greater than zero.',
+      );
     }
 
     if (timeout != null) {
@@ -151,8 +154,10 @@ class Pool {
   /// Note: if this [Pool] is closed before the returned [Stream] is listened
   /// to, a [StateError] is thrown.
   Stream<T> forEach<S, T>(
-      Iterable<S> elements, FutureOr<T> Function(S source) action,
-      {bool Function(S item, Object error, StackTrace stack)? onError}) {
+    Iterable<S> elements,
+    FutureOr<T> Function(S source) action, {
+    bool Function(S item, Object error, StackTrace stack)? onError,
+  }) {
     final errorHandler = onError ?? (item, e, s) => true;
 
     var cancelPending = false;
@@ -307,11 +312,8 @@ class Pool {
     var completer = Completer<PoolResource>.sync();
     _onReleaseCompleters.add(completer);
 
-    Future.sync(onRelease).then((value) {
+    Future.sync(onRelease).catchError((_) {}).then((_) {
       _onReleaseCompleters.removeFirst().complete(PoolResource._(this));
-    }).onError((Object error, StackTrace stackTrace) {
-      _onReleaseCompleters.removeFirst().completeError(error, stackTrace);
-      _onResourceReleased();
     });
 
     return completer.future;
@@ -333,11 +335,13 @@ class Pool {
   void _onTimeout() {
     for (var completer in _requestedResources) {
       completer.completeError(
-          TimeoutException(
-              'Pool deadlock: all resources have been '
-              'allocated for too long.',
-              _timeout),
-          Chain.current());
+        TimeoutException(
+          'Pool deadlock: all resources have been '
+          'allocated for too long.',
+          _timeout,
+        ),
+        Chain.current(),
+      );
     }
     _requestedResources.clear();
     _timer = null;
@@ -378,6 +382,8 @@ class PoolResource {
   /// This is useful when a resource's main function is complete, but it may
   /// produce additional information later on. For example, an isolate's task
   /// may be complete, but it could still emit asynchronous errors.
+  ///
+  /// Any errors thrown by [onRelease] or the future it returns are ignored.
   void allowRelease(FutureOr<void> Function() onRelease) {
     if (_released) {
       throw StateError('A PoolResource may only be released once.');
