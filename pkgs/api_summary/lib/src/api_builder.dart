@@ -422,11 +422,11 @@ final class _ApiBuilder {
       immediateSubtypes: immediateSubtypes,
       constructors: constructors,
       methods: methods,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
-      isInternal: element.nonSynthetic.metadata.hasInternal,
+      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isImmutable: element.nonSynthetic.metadata.hasImmutable,
+      isInternal: element.nonSynthetic.metadata.hasInternal,
+      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
     );
   }
 
@@ -452,10 +452,10 @@ final class _ApiBuilder {
       extendedType: _describeType(element.extendedType),
       typeParameters: _extractTypeParameters(element.typeParameters),
       methods: methods,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isInternal: element.nonSynthetic.metadata.hasInternal,
+      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
     );
   }
 
@@ -486,10 +486,10 @@ final class _ApiBuilder {
       interfaces: element.interfaces.map(_describeType).toList(),
       constructors: constructors,
       methods: methods,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isInternal: element.nonSynthetic.metadata.hasInternal,
+      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
     );
   }
 
@@ -547,23 +547,23 @@ final class _ApiBuilder {
           .toList(),
       isStatic: element.isStatic,
       isConst: isConst,
+      isDeprecated: _hasAnnotation(element, (m) => m.hasDeprecated),
       isEnumConstant: isEnumConstant,
-      isProtected: _hasAnnotation(element, (m) => m.hasProtected),
+      isExperimental: _hasAnnotation(element, (m) => m.hasExperimental),
+      isInternal: _hasAnnotation(element, (m) => m.hasInternal),
+      isMustBeOverridden: _hasAnnotation(element, (m) => m.hasMustBeOverridden),
       isMustCallSuper: _hasAnnotation(element, (m) => m.hasMustCallSuper),
+      isNonVirtual: _hasAnnotation(element, (m) => m.hasNonVirtual),
+      isProtected: _hasAnnotation(element, (m) => m.hasProtected),
+      isUseResult: _hasAnnotation(element, (m) => m.hasUseResult),
       isVisibleForOverriding: _hasAnnotation(
         element,
         (m) => m.hasVisibleForOverriding,
       ),
-      isNonVirtual: _hasAnnotation(element, (m) => m.hasNonVirtual),
-      isMustBeOverridden: _hasAnnotation(element, (m) => m.hasMustBeOverridden),
-      isUseResult: _hasAnnotation(element, (m) => m.hasUseResult),
-      isDeprecated: _hasAnnotation(element, (m) => m.hasDeprecated),
-      isExperimental: _hasAnnotation(element, (m) => m.hasExperimental),
       isVisibleForTesting: _hasAnnotation(
         element,
         (m) => m.hasVisibleForTesting,
       ),
-      isInternal: _hasAnnotation(element, (m) => m.hasInternal),
     );
   }
 
@@ -578,8 +578,8 @@ final class _ApiBuilder {
     aliasedType: _describeType(element.aliasedType),
     isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
     isExperimental: element.nonSynthetic.metadata.hasExperimental,
-    isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
     isInternal: element.nonSynthetic.metadata.hasInternal,
+    isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
   );
 }
 
