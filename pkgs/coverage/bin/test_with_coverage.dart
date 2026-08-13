@@ -84,7 +84,11 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
   ..addOption(
     'platform',
     abbr: 'p',
-    help: 'The platform on which to run the tests. Supported: vm, chrome.',
+    help:
+        'The platform on which to run the tests. Supported: vm, chrome. '
+        'Web coverage is measured on compiled JavaScript, so its line counts '
+        'and percentages are not comparable to vm: code the compiler drops '
+        'cannot be reported as uncovered. Re-tune --fail-under per platform.',
   )
   ..addFlag(
     'include-test-files',
@@ -177,8 +181,28 @@ ${parser.usage}
       'supported on: ${supportedPlatforms.join(', ')}.',
     );
   }
-  if (args.flag('function-coverage') && platform == 'chrome') {
-    fail('--function-coverage is not supported for web platforms.');
+  if (platform == 'chrome') {
+    if (args.flag('function-coverage')) {
+      fail('--function-coverage is not supported for web platforms.');
+    }
+    if (args.flag('branch-coverage')) {
+      fail('--branch-coverage is not supported for web platforms.');
+    }
+  }
+
+  // Extra args are forwarded to `dart test`, where a second platform flag
+  // would silently override the validated one.
+  for (final arg in args.rest) {
+    if (arg == '-p' ||
+        arg == '--platform' ||
+        arg.startsWith('-p=') ||
+        arg.startsWith('--platform=')) {
+      fail(
+        'Pass the platform with --platform, not as an argument to the test '
+        'script. Coverage can only be collected for the platform this '
+        'command runs.',
+      );
+    }
   }
 
   return Flags(
@@ -236,7 +260,7 @@ Future<void> main(List<String> arguments) async {
   // the only way to collect coverage from a browser.
   if (flags.platform == null || flags.platform == 'vm') {
     final serviceUriCompleter = Completer<Uri>();
-    final process = await Process.start(Platform.executable, [
+    final testArgs = [
       if (flags.branchCoverage) '--branch-coverage',
       'run',
       '--pause-isolates-on-exit',
@@ -244,7 +268,12 @@ Future<void> main(List<String> arguments) async {
       '--enable-vm-service=${flags.port}',
       flags.testScript,
       ...flags.rest,
-    ], workingDirectory: flags.packageDir);
+    ];
+    final process = await Process.start(
+      Platform.executable,
+      testArgs,
+      workingDirectory: flags.packageDir,
+    );
     _allProcesses.add(process);
 
     void listen(
@@ -273,7 +302,30 @@ Future<void> main(List<String> arguments) async {
       }
     });
 
-    final serviceUri = await serviceUriCompleter.future;
+    // If the test process exits before reporting a VM service URI there is
+    // nothing to collect from, and waiting for the URI would hang forever.
+    unawaited(
+      process.exitCode.then((code) {
+        if (!serviceUriCompleter.isCompleted) {
+          serviceUriCompleter.completeError(
+            ProcessException(
+              Platform.executable,
+              testArgs,
+              'Test process exited before the VM service was ready',
+              code,
+            ),
+          );
+        }
+      }),
+    );
+
+    final Uri serviceUri;
+    try {
+      serviceUri = await serviceUriCompleter.future;
+    } on ProcessException catch (e) {
+      stderr.writeln('${e.message} (exit code ${e.errorCode}).');
+      exit(e.errorCode == 0 ? 1 : e.errorCode);
+    }
 
     final scopes = flags.scopeOutput.isEmpty
         ? getAllWorkspaceNames(flags.packageDir)
@@ -370,12 +422,24 @@ Future<void> main(List<String> arguments) async {
           }
         });
 
+        if (allCoverage.isEmpty) {
+          stderr.writeln(
+            'warning: no coverage data matched ${scopes.join(', ')}. '
+            'Compiled web output may not map back to library sources; pass '
+            '--include-test-files to also report non-library sources.',
+          );
+        }
+
         final jsonOutput = jsonEncode({
           'type': 'CodeCoverage',
           'coverage': allCoverage,
         });
         File(outJson).writeAsStringSync(jsonOutput);
       } else {
+        stderr.writeln(
+          'warning: the test run produced no coverage files; the report will '
+          'be empty.',
+        );
         File(outJson).writeAsStringSync(
           jsonEncode({
             'type': 'CodeCoverage',

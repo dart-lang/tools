@@ -184,6 +184,12 @@ class HitMap {
           if (chromeReport case {'coverage': final List jsonResult}) {
             globalHitmap.merge(await parse(jsonResult));
           }
+        case final decoded:
+          throw FormatException(
+            'Unrecognized coverage JSON in "${file.path}". Expected a '
+            '{"coverage": [...]} report or a raw V8 coverage list, but got '
+            '${decoded.runtimeType}.',
+          );
       }
     }
     return globalHitmap;

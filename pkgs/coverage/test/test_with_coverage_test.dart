@@ -261,6 +261,143 @@ dependency_overrides:
       await process.shouldExit(1);
     },
   );
+
+  // An unsupported platform must be rejected during argument parsing, before
+  // any test process is started. Asserting only on the exit code is not
+  // enough: `dart test -p <unsupported>` also exits 1, so a broken allowlist
+  // would still look like a pass.
+  test('dart run bin/test_with_coverage.dart -p firefox fails during '
+      'argument parsing', () async {
+    final process = await _run(['run', _testWithCoveragePath, '-p', 'firefox']);
+    await expectLater(
+      process.stdout,
+      emitsThrough(contains('Unsupported --platform "firefox"')),
+    );
+    await process.shouldExit(1);
+  });
+
+  test('dart run bin/test_with_coverage.dart -f -p chrome fails during '
+      'argument parsing', () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '-f',
+      '-p',
+      'chrome',
+    ]);
+    await expectLater(
+      process.stdout,
+      emitsThrough(
+        contains('--function-coverage is not supported for web platforms.'),
+      ),
+    );
+    await process.shouldExit(1);
+  });
+
+  test('dart run bin/test_with_coverage.dart -b -p chrome fails during '
+      'argument parsing', () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '-b',
+      '-p',
+      'chrome',
+    ]);
+    await expectLater(
+      process.stdout,
+      emitsThrough(
+        contains('--branch-coverage is not supported for web platforms.'),
+      ),
+    );
+    await process.shouldExit(1);
+  });
+
+  // A platform flag after `--` would reach `dart test` and override the
+  // validated platform, collecting coverage for something else entirely.
+  test('dart run bin/test_with_coverage.dart rejects a platform flag passed '
+      'to the test script', () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '-p',
+      'vm',
+      '--',
+      '-p',
+      'chrome',
+    ]);
+    await expectLater(
+      process.stdout,
+      emitsThrough(contains('Pass the platform with --platform')),
+    );
+    await process.shouldExit(1);
+  });
+
+  // A test process that dies before the VM service is ready must fail fast
+  // rather than waiting forever for a service URI that will never arrive.
+  test('dart run bin/test_with_coverage.dart fails fast when the test process '
+      'cannot start', () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '--test',
+      p.join(d.sandbox, 'no_such_test_dir'),
+    ]);
+    await expectLater(
+      process.stderr,
+      emitsThrough(contains('exited before the VM service was ready')),
+    );
+    await process.shouldExit(isNot(0));
+  });
+
+  // `--platform vm` is an advertised value and must take the VM service
+  // collection path, which is the only path that can produce function hits.
+  test(
+    'dart run bin/test_with_coverage.dart -p vm -f uses the VM flow',
+    () async {
+      final list = await _runTest([
+        'run',
+        _testWithCoveragePath,
+        '-p',
+        'vm',
+        '-f',
+      ]);
+
+      expect(
+        list.any((entry) => entry.containsKey('funcHits')),
+        isTrue,
+        reason:
+            '--platform vm must take the VM service collection path, which '
+            'is the only path that can report function coverage',
+      );
+
+      final sources = list.sources();
+      final functionHits = functionInfoFromSources(sources);
+
+      expect(functionHits['package:$_testPackageName/validate_lib.dart'], {
+        'product': 1,
+        'sum': 1,
+        'evaluateScore': 1,
+      });
+    },
+  );
+
+  // The exit code of the underlying test run must reach the caller, otherwise
+  // a red test suite is reported to CI as a success.
+  test(
+    'dart run bin/test_with_coverage.dart propagates a failing test run',
+    () async {
+      final process = await _run([
+        'run',
+        _testWithCoveragePath,
+        '--port',
+        '0',
+        '--',
+        '-N',
+        'no_such_test_name_xyz',
+      ]);
+      await process.shouldExit(isNot(0));
+    },
+  );
 }
 
 Future<TestProcess> _run(List<String> args) => TestProcess.start(
