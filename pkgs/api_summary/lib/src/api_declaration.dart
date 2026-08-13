@@ -411,7 +411,12 @@ final class ApiExecutable extends ApiDeclaration {
   final Map<String, ApiType?> typeParameters;
   final ApiType returnType;
   final List<ApiParameter> parameters;
+
+  /// Whether this executable is a const constructor, field, or top-level
+  /// variable.
   final bool isConst;
+
+  /// Whether this executable represents an enum constant.
   final bool isEnumConstant;
 
   /// Whether this executable is annotated with `@mustBeOverridden`.
