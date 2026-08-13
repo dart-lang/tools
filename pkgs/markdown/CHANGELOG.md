@@ -13,6 +13,9 @@
   quantifiers to RFC limits, improving performance on inputs with long sequences
   of dots or alphanumeric characters.
 * Escape image description text when assigning it to the `alt` attribute.
+* Fixes `ExtensionSet.gitHubFlavored` so a lone `-` (or `=`) line that
+  continues a paragraph is parsed as a setext heading underline instead of
+  an empty list item.
 
 ## 7.3.1
 
