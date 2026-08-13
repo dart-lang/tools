@@ -332,8 +332,10 @@ dependency_overrides:
     await process.shouldExit(1);
   });
 
-  // A test process that dies before the VM service is ready must fail fast
-  // rather than waiting forever for a service URI that will never arrive.
+  // A test process that dies without pausing must fail fast rather than
+  // waiting forever. Which guard fires depends on the SDK: some report a VM
+  // service URI even when the test script could not be loaded, so the failure
+  // is only detectable once collection is under way.
   test('dart run bin/test_with_coverage.dart fails fast when the test process '
       'cannot start', () async {
     final process = await _run([
@@ -344,7 +346,12 @@ dependency_overrides:
     ]);
     await expectLater(
       process.stderr,
-      emitsThrough(contains('exited before the VM service was ready')),
+      emitsThrough(
+        anyOf(
+          contains('exited before the VM service was ready'),
+          contains('before coverage collection finished'),
+        ),
+      ),
     );
     await process.shouldExit(isNot(0));
   });

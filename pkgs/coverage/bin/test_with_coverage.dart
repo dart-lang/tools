@@ -330,7 +330,7 @@ Future<void> main(List<String> arguments) async {
     final scopes = flags.scopeOutput.isEmpty
         ? getAllWorkspaceNames(flags.packageDir)
         : flags.scopeOutput;
-    await collect_coverage.main([
+    final collection = collect_coverage.main([
       '--wait-paused',
       '--resume-isolates',
       '--uri=$serviceUri',
@@ -340,6 +340,24 @@ Future<void> main(List<String> arguments) async {
       '-o',
       outJson,
     ]);
+
+    // The test process is paused on exit, so collection is what lets it
+    // finish. If it exits with an error first, it never reached that pause
+    // (for example, the test script failed to load) and `--wait-paused` would
+    // wait forever. Some SDKs report a service URI even in that case, so the
+    // check above is not enough on its own.
+    final collected = await Future.any<Object?>([
+      collection.then((_) => null),
+      process.exitCode,
+    ]);
+    if (collected is int && collected != 0) {
+      stderr.writeln(
+        'Test process exited with code $collected before coverage collection '
+        'finished.',
+      );
+      exit(collected);
+    }
+    await collection;
     exitCode = await process.exitCode.timeout(
       const Duration(seconds: 3),
       onTimeout: () {
