@@ -21,6 +21,12 @@ import 'extensions.dart';
 /// a canonical [ApiSummary] representation.
 ///
 /// Filtering and discovery behaviors are customized using [customizer].
+///
+/// [environment] defines the SDK and platform environment constraints of the
+/// package (such as 'sdk' or 'flutter').
+///
+/// [executables] defines the executables exposed by the package, mapping
+/// executable names to their target script paths within `bin/`.
 Future<ApiSummary> buildApiPackage(
   String packageName,
   AnalysisContext context,
