@@ -134,6 +134,24 @@
                   "isNamed": true
                 },
                 {
+                  "name": "isImmutable",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isInternal",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "isVisibleForTesting",
                   "type": {
                     "kind": "interface",
@@ -327,6 +345,16 @@
               }
             },
             {
+              "name": "isImmutable",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
               "name": "methods",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -481,6 +509,16 @@
             },
             {
               "name": "isExperimental",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isInternal",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
@@ -707,6 +745,51 @@
                   "isNamed": true
                 },
                 {
+                  "name": "isInternal",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isMustBeOverridden",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isMustCallSuper",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isNonVirtual",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isProtected",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "isStatic",
                   "type": {
                     "kind": "interface",
@@ -714,6 +797,24 @@
                     "libraryUri": "dart:core"
                   },
                   "isRequired": true,
+                  "isNamed": true
+                },
+                {
+                  "name": "isUseResult",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isVisibleForOverriding",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
                   "isNamed": true
                 },
                 {
@@ -839,7 +940,67 @@
               }
             },
             {
+              "name": "isMustBeOverridden",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isMustCallSuper",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isNonVirtual",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isProtected",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
               "name": "isStatic",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isUseResult",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isVisibleForOverriding",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
@@ -1004,6 +1165,15 @@
                 },
                 {
                   "name": "isExperimental",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isInternal",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -1263,6 +1433,15 @@
                 },
                 {
                   "name": "isExperimental",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isInternal",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -3351,6 +3530,15 @@
                 },
                 {
                   "name": "isExperimental",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isInternal",
                   "type": {
                     "kind": "interface",
                     "name": "bool",

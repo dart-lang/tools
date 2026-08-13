@@ -25,6 +25,26 @@ extension FormalParameterElementExtension on FormalParameterElement {
 
 extension ElementAnnotationListExtension on List<ElementAnnotation> {
   bool get hasVisibleForTesting => any((a) => a.isVisibleForTesting);
+  bool get hasProtected => any((a) => a.isProtected);
+  bool get hasMustCallSuper => any((a) => a.isMustCallSuper);
+  bool get hasVisibleForOverriding => any((a) => a.isVisibleForOverriding);
+  bool get hasNonVirtual => any((a) => a.isNonVirtual);
+  bool get hasMustBeOverridden => any((a) => a.isMustBeOverridden);
+  bool get hasUseResult => any((a) => a.isUseResult);
+  bool get hasInternal => any((a) => a.isInternal);
+  bool get hasImmutable => any((a) => a.isImmutable);
+}
+
+extension MetadataExtension on Metadata {
+  bool get hasVisibleForTesting => annotations.hasVisibleForTesting;
+  bool get hasProtected => annotations.hasProtected;
+  bool get hasMustCallSuper => annotations.hasMustCallSuper;
+  bool get hasVisibleForOverriding => annotations.hasVisibleForOverriding;
+  bool get hasNonVirtual => annotations.hasNonVirtual;
+  bool get hasMustBeOverridden => annotations.hasMustBeOverridden;
+  bool get hasUseResult => annotations.hasUseResult;
+  bool get hasInternal => annotations.hasInternal;
+  bool get hasImmutable => annotations.hasImmutable;
 }
 
 extension IterableIterableExtension on Iterable<Iterable<Object?>> {

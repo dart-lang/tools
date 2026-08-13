@@ -230,9 +230,6 @@ final class _ApiBuilder {
     ),
   };
 
-  bool _isVisibleForTesting(Element element) =>
-      element.nonSynthetic.metadata.hasVisibleForTesting;
-
   ApiType _describeType(DartType type) {
     final isNullable = _isNullable(type.nullabilitySuffix);
     switch (type) {
@@ -427,7 +424,9 @@ final class _ApiBuilder {
       methods: methods,
       isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+      isInternal: element.nonSynthetic.metadata.hasInternal,
+      isImmutable: element.nonSynthetic.metadata.hasImmutable,
     );
   }
 
@@ -455,7 +454,8 @@ final class _ApiBuilder {
       methods: methods,
       isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+      isInternal: element.nonSynthetic.metadata.hasInternal,
     );
   }
 
@@ -488,15 +488,23 @@ final class _ApiBuilder {
       methods: methods,
       isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+      isInternal: element.nonSynthetic.metadata.hasInternal,
     );
   }
+
+  bool _hasAnnotation(
+    ExecutableElement element,
+    bool Function(Metadata metadata) predicate,
+  ) =>
+      predicate(element.nonSynthetic.metadata) ||
+      (element is PropertyAccessorElement &&
+          predicate(element.variable.nonSynthetic.metadata));
 
   ApiExecutable _buildExecutable(
     ExecutableElement element, {
     required ApiDeclarationStatus status,
   }) {
-    final nonSyntheticElement = element.nonSynthetic;
     final formalParameters = element.type.formalParameters;
 
     final kind = switch (element) {
@@ -540,9 +548,22 @@ final class _ApiBuilder {
       isStatic: element.isStatic,
       isConst: isConst,
       isEnumConstant: isEnumConstant,
-      isDeprecated: nonSyntheticElement.metadata.hasDeprecated,
-      isExperimental: nonSyntheticElement.metadata.hasExperimental,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      isProtected: _hasAnnotation(element, (m) => m.hasProtected),
+      isMustCallSuper: _hasAnnotation(element, (m) => m.hasMustCallSuper),
+      isVisibleForOverriding: _hasAnnotation(
+        element,
+        (m) => m.hasVisibleForOverriding,
+      ),
+      isNonVirtual: _hasAnnotation(element, (m) => m.hasNonVirtual),
+      isMustBeOverridden: _hasAnnotation(element, (m) => m.hasMustBeOverridden),
+      isUseResult: _hasAnnotation(element, (m) => m.hasUseResult),
+      isDeprecated: _hasAnnotation(element, (m) => m.hasDeprecated),
+      isExperimental: _hasAnnotation(element, (m) => m.hasExperimental),
+      isVisibleForTesting: _hasAnnotation(
+        element,
+        (m) => m.hasVisibleForTesting,
+      ),
+      isInternal: _hasAnnotation(element, (m) => m.hasInternal),
     );
   }
 
@@ -557,7 +578,8 @@ final class _ApiBuilder {
     aliasedType: _describeType(element.aliasedType),
     isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
     isExperimental: element.nonSynthetic.metadata.hasExperimental,
-    isVisibleForTesting: _isVisibleForTesting(element),
+    isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+    isInternal: element.nonSynthetic.metadata.hasInternal,
   );
 }
 
