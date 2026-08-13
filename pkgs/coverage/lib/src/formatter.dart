@@ -34,9 +34,11 @@ class LcovFormatter implements Formatter {
 
   @override
   Future<String> format(Map<String, Map<int, int>> hitmap) {
-    return Future.value(hitmap
-        .map((key, value) => MapEntry(key, HitMap(value)))
-        .formatLcov(resolver, basePath: basePath, reportOn: reportOn));
+    return Future.value(
+      hitmap
+          .map((key, value) => MapEntry(key, HitMap(value)))
+          .formatLcov(resolver, basePath: basePath, reportOn: reportOn),
+    );
   }
 }
 
@@ -51,8 +53,12 @@ class PrettyPrintFormatter implements Formatter {
   ///
   /// If [reportOn] is provided, coverage report output is limited to files
   /// prefixed with one of the paths included.
-  PrettyPrintFormatter(this.resolver, this.loader,
-      {this.reportOn, this.reportFuncs = false});
+  PrettyPrintFormatter(
+    this.resolver,
+    this.loader, {
+    this.reportOn,
+    this.reportFuncs = false,
+  });
 
   final Resolver resolver;
   final Loader loader;
@@ -61,9 +67,14 @@ class PrettyPrintFormatter implements Formatter {
 
   @override
   Future<String> format(Map<String, Map<int, int>> hitmap) {
-    return hitmap.map((key, value) => MapEntry(key, HitMap(value))).prettyPrint(
-        resolver, loader,
-        reportOn: reportOn, reportFuncs: reportFuncs);
+    return hitmap
+        .map((key, value) => MapEntry(key, HitMap(value)))
+        .prettyPrint(
+          resolver,
+          loader,
+          reportOn: reportOn,
+          reportFuncs: reportFuncs,
+        );
   }
 }
 
@@ -175,16 +186,17 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
       }
       if (reportBranches && v.branchHits == null) {
         throw StateError(
-            'Branch coverage formatting was requested, but the hit map is '
-            'missing branch coverage information. Did you run '
-            'collect_coverage with the --branch-coverage flag?');
+          'Branch coverage formatting was requested, but the hit map is '
+          'missing branch coverage information. Did you run '
+          'collect_coverage with the --branch-coverage flag?',
+        );
       }
 
       final hits = reportFuncs
           ? v.funcHits!
           : reportBranches
-              ? v.branchHits!
-              : v.lineHits;
+          ? v.branchHits!
+          : v.lineHits;
       buf.writeln(source);
       for (var line = 1; line <= lines.length; line++) {
         var prefix = _prefix;
