@@ -16,14 +16,19 @@ import 'format_coverage.dart' as format_coverage;
 
 final _allProcesses = <Process>[];
 
-Future<void> _dartRun(List<String> args,
-    {required void Function(String) onStdout,
-    required void Function(String) onStderr}) async {
+Future<void> _dartRun(
+  List<String> args, {
+  required void Function(String) onStdout,
+  required void Function(String) onStderr,
+}) async {
   final process = await Process.start(Platform.executable, args);
   _allProcesses.add(process);
 
   void listen(
-      Stream<List<int>> stream, IOSink sink, void Function(String) onLine) {
+    Stream<List<int>> stream,
+    IOSink sink,
+    void Function(String) onLine,
+  ) {
     final broadStream = stream.asBroadcastStream();
     broadStream.listen(sink.add);
     broadStream.lines().listen(onLine);
@@ -57,7 +62,8 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
   )
   ..addOption(
     'package-name',
-    help: 'Name of the package to test. '
+    help:
+        'Name of the package to test. '
         'Deduced from --package if not provided. '
         'DEPRECATED: use --scope-output',
   )
@@ -68,8 +74,11 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
     abbr: 'o',
     help: 'Output directory. Defaults to <package-dir>/coverage.',
   )
-  ..addOption('test',
-      help: 'Test script to run.', defaultsTo: defaultOptions.testScript)
+  ..addOption(
+    'test',
+    help: 'Test script to run.',
+    defaultsTo: defaultOptions.testScript,
+  )
   ..addFlag(
     'function-coverage',
     abbr: 'f',
@@ -86,12 +95,15 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
     'fail-under',
     help: 'Fail if coverage is less than the given percentage (0-100)',
   )
-  ..addMultiOption('scope-output',
-      defaultsTo: defaultOptions.scopeOutput,
-      help: 'restrict coverage results so that only scripts that start with '
-          'the provided package path are considered. Defaults to the name of '
-          'the current package (including all subpackages, if this is a '
-          'workspace).')
+  ..addMultiOption(
+    'scope-output',
+    defaultsTo: defaultOptions.scopeOutput,
+    help:
+        'restrict coverage results so that only scripts that start with '
+        'the provided package path are considered. Defaults to the name of '
+        'the current package (including all subpackages, if this is a '
+        'workspace).',
+  )
   ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
 
 class Flags {
@@ -120,7 +132,9 @@ class Flags {
 
 @visibleForTesting
 Future<Flags> parseArgs(
-    List<String> arguments, CoverageOptions defaultOptions) async {
+  List<String> arguments,
+  CoverageOptions defaultOptions,
+) async {
   final parser = _createArgParser(defaultOptions);
   final args = parser.parse(arguments);
 

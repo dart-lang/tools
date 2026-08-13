@@ -27,8 +27,10 @@ void main() {
     });
 
     test('format coverage', () {
-      final formattedCoverage =
-          format_coverage.parseArgs(formatCoverageArgs, defaults);
+      final formattedCoverage = format_coverage.parseArgs(
+        formatCoverageArgs,
+        defaults,
+      );
 
       expect(formattedCoverage.output, isNull);
       expect(formattedCoverage.packagePath, defaults.packageDirectory);
@@ -37,10 +39,14 @@ void main() {
     test('test with coverage', () async {
       final testCoverage = await test_with_coverage.parseArgs([], defaults);
 
-      expect(path.canonicalize(testCoverage.packageDir),
-          path.canonicalize(defaults.packageDirectory));
-      expect(path.canonicalize(testCoverage.outDir),
-          path.canonicalize('coverage'));
+      expect(
+        path.canonicalize(testCoverage.packageDir),
+        path.canonicalize(defaults.packageDirectory),
+      );
+      expect(
+        path.canonicalize(testCoverage.outDir),
+        path.canonicalize('coverage'),
+      );
       expect(testCoverage.testScript, defaults.testScript);
       expect(testCoverage.functionCoverage, defaults.functionCoverage);
       expect(testCoverage.branchCoverage, defaults.branchCoverage);
@@ -55,29 +61,43 @@ void main() {
 
     // Parse arguments with empty command line args
     final collectedCoverage = collect_coverage.parseArgs([], configuredOptions);
-    final formattedCoverage =
-        format_coverage.parseArgs(formatCoverageArgs, configuredOptions);
-    final testCoverage =
-        await test_with_coverage.parseArgs([], configuredOptions);
+    final formattedCoverage = format_coverage.parseArgs(
+      formatCoverageArgs,
+      configuredOptions,
+    );
+    final testCoverage = await test_with_coverage.parseArgs(
+      [],
+      configuredOptions,
+    );
 
     // Verify collect coverage yaml values
     expect(collectedCoverage.scopedOutput, ['lib', 'src']);
     expect(collectedCoverage.functionCoverage, isTrue);
     expect(collectedCoverage.branchCoverage, isFalse);
-    expect(path.canonicalize(collectedCoverage.out!),
-        path.canonicalize('var/coverage_data/coverage.json'));
+    expect(
+      path.canonicalize(collectedCoverage.out!),
+      path.canonicalize('var/coverage_data/coverage.json'),
+    );
 
     // Verify format coverage yaml values
-    expect(path.canonicalize(formattedCoverage.output!),
-        path.canonicalize('var/coverage_data/lcov.info'));
-    expect(path.canonicalize(formattedCoverage.packagePath),
-        path.canonicalize('test/test_files'));
+    expect(
+      path.canonicalize(formattedCoverage.output!),
+      path.canonicalize('var/coverage_data/lcov.info'),
+    );
+    expect(
+      path.canonicalize(formattedCoverage.packagePath),
+      path.canonicalize('test/test_files'),
+    );
 
     // Verify test with coverage yaml values
-    expect(path.canonicalize(testCoverage.packageDir),
-        path.canonicalize('test/test_files'));
-    expect(path.canonicalize(testCoverage.outDir),
-        path.canonicalize('var/coverage_data'));
+    expect(
+      path.canonicalize(testCoverage.packageDir),
+      path.canonicalize('test/test_files'),
+    );
+    expect(
+      path.canonicalize(testCoverage.outDir),
+      path.canonicalize('var/coverage_data'),
+    );
     expect(testCoverage.testScript, 'test1');
     expect(testCoverage.functionCoverage, isTrue);
     expect(testCoverage.branchCoverage, isFalse);
@@ -91,19 +111,29 @@ void main() {
       ).coverageOptions;
 
       // Parse arguments with empty command line args
-      final collectedCoverage =
-          collect_coverage.parseArgs([], configuredOptions);
-      final testCoverage =
-          await test_with_coverage.parseArgs([], configuredOptions);
-      final formattedCoverage =
-          format_coverage.parseArgs([], configuredOptions);
+      final collectedCoverage = collect_coverage.parseArgs(
+        [],
+        configuredOptions,
+      );
+      final testCoverage = await test_with_coverage.parseArgs(
+        [],
+        configuredOptions,
+      );
+      final formattedCoverage = format_coverage.parseArgs(
+        [],
+        configuredOptions,
+      );
 
-      expect(path.canonicalize(collectedCoverage.out!),
-          path.canonicalize('var/coverage_data/custom_coverage/coverage.json'));
+      expect(
+        path.canonicalize(collectedCoverage.out!),
+        path.canonicalize('var/coverage_data/custom_coverage/coverage.json'),
+      );
       expect(collectedCoverage.scopedOutput, ['lib', 'test']);
       expect(collectedCoverage.functionCoverage, isFalse);
-      expect(path.canonicalize(formattedCoverage.output!),
-          path.canonicalize('var/coverage_data/custom_coverage/lcov.info'));
+      expect(
+        path.canonicalize(formattedCoverage.output!),
+        path.canonicalize('var/coverage_data/custom_coverage/lcov.info'),
+      );
       expect(testCoverage.scopeOutput, ['lib', 'test']);
     });
 
@@ -113,29 +143,43 @@ void main() {
       ).coverageOptions;
 
       // Parse arguments with empty command line args
-      final collectedCoverage =
-          collect_coverage.parseArgs([], configuredOptions);
-      final formattedCoverage =
-          format_coverage.parseArgs([], configuredOptions);
-      final testCoverage =
-          await test_with_coverage.parseArgs([], configuredOptions);
+      final collectedCoverage = collect_coverage.parseArgs(
+        [],
+        configuredOptions,
+      );
+      final formattedCoverage = format_coverage.parseArgs(
+        [],
+        configuredOptions,
+      );
+      final testCoverage = await test_with_coverage.parseArgs(
+        [],
+        configuredOptions,
+      );
 
       // Verify collect coverage yaml values
       expect(collectedCoverage.scopedOutput, ['lib', 'tools']);
       expect(collectedCoverage.branchCoverage, isFalse);
       expect(collectedCoverage.functionCoverage, isTrue);
-      expect(path.canonicalize(collectedCoverage.out!),
-          path.canonicalize('var/coverage_data/custom_lcov/coverage.json'));
+      expect(
+        path.canonicalize(collectedCoverage.out!),
+        path.canonicalize('var/coverage_data/custom_lcov/coverage.json'),
+      );
 
       // Verify format coverage yaml values
-      expect(path.canonicalize(formattedCoverage.output!),
-          path.canonicalize('var/coverage_data/custom_lcov/lcov.info'));
-      expect(path.canonicalize(formattedCoverage.packagePath),
-          path.canonicalize('test/test_coverage_options'));
+      expect(
+        path.canonicalize(formattedCoverage.output!),
+        path.canonicalize('var/coverage_data/custom_lcov/lcov.info'),
+      );
+      expect(
+        path.canonicalize(formattedCoverage.packagePath),
+        path.canonicalize('test/test_coverage_options'),
+      );
 
       // Verify test with coverage yaml values
-      expect(path.canonicalize(testCoverage.outDir),
-          path.canonicalize('var/coverage_data/custom_lcov'));
+      expect(
+        path.canonicalize(testCoverage.outDir),
+        path.canonicalize('var/coverage_data/custom_lcov'),
+      );
       expect(testCoverage.testScript, 'custom_test');
       expect(testCoverage.functionCoverage, isTrue);
     });
@@ -166,15 +210,19 @@ void main() {
       ], configuredOptions);
 
       // Verify collect coverage command line args
-      expect(collectedCoverage.out,
-          path.normalize('var/coverage_data/coverage.json'));
+      expect(
+        collectedCoverage.out,
+        path.normalize('var/coverage_data/coverage.json'),
+      );
       expect(collectedCoverage.scopedOutput, ['lib']);
       expect(collectedCoverage.functionCoverage, isFalse);
       expect(collectedCoverage.branchCoverage, isTrue);
 
       // Verify format coverage command line args
-      expect(formattedCoverage.output,
-          path.normalize('var/coverage_data/out_test.info'));
+      expect(
+        formattedCoverage.output,
+        path.normalize('var/coverage_data/out_test.info'),
+      );
       expect(formattedCoverage.packagePath, '../code_builder');
 
       // Verify test with coverage command line args
@@ -225,9 +273,10 @@ void main() {
 
   test('format exception when empty yaml file', () {
     expect(
-        () => CoverageOptionsProvider(
-              filePath: 'test/test_coverage_options/empty.yaml',
-            ),
-        throwsFormatException);
+      () => CoverageOptionsProvider(
+        filePath: 'test/test_coverage_options/empty.yaml',
+      ),
+      throwsFormatException,
+    );
   });
 }

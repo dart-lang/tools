@@ -25,34 +25,43 @@ Future<void> main(List<String> arguments) async {
 
   final out = options.out == null ? stdout : File(options.out!).openWrite();
 
-  await Chain.capture(() async {
-    final coverage = await collect(options.serviceUri, options.resume,
-        options.waitPaused, options.includeDart, options.scopedOutput,
+  await Chain.capture(
+    () async {
+      final coverage = await collect(
+        options.serviceUri,
+        options.resume,
+        options.waitPaused,
+        options.includeDart,
+        options.scopedOutput,
         timeout: options.timeout,
         functionCoverage: options.functionCoverage,
-        branchCoverage: options.branchCoverage);
-    out.write(json.encode(coverage));
-    await out.close();
-  }, onError: (dynamic error, Chain chain) {
-    stderr.writeln(error);
-    stderr.writeln(chain.terse);
-    // See http://www.retro11.de/ouxr/211bsd/usr/include/sysexits.h.html
-    // EX_SOFTWARE
-    exit(70);
-  });
+        branchCoverage: options.branchCoverage,
+      );
+      out.write(json.encode(coverage));
+      await out.close();
+    },
+    onError: (dynamic error, Chain chain) {
+      stderr.writeln(error);
+      stderr.writeln(chain.terse);
+      // See http://www.retro11.de/ouxr/211bsd/usr/include/sysexits.h.html
+      // EX_SOFTWARE
+      exit(70);
+    },
+  );
 }
 
 class Options {
   Options(
-      this.serviceUri,
-      this.out,
-      this.timeout,
-      this.waitPaused,
-      this.resume,
-      this.includeDart,
-      this.functionCoverage,
-      this.branchCoverage,
-      this.scopedOutput);
+    this.serviceUri,
+    this.out,
+    this.timeout,
+    this.waitPaused,
+    this.resume,
+    this.includeDart,
+    this.functionCoverage,
+    this.branchCoverage,
+    this.scopedOutput,
+  );
 
   final Uri serviceUri;
   final String? out;
@@ -68,39 +77,64 @@ class Options {
 @visibleForTesting
 Options parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser()
-    ..addOption('host',
-        abbr: 'H',
-        help: 'remote VM host. DEPRECATED: use --uri',
-        defaultsTo: '127.0.0.1')
-    ..addOption('port',
-        abbr: 'p',
-        help: 'remote VM port. DEPRECATED: use --uri',
-        defaultsTo: '8181')
+    ..addOption(
+      'host',
+      abbr: 'H',
+      help: 'remote VM host. DEPRECATED: use --uri',
+      defaultsTo: '127.0.0.1',
+    )
+    ..addOption(
+      'port',
+      abbr: 'p',
+      help: 'remote VM port. DEPRECATED: use --uri',
+      defaultsTo: '8181',
+    )
     ..addOption('uri', abbr: 'u', help: 'VM observatory service URI')
     ..addOption('out', abbr: 'o', help: 'output: may be file or stdout')
-    ..addOption('connect-timeout',
-        abbr: 't', help: 'connect timeout in seconds')
-    ..addMultiOption('scope-output',
-        defaultsTo: defaultOptions.scopeOutput,
-        help: 'restrict coverage results so that only scripts that start with '
-            'the provided package path are considered')
-    ..addFlag('wait-paused',
-        abbr: 'w',
-        defaultsTo: false,
-        help: 'wait for all isolates to be paused before collecting coverage')
-    ..addFlag('resume-isolates',
-        abbr: 'r', defaultsTo: false, help: 'resume all isolates on exit')
-    ..addFlag('include-dart',
-        abbr: 'd', defaultsTo: false, help: 'include "dart:" libraries')
-    ..addFlag('function-coverage',
-        abbr: 'f',
-        defaultsTo: defaultOptions.functionCoverage,
-        help: 'Collect function coverage info')
-    ..addFlag('branch-coverage',
-        abbr: 'b',
-        defaultsTo: defaultOptions.branchCoverage,
-        help: 'Collect branch coverage info (Dart VM must also be run with '
-            '--branch-coverage for this to work)')
+    ..addOption(
+      'connect-timeout',
+      abbr: 't',
+      help: 'connect timeout in seconds',
+    )
+    ..addMultiOption(
+      'scope-output',
+      defaultsTo: defaultOptions.scopeOutput,
+      help:
+          'restrict coverage results so that only scripts that start with '
+          'the provided package path are considered',
+    )
+    ..addFlag(
+      'wait-paused',
+      abbr: 'w',
+      defaultsTo: false,
+      help: 'wait for all isolates to be paused before collecting coverage',
+    )
+    ..addFlag(
+      'resume-isolates',
+      abbr: 'r',
+      defaultsTo: false,
+      help: 'resume all isolates on exit',
+    )
+    ..addFlag(
+      'include-dart',
+      abbr: 'd',
+      defaultsTo: false,
+      help: 'include "dart:" libraries',
+    )
+    ..addFlag(
+      'function-coverage',
+      abbr: 'f',
+      defaultsTo: defaultOptions.functionCoverage,
+      help: 'Collect function coverage info',
+    )
+    ..addFlag(
+      'branch-coverage',
+      abbr: 'b',
+      defaultsTo: defaultOptions.branchCoverage,
+      help:
+          'Collect branch coverage info (Dart VM must also be run with '
+          '--branch-coverage for this to work)',
+    )
     ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
   final args = parser.parse(arguments);
@@ -141,8 +175,9 @@ Options parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
       (outPath == null && defaultOptions.outputDirectory == null)) {
     out = null;
   } else {
-    final outFilePath = p.normalize(outPath ??
-        p.absolute(defaultOptions.outputDirectory!, 'coverage.json'));
+    final outFilePath = p.normalize(
+      outPath ?? p.absolute(defaultOptions.outputDirectory!, 'coverage.json'),
+    );
 
     final outFile = File(outFilePath);
     if (!FileSystemEntity.isDirectorySync(outFilePath) &&
