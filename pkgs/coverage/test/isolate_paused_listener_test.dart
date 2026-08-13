@@ -11,32 +11,22 @@ import 'package:vm_service/vm_service.dart';
 
 import 'collect_coverage_mock_test.mocks.dart';
 
-Event event(
-  String id, {
-  String? kind,
-  String? groupId,
-  String? name,
-}) =>
-    Event(
-        kind: kind,
-        isolate: IsolateRef(
-          isolateGroupId: groupId,
-          id: id,
-          name: name,
-        ));
+Event event(String id, {String? kind, String? groupId, String? name}) => Event(
+  kind: kind,
+  isolate: IsolateRef(isolateGroupId: groupId, id: id, name: name),
+);
 
 Isolate isolate(
   String id, {
   String? groupId,
   String? name,
   String? pauseKind,
-}) =>
-    Isolate(
-      isolateGroupId: groupId,
-      id: id,
-      name: name,
-      pauseEvent: pauseKind == null ? null : Event(kind: pauseKind),
-    );
+}) => Isolate(
+  isolateGroupId: groupId,
+  id: id,
+  name: name,
+  pauseEvent: pauseKind == null ? null : Event(kind: pauseKind),
+);
 
 (MockVmService, StreamController<Event>) createServiceAndEventStreams() {
   final service = MockVmService();
@@ -142,8 +132,10 @@ void main() {
     expect(group.noLiveIsolates, isFalse);
 
     group.start(IsolateRef(id: 'b'));
-    expect(group.running.map((iso) => iso.id).toList(),
-        unorderedEquals(['a', 'b']));
+    expect(
+      group.running.map((iso) => iso.id).toList(),
+      unorderedEquals(['a', 'b']),
+    );
     expect(group.paused, isEmpty);
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
@@ -162,22 +154,28 @@ void main() {
 
     group.pause(IsolateRef(id: 'c'));
     expect(group.running.map((iso) => iso.id).toList(), unorderedEquals(['b']));
-    expect(group.paused.map((iso) => iso.id).toList(),
-        unorderedEquals(['a', 'c']));
+    expect(
+      group.paused.map((iso) => iso.id).toList(),
+      unorderedEquals(['a', 'c']),
+    );
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
     group.start(IsolateRef(id: 'c'));
-    expect(group.running.map((iso) => iso.id).toList(),
-        unorderedEquals(['b', 'c']));
+    expect(
+      group.running.map((iso) => iso.id).toList(),
+      unorderedEquals(['b', 'c']),
+    );
     expect(group.paused.map((iso) => iso.id).toList(), unorderedEquals(['a']));
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
     group.pause(IsolateRef(id: 'c'));
     expect(group.running.map((iso) => iso.id).toList(), unorderedEquals(['b']));
-    expect(group.paused.map((iso) => iso.id).toList(),
-        unorderedEquals(['a', 'c']));
+    expect(
+      group.paused.map((iso) => iso.id).toList(),
+      unorderedEquals(['a', 'c']),
+    );
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
@@ -189,8 +187,10 @@ void main() {
 
     group.pause(IsolateRef(id: 'b'));
     expect(group.running, isEmpty);
-    expect(group.paused.map((iso) => iso.id).toList(),
-        unorderedEquals(['b', 'c']));
+    expect(
+      group.paused.map((iso) => iso.id).toList(),
+      unorderedEquals(['b', 'c']),
+    );
     expect(group.noRunningIsolates, isTrue);
     expect(group.noLiveIsolates, isFalse);
 
@@ -242,8 +242,9 @@ void main() {
       (service, allEvents) = createServiceAndEventStreams();
 
       isolates = Completer<List<Isolate>>();
-      when(service.getVM())
-          .thenAnswer((_) async => VM(isolates: await isolates.future));
+      when(
+        service.getVM(),
+      ).thenAnswer((_) async => VM(isolates: await isolates.future));
       when(service.getIsolate(any)).thenAnswer((invocation) async {
         final id = invocation.positionalArguments[0];
         return (await isolates.future).firstWhere((iso) => iso.id == id);
@@ -346,12 +347,7 @@ void main() {
       exitEvent('B');
 
       await endTest();
-      expect(received, [
-        'Start A',
-        'Pause A',
-        'Start B',
-        'Exit B',
-      ]);
+      expect(received, ['Start A', 'Pause A', 'Start B', 'Exit B']);
     });
 
     test('pause event after exit is ignored', () async {
@@ -361,10 +357,7 @@ void main() {
       pauseEvent('A');
 
       await endTest();
-      expect(received, [
-        'Start A',
-        'Exit A',
-      ]);
+      expect(received, ['Start A', 'Exit A']);
     });
 
     test('event deduping', () async {
@@ -409,13 +402,7 @@ void main() {
       otherEvent('C', EventKind.kInspect);
 
       await endTest();
-      expect(received, [
-        'Start A',
-        'Pause A',
-        'Exit A',
-        'Start B',
-        'Exit B',
-      ]);
+      expect(received, ['Start A', 'Pause A', 'Exit A', 'Start B', 'Exit B']);
     });
 
     test('exit event during pause callback', () async {
@@ -431,19 +418,11 @@ void main() {
         await Future<void>.delayed(Duration.zero);
       }
 
-      expect(received, [
-        'Start A',
-        'Pause A',
-      ]);
+      expect(received, ['Start A', 'Pause A']);
 
       delayingTheOnPauseCallback.complete();
       await endTest();
-      expect(received, [
-        'Start A',
-        'Pause A',
-        'Pause done A',
-        'Exit A',
-      ]);
+      expect(received, ['Start A', 'Pause A', 'Pause done A', 'Exit A']);
     });
 
     test('exit event during pause callback, event deduping', () async {
@@ -463,19 +442,11 @@ void main() {
         await Future<void>.delayed(Duration.zero);
       }
 
-      expect(received, [
-        'Start A',
-        'Pause A',
-      ]);
+      expect(received, ['Start A', 'Pause A']);
 
       delayingTheOnPauseCallback.complete();
       await endTest();
-      expect(received, [
-        'Start A',
-        'Pause A',
-        'Pause done A',
-        'Exit A',
-      ]);
+      expect(received, ['Start A', 'Pause A', 'Pause done A', 'Exit A']);
     });
   });
 
@@ -491,27 +462,25 @@ void main() {
     late Set<String> resumeFailures;
     Exception Function(String id)? resumeErrorBuilder;
 
-    void startEvent(String id, String groupId, [String? name]) =>
-        allEvents.add(event(
-          id,
-          kind: EventKind.kIsolateStart,
-          groupId: groupId,
-          name: name ?? id,
-        ));
-    void exitEvent(String id, String groupId, [String? name]) =>
-        allEvents.add(event(
-          id,
-          kind: EventKind.kIsolateExit,
-          groupId: groupId,
-          name: name ?? id,
-        ));
-    void pauseEvent(String id, String groupId, [String? name]) =>
-        allEvents.add(event(
-          id,
-          kind: EventKind.kPauseExit,
-          groupId: groupId,
-          name: name ?? id,
-        ));
+    void startEvent(String id, String groupId, [String? name]) => allEvents.add(
+      event(
+        id,
+        kind: EventKind.kIsolateStart,
+        groupId: groupId,
+        name: name ?? id,
+      ),
+    );
+    void exitEvent(String id, String groupId, [String? name]) => allEvents.add(
+      event(
+        id,
+        kind: EventKind.kIsolateExit,
+        groupId: groupId,
+        name: name ?? id,
+      ),
+    );
+    void pauseEvent(String id, String groupId, [String? name]) => allEvents.add(
+      event(id, kind: EventKind.kPauseExit, groupId: groupId, name: name ?? id),
+    );
 
     Future<void> endTest() async {
       await allIsolatesExited;
@@ -520,50 +489,58 @@ void main() {
 
     setUp(() {
       lastError = null;
-      Zone.current.fork(
-        specification: ZoneSpecification(
-          handleUncaughtError: (Zone self, ZoneDelegate parent, Zone zone,
-              Object error, StackTrace stackTrace) {
-            lastError = error;
-          },
-        ),
-      ).runGuarded(() {
-        (service, allEvents) = createServiceAndEventStreams();
+      Zone.current
+          .fork(
+            specification: ZoneSpecification(
+              handleUncaughtError:
+                  (
+                    Zone self,
+                    ZoneDelegate parent,
+                    Zone zone,
+                    Object error,
+                    StackTrace stackTrace,
+                  ) {
+                    lastError = error;
+                  },
+            ),
+          )
+          .runGuarded(() {
+            (service, allEvents) = createServiceAndEventStreams();
 
-        // Backfill was tested above, so this test does everything using events,
-        // for simplicity. No need to report any isolates.
-        when(service.getVM()).thenAnswer((_) async => VM());
+            // Backfill was tested above, so this test does everything using
+            // events, for simplicity. No need to report any isolates.
+            when(service.getVM()).thenAnswer((_) async => VM());
 
-        received = <String>[];
-        delayTheOnPauseCallback = null;
-        resumeFailures = <String>{};
-        resumeErrorBuilder = null;
-        when(service.resume(any)).thenAnswer((invocation) async {
-          final id = invocation.positionalArguments[0] as String;
-          received.add('Resume $id');
-          if (resumeFailures.contains(id)) {
-            throw resumeErrorBuilder?.call(id) ??
-                RPCError('resume', -32000, id);
-          }
-          return Success();
-        });
+            received = <String>[];
+            delayTheOnPauseCallback = null;
+            resumeFailures = <String>{};
+            resumeErrorBuilder = null;
+            when(service.resume(any)).thenAnswer((invocation) async {
+              final id = invocation.positionalArguments[0] as String;
+              received.add('Resume $id');
+              if (resumeFailures.contains(id)) {
+                throw resumeErrorBuilder?.call(id) ??
+                    RPCError('resume', -32000, id);
+              }
+              return Success();
+            });
 
-        stopped = false;
-        allIsolatesExited = IsolatePausedListener(
-          service,
-          (iso, isLastIsolateInGroup) async {
-            expect(stopped, isFalse);
-            received
-                .add('Pause ${iso.id}. Collect group ${iso.isolateGroupId}? '
-                    '${isLastIsolateInGroup ? 'Yes' : 'No'}');
-            if (delayTheOnPauseCallback != null) {
-              await delayTheOnPauseCallback!(iso.id!);
-              received.add('Pause done ${iso.id}');
-            }
-          },
-          (message) => received.add(message),
-        ).waitUntilAllExited();
-      });
+            stopped = false;
+            allIsolatesExited = IsolatePausedListener(service, (
+              iso,
+              isLastIsolateInGroup,
+            ) async {
+              expect(stopped, isFalse);
+              received.add(
+                'Pause ${iso.id}. Collect group ${iso.isolateGroupId}? '
+                '${isLastIsolateInGroup ? 'Yes' : 'No'}',
+              );
+              if (delayTheOnPauseCallback != null) {
+                await delayTheOnPauseCallback!(iso.id!);
+                received.add('Pause done ${iso.id}');
+              }
+            }, (message) => received.add(message)).waitUntilAllExited();
+          });
     });
 
     test('ordinary flows', () async {
@@ -739,10 +716,7 @@ void main() {
 
       await endTest();
 
-      expect(received, [
-        'Pause A. Collect group 1? Yes',
-        'Resume A',
-      ]);
+      expect(received, ['Pause A. Collect group 1? Yes', 'Resume A']);
     });
 
     test('all other isolates exit before main isolate pauses', () async {
@@ -766,8 +740,7 @@ void main() {
       ]);
     });
 
-    test(
-        'all other isolates exit before main isolate pauses, then main '
+    test('all other isolates exit before main isolate pauses, then main '
         'starts another isolate, then pauses before they exit', () async {
       startEvent('A', '1', 'main');
       startEvent('B', '1');
@@ -797,8 +770,7 @@ void main() {
       ]);
     });
 
-    test(
-        'all other isolates exit before main isolate pauses, then main '
+    test('all other isolates exit before main isolate pauses, then main '
         'starts another isolate, then pauses before they pause', () async {
       startEvent('A', '1', 'main');
       startEvent('B', '1');
@@ -956,14 +928,17 @@ void main() {
         'RPCError ${RPCErrorKind.kIsolateMustBePaused.code} '
             '(isolate must be paused)',
         (String id) => RPCError(
-            'resume',
-            RPCErrorKind.kIsolateMustBePaused.code,
-            'Isolate must be paused: $id'),
+          'resume',
+          RPCErrorKind.kIsolateMustBePaused.code,
+          'Isolate must be paused: $id',
+        ),
       ),
       (
         'SentinelException (isolate collected)',
-        (String id) => SentinelException.parse(
-            'resume', {'type': 'Sentinel', 'kind': 'Collected'}),
+        (String id) => SentinelException.parse('resume', {
+          'type': 'Sentinel',
+          'kind': 'Collected',
+        }),
       ),
     ]) {
       test('$description when resuming exited isolate is ignored', () async {
@@ -989,13 +964,15 @@ void main() {
       });
     }
 
-    test(
-        'RPCError ${RPCErrorKind.kIsolateMustBeRunnable.code} '
+    test('RPCError ${RPCErrorKind.kIsolateMustBeRunnable.code} '
         '(isolate must be runnable) when resuming other isolate is not '
         'ignored', () async {
       resumeFailures = {'other'};
-      resumeErrorBuilder = (id) => RPCError('resume',
-          RPCErrorKind.kIsolateMustBeRunnable.code, 'Isolate must be runnable');
+      resumeErrorBuilder = (id) => RPCError(
+        'resume',
+        RPCErrorKind.kIsolateMustBeRunnable.code,
+        'Isolate must be runnable',
+      );
 
       startEvent('main', '1');
       startEvent('other', '2');

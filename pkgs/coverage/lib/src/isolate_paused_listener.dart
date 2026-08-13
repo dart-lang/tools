@@ -12,8 +12,8 @@ import 'util.dart';
 
 typedef SyncIsolateCallback = void Function(IsolateRef isolate);
 typedef AsyncIsolateCallback = Future<void> Function(IsolateRef isolate);
-typedef AsyncIsolatePausedCallback = Future<void> Function(
-    IsolateRef isolate, bool isLastIsolateInGroup);
+typedef AsyncIsolatePausedCallback =
+    Future<void> Function(IsolateRef isolate, bool isLastIsolateInGroup);
 typedef AsyncVmServiceEventCallback = Future<void> Function(Event event);
 typedef SyncErrorLogger = void Function(String message);
 
@@ -133,8 +133,10 @@ class IsolatePausedListener {
     group.exit(isolateRef);
     --_numIsolates;
     if (group.noLiveIsolates && !group.collected) {
-      _log('ERROR: An isolate exited without pausing, causing '
-          'coverage data to be lost for group ${isolateRef.isolateGroupId!}.');
+      _log(
+        'ERROR: An isolate exited without pausing, causing '
+        'coverage data to be lost for group ${isolateRef.isolateGroupId!}.',
+      );
     }
     if (isolateRef.id! == _mainIsolate?.id) {
       // Main isolate exited without pausing.
@@ -176,10 +178,11 @@ extension on Completer {
 ///    if an exit event arrives while [onIsolatePaused] is being awaited.
 ///  - Each callback will only be called once per isolate.
 Future<void> listenToIsolateLifecycleEvents(
-    VmService service,
-    SyncIsolateCallback onIsolateStarted,
-    AsyncIsolateCallback onIsolatePaused,
-    SyncIsolateCallback onIsolateExited) async {
+  VmService service,
+  SyncIsolateCallback onIsolateStarted,
+  AsyncIsolateCallback onIsolatePaused,
+  SyncIsolateCallback onIsolateExited,
+) async {
   final started = <String>{};
   void onStart(IsolateRef isolateRef) {
     if (started.add(isolateRef.id!)) onIsolateStarted(isolateRef);
