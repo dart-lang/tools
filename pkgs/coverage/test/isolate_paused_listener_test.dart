@@ -905,8 +905,10 @@ void main() {
 
     test('SentinelException when resuming main isolate is ignored', () async {
       resumeFailures = {'main'};
-      resumeErrorBuilder = (id) => SentinelException.parse(
-          'resume', {'type': 'Sentinel', 'kind': 'Collected'});
+      resumeErrorBuilder = (id) => SentinelException.parse('resume', {
+        'type': 'Sentinel',
+        'kind': 'Collected',
+      });
 
       startEvent('main', '1');
       startEvent('other', '2');
