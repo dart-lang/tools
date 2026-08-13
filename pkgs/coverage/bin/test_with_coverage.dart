@@ -84,7 +84,15 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
   ..addOption(
     'platform',
     abbr: 'p',
-    help: 'The platform(s) on which to run the tests (e.g. vm, chrome).',
+    help: 'The platform on which to run the tests. Supported: vm, chrome.',
+  )
+  ..addFlag(
+    'include-test-files',
+    defaultsTo: false,
+    help:
+        'Include coverage for test files and other non-library package '
+        'sources. Only applies to web platform runs; VM runs always report '
+        'library coverage only.',
   )
   ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
 
@@ -98,7 +106,8 @@ class Flags {
     this.branchCoverage,
     this.scopeOutput,
     this.failUnder,
-    this.platform, {
+    this.platform,
+    this.includeTestFiles, {
     required this.rest,
   });
 
@@ -111,6 +120,7 @@ class Flags {
   final List<String> scopeOutput;
   final String? failUnder;
   final String? platform;
+  final bool includeTestFiles;
   final List<String> rest;
 }
 
@@ -159,6 +169,18 @@ ${parser.usage}
     );
   }
 
+  const supportedPlatforms = {'vm', 'chrome'};
+  final platform = args.option('platform');
+  if (platform != null && !supportedPlatforms.contains(platform)) {
+    fail(
+      'Unsupported --platform "$platform". Coverage collection is only '
+      'supported on: ${supportedPlatforms.join(', ')}.',
+    );
+  }
+  if (args.flag('function-coverage') && platform == 'chrome') {
+    fail('--function-coverage is not supported for web platforms.');
+  }
+
   return Flags(
     packageDir,
     args.option('out') ?? path.join(packageDir, 'coverage'),
@@ -168,7 +190,8 @@ ${parser.usage}
     args.flag('branch-coverage'),
     args.multiOption('scope-output'),
     args.option('fail-under'),
-    args.option('platform'),
+    platform,
+    args.flag('include-test-files'),
     rest: args.rest,
   );
 }
@@ -208,8 +231,10 @@ Future<void> main(List<String> arguments) async {
 
   var exitCode = 0;
 
-  if (flags.functionCoverage &&
-      (flags.platform == null || flags.platform == 'vm')) {
+  // VM runs use the existing VM-service pause/resume collection flow,
+  // unchanged. Web (chrome) runs delegate to `dart test --coverage`, which is
+  // the only way to collect coverage from a browser.
+  if (flags.platform == null || flags.platform == 'vm') {
     final serviceUriCompleter = Completer<Uri>();
     final process = await Process.start(Platform.executable, [
       if (flags.branchCoverage) '--branch-coverage',
@@ -277,7 +302,8 @@ Future<void> main(List<String> arguments) async {
         'test',
         '--coverage=${tempDir.path}',
         if (flags.branchCoverage) '--branch-coverage',
-        if (flags.platform != null) ...['-p', flags.platform!],
+        '-p',
+        flags.platform!,
         flags.testScript,
         ...flags.rest,
       ];
@@ -320,12 +346,16 @@ Future<void> main(List<String> arguments) async {
           }
 
           final targetUri = uri;
+          // Library code resolves to a package: URI above; anything still on
+          // the file: scheme (test files, tools, ...) is only included when
+          // explicitly requested, matching the VM flow's lib-only reporting.
           final isIncluded =
               scopes.isEmpty ||
               (targetUri.scheme == 'package' &&
                   targetUri.pathSegments.isNotEmpty &&
                   scopes.contains(targetUri.pathSegments.first)) ||
-              (targetUri.scheme == 'file' &&
+              (flags.includeTestFiles &&
+                  targetUri.scheme == 'file' &&
                   scopes.any((scope) {
                     final package = pkgConfig?[scope];
                     if (package != null) {

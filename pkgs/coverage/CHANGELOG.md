@@ -1,9 +1,16 @@
 ## 1.16.0-wip
 
 - Require Dart 3.9.
-- Support collecting and formatting Web (V8 / Chrome) coverage reports in
-  `test_with_coverage` via `-p` / `--platform` flag.
-- Support parsing raw Chrome V8 coverage JSON lists in `HitMap.parseFiles`.
+- Support collecting and formatting web (V8 / Chrome) coverage reports in
+  `test_with_coverage` via the new `-p` / `--platform` flag. Web runs delegate
+  to `dart test --coverage`; VM runs continue to use the existing VM-service
+  collection flow, unchanged. Platforms other than `vm` and `chrome` are
+  rejected, as is `--function-coverage` combined with a web platform.
+- Add an `--include-test-files` flag to `test_with_coverage` (web platform
+  only) that includes coverage for test files and other non-library package
+  sources; by default only library code is reported, matching the VM flow.
+- Support parsing raw Chrome V8 coverage JSON lists in `HitMap.parseFiles`
+  (requires source and source-map providers to produce output).
 - Pre-flight `package:test` verification and `file:` URI normalization using
   `package:package_config`.
 - Fixed a race condition in isolate teardown: ignore the benign errors

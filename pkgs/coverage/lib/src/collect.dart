@@ -180,8 +180,6 @@ Future<Map<String, dynamic>> _getAllCoverage(
       );
     } on SentinelException {
       return;
-    } on RPCError {
-      return;
     }
 
     final coverage = await _processSourceReport(
@@ -283,14 +281,8 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
       return null;
     }
     if (!scripts.containsKey(scriptRef)) {
-      try {
-        scripts[scriptRef] =
-            await service.getObject(isolateRef.id!, scriptRef.id!) as Script;
-      } on SentinelException {
-        return null;
-      } on RPCError {
-        return null;
-      }
+      scripts[scriptRef] =
+          await service.getObject(isolateRef.id!, scriptRef.id!) as Script;
     }
     return scripts[scriptRef];
   }
@@ -304,14 +296,7 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
   );
 
   Future<void> processFunction(FuncRef funcRef) async {
-    late final Func func;
-    try {
-      func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;
-    } on SentinelException {
-      return;
-    } on RPCError {
-      return;
-    }
+    final func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;
     if ((func.implicit ?? false) || (func.isAbstract ?? false)) {
       return;
     }

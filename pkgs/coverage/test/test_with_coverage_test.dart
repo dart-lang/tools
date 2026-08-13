@@ -212,6 +212,53 @@ dependency_overrides:
       expect(libHits![6], greaterThanOrEqualTo(1));
       expect(libHits[14], greaterThanOrEqualTo(1));
       expect(libHits[22], greaterThanOrEqualTo(1));
+      expect(
+        lineHits.keys.where((source) => source.endsWith('_test.dart')),
+        isEmpty,
+        reason: 'test files are excluded without --include-test-files',
+      );
+    },
+  );
+
+  test(
+    'dart run bin/test_with_coverage.dart -p chrome --include-test-files',
+    onPlatform: const {'windows': Skip('Chrome tests skipped on Windows')},
+    timeout: const Timeout(Duration(minutes: 5)),
+    () async {
+      final list = await _runTest([
+        'run',
+        _testWithCoveragePath,
+        '-p',
+        'chrome',
+        '--include-test-files',
+      ]);
+      final sources = list.sources();
+      final lineHits = lineHitsFromSources(sources);
+
+      expect(
+        lineHits.keys.where((source) => source.endsWith('_test.dart')),
+        isNotEmpty,
+        reason: '--include-test-files should include test sources',
+      );
+    },
+  );
+
+  test('dart run bin/test_with_coverage.dart -p firefox is rejected', () async {
+    final process = await _run(['run', _testWithCoveragePath, '-p', 'firefox']);
+    await process.shouldExit(1);
+  });
+
+  test(
+    'dart run bin/test_with_coverage.dart -f -p chrome is rejected',
+    () async {
+      final process = await _run([
+        'run',
+        _testWithCoveragePath,
+        '-f',
+        '-p',
+        'chrome',
+      ]);
+      await process.shouldExit(1);
     },
   );
 }
