@@ -59,7 +59,7 @@ HostedDetails _$HostedDetailsFromJson(Map json) =>
       );
       final val = HostedDetails(
         $checkedConvert('name', (v) => v as String?),
-        $checkedConvert('url', (v) => parseGitUriOrNull(v as String?)),
+        $checkedConvert('url', (v) => _parseUriOrNull(v as String?)),
       );
       return val;
     }, fieldKeyMap: const {'declaredName': 'name'});

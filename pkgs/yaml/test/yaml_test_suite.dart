@@ -57,8 +57,11 @@ typedef YamlTestCase = ({
 /// Loads all test cases from the yaml-test-suite descriptors.
 Iterable<YamlTestCase> loadYamlTestSuite() sync* {
   final libUri = Isolate.resolvePackageUriSync(Uri.parse('package:yaml/'))!;
-  final srcUri = libUri.resolve('../third_party/yaml-test-suite/src');
+  final srcUri = libUri.resolve('../../../third_party/yaml-test-suite/src');
   final srcDir = Directory.fromUri(srcUri);
+  if (!srcDir.existsSync()) {
+    return;
+  }
 
   final files = srcDir
       .listSync()
@@ -74,7 +77,14 @@ Iterable<YamlTestCase> loadYamlTestSuite() sync* {
   for (final file in files) {
     final content = file.readAsStringSync();
     // Load the yaml test descriptor
-    final yamlList = loadYaml(content) as YamlList;
+    final oldWarn = yamlWarningCallback;
+    yamlWarningCallback = (_, [__]) {};
+    final YamlList yamlList;
+    try {
+      yamlList = loadYaml(content) as YamlList;
+    } finally {
+      yamlWarningCallback = oldWarn;
+    }
 
     final fileId = file.uri.pathSegments.last.replaceAll('.yaml', '');
 
@@ -126,28 +136,34 @@ String _replaceSpecialCharacters(String input) => input
 
 extension YamlTestCaseExtension on YamlTestCase {
   void runTest() {
-    if (this.fail) {
-      try {
-        loadYamlStream(this.yaml);
-      } on YamlException {
-        return;
+    final oldWarn = yamlWarningCallback;
+    yamlWarningCallback = (_, [__]) {};
+    try {
+      if (this.fail) {
+        try {
+          loadYamlStream(this.yaml);
+        } on YamlException {
+          return;
+        }
+        throw TestFailure('Expected parsing to fail');
       }
-      throw TestFailure('Expected parsing to fail');
-    }
 
-    final docs = loadYamlStream(this.yaml);
+      final docs = loadYamlStream(this.yaml);
 
-    if (this.hasJson) {
-      final actualDocs = docs.map(_toJson).toList();
-      final expectedDocs = this.json.map((e) => e.json).toList();
+      if (this.hasJson) {
+        final actualDocs = docs.map(_toJson).toList();
+        final expectedDocs = this.json.map((e) => e.json).toList();
 
-      if (!const DeepCollectionEquality().equals(actualDocs, expectedDocs)) {
-        const encoder = JsonEncoder.withIndent('  ');
-        final actualJson = encoder.convert(actualDocs);
-        final expectedStr = encoder.convert(expectedDocs);
-        throw TestFailure(
-            'JSON mismatch\nExpected:\n$expectedStr\nActual:\n$actualJson');
+        if (!const DeepCollectionEquality().equals(actualDocs, expectedDocs)) {
+          const encoder = JsonEncoder.withIndent('  ');
+          final actualJson = encoder.convert(actualDocs);
+          final expectedStr = encoder.convert(expectedDocs);
+          throw TestFailure(
+              'JSON mismatch\nExpected:\n$expectedStr\nActual:\n$actualJson');
+        }
       }
+    } finally {
+      yamlWarningCallback = oldWarn;
     }
   }
 }

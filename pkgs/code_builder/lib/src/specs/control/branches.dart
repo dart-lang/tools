@@ -1,147 +1,106 @@
-// Copyright (c) 2025, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file
+// BSD-style license that can be found in the LICENSE file.
 
 part of '../control.dart';
 
-/// A [Conditional] branch.
-///
-/// Intentionally not exported to avoid confusion
-/// with [Conditional].
-///
-@internal
+/// A condition in a [Branch] (`if` or `else if`).
+abstract class Condition implements Spec {
+  const Condition();
+
+  /// A boolean expression condition: `if (expression)`.
+  static BooleanCondition expression(Expression expression) =>
+      BooleanCondition._(expression);
+
+  /// An if-case pattern matching condition:
+  /// `if (object case pattern [when guard])`.
+  static CaseCondition ifCase(
+    Expression object,
+    Pattern pattern, {
+    Expression? guard,
+  }) => CaseCondition._(object, pattern, guard: guard);
+}
+
+/// A boolean expression condition.
+class BooleanCondition extends Condition {
+  final Expression expression;
+
+  const BooleanCondition._(this.expression);
+
+  @override
+  R accept<R>(covariant ControlVisitor<R> visitor, [R? context]) =>
+      visitor.visitBooleanCondition(this, context);
+}
+
+/// An `if-case` condition: `object case pattern [when guard]`.
+class CaseCondition extends Condition {
+  final Expression object;
+  final Pattern pattern;
+  final Expression? guard;
+
+  const CaseCondition._(this.object, this.pattern, {this.guard});
+
+  @override
+  R accept<R>(covariant ControlVisitor<R> visitor, [R? context]) =>
+      visitor.visitCaseCondition(this, context);
+}
+
+/// A branch within a [Conditional] (`if` or `else if`).
 abstract class Branch implements Built<Branch, BranchBuilder> {
-  Branch._();
   factory Branch([void Function(BranchBuilder) updates]) = _$Branch;
 
-  Expression? get condition;
-  Block get body;
+  Branch._();
 
-  _Branch _buildable(bool isElse) =>
-      _Branch(condition: condition, body: body, isElse: isElse);
+  /// The condition for this branch.
+  Condition get condition;
+
+  /// The body of this branch.
+  Code? get body;
 }
 
-/// Builds a [Conditional] branch.
 abstract class BranchBuilder implements Builder<Branch, BranchBuilder> {
-  BranchBuilder._();
   factory BranchBuilder() = _$BranchBuilder;
+  BranchBuilder._();
 
-  /// The `if` statement condition.
-  ///
-  /// If this is the first branch in a [Conditional], [condition] is
-  /// required. Otherwise, it may be left `null` to create an `else` statement.
-  Expression? condition;
-
-  /// The branch body.
-  BlockBuilder body = BlockBuilder();
-
-  /// Set [condition] to an `if-case` expression, matching [object] against
-  /// [pattern].
-  ///
-  /// Guard clause [guard] can also be specified.
-  ///
-  /// ```dart
-  /// if (object case pattern)
-  /// if (object case pattern when guard)
-  /// ```
-  ///
-  /// Equivalent to using [ControlFlow.ifCase].
-  void ifCase({
-    required Expression object,
-    required Expression pattern,
-    Expression? guard,
-  }) =>
-      condition = ControlFlow.ifCase(
-        object: object,
-        pattern: pattern,
-        guard: guard,
-      );
+  Condition? condition;
+  Code? body;
 }
 
-/// Buildable version of [Branch]
-class _Branch extends _$Branch with ControlBlock {
-  final bool isElse;
-
-  _Branch({required super.condition, required super.body, required this.isElse})
-    : super._();
-
-  ControlExpression? get _condition =>
-      condition == null ? null : ControlExpression.ifStatement(condition!);
-
-  @override
-  ControlExpression get _expression =>
-      isElse
-          ? ControlExpression.elseStatement(_condition)
-          : (_condition ?? throwError);
-
-  Never get throwError {
-    throw ArgumentError(
-      'The first branch in a conditional must specify a condition',
-      'condition',
-    );
-  }
-}
-
-/// Represents a conditional (`if`/`else`) tree.
-///
-/// The first added branch will be treated as an `if` block, with
-/// all subsequent conditions being treated as `else`.
-///
-/// {@category controlFlow}
+/// An `if`/`else if`/`else` conditional statement.
 abstract class Conditional
-    with ControlTree
-    implements Built<Conditional, ConditionalBuilder> {
-  Conditional._();
-
-  /// Build an [Conditional]
-  factory Conditional(void Function(ConditionalBuilder tree) builder) =
+    implements Built<Conditional, ConditionalBuilder>, Code, Spec {
+  factory Conditional([void Function(ConditionalBuilder) updates]) =
       _$Conditional;
 
-  @protected
-  @visibleForTesting
-  BuiltList<BranchBuilder> get branches;
+  Conditional._() {
+    if (branches.isEmpty) {
+      throw ArgumentError.value(
+        branches,
+        'branches',
+        'A conditional must have at least one branch.',
+      );
+    }
+  }
+
+  /// The `if` and `else if` branches in this conditional.
+  ///
+  /// The first branch is emitted as `if (condition) { body }`, and any
+  /// subsequent branches are emitted as `else if (condition) { body }`.
+  BuiltList<Branch> get branches;
+
+  /// The optional `else` body.
+  Code? get orElse;
 
   @override
-  List<ControlBlock> get _blocks =>
-      branches
-          .mapIndexed(
-            (index, element) => element.build()._buildable(index != 0),
-          )
-          .toList();
-
-  /// Builds a branch with [builder] and returns
-  /// a new [Conditional] with it added to the tree.
-  Conditional elseIf(void Function(BranchBuilder branch) builder) =>
-      (toBuilder()..branches.add(BranchBuilder()..update(builder))).build();
-
-  /// Builds a block with [builder] and returns a new [Conditional]
-  /// with it added to the tree as an `else` [Branch].
-  Conditional orElse(void Function(BlockBuilder body) builder) =>
-      elseIf((block) => builder(block.body));
+  R accept<R>(covariant ControlVisitor<R> visitor, [R? context]) =>
+      visitor.visitConditional(this, context);
 }
 
-/// Builds a [Conditional].
-///
-/// The first added branch will be treated as an `if` block, with
-/// all subsequent conditions being treated as `else`.
-///
-/// {@category controlFlow}
 abstract class ConditionalBuilder
     implements Builder<Conditional, ConditionalBuilder> {
-  ConditionalBuilder._();
   factory ConditionalBuilder() = _$ConditionalBuilder;
+  ConditionalBuilder._();
 
-  /// The items in this tree.
-  ListBuilder<BranchBuilder> branches = ListBuilder();
-
-  /// Build a branch with [builder] and add it to the conditional tree.
-  ///
-  /// The first branch will be an `if` block, and all subsequent branches
-  /// will be `else if` or `else`.
-  void add(void Function(BranchBuilder branch) builder) =>
-      branches.add(BranchBuilder()..update(builder));
-
-  /// Shorthand to build a block with no condition and add it to the tree.
-  void addElse(void Function(BlockBuilder body) builder) =>
-      branches.add(BranchBuilder()..body.update(builder));
+  ListBuilder<Branch> branches = ListBuilder<Branch>();
+  Code? orElse;
 }

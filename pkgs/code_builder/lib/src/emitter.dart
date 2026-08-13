@@ -17,6 +17,7 @@ import 'specs/field.dart';
 import 'specs/library.dart';
 import 'specs/method.dart';
 import 'specs/mixin.dart';
+import 'specs/pattern.dart';
 import 'specs/reference.dart';
 import 'specs/type_function.dart';
 import 'specs/type_record.dart';
@@ -42,31 +43,17 @@ StringSink visitAll<T>(
   if (elements.isEmpty) {
     return output;
   }
-
   final iterator = elements.iterator..moveNext();
-
-  var prev = iterator.current;
-  visit(prev);
-
+  visit(iterator.current);
   while (iterator.moveNext()) {
-    final curr = iterator.current;
-
-    final chain =
-        prev is CollectionExpression &&
-        curr is CollectionExpression &&
-        prev.chainTarget &&
-        curr.chain;
-
-    output.write(chain ? ' ' : separator);
-    visit(curr);
-    prev = curr;
+    output.write(separator);
+    visit(iterator.current);
   }
-
   return output;
 }
 
 class DartEmitter extends Object
-    with CodeEmitter, ExpressionEmitter, ControlBlockEmitter
+    with CodeEmitter, ExpressionEmitter, PatternEmitter, ControlEmitter
     implements SpecVisitor<StringSink> {
   @override
   final Allocator allocator;
