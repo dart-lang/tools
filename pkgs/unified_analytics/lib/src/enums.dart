@@ -137,7 +137,8 @@ enum DashEvent {
   ),
   flutterTrackAndroidDependencies(
     label: 'flutter_android_dependencies',
-    description: 'Information related to min/target/compile SDK, JDK, NDK, Gradle version',
+    description:
+        'Information related to min/target/compile SDK, JDK, NDK, Gradle version',
     toolOwner: DashTool.flutterTool,
   ),
   hotReloadTime(

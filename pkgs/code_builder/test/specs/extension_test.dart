@@ -55,8 +55,9 @@ void main() {
           ..on = TypeReference((b) => b.symbol = 'Bar')
           ..annotations.addAll([
             refer('deprecated'),
-            refer('Deprecated')
-                .call([literalString('This is an old extension')]),
+            refer(
+              'Deprecated',
+            ).call([literalString('This is an old extension')]),
           ]),
       ),
       equalsDart(r'''

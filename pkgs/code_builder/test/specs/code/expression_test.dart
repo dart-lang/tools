@@ -49,8 +49,9 @@ void main() {
           Uri.https('google.com'),
           onError: (value) {
             if (value is Uri) {
-              return refer('Uri')
-                  .newInstanceNamed('parse', [literalString(value.toString())]);
+              return refer(
+                'Uri',
+              ).newInstanceNamed('parse', [literalString(value.toString())]);
             }
             throw UnsupportedError('Not supported: $value');
           },
@@ -593,11 +594,9 @@ void main() {
 
   test('should emit an if null index operator set', () {
     expect(
-      refer('bar')
-          .index(literalTrue)
-          .ifNullThen(literalFalse)
-          .assignVar('foo')
-          .statement,
+      refer(
+        'bar',
+      ).index(literalTrue).ifNullThen(literalFalse).assignVar('foo').statement,
       equalsDart('var foo = bar[true] ?? false;'),
     );
   });
@@ -1057,10 +1056,9 @@ void main() {
   test('should emit a parenthesized expression', () {
     expect(
       refer('foo').ifNullThen(
-        refer('FormatException')
-            .newInstance([literalString('missing foo')])
-            .thrown
-            .parenthesized,
+        refer(
+          'FormatException',
+        ).newInstance([literalString('missing foo')]).thrown.parenthesized,
       ),
       equalsDart('foo ?? (throw FormatException(\'missing foo\'))'),
     );

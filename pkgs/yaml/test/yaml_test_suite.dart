@@ -63,13 +63,12 @@ Iterable<YamlTestCase> loadYamlTestSuite() sync* {
     return;
   }
 
-  final files =
-      srcDir
-          .listSync()
-          .whereType<File>()
-          .where((f) => f.path.endsWith('.yaml'))
-          .toList()
-        ..sort((a, b) => a.path.compareTo(b.path));
+  final files = srcDir
+      .listSync()
+      .whereType<File>()
+      .where((f) => f.path.endsWith('.yaml'))
+      .toList()
+    ..sort((a, b) => a.path.compareTo(b.path));
 
   if (files.isEmpty) {
     throw AssertionError('yaml-test-suite files not found');
@@ -160,8 +159,7 @@ extension YamlTestCaseExtension on YamlTestCase {
           final actualJson = encoder.convert(actualDocs);
           final expectedStr = encoder.convert(expectedDocs);
           throw TestFailure(
-            'JSON mismatch\nExpected:\n$expectedStr\nActual:\n$actualJson',
-          );
+              'JSON mismatch\nExpected:\n$expectedStr\nActual:\n$actualJson');
         }
       }
     } finally {

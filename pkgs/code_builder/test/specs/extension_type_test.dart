@@ -64,8 +64,9 @@ void main() {
           ..docs.add('/// My favorite extension type.')
           ..annotations.addAll([
             refer('deprecated'),
-            refer('Deprecated')
-                .call([literalString('This is an old extension type')]),
+            refer(
+              'Deprecated',
+            ).call([literalString('This is an old extension type')]),
           ]),
       ),
       equalsDart(r'''

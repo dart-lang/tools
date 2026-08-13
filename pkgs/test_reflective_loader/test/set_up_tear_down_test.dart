@@ -8,20 +8,18 @@ import 'utils.dart';
 
 void main() {
   test('includes setUp and tearDown results only when defined', () async {
-    var (:stdout, :stderr) = await runTestFile(
-      'set_up_tear_down_test.data.dart',
-    );
+    var (:stdout, :stderr) =
+        await runTestFile('set_up_tear_down_test.data.dart');
 
     expect(stderr, isEmpty);
     expect(
-      stdout,
-      allOf([
-        contains('WithSetUpTearDownTest (setUpAll)'),
-        contains('WithSetUpTearDownTest test_pass'),
-        contains('WithSetUpTearDownTest (tearDownAll)'),
-        contains('NoSetUpTearDownTest test_pass'),
-        contains('All tests passed!'),
-      ]),
-    );
+        stdout,
+        allOf([
+          contains('WithSetUpTearDownTest (setUpAll)'),
+          contains('WithSetUpTearDownTest test_pass'),
+          contains('WithSetUpTearDownTest (tearDownAll)'),
+          contains('NoSetUpTearDownTest test_pass'),
+          contains('All tests passed!'),
+        ]));
   });
 }

@@ -44,8 +44,7 @@ final _skippedFiles = [
 /// Input documents are loaded from: test/crash_test/testdata/*.yaml
 Future<void> main() async {
   final packageUri = await Isolate.resolvePackageUri(
-    Uri.parse('package:yaml_edit/yaml_edit.dart'),
-  );
+      Uri.parse('package:yaml_edit/yaml_edit.dart'));
 
   final testdataUri = packageUri!.resolve('../test/crash_test/testdata/');
   final testFiles = Directory.fromUri(testdataUri)

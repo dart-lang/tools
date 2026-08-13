@@ -18,10 +18,8 @@ void main() {
 
     group("doesn't make the max a pre-release if", () {
       test("it's already a pre-release", () {
-        expect(
-          VersionRange(max: Version.parse('1.2.4-pre')).max,
-          equals(Version.parse('1.2.4-pre')),
-        );
+        expect(VersionRange(max: Version.parse('1.2.4-pre')).max,
+            equals(Version.parse('1.2.4-pre')));
       });
 
       test('includeMax is true', () {
@@ -29,17 +27,13 @@ void main() {
       });
 
       test('min is a prerelease of max', () {
-        expect(
-          VersionRange(min: Version.parse('1.2.4-pre'), max: v124).max,
-          equals(v124),
-        );
+        expect(VersionRange(min: Version.parse('1.2.4-pre'), max: v124).max,
+            equals(v124));
       });
 
       test('max has a build identifier', () {
-        expect(
-          VersionRange(max: Version.parse('1.2.4+1')).max,
-          equals(Version.parse('1.2.4+1')),
-        );
+        expect(VersionRange(max: Version.parse('1.2.4+1')).max,
+            equals(Version.parse('1.2.4+1')));
       });
     });
 
@@ -88,22 +82,16 @@ void main() {
 
       expect(range, allows(Version.parse('1.3.3'), Version.parse('2.3.3')));
       expect(
-        range,
-        doesNotAllow(Version.parse('1.2.2'), Version.parse('1.2.3')),
-      );
+          range, doesNotAllow(Version.parse('1.2.2'), Version.parse('1.2.3')));
     });
 
     test('version must be min or greater if includeMin', () {
       var range = VersionRange(min: v123, includeMin: true);
 
       expect(
-        range,
-        allows(
-          Version.parse('1.2.3'),
-          Version.parse('1.3.3'),
-          Version.parse('2.3.3'),
-        ),
-      );
+          range,
+          allows(Version.parse('1.2.3'), Version.parse('1.3.3'),
+              Version.parse('2.3.3')));
       expect(range, doesNotAllow(Version.parse('1.2.2')));
     });
 
@@ -119,9 +107,7 @@ void main() {
 
       expect(range, allows(Version.parse('2.3.3')));
       expect(
-        range,
-        doesNotAllow(Version.parse('2.3.4'), Version.parse('2.4.3')),
-      );
+          range, doesNotAllow(Version.parse('2.3.4'), Version.parse('2.4.3')));
     });
 
     test('pre-release versions of non-pre-release max are excluded', () {
@@ -129,29 +115,21 @@ void main() {
 
       expect(range, allows(Version.parse('2.3.3')));
       expect(
-        range,
-        doesNotAllow(
-          Version.parse('2.3.4-dev'),
-          Version.parse('2.3.4--1'),
-          Version.parse('2.3.4-0xA'),
-          Version.parse('2.3.4'),
-        ),
-      );
+          range,
+          doesNotAllow(Version.parse('2.3.4-dev'), Version.parse('2.3.4--1'),
+              Version.parse('2.3.4-0xA'), Version.parse('2.3.4')));
     });
 
-    test('pre-release versions of non-pre-release max are included if min is a '
+    test(
+        'pre-release versions of non-pre-release max are included if min is a '
         'pre-release of the same version', () {
       var range = VersionRange(min: Version.parse('2.3.4-dev.0'), max: v234);
 
       expect(range, allows(Version.parse('2.3.4-dev.1')));
       expect(
-        range,
-        doesNotAllow(
-          Version.parse('2.3.3'),
-          Version.parse('2.3.4-dev'),
-          Version.parse('2.3.4'),
-        ),
-      );
+          range,
+          doesNotAllow(Version.parse('2.3.3'), Version.parse('2.3.4-dev'),
+              Version.parse('2.3.4')));
     });
 
     test('pre-release versions of pre-release max are included', () {
@@ -159,26 +137,21 @@ void main() {
 
       expect(range, allows(Version.parse('2.3.4-dev.1')));
       expect(
-        range,
-        doesNotAllow(
-          Version.parse('2.3.4-dev.2'),
-          Version.parse('2.3.4-dev.3'),
-        ),
-      );
+          range,
+          doesNotAllow(
+              Version.parse('2.3.4-dev.2'), Version.parse('2.3.4-dev.3')));
     });
 
     test('version must be max or less if includeMax', () {
       var range = VersionRange(min: v123, max: v234, includeMax: true);
 
       expect(
-        range,
-        allows(
-          Version.parse('2.3.3'),
-          Version.parse('2.3.4'),
-          // Pre-releases of the max are allowed.
-          Version.parse('2.3.4-dev'),
-        ),
-      );
+          range,
+          allows(
+              Version.parse('2.3.3'),
+              Version.parse('2.3.4'),
+              // Pre-releases of the max are allowed.
+              Version.parse('2.3.4-dev')));
       expect(range, doesNotAllow(Version.parse('2.4.3')));
     });
 
@@ -210,9 +183,8 @@ void main() {
   group('allowsAll()', () {
     test('allows an empty constraint', () {
       expect(
-        VersionRange(min: v123, max: v250).allowsAll(VersionConstraint.empty),
-        isTrue,
-      );
+          VersionRange(min: v123, max: v250).allowsAll(VersionConstraint.empty),
+          isTrue);
     });
 
     test('allows allowed versions', () {
@@ -256,11 +228,7 @@ void main() {
     test("allows a bordering range that's not more inclusive", () {
       var exclusive = VersionRange(min: v010, max: v250);
       var inclusive = VersionRange(
-        min: v010,
-        includeMin: true,
-        max: v250,
-        includeMax: true,
-      );
+          min: v010, includeMin: true, max: v250, includeMax: true);
       expect(inclusive.allowsAll(exclusive), isTrue);
       expect(inclusive.allowsAll(inclusive), isTrue);
       expect(exclusive.allowsAll(inclusive), isFalse);
@@ -269,18 +237,12 @@ void main() {
 
     test('allows unions that are completely contained', () {
       var range = VersionRange(min: v114, max: v200);
-      expect(
-        range.allowsAll(VersionRange(min: v123, max: v124).union(v140)),
-        isTrue,
-      );
-      expect(
-        range.allowsAll(VersionRange(min: v010, max: v124).union(v140)),
-        isFalse,
-      );
-      expect(
-        range.allowsAll(VersionRange(min: v123, max: v234).union(v140)),
-        isFalse,
-      );
+      expect(range.allowsAll(VersionRange(min: v123, max: v124).union(v140)),
+          isTrue);
+      expect(range.allowsAll(VersionRange(min: v010, max: v124).union(v140)),
+          isFalse);
+      expect(range.allowsAll(VersionRange(min: v123, max: v234).union(v140)),
+          isFalse);
     });
 
     group('pre-release versions', () {
@@ -300,42 +262,33 @@ void main() {
 
       test('of non-pre-release max are included with includeMaxPreRelease', () {
         expect(
-          includeMaxPreReleaseRange.allowsAll(
-            VersionConstraint.parse('<2.0.0-dev'),
-          ),
-          isTrue,
-        );
+            includeMaxPreReleaseRange
+                .allowsAll(VersionConstraint.parse('<2.0.0-dev')),
+            isTrue);
       });
 
-      test('of non-pre-release max are included if min is a pre-release of the '
+      test(
+          'of non-pre-release max are included if min is a pre-release of the '
           'same version', () {
         var range = VersionRange(min: Version.parse('2.3.4-dev.0'), max: v234);
 
         expect(
-          range.allowsAll(VersionConstraint.parse('>2.3.4-dev.0 <2.3.4-dev.1')),
-          isTrue,
-        );
+            range.allowsAll(
+                VersionConstraint.parse('>2.3.4-dev.0 <2.3.4-dev.1')),
+            isTrue);
       });
 
       test('of pre-release max are included', () {
         var range = VersionRange(max: Version.parse('2.3.4-dev.2'));
 
         expect(
-          range.allowsAll(VersionConstraint.parse('<2.3.4-dev.1')),
-          isTrue,
-        );
+            range.allowsAll(VersionConstraint.parse('<2.3.4-dev.1')), isTrue);
         expect(
-          range.allowsAll(VersionConstraint.parse('<2.3.4-dev.2')),
-          isTrue,
-        );
+            range.allowsAll(VersionConstraint.parse('<2.3.4-dev.2')), isTrue);
         expect(
-          range.allowsAll(VersionConstraint.parse('<=2.3.4-dev.2')),
-          isFalse,
-        );
+            range.allowsAll(VersionConstraint.parse('<=2.3.4-dev.2')), isFalse);
         expect(
-          range.allowsAll(VersionConstraint.parse('<2.3.4-dev.3')),
-          isFalse,
-        );
+            range.allowsAll(VersionConstraint.parse('<2.3.4-dev.3')), isFalse);
       });
     });
   });
@@ -343,9 +296,8 @@ void main() {
   group('allowsAny()', () {
     test('disallows an empty constraint', () {
       expect(
-        VersionRange(min: v123, max: v250).allowsAny(VersionConstraint.empty),
-        isFalse,
-      );
+          VersionRange(min: v123, max: v250).allowsAny(VersionConstraint.empty),
+          isFalse);
     });
 
     test('allows allowed versions', () {
@@ -387,74 +339,50 @@ void main() {
 
     test('allows a bordering range when both are inclusive', () {
       expect(
-        VersionRange(max: v250).allowsAny(VersionRange(min: v250)),
-        isFalse,
-      );
+          VersionRange(max: v250).allowsAny(VersionRange(min: v250)), isFalse);
 
       expect(
-        VersionRange(
-          max: v250,
-          includeMax: true,
-        ).allowsAny(VersionRange(min: v250)),
-        isFalse,
-      );
+          VersionRange(max: v250, includeMax: true)
+              .allowsAny(VersionRange(min: v250)),
+          isFalse);
 
       expect(
-        VersionRange(max: v250)
-            .allowsAny(VersionRange(min: v250, includeMin: true)),
-        isFalse,
-      );
+          VersionRange(max: v250)
+              .allowsAny(VersionRange(min: v250, includeMin: true)),
+          isFalse);
 
       expect(
-        VersionRange(
-          max: v250,
-          includeMax: true,
-        ).allowsAny(VersionRange(min: v250, includeMin: true)),
-        isTrue,
-      );
+          VersionRange(max: v250, includeMax: true)
+              .allowsAny(VersionRange(min: v250, includeMin: true)),
+          isTrue);
 
       expect(
-        VersionRange(min: v250).allowsAny(VersionRange(max: v250)),
-        isFalse,
-      );
+          VersionRange(min: v250).allowsAny(VersionRange(max: v250)), isFalse);
 
       expect(
-        VersionRange(
-          min: v250,
-          includeMin: true,
-        ).allowsAny(VersionRange(max: v250)),
-        isFalse,
-      );
+          VersionRange(min: v250, includeMin: true)
+              .allowsAny(VersionRange(max: v250)),
+          isFalse);
 
       expect(
-        VersionRange(min: v250)
-            .allowsAny(VersionRange(max: v250, includeMax: true)),
-        isFalse,
-      );
+          VersionRange(min: v250)
+              .allowsAny(VersionRange(max: v250, includeMax: true)),
+          isFalse);
 
       expect(
-        VersionRange(
-          min: v250,
-          includeMin: true,
-        ).allowsAny(VersionRange(max: v250, includeMax: true)),
-        isTrue,
-      );
+          VersionRange(min: v250, includeMin: true)
+              .allowsAny(VersionRange(max: v250, includeMax: true)),
+          isTrue);
     });
 
     test('allows unions that are partially contained', () {
       var range = VersionRange(min: v114, max: v200);
-      expect(
-        range.allowsAny(VersionRange(min: v010, max: v080).union(v140)),
-        isTrue,
-      );
-      expect(
-        range.allowsAny(VersionRange(min: v123, max: v234).union(v300)),
-        isTrue,
-      );
-      expect(
-        range.allowsAny(VersionRange(min: v234, max: v300).union(v010)),
-        isFalse,
-      );
+      expect(range.allowsAny(VersionRange(min: v010, max: v080).union(v140)),
+          isTrue);
+      expect(range.allowsAny(VersionRange(min: v123, max: v234).union(v300)),
+          isTrue);
+      expect(range.allowsAny(VersionRange(min: v234, max: v300).union(v010)),
+          isFalse);
     });
 
     group('pre-release versions', () {
@@ -474,27 +402,22 @@ void main() {
 
       test('of non-pre-release max are included with includeMaxPreRelease', () {
         expect(
-          includeMaxPreReleaseRange.allowsAny(
-            VersionConstraint.parse('>2.0.0-dev'),
-          ),
-          isTrue,
-        );
+            includeMaxPreReleaseRange
+                .allowsAny(VersionConstraint.parse('>2.0.0-dev')),
+            isTrue);
       });
 
-      test('of non-pre-release max are included if min is a pre-release of the '
+      test(
+          'of non-pre-release max are included if min is a pre-release of the '
           'same version', () {
         var range = VersionRange(min: Version.parse('2.3.4-dev.0'), max: v234);
 
         expect(
-          range.allowsAny(VersionConstraint.parse('>2.3.4-dev.1')),
-          isTrue,
-        );
+            range.allowsAny(VersionConstraint.parse('>2.3.4-dev.1')), isTrue);
         expect(range.allowsAny(VersionConstraint.parse('>2.3.4')), isFalse);
 
         expect(
-          range.allowsAny(VersionConstraint.parse('<2.3.4-dev.1')),
-          isTrue,
-        );
+            range.allowsAny(VersionConstraint.parse('<2.3.4-dev.1')), isTrue);
         expect(range.allowsAny(VersionConstraint.parse('<2.3.4-dev')), isFalse);
       });
 
@@ -502,17 +425,11 @@ void main() {
         var range = VersionConstraint.parse('<2.3.4-dev.2');
 
         expect(
-          range.allowsAny(VersionConstraint.parse('>2.3.4-dev.1')),
-          isTrue,
-        );
+            range.allowsAny(VersionConstraint.parse('>2.3.4-dev.1')), isTrue);
         expect(
-          range.allowsAny(VersionConstraint.parse('>2.3.4-dev.2')),
-          isFalse,
-        );
+            range.allowsAny(VersionConstraint.parse('>2.3.4-dev.2')), isFalse);
         expect(
-          range.allowsAny(VersionConstraint.parse('>2.3.4-dev.3')),
-          isFalse,
-        );
+            range.allowsAny(VersionConstraint.parse('>2.3.4-dev.3')), isFalse);
       });
     });
   });
@@ -520,12 +437,9 @@ void main() {
   group('intersect()', () {
     test('two overlapping ranges', () {
       expect(
-        VersionRange(
-          min: v123,
-          max: v250,
-        ).intersect(VersionRange(min: v200, max: v300)),
-        equals(VersionRange(min: v200, max: v250)),
-      );
+          VersionRange(min: v123, max: v250)
+              .intersect(VersionRange(min: v200, max: v300)),
+          equals(VersionRange(min: v200, max: v250)));
     });
 
     test('a non-overlapping range allows no versions', () {
@@ -556,86 +470,63 @@ void main() {
     test('returns the version if the range allows it', () {
       expect(VersionRange(min: v114, max: v124).intersect(v123), equals(v123));
       expect(
-        VersionRange(min: v123, max: v124).intersect(v114).isEmpty,
-        isTrue,
-      );
+          VersionRange(min: v123, max: v124).intersect(v114).isEmpty, isTrue);
     });
 
-    test(
-      'with a range with a pre-release min, returns an empty constraint',
-      () {
-        expect(
+    test('with a range with a pre-release min, returns an empty constraint',
+        () {
+      expect(
           VersionRange(max: v200)
               .intersect(VersionConstraint.parse('>=2.0.0-dev')),
-          equals(VersionConstraint.empty),
-        );
-      },
-    );
+          equals(VersionConstraint.empty));
+    });
 
     test('with a range with a pre-release max, returns the original', () {
       expect(
-        VersionRange(max: v200)
-            .intersect(VersionConstraint.parse('<2.0.0-dev')),
-        equals(VersionRange(max: v200)),
-      );
+          VersionRange(max: v200)
+              .intersect(VersionConstraint.parse('<2.0.0-dev')),
+          equals(VersionRange(max: v200)));
     });
 
     group('with includeMaxPreRelease', () {
       test('preserves includeMaxPreRelease if the max version is included', () {
         expect(
-          includeMaxPreReleaseRange.intersect(
-            VersionConstraint.parse('<1.0.0'),
-          ),
-          equals(VersionConstraint.parse('<1.0.0')),
-        );
+            includeMaxPreReleaseRange
+                .intersect(VersionConstraint.parse('<1.0.0')),
+            equals(VersionConstraint.parse('<1.0.0')));
         expect(
-          includeMaxPreReleaseRange.intersect(
-            VersionConstraint.parse('<2.0.0'),
-          ),
-          equals(VersionConstraint.parse('<2.0.0')),
-        );
+            includeMaxPreReleaseRange
+                .intersect(VersionConstraint.parse('<2.0.0')),
+            equals(VersionConstraint.parse('<2.0.0')));
+        expect(includeMaxPreReleaseRange.intersect(includeMaxPreReleaseRange),
+            equals(includeMaxPreReleaseRange));
         expect(
-          includeMaxPreReleaseRange.intersect(includeMaxPreReleaseRange),
-          equals(includeMaxPreReleaseRange),
-        );
+            includeMaxPreReleaseRange
+                .intersect(VersionConstraint.parse('<3.0.0')),
+            equals(includeMaxPreReleaseRange));
         expect(
-          includeMaxPreReleaseRange.intersect(
-            VersionConstraint.parse('<3.0.0'),
-          ),
-          equals(includeMaxPreReleaseRange),
-        );
-        expect(
-          includeMaxPreReleaseRange.intersect(
-            VersionConstraint.parse('>1.1.4'),
-          ),
-          equals(
-            VersionRange(
-              min: v114,
-              max: v200,
-              alwaysIncludeMaxPreRelease: true,
-            ),
-          ),
-        );
+            includeMaxPreReleaseRange
+                .intersect(VersionConstraint.parse('>1.1.4')),
+            equals(VersionRange(
+                min: v114, max: v200, alwaysIncludeMaxPreRelease: true)));
       });
 
-      test('and a range with a pre-release min, returns '
+      test(
+          'and a range with a pre-release min, returns '
           'an intersection', () {
         expect(
-          includeMaxPreReleaseRange.intersect(
-            VersionConstraint.parse('>=2.0.0-dev'),
-          ),
-          equals(VersionConstraint.parse('>=2.0.0-dev <2.0.0')),
-        );
+            includeMaxPreReleaseRange
+                .intersect(VersionConstraint.parse('>=2.0.0-dev')),
+            equals(VersionConstraint.parse('>=2.0.0-dev <2.0.0')));
       });
 
-      test('and a range with a pre-release max, returns '
+      test(
+          'and a range with a pre-release max, returns '
           'the narrower constraint', () {
         expect(
-          includeMaxPreReleaseRange.intersect(
-            VersionConstraint.parse('<2.0.0-dev'),
-          ),
-          equals(VersionConstraint.parse('<2.0.0-dev')),
-        );
+            includeMaxPreReleaseRange
+                .intersect(VersionConstraint.parse('<2.0.0-dev')),
+            equals(VersionConstraint.parse('<2.0.0-dev')));
       });
     });
   });
@@ -648,20 +539,15 @@ void main() {
 
     test('with a version on the edge of the range, expands the range', () {
       expect(
-        VersionRange(
-          min: v114,
-          max: v124,
-          alwaysIncludeMaxPreRelease: true,
-        ).union(v124),
-        equals(VersionRange(min: v114, max: v124, includeMax: true)),
-      );
-      expect(
-        VersionRange(min: v114, max: v124).union(v114),
-        equals(VersionRange(min: v114, max: v124, includeMin: true)),
-      );
+          VersionRange(min: v114, max: v124, alwaysIncludeMaxPreRelease: true)
+              .union(v124),
+          equals(VersionRange(min: v114, max: v124, includeMax: true)));
+      expect(VersionRange(min: v114, max: v124).union(v114),
+          equals(VersionRange(min: v114, max: v124, includeMin: true)));
     });
 
-    test('with a version allows both the range and the version if the range '
+    test(
+        'with a version allows both the range and the version if the range '
         "doesn't contain the version", () {
       var result = VersionRange(min: v003, max: v114).union(v124);
       expect(result, allows(v010));
@@ -670,10 +556,8 @@ void main() {
     });
 
     test('returns a VersionUnion for a disjoint range', () {
-      var result = VersionRange(
-        min: v003,
-        max: v114,
-      ).union(VersionRange(min: v130, max: v200));
+      var result = VersionRange(min: v003, max: v114)
+          .union(VersionRange(min: v130, max: v200));
       expect(result, allows(v080));
       expect(result, doesNotAllow(v123));
       expect(result, allows(v140));
@@ -691,15 +575,9 @@ void main() {
           for (final includeBMin in [true, false]) {
             for (final includeBMax in [true, false]) {
               final a = VersionRange(
-                min: v130,
-                includeMin: includeAMin,
-                includeMax: includeAMax,
-              );
+                  min: v130, includeMin: includeAMin, includeMax: includeAMax);
               final b = VersionRange(
-                max: v114,
-                includeMin: includeBMin,
-                includeMax: includeBMax,
-              );
+                  max: v114, includeMin: includeBMin, includeMax: includeBMax);
               isVersionUnion(a.union(b));
               isVersionUnion(b.union(a));
             }
@@ -709,136 +587,98 @@ void main() {
     });
 
     test('considers open ranges disjoint', () {
-      var result = VersionRange(
-        min: v003,
-        max: v114,
-      ).union(VersionRange(min: v114, max: v200));
+      var result = VersionRange(min: v003, max: v114)
+          .union(VersionRange(min: v114, max: v200));
       expect(result, allows(v080));
       expect(result, doesNotAllow(v114));
       expect(result, allows(v140));
 
-      result = VersionRange(
-        min: v114,
-        max: v200,
-      ).union(VersionRange(min: v003, max: v114));
+      result = VersionRange(min: v114, max: v200)
+          .union(VersionRange(min: v003, max: v114));
       expect(result, allows(v080));
       expect(result, doesNotAllow(v114));
       expect(result, allows(v140));
     });
 
     test('returns a merged range for an overlapping range', () {
-      var result = VersionRange(
-        min: v003,
-        max: v114,
-      ).union(VersionRange(min: v080, max: v200));
+      var result = VersionRange(min: v003, max: v114)
+          .union(VersionRange(min: v080, max: v200));
       expect(result, equals(VersionRange(min: v003, max: v200)));
     });
 
     test('considers closed ranges overlapping', () {
-      var result = VersionRange(
-        min: v003,
-        max: v114,
-        includeMax: true,
-      ).union(VersionRange(min: v114, max: v200));
+      var result = VersionRange(min: v003, max: v114, includeMax: true)
+          .union(VersionRange(min: v114, max: v200));
       expect(result, equals(VersionRange(min: v003, max: v200)));
 
-      result = VersionRange(
-        min: v003,
-        max: v114,
-        alwaysIncludeMaxPreRelease: true,
-      ).union(VersionRange(min: v114, max: v200, includeMin: true));
+      result =
+          VersionRange(min: v003, max: v114, alwaysIncludeMaxPreRelease: true)
+              .union(VersionRange(min: v114, max: v200, includeMin: true));
       expect(result, equals(VersionRange(min: v003, max: v200)));
 
-      result = VersionRange(
-        min: v114,
-        max: v200,
-      ).union(VersionRange(min: v003, max: v114, includeMax: true));
+      result = VersionRange(min: v114, max: v200)
+          .union(VersionRange(min: v003, max: v114, includeMax: true));
       expect(result, equals(VersionRange(min: v003, max: v200)));
 
       result = VersionRange(min: v114, max: v200, includeMin: true).union(
-        VersionRange(min: v003, max: v114, alwaysIncludeMaxPreRelease: true),
-      );
+          VersionRange(min: v003, max: v114, alwaysIncludeMaxPreRelease: true));
       expect(result, equals(VersionRange(min: v003, max: v200)));
     });
 
     test('includes edges if either range does', () {
-      var result = VersionRange(
-        min: v003,
-        max: v114,
-        includeMin: true,
-      ).union(VersionRange(min: v003, max: v114, includeMax: true));
+      var result = VersionRange(min: v003, max: v114, includeMin: true)
+          .union(VersionRange(min: v003, max: v114, includeMax: true));
       expect(
-        result,
-        equals(
-          VersionRange(
-            min: v003,
-            max: v114,
-            includeMin: true,
-            includeMax: true,
-          ),
-        ),
-      );
+          result,
+          equals(VersionRange(
+              min: v003, max: v114, includeMin: true, includeMax: true)));
     });
 
-    test(
-      'with a range with a pre-release min, returns a constraint with a gap',
-      () {
-        var result = VersionRange(max: v200)
-            .union(VersionConstraint.parse('>=2.0.0-dev'));
-        expect(result, allows(v140));
-        expect(result, doesNotAllow(Version.parse('2.0.0-alpha')));
-        expect(result, allows(Version.parse('2.0.0-dev')));
-        expect(result, allows(Version.parse('2.0.0-dev.1')));
-        expect(result, allows(Version.parse('2.0.0')));
-      },
-    );
+    test('with a range with a pre-release min, returns a constraint with a gap',
+        () {
+      var result =
+          VersionRange(max: v200).union(VersionConstraint.parse('>=2.0.0-dev'));
+      expect(result, allows(v140));
+      expect(result, doesNotAllow(Version.parse('2.0.0-alpha')));
+      expect(result, allows(Version.parse('2.0.0-dev')));
+      expect(result, allows(Version.parse('2.0.0-dev.1')));
+      expect(result, allows(Version.parse('2.0.0')));
+    });
 
-    test(
-      'with a range with a pre-release max, returns the larger constraint',
-      () {
-        expect(
+    test('with a range with a pre-release max, returns the larger constraint',
+        () {
+      expect(
           VersionRange(max: v200).union(VersionConstraint.parse('<2.0.0-dev')),
-          equals(VersionConstraint.parse('<2.0.0-dev')),
-        );
-      },
-    );
+          equals(VersionConstraint.parse('<2.0.0-dev')));
+    });
 
     group('with includeMaxPreRelease', () {
       test('adds includeMaxPreRelease if the max version is included', () {
         expect(
-          includeMaxPreReleaseRange.union(VersionConstraint.parse('<1.0.0')),
-          equals(includeMaxPreReleaseRange),
-        );
+            includeMaxPreReleaseRange.union(VersionConstraint.parse('<1.0.0')),
+            equals(includeMaxPreReleaseRange));
+        expect(includeMaxPreReleaseRange.union(includeMaxPreReleaseRange),
+            equals(includeMaxPreReleaseRange));
         expect(
-          includeMaxPreReleaseRange.union(includeMaxPreReleaseRange),
-          equals(includeMaxPreReleaseRange),
-        );
+            includeMaxPreReleaseRange.union(VersionConstraint.parse('<2.0.0')),
+            equals(includeMaxPreReleaseRange));
         expect(
-          includeMaxPreReleaseRange.union(VersionConstraint.parse('<2.0.0')),
-          equals(includeMaxPreReleaseRange),
-        );
-        expect(
-          includeMaxPreReleaseRange.union(VersionConstraint.parse('<3.0.0')),
-          equals(VersionConstraint.parse('<3.0.0')),
-        );
+            includeMaxPreReleaseRange.union(VersionConstraint.parse('<3.0.0')),
+            equals(VersionConstraint.parse('<3.0.0')));
       });
 
       test('and a range with a pre-release min, returns any', () {
         expect(
-          includeMaxPreReleaseRange.union(
-            VersionConstraint.parse('>=2.0.0-dev'),
-          ),
-          equals(VersionConstraint.any),
-        );
+            includeMaxPreReleaseRange
+                .union(VersionConstraint.parse('>=2.0.0-dev')),
+            equals(VersionConstraint.any));
       });
 
       test('and a range with a pre-release max, returns the original', () {
         expect(
-          includeMaxPreReleaseRange.union(
-            VersionConstraint.parse('<2.0.0-dev'),
-          ),
-          equals(includeMaxPreReleaseRange),
-        );
+            includeMaxPreReleaseRange
+                .union(VersionConstraint.parse('<2.0.0-dev')),
+            equals(includeMaxPreReleaseRange));
       });
     });
   });
@@ -846,340 +686,224 @@ void main() {
   group('difference()', () {
     test('with an empty range returns the original range', () {
       expect(
-        VersionRange(min: v003, max: v114).difference(VersionConstraint.empty),
-        equals(VersionRange(min: v003, max: v114)),
-      );
+          VersionRange(min: v003, max: v114)
+              .difference(VersionConstraint.empty),
+          equals(VersionRange(min: v003, max: v114)));
     });
 
     test('with a version outside the range returns the original range', () {
-      expect(
-        VersionRange(min: v003, max: v114).difference(v200),
-        equals(VersionRange(min: v003, max: v114)),
-      );
+      expect(VersionRange(min: v003, max: v114).difference(v200),
+          equals(VersionRange(min: v003, max: v114)));
     });
 
     test('with a version in the range splits the range', () {
       expect(
-        VersionRange(min: v003, max: v114).difference(v072),
-        equals(
-          VersionConstraint.unionOf([
+          VersionRange(min: v003, max: v114).difference(v072),
+          equals(VersionConstraint.unionOf([
             VersionRange(
-              min: v003,
-              max: v072,
-              alwaysIncludeMaxPreRelease: true,
-            ),
-            VersionRange(min: v072, max: v114),
-          ]),
-        ),
-      );
+                min: v003, max: v072, alwaysIncludeMaxPreRelease: true),
+            VersionRange(min: v072, max: v114)
+          ])));
     });
 
     test('with the max version makes the max exclusive', () {
       expect(
-        VersionRange(min: v003, max: v114, includeMax: true).difference(v114),
-        equals(
-          VersionRange(min: v003, max: v114, alwaysIncludeMaxPreRelease: true),
-        ),
-      );
+          VersionRange(min: v003, max: v114, includeMax: true).difference(v114),
+          equals(VersionRange(
+              min: v003, max: v114, alwaysIncludeMaxPreRelease: true)));
     });
 
     test('with the min version makes the min exclusive', () {
       expect(
-        VersionRange(min: v003, max: v114, includeMin: true).difference(v003),
-        equals(VersionRange(min: v003, max: v114)),
-      );
+          VersionRange(min: v003, max: v114, includeMin: true).difference(v003),
+          equals(VersionRange(min: v003, max: v114)));
     });
 
     test('with a disjoint range returns the original', () {
       expect(
-        VersionRange(
-          min: v003,
-          max: v114,
-        ).difference(VersionRange(min: v123, max: v140)),
-        equals(VersionRange(min: v003, max: v114)),
-      );
+          VersionRange(min: v003, max: v114)
+              .difference(VersionRange(min: v123, max: v140)),
+          equals(VersionRange(min: v003, max: v114)));
     });
 
     test('with an adjacent range returns the original', () {
       expect(
-        VersionRange(
-          min: v003,
-          max: v114,
-          includeMax: true,
-        ).difference(VersionRange(min: v114, max: v140)),
-        equals(VersionRange(min: v003, max: v114, includeMax: true)),
-      );
+          VersionRange(min: v003, max: v114, includeMax: true)
+              .difference(VersionRange(min: v114, max: v140)),
+          equals(VersionRange(min: v003, max: v114, includeMax: true)));
     });
 
-    test(
-      'with a range at the beginning cuts off the beginning of the range',
-      () {
-        expect(
-          VersionRange(
-            min: v080,
-            max: v130,
-          ).difference(VersionRange(min: v010, max: v114)),
-          equals(VersionConstraint.parse('>=1.1.4-0 <1.3.0')),
-        );
-        expect(
-          VersionRange(
-            min: v080,
-            max: v130,
-          ).difference(VersionRange(max: v114)),
-          equals(VersionConstraint.parse('>=1.1.4-0 <1.3.0')),
-        );
-        expect(
-          VersionRange(
-            min: v080,
-            max: v130,
-          ).difference(VersionRange(min: v010, max: v114, includeMax: true)),
-          equals(VersionRange(min: v114, max: v130)),
-        );
-        expect(
-          VersionRange(
-            min: v080,
-            max: v130,
-            includeMin: true,
-          ).difference(VersionRange(min: v010, max: v080, includeMax: true)),
-          equals(VersionRange(min: v080, max: v130)),
-        );
-        expect(
-          VersionRange(
-            min: v080,
-            max: v130,
-            includeMax: true,
-          ).difference(VersionRange(min: v080, max: v130)),
-          equals(VersionConstraint.parse('>=1.3.0-0 <=1.3.0')),
-        );
-      },
-    );
+    test('with a range at the beginning cuts off the beginning of the range',
+        () {
+      expect(
+          VersionRange(min: v080, max: v130)
+              .difference(VersionRange(min: v010, max: v114)),
+          equals(VersionConstraint.parse('>=1.1.4-0 <1.3.0')));
+      expect(
+          VersionRange(min: v080, max: v130)
+              .difference(VersionRange(max: v114)),
+          equals(VersionConstraint.parse('>=1.1.4-0 <1.3.0')));
+      expect(
+          VersionRange(min: v080, max: v130)
+              .difference(VersionRange(min: v010, max: v114, includeMax: true)),
+          equals(VersionRange(min: v114, max: v130)));
+      expect(
+          VersionRange(min: v080, max: v130, includeMin: true)
+              .difference(VersionRange(min: v010, max: v080, includeMax: true)),
+          equals(VersionRange(min: v080, max: v130)));
+      expect(
+          VersionRange(min: v080, max: v130, includeMax: true)
+              .difference(VersionRange(min: v080, max: v130)),
+          equals(VersionConstraint.parse('>=1.3.0-0 <=1.3.0')));
+    });
 
     test('with a range at the end cuts off the end of the range', () {
       expect(
-        VersionRange(
-          min: v080,
-          max: v130,
-        ).difference(VersionRange(min: v114, max: v140)),
-        equals(VersionRange(min: v080, max: v114, includeMax: true)),
-      );
+          VersionRange(min: v080, max: v130)
+              .difference(VersionRange(min: v114, max: v140)),
+          equals(VersionRange(min: v080, max: v114, includeMax: true)));
       expect(
-        VersionRange(min: v080, max: v130).difference(VersionRange(min: v114)),
-        equals(VersionRange(min: v080, max: v114, includeMax: true)),
-      );
+          VersionRange(min: v080, max: v130)
+              .difference(VersionRange(min: v114)),
+          equals(VersionRange(min: v080, max: v114, includeMax: true)));
       expect(
-        VersionRange(
-          min: v080,
-          max: v130,
-        ).difference(VersionRange(min: v114, max: v140, includeMin: true)),
-        equals(
-          VersionRange(min: v080, max: v114, alwaysIncludeMaxPreRelease: true),
-        ),
-      );
+          VersionRange(min: v080, max: v130)
+              .difference(VersionRange(min: v114, max: v140, includeMin: true)),
+          equals(VersionRange(
+              min: v080, max: v114, alwaysIncludeMaxPreRelease: true)));
       expect(
-        VersionRange(
-          min: v080,
-          max: v130,
-          includeMax: true,
-        ).difference(VersionRange(min: v130, max: v140, includeMin: true)),
-        equals(
-          VersionRange(min: v080, max: v130, alwaysIncludeMaxPreRelease: true),
-        ),
-      );
+          VersionRange(min: v080, max: v130, includeMax: true)
+              .difference(VersionRange(min: v130, max: v140, includeMin: true)),
+          equals(VersionRange(
+              min: v080, max: v130, alwaysIncludeMaxPreRelease: true)));
       expect(
-        VersionRange(
-          min: v080,
-          max: v130,
-          includeMin: true,
-        ).difference(VersionRange(min: v080, max: v130)),
-        equals(v080),
-      );
+          VersionRange(min: v080, max: v130, includeMin: true)
+              .difference(VersionRange(min: v080, max: v130)),
+          equals(v080));
     });
 
     test('with a range in the middle cuts the range in half', () {
       expect(
-        VersionRange(
-          min: v003,
-          max: v130,
-        ).difference(VersionRange(min: v072, max: v114)),
-        equals(
-          VersionConstraint.unionOf([
+          VersionRange(min: v003, max: v130)
+              .difference(VersionRange(min: v072, max: v114)),
+          equals(VersionConstraint.unionOf([
             VersionRange(min: v003, max: v072, includeMax: true),
-            VersionConstraint.parse('>=1.1.4-0 <1.3.0'),
-          ]),
-        ),
-      );
+            VersionConstraint.parse('>=1.1.4-0 <1.3.0')
+          ])));
     });
 
     test('with a totally covering range returns empty', () {
       expect(
-        VersionRange(
-          min: v114,
-          max: v200,
-        ).difference(VersionRange(min: v072, max: v300)),
-        isEmpty,
-      );
+          VersionRange(min: v114, max: v200)
+              .difference(VersionRange(min: v072, max: v300)),
+          isEmpty);
       expect(
-        VersionRange(
-          min: v003,
-          max: v114,
-        ).difference(VersionRange(min: v003, max: v114)),
-        isEmpty,
-      );
+          VersionRange(min: v003, max: v114)
+              .difference(VersionRange(min: v003, max: v114)),
+          isEmpty);
       expect(
-        VersionRange(
-          min: v003,
-          max: v114,
-          includeMin: true,
-          includeMax: true,
-        ).difference(
-          VersionRange(
-            min: v003,
-            max: v114,
-            includeMin: true,
-            includeMax: true,
-          ),
-        ),
-        isEmpty,
-      );
+          VersionRange(min: v003, max: v114, includeMin: true, includeMax: true)
+              .difference(VersionRange(
+                  min: v003, max: v114, includeMin: true, includeMax: true)),
+          isEmpty);
     });
 
-    test("with a version union that doesn't cover the range, returns the "
+    test(
+        "with a version union that doesn't cover the range, returns the "
         'original', () {
       expect(
-        VersionRange(
-          min: v114,
-          max: v140,
-        ).difference(VersionConstraint.unionOf([v010, v200])),
-        equals(VersionRange(min: v114, max: v140)),
-      );
+          VersionRange(min: v114, max: v140)
+              .difference(VersionConstraint.unionOf([v010, v200])),
+          equals(VersionRange(min: v114, max: v140)));
     });
 
     test('with a version union that intersects the ends, chops them off', () {
       expect(
-        VersionRange(min: v114, max: v140).difference(
-          VersionConstraint.unionOf([
+          VersionRange(min: v114, max: v140).difference(
+              VersionConstraint.unionOf([
             VersionRange(min: v080, max: v123),
-            VersionRange(min: v130, max: v200),
-          ]),
-        ),
-        equals(VersionConstraint.parse('>=1.2.3-0 <=1.3.0')),
-      );
+            VersionRange(min: v130, max: v200)
+          ])),
+          equals(VersionConstraint.parse('>=1.2.3-0 <=1.3.0')));
     });
 
     test('with a version union that intersects the middle, chops it up', () {
       expect(
-        VersionRange(
-          min: v114,
-          max: v140,
-        ).difference(VersionConstraint.unionOf([v123, v124, v130])),
-        equals(
-          VersionConstraint.unionOf([
+          VersionRange(min: v114, max: v140)
+              .difference(VersionConstraint.unionOf([v123, v124, v130])),
+          equals(VersionConstraint.unionOf([
             VersionRange(
-              min: v114,
-              max: v123,
-              alwaysIncludeMaxPreRelease: true,
-            ),
+                min: v114, max: v123, alwaysIncludeMaxPreRelease: true),
             VersionRange(
-              min: v123,
-              max: v124,
-              alwaysIncludeMaxPreRelease: true,
-            ),
+                min: v123, max: v124, alwaysIncludeMaxPreRelease: true),
             VersionRange(
-              min: v124,
-              max: v130,
-              alwaysIncludeMaxPreRelease: true,
-            ),
-            VersionRange(min: v130, max: v140),
-          ]),
-        ),
-      );
+                min: v124, max: v130, alwaysIncludeMaxPreRelease: true),
+            VersionRange(min: v130, max: v140)
+          ])));
     });
 
     test('with a version union that covers the whole range, returns empty', () {
       expect(
-        VersionRange(min: v114, max: v140).difference(
-          VersionConstraint.unionOf([v003, VersionRange(min: v010)]),
-        ),
-        equals(VersionConstraint.empty),
-      );
+          VersionRange(min: v114, max: v140).difference(
+              VersionConstraint.unionOf([v003, VersionRange(min: v010)])),
+          equals(VersionConstraint.empty));
     });
 
     test('with a range with a pre-release min, returns the original', () {
       expect(
-        VersionRange(max: v200)
-            .difference(VersionConstraint.parse('>=2.0.0-dev')),
-        equals(VersionRange(max: v200)),
-      );
+          VersionRange(max: v200)
+              .difference(VersionConstraint.parse('>=2.0.0-dev')),
+          equals(VersionRange(max: v200)));
     });
 
     test('with a range with a pre-release max, returns null', () {
       expect(
-        VersionRange(max: v200)
-            .difference(VersionConstraint.parse('<2.0.0-dev')),
-        equals(VersionConstraint.empty),
-      );
+          VersionRange(max: v200)
+              .difference(VersionConstraint.parse('<2.0.0-dev')),
+          equals(VersionConstraint.empty));
     });
 
     group('with includeMaxPreRelease', () {
       group('for the minuend', () {
-        test(
-          'preserves includeMaxPreRelease if the max version is included',
-          () {
-            expect(
-              includeMaxPreReleaseRange.difference(
-                VersionConstraint.parse('<1.0.0'),
-              ),
-              equals(
-                VersionRange(
+        test('preserves includeMaxPreRelease if the max version is included',
+            () {
+          expect(
+              includeMaxPreReleaseRange
+                  .difference(VersionConstraint.parse('<1.0.0')),
+              equals(VersionRange(
                   min: Version.parse('1.0.0-0'),
                   max: v200,
                   includeMin: true,
-                  alwaysIncludeMaxPreRelease: true,
-                ),
-              ),
-            );
-            expect(
-              includeMaxPreReleaseRange.difference(
-                VersionConstraint.parse('<2.0.0'),
-              ),
-              equals(
-                VersionRange(
+                  alwaysIncludeMaxPreRelease: true)));
+          expect(
+              includeMaxPreReleaseRange
+                  .difference(VersionConstraint.parse('<2.0.0')),
+              equals(VersionRange(
                   min: v200.firstPreRelease,
                   max: v200,
                   includeMin: true,
-                  alwaysIncludeMaxPreRelease: true,
-                ),
-              ),
-            );
-            expect(
+                  alwaysIncludeMaxPreRelease: true)));
+          expect(
               includeMaxPreReleaseRange.difference(includeMaxPreReleaseRange),
-              equals(VersionConstraint.empty),
-            );
-            expect(
-              includeMaxPreReleaseRange.difference(
-                VersionConstraint.parse('<3.0.0'),
-              ),
-              equals(VersionConstraint.empty),
-            );
-          },
-        );
+              equals(VersionConstraint.empty));
+          expect(
+              includeMaxPreReleaseRange
+                  .difference(VersionConstraint.parse('<3.0.0')),
+              equals(VersionConstraint.empty));
+        });
 
         test('with a range with a pre-release min, adjusts the max', () {
           expect(
-            includeMaxPreReleaseRange.difference(
-              VersionConstraint.parse('>=2.0.0-dev'),
-            ),
-            equals(VersionConstraint.parse('<2.0.0-dev')),
-          );
+              includeMaxPreReleaseRange
+                  .difference(VersionConstraint.parse('>=2.0.0-dev')),
+              equals(VersionConstraint.parse('<2.0.0-dev')));
         });
 
         test('with a range with a pre-release max, adjusts the min', () {
           expect(
-            includeMaxPreReleaseRange.difference(
-              VersionConstraint.parse('<2.0.0-dev'),
-            ),
-            equals(VersionConstraint.parse('>=2.0.0-dev <2.0.0')),
-          );
+              includeMaxPreReleaseRange
+                  .difference(VersionConstraint.parse('<2.0.0-dev')),
+              equals(VersionConstraint.parse('>=2.0.0-dev <2.0.0')));
         });
       });
 
@@ -1187,37 +911,29 @@ void main() {
         group("doesn't create a pre-release minimum", () {
           test('when cutting off the bottom', () {
             expect(
-              VersionConstraint.parse('<3.0.0')
-                  .difference(includeMaxPreReleaseRange),
-              equals(VersionRange(min: v200, max: v300, includeMin: true)),
-            );
+                VersionConstraint.parse('<3.0.0')
+                    .difference(includeMaxPreReleaseRange),
+                equals(VersionRange(min: v200, max: v300, includeMin: true)));
           });
 
           test('with splitting down the middle', () {
             expect(
-              VersionConstraint.parse('<4.0.0').difference(
-                VersionRange(
-                  min: v200,
-                  max: v300,
-                  includeMin: true,
-                  alwaysIncludeMaxPreRelease: true,
-                ),
-              ),
-              equals(
-                VersionConstraint.unionOf([
+                VersionConstraint.parse('<4.0.0').difference(VersionRange(
+                    min: v200,
+                    max: v300,
+                    includeMin: true,
+                    alwaysIncludeMaxPreRelease: true)),
+                equals(VersionConstraint.unionOf([
                   VersionRange(max: v200, alwaysIncludeMaxPreRelease: true),
-                  VersionConstraint.parse('>=3.0.0 <4.0.0'),
-                ]),
-              ),
-            );
+                  VersionConstraint.parse('>=3.0.0 <4.0.0')
+                ])));
           });
 
           test('can leave a single version', () {
             expect(
-              VersionConstraint.parse('<=2.0.0')
-                  .difference(includeMaxPreReleaseRange),
-              equals(v200),
-            );
+                VersionConstraint.parse('<=2.0.0')
+                    .difference(includeMaxPreReleaseRange),
+                equals(v200));
           });
         });
       });
@@ -1231,81 +947,54 @@ void main() {
 
   group('compareTo()', () {
     test('orders by minimum first', () {
-      _expectComparesSmaller(
-        VersionRange(min: v003, max: v080),
-        VersionRange(min: v010, max: v072),
-      );
-      _expectComparesSmaller(
-        VersionRange(min: v003, max: v080),
-        VersionRange(min: v010, max: v080),
-      );
-      _expectComparesSmaller(
-        VersionRange(min: v003, max: v080),
-        VersionRange(min: v010, max: v114),
-      );
+      _expectComparesSmaller(VersionRange(min: v003, max: v080),
+          VersionRange(min: v010, max: v072));
+      _expectComparesSmaller(VersionRange(min: v003, max: v080),
+          VersionRange(min: v010, max: v080));
+      _expectComparesSmaller(VersionRange(min: v003, max: v080),
+          VersionRange(min: v010, max: v114));
     });
 
     test('orders by maximum second', () {
-      _expectComparesSmaller(
-        VersionRange(min: v003, max: v010),
-        VersionRange(min: v003, max: v072),
-      );
+      _expectComparesSmaller(VersionRange(min: v003, max: v010),
+          VersionRange(min: v003, max: v072));
     });
 
     test('includeMin comes before !includeMin', () {
       _expectComparesSmaller(
-        VersionRange(min: v003, max: v080, includeMin: true),
-        VersionRange(min: v003, max: v080),
-      );
+          VersionRange(min: v003, max: v080, includeMin: true),
+          VersionRange(min: v003, max: v080));
     });
 
     test('includeMax comes after !includeMax', () {
-      _expectComparesSmaller(
-        VersionRange(min: v003, max: v080),
-        VersionRange(min: v003, max: v080, includeMax: true),
-      );
+      _expectComparesSmaller(VersionRange(min: v003, max: v080),
+          VersionRange(min: v003, max: v080, includeMax: true));
     });
 
     test('includeMaxPreRelease comes after !includeMaxPreRelease', () {
       _expectComparesSmaller(
-        VersionRange(max: v200),
-        includeMaxPreReleaseRange,
-      );
+          VersionRange(max: v200), includeMaxPreReleaseRange);
     });
 
     test('no minimum comes before small minimum', () {
       _expectComparesSmaller(
-        VersionRange(max: v010),
-        VersionRange(min: v003, max: v010),
-      );
-      _expectComparesSmaller(
-        VersionRange(max: v010, includeMin: true),
-        VersionRange(min: v003, max: v010),
-      );
+          VersionRange(max: v010), VersionRange(min: v003, max: v010));
+      _expectComparesSmaller(VersionRange(max: v010, includeMin: true),
+          VersionRange(min: v003, max: v010));
     });
 
     test('no maximium comes after large maximum', () {
       _expectComparesSmaller(
-        VersionRange(min: v003, max: v300),
-        VersionRange(min: v003),
-      );
-      _expectComparesSmaller(
-        VersionRange(min: v003, max: v300),
-        VersionRange(min: v003, includeMax: true),
-      );
+          VersionRange(min: v003, max: v300), VersionRange(min: v003));
+      _expectComparesSmaller(VersionRange(min: v003, max: v300),
+          VersionRange(min: v003, includeMax: true));
     });
   });
 }
 
 void _expectComparesSmaller(VersionRange smaller, VersionRange larger) {
-  expect(
-    smaller.compareTo(larger),
-    lessThan(0),
-    reason: 'expected $smaller to sort below $larger',
-  );
-  expect(
-    larger.compareTo(smaller),
-    greaterThan(0),
-    reason: 'expected $larger to sort above $smaller',
-  );
+  expect(smaller.compareTo(larger), lessThan(0),
+      reason: 'expected $smaller to sort below $larger');
+  expect(larger.compareTo(smaller), greaterThan(0),
+      reason: 'expected $larger to sort above $smaller');
 }

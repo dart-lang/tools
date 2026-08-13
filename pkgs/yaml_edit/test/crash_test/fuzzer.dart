@@ -85,19 +85,19 @@ void testJsonPath(
       });
 
       for (final style in scalarStyles) {
-        test(
-          '$editorName.insertIntoList($path, $i, \'foo\\nbar\') as $style',
-          () {
-            _tryMutate(() {
-              final editor = YamlEditor(input);
-              editor.insertIntoList(
+        test('$editorName.insertIntoList($path, $i, \'foo\\nbar\') as $style',
+            () {
+          _tryMutate(() {
+            final editor = YamlEditor(input);
+            editor.insertIntoList(
                 path,
                 i,
-                YamlScalar.wrap('foo\nbar', style: style),
-              );
-            });
-          },
-        );
+                YamlScalar.wrap(
+                  'foo\nbar',
+                  style: style,
+                ));
+          });
+        });
       }
     }
   }
@@ -124,7 +124,12 @@ void testJsonPath(
       test('$editorName.update($newPath, \'foo\\nbar\') as $style', () {
         _tryMutate(() {
           final editor = YamlEditor(input);
-          editor.update(newPath, YamlScalar.wrap('foo\nbar', style: style));
+          editor.update(
+              newPath,
+              YamlScalar.wrap(
+                'foo\nbar',
+                style: style,
+              ));
         });
       });
     }

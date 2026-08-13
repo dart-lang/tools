@@ -31,11 +31,14 @@ String get _executable {
       Platform.environment['PROGRAMFILES(X86)'],
     ];
     return p.join(
-      windowsPrefixes.firstWhere((prefix) {
-        if (prefix == null) return false;
-        final path = p.join(prefix, _windowsExecutable);
-        return File(path).existsSync();
-      }, orElse: () => '.')!,
+      windowsPrefixes.firstWhere(
+        (prefix) {
+          if (prefix == null) return false;
+          final path = p.join(prefix, _windowsExecutable);
+          return File(path).existsSync();
+        },
+        orElse: () => '.',
+      )!,
       _windowsExecutable,
     );
   }
@@ -52,8 +55,8 @@ class Chrome {
     Process? process,
     Directory? dataDir,
     this.deleteDataDir = false,
-  }) : _process = process,
-       _dataDir = dataDir;
+  })  : _process = process,
+        _dataDir = dataDir;
 
   final int debugPort;
   final ChromeConnection chromeConnection;
@@ -144,10 +147,9 @@ class Chrome {
           .transform(utf8.decoder)
           .transform(const LineSplitter())
           .firstWhere((line) {
-            errorLines.add(line);
-            return line.startsWith('DevTools listening');
-          })
-          .timeout(const Duration(seconds: 60));
+        errorLines.add(line);
+        return line.startsWith('DevTools listening');
+      }).timeout(const Duration(seconds: 60));
     } on TimeoutException catch (e, s) {
       _logger.severe('Unable to connect to Chrome DevTools', e, s);
       throw Exception(
@@ -228,11 +230,8 @@ Future<int> findUnusedPort() async {
   int port;
   ServerSocket socket;
   try {
-    socket = await ServerSocket.bind(
-      InternetAddress.loopbackIPv6,
-      0,
-      v6Only: true,
-    );
+    socket =
+        await ServerSocket.bind(InternetAddress.loopbackIPv6, 0, v6Only: true);
   } on SocketException {
     socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
   }

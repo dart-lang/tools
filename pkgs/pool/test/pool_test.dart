@@ -85,15 +85,13 @@ void main() {
           blockedResourceAllocated = true;
         });
 
-        Future<void>.delayed(const Duration(microseconds: 1))
-            .then((_) {
-              expect(blockedResourceAllocated, isFalse);
-              completer.complete();
-              return Future<void>.delayed(const Duration(microseconds: 1));
-            })
-            .then((_) {
-              expect(blockedResourceAllocated, isTrue);
-            });
+        Future<void>.delayed(const Duration(microseconds: 1)).then((_) {
+          expect(blockedResourceAllocated, isFalse);
+          completer.complete();
+          return Future<void>.delayed(const Duration(microseconds: 1));
+        }).then((_) {
+          expect(blockedResourceAllocated, isTrue);
+        });
 
         async.elapse(const Duration(seconds: 1));
       });
@@ -187,21 +185,19 @@ void main() {
       expect(onReleaseCalled, isTrue);
     });
 
-    test(
-      'runs the callback immediately if there are blocked requests',
-      () async {
-        var pool = Pool(1);
-        var resource = await pool.request();
+    test('runs the callback immediately if there are blocked requests',
+        () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
 
-        // This will be blocked until [resource.allowRelease] is called.
-        expect(pool.request(), completes);
+      // This will be blocked until [resource.allowRelease] is called.
+      expect(pool.request(), completes);
 
-        var onReleaseCalled = false;
-        resource.allowRelease(() => onReleaseCalled = true);
-        await Future<void>.delayed(Duration.zero);
-        expect(onReleaseCalled, isTrue);
-      },
-    );
+      var onReleaseCalled = false;
+      resource.allowRelease(() => onReleaseCalled = true);
+      await Future<void>.delayed(Duration.zero);
+      expect(onReleaseCalled, isTrue);
+    });
 
     test('blocks the request until the callback completes', () async {
       var pool = Pool(1);
@@ -220,7 +216,8 @@ void main() {
       expect(requestComplete, isTrue);
     });
 
-    test('completes requests in request order regardless of callback order', () async {
+    test('completes requests in request order regardless of callback order',
+        () async {
       var pool = Pool(2);
       var resource1 = await pool.request();
       var resource2 = await pool.request();
@@ -273,11 +270,9 @@ void main() {
         var innerZone = Zone.current;
         expect(innerZone, isNot(equals(outerZone)));
 
-        resource.allowRelease(
-          expectAsync0(() {
-            expect(Zone.current, equals(innerZone));
-          }),
-        );
+        resource.allowRelease(expectAsync0(() {
+          expect(Zone.current, equals(innerZone));
+        }));
       });
 
       await pool.request();
@@ -298,32 +293,29 @@ void main() {
       await expectLater(requestFuture, completes);
     });
 
-    test(
-      'request() does not leak resources when allowRelease throws',
-      () async {
-        var pool = Pool(1);
-        var resource = await pool.request();
+    test('request() does not leak resources when allowRelease throws',
+        () async {
+      var pool = Pool(1);
+      var resource = await pool.request();
 
-        var requestFuture = pool.request();
+      var requestFuture = pool.request();
 
-        var completer = Completer<void>();
-        resource.allowRelease(() => completer.future);
+      var completer = Completer<void>();
+      resource.allowRelease(() => completer.future);
 
-        await Future<void>.delayed(Duration.zero);
-        completer.completeError('oh no!');
+      await Future<void>.delayed(Duration.zero);
+      completer.completeError('oh no!');
 
-        var resource2 = await requestFuture;
-        resource2.release();
+      var resource2 = await requestFuture;
+      resource2.release();
 
-        // Without the fix, this will hang because the slot is leaked.
-        var nextRequest = pool.request().timeout(
+      // Without the fix, this will hang because the slot is leaked.
+      var nextRequest = pool.request().timeout(
           const Duration(milliseconds: 100),
-          onTimeout: () => throw TimeoutException('Leaked!'),
-        );
+          onTimeout: () => throw TimeoutException('Leaked!'));
 
-        await expectLater(nextRequest, completes);
-      },
-    );
+      await expectLater(nextRequest, completes);
+    });
 
     test('throwing in request listener does not corrupt state', () async {
       var pool = Pool(2);
@@ -348,16 +340,11 @@ void main() {
 
       var request2Completed = false;
       var request2Error = false;
-      unawaited(
-        requestFuture2.then(
-          (_) {
-            request2Completed = true;
-          },
-          onError: (Object e) {
-            request2Error = true;
-          },
-        ),
-      );
+      unawaited(requestFuture2.then((_) {
+        request2Completed = true;
+      }, onError: (Object e) {
+        request2Error = true;
+      }));
 
       await Future<void>.delayed(Duration.zero);
 
@@ -440,11 +427,10 @@ void main() {
       var pool = Pool(1);
       var resource1 = await pool.request();
       expect(
-        pool.request().then((resource2) {
-          resource2.release();
-        }),
-        completes,
-      );
+          pool.request().then((resource2) {
+            resource2.release();
+          }),
+          completes);
       expect(pool.done, completes);
       expect(pool.close(), completes);
       resource1.release();
@@ -456,12 +442,11 @@ void main() {
 
       var completer = Completer<void>();
       expect(
-        pool.request().then((resource2) {
-          expect(completer.isCompleted, isTrue);
-          resource2.release();
-        }),
-        completes,
-      );
+          pool.request().then((resource2) {
+            expect(completer.isCompleted, isTrue);
+            resource2.release();
+          }),
+          completes);
       expect(pool.close(), completes);
 
       resource1.allowRelease(() => completer.future);
@@ -480,13 +465,12 @@ void main() {
       var resource2Released = false;
       var resource3Released = false;
       expect(
-        pool.close().then((_) {
-          expect(resource1Released, isTrue);
-          expect(resource2Released, isTrue);
-          expect(resource3Released, isTrue);
-        }),
-        completes,
-      );
+          pool.close().then((_) {
+            expect(resource1Released, isTrue);
+            expect(resource2Released, isTrue);
+            expect(resource3Released, isTrue);
+          }),
+          completes);
 
       resource1Released = true;
       resource1.release();
@@ -510,11 +494,10 @@ void main() {
       var completer = Completer<void>();
       resource.allowRelease(() => completer.future);
       expect(
-        pool.request().then((_) {
-          expect(completer.isCompleted, isTrue);
-        }),
-        completes,
-      );
+          pool.request().then((_) {
+            expect(completer.isCompleted, isTrue);
+          }),
+          completes);
 
       await Future<void>.delayed(Duration.zero);
       unawaited(pool.close());
@@ -534,12 +517,11 @@ void main() {
       resource2.allowRelease(() => completer2.future);
 
       expect(
-        pool.close().then((_) {
-          expect(completer1.isCompleted, isTrue);
-          expect(completer2.isCompleted, isTrue);
-        }),
-        completes,
-      );
+          pool.close().then((_) {
+            expect(completer1.isCompleted, isTrue);
+            expect(completer2.isCompleted, isTrue);
+          }),
+          completes);
 
       await Future<void>.delayed(Duration.zero);
       completer1.complete();
@@ -554,11 +536,10 @@ void main() {
 
       var completer = Completer<void>();
       expect(
-        pool.close().then((_) {
-          expect(completer.isCompleted, isTrue);
-        }),
-        completes,
-      );
+          pool.close().then((_) {
+            expect(completer.isCompleted, isTrue);
+          }),
+          completes);
 
       await Future<void>.delayed(Duration.zero);
       resource.allowRelease(() => completer.future);
@@ -602,16 +583,12 @@ void main() {
           var finishedItems = 0;
 
           await for (var item in pool.forEach(
-            Iterable.generate(itemCount, (i) {
-              expect(
-                i,
-                lessThanOrEqualTo(finishedItems + poolSize),
-                reason: 'the iterator should be called lazily',
-              );
-              return i;
-            }),
-            delayedToString,
-          )) {
+              Iterable.generate(itemCount, (i) {
+                expect(i, lessThanOrEqualTo(finishedItems + poolSize),
+                    reason: 'the iterator should be called lazily');
+                return i;
+              }),
+              delayedToString)) {
             expect(int.parse(item), lessThan(itemCount));
             finishedItems++;
           }
@@ -649,97 +626,71 @@ void main() {
       var resource = await pool.request();
 
       var stream = pool.forEach<int, int>(
-        Iterable.generate(100, (i) {
-          expect(
-            i,
-            lessThan(20),
-            reason:
-                'The timeout should happen '
-                'before the entire iterable is iterated.',
-          );
-          return i;
-        }),
-        (i) async {
-          await Future<void>.delayed(Duration(milliseconds: i));
-          return i;
-        },
-      );
+          Iterable.generate(100, (i) {
+            expect(i, lessThan(20),
+                reason: 'The timeout should happen '
+                    'before the entire iterable is iterated.');
+            return i;
+          }), (i) async {
+        await Future<void>.delayed(Duration(milliseconds: i));
+        return i;
+      });
 
       await expectLater(
-        stream.toList,
-        throwsA(
-          const TypeMatcher<TimeoutException>().having(
-            (te) => te.message,
-            'message',
-            contains(
-              'Pool deadlock: '
-              'all resources have been allocated for too long.',
-            ),
-          ),
-        ),
-      );
+          stream.toList,
+          throwsA(const TypeMatcher<TimeoutException>().having(
+              (te) => te.message,
+              'message',
+              contains('Pool deadlock: '
+                  'all resources have been allocated for too long.'))));
 
       resource.release();
     });
 
     group('timing and timeout', () {
       for (var poolSize in [2, 8, 64]) {
-        for (var otherTaskCount in [
-          0,
-          1,
-          7,
-          63,
-        ].where((otc) => otc < poolSize)) {
-          test(
-            'poolSize: $poolSize, otherTaskCount: $otherTaskCount',
-            () async {
-              final itemCount = 128;
-              pool = Pool(poolSize, timeout: const Duration(milliseconds: 20));
+        for (var otherTaskCount
+            in [0, 1, 7, 63].where((otc) => otc < poolSize)) {
+          test('poolSize: $poolSize, otherTaskCount: $otherTaskCount',
+              () async {
+            final itemCount = 128;
+            pool = Pool(poolSize, timeout: const Duration(milliseconds: 20));
 
-              var otherTasks = await Future.wait(
+            var otherTasks = await Future.wait(
                 Iterable<int>.generate(otherTaskCount)
-                    .map((i) => pool.request()),
-              );
+                    .map((i) => pool.request()));
 
-              try {
-                var finishedItems = 0;
+            try {
+              var finishedItems = 0;
 
-                var watch = Stopwatch()..start();
+              var watch = Stopwatch()..start();
 
-                await for (var item in pool.forEach(
+              await for (var item in pool.forEach(
                   Iterable.generate(itemCount, (i) {
-                    expect(
-                      i,
-                      lessThanOrEqualTo(finishedItems + poolSize),
-                      reason: 'the iterator should be called lazily',
-                    );
+                    expect(i, lessThanOrEqualTo(finishedItems + poolSize),
+                        reason: 'the iterator should be called lazily');
                     return i;
                   }),
-                  delayedToString,
-                )) {
-                  expect(int.parse(item), lessThan(itemCount));
-                  finishedItems++;
-                }
-
-                expect(finishedItems, itemCount);
-
-                final expectedElapsed =
-                    delayedToStringDuration.inMicroseconds * 4;
-
-                expect(
-                  (watch.elapsed ~/ itemCount).inMicroseconds,
-                  lessThan(expectedElapsed / (poolSize - otherTaskCount)),
-                  reason:
-                      'Average time per task should be '
-                      'proportionate to the available pool resources.',
-                );
-              } finally {
-                for (var task in otherTasks) {
-                  task.release();
-                }
+                  delayedToString)) {
+                expect(int.parse(item), lessThan(itemCount));
+                finishedItems++;
               }
-            },
-          );
+
+              expect(finishedItems, itemCount);
+
+              final expectedElapsed =
+                  delayedToStringDuration.inMicroseconds * 4;
+
+              expect((watch.elapsed ~/ itemCount).inMicroseconds,
+                  lessThan(expectedElapsed / (poolSize - otherTaskCount)),
+                  reason: 'Average time per task should be '
+                      'proportionate to the available pool resources.');
+            } finally {
+              for (var task in otherTasks) {
+                task.release();
+              }
+            }
+          });
         }
       }
     }, testOn: 'vm');
@@ -774,19 +725,14 @@ void main() {
       pool = Pool(poolSize);
 
       var stream = pool.forEach(
-        Iterable<int>.generate(40, (i) {
-          expect(
-            generatedCount,
-            lessThanOrEqualTo(dataCount + 2 * poolSize),
-            reason:
-                'The iterator should not be called '
-                'much faster than the data is consumed.',
-          );
-          generatedCount++;
-          return i;
-        }),
-        delayedToString,
-      );
+          Iterable<int>.generate(40, (i) {
+            expect(generatedCount, lessThanOrEqualTo(dataCount + 2 * poolSize),
+                reason: 'The iterator should not be called '
+                    'much faster than the data is consumed.');
+            generatedCount++;
+            return i;
+          }),
+          delayedToString);
 
       // ignore: cancel_subscriptions
       late StreamSubscription subscription;
@@ -796,11 +742,9 @@ void main() {
           dataCount++;
 
           if (int.parse(data) % 3 == 1) {
-            subscription.pause(
-              Future(() async {
-                await Future<void>.delayed(const Duration(milliseconds: 100));
-              }),
-            );
+            subscription.pause(Future(() async {
+              await Future<void>.delayed(const Duration(milliseconds: 100));
+            }));
           }
         },
         onError: registerException,
@@ -818,21 +762,16 @@ void main() {
 
           final stopAfter = dataSize ~/ 2;
           var workStarted = -1;
-          var stream = pool.forEach(Iterable<int>.generate(dataSize), (
-            i,
-          ) async {
+          var stream =
+              pool.forEach(Iterable<int>.generate(dataSize), (i) async {
             if (i > workStarted) workStarted = i;
             await pumpEventQueue();
             return i;
           });
           await stream.take(stopAfter).drain<void>();
-          expect(
-            workStarted,
-            lessThanOrEqualTo(stopAfter + i),
-            reason:
-                'at most $i resources may be acquired '
-                'during ongoing cancellation',
-          );
+          expect(workStarted, lessThanOrEqualTo(stopAfter + i),
+              reason: 'at most $i resources may be acquired '
+                  'during ongoing cancellation');
         });
       }
 
@@ -886,15 +825,12 @@ void main() {
 
         late StreamSubscription subscription;
 
-        subscription = stream.listen(
-          (data) {},
-          onError: (e) {
-            errorCompleter.complete();
-            subscription.cancel().then((_) {
-              cancelCompleter.complete();
-            });
-          },
-        );
+        subscription = stream.listen((data) {}, onError: (e) {
+          errorCompleter.complete();
+          subscription.cancel().then((_) {
+            cancelCompleter.complete();
+          });
+        });
 
         await worker1Started.future;
         await errorCompleter.future;
@@ -915,16 +851,15 @@ void main() {
 
         var listFuture = pool
             .forEach(
-              Iterable.generate(100, (i) {
-                if (i == 50) {
-                  throw StateError('error while generating item in iterator');
-                }
+                Iterable.generate(100, (i) {
+                  if (i == 50) {
+                    throw StateError('error while generating item in iterator');
+                  }
 
-                return i;
-              }),
-              delayedToString,
-              onError: onError,
-            )
+                  return i;
+                }),
+                delayedToString,
+                onError: onError)
             .toList();
 
         await expectLater(() async => listFuture, throwsStateError);
@@ -962,26 +897,22 @@ void main() {
       });
 
       test(
-        'iterator error with advancing iterator stops processing other items',
-        () async {
-          pool = Pool(1);
+          'iterator error with advancing iterator stops processing other items',
+          () async {
+        pool = Pool(1);
 
-          var pulledItems = <int>[];
-          var stream = pool.forEach(
-            _AdvancingThrowingIterable((i) {
-              pulledItems.add(i);
-            }),
-            (i) async {
-              await Future<void>.delayed(const Duration(milliseconds: 10));
-              return i;
-            },
-          );
+        var pulledItems = <int>[];
+        var stream = pool.forEach(_AdvancingThrowingIterable((i) {
+          pulledItems.add(i);
+        }), (i) async {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          return i;
+        });
 
-          await expectLater(stream.toList(), throwsException);
+        await expectLater(stream.toList(), throwsException);
 
-          expect(pulledItems.length, lessThan(5));
-        },
-      );
+        expect(pulledItems.length, lessThan(5));
+      });
 
       test('error in action, no onError', () async {
         pool = Pool(20);
@@ -1000,17 +931,16 @@ void main() {
       test('error in action, no onError', () async {
         pool = Pool(20);
 
-        var list = await pool.forEach(
-          Iterable<int>.generate(100),
-          (int i) async {
-            await Future<void>.delayed(const Duration(milliseconds: 10));
-            if (i % 10 == 0) {
-              throw UnsupportedError('Multiples of 10 not supported');
-            }
-            return i.toString();
-          },
-          onError: (item, error, stack) => error is! UnsupportedError,
-        ).toList();
+        var list = await pool.forEach(Iterable<int>.generate(100),
+            (int i) async {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          if (i % 10 == 0) {
+            throw UnsupportedError('Multiples of 10 not supported');
+          }
+          return i.toString();
+        },
+            onError: (item, error, stack) =>
+                error is! UnsupportedError).toList();
 
         expect(list, hasLength(90));
       });
@@ -1029,24 +959,18 @@ void main() {
 void Function() expectNoAsync() {
   var stack = Trace.current(1);
   return () => registerException(
-    TestFailure('Expected function not to be called.'),
-    stack,
-  );
+      TestFailure('Expected function not to be called.'), stack);
 }
 
 /// A matcher for Futures that asserts that they don't complete.
 ///
 /// This should only be called within a [FakeAsync.run] zone.
 Matcher get doesNotComplete => predicate((Future future) {
-  var stack = Trace.current(1);
-  future.then(
-    (_) => registerException(
-      TestFailure('Expected future not to complete.'),
-      stack,
-    ),
-  );
-  return true;
-});
+      var stack = Trace.current(1);
+      future.then((_) => registerException(
+          TestFailure('Expected future not to complete.'), stack));
+      return true;
+    });
 
 class _AdvancingThrowingIterable extends Iterable<int> {
   final void Function(int) onPull;

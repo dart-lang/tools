@@ -80,11 +80,8 @@ class Pool {
   /// intended to avoid deadlocks.
   Pool(this._maxAllocatedResources, {Duration? timeout}) : _timeout = timeout {
     if (_maxAllocatedResources <= 0) {
-      throw ArgumentError.value(
-        _maxAllocatedResources,
-        'maxAllocatedResources',
-        'Must be greater than zero.',
-      );
+      throw ArgumentError.value(_maxAllocatedResources, 'maxAllocatedResources',
+          'Must be greater than zero.');
     }
 
     if (timeout != null) {
@@ -154,10 +151,8 @@ class Pool {
   /// Note: if this [Pool] is closed before the returned [Stream] is listened
   /// to, a [StateError] is thrown.
   Stream<T> forEach<S, T>(
-    Iterable<S> elements,
-    FutureOr<T> Function(S source) action, {
-    bool Function(S item, Object error, StackTrace stack)? onError,
-  }) {
+      Iterable<S> elements, FutureOr<T> Function(S source) action,
+      {bool Function(S item, Object error, StackTrace stack)? onError}) {
     final errorHandler = onError ?? (item, e, s) => true;
 
     var cancelPending = false;
@@ -335,13 +330,11 @@ class Pool {
   void _onTimeout() {
     for (var completer in _requestedResources) {
       completer.completeError(
-        TimeoutException(
-          'Pool deadlock: all resources have been '
-          'allocated for too long.',
-          _timeout,
-        ),
-        Chain.current(),
-      );
+          TimeoutException(
+              'Pool deadlock: all resources have been '
+              'allocated for too long.',
+              _timeout),
+          Chain.current());
     }
     _requestedResources.clear();
     _timer = null;

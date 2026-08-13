@@ -15,22 +15,16 @@ import 'package:path/path.dart' as path;
 /// Defaults to the expanded reporter (because the default reporter may differ
 /// between GitHub and running locally) but this can be overridden with
 /// [reporter].
-Future<({String stdout, String stderr})> runTestFile(
-  String filename, {
-  String reporter = 'expanded',
-}) async {
+Future<({String stdout, String stderr})> runTestFile(String filename,
+    {String reporter = 'expanded'}) async {
   var testPackagePath = (await Isolate.resolvePackageUri(
-    Uri.parse('package:test_reflective_loader/'),
-  ))!.toFilePath();
+          Uri.parse('package:test_reflective_loader/')))!
+      .toFilePath();
   var testFilePath = path.isAbsolute(filename)
       ? filename
       : path.normalize(path.join(testPackagePath, '..', 'test', filename));
-  var result = await Process.run(Platform.resolvedExecutable, [
-    'test',
-    '-r',
-    reporter,
-    testFilePath,
-  ]);
+  var result = await Process.run(
+      Platform.resolvedExecutable, ['test', '-r', reporter, testFilePath]);
 
   var output = result.stdout.toString().trim();
   var error = result.stderr.toString().trim();

@@ -32,12 +32,13 @@ void main() {
   _configureLogging(false);
 
   Future<ChromeTab?> getTab(String url) => chrome!.chromeConnection.getTab(
-    (t) => t.url.contains(url),
-    retryFor: const Duration(seconds: 5),
-  );
+        (t) => t.url.contains(url),
+        retryFor: const Duration(seconds: 5),
+      );
 
-  Future<List<ChromeTab>?> getTabs() =>
-      chrome!.chromeConnection.getTabs(retryFor: const Duration(seconds: 5));
+  Future<List<ChromeTab>?> getTabs() => chrome!.chromeConnection.getTabs(
+        retryFor: const Duration(seconds: 5),
+      );
 
   Future<WipConnection> connectToTab(String url) async {
     final tab = await getTab(url);
@@ -69,7 +70,10 @@ void main() {
     await Chrome.start([_googleUrl], args: [if (headless) '--headless']);
   }
 
-  final headlessModes = [true, if (!headlessOnlyEnvironment) false];
+  final headlessModes = [
+    true,
+    if (!headlessOnlyEnvironment) false,
+  ];
 
   for (var headless in headlessModes) {
     group('(headless: $headless)', () {
@@ -99,10 +103,8 @@ void main() {
           final wipConnection = await connectToTab(_googleUrl);
           await wipConnection.debugger.enable();
           await wipConnection.runtime.enable();
-          final userAgent = await _evaluate(
-            wipConnection.page,
-            'navigator.userAgent',
-          );
+          final userAgent =
+              await _evaluate(wipConnection.page, 'navigator.userAgent');
           expect(userAgent, contains('CustomTestAgent'));
         });
 
@@ -112,11 +114,8 @@ void main() {
           expect(
             tabs,
             contains(
-              const TypeMatcher<ChromeTab>().having(
-                (t) => t.url,
-                'url',
-                _googleUrl,
-              ),
+              const TypeMatcher<ChromeTab>()
+                  .having((t) => t.url, 'url', _googleUrl),
             ),
           );
         });
@@ -179,11 +178,8 @@ void main() {
               expect(
                 tabs,
                 contains(
-                  const TypeMatcher<ChromeTab>().having(
-                    (t) => t.url,
-                    'url',
-                    _googleUrl,
-                  ),
+                  const TypeMatcher<ChromeTab>()
+                      .having((t) => t.url, 'url', _googleUrl),
                 ),
               );
             });

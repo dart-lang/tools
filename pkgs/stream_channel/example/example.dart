@@ -50,9 +50,7 @@ Future<void> main() async {
   // StreamChannel<T> that provides all guarantees.
   var dummyCtrl0 = StreamChannelController<String>();
   var guaranteedChannel = StreamChannel.withGuarantees(
-    dummyCtrl0.foreign.stream,
-    dummyCtrl0.foreign.sink,
-  );
+      dummyCtrl0.foreign.stream, dummyCtrl0.foreign.sink);
 
   // To close a StreamChannel, use `sink.close()`.
   await guaranteedChannel.sink.close();

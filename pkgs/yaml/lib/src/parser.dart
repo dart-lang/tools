@@ -46,18 +46,13 @@ class Parser {
   /// return invalid or synthetic nodes. If [errorListener] is also supplied,
   /// its onError method will be called for each error recovered from. It is not
   /// valid to provide [errorListener] if [recover] is false.
-  Parser(
-    String source, {
-    Uri? sourceUrl,
-    bool recover = false,
-    ErrorListener? errorListener,
-  }) : assert(recover || errorListener == null),
-       _scanner = Scanner(
-         source,
-         sourceUrl: sourceUrl,
-         recover: recover,
-         errorListener: errorListener,
-       );
+  Parser(String source,
+      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener})
+      : assert(recover || errorListener == null),
+        _scanner = Scanner(source,
+            sourceUrl: sourceUrl,
+            recover: recover,
+            errorListener: errorListener);
 
   /// Consumes and returns the next event.
   Event parse() {
@@ -188,12 +183,10 @@ class Parser {
     _states.add(_State.DOCUMENT_END);
     _state = _State.DOCUMENT_CONTENT;
     _scanner.scan();
-    return DocumentStartEvent(
-      start.expand(token.span),
-      versionDirective: versionDirective,
-      tagDirectives: tagDirectives,
-      isImplicit: false,
-    );
+    return DocumentStartEvent(start.expand(token.span),
+        versionDirective: versionDirective,
+        tagDirectives: tagDirectives,
+        isImplicit: false);
   }
 
   /// Parses the productions:
@@ -312,12 +305,8 @@ class Parser {
 
     if (indentlessSequence && token.type == TokenType.blockEntry) {
       _state = _State.INDENTLESS_SEQUENCE_ENTRY;
-      return SequenceStartEvent(
-        span.expand(token.span),
-        CollectionStyle.BLOCK,
-        anchor: anchor,
-        tag: tag,
-      );
+      return SequenceStartEvent(span.expand(token.span), CollectionStyle.BLOCK,
+          anchor: anchor, tag: tag);
     }
 
     if (token is ScalarToken) {
@@ -326,53 +315,32 @@ class Parser {
 
       _state = _states.removeLast();
       _scanner.scan();
-      return ScalarEvent(
-        span.expand(token.span),
-        token.value,
-        token.style,
-        anchor: anchor,
-        tag: tag,
-      );
+      return ScalarEvent(span.expand(token.span), token.value, token.style,
+          anchor: anchor, tag: tag);
     }
 
     if (token.type == TokenType.flowSequenceStart) {
       _state = _State.FLOW_SEQUENCE_FIRST_ENTRY;
-      return SequenceStartEvent(
-        span.expand(token.span),
-        CollectionStyle.FLOW,
-        anchor: anchor,
-        tag: tag,
-      );
+      return SequenceStartEvent(span.expand(token.span), CollectionStyle.FLOW,
+          anchor: anchor, tag: tag);
     }
 
     if (token.type == TokenType.flowMappingStart) {
       _state = _State.FLOW_MAPPING_FIRST_KEY;
-      return MappingStartEvent(
-        span.expand(token.span),
-        CollectionStyle.FLOW,
-        anchor: anchor,
-        tag: tag,
-      );
+      return MappingStartEvent(span.expand(token.span), CollectionStyle.FLOW,
+          anchor: anchor, tag: tag);
     }
 
     if (block && token.type == TokenType.blockSequenceStart) {
       _state = _State.BLOCK_SEQUENCE_FIRST_ENTRY;
-      return SequenceStartEvent(
-        span.expand(token.span),
-        CollectionStyle.BLOCK,
-        anchor: anchor,
-        tag: tag,
-      );
+      return SequenceStartEvent(span.expand(token.span), CollectionStyle.BLOCK,
+          anchor: anchor, tag: tag);
     }
 
     if (block && token.type == TokenType.blockMappingStart) {
       _state = _State.BLOCK_MAPPING_FIRST_KEY;
-      return MappingStartEvent(
-        span.expand(token.span),
-        CollectionStyle.BLOCK,
-        anchor: anchor,
-        tag: tag,
-      );
+      return MappingStartEvent(span.expand(token.span), CollectionStyle.BLOCK,
+          anchor: anchor, tag: tag);
     }
 
     if (anchor != null || tag != null) {
@@ -421,10 +389,8 @@ class Parser {
       return _parseNode(block: true);
     }
 
-    throw YamlException(
-      "While parsing a block collection, expected '-'.",
-      token.span.start.pointSpan(),
-    );
+    throw YamlException("While parsing a block collection, expected '-'.",
+        token.span.start.pointSpan());
   }
 
   /// Parses the productions:
@@ -495,10 +461,8 @@ class Parser {
       return Event(EventType.mappingEnd, token.span);
     }
 
-    throw YamlException(
-      'Expected a key while parsing a block mapping.',
-      token.span.start.pointSpan(),
-    );
+    throw YamlException('Expected a key while parsing a block mapping.',
+        token.span.start.pointSpan());
   }
 
   /// Parses the productions:
@@ -553,9 +517,8 @@ class Parser {
       if (!first) {
         if (token.type != TokenType.flowEntry) {
           throw YamlException(
-            "While parsing a flow sequence, expected ',' or ']'.",
-            token.span.start.pointSpan(),
-          );
+              "While parsing a flow sequence, expected ',' or ']'.",
+              token.span.start.pointSpan());
         }
 
         token = _scanner.advance()!;
@@ -652,9 +615,8 @@ class Parser {
       if (!first) {
         if (token.type != TokenType.flowEntry) {
           throw YamlException(
-            "While parsing a flow mapping, expected ',' or '}'.",
-            token.span.start.pointSpan(),
-          );
+              "While parsing a flow mapping, expected ',' or '}'.",
+              token.span.start.pointSpan());
         }
 
         token = _scanner.advance()!;
@@ -727,17 +689,14 @@ class Parser {
 
         if (token.major != 1 || token.minor == 0) {
           throw YamlException(
-            'Incompatible YAML document. This parser only supports YAML 1.1 '
-            'and 1.2.',
-            token.span,
-          );
+              'Incompatible YAML document. This parser only supports YAML 1.1 '
+              'and 1.2.',
+              token.span);
         } else if (token.minor > 2) {
           // TODO(nweiz): Print to stderr when issue 6943 is fixed and dart:io
           // is available.
-          warn(
-            'Warning: this parser only supports YAML 1.1 and 1.2.',
-            token.span,
-          );
+          warn('Warning: this parser only supports YAML 1.1 and 1.2.',
+              token.span);
         }
 
         versionDirective = VersionDirective(token.major, token.minor);
@@ -750,26 +709,18 @@ class Parser {
       token = _scanner.advance()!;
     }
 
+    _appendTagDirective(TagDirective('!', '!'), token.span.start.pointSpan(),
+        allowDuplicates: true);
     _appendTagDirective(
-      TagDirective('!', '!'),
-      token.span.start.pointSpan(),
-      allowDuplicates: true,
-    );
-    _appendTagDirective(
-      TagDirective('!!', 'tag:yaml.org,2002:'),
-      token.span.start.pointSpan(),
-      allowDuplicates: true,
-    );
+        TagDirective('!!', 'tag:yaml.org,2002:'), token.span.start.pointSpan(),
+        allowDuplicates: true);
 
     return (versionDirective, tagDirectives);
   }
 
   /// Adds a tag directive to the directives stack.
-  void _appendTagDirective(
-    TagDirective newDirective,
-    FileSpan span, {
-    bool allowDuplicates = false,
-  }) {
+  void _appendTagDirective(TagDirective newDirective, FileSpan span,
+      {bool allowDuplicates = false}) {
     if (_tagDirectives.containsKey(newDirective.handle)) {
       if (allowDuplicates) return;
       throw YamlException('Duplicate %TAG directive.', span);
@@ -797,17 +748,15 @@ class _State {
   static const BLOCK_NODE = _State('BLOCK_NODE');
 
   /// Expect a block node or indentless sequence.
-  static const BLOCK_NODE_OR_INDENTLESS_SEQUENCE = _State(
-    'BLOCK_NODE_OR_INDENTLESS_SEQUENCE',
-  );
+  static const BLOCK_NODE_OR_INDENTLESS_SEQUENCE =
+      _State('BLOCK_NODE_OR_INDENTLESS_SEQUENCE');
 
   /// Expect a flow node.
   static const FLOW_NODE = _State('FLOW_NODE');
 
   /// Expect the first entry of a block sequence.
-  static const BLOCK_SEQUENCE_FIRST_ENTRY = _State(
-    'BLOCK_SEQUENCE_FIRST_ENTRY',
-  );
+  static const BLOCK_SEQUENCE_FIRST_ENTRY =
+      _State('BLOCK_SEQUENCE_FIRST_ENTRY');
 
   /// Expect an entry of a block sequence.
   static const BLOCK_SEQUENCE_ENTRY = _State('BLOCK_SEQUENCE_ENTRY');
@@ -831,19 +780,16 @@ class _State {
   static const FLOW_SEQUENCE_ENTRY = _State('FLOW_SEQUENCE_ENTRY');
 
   /// Expect a key of an ordered mapping.
-  static const FLOW_SEQUENCE_ENTRY_MAPPING_KEY = _State(
-    'FLOW_SEQUENCE_ENTRY_MAPPING_KEY',
-  );
+  static const FLOW_SEQUENCE_ENTRY_MAPPING_KEY =
+      _State('FLOW_SEQUENCE_ENTRY_MAPPING_KEY');
 
   /// Expect a value of an ordered mapping.
-  static const FLOW_SEQUENCE_ENTRY_MAPPING_VALUE = _State(
-    'FLOW_SEQUENCE_ENTRY_MAPPING_VALUE',
-  );
+  static const FLOW_SEQUENCE_ENTRY_MAPPING_VALUE =
+      _State('FLOW_SEQUENCE_ENTRY_MAPPING_VALUE');
 
   /// Expect the and of an ordered mapping entry.
-  static const FLOW_SEQUENCE_ENTRY_MAPPING_END = _State(
-    'FLOW_SEQUENCE_ENTRY_MAPPING_END',
-  );
+  static const FLOW_SEQUENCE_ENTRY_MAPPING_END =
+      _State('FLOW_SEQUENCE_ENTRY_MAPPING_END');
 
   /// Expect the first key of a flow mapping.
   static const FLOW_MAPPING_FIRST_KEY = _State('FLOW_MAPPING_FIRST_KEY');

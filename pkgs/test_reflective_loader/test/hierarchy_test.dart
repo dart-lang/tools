@@ -12,13 +12,12 @@ void main() {
 
     expect(stderr, isEmpty);
     expect(
-      stdout,
-      allOf([
-        contains('SimpleTest test_foo'),
-        contains('level_1.1 level_2.1 SimpleTest test_foo'),
-        contains('level_1.1 level_2.2 SimpleTest test_foo'),
-        contains('All tests passed!'),
-      ]),
-    );
+        stdout,
+        allOf([
+          contains('SimpleTest test_foo'),
+          contains('level_1.1 level_2.1 SimpleTest test_foo'),
+          contains('level_1.1 level_2.2 SimpleTest test_foo'),
+          contains('All tests passed!'),
+        ]));
   });
 }

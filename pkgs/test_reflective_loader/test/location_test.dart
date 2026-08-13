@@ -12,18 +12,13 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
-  test("reports correct locations in the JSON output from 'dart test'", () async {
+  test("reports correct locations in the JSON output from 'dart test'",
+      () async {
     var testPackagePath = (await Isolate.resolvePackageUri(
-      Uri.parse('package:test_reflective_loader/'),
-    ))!.toFilePath();
-    var testFilePath = path.normalize(
-      path.join(
-        testPackagePath,
-        '..',
-        'test',
-        'test_reflective_loader_test.dart',
-      ),
-    );
+            Uri.parse('package:test_reflective_loader/')))!
+        .toFilePath();
+    var testFilePath = path.normalize(path.join(
+        testPackagePath, '..', 'test', 'test_reflective_loader_test.dart'));
     var testFileContent = File(testFilePath).readAsLinesSync();
 
     var (:stdout, :stderr) = await runTestFile(testFilePath, reporter: 'json');
@@ -68,23 +63,15 @@ void main() {
         if (lineContent.trim().startsWith('@')) {
           lineContent = testFileContent[line];
         }
-        expect(
-          lineContent,
-          contains(name),
-          reason:
-              'JSON reports test $name on line $line, '
-              'but line content is "$lineContent"',
-        );
+        expect(lineContent, contains(name),
+            reason: 'JSON reports test $name on line $line, '
+                'but line content is "$lineContent"');
 
         // Verify the column too.
         var columnContent = lineContent.substring(column - 1);
-        expect(
-          columnContent,
-          contains(name),
-          reason:
-              'JSON reports test $name at column $column, '
-              'but text at column is "$columnContent"',
-        );
+        expect(columnContent, contains(name),
+            reason: 'JSON reports test $name at column $column, '
+                'but text at column is "$columnContent"');
       }
     }
   });

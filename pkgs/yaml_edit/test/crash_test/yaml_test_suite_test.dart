@@ -77,12 +77,10 @@ final _skippedCases = [
 
 Future<void> main() async {
   final packageUri = await Isolate.resolvePackageUri(
-    Uri.parse('package:yaml_edit/yaml_edit.dart'),
-  );
+      Uri.parse('package:yaml_edit/yaml_edit.dart'));
 
-  final testdataUri = packageUri!.resolve(
-    '../../../third_party/yaml-test-suite/src/',
-  );
+  final testdataUri =
+      packageUri!.resolve('../../../third_party/yaml-test-suite/src/');
   final srcDir = Directory.fromUri(testdataUri);
 
   if (!srcDir.existsSync()) {
@@ -111,11 +109,8 @@ Future<void> main() async {
         final caseName = '${basename}_$i';
 
         if (_skippedCases.contains(caseName)) {
-          test(
-            'yaml_test_suite_test.dart for $caseName',
-            () {},
-            skip: 'Known failures in "$caseName"',
-          );
+          test('yaml_test_suite_test.dart for $caseName', () {},
+              skip: 'Known failures in "$caseName"');
           continue;
         }
 

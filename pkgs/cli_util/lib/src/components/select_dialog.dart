@@ -262,9 +262,9 @@ Future<Set<int>?> _runDialog(
 
     return await doneCompleter.future;
   } finally {
-    await [for (final cleanupTask in cleanupTasks) cleanupTask()]
-        .whereType<Future<void>>()
-        .wait;
+    await [
+      for (final cleanupTask in cleanupTasks) cleanupTask(),
+    ].whereType<Future<void>>().wait;
   }
 }
 
@@ -310,12 +310,12 @@ void _render({
 }) {
   // Calculate the window of items to display.
   final isScrollable = items.length > height;
-  final start = isScrollable
-      ? (cursor - (height ~/ 2)).clamp(0, items.length - height)
-      : 0;
-  final end = isScrollable
-      ? math.min(start + height, items.length)
-      : items.length;
+  final start =
+      isScrollable
+          ? (cursor - (height ~/ 2)).clamp(0, items.length - height)
+          : 0;
+  final end =
+      isScrollable ? math.min(start + height, items.length) : items.length;
   final visibleCount = end - start;
 
   // Move the cursor to the top of the dialog if we're not on the first render.

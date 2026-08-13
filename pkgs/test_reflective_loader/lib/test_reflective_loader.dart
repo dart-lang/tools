@@ -112,14 +112,11 @@ void defineReflectiveTests(Type type) {
         var memberName = MirrorSystem.getName(symbol);
         var isTest = memberName.startsWith(RegExp('(solo_|fail_|skip_)*test_'));
         if (isTest) {
-          var isSolo =
-              memberName.startsWith('solo_') ||
+          var isSolo = memberName.startsWith('solo_') ||
               _hasAnnotationInstance(memberMirror, soloTest);
-          var isSkipped =
-              memberName.startsWith('skip_') ||
+          var isSkipped = memberName.startsWith('skip_') ||
               _hasSkippedTestAnnotation(memberMirror);
-          var expectFail =
-              memberName.startsWith('fail_') ||
+          var expectFail = memberName.startsWith('fail_') ||
               memberName.startsWith('solo_fail_') ||
               _hasFailingTestAnnotation(memberMirror) ||
               _isCheckedMode && _hasAssertFailingTestAnnotation(memberMirror);
@@ -174,18 +171,14 @@ void _addTestsIfTopLevelSuite() {
                 if (group.classMirror case var classMirror?) {
                   var setUp = _getClosureMember(classMirror, #setUpClass);
                   if (setUp != null) {
-                    test_package.setUpAll(
-                      group.ensureSetUpClass,
-                      location: setUp.function.testLocation,
-                    );
+                    test_package.setUpAll(group.ensureSetUpClass,
+                        location: setUp.function.testLocation);
                   }
 
                   var tearDown = _getClosureMember(classMirror, #tearDownClass);
                   if (tearDown != null) {
-                    test_package.tearDownAll(
-                      group.tearDownClass,
-                      location: tearDown.function.testLocation,
-                    );
+                    test_package.tearDownAll(group.tearDownClass,
+                        location: tearDown.function.testLocation);
                   }
                 }
                 addGroupsAndTests(group.children);
@@ -296,21 +289,19 @@ Future<void> _runFailingTest(ClassMirror classMirror, Symbol symbol) async {
   await runZonedGuarded(
     () {
       // ignore: void_checks
-      return Future.sync(() => _runTest(classMirror, symbol))
-          .then<void>((_) {
-            // We can't throw async exceptions inside here because `runZoneGuarded`
-            // will never complete (see docs on `runZonedGuarded`), so we need to
-            // capture this state and throw later if there wasn't otherwise an
-            // exception.
+      return Future.sync(() => _runTest(classMirror, symbol)).then<void>((_) {
+        // We can't throw async exceptions inside here because `runZoneGuarded`
+        // will never complete (see docs on `runZonedGuarded`), so we need to
+        // capture this state and throw later if there wasn't otherwise an
+        // exception.
 
-            // If we didn't already have a failure (eg. an unawaited exception) then
-            // this successful completion is an unexpected pass state.
-            result ??= _FailedTestResult.pass;
-          })
-          .catchError((Object e) {
-            // an awaited exception is always expected failure.
-            result = _FailedTestResult.expectedFail;
-          });
+        // If we didn't already have a failure (eg. an unawaited exception) then
+        // this successful completion is an unexpected pass state.
+        result ??= _FailedTestResult.pass;
+      }).catchError((Object e) {
+        // an awaited exception is always expected failure.
+        result = _FailedTestResult.expectedFail;
+      });
     },
     (e, st) {
       result = _FailedTestResult.expectedFail;

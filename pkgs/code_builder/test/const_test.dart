@@ -71,9 +71,9 @@ void main() {
           (b) => b
             ..name = 'val2'
             ..modifier = FieldModifier.constant
-            ..assignment = refer('ConstClass')
-                .constInstanceNamed('other', [])
-                .code,
+            ..assignment = refer(
+              'ConstClass',
+            ).constInstanceNamed('other', []).code,
         ),
       ),
   );
