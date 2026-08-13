@@ -67,6 +67,9 @@ class IsolatePausedListener {
         await _service.resume(_mainIsolate!.id!);
       } on RPCError {
         // The VM Service has already shut down, so there's nothing left to do.
+      } on SentinelException {
+        // The isolate has already been collected, so there's nothing left
+        // to do.
       }
     }
   }

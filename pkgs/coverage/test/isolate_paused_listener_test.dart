@@ -931,6 +931,29 @@ void main() {
       ]);
     });
 
+    test('SentinelException when resuming main isolate is ignored', () async {
+      resumeFailures = {'main'};
+      resumeErrorBuilder = (id) => SentinelException.parse(
+          'resume', {'type': 'Sentinel', 'kind': 'Collected'});
+
+      startEvent('main', '1');
+      startEvent('other', '2');
+      pauseEvent('other', '2');
+      exitEvent('other', '2');
+      pauseEvent('main', '1');
+      exitEvent('main', '1');
+
+      await endTest();
+      expect(lastError, isNull);
+
+      expect(received, [
+        'Pause other. Collect group 2? Yes',
+        'Resume other',
+        'Pause main. Collect group 1? Yes',
+        'Resume main',
+      ]);
+    });
+
     test('throw when resuming other isolate is not ignored', () async {
       resumeFailures = {'other'};
 
