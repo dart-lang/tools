@@ -68,41 +68,63 @@ _PubspecDetails _extractPubspecDetails(String packagePath) {
   final YamlMap yaml;
   try {
     final parsed = loadYaml(content, sourceUrl: pubspecFile.uri);
-    if (parsed is! YamlMap) {
+    if (parsed case final YamlMap map) {
+      yaml = map;
+    } else {
       throw Exception('Expected pubspec to be a YAML map.');
     }
-    yaml = parsed;
   } on Exception catch (e) {
     throw ArgumentError(
       'Failed to parse pubspec.yaml at ${pubspecFile.path}: $e',
     );
   }
 
-  final name = yaml['name'];
-  if (name is! String) {
+  final String name;
+  if (yaml['name'] case final String parsedName) {
+    name = parsedName;
+  } else {
     throw ArgumentError(
       'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
       'Expected pubspec to contain a "name" string.',
     );
   }
 
-  final environment = <String, String>{};
-  final environmentNode = yaml['environment'];
-  if (environmentNode is YamlMap) {
-    for (final entry in environmentNode.entries) {
-      if (entry.value != null) {
-        environment[entry.key as String] = entry.value.toString();
-      }
-    }
+  final Map<String, String> environment;
+  if (yaml['environment'] case final Map<dynamic, dynamic> envMap) {
+    environment = {
+      for (final MapEntry(:key, :value) in envMap.entries)
+        if (key case final String k when value != null) k: value.toString(),
+    };
+  } else if (yaml['environment'] == null) {
+    environment = const {};
+  } else {
+    throw ArgumentError(
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+      'Expected "environment" to be a YAML map.',
+    );
   }
 
-  final executables = <String, String?>{};
-  final executablesNode = yaml['executables'];
-  if (executablesNode is YamlMap) {
-    for (final entry in executablesNode.entries) {
-      final value = entry.value;
-      executables[entry.key as String] = value is String ? value : null;
-    }
+  final Map<String, String?> executables;
+  if (yaml['executables'] case final Map<dynamic, dynamic> execMap) {
+    executables = {
+      for (final MapEntry(:key, :value) in execMap.entries)
+        if (key case final String k)
+          k: switch (value) {
+            final String s => s,
+            null => null,
+            _ => throw ArgumentError(
+              'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+              'Expected executable target for "$k" to be a string or null.',
+            ),
+          },
+    };
+  } else if (yaml['executables'] == null) {
+    executables = const {};
+  } else {
+    throw ArgumentError(
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+      'Expected "executables" to be a YAML map.',
+    );
   }
 
   return (name: name, environment: environment, executables: executables);

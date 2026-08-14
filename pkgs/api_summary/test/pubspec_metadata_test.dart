@@ -2,7 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:api_summary/api_summary.dart';
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
@@ -128,5 +131,194 @@ void main() {
       expect(yaml, contains('environment:\n  sdk: ^3.12.0'));
       expect(yaml, contains('executables:\n  my_tool: null'));
     });
+  });
+
+  group('pubspec.yaml parsing in apiSummary', () {
+    Future<void> withTempPkg(
+      String pubspecContent,
+      Future<void> Function(String pkgPath) fn,
+    ) async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'api_summary_pubspec_test_',
+      );
+      try {
+        File(
+          p.join(tempDir.path, 'pubspec.yaml'),
+        ).writeAsStringSync(pubspecContent);
+        Directory(p.join(tempDir.path, 'lib')).createSync();
+        File(
+          p.join(tempDir.path, 'lib', 'foo.dart'),
+        ).writeAsStringSync('void foo() {}');
+        await fn(tempDir.path);
+      } finally {
+        await tempDir.delete(recursive: true);
+      }
+    }
+
+    test('extracts environment and executables successfully', () async {
+      await withTempPkg(
+        '''
+name: sample_pkg
+environment:
+  sdk: ^3.12.0
+  flutter: ">=3.2.0 <3.9.0"
+executables:
+  tool_a:
+  tool_b: custom_b
+''',
+        (pkgPath) async {
+          final summary = await apiSummary(pkgPath);
+          expect(summary.name, equals('sample_pkg'));
+          expect(
+            summary.environment,
+            equals({'flutter': '>=3.2.0 <3.9.0', 'sdk': '^3.12.0'}),
+          );
+          expect(
+            summary.executables,
+            equals({'tool_a': null, 'tool_b': 'custom_b'}),
+          );
+        },
+      );
+    });
+
+    test('handles omitted and null environment and executables', () async {
+      await withTempPkg(
+        '''
+name: minimal_pkg
+environment:
+executables:
+''',
+        (pkgPath) async {
+          final summary = await apiSummary(pkgPath);
+          expect(summary.name, equals('minimal_pkg'));
+          expect(summary.environment, isEmpty);
+          expect(summary.executables, isEmpty);
+        },
+      );
+    });
+
+    test('ignores null environment constraints', () async {
+      await withTempPkg(
+        '''
+name: sample_pkg
+environment:
+  sdk: ^3.12.0
+  flutter:
+''',
+        (pkgPath) async {
+          final summary = await apiSummary(pkgPath);
+          expect(summary.environment, equals({'sdk': '^3.12.0'}));
+        },
+      );
+    });
+
+    test('throws ArgumentError when pubspec is not a YAML map', () async {
+      await withTempPkg('- item1\n- item2', (pkgPath) async {
+        await expectLater(
+          apiSummary(pkgPath),
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains('Expected pubspec to be a YAML map'),
+            ),
+          ),
+        );
+      });
+    });
+
+    test('throws ArgumentError when name is missing or not a string', () async {
+      await withTempPkg(
+        '''
+environment:
+  sdk: ^3.12.0
+''',
+        (pkgPath) async {
+          await expectLater(
+            apiSummary(pkgPath),
+            throwsA(
+              isA<ArgumentError>().having(
+                (e) => e.message,
+                'message',
+                contains('Expected pubspec to contain a "name" string'),
+              ),
+            ),
+          );
+        },
+      );
+
+      await withTempPkg('name: 12345', (pkgPath) async {
+        await expectLater(
+          apiSummary(pkgPath),
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains('Expected pubspec to contain a "name" string'),
+            ),
+          ),
+        );
+      });
+    });
+
+    test('throws ArgumentError when environment is not a map', () async {
+      await withTempPkg('name: foo\nenvironment: "sdk ^3.12.0"', (
+        pkgPath,
+      ) async {
+        await expectLater(
+          apiSummary(pkgPath),
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains('Expected "environment" to be a YAML map'),
+            ),
+          ),
+        );
+      });
+    });
+
+    test('throws ArgumentError when executables is not a map', () async {
+      await withTempPkg('name: foo\nexecutables: "my_tool"', (pkgPath) async {
+        await expectLater(
+          apiSummary(pkgPath),
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains('Expected "executables" to be a YAML map'),
+            ),
+          ),
+        );
+      });
+    });
+
+    test(
+      'throws ArgumentError when executable target is not string or null',
+      () async {
+        await withTempPkg(
+          '''
+name: foo
+executables:
+  my_tool: [invalid, target]
+''',
+          (pkgPath) async {
+            await expectLater(
+              apiSummary(pkgPath),
+              throwsA(
+                isA<ArgumentError>().having(
+                  (e) => e.message,
+                  'message',
+                  contains(
+                    'Expected executable target for "my_tool" '
+                    'to be a string or null',
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   });
 }
