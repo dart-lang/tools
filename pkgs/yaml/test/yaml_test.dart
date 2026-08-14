@@ -8,7 +8,6 @@
 // ignore_for_file: avoid_dynamic_calls
 
 import 'package:test/test.dart';
-import 'package:yaml/src/error_listener.dart';
 import 'package:yaml/yaml.dart';
 
 import 'utils.dart';
@@ -16,6 +15,23 @@ import 'utils.dart';
 void main() {
   var infinity = double.parse('Infinity');
   var nan = double.parse('NaN');
+
+  group('exports', () {
+    // Regression test for #2336: ErrorListener and ErrorCollector must be
+    // usable without importing package:yaml/src/error_listener.dart.
+    test('ErrorListener and ErrorCollector from package:yaml/yaml.dart', () {
+      var collector = ErrorCollector();
+      expect(collector, isA<ErrorListener>());
+
+      final yaml = cleanUpLiteral(r'''
+        dependencies:
+          six: 5.4.3
+          seven
+          ''');
+      loadYaml(yaml, recover: true, errorListener: collector);
+      expect(collector.errors, isNotEmpty);
+    });
+  });
 
   group('has a friendly error message for', () {
     var tabError = predicate((e) =>
