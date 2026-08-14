@@ -1,4 +1,4 @@
-## 0.10.14
+## 0.10.14-wip
 
 * Fix `SingleMapping.spanFor` to use the entry from a previous line as specified
   by the sourcemap specification
