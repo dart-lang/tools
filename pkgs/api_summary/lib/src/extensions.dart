@@ -23,30 +23,6 @@ extension FormalParameterElementExtension on FormalParameterElement {
       metadata.hasDeprecated;
 }
 
-extension ElementAnnotationListExtension on List<ElementAnnotation> {
-  bool get hasImmutable => any((a) => a.isImmutable);
-  bool get hasInternal => any((a) => a.isInternal);
-  bool get hasMustBeOverridden => any((a) => a.isMustBeOverridden);
-  bool get hasMustCallSuper => any((a) => a.isMustCallSuper);
-  bool get hasNonVirtual => any((a) => a.isNonVirtual);
-  bool get hasProtected => any((a) => a.isProtected);
-  bool get hasUseResult => any((a) => a.isUseResult);
-  bool get hasVisibleForOverriding => any((a) => a.isVisibleForOverriding);
-  bool get hasVisibleForTesting => any((a) => a.isVisibleForTesting);
-}
-
-extension MetadataExtension on Metadata {
-  bool get hasImmutable => annotations.hasImmutable;
-  bool get hasInternal => annotations.hasInternal;
-  bool get hasMustBeOverridden => annotations.hasMustBeOverridden;
-  bool get hasMustCallSuper => annotations.hasMustCallSuper;
-  bool get hasNonVirtual => annotations.hasNonVirtual;
-  bool get hasProtected => annotations.hasProtected;
-  bool get hasUseResult => annotations.hasUseResult;
-  bool get hasVisibleForOverriding => annotations.hasVisibleForOverriding;
-  bool get hasVisibleForTesting => annotations.hasVisibleForTesting;
-}
-
 extension IterableIterableExtension on Iterable<Iterable<Object?>> {
   /// Forms a list containing [prefix], followed by the elements of `this`
   /// (separated by [separator]), followed by [suffix].
