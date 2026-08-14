@@ -8,15 +8,6 @@ library;
 extension type const JsonKey(String value) implements String {}
 
 const JsonKey configVersion = JsonKey('configVersion');
-const JsonKey path = JsonKey('path');
-const JsonKey configPath = JsonKey('configPath');
-const JsonKey package = JsonKey('package');
-const JsonKey name = JsonKey('name');
-const JsonKey root = JsonKey('root');
-const JsonKey packageUri = JsonKey('packageUri');
-const JsonKey lib = JsonKey('lib');
-const JsonKey languageVersion = JsonKey('languageVersion');
-const JsonKey languageVersionOverride = JsonKey('languageVersionOverride');
 
 // Update these values when changing version.
 const _minConfigVersion = 2;
