@@ -91,7 +91,18 @@ _PubspecDetails _extractPubspecDetails(String packagePath) {
   final environment = switch (yaml['environment']) {
     final Map<dynamic, dynamic> envMap => {
       for (final MapEntry(:key, :value) in envMap.entries)
-        if (key case final String k when value != null) k: value.toString(),
+        if (key case final String k when value != null)
+          k: switch (value) {
+            final String s => s,
+            final num n => n.toString(),
+            final bool b => b.toString(),
+            _ => throw FormatException(
+              'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+              'Expected environment constraint for "$k" to be a string or '
+              'scalar.',
+              content,
+            ),
+          },
     },
     null => const <String, String>{},
     _ => throw FormatException(

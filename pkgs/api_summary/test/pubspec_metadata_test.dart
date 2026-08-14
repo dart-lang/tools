@@ -270,6 +270,58 @@ environment:
       });
     });
 
+    test(
+      'throws FormatException when environment constraint is not a scalar',
+      () async {
+        await withTempPkg(
+          '''
+name: foo
+environment:
+  sdk: [3, 0]
+''',
+          (pkgPath) async {
+            await expectLater(
+              apiSummary(pkgPath),
+              throwsA(
+                isA<FormatException>().having(
+                  (e) => e.message,
+                  'message',
+                  contains(
+                    'Expected environment constraint for "sdk" '
+                    'to be a string or scalar',
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+
+        await withTempPkg(
+          '''
+name: foo
+environment:
+  sdk:
+    major: 3
+''',
+          (pkgPath) async {
+            await expectLater(
+              apiSummary(pkgPath),
+              throwsA(
+                isA<FormatException>().having(
+                  (e) => e.message,
+                  'message',
+                  contains(
+                    'Expected environment constraint for "sdk" '
+                    'to be a string or scalar',
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
     test('throws FormatException when executables is not a map', () async {
       await withTempPkg('name: foo\nexecutables: "my_tool"', (pkgPath) async {
         await expectLater(
