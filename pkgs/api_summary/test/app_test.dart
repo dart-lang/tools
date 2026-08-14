@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:api_summary/api_summary.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:yaml_edit/yaml_edit.dart';
 
 void main() {
@@ -68,10 +69,25 @@ void main() {
     expect(result.stderr, contains('Usage: api_summary'));
   });
   test('exits with code 64 on invalid pubspec.yaml', () async {
-    final tempDir = await Directory.systemTemp.createTemp('api_summary_test');
-    try {
-      final pubspec = File(p.join(tempDir.path, 'pubspec.yaml'));
-      await pubspec.writeAsString('not_a_map');
+    await d.file('pubspec.yaml', 'not_a_map').create();
+
+    final packageDir = p.current;
+    final result = await Process.run(Platform.resolvedExecutable, [
+      if (Platform.packageConfig != null)
+        '--packages=${Platform.packageConfig}',
+      p.join(packageDir, 'bin', 'api_summary.dart'),
+      '-p',
+      d.sandbox,
+    ], workingDirectory: packageDir);
+
+    expect(result.exitCode, equals(64));
+    expect(result.stderr, contains('Failed to parse pubspec.yaml'));
+  });
+
+  test(
+    'exits with code 64 when no analysis context is found (missing lib/)',
+    () async {
+      await d.file('pubspec.yaml', 'name: foo\n').create();
 
       final packageDir = p.current;
       final result = await Process.run(Platform.resolvedExecutable, [
@@ -79,39 +95,11 @@ void main() {
           '--packages=${Platform.packageConfig}',
         p.join(packageDir, 'bin', 'api_summary.dart'),
         '-p',
-        tempDir.path,
+        d.sandbox,
       ], workingDirectory: packageDir);
 
       expect(result.exitCode, equals(64));
-      expect(result.stderr, contains('Failed to parse pubspec.yaml'));
-    } finally {
-      await tempDir.delete(recursive: true);
-    }
-  });
-
-  test(
-    'exits with code 64 when no analysis context is found (missing lib/)',
-    () async {
-      final tempDir = await Directory.systemTemp.createTemp('api_summary_test');
-      ProcessResult? result;
-      try {
-        final pubspec = File(p.join(tempDir.path, 'pubspec.yaml'));
-        await pubspec.writeAsString('name: foo\n');
-
-        final packageDir = p.current;
-        result = await Process.run(Platform.resolvedExecutable, [
-          if (Platform.packageConfig != null)
-            '--packages=${Platform.packageConfig}',
-          p.join(packageDir, 'bin', 'api_summary.dart'),
-          '-p',
-          tempDir.path,
-        ], workingDirectory: packageDir);
-
-        expect(result.exitCode, equals(64));
-        expect(result.stderr, contains('No "lib" directory found'));
-      } finally {
-        await tempDir.delete(recursive: true);
-      }
+      expect(result.stderr, contains('No "lib" directory found'));
     },
   );
 }

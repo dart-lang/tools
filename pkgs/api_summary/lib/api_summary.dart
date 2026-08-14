@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:path/path.dart' as p;
-import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:yaml/yaml.dart';
 
 import 'src/api_builder.dart';
 import 'src/api_declaration.dart';
@@ -65,23 +65,73 @@ _PubspecDetails _extractPubspecDetails(String packagePath) {
     throw ArgumentError('No pubspec.yaml found at "$packagePath".');
   }
   final content = pubspecFile.readAsStringSync();
-  final Pubspec pubspec;
+  final YamlMap yaml;
   try {
-    pubspec = Pubspec.parse(content, sourceUrl: pubspecFile.uri);
-  } on Exception catch (e) {
-    throw ArgumentError(
-      'Failed to parse pubspec.yaml at ${pubspecFile.path}: $e',
+    yaml = switch (loadYaml(content, sourceUrl: pubspecFile.uri)) {
+      final YamlMap map => map,
+      _ => throw FormatException('Expected pubspec to be a YAML map.', content),
+    };
+  } on FormatException catch (e) {
+    throw FormatException(
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: ${e.message}',
+      content,
+      e.offset,
     );
   }
 
-  final environment = <String, String>{
-    for (final entry in pubspec.environment.entries)
-      if (entry.value case final constraint?) entry.key: constraint.toString(),
+  final name = switch (yaml['name']) {
+    final String name => name,
+    _ => throw FormatException(
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+      'Expected pubspec to contain a "name" string.',
+      content,
+    ),
   };
 
-  return (
-    name: pubspec.name,
-    environment: environment,
-    executables: pubspec.executables,
-  );
+  final environment = switch (yaml['environment']) {
+    final Map<dynamic, dynamic> envMap => {
+      for (final MapEntry(:key, :value) in envMap.entries)
+        if (key is String && value != null)
+          key: switch (value) {
+            final String s => s,
+            final num n => n.toString(),
+            final bool b => b.toString(),
+            _ => throw FormatException(
+              'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+              'Expected environment constraint for "$key" to be a string or '
+              'scalar.',
+              content,
+            ),
+          },
+    },
+    null => const <String, String>{},
+    _ => throw FormatException(
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+      'Expected "environment" to be a YAML map.',
+      content,
+    ),
+  };
+
+  final executables = switch (yaml['executables']) {
+    final Map<dynamic, dynamic> execMap => {
+      for (final MapEntry(:key, :value) in execMap.entries)
+        if (key is String)
+          key: switch (value) {
+            final String? s => s,
+            _ => throw FormatException(
+              'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+              'Expected executable target for "$key" to be a string or null.',
+              content,
+            ),
+          },
+    },
+    null => const <String, String?>{},
+    _ => throw FormatException(
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+      'Expected "executables" to be a YAML map.',
+      content,
+    ),
+  };
+
+  return (name: name, environment: environment, executables: executables);
 }

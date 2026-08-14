@@ -4,6 +4,7 @@
 
 import 'package:api_summary/api_summary.dart';
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:yaml_edit/yaml_edit.dart';
 
 void main() {
@@ -128,5 +129,240 @@ void main() {
       expect(yaml, contains('environment:\n  sdk: ^3.12.0'));
       expect(yaml, contains('executables:\n  my_tool: null'));
     });
+  });
+
+  group('pubspec.yaml parsing in apiSummary', () {
+    Future<void> withTempPkg(
+      String pubspecContent,
+      Future<void> Function(String pkgPath) fn,
+    ) async {
+      await d.dir('pkg', [
+        d.file('pubspec.yaml', pubspecContent),
+        d.dir('lib', [d.file('foo.dart', 'void foo() {}')]),
+      ]).create();
+
+      await fn(d.path('pkg'));
+    }
+
+    test('extracts environment and executables successfully', () async {
+      await withTempPkg(
+        '''
+name: sample_pkg
+environment:
+  sdk: ^3.12.0
+  flutter: ">=3.2.0 <3.9.0"
+executables:
+  tool_a:
+  tool_b: custom_b
+''',
+        (pkgPath) async {
+          final summary = await apiSummary(pkgPath);
+          expect(summary.name, equals('sample_pkg'));
+          expect(
+            summary.environment,
+            equals({'flutter': '>=3.2.0 <3.9.0', 'sdk': '^3.12.0'}),
+          );
+          expect(
+            summary.executables,
+            equals({'tool_a': null, 'tool_b': 'custom_b'}),
+          );
+        },
+      );
+    });
+
+    test('handles omitted and null environment and executables', () async {
+      await withTempPkg(
+        '''
+name: minimal_pkg
+environment:
+executables:
+''',
+        (pkgPath) async {
+          final summary = await apiSummary(pkgPath);
+          expect(summary.name, equals('minimal_pkg'));
+          expect(summary.environment, isEmpty);
+          expect(summary.executables, isEmpty);
+        },
+      );
+    });
+
+    test('ignores null environment constraints', () async {
+      await withTempPkg(
+        '''
+name: sample_pkg
+environment:
+  sdk: ^3.12.0
+  flutter:
+''',
+        (pkgPath) async {
+          final summary = await apiSummary(pkgPath);
+          expect(summary.environment, equals({'sdk': '^3.12.0'}));
+        },
+      );
+    });
+
+    test('throws FormatException when pubspec is not a YAML map', () async {
+      await withTempPkg('- item1\n- item2', (pkgPath) async {
+        await expectLater(
+          apiSummary(pkgPath),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains('Expected pubspec to be a YAML map'),
+            ),
+          ),
+        );
+      });
+    });
+
+    test(
+      'throws FormatException when name is missing or not a string',
+      () async {
+        await withTempPkg(
+          '''
+environment:
+  sdk: ^3.12.0
+''',
+          (pkgPath) async {
+            await expectLater(
+              apiSummary(pkgPath),
+              throwsA(
+                isA<FormatException>().having(
+                  (e) => e.message,
+                  'message',
+                  contains('Expected pubspec to contain a "name" string'),
+                ),
+              ),
+            );
+          },
+        );
+
+        await withTempPkg('name: 12345', (pkgPath) async {
+          await expectLater(
+            apiSummary(pkgPath),
+            throwsA(
+              isA<FormatException>().having(
+                (e) => e.message,
+                'message',
+                contains('Expected pubspec to contain a "name" string'),
+              ),
+            ),
+          );
+        });
+      },
+    );
+
+    test('throws FormatException when environment is not a map', () async {
+      await withTempPkg('name: foo\nenvironment: "sdk ^3.12.0"', (
+        pkgPath,
+      ) async {
+        await expectLater(
+          apiSummary(pkgPath),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains('Expected "environment" to be a YAML map'),
+            ),
+          ),
+        );
+      });
+    });
+
+    test(
+      'throws FormatException when environment constraint is not a scalar',
+      () async {
+        await withTempPkg(
+          '''
+name: foo
+environment:
+  sdk: [3, 0]
+''',
+          (pkgPath) async {
+            await expectLater(
+              apiSummary(pkgPath),
+              throwsA(
+                isA<FormatException>().having(
+                  (e) => e.message,
+                  'message',
+                  contains(
+                    'Expected environment constraint for "sdk" '
+                    'to be a string or scalar',
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+
+        await withTempPkg(
+          '''
+name: foo
+environment:
+  sdk:
+    major: 3
+''',
+          (pkgPath) async {
+            await expectLater(
+              apiSummary(pkgPath),
+              throwsA(
+                isA<FormatException>().having(
+                  (e) => e.message,
+                  'message',
+                  contains(
+                    'Expected environment constraint for "sdk" '
+                    'to be a string or scalar',
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    test('throws FormatException when executables is not a map', () async {
+      await withTempPkg('name: foo\nexecutables: "my_tool"', (pkgPath) async {
+        await expectLater(
+          apiSummary(pkgPath),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains('Expected "executables" to be a YAML map'),
+            ),
+          ),
+        );
+      });
+    });
+
+    test(
+      'throws FormatException when executable target is not string or null',
+      () async {
+        await withTempPkg(
+          '''
+name: foo
+executables:
+  my_tool: [invalid, target]
+''',
+          (pkgPath) async {
+            await expectLater(
+              apiSummary(pkgPath),
+              throwsA(
+                isA<FormatException>().having(
+                  (e) => e.message,
+                  'message',
+                  contains(
+                    'Expected executable target for "my_tool" '
+                    'to be a string or null',
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   });
 }
