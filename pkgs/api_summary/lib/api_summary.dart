@@ -91,14 +91,14 @@ _PubspecDetails _extractPubspecDetails(String packagePath) {
   final environment = switch (yaml['environment']) {
     final Map<dynamic, dynamic> envMap => {
       for (final MapEntry(:key, :value) in envMap.entries)
-        if (key case final String k when value != null)
-          k: switch (value) {
+        if (key is String && value != null)
+          key: switch (value) {
             final String s => s,
             final num n => n.toString(),
             final bool b => b.toString(),
             _ => throw FormatException(
               'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
-              'Expected environment constraint for "$k" to be a string or '
+              'Expected environment constraint for "$key" to be a string or '
               'scalar.',
               content,
             ),
@@ -115,13 +115,12 @@ _PubspecDetails _extractPubspecDetails(String packagePath) {
   final executables = switch (yaml['executables']) {
     final Map<dynamic, dynamic> execMap => {
       for (final MapEntry(:key, :value) in execMap.entries)
-        if (key case final String k)
-          k: switch (value) {
-            final String s => s,
-            null => null,
+        if (key is String)
+          key: switch (value) {
+            final String? s => s,
             _ => throw FormatException(
               'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
-              'Expected executable target for "$k" to be a string or null.',
+              'Expected executable target for "$key" to be a string or null.',
               content,
             ),
           },
