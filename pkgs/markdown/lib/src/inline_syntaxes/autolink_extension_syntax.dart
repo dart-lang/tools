@@ -101,7 +101,7 @@ class AutolinkExtensionSyntax extends InlineSyntax {
     }
 
     final anchor = Element.text('a', text)
-      ..attributes['href'] = Uri.encodeFull(destination);
+      ..attributes['href'] = _encodeDestination(destination);
 
     parser
       ..addNode(anchor)
@@ -109,6 +109,21 @@ class AutolinkExtensionSyntax extends InlineSyntax {
 
     return true;
   }
+
+  static final _percentEncodedSequences = RegExp('%[0-9A-Fa-f]{2}');
+
+  /// Percent-encodes [destination], preserving pre-existing percent-encoded
+  /// sequences so that they do not get encoded a second time, for example a
+  /// destination containing `%40` keeps it instead of producing `%2540`.
+  ///
+  /// This matches how [normalizeLinkDestination] treats the destination of
+  /// inline links, see https://spec.commonmark.org/0.30/#example-502.
+  static String _encodeDestination(String destination) =>
+      destination.splitMapJoin(
+        _percentEncodedSequences,
+        onMatch: (match) => match.match,
+        onNonMatch: Uri.encodeFull,
+      );
 
   int _getConsumeLength(String text) {
     var excludedLength = 0;

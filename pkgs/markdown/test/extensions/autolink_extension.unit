@@ -8,3 +8,15 @@ http://www.foo.com
 <<<
 <p>m
 <a href="http://www.foo.com">http://www.foo.com</a></p>
+>>> percent-encoded characters are not double-encoded
+http://example.com/%40foo
+<<<
+<p><a href="http://example.com/%40foo">http://example.com/%40foo</a></p>
+>>> characters requiring encoding are percent-encoded
+http://example.com/fü
+<<<
+<p><a href="http://example.com/f%C3%BC">http://example.com/fü</a></p>
+>>> invalid percent-encoding is still percent-encoded
+http://example.com/50%off
+<<<
+<p><a href="http://example.com/50%25off">http://example.com/50%off</a></p>
