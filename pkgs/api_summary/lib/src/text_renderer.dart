@@ -623,18 +623,18 @@ final class _ApiTextRenderer {
     required Node<MemberSortKey> node,
   }) {
     parentheticals.addAll([
-      if (element.isInternal) ['internal'],
-      if (element is ApiClass && element.isImmutable) ['immutable'],
-      if (element is ApiExecutable) ...[
-        if (element.isProtected) ['protected'],
-        if (element.isVisibleForOverriding) ['visible for overriding'],
-        if (element.isNonVirtual) ['non-virtual'],
-        if (element.isMustCallSuper) ['must call super'],
-        if (element.isMustBeOverridden) ['must be overridden'],
-        if (element.isUseResult) ['use result'],
-      ],
       if (element.isDeprecated) ['deprecated'],
       if (element.isExperimental) ['experimental'],
+      if (element is ApiClass && element.isImmutable) ['immutable'],
+      if (element.isInternal) ['internal'],
+      if (element is ApiExecutable) ...[
+        if (element.isMustBeOverridden) ['must be overridden'],
+        if (element.isMustCallSuper) ['must call super'],
+        if (element.isNonVirtual) ['non-virtual'],
+        if (element.isProtected) ['protected'],
+        if (element.isUseResult) ['use result'],
+        if (element.isVisibleForOverriding) ['visible for overriding'],
+      ],
       if (element.isVisibleForTesting) ['visible for testing'],
     ]);
     if (parentheticals.isNotEmpty) {

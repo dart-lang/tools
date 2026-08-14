@@ -2539,9 +2539,9 @@ libraries:
               kind: interface
               name: ApiClassModifier
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: isBase
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2549,9 +2549,9 @@ libraries:
               kind: interface
               name: ApiClassModifier
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: isFinal
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2559,9 +2559,9 @@ libraries:
               kind: interface
               name: ApiClassModifier
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: isInterface
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2569,9 +2569,9 @@ libraries:
               kind: interface
               name: ApiClassModifier
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: isMixin
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2579,9 +2579,9 @@ libraries:
               kind: interface
               name: ApiClassModifier
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: isSealed
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2589,9 +2589,9 @@ libraries:
               kind: interface
               name: ApiClassModifier
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: jsonName
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2625,8 +2625,8 @@ libraries:
                 - kind: interface
                   name: ApiClassModifier
                   libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
+            isStatic: true
       - name: ApiDeclarationStatus
         locationUri: package:api_summary/src/api_declaration.dart
         methods:
@@ -2637,9 +2637,9 @@ libraries:
               kind: interface
               name: ApiDeclarationStatus
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: public
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2647,9 +2647,9 @@ libraries:
               kind: interface
               name: ApiDeclarationStatus
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: referenced
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2657,9 +2657,9 @@ libraries:
               kind: interface
               name: ApiDeclarationStatus
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: values
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2671,8 +2671,8 @@ libraries:
                 - kind: interface
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
+            isStatic: true
       - name: ApiExecutableKind
         locationUri: package:api_summary/src/api_declaration.dart
         methods:
@@ -2683,9 +2683,9 @@ libraries:
               kind: interface
               name: ApiExecutableKind
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: function
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2693,9 +2693,9 @@ libraries:
               kind: interface
               name: ApiExecutableKind
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: getter
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2703,9 +2703,9 @@ libraries:
               kind: interface
               name: ApiExecutableKind
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: method
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2713,9 +2713,9 @@ libraries:
               kind: interface
               name: ApiExecutableKind
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: setter
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2723,9 +2723,9 @@ libraries:
               kind: interface
               name: ApiExecutableKind
               libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
             isEnumConstant: true
+            isStatic: true
           - name: values
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2737,8 +2737,8 @@ libraries:
                 - kind: interface
                   name: ApiExecutableKind
                   libraryUri: package:api_summary/src/api_declaration.dart
-            isStatic: true
             isConst: true
+            isStatic: true
     functions:
       - name: apiSummary
         locationUri: package:api_summary/api_summary.dart
