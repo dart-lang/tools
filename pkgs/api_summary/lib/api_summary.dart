@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:path/path.dart' as p;
-import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:yaml/yaml.dart';
 
 import 'src/api_builder.dart';
 import 'src/api_declaration.dart';
@@ -65,23 +65,45 @@ _PubspecDetails _extractPubspecDetails(String packagePath) {
     throw ArgumentError('No pubspec.yaml found at "$packagePath".');
   }
   final content = pubspecFile.readAsStringSync();
-  final Pubspec pubspec;
+  final YamlMap yaml;
   try {
-    pubspec = Pubspec.parse(content, sourceUrl: pubspecFile.uri);
+    final parsed = loadYaml(content, sourceUrl: pubspecFile.uri);
+    if (parsed is! YamlMap) {
+      throw Exception('Expected pubspec to be a YAML map.');
+    }
+    yaml = parsed;
   } on Exception catch (e) {
     throw ArgumentError(
       'Failed to parse pubspec.yaml at ${pubspecFile.path}: $e',
     );
   }
 
-  final environment = <String, String>{
-    for (final entry in pubspec.environment.entries)
-      if (entry.value case final constraint?) entry.key: constraint.toString(),
-  };
+  final name = yaml['name'];
+  if (name is! String) {
+    throw ArgumentError(
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+      'Expected pubspec to contain a "name" string.',
+    );
+  }
 
-  return (
-    name: pubspec.name,
-    environment: environment,
-    executables: pubspec.executables,
-  );
+  final environment = <String, String>{};
+  final environmentNode = yaml['environment'];
+  if (environmentNode is YamlMap) {
+    for (final entry in environmentNode.entries) {
+      if (entry.value != null) {
+        environment[entry.key as String] = entry.value.toString();
+      }
+    }
+  }
+
+  final executables = <String, String?>{};
+  final executablesNode = yaml['executables'];
+  if (executablesNode is YamlMap) {
+    for (final entry in executablesNode.entries) {
+      final value = entry.value;
+      executables[entry.key as String] = value is String ? value : null;
+    }
+  }
+
+  return (name: name, environment: environment, executables: executables);
 }
