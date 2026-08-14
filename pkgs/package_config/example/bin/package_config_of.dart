@@ -12,6 +12,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:package_config/package_config.dart';
+import 'package:package_config/src/constants.dart' as json_key;
 import 'package:path/path.dart' as p;
 
 /// Output modes.
@@ -191,22 +192,22 @@ final class ConfigInfo {
 
   Map<String, Object?> toJson() {
     return {
-      'path': path,
-      if (configPath != null) 'configPath': configPath,
+      json_key.path: path,
+      if (configPath != null) json_key.configPath: configPath,
       if (package case var package?)
-        'package': {
-          'name': package.name,
-          'root': _fileUriPath(package.root),
+        json_key.package: {
+          json_key.name: package.name,
+          json_key.root: _fileUriPath(package.root),
           if (package.languageVersion case var languageVersion?)
-            'languageVersion': languageVersion.toString(),
+            json_key.languageVersion: languageVersion.toString(),
           if (packageUri case var packageUri?) ...{
-            'packageUri': packageUri.toString(),
+            json_key.packageUri: packageUri.toString(),
             if (package.root != package.packageUriRoot)
-              'lib': _fileUriPath(package.packageUriRoot),
+              json_key.lib: _fileUriPath(package.packageUriRoot),
           },
         },
       if (languageVersionOverride case var override?)
-        'languageVersionOverride': override.toString(),
+        json_key.languageVersionOverride: override.toString(),
     };
   }
 
