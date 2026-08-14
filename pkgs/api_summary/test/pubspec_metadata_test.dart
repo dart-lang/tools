@@ -212,12 +212,12 @@ environment:
       );
     });
 
-    test('throws ArgumentError when pubspec is not a YAML map', () async {
+    test('throws FormatException when pubspec is not a YAML map', () async {
       await withTempPkg('- item1\n- item2', (pkgPath) async {
         await expectLater(
           apiSummary(pkgPath),
           throwsA(
-            isA<ArgumentError>().having(
+            isA<FormatException>().having(
               (e) => e.message,
               'message',
               contains('Expected pubspec to be a YAML map'),
@@ -227,48 +227,51 @@ environment:
       });
     });
 
-    test('throws ArgumentError when name is missing or not a string', () async {
-      await withTempPkg(
-        '''
+    test(
+      'throws FormatException when name is missing or not a string',
+      () async {
+        await withTempPkg(
+          '''
 environment:
   sdk: ^3.12.0
 ''',
-        (pkgPath) async {
+          (pkgPath) async {
+            await expectLater(
+              apiSummary(pkgPath),
+              throwsA(
+                isA<FormatException>().having(
+                  (e) => e.message,
+                  'message',
+                  contains('Expected pubspec to contain a "name" string'),
+                ),
+              ),
+            );
+          },
+        );
+
+        await withTempPkg('name: 12345', (pkgPath) async {
           await expectLater(
             apiSummary(pkgPath),
             throwsA(
-              isA<ArgumentError>().having(
+              isA<FormatException>().having(
                 (e) => e.message,
                 'message',
                 contains('Expected pubspec to contain a "name" string'),
               ),
             ),
           );
-        },
-      );
+        });
+      },
+    );
 
-      await withTempPkg('name: 12345', (pkgPath) async {
-        await expectLater(
-          apiSummary(pkgPath),
-          throwsA(
-            isA<ArgumentError>().having(
-              (e) => e.message,
-              'message',
-              contains('Expected pubspec to contain a "name" string'),
-            ),
-          ),
-        );
-      });
-    });
-
-    test('throws ArgumentError when environment is not a map', () async {
+    test('throws FormatException when environment is not a map', () async {
       await withTempPkg('name: foo\nenvironment: "sdk ^3.12.0"', (
         pkgPath,
       ) async {
         await expectLater(
           apiSummary(pkgPath),
           throwsA(
-            isA<ArgumentError>().having(
+            isA<FormatException>().having(
               (e) => e.message,
               'message',
               contains('Expected "environment" to be a YAML map'),
@@ -278,12 +281,12 @@ environment:
       });
     });
 
-    test('throws ArgumentError when executables is not a map', () async {
+    test('throws FormatException when executables is not a map', () async {
       await withTempPkg('name: foo\nexecutables: "my_tool"', (pkgPath) async {
         await expectLater(
           apiSummary(pkgPath),
           throwsA(
-            isA<ArgumentError>().having(
+            isA<FormatException>().having(
               (e) => e.message,
               'message',
               contains('Expected "executables" to be a YAML map'),
@@ -294,7 +297,7 @@ environment:
     });
 
     test(
-      'throws ArgumentError when executable target is not string or null',
+      'throws FormatException when executable target is not string or null',
       () async {
         await withTempPkg(
           '''
@@ -306,7 +309,7 @@ executables:
             await expectLater(
               apiSummary(pkgPath),
               throwsA(
-                isA<ArgumentError>().having(
+                isA<FormatException>().having(
                   (e) => e.message,
                   'message',
                   contains(
