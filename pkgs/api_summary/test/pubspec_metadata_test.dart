@@ -2,11 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:io';
-
 import 'package:api_summary/api_summary.dart';
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:yaml_edit/yaml_edit.dart';
 
 void main() {
@@ -138,21 +136,12 @@ void main() {
       String pubspecContent,
       Future<void> Function(String pkgPath) fn,
     ) async {
-      final tempDir = await Directory.systemTemp.createTemp(
-        'api_summary_pubspec_test_',
-      );
-      try {
-        File(
-          p.join(tempDir.path, 'pubspec.yaml'),
-        ).writeAsStringSync(pubspecContent);
-        Directory(p.join(tempDir.path, 'lib')).createSync();
-        File(
-          p.join(tempDir.path, 'lib', 'foo.dart'),
-        ).writeAsStringSync('void foo() {}');
-        await fn(tempDir.path);
-      } finally {
-        await tempDir.delete(recursive: true);
-      }
+      await d.dir('pkg', [
+        d.file('pubspec.yaml', pubspecContent),
+        d.dir('lib', [d.file('foo.dart', 'void foo() {}')]),
+      ]).create();
+
+      await fn(d.path('pkg'));
     }
 
     test('extracts environment and executables successfully', () async {
