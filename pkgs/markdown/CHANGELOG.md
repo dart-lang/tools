@@ -1,3 +1,5 @@
+## 7.4.1-wip
+
 ## 7.4.0
 
 * Adds `linkBuilder`/`imageLinkBuilder` alternatives to `linkResolver`/  
