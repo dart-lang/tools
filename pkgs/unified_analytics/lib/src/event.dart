@@ -460,6 +460,27 @@ final class Event {
   ///
   /// * [exitCode] - the process exit code set as a result of running the
   ///   command.
+  ///
+  /// * [pubspecHasFlutterSdk] - whether the project's pubspec explicitly
+  ///   declares a dependency on the Flutter SDK (e.g. `sdk: flutter` or
+  ///   `environment.flutter`).
+  ///
+  /// * [pubspecDependencies] - a set of public package names depended upon by
+  ///   the project. Callers MUST verify packages against
+  ///   `.dart_tool/package_config.json` to ensure only public hosted packages
+  ///   (published to pub.dev or public registries) are passed. Non-hosted
+  ///   packages (path, git, un-versioned workspace members) must be excluded
+  ///   to prevent leaking proprietary or internal package names.
+  ///
+  /// * [pubspecEnvironmentSdk] - the Dart SDK version constraint declared in
+  ///   the project's pubspec (e.g. `^3.5.0` from `environment.sdk:`).
+  ///
+  /// NOTE FOR MAINTAINERS: Google Analytics 4 limits each event to at most 25
+  /// custom parameters. With standard metadata fields taking up 4–5 slots and
+  /// dependency chunking consuming up to 20 parameters (`pubspec_dep_0` through
+  /// `pubspec_dep_19`), adding any new parameters to this constructor requires
+  /// decreasing `maxChunks` in [chunkDependencies] to prevent dropping event
+  /// parameters.
   Event.dartCliCommandExecuted({
     required String name,
     required String enabledExperiments,

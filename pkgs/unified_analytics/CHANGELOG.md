@@ -1,7 +1,8 @@
 ## 8.0.16-wip
 
-- Added optional `pubspecHasFlutterSdk` and `pubspecDependencies` parameters to
-  the `Event.dartCliCommandExecuted` constructor.
+- Added optional `pubspecHasFlutterSdk`, `pubspecEnvironmentSdk`, and
+  `pubspecDependencies` parameters to the `Event.dartCliCommandExecuted`
+  constructor.
 - Dependencies are deterministically sorted and chunked using a hash-based
   algorithm to fit within Google Analytics 4 parameter limitations without
   alphabetical bias.
