@@ -26,18 +26,6 @@ const int $exclamation = 0x21;
 /// Character `"`.
 const int $quote = 0x22;
 
-/// Character `"`.
-const int $double_quote = 0x22; // ignore: constant_identifier_names
-
-/// Character `#`.
-const int $hash = 0x23;
-
-/// Character `$`.
-const int $dollar = 0x24;
-
-/// Character `%`.
-const int $percent = 0x25;
-
 /// Character `&`.
 const int $ampersand = 0x26;
 
@@ -53,41 +41,14 @@ const int $rparen = 0x29;
 /// Character `*`.
 const int $asterisk = 0x2A;
 
-/// Character `+`.
-const int $plus = 0x2B;
-
-/// Character `,`.
-const int $comma = 0x2C;
-
-/// Character `-`.
-const int $dash = 0x2D;
-
-/// Character `.`.
-const int $dot = 0x2E;
-
-/// Character `/`.
-const int $slash = 0x2F;
-
 /// Character `:`.
 const int $colon = 0x3A;
-
-/// Character `;`.
-const int $semicolon = 0x3B;
 
 /// Character `<`.
 const int $lt = 0x3C;
 
-/// Character `=`.
-const int $equal = 0x3D;
-
 /// Character `>`.
 const int $gt = 0x3E;
-
-/// Character `?`.
-const int $question = 0x3F;
-
-/// Character `@`.
-const int $at = 0x40;
 
 /// Character `[`.
 const int $lbracket = 0x5B;
@@ -107,17 +68,8 @@ const int $underscore = 0x5F;
 /// Character `` ` ``.
 const int $backquote = 0x60;
 
-/// Character `{`.
-const int $lbrace = 0x7B;
-
 /// Character `|`.
 const int $pipe = 0x7C;
-
-/// Character `|`.
-const int $bar = 0x7C;
-
-/// Character `}`.
-const int $rbrace = 0x7D;
 
 /// Character `~`.
 const int $tilde = 0x7E;

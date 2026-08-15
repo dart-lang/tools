@@ -20,8 +20,6 @@ const int vlqBaseMask = (1 << 5) - 1;
 
 const int vlqContinuationBit = 1 << 5;
 
-const int vlqContinuationMask = 1 << 5;
-
 const String base64Digits =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 

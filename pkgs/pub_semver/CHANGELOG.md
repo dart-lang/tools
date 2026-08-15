@@ -1,3 +1,9 @@
+## 2.2.1-wip
+
+- Fix parsing of pre-release and build identifiers to only treat pure-digit
+  base-10 identifiers as integers, treating hexadecimal and signed identifiers
+  as alphanumeric strings according to SemVer 2.0.0.
+
 ## 2.2.0
 
 - Remove dependency on `package:meta`.

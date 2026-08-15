@@ -1,5 +1,11 @@
 {
   "name": "api_summary",
+  "environment": {
+    "sdk": "^3.12.0"
+  },
+  "executables": {
+    "api_summary": null
+  },
   "libraries": [
     {
       "uri": "package:api_summary/api_summary.dart",
@@ -120,6 +126,24 @@
                 },
                 {
                   "name": "isExperimental",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isImmutable",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isInternal",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -321,6 +345,16 @@
               }
             },
             {
+              "name": "isImmutable",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
               "name": "methods",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -475,6 +509,16 @@
             },
             {
               "name": "isExperimental",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isInternal",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
@@ -701,6 +745,51 @@
                   "isNamed": true
                 },
                 {
+                  "name": "isInternal",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isMustBeOverridden",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isMustCallSuper",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isNonVirtual",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isProtected",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "isStatic",
                   "type": {
                     "kind": "interface",
@@ -708,6 +797,24 @@
                     "libraryUri": "dart:core"
                   },
                   "isRequired": true,
+                  "isNamed": true
+                },
+                {
+                  "name": "isUseResult",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isVisibleForOverriding",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
                   "isNamed": true
                 },
                 {
@@ -833,7 +940,67 @@
               }
             },
             {
+              "name": "isMustBeOverridden",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isMustCallSuper",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isNonVirtual",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isProtected",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
               "name": "isStatic",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isUseResult",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "isVisibleForOverriding",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
@@ -998,6 +1165,15 @@
                 },
                 {
                   "name": "isExperimental",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isInternal",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -1257,6 +1433,15 @@
                 },
                 {
                   "name": "isExperimental",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "isInternal",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -2752,6 +2937,51 @@
               },
               "parameters": [
                 {
+                  "name": "environment",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      }
+                    ],
+                    "isNullable": true
+                  },
+                  "isNamed": true
+                },
+                {
+                  "name": "executables",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core",
+                        "isNullable": true
+                      }
+                    ],
+                    "isNullable": true
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "libraries",
                   "type": {
                     "kind": "interface",
@@ -2782,6 +3012,51 @@
             }
           ],
           "methods": [
+            {
+              "name": "environment",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "executables",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core",
+                    "isNullable": true
+                  }
+                ]
+              }
+            },
             {
               "name": "libraries",
               "locationUri": "package:api_summary/src/api_declaration.dart",
@@ -3263,6 +3538,15 @@
                   "isNamed": true
                 },
                 {
+                  "name": "isInternal",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "isVisibleForTesting",
                   "type": {
                     "kind": "interface",
@@ -3608,9 +3892,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "isBase",
@@ -3621,9 +3905,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "isFinal",
@@ -3634,9 +3918,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "isInterface",
@@ -3647,9 +3931,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "isMixin",
@@ -3660,9 +3944,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "isSealed",
@@ -3673,9 +3957,9 @@
                 "name": "ApiClassModifier",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "jsonName",
@@ -3725,8 +4009,8 @@
                   }
                 ]
               },
-              "isStatic": true,
-              "isConst": true
+              "isConst": true,
+              "isStatic": true
             }
           ]
         },
@@ -3743,9 +4027,9 @@
                 "name": "ApiDeclarationStatus",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "public",
@@ -3756,9 +4040,9 @@
                 "name": "ApiDeclarationStatus",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "referenced",
@@ -3769,9 +4053,9 @@
                 "name": "ApiDeclarationStatus",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "values",
@@ -3789,8 +4073,8 @@
                   }
                 ]
               },
-              "isStatic": true,
-              "isConst": true
+              "isConst": true,
+              "isStatic": true
             }
           ]
         },
@@ -3807,9 +4091,9 @@
                 "name": "ApiExecutableKind",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "function",
@@ -3820,9 +4104,9 @@
                 "name": "ApiExecutableKind",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "getter",
@@ -3833,9 +4117,9 @@
                 "name": "ApiExecutableKind",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "method",
@@ -3846,9 +4130,9 @@
                 "name": "ApiExecutableKind",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "setter",
@@ -3859,9 +4143,9 @@
                 "name": "ApiExecutableKind",
                 "libraryUri": "package:api_summary/src/api_declaration.dart"
               },
-              "isStatic": true,
               "isConst": true,
-              "isEnumConstant": true
+              "isEnumConstant": true,
+              "isStatic": true
             },
             {
               "name": "values",
@@ -3879,8 +4163,8 @@
                   }
                 ]
               },
-              "isStatic": true,
-              "isConst": true
+              "isConst": true,
+              "isStatic": true
             }
           ]
         }

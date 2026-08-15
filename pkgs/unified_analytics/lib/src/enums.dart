@@ -66,6 +66,10 @@ enum DashEvent {
     description: 'Information for a Dart MCP server event',
     toolOwner: DashTool.dartTool,
   ),
+  packageSkillsEvent(
+    label: 'package_skills',
+    description: 'Information for a package:skills event',
+  ),
 
   // Events for Flutter devtools
 

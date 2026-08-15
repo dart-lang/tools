@@ -307,11 +307,8 @@ class Pool {
     var completer = Completer<PoolResource>.sync();
     _onReleaseCompleters.add(completer);
 
-    Future.sync(onRelease).then((value) {
+    Future.sync(onRelease).catchError((_) {}).then((_) {
       _onReleaseCompleters.removeFirst().complete(PoolResource._(this));
-    }).onError((Object error, StackTrace stackTrace) {
-      _onReleaseCompleters.removeFirst().completeError(error, stackTrace);
-      _onResourceReleased();
     });
 
     return completer.future;
@@ -378,6 +375,8 @@ class PoolResource {
   /// This is useful when a resource's main function is complete, but it may
   /// produce additional information later on. For example, an isolate's task
   /// may be complete, but it could still emit asynchronous errors.
+  ///
+  /// Any errors thrown by [onRelease] or the future it returns are ignored.
   void allowRelease(FutureOr<void> Function() onRelease) {
     if (_released) {
       throw StateError('A PoolResource may only be released once.');
