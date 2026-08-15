@@ -1219,23 +1219,38 @@ abstract base class CustomMetrics {
 /// per event.
 ///
 /// To eliminate alphabetical bias (e.g., always omitting packages starting
-/// with 'z' when exceeding the 20-chunk cap), dependencies are sorted
-/// deterministically by their FNV-1a hash value instead of alphabetically.
-/// This provides a statistically unbiased, pseudo-random sample of packages
-/// for large projects while remaining 100% stable, reproducible, and testable
-/// across runs.
+/// with 'z' when exceeding the 20-chunk cap) while preventing ecosystem-wide
+/// starvation of specific package names across projects, dependencies are
+/// sorted deterministically using a 32-bit FNV-1a hash salted with the
+/// project's canonical dependency set.
+///
+/// This ensures:
+/// 1. **Cross-Machine Stability**: Identical dependency sets always produce the
+///    exact same deterministic chunk payload across developers and CI runs.
+/// 2. **Cross-Project Diversity**: Different projects produce different hash
+///    permutations, ensuring no package is globally starved across the
+///    ecosystem under truncation.
+/// 3. **Zero PII**: Salt is derived strictly from public package names without
+///    relying on local paths, usernames, or private project identifiers.
 @visibleForTesting
 Map<String, String> chunkDependencies(Set<String> deps) {
   if (deps.isEmpty) return const {};
 
-  // Sort deterministically by FNV-1a hash value instead of alphabetically
-  // to eliminate systemic alphabetical bias during truncation. Fall back to
+  // Compute a deterministic project-level salt from the canonical
+  // (alphabetically sorted) dependency set.
+  final sortedBase = deps.toList()..sort();
+  var setSalt = 2166136261;
+  for (final dep in sortedBase) {
+    setSalt = _fnv1a(dep, setSalt);
+  }
+
+  // Sort deterministically by salted FNV-1a hash value. Fall back to
   // alphabetical comparison if there is a hash collision to guarantee absolute
   // determinism.
   final sortedDeps = deps.toList()
     ..sort((a, b) {
-      final hashA = _fnv1a(a);
-      final hashB = _fnv1a(b);
+      final hashA = _fnv1a(a, setSalt);
+      final hashB = _fnv1a(b, setSalt);
       if (hashA != hashB) {
         return hashA.compareTo(hashB);
       }
@@ -1284,13 +1299,14 @@ Map<String, String> chunkDependencies(Set<String> deps) {
   return chunks;
 }
 
-/// Computes a deterministic 32-bit FNV-1a hash of a string.
+/// Computes a deterministic 32-bit FNV-1a hash of a string with an optional
+/// seed.
 ///
 /// This is used to shuffle dependency names in a stable, pseudo-random
-/// way to eliminate alphabetical bias when sampling packages for telemetry
-/// while maintaining 100% determinism across runs.
-int _fnv1a(String s) {
-  var hash = 2166136261;
+/// way to eliminate alphabetical and global package bias when sampling packages
+/// for telemetry while maintaining 100% determinism across runs.
+int _fnv1a(String s, [int seed = 2166136261]) {
+  var hash = seed;
   for (var i = 0; i < s.length; i++) {
     hash ^= s.codeUnitAt(i);
     // Split the multiplication to prevent exceeding the 53-bit safe integer

@@ -253,7 +253,7 @@ void main() {
       expect(chunkDependencies({}), isEmpty);
     });
 
-    test('sorts deterministically using FNV-1a hash values', () {
+    test('sorts deterministically using salted FNV-1a hash values', () {
       final deps = {'path', 'meta', 'collection', 'args', 'yaml', 'http'};
 
       // Verification of determinism across multiple calls
@@ -267,6 +267,50 @@ void main() {
       final reportedList = result1['pubspec_dep_0']!.split(',');
       expect(reportedList, isNot(alphabeticalList));
     });
+
+    test(
+      'salts ordering by dependency set to eliminate ecosystem-wide starvation',
+      () {
+        final depsA = {
+          'path',
+          'meta',
+          'collection',
+          'args',
+          'yaml',
+          'http',
+          'shelf',
+        };
+        final depsB = {
+          'path',
+          'meta',
+          'collection',
+          'args',
+          'yaml',
+          'http',
+          'async',
+        };
+
+        final resultA = chunkDependencies(depsA);
+        final resultB = chunkDependencies(depsB);
+
+        // Both results are deterministic across repeated runs
+        expect(resultA, chunkDependencies(depsA));
+        expect(resultB, chunkDependencies(depsB));
+
+        // The common packages ('path', 'meta', 'collection', etc.) should have
+        // different relative orderings between project A and project B because
+        // each project computes a unique dependency-set salt.
+        final commonInA = resultA['pubspec_dep_0']!
+            .split(',')
+            .where((p) => p != 'shelf')
+            .toList();
+        final commonInB = resultB['pubspec_dep_0']!
+            .split(',')
+            .where((p) => p != 'async')
+            .toList();
+        expect(commonInA, isNot(commonInB));
+      },
+    );
 
     test('chunks correctly based on 100-character limit', () {
       // 10 dependencies, each 16 characters.

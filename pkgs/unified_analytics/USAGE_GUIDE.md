@@ -133,11 +133,11 @@ SDK constraints (`pubspecEnvironmentSdk`), Flutter SDK flags
 
 To comply with Google Analytics 4 (GA4) string length restrictions (maximum 100
 characters per event parameter), `unified_analytics` deterministically sorts
-and shuffles the dependency list using a 32-bit FNV-1a hash before partitioning
-it across 20 distinct event parameters (`pubspec_dep_0` through
-`pubspec_dep_19`). This eliminates alphabetical bias (where packages starting
-with 'a' or 'b' consistently fill the parameter budget while later packages are
-dropped) and ensures statistically uniform ecosystem sampling.
+and shuffles the dependency list using a 32-bit FNV-1a hash salted with the
+canonical dependency set before partitioning it across 20 distinct event
+parameters (`pubspec_dep_0` through `pubspec_dep_19`). This eliminates
+alphabetical bias while preventing ecosystem-wide starvation of specific package
+names across projects, ensuring statistically uniform ecosystem sampling.
 
 ### Guidance for CLI Tool Authors
 
