@@ -547,8 +547,8 @@ final class _ApiBuilder {
 
     return [
       if (contracts.isNotEmpty) MetaContractTrait(contracts),
-      if (jsBinding case final jsBinding?) jsBinding,
-      if (jsExport case final jsExport?) jsExport,
+      ?jsBinding,
+      ?jsExport,
     ];
   }
 

@@ -21,22 +21,6 @@ void main() {
 
 @reflectiveTest
 class JsInteropTest extends ApiSummaryTest {
-  Future<String> _build(Map<String, String> files) async {
-    files.forEach(newFile);
-    for (final file in files.keys) {
-      if (file.endsWith('.dart')) await assertNoDiagnosticsInFile(file);
-    }
-    final context = contextCollection.contextFor(
-      convertPath(testPackageLibPath),
-    );
-    final package = await buildApiPackage(
-      'test',
-      context,
-      const ApiSummaryCustomizer(),
-    );
-    return package.toString();
-  }
-
   Future<ApiSummary> _buildModel(Map<String, String> files) async {
     files.forEach(newFile);
     for (final file in files.keys) {
@@ -180,7 +164,8 @@ extension type Element(JSObject _) implements JSObject {}
     expect(js1, isNot(equals(js3)));
     expect(jsExport1, equals(jsExport2));
 
-    // Comparable sorting: 'js' < 'js_export' < 'meta', and within 'js': 'bar' < 'foo'
+    // Comparable sorting: 'js' < 'js_export' < 'meta', and within 'js':
+    // 'bar' < 'foo'.
     final unsorted = [meta, js1, jsExport1, js3, js2];
     final sorted = unsorted.toSet().toList()..sort();
     expect(
@@ -205,9 +190,6 @@ extension type Element(JSObject _) implements JSObject {}
     );
 
     expect(exec.traits.toList(), equals([js1, jsExport1, meta]));
-    expect(
-      () => (exec.traits as dynamic).add(js3),
-      throwsUnsupportedError,
-    );
+    expect(() => (exec.traits as dynamic).add(js3), throwsUnsupportedError);
   }
 }
