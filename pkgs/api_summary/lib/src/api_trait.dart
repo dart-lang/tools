@@ -170,12 +170,12 @@ final class JsExportTrait implements ApiTrait {
   @override
   Map<String, dynamic> toJson() => {
     'namespace': namespace,
-    if (name != null && name!.isNotEmpty) 'name': name,
+    if (name != null) 'name': name,
   };
 
   @override
   List<String> get parentheticalSegments => [
-    if (name != null && name!.isNotEmpty) 'jsExport: "$name"' else 'jsExport',
+    if (name != null) 'jsExport: "$name"' else 'jsExport',
   ];
 
   @override

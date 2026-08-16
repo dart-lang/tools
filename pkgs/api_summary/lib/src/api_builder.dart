@@ -526,14 +526,14 @@ final class _ApiBuilder {
         final type = constant.type;
         if (type == null) continue;
         final typeElement = type.element;
-        if (typeElement == null) continue;
-        final uri = typeElement.library?.uri.toString();
+        if (typeElement is! InterfaceElement) continue;
+        final uri = typeElement.library.uri.toString();
         if (typeElement.name == 'JS' &&
             (uri == 'dart:js_interop' || uri == 'package:js/js.dart')) {
           final name = constant.getField('name')?.toStringValue();
           jsBinding = JsBindingTrait(name);
         } else if (typeElement.name == 'JSExport' &&
-            (uri == 'dart:js_interop' || uri?.contains('interop') == true)) {
+            (uri == 'dart:js_interop' || uri.contains('interop'))) {
           final name = constant.getField('name')?.toStringValue();
           jsExport = JsExportTrait(name);
         }

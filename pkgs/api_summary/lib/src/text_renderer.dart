@@ -129,12 +129,10 @@ final class _ApiTextRenderer {
   void _renderLibrary(ApiLibrary library, Node<MemberSortKey> node) {
     node.text.add(Uri.parse(library.uri));
     if (library.traits.isNotEmpty) {
-      final parentheticals = <List<Object?>>[];
-      for (final trait in library.traits) {
-        for (final segment in trait.parentheticalSegments) {
-          parentheticals.add([segment]);
-        }
-      }
+      final parentheticals = [
+        for (final trait in library.traits)
+          for (final segment in trait.parentheticalSegments) [segment],
+      ];
       if (parentheticals.isNotEmpty) {
         node.text.addAll(parentheticals.separatedBy(prefix: ' (', suffix: ')'));
       }
