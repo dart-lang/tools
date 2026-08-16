@@ -227,7 +227,8 @@ class Target {
   }
 
   void test_traits_deduplication_sorting_and_immutability() {
-    // 1. Verify MetaContractTrait deduplicates contracts and sorts them deterministically
+    // 1. Verify MetaContractTrait deduplicates contracts and sorts them
+    // deterministically.
     final metaTrait1 = MetaContractTrait([
       MetaContract.useResult,
       MetaContract.protected,
@@ -261,7 +262,18 @@ class Target {
     expect(metaTrait1, equals(metaTrait2));
     expect(metaTrait1.hashCode, equals(metaTrait2.hashCode));
 
-    // 2. Verify ApiDeclaration deduplicates traits and sorts them deterministically
+    // Verify fromJson gracefully ignores unknown contracts
+    final fromJsonTrait = MetaContractTrait.fromJson({
+      'namespace': 'meta',
+      'contracts': ['protected', 'unknownFutureContract', 'useResult'],
+    });
+    expect(
+      fromJsonTrait.contracts.toList(),
+      equals([MetaContract.protected, MetaContract.useResult]),
+    );
+
+    // 2. Verify ApiDeclaration deduplicates traits and sorts them
+    // deterministically.
     final dummyExecutable = ApiExecutable(
       name: 'foo',
       kind: ApiExecutableKind.function,

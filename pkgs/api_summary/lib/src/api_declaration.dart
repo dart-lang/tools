@@ -507,14 +507,9 @@ extension ApiDeclarationMetaSugar on ApiDeclaration {
   bool get isVisibleForOverriding => hasMeta(MetaContract.visibleForOverriding);
   bool get isVisibleForTesting => hasMeta(MetaContract.visibleForTesting);
 
-  bool hasMeta(MetaContract contract) {
-    for (final trait in traits) {
-      if (trait is MetaContractTrait && trait.contracts.contains(contract)) {
-        return true;
-      }
-    }
-    return false;
-  }
+  bool hasMeta(MetaContract contract) => traits.any(
+    (trait) => trait is MetaContractTrait && trait.contracts.contains(contract),
+  );
 }
 
 ApiDeclarationStatus _parseStatus(Map<String, dynamic> json) =>

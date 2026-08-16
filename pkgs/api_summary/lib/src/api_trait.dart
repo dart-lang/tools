@@ -16,7 +16,8 @@ abstract interface class ApiTrait implements Comparable<ApiTrait> {
   /// JSON serialization for `api.json`.
   Map<String, dynamic> toJson();
 
-  /// Deserializes an [ApiTrait] from a JSON map containing a `'namespace'` field.
+  /// Deserializes an [ApiTrait] from a JSON map containing a `'namespace'`
+  /// field.
   static ApiTrait fromJson(Map<String, dynamic> json) {
     final namespace = json['namespace'] as String?;
     return switch (namespace) {
@@ -39,6 +40,7 @@ enum MetaContract implements Comparable<MetaContract> {
   visibleForOverriding('visible for overriding'),
   visibleForTesting('visible for testing');
 
+  /// The human-readable label used for text representation in summaries.
   final String textLabel;
   const MetaContract(this.textLabel);
 
@@ -51,6 +53,7 @@ final class MetaContractTrait implements ApiTrait {
   @override
   String get namespace => 'meta';
 
+  /// The set of active metadata contracts associated with this trait.
   final Set<MetaContract> contracts;
 
   MetaContractTrait(Iterable<MetaContract> contracts)
@@ -61,7 +64,12 @@ final class MetaContractTrait implements ApiTrait {
     final set = <MetaContract>{};
     for (final item in list) {
       if (item is String) {
-        set.add(MetaContract.values.byName(item));
+        final contract = MetaContract.values
+            .where((e) => e.name == item)
+            .firstOrNull;
+        if (contract != null) {
+          set.add(contract);
+        }
       }
     }
     return MetaContractTrait(set);
