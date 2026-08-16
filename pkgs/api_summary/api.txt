@@ -175,6 +175,26 @@ package:api_summary/api_summary.dart:
     new (const constructor: ApiVoidType Function())
     fromJson (constructor: ApiVoidType Function(Map<String, dynamic>))
     toJson (method: Map<String, dynamic> Function())
+  JsBindingTrait (class extends Object implements ApiTrait, final):
+    new (const constructor: JsBindingTrait Function([String?]))
+    fromJson (constructor: JsBindingTrait Function(Map<String, dynamic>))
+    hashCode (getter: int)
+    name (getter: String?)
+    namespace (getter: String)
+    parentheticalSegments (getter: List<String>)
+    == (method: bool Function(Object))
+    compareTo (method: int Function(ApiTrait))
+    toJson (method: Map<String, dynamic> Function())
+  JsExportTrait (class extends Object implements ApiTrait, final):
+    new (const constructor: JsExportTrait Function([String?]))
+    fromJson (constructor: JsExportTrait Function(Map<String, dynamic>))
+    hashCode (getter: int)
+    name (getter: String?)
+    namespace (getter: String)
+    parentheticalSegments (getter: List<String>)
+    == (method: bool Function(Object))
+    compareTo (method: int Function(ApiTrait))
+    toJson (method: Map<String, dynamic> Function())
   MetaContract (enum implements Comparable<MetaContract>):
     experimental (enum constant: MetaContract)
     immutable (enum constant: MetaContract)
@@ -199,6 +219,11 @@ package:api_summary/api_summary.dart:
     == (method: bool Function(Object))
     compareTo (method: int Function(ApiTrait))
     toJson (method: Map<String, dynamic> Function())
+  ApiDeclarationJsSugar (extension on ApiDeclaration):
+    hasJsBinding (getter: bool)
+    hasJsExport (getter: bool)
+    jsBindingName (getter: String?)
+    jsExportName (getter: String?)
   ApiDeclarationMetaSugar (extension on ApiDeclaration):
     isExperimental (getter: bool)
     isImmutable (getter: bool)

@@ -512,5 +512,26 @@ extension ApiDeclarationMetaSugar on ApiDeclaration {
   );
 }
 
+/// Convenience extensions for querying `dart:js_interop` annotations.
+extension ApiDeclarationJsSugar on ApiDeclaration {
+  String? get jsBindingName {
+    for (final trait in traits) {
+      if (trait is JsBindingTrait) return trait.name;
+    }
+    return null;
+  }
+
+  bool get hasJsBinding => traits.any((t) => t is JsBindingTrait);
+
+  String? get jsExportName {
+    for (final trait in traits) {
+      if (trait is JsExportTrait) return trait.name;
+    }
+    return null;
+  }
+
+  bool get hasJsExport => traits.any((t) => t is JsExportTrait);
+}
+
 ApiDeclarationStatus _parseStatus(Map<String, dynamic> json) =>
     ApiDeclarationStatus.values.byName(json['status'] as String? ?? 'public');

@@ -22,6 +22,8 @@ abstract interface class ApiTrait implements Comparable<ApiTrait> {
     final namespace = json['namespace'] as String?;
     return switch (namespace) {
       'meta' => MetaContractTrait.fromJson(json),
+      'js' => JsBindingTrait.fromJson(json),
+      'js_export' => JsExportTrait.fromJson(json),
       _ => throw FormatException('Unknown ApiTrait namespace: "$namespace"'),
     };
   }
@@ -106,4 +108,90 @@ final class MetaContractTrait implements ApiTrait {
   @override
   int get hashCode =>
       Object.hash(namespace, const SetEquality<MetaContract>().hash(contracts));
+}
+
+/// An [ApiTrait] capturing a `@JS([name])` annotation from `dart:js_interop`
+/// or `package:js`.
+final class JsBindingTrait implements ApiTrait {
+  @override
+  String get namespace => 'js';
+
+  /// The customized JavaScript symbol name, if provided.
+  final String? name;
+
+  const JsBindingTrait([this.name]);
+
+  factory JsBindingTrait.fromJson(Map<String, dynamic> json) =>
+      JsBindingTrait(json['name'] as String?);
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'namespace': namespace,
+    if (name != null) 'name': name,
+  };
+
+  @override
+  List<String> get parentheticalSegments => [
+    if (name != null) 'js: "$name"' else 'js',
+  ];
+
+  @override
+  int compareTo(ApiTrait other) {
+    final diff = namespace.compareTo(other.namespace);
+    if (diff != 0) return diff;
+    if (other is JsBindingTrait) {
+      return (name ?? '').compareTo(other.name ?? '');
+    }
+    return 0;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is JsBindingTrait && name == other.name;
+
+  @override
+  int get hashCode => Object.hash(namespace, name);
+}
+
+/// An [ApiTrait] capturing a `@JSExport([name])` annotation from
+/// `dart:js_interop`.
+final class JsExportTrait implements ApiTrait {
+  @override
+  String get namespace => 'js_export';
+
+  /// The customized exported property name, if provided.
+  final String? name;
+
+  const JsExportTrait([this.name]);
+
+  factory JsExportTrait.fromJson(Map<String, dynamic> json) =>
+      JsExportTrait(json['name'] as String?);
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'namespace': namespace,
+    if (name != null && name!.isNotEmpty) 'name': name,
+  };
+
+  @override
+  List<String> get parentheticalSegments => [
+    if (name != null && name!.isNotEmpty) 'jsExport: "$name"' else 'jsExport',
+  ];
+
+  @override
+  int compareTo(ApiTrait other) {
+    final diff = namespace.compareTo(other.namespace);
+    if (diff != 0) return diff;
+    if (other is JsExportTrait) {
+      return (name ?? '').compareTo(other.name ?? '');
+    }
+    return 0;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is JsExportTrait && name == other.name;
+
+  @override
+  int get hashCode => Object.hash(namespace, name);
 }

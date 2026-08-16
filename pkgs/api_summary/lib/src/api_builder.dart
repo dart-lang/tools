@@ -499,6 +499,9 @@ final class _ApiBuilder {
 
   List<ApiTrait> _extractTraits(Element element) {
     final contracts = <MetaContract>{};
+    JsBindingTrait? jsBinding;
+    JsExportTrait? jsExport;
+
     void checkMetadata(Metadata metadata) {
       if (metadata.hasExperimental) contracts.add(MetaContract.experimental);
       if (metadata.hasImmutable) contracts.add(MetaContract.immutable);
@@ -516,6 +519,25 @@ final class _ApiBuilder {
       if (metadata.hasVisibleForTesting) {
         contracts.add(MetaContract.visibleForTesting);
       }
+
+      for (final annotation in metadata.annotations) {
+        final constant = annotation.computeConstantValue();
+        if (constant == null) continue;
+        final type = constant.type;
+        if (type == null) continue;
+        final typeElement = type.element;
+        if (typeElement == null) continue;
+        final uri = typeElement.library?.uri.toString();
+        if (typeElement.name == 'JS' &&
+            (uri == 'dart:js_interop' || uri == 'package:js/js.dart')) {
+          final name = constant.getField('name')?.toStringValue();
+          jsBinding = JsBindingTrait(name);
+        } else if (typeElement.name == 'JSExport' &&
+            (uri == 'dart:js_interop' || uri?.contains('interop') == true)) {
+          final name = constant.getField('name')?.toStringValue();
+          jsExport = JsExportTrait(name);
+        }
+      }
     }
 
     checkMetadata(element.nonSynthetic.metadata);
@@ -523,7 +545,11 @@ final class _ApiBuilder {
       checkMetadata(element.variable.nonSynthetic.metadata);
     }
 
-    return [if (contracts.isNotEmpty) MetaContractTrait(contracts)];
+    return [
+      if (contracts.isNotEmpty) MetaContractTrait(contracts),
+      if (jsBinding case final jsBinding?) jsBinding,
+      if (jsExport case final jsExport?) jsExport,
+    ];
   }
 
   ApiExecutable _buildExecutable(
