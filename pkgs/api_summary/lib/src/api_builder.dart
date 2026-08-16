@@ -14,6 +14,7 @@ import 'package:collection/collection.dart';
 
 import 'api_declaration.dart';
 import 'api_summary_customizer.dart';
+import 'api_trait.dart';
 import 'api_type.dart';
 import 'extensions.dart';
 
@@ -149,6 +150,7 @@ final class _ApiBuilder {
           () => _ApiLibraryBuilder(
             library.uri.toString(),
             isPublicEntryPoint: library.uri.isInPublicLibOf(_pkgName),
+            traits: _extractTraits(library),
           ),
         );
         switch (apiElement) {
@@ -211,6 +213,7 @@ final class _ApiBuilder {
           () => _ApiLibraryBuilder(
             library.uri.toString(),
             isPublicEntryPoint: true,
+            traits: _extractTraits(library),
           ),
         );
       }
@@ -423,10 +426,7 @@ final class _ApiBuilder {
       constructors: constructors,
       methods: methods,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
-      isImmutable: element.nonSynthetic.metadata.hasImmutable,
-      isInternal: element.nonSynthetic.metadata.hasInternal,
-      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+      traits: _extractTraits(element),
     );
   }
 
@@ -453,9 +453,7 @@ final class _ApiBuilder {
       typeParameters: _extractTypeParameters(element.typeParameters),
       methods: methods,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
-      isInternal: element.nonSynthetic.metadata.hasInternal,
-      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+      traits: _extractTraits(element),
     );
   }
 
@@ -487,9 +485,7 @@ final class _ApiBuilder {
       constructors: constructors,
       methods: methods,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
-      isInternal: element.nonSynthetic.metadata.hasInternal,
-      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+      traits: _extractTraits(element),
     );
   }
 
@@ -500,6 +496,35 @@ final class _ApiBuilder {
       predicate(element.nonSynthetic.metadata) ||
       (element is PropertyAccessorElement &&
           predicate(element.variable.nonSynthetic.metadata));
+
+  List<ApiTrait> _extractTraits(Element element) {
+    final contracts = <MetaContract>{};
+    void checkMetadata(Metadata metadata) {
+      if (metadata.hasExperimental) contracts.add(MetaContract.experimental);
+      if (metadata.hasImmutable) contracts.add(MetaContract.immutable);
+      if (metadata.hasInternal) contracts.add(MetaContract.internal);
+      if (metadata.hasMustBeOverridden) {
+        contracts.add(MetaContract.mustBeOverridden);
+      }
+      if (metadata.hasMustCallSuper) contracts.add(MetaContract.mustCallSuper);
+      if (metadata.hasNonVirtual) contracts.add(MetaContract.nonVirtual);
+      if (metadata.hasProtected) contracts.add(MetaContract.protected);
+      if (metadata.hasUseResult) contracts.add(MetaContract.useResult);
+      if (metadata.hasVisibleForOverriding) {
+        contracts.add(MetaContract.visibleForOverriding);
+      }
+      if (metadata.hasVisibleForTesting) {
+        contracts.add(MetaContract.visibleForTesting);
+      }
+    }
+
+    checkMetadata(element.nonSynthetic.metadata);
+    if (element is PropertyAccessorElement) {
+      checkMetadata(element.variable.nonSynthetic.metadata);
+    }
+
+    return [if (contracts.isNotEmpty) MetaContractTrait(contracts)];
+  }
 
   ApiExecutable _buildExecutable(
     ExecutableElement element, {
@@ -549,21 +574,7 @@ final class _ApiBuilder {
       isConst: isConst,
       isDeprecated: _hasAnnotation(element, (m) => m.hasDeprecated),
       isEnumConstant: isEnumConstant,
-      isExperimental: _hasAnnotation(element, (m) => m.hasExperimental),
-      isInternal: _hasAnnotation(element, (m) => m.hasInternal),
-      isMustBeOverridden: _hasAnnotation(element, (m) => m.hasMustBeOverridden),
-      isMustCallSuper: _hasAnnotation(element, (m) => m.hasMustCallSuper),
-      isNonVirtual: _hasAnnotation(element, (m) => m.hasNonVirtual),
-      isProtected: _hasAnnotation(element, (m) => m.hasProtected),
-      isUseResult: _hasAnnotation(element, (m) => m.hasUseResult),
-      isVisibleForOverriding: _hasAnnotation(
-        element,
-        (m) => m.hasVisibleForOverriding,
-      ),
-      isVisibleForTesting: _hasAnnotation(
-        element,
-        (m) => m.hasVisibleForTesting,
-      ),
+      traits: _extractTraits(element),
     );
   }
 
@@ -577,9 +588,7 @@ final class _ApiBuilder {
     typeParameters: _extractTypeParameters(element.typeParameters),
     aliasedType: _describeType(element.aliasedType),
     isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-    isExperimental: element.nonSynthetic.metadata.hasExperimental,
-    isInternal: element.nonSynthetic.metadata.hasInternal,
-    isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+    traits: _extractTraits(element),
   );
 }
 
@@ -587,6 +596,7 @@ final class _ApiBuilder {
 final class _ApiLibraryBuilder {
   final String uri;
   final bool isPublicEntryPoint;
+  final List<ApiTrait> traits;
   final classes = <ApiClass>[];
   final enums = <ApiClass>[];
   final mixins = <ApiClass>[];
@@ -595,7 +605,11 @@ final class _ApiLibraryBuilder {
   final functions = <ApiExecutable>[];
   final typeAliases = <ApiTypeAlias>[];
 
-  _ApiLibraryBuilder(this.uri, {required this.isPublicEntryPoint});
+  _ApiLibraryBuilder(
+    this.uri, {
+    required this.isPublicEntryPoint,
+    this.traits = const [],
+  });
 
   ApiLibrary build() {
     classes.sortBy((e) => e.name);
@@ -615,6 +629,7 @@ final class _ApiLibraryBuilder {
       extensionTypes: extensionTypes,
       functions: functions,
       typeAliases: typeAliases,
+      traits: traits,
     );
   }
 }
