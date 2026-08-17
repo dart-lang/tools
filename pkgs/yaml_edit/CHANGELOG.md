@@ -1,3 +1,7 @@
+## 2.3.0-wip
+
+- Support configurable alias and anchor handling via `AliasBehavior` option on `YamlEditor`.
+
 ## 2.2.4
 
 -  Removes comments associated with a node when `remove` is called.

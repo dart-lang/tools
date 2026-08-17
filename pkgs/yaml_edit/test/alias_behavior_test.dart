@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:test/test.dart';
+import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
 import 'test_utils.dart';
@@ -83,9 +84,7 @@ b: *SS
       expect(doc.parseAt(['b']).value, equals('Mark McGwire'));
     });
 
-    test(
-        'replacing anchor definition with block collection preserves anchor tag',
-        () {
+    test('replacing anchor definition with block map preserves anchor tag', () {
       final doc = YamlEditor(
         '''
 a: &SS Sammy Sosa
@@ -102,6 +101,70 @@ a: &SS
 b: *SS
 '''));
       expect(doc.parseAt(['b', 'first']).value, equals('Mark'));
+    });
+
+    test('replacing anchor definition with block list preserves anchor tag',
+        () {
+      final doc = YamlEditor(
+        '''
+a: &SS Sammy Sosa
+b: *SS
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.update(['a'], ['Mark', 'McGwire']);
+      expect(doc.toString(), equals('''
+a: &SS
+  - Mark
+  - McGwire
+b: *SS
+'''));
+      expect(doc.parseAt(['b', 0]).value, equals('Mark'));
+    });
+
+    test('replacing flow map anchor definition preserves anchor tag and space',
+        () {
+      final doc = YamlEditor(
+        '{a: &user {name: Sigurd}, b: *user}',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.update(
+          ['a'],
+          wrapAsYamlNode({'name': 'Bob'},
+              collectionStyle: CollectionStyle.FLOW));
+      expect(doc.toString(), equals('{a: &user {name: Bob}, b: *user}'));
+      expect(doc.parseAt(['b', 'name']).value, equals('Bob'));
+    });
+
+    test('replacing flow list anchor definition preserves anchor tag and space',
+        () {
+      final doc = YamlEditor(
+        '[&nums [1, 2], *nums]',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.update(
+          [0], wrapAsYamlNode([3, 4], collectionStyle: CollectionStyle.FLOW));
+      expect(doc.toString(), equals('[&nums [3, 4], *nums]'));
+      expect(doc.parseAt([1, 0]).value, equals(3));
+    });
+
+    test(
+        'operations with YamlNode keys do not throw null errors in '
+        'isAnchorDefinition', () {
+      final doc = YamlEditor(
+        '''
+? &key [1, 2]
+: &val [3, 4]
+alias_val: *val
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.update(['alias_val', 0], 99);
+      expect(doc.parseAt(['alias_val', 0]).value, equals(99));
     });
 
     test('replacing alias reference leaf replaces reference token only', () {
