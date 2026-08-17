@@ -6,6 +6,9 @@
   so that the created link can contain that content.
 * For testing the package, adds matchers for `Element` and `Text` to more
   directly test the output parsing.
+* Adds `offset`/`length` to `Element`, populated for inline code spans
+  (`` `code` ``) parsed from a top-level paragraph or atx header, so that
+  their location in the original source can be recovered (#1287).
 
 ## 7.3.1
 

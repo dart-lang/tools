@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'line.dart';
+
 /// A resolver for reference links that do not resolve to a declaration.
 ///
 /// Does not have access to the link text. Use a [LinkBuilder] instead.
@@ -61,6 +63,14 @@ class Element implements Node {
   final Map<String, String> attributes;
   String? generatedId;
   String? footnoteLabel;
+
+  /// The offset of this element in the original source document, or `null`
+  /// if it is not tracked for this kind of element.
+  int? offset;
+
+  /// The length, in the original source document, of the text that produced
+  /// this element, or `null` if it is not tracked for this kind of element.
+  int? length;
 
   /// Instantiates a [tag] Element with [children].
   Element(this.tag, this.children, [Map<String, String>? attributes])
@@ -128,10 +138,42 @@ class UnparsedContent implements Node {
   @override
   final String textContent;
 
-  UnparsedContent(this.textContent);
+  /// Maps offsets within [textContent] back to offsets in the original source
+  /// document, when available.
+  final ContentOffsetMapper? offsetMapper;
+
+  UnparsedContent(this.textContent, [this.offsetMapper]);
 
   @override
   void accept(NodeVisitor visitor) {}
+}
+
+/// Maps offsets within a string of content, built by joining the [Line.content]
+/// of a sequence of [Line]s with `\n`, back to offsets in the original source
+/// document.
+class ContentOffsetMapper {
+  final List<Line> _lines;
+
+  ContentOffsetMapper(this._lines);
+
+  /// Returns the offset in the original source document corresponding to
+  /// [localOffset] within the joined content, or `null` if it cannot be
+  /// determined, for example because a contributing [Line] does not have a
+  /// known [Line.offset].
+  int? map(int localOffset) {
+    var remaining = localOffset;
+    for (final line in _lines) {
+      final offset = line.offset;
+      if (offset == null) return null;
+      final lineLength = line.content.length;
+      if (remaining <= lineLength) {
+        return offset + remaining;
+      }
+      // Account for the `\n` joining this line to the next.
+      remaining -= lineLength + 1;
+    }
+    return null;
+  }
 }
 
 /// Visitor pattern for the AST.
