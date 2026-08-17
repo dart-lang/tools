@@ -40,6 +40,12 @@ class Line {
   // https://spec.commonmark.org/0.30/#blank-line
   final bool isBlankLine;
 
-  Line(this.content, {this.tabRemaining})
+  /// The offset of the start of this line in the original source document,
+  /// or `null` if this line was constructed from content that has already
+  /// been transformed (for example with a block marker stripped), such that
+  /// its position in the original source is no longer known.
+  final int? offset;
+
+  Line(this.content, {this.tabRemaining, this.offset})
     : isBlankLine = emptyPattern.hasMatch(content);
 }
