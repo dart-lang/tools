@@ -921,6 +921,28 @@ void main() {
     );
   });
 
+  test('Event.packageSkillsEvent constructed', () {
+    final event = Event.packageSkillsEvent(
+      version: '1.1.1',
+      type: 'some_event',
+      additionalData: _TestMetrics(
+        boolField: true,
+        stringField: 'hello',
+        intField: 1,
+      ),
+    );
+    expect(
+      event.eventData,
+      equals({
+        'version': '1.1.1',
+        'type': 'some_event',
+        'boolField': true,
+        'stringField': 'hello',
+        'intField': 1,
+      }),
+    );
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (final declaration in reflectClass(Event).declarations.keys) {
@@ -933,7 +955,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 34;
+    final eventsAccountedForInTests = 35;
     expect(
       eventsAccountedForInTests,
       constructorCount,

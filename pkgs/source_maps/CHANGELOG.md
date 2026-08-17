@@ -2,7 +2,8 @@
 
 * Fix `SingleMapping.spanFor` to use the entry from a previous line as specified
   by the sourcemap specification
-  (https://tc39.es/ecma426/#sec-GetOriginalPositions),
+  (https://tc39.es/ecma426/#sec-GetOriginalPositions).
+* Throw `StateError` when parsing mappings with negative source URL or source name IDs.
 
 ## 0.10.13
 

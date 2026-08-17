@@ -1,3 +1,7 @@
+## 0.5.2
+
+- Add a legend to multiselect dialogs to make the usage more obvious.
+
 ## 0.5.1
 
 - Add `showMultiSelectDialog` and `showSingleSelectDialog` to new

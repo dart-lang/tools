@@ -1,5 +1,7 @@
 ## 3.1.4-wip
 
+* Improve recovery for list entries without `-` prefix. When recovering, provide
+  a more helpful error message suggesting the missing prefix.
 * Fix parsing of plain scalars starting with indicator characters (`?`, `:`, and `-`).
 * Throw a `FormatException` when parsing self-referential collections instead of
   a `StackOverflow`. Yaml definitions with collections nested within themselves

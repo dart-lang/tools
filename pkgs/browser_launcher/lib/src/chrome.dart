@@ -129,12 +129,10 @@ class Chrome {
       // another, don't announce when the previous session crashed.
       '--disable-session-crashed-bubble',
       ...additionalArguments,
+      if (headless) '--headless',
     ];
-    if (headless) {
-      args.add('--headless');
-    }
 
-    final process = await _startProcess(urls, args: args);
+    final process = await start(urls, args: args);
 
     // Wait until the DevTools are listening before trying to connect.
     final errorLines = <String>[];
@@ -177,15 +175,10 @@ class Chrome {
   static Future<Process> start(
     List<String> urls, {
     List<String> args = const [],
-  }) async =>
-      await _startProcess(urls, args: args);
-
-  static Future<Process> _startProcess(
-    List<String> urls, {
-    List<String> args = const [],
-  }) async {
-    final processArgs = args.toList()..addAll(urls);
-    return await Process.start(_executable, processArgs);
+  }) {
+    assert(!args.contains('--'));
+    assert(!urls.contains('--'));
+    return Process.start(_executable, [...args, '--', ...urls]);
   }
 
   static Future<Chrome> _connect(Chrome chrome) async {

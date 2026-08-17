@@ -251,6 +251,10 @@ void main() {
           final renderer =
               multiSelect ? showMultiSelectDialog : showSingleSelectDialog;
 
+          // Always compute this on demand to account for the current terminal
+          // width.
+          String maybeLegend() => multiSelect ? '$multiSelectLegend\n' : '';
+
           test('renders UI state correctly', () async {
             final future = renderer([
               'apple',
@@ -262,7 +266,7 @@ void main() {
 >$uBox apple
  $uBox banana
  $uBox cherry
-''');
+${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
@@ -270,7 +274,7 @@ void main() {
  $uBox apple
 >$uBox banana
  $uBox cherry
-''');
+${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.space);
             await pumpEventQueue();
@@ -278,7 +282,7 @@ void main() {
  $uBox apple
 >$sBox banana
  $uBox cherry
-''');
+${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.enter);
             expect(await future, multiSelect ? {1} : 1);
@@ -298,7 +302,7 @@ void main() {
  $uBox c      █
  $uBox d      █
  $uBox e      │
-''');
+${maybeLegend()}''');
             inputController.addKeys(List.filled(2, KeyVariants.down));
             inputController.addKey(KeyVariants.space);
             await pumpEventQueue();
@@ -309,7 +313,7 @@ void main() {
 >$sBox c      █
  $uBox d      █
  $uBox e      │
-''');
+${maybeLegend()}''');
 
             inputController.addKeys(List.filled(4, KeyVariants.down));
             await pumpEventQueue();
@@ -320,7 +324,7 @@ void main() {
  $uBox e      █
  $uBox f      █
 >$uBox g      █
-''');
+${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.enter);
             expect(await future, multiSelect ? {2} : 6);
@@ -341,7 +345,7 @@ void main() {
  $uBox 2       │
  $uBox 3       │
  $uBox 4       │
-''');
+${maybeLegend()}''');
 
             inputController.addKeys(List.filled(2, KeyVariants.down));
             await pumpEventQueue();
@@ -351,7 +355,7 @@ void main() {
 >$uBox 2       │
  $uBox 3       │
  $uBox 4       │
-''');
+${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
@@ -361,7 +365,7 @@ void main() {
 >$uBox 3       │
  $uBox 4       │
  $uBox 5       │
-''');
+${maybeLegend()}''');
 
             inputController.addKeys(List.filled(6, KeyVariants.down));
             await pumpEventQueue();
@@ -371,7 +375,7 @@ void main() {
 >$uBox 9       │
  $uBox 10      │
  $uBox 11      │
-''');
+${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
@@ -381,7 +385,7 @@ void main() {
 >$uBox 10      █
  $uBox 11      │
  $uBox 12      │
-''');
+${maybeLegend()}''');
 
             inputController.addKeys(List.filled(5, KeyVariants.down));
             await pumpEventQueue();
@@ -391,7 +395,7 @@ void main() {
 >$uBox 15      █
  $uBox 16      │
  $uBox 17      │
-''');
+${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
@@ -401,7 +405,7 @@ void main() {
 >$uBox 16      │
  $uBox 17      █
  $uBox 18      │
-''');
+${maybeLegend()}''');
 
             inputController.addKeys(List.filled(5, KeyVariants.down));
             await pumpEventQueue();
@@ -411,7 +415,7 @@ void main() {
 >$uBox 21      │
  $uBox 22      █
  $uBox 23      │
-''');
+${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
@@ -421,7 +425,7 @@ void main() {
 >$uBox 22      │
  $uBox 23      │
  $uBox 24      █
-''');
+${maybeLegend()}''');
 
             inputController.addKeys(List.filled(2, KeyVariants.down));
             await pumpEventQueue();
@@ -431,7 +435,7 @@ void main() {
  $uBox 22      │
  $uBox 23      │
 >$uBox 24      █
-''');
+${maybeLegend()}''');
 
             inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(await future, multiSelect ? {24} : 24);
@@ -452,7 +456,7 @@ void main() {
  $uBox 2      █
  $uBox 3      █
  $uBox 4      │
-''');
+${maybeLegend()}''');
 
             inputController.addKeys(List.filled(4, KeyVariants.down));
             await pumpEventQueue();
@@ -463,7 +467,7 @@ void main() {
  $uBox 3      █
 >$uBox 4      █
  $uBox 5      █
-''');
+${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.enter);
             expect(await future, multiSelect ? <int>{} : 4);
@@ -480,7 +484,7 @@ void main() {
             expect(mockStdout.terminal.content, '''
 >$uBox abcdefg
  $uBox hijklmn
-''');
+${maybeLegend()}''');
 
             inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(await future, multiSelect ? <int>{0} : 0);
@@ -497,7 +501,7 @@ void main() {
             expect(mockStdout.terminal.content, '''
 >$uBox abcdefg
  $uBox hijk...
-''');
+${maybeLegend()}''');
 
             inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(await future, multiSelect ? <int>{0} : 0);
@@ -514,7 +518,7 @@ void main() {
             expect(mockStdout.terminal.content, '''
 >$uBox a very long opt...
  $uBox short
-''');
+${maybeLegend()}''');
 
             inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(await future, multiSelect ? {0} : 0);
@@ -538,7 +542,7 @@ void main() {
  $uBox c                █
  $uBox d                █
  $uBox e                │
-''');
+${maybeLegend()}''');
 
             if (multiSelect) {
               inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
@@ -561,6 +565,7 @@ void main() {
 > [ ] apple
   [x] banana
   [x] cherry
+$multiSelectLegend
 ''');
           inputController.addKey(KeyVariants.enter);
           expect(await future, {1, 2});
@@ -577,6 +582,7 @@ void main() {
 > [ ] apple
   [ ] banana
   [ ] cherry
+$multiSelectLegend
 ''');
 
           inputController.addKey(KeyVariants.selectAll);
@@ -585,6 +591,7 @@ void main() {
 > [x] apple
   [x] banana
   [x] cherry
+$multiSelectLegend
 ''');
 
           inputController.addKey(KeyVariants.selectAll);
@@ -593,6 +600,7 @@ void main() {
 > [ ] apple
   [ ] banana
   [ ] cherry
+$multiSelectLegend
 ''');
 
           inputController.addKey(KeyVariants.enter);

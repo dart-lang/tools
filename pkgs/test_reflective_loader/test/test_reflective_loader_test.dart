@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, unreachable_from_main
 
 import 'dart:async';
 
@@ -36,20 +36,12 @@ class TestReflectiveLoaderTest {
   static bool didTearDownClass = false;
   static bool? expectedToFailInFailingTest;
 
-  // TODO(scheglov): Linter was updated to automatically ignore
-  // this but needs time before it is actually used. Remove this
-  // ignore and others like it in this file once the linter
-  // change is active in this project:
-  // ignore: unreachable_from_main
   static void setUpClass() {
     expect(didSetUpClass, false);
     didSetUpClass = true;
     expect(didTearDownClass, false);
   }
 
-  // TODO(scheglov): See comment directly above
-  // "TestReflectiveLoaderTest.setUpClass" for info about this ignore:
-  // ignore: unreachable_from_main
   static void tearDownClass() {
     expect(didSetUpClass, true);
     expect(didTearDownClass, false);
@@ -115,18 +107,12 @@ class SecondTest {
   static bool didSetUpClass = false;
   static bool didTearDownClass = false;
 
-  // TODO(scheglov): See comment directly above
-  // "TestReflectiveLoaderTest.setUpClass" for info about this ignore:
-  // ignore: unreachable_from_main
   static void setUpClass() {
     expect(didSetUpClass, false);
     didSetUpClass = true;
     expect(didTearDownClass, false);
   }
 
-  // TODO(scheglov): See comment directly above
-  // "TestReflectiveLoaderTest.setUpClass" for info about this ignore:
-  // ignore: unreachable_from_main
   static void tearDownClass() {
     expect(didSetUpClass, true);
     expect(didTearDownClass, false);
