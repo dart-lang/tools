@@ -104,7 +104,11 @@ class YamlEditor {
   /// any modification is taking place.
   ///
   /// See 7.1 Alias Nodes: https://yaml.org/spec/1.2/spec.html#id2786196
-  /// Defines how mutations behave when encountering YAML alias nodes.
+  ///
+  /// Defines how mutations behave when encountering YAML alias references or
+  /// anchor definition nodes. Defaults to [AliasBehavior.disallow], which
+  /// throws an [AliasException] on any modification touching an alias or
+  /// anchor.
   final AliasBehavior aliasBehavior;
 
   /// See 7.1 Alias Nodes: https://yaml.org/spec/1.2/spec.html#id2786196
@@ -383,7 +387,10 @@ class YamlEditor {
   ///
   /// Throws a [ArgumentError] if [path] is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:** (using [update])
   /// ```dart
@@ -494,7 +501,10 @@ class YamlEditor {
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:**
   /// ```dart
@@ -516,7 +526,10 @@ class YamlEditor {
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:**
   /// ```dart
@@ -535,7 +548,10 @@ class YamlEditor {
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:**
   /// ```dart
@@ -570,7 +586,10 @@ class YamlEditor {
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:**
   /// ```dart
@@ -612,7 +631,10 @@ class YamlEditor {
   ///
   /// Throws a [PathError] if the path is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:**
   /// ```dart
