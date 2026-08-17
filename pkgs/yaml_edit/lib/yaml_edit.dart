@@ -22,6 +22,7 @@
 /// [1]: https://yaml.org/
 library;
 
+export 'src/alias_behavior.dart' show AliasBehavior;
 export 'src/editor.dart';
 export 'src/errors.dart' show AliasException;
 export 'src/source_edit.dart';

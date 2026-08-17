@@ -137,7 +137,10 @@ SourceEdit _replaceInBlockMap(
     valueAsString = lineEnding + valueAsString;
   }
 
-  if (!valueAsString.startsWith(lineEnding)) {
+  final anchorTag = yamlEdit.getAnchorTag(map, key);
+  if (anchorTag != null) {
+    valueAsString = ' $anchorTag${valueAsString.trimLeft()}';
+  } else if (!valueAsString.startsWith(lineEnding)) {
     // prepend whitespace to ensure there is space after colon.
     valueAsString = ' $valueAsString';
   }
@@ -145,7 +148,7 @@ SourceEdit _replaceInBlockMap(
   /// +1 accounts for the colon
   // TODO: What if here is a whitespace following the key, before the colon?
   final start = keyNode.span.end.offset + 1;
-  var end = getContentSensitiveEnd(map.nodes[key]!);
+  var end = yamlEdit.getTrueContentSensitiveEnd(map, key);
 
   /// `package:yaml` parses empty nodes in a way where the start/end of the
   /// empty value node is the end of the key node, so we have to adjust for
@@ -160,8 +163,12 @@ SourceEdit _replaceInBlockMap(
 /// that this is a flow map.
 SourceEdit _replaceInFlowMap(
     YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
-  final valueSpan = map.nodes[key]!.span;
-  final valueString = yamlEncodeFlow(newValue);
+  final valueSpan = yamlEdit.getTrueSpan(map, key);
+  var valueString = yamlEncodeFlow(newValue);
+  final anchorTag = yamlEdit.getAnchorTag(map, key);
+  if (anchorTag != null) {
+    valueString = '$anchorTag$valueString';
+  }
 
   return SourceEdit(valueSpan.start.offset, valueSpan.length, valueString);
 }
@@ -187,7 +194,7 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
       start: entryIndex == 0 ? map.span.start.offset : keySpan.start.offset,
       end: valueNode.span.length == 0
           ? keySpan.end.offset + 2 // Null value have no span. Skip ":".
-          : getContentSensitiveEnd(valueNode),
+          : yamlEdit.getTrueContentSensitiveEnd(map, key),
     ),
     lineEnding: getLineEnding(yaml),
 
@@ -211,7 +218,7 @@ SourceEdit _removeFromFlowMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   final (index: _, :keyNode, :valueNode) = getYamlMapEntry(map, key);
 
   var start = keyNode.span.start.offset;
-  var end = valueNode.span.end.offset;
+  var end = yamlEdit.getTrueSpan(map, key, valueNode).end.offset;
   final yaml = yamlEdit.toString();
 
   if (deepEquals(keyNode, map.keys.first)) {
