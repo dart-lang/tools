@@ -4,6 +4,7 @@
 
 import '../ast.dart';
 import '../block_parser.dart';
+import '../line.dart';
 import '../patterns.dart';
 import 'block_syntax.dart';
 
@@ -16,7 +17,8 @@ class HeaderSyntax extends BlockSyntax {
 
   @override
   Node parse(BlockParser parser) {
-    final match = pattern.firstMatch(parser.current.content)!;
+    final currentLine = parser.current;
+    final match = pattern.firstMatch(currentLine.content)!;
     final matchedText = match[0]!;
     final openMarker = match[1]!;
     final closeMarker = match[2];
@@ -24,17 +26,18 @@ class HeaderSyntax extends BlockSyntax {
     final openMarkerStart = matchedText.indexOf(openMarker);
     final openMarkerEnd = openMarkerStart + level;
 
-    String? content;
+    String rawContent;
     if (closeMarker == null) {
-      content = parser.current.content.substring(openMarkerEnd);
+      rawContent = currentLine.content.substring(openMarkerEnd);
     } else {
       final closeMarkerStart = matchedText.lastIndexOf(closeMarker);
-      content = parser.current.content.substring(
+      rawContent = currentLine.content.substring(
         openMarkerEnd,
         closeMarkerStart,
       );
     }
-    content = content.trim();
+    final leadingWhitespace = rawContent.length - rawContent.trimLeft().length;
+    String? content = rawContent.trim();
 
     // https://spec.commonmark.org/0.30/#example-79
     if (closeMarker == null && RegExp(r'^#+$').hasMatch(content)) {
@@ -42,6 +45,20 @@ class HeaderSyntax extends BlockSyntax {
     }
 
     parser.advance();
-    return Element('h$level', [if (content != null) UnparsedContent(content)]);
+
+    if (content == null) {
+      return Element('h$level', const []);
+    }
+
+    final currentOffset = currentLine.offset;
+    final contentOffsetMapper = currentOffset == null
+        ? null
+        : ContentOffsetMapper([
+            Line(
+              content,
+              offset: currentOffset + openMarkerEnd + leadingWhitespace,
+            ),
+          ]);
+    return Element('h$level', [UnparsedContent(content, contentOffsetMapper)]);
   }
 }
