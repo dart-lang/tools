@@ -53,4 +53,17 @@ a <!--
     final html = markdownToHtml(input);
     expect(html, '<p>$input</p>\n');
   });
+
+  test('setext heading underline is not an empty list item, GFM #2108', () {
+    // See https://github.com/dart-lang/tools/issues/2108.
+    // With `ExtensionSet.gitHubFlavored`, `UnorderedListWithCheckboxSyntax`
+    // used to be checked before `SetextHeaderSyntax`, so a lone `-` line
+    // continuing a paragraph was parsed as an empty list item instead of a
+    // setext H2 underline.
+    final html = markdownToHtml(
+      'I am paragraph\n-',
+      extensionSet: ExtensionSet.gitHubFlavored,
+    );
+    expect(html, '<h2>I am paragraph</h2>\n');
+  });
 }

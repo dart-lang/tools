@@ -4,6 +4,7 @@ import 'block_syntaxes/fenced_code_block_syntax.dart';
 import 'block_syntaxes/footnote_def_syntax.dart';
 import 'block_syntaxes/header_with_id_syntax.dart';
 import 'block_syntaxes/ordered_list_with_checkbox_syntax.dart';
+import 'block_syntaxes/setext_header_syntax.dart';
 import 'block_syntaxes/setext_header_with_id_syntax.dart';
 import 'block_syntaxes/table_syntax.dart';
 import 'block_syntaxes/unordered_list_with_checkbox_syntax.dart';
@@ -75,6 +76,10 @@ class ExtensionSet {
     List<BlockSyntax>.unmodifiable(<BlockSyntax>[
       const FencedCodeBlockSyntax(),
       const TableSyntax(),
+      // Must precede the list syntaxes below: a lone `-` (or `=`) line
+      // continuing a paragraph is a setext heading underline, not an empty
+      // list item. See https://github.com/dart-lang/tools/issues/2108.
+      const SetextHeaderSyntax(),
       const UnorderedListWithCheckboxSyntax(),
       const OrderedListWithCheckboxSyntax(),
       const FootnoteDefSyntax(),

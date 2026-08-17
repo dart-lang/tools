@@ -62,7 +62,7 @@ Future<void> main() async {
   //
   // A MultiChannel<T> splits events into numbered channels, which are
   // instances of VirtualChannel<T>.
-  var dummyCtrl1 = StreamChannelController<String>();
+  var dummyCtrl1 = StreamChannelController<Object>();
   var multiChannel = MultiChannel<String>(dummyCtrl1.foreign);
   var channel1 = multiChannel.virtualChannel();
   await multiChannel.sink.close();
@@ -71,7 +71,7 @@ Future<void> main() async {
   // the underlying transport, use the corresponding ID's to handle events in
   // their respective channels. It is up to you how to communicate channel ID's
   // across different endpoints.
-  var dummyCtrl2 = StreamChannelController<String>();
+  var dummyCtrl2 = StreamChannelController<Object>();
   var multiChannel2 = MultiChannel<String>(dummyCtrl2.foreign);
   var channel2 = multiChannel2.virtualChannel(channel1.id);
   await channel2.sink.close();

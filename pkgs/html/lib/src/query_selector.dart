@@ -11,9 +11,6 @@ import 'package:csslib/visitor.dart';
 import '../dom.dart';
 import 'constants.dart' show isWhitespaceCC;
 
-bool matches(Element node, String selector) =>
-    SelectorEvaluator().matches(node, _parseSelectorList(selector));
-
 Element? querySelector(Node node, String selector) =>
     SelectorEvaluator().querySelector(node, _parseSelectorList(selector));
 

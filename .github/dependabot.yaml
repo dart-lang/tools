@@ -11,6 +11,7 @@ updates:
       default-days: 7
     labels:
       - autosubmit
+      - skip-changelog-check
     groups:
       github-actions:
         patterns:
@@ -27,4 +28,5 @@ updates:
       default-days: 7
     labels:
       - autosubmit
+      - skip-changelog-check
     versioning-strategy: increase-if-necessary
