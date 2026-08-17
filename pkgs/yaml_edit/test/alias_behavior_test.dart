@@ -149,6 +149,103 @@ list1: &nums
 list2: *nums
 '''));
     });
+
+    test('list insert and splice via alias reference redirect to anchor list',
+        () {
+      final doc = YamlEditor(
+        '''
+list1: &nums
+  - 1
+  - 3
+list2: *nums
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.insertIntoList(['list2'], 1, 2);
+      expect(doc.toString(), equals('''
+list1: &nums
+  - 1
+  - 2
+  - 3
+list2: *nums
+'''));
+
+      doc.spliceList(['list2'], 1, 2, [8, 9]);
+      expect(doc.toString(), equals('''
+list1: &nums
+  - 1
+  - 8
+  - 9
+list2: *nums
+'''));
+    });
+
+    test('remove element from list via alias reference updates anchor list',
+        () {
+      final doc = YamlEditor(
+        '''
+list1: &nums
+  - 1
+  - 2
+list2: *nums
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.remove(['list2', 0]);
+      expect(doc.toString(), equals('''
+list1: &nums
+  - 2
+list2: *nums
+'''));
+    });
+
+    test('flow map alias reference updates cleanly under reference', () {
+      final doc = YamlEditor(
+        '''
+a: &user { name: Sigurd, role: dev }
+b: *user
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.update(['b', 'role'], 'lead');
+      expect(doc.parseAt(['a', 'role']).value, equals('lead'));
+      expect(doc.parseAt(['b', 'role']).value, equals('lead'));
+    });
+
+    test('multiple alias references share anchor updates under reference', () {
+      final doc = YamlEditor(
+        '''
+a: &user
+  role: dev
+b: *user
+c: *user
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.update(['b', 'role'], 'lead');
+      expect(doc.parseAt(['a', 'role']).value, equals('lead'));
+      expect(doc.parseAt(['c', 'role']).value, equals('lead'));
+    });
+
+    test('removing anchor definition succeeds after all references are removed',
+        () {
+      final doc = YamlEditor(
+        '''
+a: &user
+  role: dev
+b: *user
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.remove(['b']);
+      doc.remove(['a']);
+      expect(doc.toString(), equals('{}\n'));
+    });
   });
 
   group('AliasBehavior.copyOnWrite', () {
@@ -226,6 +323,45 @@ b: *SS
       expect(doc.toString(), equals('''
 a: &SS Sammy Sosa
 '''));
+    });
+
+    test('list element removal via alias reference materializes copy', () {
+      final doc = YamlEditor(
+        '''
+list1: &nums
+  - 1
+  - 2
+list2: *nums
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.remove(['list2', 0]);
+      expect(doc.toString(), equals('''
+list1: &nums
+  - 1
+  - 2
+list2:
+  - 2
+'''));
+    });
+
+    test('multiple alias references decouple individually under copyOnWrite',
+        () {
+      final doc = YamlEditor(
+        '''
+a: &user
+  role: dev
+b: *user
+c: *user
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['b', 'role'], 'lead');
+      expect(doc.parseAt(['a', 'role']).value, equals('dev'));
+      expect(doc.parseAt(['b', 'role']).value, equals('lead'));
+      expect(doc.parseAt(['c', 'role']).value, equals('dev'));
     });
   });
 }
