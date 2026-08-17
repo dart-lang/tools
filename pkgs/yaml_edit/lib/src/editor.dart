@@ -222,7 +222,8 @@ class YamlEditor {
     }
 
     final node = parentCollection is YamlMap
-        ? parentCollection.nodes[keyOrIndex]!
+        ? parentCollection
+            .nodes[keyOrIndex is YamlNode ? keyOrIndex.value : keyOrIndex]!
         : (parentCollection as YamlList).nodes[keyOrIndex as int];
     return node.span;
   }
@@ -262,7 +263,8 @@ class YamlEditor {
   /// anchor definition node (`&anchor`).
   bool isAnchorDefinition(YamlNode parentCollection, Object? keyOrIndex) {
     final node = parentCollection is YamlMap
-        ? parentCollection.nodes[keyOrIndex]!
+        ? parentCollection
+            .nodes[keyOrIndex is YamlNode ? keyOrIndex.value : keyOrIndex]!
         : (parentCollection as YamlList).nodes[keyOrIndex as int];
     if (!_aliases.contains(node)) return false;
     final anchorPath = _anchorPaths[node];
@@ -861,6 +863,8 @@ class YamlEditor {
     return hasReference;
   }
 
+  /// Returns the clean anchor tag (`&anchorName`) associated with the node
+  /// at [keyOrIndex] inside [parentCollection], or `null` if none exists.
   String? getAnchorTag(YamlNode parentCollection, Object? keyOrIndex) {
     if (!isAnchorDefinition(parentCollection, keyOrIndex)) return null;
     final span = getTrueSpan(parentCollection, keyOrIndex);
@@ -868,9 +872,9 @@ class YamlEditor {
     if (text.startsWith('&')) {
       final idx = text.indexOf(RegExp(r'\s'));
       if (idx != -1) {
-        return text.substring(0, idx + 1);
+        return text.substring(0, idx);
       }
-      return '$text ';
+      return text;
     }
     return null;
   }
@@ -959,7 +963,7 @@ class _AliasEntryKey {
   final Object? keyOrIndex;
 
   _AliasEntryKey(this.parent, Object? keyOrIndex)
-      : keyOrIndex = keyOrIndex is YamlScalar ? keyOrIndex.value : keyOrIndex;
+      : keyOrIndex = keyOrIndex is YamlNode ? keyOrIndex.value : keyOrIndex;
 
   @override
   bool operator ==(Object other) =>
@@ -968,9 +972,5 @@ class _AliasEntryKey {
       deepEquals(keyOrIndex, other.keyOrIndex);
 
   @override
-  int get hashCode =>
-      parent.hashCode ^
-      (keyOrIndex is YamlNode
-          ? (keyOrIndex as YamlNode).value.hashCode
-          : keyOrIndex.hashCode);
+  int get hashCode => parent.hashCode ^ keyOrIndex.hashCode;
 }

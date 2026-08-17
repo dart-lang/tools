@@ -139,7 +139,11 @@ SourceEdit _replaceInBlockMap(
 
   final anchorTag = yamlEdit.getAnchorTag(map, key);
   if (anchorTag != null) {
-    valueAsString = ' $anchorTag${valueAsString.trimLeft()}';
+    if (valueAsString.startsWith(lineEnding)) {
+      valueAsString = ' $anchorTag$valueAsString';
+    } else {
+      valueAsString = ' $anchorTag ${valueAsString.trimLeft()}';
+    }
   } else if (!valueAsString.startsWith(lineEnding)) {
     // prepend whitespace to ensure there is space after colon.
     valueAsString = ' $valueAsString';
@@ -167,7 +171,7 @@ SourceEdit _replaceInFlowMap(
   var valueString = yamlEncodeFlow(newValue);
   final anchorTag = yamlEdit.getAnchorTag(map, key);
   if (anchorTag != null) {
-    valueString = '$anchorTag$valueString';
+    valueString = '$anchorTag $valueString';
   }
 
   return SourceEdit(valueSpan.start.offset, valueSpan.length, valueString);

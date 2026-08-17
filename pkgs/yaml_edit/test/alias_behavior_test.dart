@@ -83,6 +83,27 @@ b: *SS
       expect(doc.parseAt(['b']).value, equals('Mark McGwire'));
     });
 
+    test(
+        'replacing anchor definition with block collection preserves anchor tag',
+        () {
+      final doc = YamlEditor(
+        '''
+a: &SS Sammy Sosa
+b: *SS
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.update(['a'], {'first': 'Mark', 'last': 'McGwire'});
+      expect(doc.toString(), equals('''
+a: &SS
+  first: Mark
+  last: McGwire
+b: *SS
+'''));
+      expect(doc.parseAt(['b', 'first']).value, equals('Mark'));
+    });
+
     test('replacing alias reference leaf replaces reference token only', () {
       final doc = YamlEditor(
         '''

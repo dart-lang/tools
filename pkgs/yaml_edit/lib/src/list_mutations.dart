@@ -45,7 +45,17 @@ SourceEdit updateInList(
     }
 
     var end = yamlEdit.getTrueContentSensitiveEnd(list, index);
-    if (end <= offset) {
+    final anchorTag = yamlEdit.getAnchorTag(list, index);
+    if (anchorTag != null) {
+      if (valueString.startsWith(lineEnding)) {
+        valueString = ' $anchorTag$valueString';
+      } else {
+        valueString = ' $anchorTag ${valueString.trimLeft()}';
+      }
+      if (offset > 0 && yaml[offset - 1] != ' ') {
+        valueString = ' $valueString';
+      }
+    } else if (end <= offset) {
       offset++;
       end = offset;
       valueString = ' $valueString';
@@ -54,6 +64,10 @@ SourceEdit updateInList(
     return SourceEdit(offset, end - offset, valueString);
   } else {
     valueString = yamlEncodeFlow(newValue);
+    final anchorTag = yamlEdit.getAnchorTag(list, index);
+    if (anchorTag != null) {
+      valueString = '$anchorTag $valueString';
+    }
     return SourceEdit(offset, trueSpan.length, valueString);
   }
 }
