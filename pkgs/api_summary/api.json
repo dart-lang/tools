@@ -3935,6 +3935,29 @@
               ]
             },
             {
+              "name": "fromElement",
+              "locationUri": "package:api_summary/src/api_trait.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "JsBindingTrait",
+                "libraryUri": "package:api_summary/src/api_trait.dart",
+                "isNullable": true
+              },
+              "parameters": [
+                {
+                  "name": "element",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Element",
+                    "libraryUri": "package:analyzer/dart/element/element.dart"
+                  },
+                  "isRequired": true
+                }
+              ],
+              "isStatic": true
+            },
+            {
               "name": "hashCode",
               "locationUri": "package:api_summary/src/api_trait.dart",
               "kind": "getter",
@@ -4120,6 +4143,29 @@
                   "isRequired": true
                 }
               ]
+            },
+            {
+              "name": "fromElement",
+              "locationUri": "package:api_summary/src/api_trait.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "JsExportTrait",
+                "libraryUri": "package:api_summary/src/api_trait.dart",
+                "isNullable": true
+              },
+              "parameters": [
+                {
+                  "name": "element",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Element",
+                    "libraryUri": "package:analyzer/dart/element/element.dart"
+                  },
+                  "isRequired": true
+                }
+              ],
+              "isStatic": true
             },
             {
               "name": "hashCode",
@@ -4329,6 +4375,29 @@
                   }
                 ]
               }
+            },
+            {
+              "name": "fromElement",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContractTrait",
+                "libraryUri": "package:api_summary/src/meta_trait.dart",
+                "isNullable": true
+              },
+              "parameters": [
+                {
+                  "name": "element",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Element",
+                    "libraryUri": "package:analyzer/dart/element/element.dart"
+                  },
+                  "isRequired": true
+                }
+              ],
+              "isStatic": true
             },
             {
               "name": "hashCode",

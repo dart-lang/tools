@@ -490,68 +490,16 @@ final class _ApiBuilder {
     );
   }
 
-  bool _hasAnnotation(
-    ExecutableElement element,
-    bool Function(Metadata metadata) predicate,
-  ) =>
-      predicate(element.nonSynthetic.metadata) ||
+  bool _isDeprecated(Element element) =>
+      element.nonSynthetic.metadata.hasDeprecated ||
       (element is PropertyAccessorElement &&
-          predicate(element.variable.nonSynthetic.metadata));
+          element.variable.nonSynthetic.metadata.hasDeprecated);
 
-  List<ApiTrait> _extractTraits(Element element) {
-    final contracts = <MetaContract>{};
-    JsBindingTrait? jsBinding;
-    JsExportTrait? jsExport;
-
-    void checkMetadata(Metadata metadata) {
-      if (metadata.hasExperimental) contracts.add(MetaContract.experimental);
-      if (metadata.hasImmutable) contracts.add(MetaContract.immutable);
-      if (metadata.hasInternal) contracts.add(MetaContract.internal);
-      if (metadata.hasMustBeOverridden) {
-        contracts.add(MetaContract.mustBeOverridden);
-      }
-      if (metadata.hasMustCallSuper) contracts.add(MetaContract.mustCallSuper);
-      if (metadata.hasNonVirtual) contracts.add(MetaContract.nonVirtual);
-      if (metadata.hasProtected) contracts.add(MetaContract.protected);
-      if (metadata.hasUseResult) contracts.add(MetaContract.useResult);
-      if (metadata.hasVisibleForOverriding) {
-        contracts.add(MetaContract.visibleForOverriding);
-      }
-      if (metadata.hasVisibleForTesting) {
-        contracts.add(MetaContract.visibleForTesting);
-      }
-
-      for (final annotation in metadata.annotations) {
-        final constant = annotation.computeConstantValue();
-        if (constant == null) continue;
-        final type = constant.type;
-        if (type == null) continue;
-        final typeElement = type.element;
-        if (typeElement is! InterfaceElement) continue;
-        final uri = typeElement.library.uri.toString();
-        if (typeElement.name == 'JS' &&
-            (uri == 'dart:js_interop' || uri == 'package:js/js.dart')) {
-          final name = constant.getField('name')?.toStringValue();
-          jsBinding = JsBindingTrait(name);
-        } else if (typeElement.name == 'JSExport' &&
-            (uri == 'dart:js_interop' || uri.contains('interop'))) {
-          final name = constant.getField('name')?.toStringValue();
-          jsExport = JsExportTrait(name);
-        }
-      }
-    }
-
-    checkMetadata(element.nonSynthetic.metadata);
-    if (element is PropertyAccessorElement) {
-      checkMetadata(element.variable.nonSynthetic.metadata);
-    }
-
-    return [
-      if (contracts.isNotEmpty) MetaContractTrait(contracts),
-      ?jsBinding,
-      ?jsExport,
-    ];
-  }
+  List<ApiTrait> _extractTraits(Element element) => [
+    ?MetaContractTrait.fromElement(element),
+    ?JsBindingTrait.fromElement(element),
+    ?JsExportTrait.fromElement(element),
+  ];
 
   ApiExecutable _buildExecutable(
     ExecutableElement element, {
@@ -599,7 +547,7 @@ final class _ApiBuilder {
           .toList(),
       isStatic: element.isStatic,
       isConst: isConst,
-      isDeprecated: _hasAnnotation(element, (m) => m.hasDeprecated),
+      isDeprecated: _isDeprecated(element),
       isEnumConstant: isEnumConstant,
       traits: _extractTraits(element),
     );

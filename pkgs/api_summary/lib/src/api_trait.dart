@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:analyzer/dart/element/element.dart';
+
 import 'meta_trait.dart';
 
 /// Base interface for domain-specific, contractual, or runtime traits attached
@@ -39,6 +41,28 @@ final class JsBindingTrait implements ApiTrait {
   final String? name;
 
   const JsBindingTrait([this.name]);
+
+  /// Extracts a `@JS([name])` annotation from [element], or returns `null`
+  /// if not present.
+  static JsBindingTrait? fromElement(Element element) {
+    for (final metadata in _metadataFor(element)) {
+      for (final annotation in metadata.annotations) {
+        final constant = annotation.computeConstantValue();
+        if (constant == null) continue;
+        final type = constant.type;
+        if (type == null) continue;
+        final typeElement = type.element;
+        if (typeElement is! InterfaceElement) continue;
+        final uri = typeElement.library.uri.toString();
+        if (typeElement.name == 'JS' &&
+            (uri == 'dart:js_interop' || uri == 'package:js/js.dart')) {
+          final name = constant.getField('name')?.toStringValue();
+          return JsBindingTrait(name);
+        }
+      }
+    }
+    return null;
+  }
 
   factory JsBindingTrait.fromJson(Map<String, dynamic> json) =>
       JsBindingTrait(json['name'] as String?);
@@ -83,6 +107,28 @@ final class JsExportTrait implements ApiTrait {
 
   const JsExportTrait([this.name]);
 
+  /// Extracts a `@JSExport([name])` annotation from [element], or returns
+  /// `null` if not present.
+  static JsExportTrait? fromElement(Element element) {
+    for (final metadata in _metadataFor(element)) {
+      for (final annotation in metadata.annotations) {
+        final constant = annotation.computeConstantValue();
+        if (constant == null) continue;
+        final type = constant.type;
+        if (type == null) continue;
+        final typeElement = type.element;
+        if (typeElement is! InterfaceElement) continue;
+        final uri = typeElement.library.uri.toString();
+        if (typeElement.name == 'JSExport' &&
+            (uri == 'dart:js_interop' || uri.contains('interop'))) {
+          final name = constant.getField('name')?.toStringValue();
+          return JsExportTrait(name);
+        }
+      }
+    }
+    return null;
+  }
+
   factory JsExportTrait.fromJson(Map<String, dynamic> json) =>
       JsExportTrait(json['name'] as String?);
 
@@ -113,4 +159,11 @@ final class JsExportTrait implements ApiTrait {
 
   @override
   int get hashCode => Object.hash(namespace, name);
+}
+
+Iterable<Metadata> _metadataFor(Element element) sync* {
+  yield element.nonSynthetic.metadata;
+  if (element is PropertyAccessorElement) {
+    yield element.variable.nonSynthetic.metadata;
+  }
 }

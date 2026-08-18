@@ -176,6 +176,7 @@ package:api_summary/api_summary.dart:
     fromJson (constructor: ApiVoidType Function(Map<String, dynamic>))
     toJson (method: Map<String, dynamic> Function())
   JsBindingTrait (class extends Object implements ApiTrait, final):
+    fromElement (static method: JsBindingTrait? Function(Element))
     new (const constructor: JsBindingTrait Function([String?]))
     fromJson (constructor: JsBindingTrait Function(Map<String, dynamic>))
     hashCode (getter: int)
@@ -186,6 +187,7 @@ package:api_summary/api_summary.dart:
     compareTo (method: int Function(ApiTrait))
     toJson (method: Map<String, dynamic> Function())
   JsExportTrait (class extends Object implements ApiTrait, final):
+    fromElement (static method: JsExportTrait? Function(Element))
     new (const constructor: JsExportTrait Function([String?]))
     fromJson (constructor: JsExportTrait Function(Map<String, dynamic>))
     hashCode (getter: int)
@@ -210,6 +212,7 @@ package:api_summary/api_summary.dart:
     textLabel (getter: String)
     compareTo (method: int Function(MetaContract))
   MetaContractTrait (class extends Object implements ApiTrait, final):
+    fromElement (static method: MetaContractTrait? Function(Element))
     new (constructor: MetaContractTrait Function(Iterable<MetaContract>))
     fromJson (constructor: MetaContractTrait Function(Map<String, dynamic>))
     contracts (getter: Set<MetaContract>)
