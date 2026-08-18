@@ -9,7 +9,6 @@ library;
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 
-import 'api_declaration.dart';
 import 'api_trait.dart';
 
 /// Contractual annotations from `package:meta`.
@@ -122,22 +121,4 @@ final class MetaContractTrait implements ApiTrait {
   @override
   int get hashCode =>
       Object.hash(namespace, const SetEquality<MetaContract>().hash(contracts));
-}
-
-/// Convenience extensions for querying `package:meta` contractual annotations.
-extension ApiDeclarationMetaSugar on ApiDeclaration {
-  bool get isExperimental => hasMeta(MetaContract.experimental);
-  bool get isImmutable => hasMeta(MetaContract.immutable);
-  bool get isInternal => hasMeta(MetaContract.internal);
-  bool get isMustBeOverridden => hasMeta(MetaContract.mustBeOverridden);
-  bool get isMustCallSuper => hasMeta(MetaContract.mustCallSuper);
-  bool get isNonVirtual => hasMeta(MetaContract.nonVirtual);
-  bool get isProtected => hasMeta(MetaContract.protected);
-  bool get isUseResult => hasMeta(MetaContract.useResult);
-  bool get isVisibleForOverriding => hasMeta(MetaContract.visibleForOverriding);
-  bool get isVisibleForTesting => hasMeta(MetaContract.visibleForTesting);
-
-  bool hasMeta(MetaContract contract) => traits.any(
-    (trait) => trait is MetaContractTrait && trait.contracts.contains(contract),
-  );
 }

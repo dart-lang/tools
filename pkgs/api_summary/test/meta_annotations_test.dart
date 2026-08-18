@@ -182,16 +182,19 @@ class Target {
 
     final cls = rehydrated.libraries.single.classes.single;
     expect(cls.name, 'Target');
-    expect(cls.isImmutable, isTrue);
-    expect(cls.isInternal, isFalse);
+    expect(cls.contracts, contains(MetaContract.immutable));
+    expect(cls.contracts, isNot(contains(MetaContract.internal)));
 
     final method = cls.methods.singleWhere((m) => m.name == 'calculate');
-    expect(method.isProtected, isTrue);
-    expect(method.isMustCallSuper, isTrue);
-    expect(method.isNonVirtual, isTrue);
-    expect(method.isUseResult, isTrue);
-    expect(method.isMustBeOverridden, isFalse);
-    expect(method.isVisibleForOverriding, isFalse);
+    expect(
+      method.contracts,
+      equals({
+        MetaContract.mustCallSuper,
+        MetaContract.nonVirtual,
+        MetaContract.protected,
+        MetaContract.useResult,
+      }),
+    );
 
     // Verify traits in JSON output
     final libJson = (jsonMap['libraries'] as List)
@@ -297,4 +300,9 @@ final class _ShowInternalDetailsCustomizer extends ApiSummaryCustomizer {
   @override
   bool shouldShowDetails(Element element, ApiSummaryContext context) =>
       element.name?.contains('Internal') ?? false;
+}
+
+extension on ApiDeclaration {
+  Set<MetaContract> get contracts =>
+      traits.whereType<MetaContractTrait>().firstOrNull?.contracts ?? const {};
 }
