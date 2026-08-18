@@ -490,42 +490,14 @@ final class _ApiBuilder {
     );
   }
 
-  bool _hasAnnotation(
-    ExecutableElement element,
-    bool Function(Metadata metadata) predicate,
-  ) =>
-      predicate(element.nonSynthetic.metadata) ||
+  bool _isDeprecated(Element element) =>
+      element.nonSynthetic.metadata.hasDeprecated ||
       (element is PropertyAccessorElement &&
-          predicate(element.variable.nonSynthetic.metadata));
+          element.variable.nonSynthetic.metadata.hasDeprecated);
 
-  List<ApiTrait> _extractTraits(Element element) {
-    final contracts = <MetaContract>{};
-    void checkMetadata(Metadata metadata) {
-      if (metadata.hasExperimental) contracts.add(MetaContract.experimental);
-      if (metadata.hasImmutable) contracts.add(MetaContract.immutable);
-      if (metadata.hasInternal) contracts.add(MetaContract.internal);
-      if (metadata.hasMustBeOverridden) {
-        contracts.add(MetaContract.mustBeOverridden);
-      }
-      if (metadata.hasMustCallSuper) contracts.add(MetaContract.mustCallSuper);
-      if (metadata.hasNonVirtual) contracts.add(MetaContract.nonVirtual);
-      if (metadata.hasProtected) contracts.add(MetaContract.protected);
-      if (metadata.hasUseResult) contracts.add(MetaContract.useResult);
-      if (metadata.hasVisibleForOverriding) {
-        contracts.add(MetaContract.visibleForOverriding);
-      }
-      if (metadata.hasVisibleForTesting) {
-        contracts.add(MetaContract.visibleForTesting);
-      }
-    }
-
-    checkMetadata(element.nonSynthetic.metadata);
-    if (element is PropertyAccessorElement) {
-      checkMetadata(element.variable.nonSynthetic.metadata);
-    }
-
-    return [if (contracts.isNotEmpty) MetaContractTrait(contracts)];
-  }
+  List<ApiTrait> _extractTraits(Element element) => [
+    ?MetaContractTrait.fromElement(element),
+  ];
 
   ApiExecutable _buildExecutable(
     ExecutableElement element, {
@@ -573,7 +545,7 @@ final class _ApiBuilder {
           .toList(),
       isStatic: element.isStatic,
       isConst: isConst,
-      isDeprecated: _hasAnnotation(element, (m) => m.hasDeprecated),
+      isDeprecated: _isDeprecated(element),
       isEnumConstant: isEnumConstant,
       traits: _extractTraits(element),
     );

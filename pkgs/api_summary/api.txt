@@ -190,6 +190,7 @@ package:api_summary/api_summary.dart:
     textLabel (getter: String)
     compareTo (method: int Function(MetaContract))
   MetaContractTrait (class extends Object implements ApiTrait, final):
+    fromElement (static method: MetaContractTrait? Function(Element))
     new (constructor: MetaContractTrait Function(Iterable<MetaContract>))
     fromJson (constructor: MetaContractTrait Function(Map<String, dynamic>))
     contracts (getter: Set<MetaContract>)
