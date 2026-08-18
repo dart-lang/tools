@@ -1199,9 +1199,10 @@ class Scanner {
       buffer.write(_scanner.substring(startPosition));
       end = _scanner.state;
 
-      // libyaml always reads a line here, but this breaks on block scalars at
-      // the end of the document that end without newlines. See example 8.1:
-      // http://yaml.org/spec/1.2/spec.html#id2793888.
+      // libyaml always reads a line here. If the document ends without a
+      // newline (which happens on block scalars at the end of the document), we
+      // must manually set the leading break to a newline to implicitly chomp it.
+      // See example 8.1: http://yaml.org/spec/1.2/spec.html#id2793888.
       if (!_scanner.isDone) {
         leadingBreak = _readLine();
       } else {
