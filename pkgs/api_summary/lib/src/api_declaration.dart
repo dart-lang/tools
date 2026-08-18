@@ -494,18 +494,5 @@ final class ApiTypeAlias extends ApiDeclaration {
   };
 }
 
-/// Convenience extensions for querying `dart:js_interop` annotations.
-extension ApiDeclarationJsSugar on ApiDeclaration {
-  String? get jsBindingName =>
-      traits.whereType<JsBindingTrait>().firstOrNull?.name;
-
-  bool get hasJsBinding => traits.any((t) => t is JsBindingTrait);
-
-  String? get jsExportName =>
-      traits.whereType<JsExportTrait>().firstOrNull?.name;
-
-  bool get hasJsExport => traits.any((t) => t is JsExportTrait);
-}
-
 ApiDeclarationStatus _parseStatus(Map<String, dynamic> json) =>
     ApiDeclarationStatus.values.byName(json['status'] as String? ?? 'public');

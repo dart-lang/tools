@@ -222,23 +222,6 @@ package:api_summary/api_summary.dart:
     == (method: bool Function(Object))
     compareTo (method: int Function(ApiTrait))
     toJson (method: Map<String, dynamic> Function())
-  ApiDeclarationJsSugar (extension on ApiDeclaration):
-    hasJsBinding (getter: bool)
-    hasJsExport (getter: bool)
-    jsBindingName (getter: String?)
-    jsExportName (getter: String?)
-  ApiDeclarationMetaSugar (extension on ApiDeclaration):
-    isExperimental (getter: bool)
-    isImmutable (getter: bool)
-    isInternal (getter: bool)
-    isMustBeOverridden (getter: bool)
-    isMustCallSuper (getter: bool)
-    isNonVirtual (getter: bool)
-    isProtected (getter: bool)
-    isUseResult (getter: bool)
-    isVisibleForOverriding (getter: bool)
-    isVisibleForTesting (getter: bool)
-    hasMeta (method: bool Function(MetaContract))
 dart:async:
   Future (referenced)
 dart:core:

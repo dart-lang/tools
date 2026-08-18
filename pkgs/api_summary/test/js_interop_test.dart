@@ -101,24 +101,32 @@ class ExportedService {
 
     final lib = rehydrated.libraries.single;
     final windowExt = lib.extensionTypes.singleWhere((e) => e.name == 'Window');
-    expect(windowExt.hasJsBinding, isTrue);
-    expect(windowExt.jsBindingName, isNull);
+    final windowJs = windowExt.traits.whereType<JsBindingTrait>().firstOrNull;
+    expect(windowJs, isNotNull);
+    expect(windowJs!.name, isNull);
 
     final docGetter = windowExt.methods.singleWhere((m) => m.name == 'doc');
-    expect(docGetter.hasJsBinding, isTrue);
-    expect(docGetter.jsBindingName, 'document');
+    final docJs = docGetter.traits.whereType<JsBindingTrait>().firstOrNull;
+    expect(docJs, isNotNull);
+    expect(docJs!.name, 'document');
 
     final exportedClass = lib.classes.singleWhere(
       (c) => c.name == 'ExportedService',
     );
-    expect(exportedClass.hasJsExport, isTrue);
-    expect(exportedClass.jsExportName, isNull);
+    final exportedClassJs = exportedClass.traits
+        .whereType<JsExportTrait>()
+        .firstOrNull;
+    expect(exportedClassJs, isNotNull);
+    expect(exportedClassJs!.name, isNull);
 
     final computeMethod = exportedClass.methods.singleWhere(
       (m) => m.name == 'computeValue',
     );
-    expect(computeMethod.hasJsExport, isTrue);
-    expect(computeMethod.jsExportName, 'customCompute');
+    final computeMethodJs = computeMethod.traits
+        .whereType<JsExportTrait>()
+        .firstOrNull;
+    expect(computeMethodJs, isNotNull);
+    expect(computeMethodJs!.name, 'customCompute');
   }
 
   Future<void> test_library_js_annotation() async {
