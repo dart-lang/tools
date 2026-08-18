@@ -17,6 +17,7 @@ import 'api_summary_customizer.dart';
 import 'api_trait.dart';
 import 'api_type.dart';
 import 'extensions.dart';
+import 'js_trait.dart';
 import 'meta_trait.dart';
 
 /// Traverses the public libraries of [packageName] within [context] to build

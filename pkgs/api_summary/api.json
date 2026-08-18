@@ -3819,7 +3819,7 @@
         },
         {
           "name": "JsBindingTrait",
-          "locationUri": "package:api_summary/src/api_trait.dart",
+          "locationUri": "package:api_summary/src/js_trait.dart",
           "supertype": {
             "kind": "interface",
             "name": "Object",
@@ -3838,12 +3838,12 @@
           "constructors": [
             {
               "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "constructor",
               "returnType": {
                 "kind": "interface",
                 "name": "JsBindingTrait",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/js_trait.dart"
               },
               "parameters": [
                 {
@@ -3869,12 +3869,12 @@
             },
             {
               "name": "new",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "constructor",
               "returnType": {
                 "kind": "interface",
                 "name": "JsBindingTrait",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/js_trait.dart"
               },
               "parameters": [
                 {
@@ -3894,7 +3894,7 @@
           "methods": [
             {
               "name": "==",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",
@@ -3915,7 +3915,7 @@
             },
             {
               "name": "compareTo",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",
@@ -3936,12 +3936,12 @@
             },
             {
               "name": "fromElement",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",
                 "name": "JsBindingTrait",
-                "libraryUri": "package:api_summary/src/api_trait.dart",
+                "libraryUri": "package:api_summary/src/js_trait.dart",
                 "isNullable": true
               },
               "parameters": [
@@ -3959,7 +3959,7 @@
             },
             {
               "name": "hashCode",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -3969,7 +3969,7 @@
             },
             {
               "name": "name",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -3980,7 +3980,7 @@
             },
             {
               "name": "namespace",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -3990,7 +3990,7 @@
             },
             {
               "name": "parentheticalSegments",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4007,7 +4007,7 @@
             },
             {
               "name": "toJson",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",
@@ -4029,7 +4029,7 @@
         },
         {
           "name": "JsExportTrait",
-          "locationUri": "package:api_summary/src/api_trait.dart",
+          "locationUri": "package:api_summary/src/js_trait.dart",
           "supertype": {
             "kind": "interface",
             "name": "Object",
@@ -4048,12 +4048,12 @@
           "constructors": [
             {
               "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "constructor",
               "returnType": {
                 "kind": "interface",
                 "name": "JsExportTrait",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/js_trait.dart"
               },
               "parameters": [
                 {
@@ -4079,12 +4079,12 @@
             },
             {
               "name": "new",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "constructor",
               "returnType": {
                 "kind": "interface",
                 "name": "JsExportTrait",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/js_trait.dart"
               },
               "parameters": [
                 {
@@ -4104,7 +4104,7 @@
           "methods": [
             {
               "name": "==",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",
@@ -4125,7 +4125,7 @@
             },
             {
               "name": "compareTo",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",
@@ -4146,12 +4146,12 @@
             },
             {
               "name": "fromElement",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",
                 "name": "JsExportTrait",
-                "libraryUri": "package:api_summary/src/api_trait.dart",
+                "libraryUri": "package:api_summary/src/js_trait.dart",
                 "isNullable": true
               },
               "parameters": [
@@ -4169,7 +4169,7 @@
             },
             {
               "name": "hashCode",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4179,7 +4179,7 @@
             },
             {
               "name": "name",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4190,7 +4190,7 @@
             },
             {
               "name": "namespace",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4200,7 +4200,7 @@
             },
             {
               "name": "parentheticalSegments",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4217,7 +4217,7 @@
             },
             {
               "name": "toJson",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/js_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",

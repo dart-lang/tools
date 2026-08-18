@@ -2477,7 +2477,7 @@ libraries:
                   libraryUri: dart:core
                 - kind: dynamic
       - name: JsBindingTrait
-        locationUri: package:api_summary/src/api_trait.dart
+        locationUri: package:api_summary/src/js_trait.dart
         supertype:
           kind: interface
           name: Object
@@ -2490,12 +2490,12 @@ libraries:
           - final
         constructors:
           - name: fromJson
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: constructor
             returnType:
               kind: interface
               name: JsBindingTrait
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/js_trait.dart
             parameters:
               - name: json
                 type:
@@ -2509,12 +2509,12 @@ libraries:
                     - kind: dynamic
                 isRequired: true
           - name: new
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: constructor
             returnType:
               kind: interface
               name: JsBindingTrait
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/js_trait.dart
             parameters:
               - name: name
                 type:
@@ -2526,7 +2526,7 @@ libraries:
             isConst: true
         methods:
           - name: ==
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: method
             returnType:
               kind: interface
@@ -2540,7 +2540,7 @@ libraries:
                   libraryUri: dart:core
                 isRequired: true
           - name: compareTo
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: method
             returnType:
               kind: interface
@@ -2554,12 +2554,12 @@ libraries:
                   libraryUri: package:api_summary/src/api_trait.dart
                 isRequired: true
           - name: fromElement
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: method
             returnType:
               kind: interface
               name: JsBindingTrait
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/js_trait.dart
               isNullable: true
             parameters:
               - name: element
@@ -2570,14 +2570,14 @@ libraries:
                 isRequired: true
             isStatic: true
           - name: hashCode
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: int
               libraryUri: dart:core
           - name: name
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: getter
             returnType:
               kind: interface
@@ -2585,14 +2585,14 @@ libraries:
               libraryUri: dart:core
               isNullable: true
           - name: namespace
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: String
               libraryUri: dart:core
           - name: parentheticalSegments
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: getter
             returnType:
               kind: interface
@@ -2603,7 +2603,7 @@ libraries:
                   name: String
                   libraryUri: dart:core
           - name: toJson
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: method
             returnType:
               kind: interface
@@ -2615,7 +2615,7 @@ libraries:
                   libraryUri: dart:core
                 - kind: dynamic
       - name: JsExportTrait
-        locationUri: package:api_summary/src/api_trait.dart
+        locationUri: package:api_summary/src/js_trait.dart
         supertype:
           kind: interface
           name: Object
@@ -2628,12 +2628,12 @@ libraries:
           - final
         constructors:
           - name: fromJson
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: constructor
             returnType:
               kind: interface
               name: JsExportTrait
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/js_trait.dart
             parameters:
               - name: json
                 type:
@@ -2647,12 +2647,12 @@ libraries:
                     - kind: dynamic
                 isRequired: true
           - name: new
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: constructor
             returnType:
               kind: interface
               name: JsExportTrait
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/js_trait.dart
             parameters:
               - name: name
                 type:
@@ -2664,7 +2664,7 @@ libraries:
             isConst: true
         methods:
           - name: ==
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: method
             returnType:
               kind: interface
@@ -2678,7 +2678,7 @@ libraries:
                   libraryUri: dart:core
                 isRequired: true
           - name: compareTo
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: method
             returnType:
               kind: interface
@@ -2692,12 +2692,12 @@ libraries:
                   libraryUri: package:api_summary/src/api_trait.dart
                 isRequired: true
           - name: fromElement
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: method
             returnType:
               kind: interface
               name: JsExportTrait
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/js_trait.dart
               isNullable: true
             parameters:
               - name: element
@@ -2708,14 +2708,14 @@ libraries:
                 isRequired: true
             isStatic: true
           - name: hashCode
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: int
               libraryUri: dart:core
           - name: name
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: getter
             returnType:
               kind: interface
@@ -2723,14 +2723,14 @@ libraries:
               libraryUri: dart:core
               isNullable: true
           - name: namespace
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: String
               libraryUri: dart:core
           - name: parentheticalSegments
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: getter
             returnType:
               kind: interface
@@ -2741,7 +2741,7 @@ libraries:
                   name: String
                   libraryUri: dart:core
           - name: toJson
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/js_trait.dart
             kind: method
             returnType:
               kind: interface
