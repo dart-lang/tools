@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'js_trait.dart';
 import 'meta_trait.dart';
 
 /// Base interface for domain-specific, contractual, or runtime traits attached
@@ -22,6 +23,8 @@ abstract interface class ApiTrait implements Comparable<ApiTrait> {
     final namespace = json['namespace'] as String?;
     return switch (namespace) {
       'meta' => MetaContractTrait.fromJson(json),
+      'js' => JsBindingTrait.fromJson(json),
+      'js_export' => JsExportTrait.fromJson(json),
       _ => throw FormatException('Unknown ApiTrait namespace: "$namespace"'),
     };
   }

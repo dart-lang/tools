@@ -17,6 +17,7 @@ import 'api_summary_customizer.dart';
 import 'api_trait.dart';
 import 'api_type.dart';
 import 'extensions.dart';
+import 'js_trait.dart';
 import 'meta_trait.dart';
 
 /// Traverses the public libraries of [packageName] within [context] to build
@@ -497,6 +498,8 @@ final class _ApiBuilder {
 
   List<ApiTrait> _extractTraits(Element element) => [
     ?MetaContractTrait.fromElement(element),
+    ?JsBindingTrait.fromElement(element),
+    ?JsExportTrait.fromElement(element),
   ];
 
   ApiExecutable _buildExecutable(
