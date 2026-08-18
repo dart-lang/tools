@@ -137,12 +137,12 @@ class YamlEditor {
 
   /// Traverses the YAML tree formed to detect alias nodes.
   void _initialize() {
-    _aliases = {};
-    _anchorPaths = {};
+    _aliases = Set.identity();
+    _anchorPaths = Map.identity();
     _aliasReferenceSpans = {};
 
     /// Performs a DFS on [_contents] to detect alias nodes.
-    final firstVisited = <YamlNode, List<Object?>>{};
+    final firstVisited = Map<YamlNode, List<Object?>>.identity();
     void collectAliases(YamlNode node, List<Object?> path) {
       if (!firstVisited.containsKey(node)) {
         firstVisited[node] = path;
@@ -290,17 +290,113 @@ class YamlEditor {
     return true;
   }
 
+  String _getUnfoldedText(
+    YamlNode parentOfAnchor,
+    Object? keyOfAnchor,
+    YamlNode anchorNode,
+    int targetIndentation,
+    String lineEnding,
+  ) {
+    final span = getTrueSpan(parentOfAnchor, keyOfAnchor, anchorNode);
+    var text = span.text;
+
+    // Strip top-level anchor definition tag (`&anchorName\n` or `&anchorName `).
+    if (text.startsWith('&')) {
+      final wsIdx = text.indexOf(RegExp(r'\s'));
+      if (wsIdx != -1) {
+        text = text.substring(wsIdx);
+      } else {
+        text = '';
+      }
+    }
+
+    if (anchorNode is YamlMap || anchorNode is YamlList) {
+      if (isFlowYamlCollectionNode(anchorNode)) {
+        return text.trim();
+      }
+
+      // Block collection: split into lines and re-indent
+      final lines = text.trimRight().split(RegExp(r'\r?\n'));
+      int? baseIndent;
+      for (final line in lines) {
+        if (line.trim().isNotEmpty) {
+          final leadingSpaces = line.length - line.trimLeft().length;
+          if (baseIndent == null || leadingSpaces < baseIndent) {
+            baseIndent = leadingSpaces;
+          }
+        }
+      }
+
+      baseIndent ??= 0;
+      final reindentedLines = <String>[];
+      for (var i = 0; i < lines.length; i++) {
+        final line = lines[i];
+        if (line.trim().isEmpty) {
+          if (i > 0 && i < lines.length - 1) reindentedLines.add('');
+          continue;
+        }
+        final leadingSpaces = line.length - line.trimLeft().length;
+        final relIndent = leadingSpaces - baseIndent;
+        final newIndent = targetIndentation + relIndent;
+        reindentedLines
+            .add((' ' * (newIndent > 0 ? newIndent : 0)) + line.trimLeft());
+      }
+
+      var result = reindentedLines.join(lineEnding);
+      if (text.startsWith(RegExp(r'\r?\n'))) {
+        result = lineEnding + result;
+      }
+      return result;
+    }
+
+    return text.trim();
+  }
+
   void _materializeAliasReference(Iterable<Object?> aliasPath) {
+    final pathList = aliasPath.toList();
+    final parentPath = pathList.take(pathList.length - 1);
+    final keyOrIndex = pathList.last;
+    final parentCollection = _traverse(parentPath, checkAlias: false);
     final node = _traverse(aliasPath, checkAlias: false);
-    final unaliased = deepCloneWithoutAliases(node);
-    final wrapped = wrapAsYamlNode(
-      unaliased,
-      collectionStyle: node is YamlMap
-          ? node.style
-          : (node is YamlList ? node.style : CollectionStyle.ANY),
-      scalarStyle: node is YamlScalar ? node.style : ScalarStyle.ANY,
+    final anchorPath = _anchorPaths[node]!;
+
+    final anchorParentPath = anchorPath.take(anchorPath.length - 1);
+    final anchorKeyOrIndex = anchorPath.last;
+    final anchorParent = _traverse(anchorParentPath, checkAlias: false);
+    final anchorNode = _traverse(anchorPath, checkAlias: false);
+
+    final lineEnding = getLineEnding(_yaml);
+    var targetIndentation = 0;
+    if (parentCollection is YamlMap) {
+      targetIndentation =
+          getMapIndentation(_yaml, parentCollection) + getIndentation(this);
+    } else if (parentCollection is YamlList) {
+      targetIndentation =
+          getListIndentation(_yaml, parentCollection) + getIndentation(this);
+    }
+
+    final unfoldedText = _getUnfoldedText(
+      anchorParent,
+      anchorKeyOrIndex,
+      anchorNode,
+      targetIndentation,
+      lineEnding,
     );
-    update(aliasPath, wrapped);
+
+    final aliasSpan = getTrueSpan(parentCollection, keyOrIndex, node);
+    var start = aliasSpan.start.offset;
+    var length = aliasSpan.length;
+    var replacement = unfoldedText;
+
+    if (unfoldedText.startsWith(lineEnding) &&
+        start > 0 &&
+        _yaml[start - 1] == ' ') {
+      start -= 1;
+      length += 1;
+    }
+
+    final edit = SourceEdit(start, length, replacement);
+    _performEdit(edit, aliasPath, anchorNode);
   }
 
   Iterable<Object?> _resolvePath(Iterable<Object?> path,
@@ -893,32 +989,62 @@ class YamlEditor {
   /// [SourceSpan]s in this new tree are not guaranteed to be accurate.
   YamlNode _deepModify(YamlNode tree, Iterable<Object?> path,
       Iterable<Object?> subPath, YamlNode expectedNode) {
-    RangeError.checkValueInInterval(subPath.length, 0, path.length);
+    return _updateNodeAndAliases(
+        tree, path.toList(), subPath.toList(), expectedNode);
+  }
 
-    if (path.length == subPath.length) return expectedNode;
+  YamlNode _updateNodeAndAliases(
+    YamlNode tree,
+    List<Object?> targetPath,
+    List<Object?> currentPath,
+    YamlNode expectedNode,
+  ) {
+    final isOnTargetPath = currentPath.length <= targetPath.length &&
+        _pathsEqual(currentPath, targetPath.take(currentPath.length));
 
-    final keyOrIndex = path.elementAt(subPath.length);
+    if (isOnTargetPath && currentPath.length == targetPath.length) {
+      return expectedNode;
+    }
+
+    final keyOrIndex = isOnTargetPath ? targetPath[currentPath.length] : null;
 
     if (tree is YamlList) {
-      if (!isValidIndex(keyOrIndex, tree.length)) {
-        throw PathError(path, subPath, tree);
+      if (isOnTargetPath && !isValidIndex(keyOrIndex, tree.length)) {
+        throw PathError(targetPath, currentPath, tree);
       }
 
       final newNodes = <YamlNode>[];
       for (var i = 0; i < tree.length; i++) {
         final item = tree.nodes[i];
-        if (i == keyOrIndex) {
-          newNodes.add(_deepModify(
-              item, path, path.take(subPath.length + 1), expectedNode));
+        if (isOnTargetPath && i == keyOrIndex) {
+          newNodes.add(_updateNodeAndAliases(
+            item,
+            targetPath,
+            [...currentPath, i],
+            expectedNode,
+          ));
         } else if (aliasBehavior != AliasBehavior.disallow &&
-            _isAliasReferenceNode(item, [...subPath, i])) {
+            _isAliasReferenceNode(item, [...currentPath, i])) {
           final anchorPath = _anchorPaths[item]!;
-          if (path.length >= anchorPath.length &&
-              _pathsEqual(path.take(anchorPath.length), anchorPath)) {
-            newNodes.add(_deepModify(item, path, anchorPath, expectedNode));
+          if (targetPath.length >= anchorPath.length &&
+              _pathsEqual(targetPath.take(anchorPath.length), anchorPath)) {
+            newNodes.add(_updateNodeAndAliases(
+              item,
+              targetPath,
+              anchorPath,
+              expectedNode,
+            ));
           } else {
             newNodes.add(item);
           }
+        } else if (aliasBehavior != AliasBehavior.disallow &&
+            (item is YamlMap || item is YamlList)) {
+          newNodes.add(_updateNodeAndAliases(
+            item,
+            targetPath,
+            [...currentPath, i],
+            expectedNode,
+          ));
         } else {
           newNodes.add(item);
         }
@@ -927,25 +1053,42 @@ class YamlEditor {
     }
 
     if (tree is YamlMap) {
-      if (!containsKey(tree, keyOrIndex)) {
-        throw PathError(path, subPath, tree);
+      if (isOnTargetPath && !containsKey(tree, keyOrIndex)) {
+        throw PathError(targetPath, currentPath, tree);
       }
       final newMap = <Object?, Object?>{};
       for (final entry in tree.nodes.entries) {
         final key = entry.key;
         final item = entry.value;
-        if (deepEquals(key, keyOrIndex)) {
-          newMap[key] = _deepModify(
-              item, path, path.take(subPath.length + 1), expectedNode);
+        if (isOnTargetPath && deepEquals(key, keyOrIndex)) {
+          newMap[key] = _updateNodeAndAliases(
+            item,
+            targetPath,
+            [...currentPath, key],
+            expectedNode,
+          );
         } else if (aliasBehavior != AliasBehavior.disallow &&
-            _isAliasReferenceNode(item, [...subPath, key])) {
+            _isAliasReferenceNode(item, [...currentPath, key])) {
           final anchorPath = _anchorPaths[item]!;
-          if (path.length >= anchorPath.length &&
-              _pathsEqual(path.take(anchorPath.length), anchorPath)) {
-            newMap[key] = _deepModify(item, path, anchorPath, expectedNode);
+          if (targetPath.length >= anchorPath.length &&
+              _pathsEqual(targetPath.take(anchorPath.length), anchorPath)) {
+            newMap[key] = _updateNodeAndAliases(
+              item,
+              targetPath,
+              anchorPath,
+              expectedNode,
+            );
           } else {
             newMap[key] = item;
           }
+        } else if (aliasBehavior != AliasBehavior.disallow &&
+            (item is YamlMap || item is YamlList)) {
+          newMap[key] = _updateNodeAndAliases(
+            item,
+            targetPath,
+            [...currentPath, key],
+            expectedNode,
+          );
         } else {
           newMap[key] = item;
         }
@@ -953,8 +1096,10 @@ class YamlEditor {
       return wrapAsYamlNode(newMap);
     }
 
-    /// Should not ever reach here.
-    throw PathError(path, subPath, tree);
+    if (isOnTargetPath) {
+      throw PathError(targetPath, currentPath, tree);
+    }
+    return tree;
   }
 }
 

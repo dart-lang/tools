@@ -447,5 +447,54 @@ c: *user
       expect(doc.parseAt(['b', 'role']).value, equals('lead'));
       expect(doc.parseAt(['c', 'role']).value, equals('dev'));
     });
+
+    test('copyOnWrite unfolds top alias shallowly, preserving nested aliases',
+        () {
+      final doc = YamlEditor(
+        '''
+base_env: &env
+  REGION: us-central1
+  ZONE: us-central1-a
+
+base_job: &job
+  timeout: 30
+  env: *env
+
+custom_job: *job
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      // Mutating custom_job.timeout unfolds custom_job but leaves env: *env
+      // intact.
+      doc.update(['custom_job', 'timeout'], 45);
+      expect(doc.toString(), equals('''
+base_env: &env
+  REGION: us-central1
+  ZONE: us-central1-a
+
+base_job: &job
+  timeout: 30
+  env: *env
+
+custom_job:
+  timeout: 45
+  env: *env
+'''));
+
+      // Updating base_env propagates to custom_job.env via the preserved *env
+      // alias.
+      doc.update(['base_env', 'REGION'], 'us-east1');
+      expect(
+          doc.parseAt(['base_job', 'env', 'REGION']).value, equals('us-east1'));
+      expect(doc.parseAt(['custom_job', 'env', 'REGION']).value,
+          equals('us-east1'));
+
+      // Mutating custom_job.env.ZONE now unfolds *env locally on-demand.
+      doc.update(['custom_job', 'env', 'ZONE'], 'us-central1-b');
+      expect(doc.parseAt(['base_env', 'ZONE']).value, equals('us-central1-a'));
+      expect(doc.parseAt(['custom_job', 'env', 'ZONE']).value,
+          equals('us-central1-b'));
+    });
   });
 }

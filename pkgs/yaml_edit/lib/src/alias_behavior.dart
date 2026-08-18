@@ -28,17 +28,18 @@ enum AliasBehavior {
   /// applying the change, decoupling it from the anchor template.
   ///
   /// When modifying a child property through a path that traverses an alias
-  /// reference (`*name`), the referenced AST subtree is deeply cloned without
-  /// aliases into standard YAML nodes and inserted inline at the reference
-  /// position before applying the mutation (Asymmetric Copy-On-Write).
+  /// reference (`*name`), the referenced collection is unfolded inline at the
+  /// reference position before applying the mutation. Nested alias references
+  /// within the unfolded template remain intact as aliases until directly
+  /// mutated (Lazy Copy-On-Write).
   ///
   /// Mutating an anchor definition directly updates the template in place so
   /// all inheriting alias references observe the change.
   ///
   /// **Performance considerations:**
-  /// Materializing an alias reference inline deeply copies the referenced AST
-  /// subtree, requiring O(N) time where N is the number of nodes in the aliased
-  /// subtree.
+  /// Materializing an alias reference inline unfolds the referenced collection,
+  /// requiring O(N) time where N is the length of the source representation of
+  /// the aliased template.
   ///
   /// Throws an [AliasException] when attempting to remove an anchor definition
   /// node (`&name`) that has active alias references pointing to it.
