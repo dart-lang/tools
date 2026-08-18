@@ -19,11 +19,10 @@ void main() {
     });
 
     test('should collect import URLs', () {
-      allocator =
-          Allocator()
-            ..allocate(refer('List', 'dart:core'))
-            ..allocate(refer('LinkedHashMap', 'dart:collection'))
-            ..allocate(refer('someSymbol'));
+      allocator = Allocator()
+        ..allocate(refer('List', 'dart:core'))
+        ..allocate(refer('LinkedHashMap', 'dart:collection'))
+        ..allocate(refer('someSymbol'));
       expect(allocator.imports.map((d) => d.url), [
         'dart:core',
         'dart:collection',
@@ -31,9 +30,8 @@ void main() {
     });
 
     test('.simple replaces fixnum internal URIs', () {
-      allocator =
-          Allocator()
-            ..allocate(refer('Int64', 'package:fixnum/src/int64_native.dart'));
+      allocator = Allocator()
+        ..allocate(refer('Int64', 'package:fixnum/src/int64_native.dart'));
       expect(allocator.imports.map((d) => d.url), [
         'package:fixnum/fixnum.dart',
       ]);
@@ -58,9 +56,8 @@ void main() {
     });
 
     test('.simplePrefixing replaces fixnum internal URIs', () {
-      allocator =
-          Allocator.simplePrefixing()
-            ..allocate(refer('Int64', 'package:fixnum/src/int64_native.dart'));
+      allocator = Allocator.simplePrefixing()
+        ..allocate(refer('Int64', 'package:fixnum/src/int64_native.dart'));
       expect(allocator.imports.map((d) => d.url), [
         'package:fixnum/fixnum.dart',
       ]);

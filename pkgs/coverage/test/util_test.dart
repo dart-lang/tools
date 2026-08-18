@@ -51,11 +51,9 @@ void main() {
       }
 
       final safeTimoutDuration = _delay * _failCount * 10;
-      final value = await retry(
-        failCountTimes,
-        _delay,
-        timeout: safeTimoutDuration,
-      ) as int;
+      final value =
+          await retry(failCountTimes, _delay, timeout: safeTimoutDuration)
+              as int;
 
       expect(value, 42);
       expect(count, _failCount);
@@ -88,8 +86,11 @@ void main() {
         expect(e.message, 'Failed to complete within 25ms');
         caught = true;
 
-        expect(countAfterError, 0,
-            reason: 'Execution should stop after a timeout');
+        expect(
+          countAfterError,
+          0,
+          reason: 'Execution should stop after a timeout',
+        );
 
         await Future<dynamic>.delayed(_delay * 3);
 
@@ -118,7 +119,9 @@ void main() {
     test('returns URI with auth token at end of string', () {
       const msg = 'Observatory listening on http://foo.bar:9999/cG90YXRv/';
       expect(
-          extractVMServiceUri(msg), Uri.parse('http://foo.bar:9999/cG90YXRv/'));
+        extractVMServiceUri(msg),
+        Uri.parse('http://foo.bar:9999/cG90YXRv/'),
+      );
     });
 
     test('return URI embedded within string', () {
@@ -130,14 +133,18 @@ void main() {
       const msg =
           '1985-10-26 Observatory listening on http://foo.bar:9999/cG90YXRv/ **';
       expect(
-          extractVMServiceUri(msg), Uri.parse('http://foo.bar:9999/cG90YXRv/'));
+        extractVMServiceUri(msg),
+        Uri.parse('http://foo.bar:9999/cG90YXRv/'),
+      );
     });
 
     test('handles new Dart VM service message format', () {
       const msg =
           'The Dart VM service is listening on http://foo.bar:9999/cG90YXRv/';
       expect(
-          extractVMServiceUri(msg), Uri.parse('http://foo.bar:9999/cG90YXRv/'));
+        extractVMServiceUri(msg),
+        Uri.parse('http://foo.bar:9999/cG90YXRv/'),
+      );
     });
   });
 
@@ -205,26 +212,11 @@ void main() {
         'coverage:ignore-start found at content-1.dart:'
         '3 before previous coverage:ignore-start ended',
       );
-      runTest(
-        2,
-        'unmatched coverage:ignore-end found at content-2.dart:5',
-      );
-      runTest(
-        3,
-        'unmatched coverage:ignore-end found at content-3.dart:1',
-      );
-      runTest(
-        4,
-        'unmatched coverage:ignore-end found at content-4.dart:1',
-      );
-      runTest(
-        5,
-        'unmatched coverage:ignore-end found at content-5.dart:1',
-      );
-      runTest(
-        6,
-        'unmatched coverage:ignore-end found at content-6.dart:1',
-      );
+      runTest(2, 'unmatched coverage:ignore-end found at content-2.dart:5');
+      runTest(3, 'unmatched coverage:ignore-end found at content-3.dart:1');
+      runTest(4, 'unmatched coverage:ignore-end found at content-4.dart:1');
+      runTest(5, 'unmatched coverage:ignore-end found at content-5.dart:1');
+      runTest(6, 'unmatched coverage:ignore-end found at content-6.dart:1');
       runTest(
         7,
         'coverage:ignore-start found at content-7.dart:'
@@ -232,8 +224,7 @@ void main() {
       );
     });
 
-    test(
-        'returns null when the annotations are not '
+    test('returns null when the annotations are not '
         'balanced but the whole file is ignored', () {
       for (final content in invalidSources) {
         final lines = content.split('\n');
@@ -243,17 +234,19 @@ void main() {
     });
 
     test('returns null when the whole file is ignored', () {
-      final lines = '''final str = ''; // coverage:ignore-start
+      final lines =
+          '''final str = ''; // coverage:ignore-start
       final str = ''; // coverage:ignore-end
       final str = ''; // coverage:ignore-file
       '''
-          .split('\n');
+              .split('\n');
 
       expect(getIgnoredLines('', lines), null);
     });
 
     test('return the correct range of lines ignored', () {
-      final lines = '''
+      final lines =
+          '''
       final str = ''; // coverage:ignore-start
       final str = ''; // coverage:ignore-line
       final str = ''; // coverage:ignore-end
@@ -261,7 +254,7 @@ void main() {
       final str = ''; // coverage:ignore-line
       final str = ''; // coverage:ignore-end
       '''
-          .split('\n');
+              .split('\n');
 
       expect(getIgnoredLines('', lines), [
         [1, 3],
@@ -270,12 +263,13 @@ void main() {
     });
 
     test('return the correct list of lines ignored', () {
-      final lines = '''
+      final lines =
+          '''
       final str = ''; // coverage:ignore-line
       final str = ''; // coverage:ignore-line
       final str = ''; // coverage:ignore-line
       '''
-          .split('\n');
+              .split('\n');
 
       expect(getIgnoredLines('', lines), [
         [1, 1],
@@ -285,14 +279,15 @@ void main() {
     });
 
     test('ignore comments have no effect inside string literals', () {
-      final lines = '''
+      final lines =
+          '''
       final str = '// coverage:ignore-file';
       final str = '// coverage:ignore-line';
       final str = ''; // coverage:ignore-line
       final str = '// coverage:ignore-start';
       final str = '// coverage:ignore-end';
       '''
-          .split('\n');
+              .split('\n');
 
       expect(getIgnoredLines('', lines), [
         [3, 3],
@@ -362,13 +357,9 @@ void main() {
     //     └── bar
     //         └── bar_example  // Part of bar's workspace.
     expect(
-        getAllWorkspaceNames('test/workspace_names'),
-        unorderedEquals([
-          'workspace_names',
-          'foo',
-          'bar',
-          'bar_example',
-        ]));
+      getAllWorkspaceNames('test/workspace_names'),
+      unorderedEquals(['workspace_names', 'foo', 'bar', 'bar_example']),
+    );
   });
 
   test('IgnoredLinesContains', () {
@@ -391,7 +382,9 @@ void main() {
       final (ranges, end) = createRandomRanges(len);
       for (var line = 0; line < end + 3; ++line) {
         expect(
-            ranges.ignoredContains(line), naiveIgnoredContains(ranges, line));
+          ranges.ignoredContains(line),
+          naiveIgnoredContains(ranges, line),
+        );
       }
     }
   });

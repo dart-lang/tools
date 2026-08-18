@@ -34,20 +34,16 @@ class CoverageBenchmark extends AsyncBenchmarkBase {
     final lcovFile = 'data/$name $iteration lcov.info';
     ++iteration;
 
-    await Process.start(
-      Platform.executable,
-      [
-        if (branchCoverage) '--branch-coverage',
-        'run',
-        if (gatherCoverage) ...[
-          '--pause-isolates-on-exit',
-          '--disable-service-auth-codes',
-          '--enable-vm-service=1234',
-        ],
-        script,
+    await Process.start(Platform.executable, [
+      if (branchCoverage) '--branch-coverage',
+      'run',
+      if (gatherCoverage) ...[
+        '--pause-isolates-on-exit',
+        '--disable-service-auth-codes',
+        '--enable-vm-service=1234',
       ],
-      mode: ProcessStartMode.detached,
-    );
+      script,
+    ], mode: ProcessStartMode.detached);
     if (gatherCoverage) {
       await collect_coverage.main([
         '--wait-paused',
@@ -94,7 +90,8 @@ class JsonEmitter implements ScoreEmitter {
     _results[testName] = value;
   }
 
-  String write() => '[${_results.entries.map((entry) => """{
+  String write() =>
+      '[${_results.entries.map((entry) => """{
   "name": "${entry.key}",
   "unit": "times slower",
   "value": ${(entry.value / _baseline).toStringAsFixed(2)}
@@ -117,19 +114,37 @@ Future<void> runBenchmark(CoverageBenchmark benchmark) async {
 Future<String> runBenchmarkSet(String name, String script) async {
   final captureEmitter = CaptureEmitter();
   await runBenchmark(
-      CoverageBenchmark(captureEmitter, '$name - no coverage', script));
+    CoverageBenchmark(captureEmitter, '$name - no coverage', script),
+  );
   final benchmarkBaseline = captureEmitter.capturedValue;
 
   final emitter = JsonEmitter(benchmarkBaseline);
-  await runBenchmark(CoverageBenchmark(
-      emitter, '$name - basic coverage', script,
-      gatherCoverage: true));
-  await runBenchmark(CoverageBenchmark(
-      emitter, '$name - function coverage', script,
-      gatherCoverage: true, functionCoverage: true));
-  await runBenchmark(CoverageBenchmark(
-      emitter, '$name - branch coverage', script,
-      gatherCoverage: true, branchCoverage: true));
+  await runBenchmark(
+    CoverageBenchmark(
+      emitter,
+      '$name - basic coverage',
+      script,
+      gatherCoverage: true,
+    ),
+  );
+  await runBenchmark(
+    CoverageBenchmark(
+      emitter,
+      '$name - function coverage',
+      script,
+      gatherCoverage: true,
+      functionCoverage: true,
+    ),
+  );
+  await runBenchmark(
+    CoverageBenchmark(
+      emitter,
+      '$name - branch coverage',
+      script,
+      gatherCoverage: true,
+      branchCoverage: true,
+    ),
+  );
   return emitter.write();
 }
 

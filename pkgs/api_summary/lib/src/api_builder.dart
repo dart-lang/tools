@@ -21,17 +21,32 @@ import 'extensions.dart';
 /// a canonical [ApiSummary] representation.
 ///
 /// Filtering and discovery behaviors are customized using [customizer].
+///
+/// [environment] defines the SDK and platform environment constraints of the
+/// package (such as 'sdk' or 'flutter').
+///
+/// [executables] defines the executables exposed by the package, mapping
+/// executable names to their target script paths within `bin/`.
 Future<ApiSummary> buildApiPackage(
   String packageName,
   AnalysisContext context,
-  ApiSummaryCustomizer customizer,
-) => _ApiBuilder(packageName, customizer).build(context);
+  ApiSummaryCustomizer customizer, {
+  Map<String, String> environment = const {},
+  Map<String, String?> executables = const {},
+}) => _ApiBuilder(
+  packageName,
+  customizer,
+  environment: environment,
+  executables: executables,
+).build(context);
 
 /// Internal builder traversing analysis results to build structured API
 /// summaries.
 final class _ApiBuilder {
   final ApiSummaryCustomizer _customizer;
   final String _pkgName;
+  final Map<String, String> _environment;
+  final Map<String, String?> _executables;
 
   final _immediateSubinterfaceCache =
       <LibraryElement, Map<ClassElement, Set<InterfaceElement>>>{};
@@ -41,7 +56,12 @@ final class _ApiBuilder {
   final _libraryBuilders = <String, _ApiLibraryBuilder>{};
   final _elementToLibraries = <Element, List<LibraryElement>>{};
 
-  _ApiBuilder(this._pkgName, this._customizer);
+  _ApiBuilder(
+    this._pkgName,
+    this._customizer, {
+    this._environment = const {},
+    this._executables = const {},
+  });
 
   Future<ApiSummary> build(AnalysisContext context) async {
     final publicApiLibraries = <LibraryElement>[];
@@ -155,7 +175,12 @@ final class _ApiBuilder {
 
     final libraries = _libraryBuilders.values.map((e) => e.build()).toList();
 
-    return ApiSummary(name: _pkgName, libraries: libraries);
+    return ApiSummary(
+      name: _pkgName,
+      environment: _environment,
+      executables: _executables,
+      libraries: libraries,
+    );
   }
 
   Future<void> _scanPublicApiLibraries(
@@ -204,9 +229,6 @@ final class _ApiBuilder {
       'Legacy nullability (.star) is not supported.',
     ),
   };
-
-  bool _isVisibleForTesting(Element element) =>
-      element.nonSynthetic.metadata.hasVisibleForTesting;
 
   ApiType _describeType(DartType type) {
     final isNullable = _isNullable(type.nullabilitySuffix);
@@ -400,9 +422,11 @@ final class _ApiBuilder {
       immediateSubtypes: immediateSubtypes,
       constructors: constructors,
       methods: methods,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      isExperimental: element.nonSynthetic.metadata.hasExperimental,
+      isImmutable: element.nonSynthetic.metadata.hasImmutable,
+      isInternal: element.nonSynthetic.metadata.hasInternal,
+      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
     );
   }
 
@@ -428,9 +452,10 @@ final class _ApiBuilder {
       extendedType: _describeType(element.extendedType),
       typeParameters: _extractTypeParameters(element.typeParameters),
       methods: methods,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      isExperimental: element.nonSynthetic.metadata.hasExperimental,
+      isInternal: element.nonSynthetic.metadata.hasInternal,
+      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
     );
   }
 
@@ -461,17 +486,25 @@ final class _ApiBuilder {
       interfaces: element.interfaces.map(_describeType).toList(),
       constructors: constructors,
       methods: methods,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      isExperimental: element.nonSynthetic.metadata.hasExperimental,
+      isInternal: element.nonSynthetic.metadata.hasInternal,
+      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
     );
   }
+
+  bool _hasAnnotation(
+    ExecutableElement element,
+    bool Function(Metadata metadata) predicate,
+  ) =>
+      predicate(element.nonSynthetic.metadata) ||
+      (element is PropertyAccessorElement &&
+          predicate(element.variable.nonSynthetic.metadata));
 
   ApiExecutable _buildExecutable(
     ExecutableElement element, {
     required ApiDeclarationStatus status,
   }) {
-    final nonSyntheticElement = element.nonSynthetic;
     final formalParameters = element.type.formalParameters;
 
     final kind = switch (element) {
@@ -514,10 +547,23 @@ final class _ApiBuilder {
           .toList(),
       isStatic: element.isStatic,
       isConst: isConst,
+      isDeprecated: _hasAnnotation(element, (m) => m.hasDeprecated),
       isEnumConstant: isEnumConstant,
-      isDeprecated: nonSyntheticElement.metadata.hasDeprecated,
-      isExperimental: nonSyntheticElement.metadata.hasExperimental,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      isExperimental: _hasAnnotation(element, (m) => m.hasExperimental),
+      isInternal: _hasAnnotation(element, (m) => m.hasInternal),
+      isMustBeOverridden: _hasAnnotation(element, (m) => m.hasMustBeOverridden),
+      isMustCallSuper: _hasAnnotation(element, (m) => m.hasMustCallSuper),
+      isNonVirtual: _hasAnnotation(element, (m) => m.hasNonVirtual),
+      isProtected: _hasAnnotation(element, (m) => m.hasProtected),
+      isUseResult: _hasAnnotation(element, (m) => m.hasUseResult),
+      isVisibleForOverriding: _hasAnnotation(
+        element,
+        (m) => m.hasVisibleForOverriding,
+      ),
+      isVisibleForTesting: _hasAnnotation(
+        element,
+        (m) => m.hasVisibleForTesting,
+      ),
     );
   }
 
@@ -532,7 +578,8 @@ final class _ApiBuilder {
     aliasedType: _describeType(element.aliasedType),
     isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
     isExperimental: element.nonSynthetic.metadata.hasExperimental,
-    isVisibleForTesting: _isVisibleForTesting(element),
+    isInternal: element.nonSynthetic.metadata.hasInternal,
+    isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
   );
 }
 

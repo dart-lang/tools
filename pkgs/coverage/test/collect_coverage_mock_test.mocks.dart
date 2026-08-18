@@ -23,338 +23,173 @@ import 'package:vm_service/src/vm_service.dart' as _i2;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeBreakpoint_0 extends _i1.SmartFake implements _i2.Breakpoint {
-  _FakeBreakpoint_0(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeBreakpoint_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeSuccess_1 extends _i1.SmartFake implements _i2.Success {
-  _FakeSuccess_1(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeSuccess_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeIdZone_2 extends _i1.SmartFake implements _i2.IdZone {
-  _FakeIdZone_2(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeIdZone_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeResponse_3 extends _i1.SmartFake implements _i2.Response {
-  _FakeResponse_3(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeResponse_3(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeAllocationProfile_4 extends _i1.SmartFake
     implements _i2.AllocationProfile {
-  _FakeAllocationProfile_4(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeAllocationProfile_4(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeCpuSamples_5 extends _i1.SmartFake implements _i2.CpuSamples {
-  _FakeCpuSamples_5(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeCpuSamples_5(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeClassList_6 extends _i1.SmartFake implements _i2.ClassList {
-  _FakeClassList_6(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeClassList_6(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeFlagList_7 extends _i1.SmartFake implements _i2.FlagList {
-  _FakeFlagList_7(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeFlagList_7(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeInboundReferences_8 extends _i1.SmartFake
     implements _i2.InboundReferences {
-  _FakeInboundReferences_8(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeInboundReferences_8(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeInstanceSet_9 extends _i1.SmartFake implements _i2.InstanceSet {
-  _FakeInstanceSet_9(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeInstanceSet_9(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeInstanceRef_10 extends _i1.SmartFake implements _i2.InstanceRef {
-  _FakeInstanceRef_10(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeInstanceRef_10(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeIsolate_11 extends _i1.SmartFake implements _i2.Isolate {
-  _FakeIsolate_11(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeIsolate_11(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeIsolateGroup_12 extends _i1.SmartFake implements _i2.IsolateGroup {
-  _FakeIsolateGroup_12(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeIsolateGroup_12(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeEvent_13 extends _i1.SmartFake implements _i2.Event {
-  _FakeEvent_13(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeEvent_13(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeMemoryUsage_14 extends _i1.SmartFake implements _i2.MemoryUsage {
-  _FakeMemoryUsage_14(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeMemoryUsage_14(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeScriptList_15 extends _i1.SmartFake implements _i2.ScriptList {
-  _FakeScriptList_15(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeScriptList_15(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeObj_16 extends _i1.SmartFake implements _i2.Obj {
-  _FakeObj_16(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeObj_16(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakePerfettoCpuSamples_17 extends _i1.SmartFake
     implements _i2.PerfettoCpuSamples {
-  _FakePerfettoCpuSamples_17(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakePerfettoCpuSamples_17(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakePerfettoTimeline_18 extends _i1.SmartFake
     implements _i2.PerfettoTimeline {
-  _FakePerfettoTimeline_18(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakePerfettoTimeline_18(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakePortList_19 extends _i1.SmartFake implements _i2.PortList {
-  _FakePortList_19(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakePortList_19(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeRetainingPath_20 extends _i1.SmartFake implements _i2.RetainingPath {
-  _FakeRetainingPath_20(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeRetainingPath_20(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeProcessMemoryUsage_21 extends _i1.SmartFake
     implements _i2.ProcessMemoryUsage {
-  _FakeProcessMemoryUsage_21(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeProcessMemoryUsage_21(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeStack_22 extends _i1.SmartFake implements _i2.Stack {
-  _FakeStack_22(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeStack_22(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeProtocolList_23 extends _i1.SmartFake implements _i2.ProtocolList {
-  _FakeProtocolList_23(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeProtocolList_23(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeSourceReport_24 extends _i1.SmartFake implements _i2.SourceReport {
-  _FakeSourceReport_24(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeSourceReport_24(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeVersion_25 extends _i1.SmartFake implements _i2.Version {
-  _FakeVersion_25(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeVersion_25(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeVM_26 extends _i1.SmartFake implements _i2.VM {
-  _FakeVM_26(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeVM_26(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeTimeline_27 extends _i1.SmartFake implements _i2.Timeline {
-  _FakeTimeline_27(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeTimeline_27(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeTimelineFlags_28 extends _i1.SmartFake implements _i2.TimelineFlags {
-  _FakeTimelineFlags_28(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeTimelineFlags_28(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeTimestamp_29 extends _i1.SmartFake implements _i2.Timestamp {
-  _FakeTimestamp_29(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeTimestamp_29(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeUriList_30 extends _i1.SmartFake implements _i2.UriList {
-  _FakeUriList_30(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeUriList_30(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeReloadReport_31 extends _i1.SmartFake implements _i2.ReloadReport {
-  _FakeReloadReport_31(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeReloadReport_31(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeFuture_32<T1> extends _i1.SmartFake implements _i3.Future<T1> {
-  _FakeFuture_32(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeFuture_32(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [VmService].
@@ -366,103 +201,132 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
   }
 
   @override
-  _i3.Stream<String> get onSend => (super.noSuchMethod(
-        Invocation.getter(#onSend),
-        returnValue: _i3.Stream<String>.empty(),
-      ) as _i3.Stream<String>);
+  _i3.Stream<String> get onSend =>
+      (super.noSuchMethod(
+            Invocation.getter(#onSend),
+            returnValue: _i3.Stream<String>.empty(),
+          )
+          as _i3.Stream<String>);
 
   @override
-  _i3.Stream<String> get onReceive => (super.noSuchMethod(
-        Invocation.getter(#onReceive),
-        returnValue: _i3.Stream<String>.empty(),
-      ) as _i3.Stream<String>);
+  _i3.Stream<String> get onReceive =>
+      (super.noSuchMethod(
+            Invocation.getter(#onReceive),
+            returnValue: _i3.Stream<String>.empty(),
+          )
+          as _i3.Stream<String>);
 
   @override
-  _i3.Future<void> get onDone => (super.noSuchMethod(
-        Invocation.getter(#onDone),
-        returnValue: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+  _i3.Future<void> get onDone =>
+      (super.noSuchMethod(
+            Invocation.getter(#onDone),
+            returnValue: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 
   @override
-  _i3.Stream<_i2.Event> get onVMEvent => (super.noSuchMethod(
-        Invocation.getter(#onVMEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onVMEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onVMEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> get onIsolateEvent => (super.noSuchMethod(
-        Invocation.getter(#onIsolateEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onIsolateEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onIsolateEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> get onDebugEvent => (super.noSuchMethod(
-        Invocation.getter(#onDebugEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onDebugEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onDebugEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> get onProfilerEvent => (super.noSuchMethod(
-        Invocation.getter(#onProfilerEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onProfilerEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onProfilerEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> get onGCEvent => (super.noSuchMethod(
-        Invocation.getter(#onGCEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onGCEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onGCEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> get onExtensionEvent => (super.noSuchMethod(
-        Invocation.getter(#onExtensionEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onExtensionEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onExtensionEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> get onTimelineEvent => (super.noSuchMethod(
-        Invocation.getter(#onTimelineEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onTimelineEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onTimelineEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> get onLoggingEvent => (super.noSuchMethod(
-        Invocation.getter(#onLoggingEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onLoggingEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onLoggingEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> get onServiceEvent => (super.noSuchMethod(
-        Invocation.getter(#onServiceEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onServiceEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onServiceEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> get onHeapSnapshotEvent => (super.noSuchMethod(
-        Invocation.getter(#onHeapSnapshotEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onHeapSnapshotEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onHeapSnapshotEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> get onStdoutEvent => (super.noSuchMethod(
-        Invocation.getter(#onStdoutEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onStdoutEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onStdoutEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> get onStderrEvent => (super.noSuchMethod(
-        Invocation.getter(#onStderrEvent),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> get onStderrEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#onStderrEvent),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
-  _i3.Stream<_i2.Event> onEvent(String? streamId) => (super.noSuchMethod(
-        Invocation.method(
-          #onEvent,
-          [streamId],
-        ),
-        returnValue: _i3.Stream<_i2.Event>.empty(),
-      ) as _i3.Stream<_i2.Event>);
+  _i3.Stream<_i2.Event> onEvent(String? streamId) =>
+      (super.noSuchMethod(
+            Invocation.method(#onEvent, [streamId]),
+            returnValue: _i3.Stream<_i2.Event>.empty(),
+          )
+          as _i3.Stream<_i2.Event>);
 
   @override
   _i3.Future<_i2.Breakpoint> addBreakpoint(
@@ -472,28 +336,23 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     int? column,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #addBreakpoint,
-          [
-            isolateId,
-            scriptId,
-            line,
-          ],
-          {#column: column},
-        ),
-        returnValue: _i3.Future<_i2.Breakpoint>.value(_FakeBreakpoint_0(
-          this,
-          Invocation.method(
-            #addBreakpoint,
-            [
-              isolateId,
-              scriptId,
-              line,
-            ],
-            {#column: column},
-          ),
-        )),
-      ) as _i3.Future<_i2.Breakpoint>);
+            Invocation.method(
+              #addBreakpoint,
+              [isolateId, scriptId, line],
+              {#column: column},
+            ),
+            returnValue: _i3.Future<_i2.Breakpoint>.value(
+              _FakeBreakpoint_0(
+                this,
+                Invocation.method(
+                  #addBreakpoint,
+                  [isolateId, scriptId, line],
+                  {#column: column},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Breakpoint>);
 
   @override
   _i3.Future<_i2.Breakpoint> addBreakpointWithScriptUri(
@@ -503,28 +362,23 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     int? column,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #addBreakpointWithScriptUri,
-          [
-            isolateId,
-            scriptUri,
-            line,
-          ],
-          {#column: column},
-        ),
-        returnValue: _i3.Future<_i2.Breakpoint>.value(_FakeBreakpoint_0(
-          this,
-          Invocation.method(
-            #addBreakpointWithScriptUri,
-            [
-              isolateId,
-              scriptUri,
-              line,
-            ],
-            {#column: column},
-          ),
-        )),
-      ) as _i3.Future<_i2.Breakpoint>);
+            Invocation.method(
+              #addBreakpointWithScriptUri,
+              [isolateId, scriptUri, line],
+              {#column: column},
+            ),
+            returnValue: _i3.Future<_i2.Breakpoint>.value(
+              _FakeBreakpoint_0(
+                this,
+                Invocation.method(
+                  #addBreakpointWithScriptUri,
+                  [isolateId, scriptUri, line],
+                  {#column: column},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Breakpoint>);
 
   @override
   _i3.Future<_i2.Breakpoint> addBreakpointAtEntry(
@@ -532,55 +386,41 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? functionId,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #addBreakpointAtEntry,
-          [
-            isolateId,
-            functionId,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Breakpoint>.value(_FakeBreakpoint_0(
-          this,
-          Invocation.method(
-            #addBreakpointAtEntry,
-            [
-              isolateId,
-              functionId,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Breakpoint>);
+            Invocation.method(#addBreakpointAtEntry, [isolateId, functionId]),
+            returnValue: _i3.Future<_i2.Breakpoint>.value(
+              _FakeBreakpoint_0(
+                this,
+                Invocation.method(#addBreakpointAtEntry, [
+                  isolateId,
+                  functionId,
+                ]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Breakpoint>);
 
   @override
   _i3.Future<_i2.Success> clearCpuSamples(String? isolateId) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #clearCpuSamples,
-          [isolateId],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #clearCpuSamples,
-            [isolateId],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(#clearCpuSamples, [isolateId]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#clearCpuSamples, [isolateId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
-  _i3.Future<_i2.Success> clearVMTimeline() => (super.noSuchMethod(
-        Invocation.method(
-          #clearVMTimeline,
-          [],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #clearVMTimeline,
-            [],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+  _i3.Future<_i2.Success> clearVMTimeline() =>
+      (super.noSuchMethod(
+            Invocation.method(#clearVMTimeline, []),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(this, Invocation.method(#clearVMTimeline, [])),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.IdZone> createIdZone(
@@ -590,53 +430,36 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     int? capacity,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #createIdZone,
-          [
-            isolateId,
-            backingBufferKind,
-            idAssignmentPolicy,
-          ],
-          {#capacity: capacity},
-        ),
-        returnValue: _i3.Future<_i2.IdZone>.value(_FakeIdZone_2(
-          this,
-          Invocation.method(
-            #createIdZone,
-            [
-              isolateId,
-              backingBufferKind,
-              idAssignmentPolicy,
-            ],
-            {#capacity: capacity},
-          ),
-        )),
-      ) as _i3.Future<_i2.IdZone>);
+            Invocation.method(
+              #createIdZone,
+              [isolateId, backingBufferKind, idAssignmentPolicy],
+              {#capacity: capacity},
+            ),
+            returnValue: _i3.Future<_i2.IdZone>.value(
+              _FakeIdZone_2(
+                this,
+                Invocation.method(
+                  #createIdZone,
+                  [isolateId, backingBufferKind, idAssignmentPolicy],
+                  {#capacity: capacity},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.IdZone>);
 
   @override
-  _i3.Future<_i2.Success> deleteIdZone(
-    String? isolateId,
-    String? idZoneId,
-  ) =>
+  _i3.Future<_i2.Success> deleteIdZone(String? isolateId, String? idZoneId) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #deleteIdZone,
-          [
-            isolateId,
-            idZoneId,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #deleteIdZone,
-            [
-              isolateId,
-              idZoneId,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(#deleteIdZone, [isolateId, idZoneId]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#deleteIdZone, [isolateId, idZoneId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.Success> invalidateIdZone(
@@ -644,24 +467,15 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? idZoneId,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #invalidateIdZone,
-          [
-            isolateId,
-            idZoneId,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #invalidateIdZone,
-            [
-              isolateId,
-              idZoneId,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(#invalidateIdZone, [isolateId, idZoneId]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#invalidateIdZone, [isolateId, idZoneId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.Response> invoke(
@@ -673,36 +487,26 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? idZoneId,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #invoke,
-          [
-            isolateId,
-            targetId,
-            selector,
-            argumentIds,
-          ],
-          {
-            #disableBreakpoints: disableBreakpoints,
-            #idZoneId: idZoneId,
-          },
-        ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
-          this,
-          Invocation.method(
-            #invoke,
-            [
-              isolateId,
-              targetId,
-              selector,
-              argumentIds,
-            ],
-            {
-              #disableBreakpoints: disableBreakpoints,
-              #idZoneId: idZoneId,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Response>);
+            Invocation.method(
+              #invoke,
+              [isolateId, targetId, selector, argumentIds],
+              {#disableBreakpoints: disableBreakpoints, #idZoneId: idZoneId},
+            ),
+            returnValue: _i3.Future<_i2.Response>.value(
+              _FakeResponse_3(
+                this,
+                Invocation.method(
+                  #invoke,
+                  [isolateId, targetId, selector, argumentIds],
+                  {
+                    #disableBreakpoints: disableBreakpoints,
+                    #idZoneId: idZoneId,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Response>);
 
   @override
   _i3.Future<_i2.Response> evaluate(
@@ -714,36 +518,31 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? idZoneId,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #evaluate,
-          [
-            isolateId,
-            targetId,
-            expression,
-          ],
-          {
-            #scope: scope,
-            #disableBreakpoints: disableBreakpoints,
-            #idZoneId: idZoneId,
-          },
-        ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
-          this,
-          Invocation.method(
-            #evaluate,
-            [
-              isolateId,
-              targetId,
-              expression,
-            ],
-            {
-              #scope: scope,
-              #disableBreakpoints: disableBreakpoints,
-              #idZoneId: idZoneId,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Response>);
+            Invocation.method(
+              #evaluate,
+              [isolateId, targetId, expression],
+              {
+                #scope: scope,
+                #disableBreakpoints: disableBreakpoints,
+                #idZoneId: idZoneId,
+              },
+            ),
+            returnValue: _i3.Future<_i2.Response>.value(
+              _FakeResponse_3(
+                this,
+                Invocation.method(
+                  #evaluate,
+                  [isolateId, targetId, expression],
+                  {
+                    #scope: scope,
+                    #disableBreakpoints: disableBreakpoints,
+                    #idZoneId: idZoneId,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Response>);
 
   @override
   _i3.Future<_i2.Response> evaluateInFrame(
@@ -755,36 +554,31 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? idZoneId,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #evaluateInFrame,
-          [
-            isolateId,
-            frameIndex,
-            expression,
-          ],
-          {
-            #scope: scope,
-            #disableBreakpoints: disableBreakpoints,
-            #idZoneId: idZoneId,
-          },
-        ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
-          this,
-          Invocation.method(
-            #evaluateInFrame,
-            [
-              isolateId,
-              frameIndex,
-              expression,
-            ],
-            {
-              #scope: scope,
-              #disableBreakpoints: disableBreakpoints,
-              #idZoneId: idZoneId,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Response>);
+            Invocation.method(
+              #evaluateInFrame,
+              [isolateId, frameIndex, expression],
+              {
+                #scope: scope,
+                #disableBreakpoints: disableBreakpoints,
+                #idZoneId: idZoneId,
+              },
+            ),
+            returnValue: _i3.Future<_i2.Response>.value(
+              _FakeResponse_3(
+                this,
+                Invocation.method(
+                  #evaluateInFrame,
+                  [isolateId, frameIndex, expression],
+                  {
+                    #scope: scope,
+                    #disableBreakpoints: disableBreakpoints,
+                    #idZoneId: idZoneId,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Response>);
 
   @override
   _i3.Future<_i2.AllocationProfile> getAllocationProfile(
@@ -793,27 +587,23 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     bool? gc,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getAllocationProfile,
-          [isolateId],
-          {
-            #reset: reset,
-            #gc: gc,
-          },
-        ),
-        returnValue:
-            _i3.Future<_i2.AllocationProfile>.value(_FakeAllocationProfile_4(
-          this,
-          Invocation.method(
-            #getAllocationProfile,
-            [isolateId],
-            {
-              #reset: reset,
-              #gc: gc,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.AllocationProfile>);
+            Invocation.method(
+              #getAllocationProfile,
+              [isolateId],
+              {#reset: reset, #gc: gc},
+            ),
+            returnValue: _i3.Future<_i2.AllocationProfile>.value(
+              _FakeAllocationProfile_4(
+                this,
+                Invocation.method(
+                  #getAllocationProfile,
+                  [isolateId],
+                  {#reset: reset, #gc: gc},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.AllocationProfile>);
 
   @override
   _i3.Future<_i2.CpuSamples> getAllocationTraces(
@@ -823,44 +613,44 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? classId,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getAllocationTraces,
-          [isolateId],
-          {
-            #timeOriginMicros: timeOriginMicros,
-            #timeExtentMicros: timeExtentMicros,
-            #classId: classId,
-          },
-        ),
-        returnValue: _i3.Future<_i2.CpuSamples>.value(_FakeCpuSamples_5(
-          this,
-          Invocation.method(
-            #getAllocationTraces,
-            [isolateId],
-            {
-              #timeOriginMicros: timeOriginMicros,
-              #timeExtentMicros: timeExtentMicros,
-              #classId: classId,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.CpuSamples>);
+            Invocation.method(
+              #getAllocationTraces,
+              [isolateId],
+              {
+                #timeOriginMicros: timeOriginMicros,
+                #timeExtentMicros: timeExtentMicros,
+                #classId: classId,
+              },
+            ),
+            returnValue: _i3.Future<_i2.CpuSamples>.value(
+              _FakeCpuSamples_5(
+                this,
+                Invocation.method(
+                  #getAllocationTraces,
+                  [isolateId],
+                  {
+                    #timeOriginMicros: timeOriginMicros,
+                    #timeExtentMicros: timeExtentMicros,
+                    #classId: classId,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.CpuSamples>);
 
   @override
   _i3.Future<_i2.ClassList> getClassList(String? isolateId) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getClassList,
-          [isolateId],
-        ),
-        returnValue: _i3.Future<_i2.ClassList>.value(_FakeClassList_6(
-          this,
-          Invocation.method(
-            #getClassList,
-            [isolateId],
-          ),
-        )),
-      ) as _i3.Future<_i2.ClassList>);
+            Invocation.method(#getClassList, [isolateId]),
+            returnValue: _i3.Future<_i2.ClassList>.value(
+              _FakeClassList_6(
+                this,
+                Invocation.method(#getClassList, [isolateId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.ClassList>);
 
   @override
   _i3.Future<_i2.CpuSamples> getCpuSamples(
@@ -869,41 +659,33 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     int? timeExtentMicros,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getCpuSamples,
-          [
-            isolateId,
-            timeOriginMicros,
-            timeExtentMicros,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.CpuSamples>.value(_FakeCpuSamples_5(
-          this,
-          Invocation.method(
-            #getCpuSamples,
-            [
+            Invocation.method(#getCpuSamples, [
               isolateId,
               timeOriginMicros,
               timeExtentMicros,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.CpuSamples>);
+            ]),
+            returnValue: _i3.Future<_i2.CpuSamples>.value(
+              _FakeCpuSamples_5(
+                this,
+                Invocation.method(#getCpuSamples, [
+                  isolateId,
+                  timeOriginMicros,
+                  timeExtentMicros,
+                ]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.CpuSamples>);
 
   @override
-  _i3.Future<_i2.FlagList> getFlagList() => (super.noSuchMethod(
-        Invocation.method(
-          #getFlagList,
-          [],
-        ),
-        returnValue: _i3.Future<_i2.FlagList>.value(_FakeFlagList_7(
-          this,
-          Invocation.method(
-            #getFlagList,
-            [],
-          ),
-        )),
-      ) as _i3.Future<_i2.FlagList>);
+  _i3.Future<_i2.FlagList> getFlagList() =>
+      (super.noSuchMethod(
+            Invocation.method(#getFlagList, []),
+            returnValue: _i3.Future<_i2.FlagList>.value(
+              _FakeFlagList_7(this, Invocation.method(#getFlagList, [])),
+            ),
+          )
+          as _i3.Future<_i2.FlagList>);
 
   @override
   _i3.Future<_i2.InboundReferences> getInboundReferences(
@@ -913,29 +695,23 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? idZoneId,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getInboundReferences,
-          [
-            isolateId,
-            targetId,
-            limit,
-          ],
-          {#idZoneId: idZoneId},
-        ),
-        returnValue:
-            _i3.Future<_i2.InboundReferences>.value(_FakeInboundReferences_8(
-          this,
-          Invocation.method(
-            #getInboundReferences,
-            [
-              isolateId,
-              targetId,
-              limit,
-            ],
-            {#idZoneId: idZoneId},
-          ),
-        )),
-      ) as _i3.Future<_i2.InboundReferences>);
+            Invocation.method(
+              #getInboundReferences,
+              [isolateId, targetId, limit],
+              {#idZoneId: idZoneId},
+            ),
+            returnValue: _i3.Future<_i2.InboundReferences>.value(
+              _FakeInboundReferences_8(
+                this,
+                Invocation.method(
+                  #getInboundReferences,
+                  [isolateId, targetId, limit],
+                  {#idZoneId: idZoneId},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.InboundReferences>);
 
   @override
   _i3.Future<_i2.InstanceSet> getInstances(
@@ -947,36 +723,31 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? idZoneId,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getInstances,
-          [
-            isolateId,
-            objectId,
-            limit,
-          ],
-          {
-            #includeSubclasses: includeSubclasses,
-            #includeImplementers: includeImplementers,
-            #idZoneId: idZoneId,
-          },
-        ),
-        returnValue: _i3.Future<_i2.InstanceSet>.value(_FakeInstanceSet_9(
-          this,
-          Invocation.method(
-            #getInstances,
-            [
-              isolateId,
-              objectId,
-              limit,
-            ],
-            {
-              #includeSubclasses: includeSubclasses,
-              #includeImplementers: includeImplementers,
-              #idZoneId: idZoneId,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.InstanceSet>);
+            Invocation.method(
+              #getInstances,
+              [isolateId, objectId, limit],
+              {
+                #includeSubclasses: includeSubclasses,
+                #includeImplementers: includeImplementers,
+                #idZoneId: idZoneId,
+              },
+            ),
+            returnValue: _i3.Future<_i2.InstanceSet>.value(
+              _FakeInstanceSet_9(
+                this,
+                Invocation.method(
+                  #getInstances,
+                  [isolateId, objectId, limit],
+                  {
+                    #includeSubclasses: includeSubclasses,
+                    #includeImplementers: includeImplementers,
+                    #idZoneId: idZoneId,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.InstanceSet>);
 
   @override
   _i3.Future<_i2.InstanceRef> getInstancesAsList(
@@ -987,130 +758,113 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? idZoneId,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getInstancesAsList,
-          [
-            isolateId,
-            objectId,
-          ],
-          {
-            #includeSubclasses: includeSubclasses,
-            #includeImplementers: includeImplementers,
-            #idZoneId: idZoneId,
-          },
-        ),
-        returnValue: _i3.Future<_i2.InstanceRef>.value(_FakeInstanceRef_10(
-          this,
-          Invocation.method(
-            #getInstancesAsList,
-            [
-              isolateId,
-              objectId,
-            ],
-            {
-              #includeSubclasses: includeSubclasses,
-              #includeImplementers: includeImplementers,
-              #idZoneId: idZoneId,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.InstanceRef>);
+            Invocation.method(
+              #getInstancesAsList,
+              [isolateId, objectId],
+              {
+                #includeSubclasses: includeSubclasses,
+                #includeImplementers: includeImplementers,
+                #idZoneId: idZoneId,
+              },
+            ),
+            returnValue: _i3.Future<_i2.InstanceRef>.value(
+              _FakeInstanceRef_10(
+                this,
+                Invocation.method(
+                  #getInstancesAsList,
+                  [isolateId, objectId],
+                  {
+                    #includeSubclasses: includeSubclasses,
+                    #includeImplementers: includeImplementers,
+                    #idZoneId: idZoneId,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.InstanceRef>);
 
   @override
-  _i3.Future<_i2.Isolate> getIsolate(String? isolateId) => (super.noSuchMethod(
-        Invocation.method(
-          #getIsolate,
-          [isolateId],
-        ),
-        returnValue: _i3.Future<_i2.Isolate>.value(_FakeIsolate_11(
-          this,
-          Invocation.method(
-            #getIsolate,
-            [isolateId],
-          ),
-        )),
-      ) as _i3.Future<_i2.Isolate>);
+  _i3.Future<_i2.Isolate> getIsolate(String? isolateId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getIsolate, [isolateId]),
+            returnValue: _i3.Future<_i2.Isolate>.value(
+              _FakeIsolate_11(
+                this,
+                Invocation.method(#getIsolate, [isolateId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Isolate>);
 
   @override
   _i3.Future<_i2.IsolateGroup> getIsolateGroup(String? isolateGroupId) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getIsolateGroup,
-          [isolateGroupId],
-        ),
-        returnValue: _i3.Future<_i2.IsolateGroup>.value(_FakeIsolateGroup_12(
-          this,
-          Invocation.method(
-            #getIsolateGroup,
-            [isolateGroupId],
-          ),
-        )),
-      ) as _i3.Future<_i2.IsolateGroup>);
+            Invocation.method(#getIsolateGroup, [isolateGroupId]),
+            returnValue: _i3.Future<_i2.IsolateGroup>.value(
+              _FakeIsolateGroup_12(
+                this,
+                Invocation.method(#getIsolateGroup, [isolateGroupId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.IsolateGroup>);
 
   @override
   _i3.Future<_i2.Event> getIsolatePauseEvent(String? isolateId) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getIsolatePauseEvent,
-          [isolateId],
-        ),
-        returnValue: _i3.Future<_i2.Event>.value(_FakeEvent_13(
-          this,
-          Invocation.method(
-            #getIsolatePauseEvent,
-            [isolateId],
-          ),
-        )),
-      ) as _i3.Future<_i2.Event>);
+            Invocation.method(#getIsolatePauseEvent, [isolateId]),
+            returnValue: _i3.Future<_i2.Event>.value(
+              _FakeEvent_13(
+                this,
+                Invocation.method(#getIsolatePauseEvent, [isolateId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Event>);
 
   @override
   _i3.Future<_i2.MemoryUsage> getMemoryUsage(String? isolateId) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getMemoryUsage,
-          [isolateId],
-        ),
-        returnValue: _i3.Future<_i2.MemoryUsage>.value(_FakeMemoryUsage_14(
-          this,
-          Invocation.method(
-            #getMemoryUsage,
-            [isolateId],
-          ),
-        )),
-      ) as _i3.Future<_i2.MemoryUsage>);
+            Invocation.method(#getMemoryUsage, [isolateId]),
+            returnValue: _i3.Future<_i2.MemoryUsage>.value(
+              _FakeMemoryUsage_14(
+                this,
+                Invocation.method(#getMemoryUsage, [isolateId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.MemoryUsage>);
 
   @override
   _i3.Future<_i2.MemoryUsage> getIsolateGroupMemoryUsage(
-          String? isolateGroupId) =>
+    String? isolateGroupId,
+  ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getIsolateGroupMemoryUsage,
-          [isolateGroupId],
-        ),
-        returnValue: _i3.Future<_i2.MemoryUsage>.value(_FakeMemoryUsage_14(
-          this,
-          Invocation.method(
-            #getIsolateGroupMemoryUsage,
-            [isolateGroupId],
-          ),
-        )),
-      ) as _i3.Future<_i2.MemoryUsage>);
+            Invocation.method(#getIsolateGroupMemoryUsage, [isolateGroupId]),
+            returnValue: _i3.Future<_i2.MemoryUsage>.value(
+              _FakeMemoryUsage_14(
+                this,
+                Invocation.method(#getIsolateGroupMemoryUsage, [
+                  isolateGroupId,
+                ]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.MemoryUsage>);
 
   @override
   _i3.Future<_i2.ScriptList> getScripts(String? isolateId) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getScripts,
-          [isolateId],
-        ),
-        returnValue: _i3.Future<_i2.ScriptList>.value(_FakeScriptList_15(
-          this,
-          Invocation.method(
-            #getScripts,
-            [isolateId],
-          ),
-        )),
-      ) as _i3.Future<_i2.ScriptList>);
+            Invocation.method(#getScripts, [isolateId]),
+            returnValue: _i3.Future<_i2.ScriptList>.value(
+              _FakeScriptList_15(
+                this,
+                Invocation.method(#getScripts, [isolateId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.ScriptList>);
 
   @override
   _i3.Future<_i2.Obj> getObject(
@@ -1121,34 +875,23 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? idZoneId,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getObject,
-          [
-            isolateId,
-            objectId,
-          ],
-          {
-            #offset: offset,
-            #count: count,
-            #idZoneId: idZoneId,
-          },
-        ),
-        returnValue: _i3.Future<_i2.Obj>.value(_FakeObj_16(
-          this,
-          Invocation.method(
-            #getObject,
-            [
-              isolateId,
-              objectId,
-            ],
-            {
-              #offset: offset,
-              #count: count,
-              #idZoneId: idZoneId,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Obj>);
+            Invocation.method(
+              #getObject,
+              [isolateId, objectId],
+              {#offset: offset, #count: count, #idZoneId: idZoneId},
+            ),
+            returnValue: _i3.Future<_i2.Obj>.value(
+              _FakeObj_16(
+                this,
+                Invocation.method(
+                  #getObject,
+                  [isolateId, objectId],
+                  {#offset: offset, #count: count, #idZoneId: idZoneId},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Obj>);
 
   @override
   _i3.Future<_i2.PerfettoCpuSamples> getPerfettoCpuSamples(
@@ -1157,27 +900,29 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     int? timeExtentMicros,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getPerfettoCpuSamples,
-          [isolateId],
-          {
-            #timeOriginMicros: timeOriginMicros,
-            #timeExtentMicros: timeExtentMicros,
-          },
-        ),
-        returnValue:
-            _i3.Future<_i2.PerfettoCpuSamples>.value(_FakePerfettoCpuSamples_17(
-          this,
-          Invocation.method(
-            #getPerfettoCpuSamples,
-            [isolateId],
-            {
-              #timeOriginMicros: timeOriginMicros,
-              #timeExtentMicros: timeExtentMicros,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.PerfettoCpuSamples>);
+            Invocation.method(
+              #getPerfettoCpuSamples,
+              [isolateId],
+              {
+                #timeOriginMicros: timeOriginMicros,
+                #timeExtentMicros: timeExtentMicros,
+              },
+            ),
+            returnValue: _i3.Future<_i2.PerfettoCpuSamples>.value(
+              _FakePerfettoCpuSamples_17(
+                this,
+                Invocation.method(
+                  #getPerfettoCpuSamples,
+                  [isolateId],
+                  {
+                    #timeOriginMicros: timeOriginMicros,
+                    #timeExtentMicros: timeExtentMicros,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.PerfettoCpuSamples>);
 
   @override
   _i3.Future<_i2.PerfettoTimeline> getPerfettoVMTimeline({
@@ -1185,42 +930,31 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     int? timeExtentMicros,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getPerfettoVMTimeline,
-          [],
-          {
-            #timeOriginMicros: timeOriginMicros,
-            #timeExtentMicros: timeExtentMicros,
-          },
-        ),
-        returnValue:
-            _i3.Future<_i2.PerfettoTimeline>.value(_FakePerfettoTimeline_18(
-          this,
-          Invocation.method(
-            #getPerfettoVMTimeline,
-            [],
-            {
+            Invocation.method(#getPerfettoVMTimeline, [], {
               #timeOriginMicros: timeOriginMicros,
               #timeExtentMicros: timeExtentMicros,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.PerfettoTimeline>);
+            }),
+            returnValue: _i3.Future<_i2.PerfettoTimeline>.value(
+              _FakePerfettoTimeline_18(
+                this,
+                Invocation.method(#getPerfettoVMTimeline, [], {
+                  #timeOriginMicros: timeOriginMicros,
+                  #timeExtentMicros: timeExtentMicros,
+                }),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.PerfettoTimeline>);
 
   @override
-  _i3.Future<_i2.PortList> getPorts(String? isolateId) => (super.noSuchMethod(
-        Invocation.method(
-          #getPorts,
-          [isolateId],
-        ),
-        returnValue: _i3.Future<_i2.PortList>.value(_FakePortList_19(
-          this,
-          Invocation.method(
-            #getPorts,
-            [isolateId],
-          ),
-        )),
-      ) as _i3.Future<_i2.PortList>);
+  _i3.Future<_i2.PortList> getPorts(String? isolateId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getPorts, [isolateId]),
+            returnValue: _i3.Future<_i2.PortList>.value(
+              _FakePortList_19(this, Invocation.method(#getPorts, [isolateId])),
+            ),
+          )
+          as _i3.Future<_i2.PortList>);
 
   @override
   _i3.Future<_i2.RetainingPath> getRetainingPath(
@@ -1230,45 +964,36 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? idZoneId,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getRetainingPath,
-          [
-            isolateId,
-            targetId,
-            limit,
-          ],
-          {#idZoneId: idZoneId},
-        ),
-        returnValue: _i3.Future<_i2.RetainingPath>.value(_FakeRetainingPath_20(
-          this,
-          Invocation.method(
-            #getRetainingPath,
-            [
-              isolateId,
-              targetId,
-              limit,
-            ],
-            {#idZoneId: idZoneId},
-          ),
-        )),
-      ) as _i3.Future<_i2.RetainingPath>);
+            Invocation.method(
+              #getRetainingPath,
+              [isolateId, targetId, limit],
+              {#idZoneId: idZoneId},
+            ),
+            returnValue: _i3.Future<_i2.RetainingPath>.value(
+              _FakeRetainingPath_20(
+                this,
+                Invocation.method(
+                  #getRetainingPath,
+                  [isolateId, targetId, limit],
+                  {#idZoneId: idZoneId},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.RetainingPath>);
 
   @override
   _i3.Future<_i2.ProcessMemoryUsage> getProcessMemoryUsage() =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getProcessMemoryUsage,
-          [],
-        ),
-        returnValue:
-            _i3.Future<_i2.ProcessMemoryUsage>.value(_FakeProcessMemoryUsage_21(
-          this,
-          Invocation.method(
-            #getProcessMemoryUsage,
-            [],
-          ),
-        )),
-      ) as _i3.Future<_i2.ProcessMemoryUsage>);
+            Invocation.method(#getProcessMemoryUsage, []),
+            returnValue: _i3.Future<_i2.ProcessMemoryUsage>.value(
+              _FakeProcessMemoryUsage_21(
+                this,
+                Invocation.method(#getProcessMemoryUsage, []),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.ProcessMemoryUsage>);
 
   @override
   _i3.Future<_i2.Stack> getStack(
@@ -1277,41 +1002,36 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? idZoneId,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getStack,
-          [isolateId],
-          {
-            #limit: limit,
-            #idZoneId: idZoneId,
-          },
-        ),
-        returnValue: _i3.Future<_i2.Stack>.value(_FakeStack_22(
-          this,
-          Invocation.method(
-            #getStack,
-            [isolateId],
-            {
-              #limit: limit,
-              #idZoneId: idZoneId,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Stack>);
+            Invocation.method(
+              #getStack,
+              [isolateId],
+              {#limit: limit, #idZoneId: idZoneId},
+            ),
+            returnValue: _i3.Future<_i2.Stack>.value(
+              _FakeStack_22(
+                this,
+                Invocation.method(
+                  #getStack,
+                  [isolateId],
+                  {#limit: limit, #idZoneId: idZoneId},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Stack>);
 
   @override
-  _i3.Future<_i2.ProtocolList> getSupportedProtocols() => (super.noSuchMethod(
-        Invocation.method(
-          #getSupportedProtocols,
-          [],
-        ),
-        returnValue: _i3.Future<_i2.ProtocolList>.value(_FakeProtocolList_23(
-          this,
-          Invocation.method(
-            #getSupportedProtocols,
-            [],
-          ),
-        )),
-      ) as _i3.Future<_i2.ProtocolList>);
+  _i3.Future<_i2.ProtocolList> getSupportedProtocols() =>
+      (super.noSuchMethod(
+            Invocation.method(#getSupportedProtocols, []),
+            returnValue: _i3.Future<_i2.ProtocolList>.value(
+              _FakeProtocolList_23(
+                this,
+                Invocation.method(#getSupportedProtocols, []),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.ProtocolList>);
 
   @override
   _i3.Future<_i2.SourceReport> getSourceReport(
@@ -1326,72 +1046,59 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     List<String>? librariesAlreadyCompiled,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getSourceReport,
-          [
-            isolateId,
-            reports,
-          ],
-          {
-            #scriptId: scriptId,
-            #tokenPos: tokenPos,
-            #endTokenPos: endTokenPos,
-            #forceCompile: forceCompile,
-            #reportLines: reportLines,
-            #libraryFilters: libraryFilters,
-            #librariesAlreadyCompiled: librariesAlreadyCompiled,
-          },
-        ),
-        returnValue: _i3.Future<_i2.SourceReport>.value(_FakeSourceReport_24(
-          this,
-          Invocation.method(
-            #getSourceReport,
-            [
-              isolateId,
-              reports,
-            ],
-            {
-              #scriptId: scriptId,
-              #tokenPos: tokenPos,
-              #endTokenPos: endTokenPos,
-              #forceCompile: forceCompile,
-              #reportLines: reportLines,
-              #libraryFilters: libraryFilters,
-              #librariesAlreadyCompiled: librariesAlreadyCompiled,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.SourceReport>);
+            Invocation.method(
+              #getSourceReport,
+              [isolateId, reports],
+              {
+                #scriptId: scriptId,
+                #tokenPos: tokenPos,
+                #endTokenPos: endTokenPos,
+                #forceCompile: forceCompile,
+                #reportLines: reportLines,
+                #libraryFilters: libraryFilters,
+                #librariesAlreadyCompiled: librariesAlreadyCompiled,
+              },
+            ),
+            returnValue: _i3.Future<_i2.SourceReport>.value(
+              _FakeSourceReport_24(
+                this,
+                Invocation.method(
+                  #getSourceReport,
+                  [isolateId, reports],
+                  {
+                    #scriptId: scriptId,
+                    #tokenPos: tokenPos,
+                    #endTokenPos: endTokenPos,
+                    #forceCompile: forceCompile,
+                    #reportLines: reportLines,
+                    #libraryFilters: libraryFilters,
+                    #librariesAlreadyCompiled: librariesAlreadyCompiled,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.SourceReport>);
 
   @override
-  _i3.Future<_i2.Version> getVersion() => (super.noSuchMethod(
-        Invocation.method(
-          #getVersion,
-          [],
-        ),
-        returnValue: _i3.Future<_i2.Version>.value(_FakeVersion_25(
-          this,
-          Invocation.method(
-            #getVersion,
-            [],
-          ),
-        )),
-      ) as _i3.Future<_i2.Version>);
+  _i3.Future<_i2.Version> getVersion() =>
+      (super.noSuchMethod(
+            Invocation.method(#getVersion, []),
+            returnValue: _i3.Future<_i2.Version>.value(
+              _FakeVersion_25(this, Invocation.method(#getVersion, [])),
+            ),
+          )
+          as _i3.Future<_i2.Version>);
 
   @override
-  _i3.Future<_i2.VM> getVM() => (super.noSuchMethod(
-        Invocation.method(
-          #getVM,
-          [],
-        ),
-        returnValue: _i3.Future<_i2.VM>.value(_FakeVM_26(
-          this,
-          Invocation.method(
-            #getVM,
-            [],
-          ),
-        )),
-      ) as _i3.Future<_i2.VM>);
+  _i3.Future<_i2.VM> getVM() =>
+      (super.noSuchMethod(
+            Invocation.method(#getVM, []),
+            returnValue: _i3.Future<_i2.VM>.value(
+              _FakeVM_26(this, Invocation.method(#getVM, [])),
+            ),
+          )
+          as _i3.Future<_i2.VM>);
 
   @override
   _i3.Future<_i2.Timeline> getVMTimeline({
@@ -1399,86 +1106,67 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     int? timeExtentMicros,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getVMTimeline,
-          [],
-          {
-            #timeOriginMicros: timeOriginMicros,
-            #timeExtentMicros: timeExtentMicros,
-          },
-        ),
-        returnValue: _i3.Future<_i2.Timeline>.value(_FakeTimeline_27(
-          this,
-          Invocation.method(
-            #getVMTimeline,
-            [],
-            {
+            Invocation.method(#getVMTimeline, [], {
               #timeOriginMicros: timeOriginMicros,
               #timeExtentMicros: timeExtentMicros,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Timeline>);
+            }),
+            returnValue: _i3.Future<_i2.Timeline>.value(
+              _FakeTimeline_27(
+                this,
+                Invocation.method(#getVMTimeline, [], {
+                  #timeOriginMicros: timeOriginMicros,
+                  #timeExtentMicros: timeExtentMicros,
+                }),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Timeline>);
 
   @override
-  _i3.Future<_i2.TimelineFlags> getVMTimelineFlags() => (super.noSuchMethod(
-        Invocation.method(
-          #getVMTimelineFlags,
-          [],
-        ),
-        returnValue: _i3.Future<_i2.TimelineFlags>.value(_FakeTimelineFlags_28(
-          this,
-          Invocation.method(
-            #getVMTimelineFlags,
-            [],
-          ),
-        )),
-      ) as _i3.Future<_i2.TimelineFlags>);
+  _i3.Future<_i2.TimelineFlags> getVMTimelineFlags() =>
+      (super.noSuchMethod(
+            Invocation.method(#getVMTimelineFlags, []),
+            returnValue: _i3.Future<_i2.TimelineFlags>.value(
+              _FakeTimelineFlags_28(
+                this,
+                Invocation.method(#getVMTimelineFlags, []),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.TimelineFlags>);
 
   @override
-  _i3.Future<_i2.Timestamp> getVMTimelineMicros() => (super.noSuchMethod(
-        Invocation.method(
-          #getVMTimelineMicros,
-          [],
-        ),
-        returnValue: _i3.Future<_i2.Timestamp>.value(_FakeTimestamp_29(
-          this,
-          Invocation.method(
-            #getVMTimelineMicros,
-            [],
-          ),
-        )),
-      ) as _i3.Future<_i2.Timestamp>);
+  _i3.Future<_i2.Timestamp> getVMTimelineMicros() =>
+      (super.noSuchMethod(
+            Invocation.method(#getVMTimelineMicros, []),
+            returnValue: _i3.Future<_i2.Timestamp>.value(
+              _FakeTimestamp_29(
+                this,
+                Invocation.method(#getVMTimelineMicros, []),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Timestamp>);
 
   @override
-  _i3.Future<_i2.Success> pause(String? isolateId) => (super.noSuchMethod(
-        Invocation.method(
-          #pause,
-          [isolateId],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #pause,
-            [isolateId],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+  _i3.Future<_i2.Success> pause(String? isolateId) =>
+      (super.noSuchMethod(
+            Invocation.method(#pause, [isolateId]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(this, Invocation.method(#pause, [isolateId])),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
-  _i3.Future<_i2.Success> kill(String? isolateId) => (super.noSuchMethod(
-        Invocation.method(
-          #kill,
-          [isolateId],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #kill,
-            [isolateId],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+  _i3.Future<_i2.Success> kill(String? isolateId) =>
+      (super.noSuchMethod(
+            Invocation.method(#kill, [isolateId]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(this, Invocation.method(#kill, [isolateId])),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.UriList> lookupResolvedPackageUris(
@@ -1487,26 +1175,23 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     bool? local,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #lookupResolvedPackageUris,
-          [
-            isolateId,
-            uris,
-          ],
-          {#local: local},
-        ),
-        returnValue: _i3.Future<_i2.UriList>.value(_FakeUriList_30(
-          this,
-          Invocation.method(
-            #lookupResolvedPackageUris,
-            [
-              isolateId,
-              uris,
-            ],
-            {#local: local},
-          ),
-        )),
-      ) as _i3.Future<_i2.UriList>);
+            Invocation.method(
+              #lookupResolvedPackageUris,
+              [isolateId, uris],
+              {#local: local},
+            ),
+            returnValue: _i3.Future<_i2.UriList>.value(
+              _FakeUriList_30(
+                this,
+                Invocation.method(
+                  #lookupResolvedPackageUris,
+                  [isolateId, uris],
+                  {#local: local},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.UriList>);
 
   @override
   _i3.Future<_i2.UriList> lookupPackageUris(
@@ -1514,49 +1199,28 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     List<String>? uris,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #lookupPackageUris,
-          [
-            isolateId,
-            uris,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.UriList>.value(_FakeUriList_30(
-          this,
-          Invocation.method(
-            #lookupPackageUris,
-            [
-              isolateId,
-              uris,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.UriList>);
+            Invocation.method(#lookupPackageUris, [isolateId, uris]),
+            returnValue: _i3.Future<_i2.UriList>.value(
+              _FakeUriList_30(
+                this,
+                Invocation.method(#lookupPackageUris, [isolateId, uris]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.UriList>);
 
   @override
-  _i3.Future<_i2.Success> registerService(
-    String? service,
-    String? alias,
-  ) =>
+  _i3.Future<_i2.Success> registerService(String? service, String? alias) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #registerService,
-          [
-            service,
-            alias,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #registerService,
-            [
-              service,
-              alias,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(#registerService, [service, alias]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#registerService, [service, alias]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.ReloadReport> reloadSources(
@@ -1567,30 +1231,33 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? packagesUri,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #reloadSources,
-          [isolateId],
-          {
-            #force: force,
-            #pause: pause,
-            #rootLibUri: rootLibUri,
-            #packagesUri: packagesUri,
-          },
-        ),
-        returnValue: _i3.Future<_i2.ReloadReport>.value(_FakeReloadReport_31(
-          this,
-          Invocation.method(
-            #reloadSources,
-            [isolateId],
-            {
-              #force: force,
-              #pause: pause,
-              #rootLibUri: rootLibUri,
-              #packagesUri: packagesUri,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.ReloadReport>);
+            Invocation.method(
+              #reloadSources,
+              [isolateId],
+              {
+                #force: force,
+                #pause: pause,
+                #rootLibUri: rootLibUri,
+                #packagesUri: packagesUri,
+              },
+            ),
+            returnValue: _i3.Future<_i2.ReloadReport>.value(
+              _FakeReloadReport_31(
+                this,
+                Invocation.method(
+                  #reloadSources,
+                  [isolateId],
+                  {
+                    #force: force,
+                    #pause: pause,
+                    #rootLibUri: rootLibUri,
+                    #packagesUri: packagesUri,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.ReloadReport>);
 
   @override
   _i3.Future<_i2.Success> removeBreakpoint(
@@ -1598,40 +1265,28 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? breakpointId,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #removeBreakpoint,
-          [
-            isolateId,
-            breakpointId,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #removeBreakpoint,
-            [
-              isolateId,
-              breakpointId,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(#removeBreakpoint, [isolateId, breakpointId]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#removeBreakpoint, [isolateId, breakpointId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.Success> requestHeapSnapshot(String? isolateId) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #requestHeapSnapshot,
-          [isolateId],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #requestHeapSnapshot,
-            [isolateId],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(#requestHeapSnapshot, [isolateId]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#requestHeapSnapshot, [isolateId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.Success> resume(
@@ -1640,26 +1295,23 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     int? frameIndex,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #resume,
-          [isolateId],
-          {
-            #step: step,
-            #frameIndex: frameIndex,
-          },
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #resume,
-            [isolateId],
-            {
-              #step: step,
-              #frameIndex: frameIndex,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(
+              #resume,
+              [isolateId],
+              {#step: step, #frameIndex: frameIndex},
+            ),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(
+                  #resume,
+                  [isolateId],
+                  {#step: step, #frameIndex: frameIndex},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.Breakpoint> setBreakpointState(
@@ -1668,26 +1320,23 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     bool? enable,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #setBreakpointState,
-          [
-            isolateId,
-            breakpointId,
-            enable,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Breakpoint>.value(_FakeBreakpoint_0(
-          this,
-          Invocation.method(
-            #setBreakpointState,
-            [
+            Invocation.method(#setBreakpointState, [
               isolateId,
               breakpointId,
               enable,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Breakpoint>);
+            ]),
+            returnValue: _i3.Future<_i2.Breakpoint>.value(
+              _FakeBreakpoint_0(
+                this,
+                Invocation.method(#setBreakpointState, [
+                  isolateId,
+                  breakpointId,
+                  enable,
+                ]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Breakpoint>);
 
   @override
   _i3.Future<_i2.Success> setExceptionPauseMode(
@@ -1695,24 +1344,15 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? mode,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #setExceptionPauseMode,
-          [
-            isolateId,
-            mode,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #setExceptionPauseMode,
-            [
-              isolateId,
-              mode,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(#setExceptionPauseMode, [isolateId, mode]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#setExceptionPauseMode, [isolateId, mode]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.Success> setIsolatePauseMode(
@@ -1721,51 +1361,39 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     bool? shouldPauseOnExit,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #setIsolatePauseMode,
-          [isolateId],
-          {
-            #exceptionPauseMode: exceptionPauseMode,
-            #shouldPauseOnExit: shouldPauseOnExit,
-          },
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #setIsolatePauseMode,
-            [isolateId],
-            {
-              #exceptionPauseMode: exceptionPauseMode,
-              #shouldPauseOnExit: shouldPauseOnExit,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(
+              #setIsolatePauseMode,
+              [isolateId],
+              {
+                #exceptionPauseMode: exceptionPauseMode,
+                #shouldPauseOnExit: shouldPauseOnExit,
+              },
+            ),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(
+                  #setIsolatePauseMode,
+                  [isolateId],
+                  {
+                    #exceptionPauseMode: exceptionPauseMode,
+                    #shouldPauseOnExit: shouldPauseOnExit,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
-  _i3.Future<_i2.Response> setFlag(
-    String? name,
-    String? value,
-  ) =>
+  _i3.Future<_i2.Response> setFlag(String? name, String? value) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #setFlag,
-          [
-            name,
-            value,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
-          this,
-          Invocation.method(
-            #setFlag,
-            [
-              name,
-              value,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Response>);
+            Invocation.method(#setFlag, [name, value]),
+            returnValue: _i3.Future<_i2.Response>.value(
+              _FakeResponse_3(this, Invocation.method(#setFlag, [name, value])),
+            ),
+          )
+          as _i3.Future<_i2.Response>);
 
   @override
   _i3.Future<_i2.Success> setLibraryDebuggable(
@@ -1774,51 +1402,36 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     bool? isDebuggable,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #setLibraryDebuggable,
-          [
-            isolateId,
-            libraryId,
-            isDebuggable,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #setLibraryDebuggable,
-            [
+            Invocation.method(#setLibraryDebuggable, [
               isolateId,
               libraryId,
               isDebuggable,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            ]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#setLibraryDebuggable, [
+                  isolateId,
+                  libraryId,
+                  isDebuggable,
+                ]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
-  _i3.Future<_i2.Success> setName(
-    String? isolateId,
-    String? name,
-  ) =>
+  _i3.Future<_i2.Success> setName(String? isolateId, String? name) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #setName,
-          [
-            isolateId,
-            name,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #setName,
-            [
-              isolateId,
-              name,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(#setName, [isolateId, name]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#setName, [isolateId, name]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.Success> setTraceClassAllocation(
@@ -1827,103 +1440,85 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     bool? enable,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #setTraceClassAllocation,
-          [
-            isolateId,
-            classId,
-            enable,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #setTraceClassAllocation,
-            [
+            Invocation.method(#setTraceClassAllocation, [
               isolateId,
               classId,
               enable,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            ]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#setTraceClassAllocation, [
+                  isolateId,
+                  classId,
+                  enable,
+                ]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
-  _i3.Future<_i2.Success> setVMName(String? name) => (super.noSuchMethod(
-        Invocation.method(
-          #setVMName,
-          [name],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #setVMName,
-            [name],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+  _i3.Future<_i2.Success> setVMName(String? name) =>
+      (super.noSuchMethod(
+            Invocation.method(#setVMName, [name]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(this, Invocation.method(#setVMName, [name])),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.Success> setVMTimelineFlags(List<String>? recordedStreams) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #setVMTimelineFlags,
-          [recordedStreams],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #setVMTimelineFlags,
-            [recordedStreams],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(#setVMTimelineFlags, [recordedStreams]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#setVMTimelineFlags, [recordedStreams]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
-  _i3.Future<_i2.Success> streamCancel(String? streamId) => (super.noSuchMethod(
-        Invocation.method(
-          #streamCancel,
-          [streamId],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #streamCancel,
-            [streamId],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+  _i3.Future<_i2.Success> streamCancel(String? streamId) =>
+      (super.noSuchMethod(
+            Invocation.method(#streamCancel, [streamId]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#streamCancel, [streamId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.Success> streamCpuSamplesWithUserTag(List<String>? userTags) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #streamCpuSamplesWithUserTag,
-          [userTags],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #streamCpuSamplesWithUserTag,
-            [userTags],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+            Invocation.method(#streamCpuSamplesWithUserTag, [userTags]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#streamCpuSamplesWithUserTag, [userTags]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
-  _i3.Future<_i2.Success> streamListen(String? streamId) => (super.noSuchMethod(
-        Invocation.method(
-          #streamListen,
-          [streamId],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #streamListen,
-            [streamId],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
+  _i3.Future<_i2.Success> streamListen(String? streamId) =>
+      (super.noSuchMethod(
+            Invocation.method(#streamListen, [streamId]),
+            returnValue: _i3.Future<_i2.Success>.value(
+              _FakeSuccess_1(
+                this,
+                Invocation.method(#streamListen, [streamId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Success>);
 
   @override
   _i3.Future<_i2.Response> callMethod(
@@ -1932,26 +1527,23 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     Map<String, dynamic>? args,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #callMethod,
-          [method],
-          {
-            #isolateId: isolateId,
-            #args: args,
-          },
-        ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
-          this,
-          Invocation.method(
-            #callMethod,
-            [method],
-            {
-              #isolateId: isolateId,
-              #args: args,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Response>);
+            Invocation.method(
+              #callMethod,
+              [method],
+              {#isolateId: isolateId, #args: args},
+            ),
+            returnValue: _i3.Future<_i2.Response>.value(
+              _FakeResponse_3(
+                this,
+                Invocation.method(
+                  #callMethod,
+                  [method],
+                  {#isolateId: isolateId, #args: args},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i2.Response>);
 
   @override
   _i3.Future<_i2.Response> callServiceExtension(
@@ -1960,88 +1552,56 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     Map<String, dynamic>? args,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #callServiceExtension,
-          [method],
-          {
-            #isolateId: isolateId,
-            #args: args,
-          },
-        ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
-          this,
-          Invocation.method(
-            #callServiceExtension,
-            [method],
-            {
-              #isolateId: isolateId,
-              #args: args,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Response>);
-
-  @override
-  _i3.Future<void> dispose() => (super.noSuchMethod(
-        Invocation.method(
-          #dispose,
-          [],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
-
-  @override
-  _i3.Future<T> wrapFuture<T>(
-    String? name,
-    _i3.Future<T>? future,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #wrapFuture,
-          [
-            name,
-            future,
-          ],
-        ),
-        returnValue: _i4.ifNotNull(
-              _i4.dummyValueOrNull<T>(
+            Invocation.method(
+              #callServiceExtension,
+              [method],
+              {#isolateId: isolateId, #args: args},
+            ),
+            returnValue: _i3.Future<_i2.Response>.value(
+              _FakeResponse_3(
                 this,
                 Invocation.method(
-                  #wrapFuture,
-                  [
-                    name,
-                    future,
-                  ],
+                  #callServiceExtension,
+                  [method],
+                  {#isolateId: isolateId, #args: args},
                 ),
               ),
-              (T v) => _i3.Future<T>.value(v),
-            ) ??
-            _FakeFuture_32<T>(
-              this,
-              Invocation.method(
-                #wrapFuture,
-                [
-                  name,
-                  future,
-                ],
-              ),
             ),
-      ) as _i3.Future<T>);
+          )
+          as _i3.Future<_i2.Response>);
 
   @override
-  void registerServiceCallback(
-    String? service,
-    _i2.ServiceCallback? cb,
-  ) =>
+  _i3.Future<void> dispose() =>
+      (super.noSuchMethod(
+            Invocation.method(#dispose, []),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<T> wrapFuture<T>(String? name, _i3.Future<T>? future) =>
+      (super.noSuchMethod(
+            Invocation.method(#wrapFuture, [name, future]),
+            returnValue:
+                _i4.ifNotNull(
+                  _i4.dummyValueOrNull<T>(
+                    this,
+                    Invocation.method(#wrapFuture, [name, future]),
+                  ),
+                  (T v) => _i3.Future<T>.value(v),
+                ) ??
+                _FakeFuture_32<T>(
+                  this,
+                  Invocation.method(#wrapFuture, [name, future]),
+                ),
+          )
+          as _i3.Future<T>);
+
+  @override
+  void registerServiceCallback(String? service, _i2.ServiceCallback? cb) =>
       super.noSuchMethod(
-        Invocation.method(
-          #registerServiceCallback,
-          [
-            service,
-            cb,
-          ],
-        ),
+        Invocation.method(#registerServiceCallback, [service, cb]),
         returnValueForMissingStub: null,
       );
 }

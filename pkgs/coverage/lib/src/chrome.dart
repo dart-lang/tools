@@ -65,9 +65,11 @@ Future<Map<String, dynamic>> parseChromeCoverage(
 
         final sourceLine = columnEntry.sourceLine!;
         final current = coverage[sourceLine + 1] ?? false;
-        coverage[sourceLine + 1] = current ||
+        coverage[sourceLine + 1] =
+            current ||
             coveredPositions.contains(
-                _Position(lineEntry.line + 1, columnEntry.column + 1));
+              _Position(lineEntry.line + 1, columnEntry.column + 1),
+            );
       }
     }
   }
@@ -90,7 +92,9 @@ Future<Map<String, dynamic>> parseChromeCoverage(
 
 /// Returns all covered positions in a provided source.
 Set<_Position> _coveredPositions(
-    String compiledSource, List<bool> offsetCoverage) {
+  String compiledSource,
+  List<bool> offsetCoverage,
+) {
   final positions = <_Position>{};
   // Line is 1 based.
   var line = 1;
@@ -115,11 +119,13 @@ List<_CoverageInfo> _coverageInfoFor(Map<String, dynamic> entry) {
       in (entry['functions'] as List).cast<Map<String, dynamic>>()) {
     for (var range
         in (functions['ranges'] as List).cast<Map<String, dynamic>>()) {
-      result.add(_CoverageInfo(
-        range['startOffset'] as int,
-        range['endOffset'] as int,
-        (range['count'] as int) > 0,
-      ));
+      result.add(
+        _CoverageInfo(
+          range['startOffset'] as int,
+          range['endOffset'] as int,
+          (range['count'] as int) > 0,
+        ),
+      );
     }
   }
   return result;
@@ -131,8 +137,10 @@ List<bool> _offsetCoverage(List<_CoverageInfo> coverageInfo, int sourceLength) {
 
   // Sort coverage information by their size.
   // Coverage information takes granularity as precedence.
-  coverageInfo.sort((a, b) =>
-      (b.endOffset - b.startOffset).compareTo(a.endOffset - a.startOffset));
+  coverageInfo.sort(
+    (a, b) =>
+        (b.endOffset - b.startOffset).compareTo(a.endOffset - a.startOffset),
+  );
 
   for (var range in coverageInfo) {
     for (var i = range.startOffset; i < range.endOffset; i++) {

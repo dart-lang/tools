@@ -282,23 +282,6 @@ const scopingElements = {
   (Namespaces.svg, 'title')
 };
 
-const formattingElements = {
-  (Namespaces.html, 'a'),
-  (Namespaces.html, 'b'),
-  (Namespaces.html, 'big'),
-  (Namespaces.html, 'code'),
-  (Namespaces.html, 'em'),
-  (Namespaces.html, 'font'),
-  (Namespaces.html, 'i'),
-  (Namespaces.html, 'nobr'),
-  (Namespaces.html, 's'),
-  (Namespaces.html, 'small'),
-  (Namespaces.html, 'strike'),
-  (Namespaces.html, 'strong'),
-  (Namespaces.html, 'tt'),
-  (Namespaces.html, '')
-};
-
 const specialElements = {
   (Namespaces.html, 'address'),
   (Namespaces.html, 'applet'),
@@ -559,45 +542,6 @@ const rcdataElements = {
   'noframes',
   'noscript'
 };
-
-// entitiesWindows1252 has to be _ordered_ and needs to have an index. It
-// therefore can't be a frozenset.
-const List<int> entitiesWindows1252 = [
-  8364, // 0x80  0x20AC  EURO SIGN
-  65533, // 0x81          UNDEFINED
-  8218, // 0x82  0x201A  SINGLE LOW-9 QUOTATION MARK
-  402, // 0x83  0x0192  LATIN SMALL LETTER F WITH HOOK
-  8222, // 0x84  0x201E  DOUBLE LOW-9 QUOTATION MARK
-  8230, // 0x85  0x2026  HORIZONTAL ELLIPSIS
-  8224, // 0x86  0x2020  DAGGER
-  8225, // 0x87  0x2021  DOUBLE DAGGER
-  710, // 0x88  0x02C6  MODIFIER LETTER CIRCUMFLEX ACCENT
-  8240, // 0x89  0x2030  PER MILLE SIGN
-  352, // 0x8A  0x0160  LATIN CAPITAL LETTER S WITH CARON
-  8249, // 0x8B  0x2039  SINGLE LEFT-POINTING ANGLE QUOTATION MARK
-  338, // 0x8C  0x0152  LATIN CAPITAL LIGATURE OE
-  65533, // 0x8D          UNDEFINED
-  381, // 0x8E  0x017D  LATIN CAPITAL LETTER Z WITH CARON
-  65533, // 0x8F          UNDEFINED
-  65533, // 0x90          UNDEFINED
-  8216, // 0x91  0x2018  LEFT SINGLE QUOTATION MARK
-  8217, // 0x92  0x2019  RIGHT SINGLE QUOTATION MARK
-  8220, // 0x93  0x201C  LEFT DOUBLE QUOTATION MARK
-  8221, // 0x94  0x201D  RIGHT DOUBLE QUOTATION MARK
-  8226, // 0x95  0x2022  BULLET
-  8211, // 0x96  0x2013  EN DASH
-  8212, // 0x97  0x2014  EM DASH
-  732, // 0x98  0x02DC  SMALL TILDE
-  8482, // 0x99  0x2122  TRADE MARK SIGN
-  353, // 0x9A  0x0161  LATIN SMALL LETTER S WITH CARON
-  8250, // 0x9B  0x203A  SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
-  339, // 0x9C  0x0153  LATIN SMALL LIGATURE OE
-  65533, // 0x9D          UNDEFINED
-  382, // 0x9E  0x017E  LATIN SMALL LETTER Z WITH CARON
-  376 // 0x9F  0x0178  LATIN CAPITAL LETTER Y WITH DIAERESIS
-];
-
-const xmlEntities = ['lt;', 'gt;', 'amp;', 'apos;', 'quot;'];
 
 const Map<String, String> entities = {
   'AElig': '\xc6',

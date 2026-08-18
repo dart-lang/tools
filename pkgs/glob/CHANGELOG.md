@@ -1,9 +1,11 @@
-## 2.1.4-wip
+## 2.2.0-wip
 
 - Limit option expansion during glob listing (`list()` and `listSync()`) to a
   maximum of 10,000 branches. Globs with combinatorial option expansions
   exceeding 10,000 will now throw a `FormatException` to prevent out-of-memory
   exhaustion. `Glob.matches()` uses regular expressions and is unaffected.
+- Allow `**` to match zero directories at the start of a pattern or following
+  a separator (e.g. `**/foo` matches `foo` and `a/**/b` matches `a/b`).
 
 ## 2.1.3
 

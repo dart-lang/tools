@@ -30,8 +30,8 @@ void main() {
     final files = filesToProcess(testDir.path);
     expect(files.length, equals(2));
     expect(
-        files.map((f) => f.path),
-        containsAll(
-            [endsWith('coverage_a.json'), endsWith('coverage_b.json')]));
+      files.map((f) => f.path),
+      containsAll([endsWith('coverage_a.json'), endsWith('coverage_b.json')]),
+    );
   });
 }
