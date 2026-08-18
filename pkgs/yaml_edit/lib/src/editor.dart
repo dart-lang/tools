@@ -290,6 +290,28 @@ class YamlEditor {
     return true;
   }
 
+  Set<String> _collectSubAnchorTags(YamlNode node) {
+    final tags = <String>{};
+    void walk(YamlNode current) {
+      if (current is YamlMap) {
+        for (final entry in current.nodes.entries) {
+          final tag = getAnchorTag(current, entry.key);
+          if (tag != null) tags.add(tag);
+          walk(entry.value);
+        }
+      } else if (current is YamlList) {
+        for (var i = 0; i < current.nodes.length; i++) {
+          final tag = getAnchorTag(current, i);
+          if (tag != null) tags.add(tag);
+          walk(current.nodes[i]);
+        }
+      }
+    }
+
+    walk(node);
+    return tags;
+  }
+
   String _getUnfoldedText(
     YamlNode parentOfAnchor,
     Object? keyOfAnchor,
@@ -308,6 +330,14 @@ class YamlEditor {
       } else {
         text = '';
       }
+    }
+
+    // Strip nested sub-anchor definition tags to prevent duplicate anchor
+    // definitions.
+    final subAnchorTags = _collectSubAnchorTags(anchorNode);
+    for (final tag in subAnchorTags) {
+      text = text.replaceAll('$tag ', '');
+      text = text.replaceAll(RegExp('${RegExp.escape(tag)}\\r?\\n'), '\n');
     }
 
     if (anchorNode is YamlMap || anchorNode is YamlList) {
@@ -962,8 +992,12 @@ class YamlEditor {
   /// Returns the clean anchor tag (`&anchorName`) associated with the node
   /// at [keyOrIndex] inside [parentCollection], or `null` if none exists.
   String? getAnchorTag(YamlNode parentCollection, Object? keyOrIndex) {
-    if (!isAnchorDefinition(parentCollection, keyOrIndex)) return null;
-    final span = getTrueSpan(parentCollection, keyOrIndex);
+    final unwrappedKey = keyOrIndex is YamlNode ? keyOrIndex.value : keyOrIndex;
+    if (_aliasReferenceSpans[_AliasEntryKey(parentCollection, unwrappedKey)] !=
+        null) {
+      return null;
+    }
+    final span = getTrueSpan(parentCollection, unwrappedKey);
     final text = span.text;
     if (text.startsWith('&')) {
       final idx = text.indexOf(RegExp(r'\s'));

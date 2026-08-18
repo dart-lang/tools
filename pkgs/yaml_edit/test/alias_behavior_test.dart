@@ -496,5 +496,31 @@ custom_job:
       expect(doc.parseAt(['custom_job', 'env', 'ZONE']).value,
           equals('us-central1-b'));
     });
+
+    test('copyOnWrite strips nested sub-anchor definitions when unfolding', () {
+      final doc = YamlEditor(
+        '''
+template: &job
+  timeout: &t 30
+  env: prod
+
+custom_job: *job
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['custom_job', 'env'], 'dev');
+      expect(doc.toString(), equals('''
+template: &job
+  timeout: &t 30
+  env: prod
+
+custom_job:
+  timeout: 30
+  env: dev
+'''));
+      expect(doc.parseAt(['template', 'timeout']).value, equals(30));
+      expect(doc.parseAt(['custom_job', 'timeout']).value, equals(30));
+    });
   });
 }
