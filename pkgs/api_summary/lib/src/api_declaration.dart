@@ -496,18 +496,19 @@ final class ApiTypeAlias extends ApiDeclaration {
 
 /// Convenience extensions for querying `package:meta` contractual annotations.
 extension ApiDeclarationMetaSugar on ApiDeclaration {
-  bool get isExperimental => hasMeta(MetaContract.experimental);
-  bool get isImmutable => hasMeta(MetaContract.immutable);
-  bool get isInternal => hasMeta(MetaContract.internal);
-  bool get isMustBeOverridden => hasMeta(MetaContract.mustBeOverridden);
-  bool get isMustCallSuper => hasMeta(MetaContract.mustCallSuper);
-  bool get isNonVirtual => hasMeta(MetaContract.nonVirtual);
-  bool get isProtected => hasMeta(MetaContract.protected);
-  bool get isUseResult => hasMeta(MetaContract.useResult);
-  bool get isVisibleForOverriding => hasMeta(MetaContract.visibleForOverriding);
-  bool get isVisibleForTesting => hasMeta(MetaContract.visibleForTesting);
+  bool get isExperimental => _hasMeta(MetaContract.experimental);
+  bool get isImmutable => _hasMeta(MetaContract.immutable);
+  bool get isInternal => _hasMeta(MetaContract.internal);
+  bool get isMustBeOverridden => _hasMeta(MetaContract.mustBeOverridden);
+  bool get isMustCallSuper => _hasMeta(MetaContract.mustCallSuper);
+  bool get isNonVirtual => _hasMeta(MetaContract.nonVirtual);
+  bool get isProtected => _hasMeta(MetaContract.protected);
+  bool get isUseResult => _hasMeta(MetaContract.useResult);
+  bool get isVisibleForOverriding =>
+      _hasMeta(MetaContract.visibleForOverriding);
+  bool get isVisibleForTesting => _hasMeta(MetaContract.visibleForTesting);
 
-  bool hasMeta(MetaContract contract) => traits.any(
+  bool _hasMeta(MetaContract contract) => traits.any(
     (trait) => trait is MetaContractTrait && trait.contracts.contains(contract),
   );
 }
