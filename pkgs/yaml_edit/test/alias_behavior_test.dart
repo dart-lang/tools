@@ -13,7 +13,7 @@ void main() {
     test('throws AliasException on any alias touch', () {
       final doc = YamlEditor('''
 a: &user
-  name: Sigurd
+  name: Alice
 b: *user
 ''');
       expect(() => doc.update(['b', 'name'], 'John'), throwsAliasException);
@@ -28,7 +28,7 @@ b: *user
       final doc = YamlEditor(
         '''
 a: &user
-  name: Sigurd
+  name: Alice
   role: dev
 b: *user
 ''',
@@ -38,7 +38,7 @@ b: *user
       doc.update(['b', 'role'], 'lead');
       expect(doc.toString(), equals('''
 a: &user
-  name: Sigurd
+  name: Alice
   role: lead
 b: *user
 '''));
@@ -50,7 +50,7 @@ b: *user
       final doc = YamlEditor(
         '''
 a: &user
-  name: Sigurd
+  name: Alice
   role: dev
 b: *user
 ''',
@@ -60,7 +60,7 @@ b: *user
       doc.update(['a', 'role'], 'lead');
       expect(doc.toString(), equals('''
 a: &user
-  name: Sigurd
+  name: Alice
   role: lead
 b: *user
 '''));
@@ -126,7 +126,7 @@ b: *SS
     test('replacing flow map anchor definition preserves anchor tag and space',
         () {
       final doc = YamlEditor(
-        '{a: &user {name: Sigurd}, b: *user}',
+        '{a: &user {name: Alice}, b: *user}',
         aliasBehavior: AliasBehavior.reference,
       );
 
@@ -288,7 +288,7 @@ list2: *nums
     test('flow map alias reference updates cleanly under reference', () {
       final doc = YamlEditor(
         '''
-a: &user { name: Sigurd, role: dev }
+a: &user { name: Alice, role: dev }
 b: *user
 ''',
         aliasBehavior: AliasBehavior.reference,
@@ -337,7 +337,7 @@ b: *user
       final doc = YamlEditor(
         '''
 a: &user
-  name: Sigurd
+  name: Alice
   role: dev
 b: *user
 ''',
@@ -347,10 +347,10 @@ b: *user
       doc.update(['b', 'role'], 'lead');
       expect(doc.toString(), equals('''
 a: &user
-  name: Sigurd
+  name: Alice
   role: dev
 b:
-  name: Sigurd
+  name: Alice
   role: lead
 '''));
       expect(doc.parseAt(['a', 'role']).value, equals('dev'));
@@ -361,7 +361,7 @@ b:
       final doc = YamlEditor(
         '''
 a: &user
-  name: Sigurd
+  name: Alice
   role: dev
 b: *user
 ''',
@@ -371,7 +371,7 @@ b: *user
       doc.update(['a', 'role'], 'lead');
       expect(doc.toString(), equals('''
 a: &user
-  name: Sigurd
+  name: Alice
   role: lead
 b: *user
 '''));
