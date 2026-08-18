@@ -4945,27 +4945,6 @@
           },
           "methods": [
             {
-              "name": "hasMeta",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              },
-              "parameters": [
-                {
-                  "name": "contract",
-                  "type": {
-                    "kind": "interface",
-                    "name": "MetaContract",
-                    "libraryUri": "package:api_summary/src/api_trait.dart"
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
-            {
               "name": "isExperimental",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",

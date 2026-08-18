@@ -235,7 +235,6 @@ package:api_summary/api_summary.dart:
     isUseResult (getter: bool)
     isVisibleForOverriding (getter: bool)
     isVisibleForTesting (getter: bool)
-    hasMeta (method: bool Function(MetaContract))
 dart:async:
   Future (referenced)
 dart:core:
