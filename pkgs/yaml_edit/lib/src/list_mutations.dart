@@ -103,8 +103,46 @@ SourceEdit removeInList(YamlEditor yamlEdit, YamlList list, int index) {
 /// flow list.
 SourceEdit _appendToFlowList(
     YamlEditor yamlEdit, YamlList list, YamlNode item) {
-  final valueString = _formatNewFlow(list, item, true);
+  if (list.isEmpty) {
+    final valueString = _formatNewFlow(list, item, true);
+    return SourceEdit(list.span.end.offset - 1, 0, valueString);
+  }
+
+  final yaml = yamlEdit.toString();
+  final lastNode = list.nodes.last;
+  final between =
+      yaml.substring(lastNode.span.end.offset, list.span.end.offset - 1);
+  final hasTrailing = _betweenHasTrailingComma(between);
+
+  String valueString;
+  if (hasTrailing) {
+    valueString = yamlEncodeFlow(item);
+    if (!RegExp(r'\s$').hasMatch(between)) {
+      valueString = ' $valueString';
+    }
+    valueString += ',';
+  } else {
+    valueString = _formatNewFlow(list, item, true);
+  }
+
   return SourceEdit(list.span.end.offset - 1, 0, valueString);
+}
+
+bool _betweenHasTrailingComma(String between) {
+  for (var i = 0; i < between.length; i++) {
+    final char = between[i];
+    if (char == '#') {
+      // skip to next newline
+      final nextNewline = between.indexOf('\n', i);
+      if (nextNewline == -1) break;
+      i = nextNewline;
+      continue;
+    }
+    if (char == ',') {
+      return true;
+    }
+  }
+  return false;
 }
 
 /// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
