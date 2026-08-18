@@ -210,6 +210,10 @@ class SequenceNode extends AstNode {
     while (i < nodes.length) {
       var node = nodes[i];
       if (node is DoubleStarNode && _isDirBoundary(i)) {
+        // A `**/` may match a zero-length subset of the path, but the
+        // following `/` on its own requires a directory separator. Encode the
+        // following `/` as part of the overall optional segment instead of
+        // separately as a subsequent segment.
         buffer.write(node._toRegExp(followedBySlash: true));
         var next = nodes[++i] as LiteralNode;
         var remaining = next.text.substring(1);
@@ -222,6 +226,10 @@ class SequenceNode extends AstNode {
     return buffer.toString();
   }
 
+  /// Whether the node at index [i] is bounded by directory separators.
+  ///
+  /// A node is at a directory boundary if the next node starts with `/`, and
+  /// either it is the first node or the previous node ends with `/`.
   bool _isDirBoundary(int i) {
     if (i + 1 >= nodes.length) return false;
     if (nodes[i + 1] case LiteralNode(text: final nextText)
