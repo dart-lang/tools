@@ -147,13 +147,8 @@ void main() {
         packagePath: p.join(d.sandbox, 'foo'),
         sdkRoot: p.join(d.sandbox, 'sdk'),
       );
-      final outsideFile = File(
-        p.join(
-          Directory.systemTemp.createTempSync('coverage_test_').path,
-          'secret.txt',
-        ),
-      )..writeAsStringSync('should not leak');
-      addTearDown(() => outsideFile.parent.deleteSync(recursive: true));
+      final outsideFile = File(p.join(d.sandbox, 'outside.txt'))
+        ..writeAsStringSync('should not leak');
 
       expect(resolver.resolve(p.toUri(outsideFile.path).toString()), null);
     });
