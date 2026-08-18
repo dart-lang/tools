@@ -494,24 +494,5 @@ final class ApiTypeAlias extends ApiDeclaration {
   };
 }
 
-/// Convenience extensions for querying `package:meta` contractual annotations.
-extension ApiDeclarationMetaSugar on ApiDeclaration {
-  bool get isExperimental => _hasMeta(MetaContract.experimental);
-  bool get isImmutable => _hasMeta(MetaContract.immutable);
-  bool get isInternal => _hasMeta(MetaContract.internal);
-  bool get isMustBeOverridden => _hasMeta(MetaContract.mustBeOverridden);
-  bool get isMustCallSuper => _hasMeta(MetaContract.mustCallSuper);
-  bool get isNonVirtual => _hasMeta(MetaContract.nonVirtual);
-  bool get isProtected => _hasMeta(MetaContract.protected);
-  bool get isUseResult => _hasMeta(MetaContract.useResult);
-  bool get isVisibleForOverriding =>
-      _hasMeta(MetaContract.visibleForOverriding);
-  bool get isVisibleForTesting => _hasMeta(MetaContract.visibleForTesting);
-
-  bool _hasMeta(MetaContract contract) => traits.any(
-    (trait) => trait is MetaContractTrait && trait.contracts.contains(contract),
-  );
-}
-
 ApiDeclarationStatus _parseStatus(Map<String, dynamic> json) =>
     ApiDeclarationStatus.values.byName(json['status'] as String? ?? 'public');

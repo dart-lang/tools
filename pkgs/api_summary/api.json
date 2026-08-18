@@ -3819,7 +3819,7 @@
         },
         {
           "name": "MetaContractTrait",
-          "locationUri": "package:api_summary/src/api_trait.dart",
+          "locationUri": "package:api_summary/src/meta_trait.dart",
           "supertype": {
             "kind": "interface",
             "name": "Object",
@@ -3838,12 +3838,12 @@
           "constructors": [
             {
               "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "constructor",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContractTrait",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "parameters": [
                 {
@@ -3869,12 +3869,12 @@
             },
             {
               "name": "new",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "constructor",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContractTrait",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "parameters": [
                 {
@@ -3887,7 +3887,7 @@
                       {
                         "kind": "interface",
                         "name": "MetaContract",
-                        "libraryUri": "package:api_summary/src/api_trait.dart"
+                        "libraryUri": "package:api_summary/src/meta_trait.dart"
                       }
                     ]
                   },
@@ -3899,7 +3899,7 @@
           "methods": [
             {
               "name": "==",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",
@@ -3920,7 +3920,7 @@
             },
             {
               "name": "compareTo",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",
@@ -3941,7 +3941,7 @@
             },
             {
               "name": "contracts",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -3951,14 +3951,14 @@
                   {
                     "kind": "interface",
                     "name": "MetaContract",
-                    "libraryUri": "package:api_summary/src/api_trait.dart"
+                    "libraryUri": "package:api_summary/src/meta_trait.dart"
                   }
                 ]
               }
             },
             {
               "name": "hashCode",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -3968,7 +3968,7 @@
             },
             {
               "name": "namespace",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -3978,7 +3978,7 @@
             },
             {
               "name": "parentheticalSegments",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -3995,7 +3995,7 @@
             },
             {
               "name": "toJson",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",
@@ -4308,7 +4308,7 @@
         },
         {
           "name": "MetaContract",
-          "locationUri": "package:api_summary/src/api_trait.dart",
+          "locationUri": "package:api_summary/src/meta_trait.dart",
           "interfaces": [
             {
               "kind": "interface",
@@ -4318,7 +4318,7 @@
                 {
                   "kind": "interface",
                   "name": "MetaContract",
-                  "libraryUri": "package:api_summary/src/api_trait.dart"
+                  "libraryUri": "package:api_summary/src/meta_trait.dart"
                 }
               ]
             }
@@ -4326,7 +4326,7 @@
           "methods": [
             {
               "name": "compareTo",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "method",
               "returnType": {
                 "kind": "interface",
@@ -4339,7 +4339,7 @@
                   "type": {
                     "kind": "interface",
                     "name": "MetaContract",
-                    "libraryUri": "package:api_summary/src/api_trait.dart"
+                    "libraryUri": "package:api_summary/src/meta_trait.dart"
                   },
                   "isRequired": true
                 }
@@ -4347,12 +4347,12 @@
             },
             {
               "name": "experimental",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContract",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "isConst": true,
               "isEnumConstant": true,
@@ -4360,12 +4360,12 @@
             },
             {
               "name": "immutable",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContract",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "isConst": true,
               "isEnumConstant": true,
@@ -4373,12 +4373,12 @@
             },
             {
               "name": "internal",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContract",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "isConst": true,
               "isEnumConstant": true,
@@ -4386,12 +4386,12 @@
             },
             {
               "name": "mustBeOverridden",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContract",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "isConst": true,
               "isEnumConstant": true,
@@ -4399,12 +4399,12 @@
             },
             {
               "name": "mustCallSuper",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContract",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "isConst": true,
               "isEnumConstant": true,
@@ -4412,12 +4412,12 @@
             },
             {
               "name": "nonVirtual",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContract",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "isConst": true,
               "isEnumConstant": true,
@@ -4425,12 +4425,12 @@
             },
             {
               "name": "protected",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContract",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "isConst": true,
               "isEnumConstant": true,
@@ -4438,7 +4438,7 @@
             },
             {
               "name": "textLabel",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4448,12 +4448,12 @@
             },
             {
               "name": "useResult",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContract",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "isConst": true,
               "isEnumConstant": true,
@@ -4461,7 +4461,7 @@
             },
             {
               "name": "values",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4471,7 +4471,7 @@
                   {
                     "kind": "interface",
                     "name": "MetaContract",
-                    "libraryUri": "package:api_summary/src/api_trait.dart"
+                    "libraryUri": "package:api_summary/src/meta_trait.dart"
                   }
                 ]
               },
@@ -4480,12 +4480,12 @@
             },
             {
               "name": "visibleForOverriding",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContract",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "isConst": true,
               "isEnumConstant": true,
@@ -4493,12 +4493,12 @@
             },
             {
               "name": "visibleForTesting",
-              "locationUri": "package:api_summary/src/api_trait.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
                 "name": "MetaContract",
-                "libraryUri": "package:api_summary/src/api_trait.dart"
+                "libraryUri": "package:api_summary/src/meta_trait.dart"
               },
               "isConst": true,
               "isEnumConstant": true,
@@ -4510,7 +4510,7 @@
       "extensions": [
         {
           "name": "ApiDeclarationMetaSugar",
-          "locationUri": "package:api_summary/src/api_declaration.dart",
+          "locationUri": "package:api_summary/src/meta_trait.dart",
           "extendedType": {
             "kind": "interface",
             "name": "ApiDeclaration",
@@ -4518,8 +4518,29 @@
           },
           "methods": [
             {
+              "name": "hasMeta",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "contract",
+                  "type": {
+                    "kind": "interface",
+                    "name": "MetaContract",
+                    "libraryUri": "package:api_summary/src/meta_trait.dart"
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
               "name": "isExperimental",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4529,7 +4550,7 @@
             },
             {
               "name": "isImmutable",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4539,7 +4560,7 @@
             },
             {
               "name": "isInternal",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4549,7 +4570,7 @@
             },
             {
               "name": "isMustBeOverridden",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4559,7 +4580,7 @@
             },
             {
               "name": "isMustCallSuper",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4569,7 +4590,7 @@
             },
             {
               "name": "isNonVirtual",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4579,7 +4600,7 @@
             },
             {
               "name": "isProtected",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4589,7 +4610,7 @@
             },
             {
               "name": "isUseResult",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4599,7 +4620,7 @@
             },
             {
               "name": "isVisibleForOverriding",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
@@ -4609,7 +4630,7 @@
             },
             {
               "name": "isVisibleForTesting",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "locationUri": "package:api_summary/src/meta_trait.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",

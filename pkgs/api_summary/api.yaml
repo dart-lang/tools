@@ -2477,7 +2477,7 @@ libraries:
                   libraryUri: dart:core
                 - kind: dynamic
       - name: MetaContractTrait
-        locationUri: package:api_summary/src/api_trait.dart
+        locationUri: package:api_summary/src/meta_trait.dart
         supertype:
           kind: interface
           name: Object
@@ -2490,12 +2490,12 @@ libraries:
           - final
         constructors:
           - name: fromJson
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: constructor
             returnType:
               kind: interface
               name: MetaContractTrait
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             parameters:
               - name: json
                 type:
@@ -2509,12 +2509,12 @@ libraries:
                     - kind: dynamic
                 isRequired: true
           - name: new
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: constructor
             returnType:
               kind: interface
               name: MetaContractTrait
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             parameters:
               - name: contracts
                 type:
@@ -2524,11 +2524,11 @@ libraries:
                   typeArguments:
                     - kind: interface
                       name: MetaContract
-                      libraryUri: package:api_summary/src/api_trait.dart
+                      libraryUri: package:api_summary/src/meta_trait.dart
                 isRequired: true
         methods:
           - name: ==
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: method
             returnType:
               kind: interface
@@ -2542,7 +2542,7 @@ libraries:
                   libraryUri: dart:core
                 isRequired: true
           - name: compareTo
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: method
             returnType:
               kind: interface
@@ -2556,7 +2556,7 @@ libraries:
                   libraryUri: package:api_summary/src/api_trait.dart
                 isRequired: true
           - name: contracts
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
@@ -2565,23 +2565,23 @@ libraries:
               typeArguments:
                 - kind: interface
                   name: MetaContract
-                  libraryUri: package:api_summary/src/api_trait.dart
+                  libraryUri: package:api_summary/src/meta_trait.dart
           - name: hashCode
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: int
               libraryUri: dart:core
           - name: namespace
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: String
               libraryUri: dart:core
           - name: parentheticalSegments
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
@@ -2592,7 +2592,7 @@ libraries:
                   name: String
                   libraryUri: dart:core
           - name: toJson
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: method
             returnType:
               kind: interface
@@ -2815,7 +2815,7 @@ libraries:
             isConst: true
             isStatic: true
       - name: MetaContract
-        locationUri: package:api_summary/src/api_trait.dart
+        locationUri: package:api_summary/src/meta_trait.dart
         interfaces:
           - kind: interface
             name: Comparable
@@ -2823,10 +2823,10 @@ libraries:
             typeArguments:
               - kind: interface
                 name: MetaContract
-                libraryUri: package:api_summary/src/api_trait.dart
+                libraryUri: package:api_summary/src/meta_trait.dart
         methods:
           - name: compareTo
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: method
             returnType:
               kind: interface
@@ -2837,97 +2837,97 @@ libraries:
                 type:
                   kind: interface
                   name: MetaContract
-                  libraryUri: package:api_summary/src/api_trait.dart
+                  libraryUri: package:api_summary/src/meta_trait.dart
                 isRequired: true
           - name: experimental
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: immutable
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: internal
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: mustBeOverridden
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: mustCallSuper
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: nonVirtual
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: protected
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: textLabel
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: String
               libraryUri: dart:core
           - name: useResult
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: values
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
@@ -2936,102 +2936,116 @@ libraries:
               typeArguments:
                 - kind: interface
                   name: MetaContract
-                  libraryUri: package:api_summary/src/api_trait.dart
+                  libraryUri: package:api_summary/src/meta_trait.dart
             isConst: true
             isStatic: true
           - name: visibleForOverriding
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: visibleForTesting
-            locationUri: package:api_summary/src/api_trait.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/api_trait.dart
+              libraryUri: package:api_summary/src/meta_trait.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
     extensions:
       - name: ApiDeclarationMetaSugar
-        locationUri: package:api_summary/src/api_declaration.dart
+        locationUri: package:api_summary/src/meta_trait.dart
         extendedType:
           kind: interface
           name: ApiDeclaration
           libraryUri: package:api_summary/src/api_declaration.dart
         methods:
+          - name: hasMeta
+            locationUri: package:api_summary/src/meta_trait.dart
+            kind: method
+            returnType:
+              kind: interface
+              name: bool
+              libraryUri: dart:core
+            parameters:
+              - name: contract
+                type:
+                  kind: interface
+                  name: MetaContract
+                  libraryUri: package:api_summary/src/meta_trait.dart
+                isRequired: true
           - name: isExperimental
-            locationUri: package:api_summary/src/api_declaration.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: bool
               libraryUri: dart:core
           - name: isImmutable
-            locationUri: package:api_summary/src/api_declaration.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: bool
               libraryUri: dart:core
           - name: isInternal
-            locationUri: package:api_summary/src/api_declaration.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: bool
               libraryUri: dart:core
           - name: isMustBeOverridden
-            locationUri: package:api_summary/src/api_declaration.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: bool
               libraryUri: dart:core
           - name: isMustCallSuper
-            locationUri: package:api_summary/src/api_declaration.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: bool
               libraryUri: dart:core
           - name: isNonVirtual
-            locationUri: package:api_summary/src/api_declaration.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: bool
               libraryUri: dart:core
           - name: isProtected
-            locationUri: package:api_summary/src/api_declaration.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: bool
               libraryUri: dart:core
           - name: isUseResult
-            locationUri: package:api_summary/src/api_declaration.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: bool
               libraryUri: dart:core
           - name: isVisibleForOverriding
-            locationUri: package:api_summary/src/api_declaration.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
               name: bool
               libraryUri: dart:core
           - name: isVisibleForTesting
-            locationUri: package:api_summary/src/api_declaration.dart
+            locationUri: package:api_summary/src/meta_trait.dart
             kind: getter
             returnType:
               kind: interface
