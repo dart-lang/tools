@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:coverage/src/resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -130,6 +132,30 @@ void main() {
         packagePath: p.join(d.sandbox, 'foo'),
       );
       expect(resolver.resolve('thing:foo/foo.dart'), null);
+    });
+
+    test('resolves file URIs within a known root', () async {
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+      );
+      final fooDartPath = p.join(d.sandbox, 'foo', 'lib', 'foo.dart');
+      expect(resolver.resolve(p.toUri(fooDartPath).toString()), fooDartPath);
+    });
+
+    test('does not resolve file URIs outside every known root', () async {
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+        sdkRoot: p.join(d.sandbox, 'sdk'),
+      );
+      final outsideFile = File(
+        p.join(
+          Directory.systemTemp.createTempSync('coverage_test_').path,
+          'secret.txt',
+        ),
+      )..writeAsStringSync('should not leak');
+      addTearDown(() => outsideFile.parent.deleteSync(recursive: true));
+
+      expect(resolver.resolve(p.toUri(outsideFile.path).toString()), null);
     });
   });
 
