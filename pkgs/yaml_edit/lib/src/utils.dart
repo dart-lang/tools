@@ -586,3 +586,23 @@ extension YamlNodeExtension on YamlNode {
     return null;
   }
 }
+
+/// Deeply clones [node] into standard Dart objects so that when wrapped back
+/// into a [YamlNode], no AST node references or alias associations are shared.
+Object? deepCloneWithoutAliases(YamlNode node) {
+  if (node is YamlList) {
+    return node.nodes.map(deepCloneWithoutAliases).toList();
+  } else if (node is YamlMap) {
+    return Map.fromEntries(
+      node.nodes.entries.map(
+        (entry) => MapEntry(
+          deepCloneWithoutAliases(entry.key as YamlNode),
+          deepCloneWithoutAliases(entry.value),
+        ),
+      ),
+    );
+  } else if (node is YamlScalar) {
+    return node.value;
+  }
+  return node.value;
+}

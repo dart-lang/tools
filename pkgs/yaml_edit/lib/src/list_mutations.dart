@@ -18,7 +18,8 @@ SourceEdit updateInList(
   RangeError.checkValueInInterval(index, 0, list.length - 1);
 
   final currValue = list.nodes[index];
-  var offset = currValue.span.start.offset;
+  final trueSpan = yamlEdit.getTrueSpan(list, index);
+  var offset = trueSpan.start.offset;
   final yaml = yamlEdit.toString();
   String valueString;
 
@@ -43,8 +44,18 @@ SourceEdit updateInList(
       valueString += lineEnding;
     }
 
-    var end = getContentSensitiveEnd(currValue);
-    if (end <= offset) {
+    var end = yamlEdit.getTrueContentSensitiveEnd(list, index);
+    final anchorTag = yamlEdit.getAnchorTag(list, index);
+    if (anchorTag != null) {
+      if (valueString.startsWith(lineEnding)) {
+        valueString = ' $anchorTag$valueString';
+      } else {
+        valueString = ' $anchorTag ${valueString.trimLeft()}';
+      }
+      if (offset > 0 && yaml[offset - 1] != ' ') {
+        valueString = ' $valueString';
+      }
+    } else if (end <= offset) {
       offset++;
       end = offset;
       valueString = ' $valueString';
@@ -53,7 +64,11 @@ SourceEdit updateInList(
     return SourceEdit(offset, end - offset, valueString);
   } else {
     valueString = yamlEncodeFlow(newValue);
-    return SourceEdit(offset, currValue.span.length, valueString);
+    final anchorTag = yamlEdit.getAnchorTag(list, index);
+    if (anchorTag != null) {
+      valueString = '$anchorTag $valueString';
+    }
+    return SourceEdit(offset, trueSpan.length, valueString);
   }
 }
 
@@ -310,10 +325,10 @@ SourceEdit _removeFromBlockList(
   RangeError.checkValueInInterval(index, 0, listSize - 1);
 
   final yaml = yamlEdit.toString();
-  final span = nodeToRemove.span;
+  final span = yamlEdit.getTrueSpan(list, index);
 
   final isEmptySpan = span.length == 0; // Just the '-'
-  final end = getContentSensitiveEnd(nodeToRemove);
+  final end = yamlEdit.getTrueContentSensitiveEnd(list, index);
 
   return removeBlockCollectionEntry(
     yaml,
@@ -331,8 +346,7 @@ SourceEdit _removeFromBlockList(
     ),
     lineEnding: getLineEnding(yaml),
     nextBlockNodeInfo: () {
-      final nextNode = list.nodes[index + 1];
-      final nextNodeSpan = nextNode.span;
+      final nextNodeSpan = yamlEdit.getTrueSpan(list, index + 1);
       final offset = nextNodeSpan.start.offset;
 
       final hyphenOffset = yaml.lastIndexOf(
@@ -359,7 +373,7 @@ SourceEdit _removeFromFlowList(
     YamlEditor yamlEdit, YamlList list, YamlNode nodeToRemove, int index) {
   RangeError.checkValueInInterval(index, 0, list.length - 1);
 
-  final span = nodeToRemove.span;
+  final span = yamlEdit.getTrueSpan(list, index);
   final yaml = yamlEdit.toString();
   var start = span.start.offset;
   var end = span.end.offset;

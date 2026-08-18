@@ -6,6 +6,7 @@ import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
+import 'alias_behavior.dart';
 import 'equality.dart';
 import 'errors.dart';
 import 'list_mutations.dart';
@@ -103,40 +104,228 @@ class YamlEditor {
   /// any modification is taking place.
   ///
   /// See 7.1 Alias Nodes: https://yaml.org/spec/1.2/spec.html#id2786196
+  ///
+  /// Defines how mutations behave when encountering YAML alias references or
+  /// anchor definition nodes. Defaults to [AliasBehavior.disallow], which
+  /// throws an [AliasException] on any modification touching an alias or
+  /// anchor.
+  final AliasBehavior aliasBehavior;
+
+  /// See 7.1 Alias Nodes: https://yaml.org/spec/1.2/spec.html#id2786196
   Set<YamlNode> _aliases = {};
+
+  /// Maps each aliased [YamlNode] to its anchor definition path (the first
+  /// path where it was encountered during AST initialization DFS).
+  Map<YamlNode, List<Object?>> _anchorPaths = {};
+
+  /// Stores the true [SourceSpan] of alias reference tokens (`*name`) for
+  /// each entry `(parentCollection, keyOrIndex)`.
+  Map<_AliasEntryKey, SourceSpan> _aliasReferenceSpans = {};
 
   /// Returns the current YAML string.
   @override
   String toString() => _yaml;
 
-  factory YamlEditor(String yaml) => YamlEditor._(yaml);
+  factory YamlEditor(String yaml,
+          {AliasBehavior aliasBehavior = AliasBehavior.disallow}) =>
+      YamlEditor._(yaml, aliasBehavior);
 
-  YamlEditor._(this._yaml) : _contents = loadYamlNode(_yaml) {
+  YamlEditor._(this._yaml, this.aliasBehavior)
+      : _contents = loadYamlNode(_yaml) {
     _initialize();
   }
 
   /// Traverses the YAML tree formed to detect alias nodes.
   void _initialize() {
     _aliases = {};
+    _anchorPaths = {};
+    _aliasReferenceSpans = {};
 
     /// Performs a DFS on [_contents] to detect alias nodes.
-    final visited = <YamlNode>{};
-    void collectAliases(YamlNode node) {
-      if (visited.add(node)) {
+    final firstVisited = <YamlNode, List<Object?>>{};
+    void collectAliases(YamlNode node, List<Object?> path) {
+      if (!firstVisited.containsKey(node)) {
+        firstVisited[node] = path;
         if (node is YamlMap) {
           node.nodes.forEach((key, value) {
-            collectAliases(key as YamlNode);
-            collectAliases(value);
+            collectAliases(key as YamlNode, [...path, key]);
+            collectAliases(value, [...path, key]);
           });
         } else if (node is YamlList) {
-          node.nodes.forEach(collectAliases);
+          for (var i = 0; i < node.length; i++) {
+            collectAliases(node.nodes[i], [...path, i]);
+          }
         }
       } else {
         _aliases.add(node);
+        _anchorPaths[node] ??= firstVisited[node]!;
+        if (path.isNotEmpty) {
+          final parentCollection =
+              _traverse(path.take(path.length - 1), checkAlias: false);
+          final keyOrIndex = path.last;
+          _aliasReferenceSpans[_AliasEntryKey(parentCollection, keyOrIndex)] =
+              _computeAliasSpan(_yaml, parentCollection, keyOrIndex);
+        }
       }
     }
 
-    collectAliases(_contents);
+    collectAliases(_contents, []);
+  }
+
+  SourceSpan _computeAliasSpan(
+      String yaml, YamlNode parentCollection, Object? keyOrIndex) {
+    int searchStart;
+    if (parentCollection is YamlMap) {
+      final keyNode = getKeyNode(parentCollection, keyOrIndex);
+      searchStart = keyNode.span.end.offset;
+    } else {
+      final idx = keyOrIndex as int;
+      if (idx > 0) {
+        searchStart = getTrueContentSensitiveEnd(parentCollection, idx - 1);
+      } else {
+        searchStart = parentCollection.span.start.offset;
+      }
+    }
+
+    var i = searchStart;
+    while (i < yaml.length) {
+      final ch = yaml.codeUnitAt(i);
+      if (ch == 0x23) {
+        while (i < yaml.length &&
+            yaml.codeUnitAt(i) != 0x0A &&
+            yaml.codeUnitAt(i) != 0x0D) {
+          i++;
+        }
+      } else if (ch == 0x2A) {
+        final starIndex = i;
+        i++;
+        while (i < yaml.length) {
+          final c = yaml.codeUnitAt(i);
+          if (c == 0x20 ||
+              c == 0x09 ||
+              c == 0x0A ||
+              c == 0x0D ||
+              c == 0x5B ||
+              c == 0x5D ||
+              c == 0x7B ||
+              c == 0x7D ||
+              c == 0x2C) {
+            break;
+          }
+          i++;
+        }
+        return SourceSpanBase(SourceLocation(starIndex), SourceLocation(i),
+            yaml.substring(starIndex, i));
+      } else {
+        i++;
+      }
+    }
+
+    final node = parentCollection is YamlMap
+        ? parentCollection
+            .nodes[keyOrIndex is YamlNode ? keyOrIndex.value : keyOrIndex]!
+        : (parentCollection as YamlList).nodes[keyOrIndex as int];
+    return node.span;
+  }
+
+  /// Returns the true source span of the node at [keyOrIndex] inside
+  /// [parentCollection]. For alias references (`*name`), returns the span
+  /// of the alias token itself rather than the anchor definition.
+  SourceSpan getTrueSpan(YamlNode parentCollection, Object? keyOrIndex,
+      [YamlNode? valueNode]) {
+    final aliasSpan =
+        _aliasReferenceSpans[_AliasEntryKey(parentCollection, keyOrIndex)];
+    if (aliasSpan != null) return aliasSpan;
+    final node = valueNode ??
+        (parentCollection is YamlMap
+            ? parentCollection.nodes[keyOrIndex] ??
+                getYamlMapEntry(parentCollection, keyOrIndex).valueNode
+            : (parentCollection as YamlList).nodes[keyOrIndex as int]);
+    return node.span;
+  }
+
+  /// Returns the true content-sensitive ending offset of the node at
+  /// [keyOrIndex] inside [parentCollection].
+  int getTrueContentSensitiveEnd(YamlNode parentCollection, Object? keyOrIndex,
+      [YamlNode? valueNode]) {
+    final aliasSpan =
+        _aliasReferenceSpans[_AliasEntryKey(parentCollection, keyOrIndex)];
+    if (aliasSpan != null) return aliasSpan.end.offset;
+    final node = valueNode ??
+        (parentCollection is YamlMap
+            ? parentCollection.nodes[keyOrIndex] ??
+                getYamlMapEntry(parentCollection, keyOrIndex).valueNode
+            : (parentCollection as YamlList).nodes[keyOrIndex as int]);
+    return getContentSensitiveEnd(node);
+  }
+
+  /// Checks whether the child at [keyOrIndex] in [parentCollection] is an
+  /// anchor definition node (`&anchor`).
+  bool isAnchorDefinition(YamlNode parentCollection, Object? keyOrIndex) {
+    final node = parentCollection is YamlMap
+        ? parentCollection
+            .nodes[keyOrIndex is YamlNode ? keyOrIndex.value : keyOrIndex]!
+        : (parentCollection as YamlList).nodes[keyOrIndex as int];
+    if (!_aliases.contains(node)) return false;
+    final anchorPath = _anchorPaths[node];
+    if (anchorPath == null) return false;
+    return _aliasReferenceSpans[_AliasEntryKey(parentCollection, keyOrIndex)] ==
+        null;
+  }
+
+  bool _isAliasReferenceNode(YamlNode node, Iterable<Object?> path) {
+    if (!_aliases.contains(node)) return false;
+    final anchorPath = _anchorPaths[node];
+    if (anchorPath == null) return false;
+    return !_pathsEqual(anchorPath, path);
+  }
+
+  bool _pathsEqual(Iterable<Object?> a, Iterable<Object?> b) {
+    if (a.length != b.length) return false;
+    final itA = a.iterator;
+    final itB = b.iterator;
+    while (itA.moveNext() && itB.moveNext()) {
+      if (!deepEquals(itA.current, itB.current)) return false;
+    }
+    return true;
+  }
+
+  void _materializeAliasReference(Iterable<Object?> aliasPath) {
+    final node = _traverse(aliasPath, checkAlias: false);
+    final unaliased = deepCloneWithoutAliases(node);
+    final wrapped = wrapAsYamlNode(
+      unaliased,
+      collectionStyle: node is YamlMap
+          ? node.style
+          : (node is YamlList ? node.style : CollectionStyle.ANY),
+      scalarStyle: node is YamlScalar ? node.style : ScalarStyle.ANY,
+    );
+    update(aliasPath, wrapped);
+  }
+
+  Iterable<Object?> _resolvePath(Iterable<Object?> path,
+      {bool resolveLeaf = false}) {
+    final pathList = path.toList();
+    if (pathList.isEmpty) return pathList;
+
+    final maxIdx = resolveLeaf ? pathList.length : pathList.length - 1;
+    for (var i = 0; i < maxIdx; i++) {
+      final subPath = pathList.take(i + 1).toList();
+      final node = _traverse(subPath, checkAlias: false);
+      if (_isAliasReferenceNode(node, subPath)) {
+        if (aliasBehavior == AliasBehavior.disallow) {
+          throw AliasException(path, node);
+        } else if (aliasBehavior == AliasBehavior.reference) {
+          final anchorPath = _anchorPaths[node]!;
+          final redirectedPath = [...anchorPath, ...pathList.skip(i + 1)];
+          return _resolvePath(redirectedPath, resolveLeaf: resolveLeaf);
+        } else if (aliasBehavior == AliasBehavior.copyOnWrite) {
+          _materializeAliasReference(subPath);
+          return _resolvePath(path, resolveLeaf: resolveLeaf);
+        }
+      }
+    }
+    return pathList;
   }
 
   /// Parses the document to return [YamlNode] currently present at [path].
@@ -200,7 +389,10 @@ class YamlEditor {
   ///
   /// Throws a [ArgumentError] if [path] is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:** (using [update])
   /// ```dart
@@ -237,6 +429,7 @@ class YamlEditor {
   ///   - 2
   /// ```
   void update(Iterable<Object?> path, Object? value) {
+    path = _resolvePath(path);
     final valueNode = wrapAsYamlNode(value);
 
     if (path.isEmpty) {
@@ -252,23 +445,51 @@ class YamlEditor {
     final pathAsList = path.toList();
     final collectionPath = pathAsList.take(path.length - 1);
     final keyOrIndex = pathAsList.last;
-    final parentNode = _traverse(collectionPath, checkAlias: true);
+    final parentNode = _traverse(
+      collectionPath,
+      checkAlias: aliasBehavior == AliasBehavior.disallow,
+    );
 
     if (parentNode is YamlList) {
       if (keyOrIndex is! int) {
         throw PathError(path, path, parentNode);
       }
-      final expected = wrapAsYamlNode(
-        [...parentNode.nodes]..[keyOrIndex] = valueNode,
-      );
+      final expectedList = [...parentNode.nodes]..[keyOrIndex] = valueNode;
+      if (aliasBehavior != AliasBehavior.disallow) {
+        for (var i = 0; i < expectedList.length; i++) {
+          if (i != keyOrIndex &&
+              _isAliasReferenceNode(
+                  parentNode.nodes[i], [...collectionPath, i])) {
+            final anchorPath = _anchorPaths[parentNode.nodes[i]]!;
+            if (_pathsEqual(anchorPath, [...collectionPath, keyOrIndex])) {
+              expectedList[i] = valueNode;
+            }
+          }
+        }
+      }
+      final expected = wrapAsYamlNode(expectedList);
 
       return _performEdit(updateInList(this, parentNode, keyOrIndex, valueNode),
           collectionPath, expected);
     }
 
     if (parentNode is YamlMap) {
-      final expectedMap =
-          updatedYamlMap(parentNode, (nodes) => nodes[keyOrIndex] = valueNode);
+      final expectedMap = updatedYamlMap(parentNode, (nodes) {
+        nodes[keyOrIndex] = valueNode;
+        if (aliasBehavior != AliasBehavior.disallow) {
+          for (final k in nodes.keys.toList()) {
+            if (!deepEquals(k, keyOrIndex) &&
+                nodes[k] is YamlNode &&
+                _isAliasReferenceNode(
+                    nodes[k] as YamlNode, [...collectionPath, k])) {
+              final anchorPath = _anchorPaths[nodes[k]]!;
+              if (_pathsEqual(anchorPath, [...collectionPath, keyOrIndex])) {
+                nodes[k] = valueNode;
+              }
+            }
+          }
+        }
+      });
       return _performEdit(updateInMap(this, parentNode, keyOrIndex, valueNode),
           collectionPath, expectedMap);
     }
@@ -282,7 +503,10 @@ class YamlEditor {
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:**
   /// ```dart
@@ -290,7 +514,11 @@ class YamlEditor {
   /// doc.appendToList([], 2); // [0, 1, 2]
   /// ```
   void appendToList(Iterable<Object?> path, Object? value) {
-    final yamlList = _traverseToList(path);
+    path = _resolvePath(path, resolveLeaf: true);
+    final yamlList = _traverseToList(
+      path,
+      checkAlias: aliasBehavior == AliasBehavior.disallow,
+    );
 
     insertIntoList(path, yamlList.length, value);
   }
@@ -300,7 +528,10 @@ class YamlEditor {
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:**
   /// ```dart
@@ -308,6 +539,7 @@ class YamlEditor {
   /// doc.prependToList([], 0); // [0, 1, 2]
   /// ```
   void prependToList(Iterable<Object?> path, Object? value) {
+    path = _resolvePath(path, resolveLeaf: true);
     insertIntoList(path, 0, value);
   }
 
@@ -318,7 +550,10 @@ class YamlEditor {
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:**
   /// ```dart
@@ -326,9 +561,13 @@ class YamlEditor {
   /// doc.insertIntoList([], 1, 1); // [0, 1, 2]
   /// ```
   void insertIntoList(Iterable<Object?> path, int index, Object? value) {
+    path = _resolvePath(path, resolveLeaf: true);
     final valueNode = wrapAsYamlNode(value);
 
-    final list = _traverseToList(path, checkAlias: true);
+    final list = _traverseToList(
+      path,
+      checkAlias: aliasBehavior == AliasBehavior.disallow,
+    );
     RangeError.checkValueInInterval(index, 0, list.length);
 
     final edit = insertInList(this, list, index, valueNode);
@@ -349,7 +588,10 @@ class YamlEditor {
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:**
   /// ```dart
@@ -359,7 +601,11 @@ class YamlEditor {
   /// ```
   Iterable<YamlNode> spliceList(Iterable<Object?> path, int index,
       int deleteCount, Iterable<Object?> values) {
-    final list = _traverseToList(path, checkAlias: true);
+    path = _resolvePath(path, resolveLeaf: true);
+    final list = _traverseToList(
+      path,
+      checkAlias: aliasBehavior == AliasBehavior.disallow,
+    );
 
     RangeError.checkValueInInterval(index, 0, list.length);
     RangeError.checkValueInInterval(index + deleteCount, 0, list.length);
@@ -383,52 +629,48 @@ class YamlEditor {
     return nodesToRemove;
   }
 
-  /// Removes the node at [path]. Comments "belonging" to the node will be
-  /// removed while surrounding comments will be left untouched.
+  /// Removes the node at [path].
   ///
-  /// Throws an [ArgumentError] if [path] is invalid.
+  /// Throws a [PathError] if the path is invalid.
   ///
-  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  /// When [aliasBehavior] is [AliasBehavior.disallow], throws an
+  /// [AliasException] if a node along [path] is an alias reference or anchor
+  /// definition. For other [AliasBehavior] modes, see [AliasBehavior] for
+  /// redirection and Copy-On-Write semantics.
   ///
   /// **Example:**
   /// ```dart
-  /// final doc = YamlEditor('''
-  /// - 0 # comment 0
-  /// # comment A
-  /// - 1 # comment 1
-  /// # comment B
-  /// - 2 # comment 2
-  /// ''');
-  /// doc.remove([1]);
-  /// ```
-  ///
-  /// **Expected Result:**
-  /// ```dart
-  /// '''
-  /// - 0 # comment 0
-  /// # comment A
-  /// # comment B
-  /// - 2 # comment 2
-  /// '''
+  /// final doc = YamlEditor('[0, 1]');
+  /// doc.remove([1]); // [0]
   /// ```
   YamlNode remove(Iterable<Object?> path) {
-    late SourceEdit edit;
-    late YamlNode expectedNode;
-    final nodeToRemove = _traverse(path, checkAlias: true);
+    path = _resolvePath(path);
+    SourceEdit edit;
+    YamlNode expectedNode;
+    final nodeToRemove = _traverse(
+      path,
+      checkAlias: aliasBehavior == AliasBehavior.disallow,
+    );
+
+    if (aliasBehavior != AliasBehavior.disallow &&
+        _aliases.contains(nodeToRemove) &&
+        _anchorPaths[nodeToRemove] != null &&
+        _pathsEqual(_anchorPaths[nodeToRemove]!, path) &&
+        _hasActiveReferencesToAnchor(nodeToRemove)) {
+      throw AliasException(path, nodeToRemove);
+    }
 
     if (path.isEmpty) {
       edit = SourceEdit(0, _yaml.length, '');
-      expectedNode = wrapAsYamlNode(null);
-
-      /// Parsing an empty YAML document returns YamlScalar with value `null`.
-      _performEdit(edit, path, expectedNode);
+      _performEdit(edit, path, wrapAsYamlNode(null));
       return nodeToRemove;
     }
 
-    final pathAsList = path.toList();
-    final collectionPath = pathAsList.take(path.length - 1);
-    final keyOrIndex = pathAsList.last;
-    final parentNode = _traverse(collectionPath);
+    final pathList = path.toList();
+    final collectionPath = pathList.take(path.length - 1);
+    final keyOrIndex = pathList.last;
+    final parentNode = _traverse(collectionPath,
+        checkAlias: aliasBehavior == AliasBehavior.disallow);
 
     if (parentNode is YamlList) {
       edit = removeInList(this, parentNode, keyOrIndex as int);
@@ -440,6 +682,9 @@ class YamlEditor {
 
       expectedNode =
           updatedYamlMap(parentNode, (nodes) => nodes.remove(keyOrIndex));
+    } else {
+      throw PathError.unexpected(
+          path, 'Scalar $parentNode does not have key $keyOrIndex');
     }
 
     _performEdit(edit, collectionPath, expectedNode);
@@ -448,14 +693,6 @@ class YamlEditor {
   }
 
   /// Traverses down [path] to return the [YamlNode] at [path] if successful.
-  ///
-  /// If no [YamlNode]s exist at [path], the result of invoking the [orElse]
-  /// function is returned.
-  ///
-  /// If [orElse] is omitted, it defaults to throwing a [PathError].
-  ///
-  /// If [checkAlias] is `true`, throw [AliasException] if an aliased node is
-  /// encountered.
   YamlNode _traverse(Iterable<Object?> path,
       {bool checkAlias = false, YamlNode Function()? orElse}) {
     if (path.isEmpty) return _contents;
@@ -597,6 +834,51 @@ class YamlEditor {
     _initialize(); // update tracking of aliases
   }
 
+  bool _hasActiveReferencesToAnchor(YamlNode anchorNode) {
+    final anchorPath = _anchorPaths[anchorNode];
+    if (anchorPath == null) return false;
+
+    var hasReference = false;
+    void checkNode(YamlNode node, List<Object?> currentPath) {
+      if (hasReference) return;
+      if (_aliases.contains(node) &&
+          !_pathsEqual(currentPath, anchorPath) &&
+          _pathsEqual(_anchorPaths[node]!, anchorPath)) {
+        hasReference = true;
+        return;
+      }
+      if (node is YamlMap) {
+        node.nodes.forEach((k, v) {
+          checkNode(k as YamlNode, [...currentPath, k]);
+          checkNode(v, [...currentPath, k]);
+        });
+      } else if (node is YamlList) {
+        for (var i = 0; i < node.length; i++) {
+          checkNode(node.nodes[i], [...currentPath, i]);
+        }
+      }
+    }
+
+    checkNode(_contents, []);
+    return hasReference;
+  }
+
+  /// Returns the clean anchor tag (`&anchorName`) associated with the node
+  /// at [keyOrIndex] inside [parentCollection], or `null` if none exists.
+  String? getAnchorTag(YamlNode parentCollection, Object? keyOrIndex) {
+    if (!isAnchorDefinition(parentCollection, keyOrIndex)) return null;
+    final span = getTrueSpan(parentCollection, keyOrIndex);
+    final text = span.text;
+    if (text.startsWith('&')) {
+      final idx = text.indexOf(RegExp(r'\s'));
+      if (idx != -1) {
+        return text.substring(0, idx);
+      }
+      return text;
+    }
+    return null;
+  }
+
   /// Utility method to produce an updated YAML tree equivalent to converting
   /// the [YamlNode] at [path] to be [expectedNode]. [subPath] holds the portion
   /// of [path] that has been traversed thus far.
@@ -622,24 +904,73 @@ class YamlEditor {
         throw PathError(path, subPath, tree);
       }
 
-      return wrapAsYamlNode([...tree.nodes]..[keyOrIndex as int] = _deepModify(
-          tree.nodes[keyOrIndex],
-          path,
-          path.take(subPath.length + 1),
-          expectedNode));
+      final newNodes = <YamlNode>[];
+      for (var i = 0; i < tree.length; i++) {
+        final item = tree.nodes[i];
+        if (i == keyOrIndex) {
+          newNodes.add(_deepModify(
+              item, path, path.take(subPath.length + 1), expectedNode));
+        } else if (aliasBehavior != AliasBehavior.disallow &&
+            _isAliasReferenceNode(item, [...subPath, i])) {
+          final anchorPath = _anchorPaths[item]!;
+          if (path.length >= anchorPath.length &&
+              _pathsEqual(path.take(anchorPath.length), anchorPath)) {
+            newNodes.add(_deepModify(item, path, anchorPath, expectedNode));
+          } else {
+            newNodes.add(item);
+          }
+        } else {
+          newNodes.add(item);
+        }
+      }
+      return wrapAsYamlNode(newNodes);
     }
 
     if (tree is YamlMap) {
-      return updatedYamlMap(
-          tree,
-          (nodes) => nodes[keyOrIndex] = _deepModify(
-              nodes[keyOrIndex] as YamlNode,
-              path,
-              path.take(subPath.length + 1),
-              expectedNode));
+      if (!containsKey(tree, keyOrIndex)) {
+        throw PathError(path, subPath, tree);
+      }
+      final newMap = <Object?, Object?>{};
+      for (final entry in tree.nodes.entries) {
+        final key = entry.key;
+        final item = entry.value;
+        if (deepEquals(key, keyOrIndex)) {
+          newMap[key] = _deepModify(
+              item, path, path.take(subPath.length + 1), expectedNode);
+        } else if (aliasBehavior != AliasBehavior.disallow &&
+            _isAliasReferenceNode(item, [...subPath, key])) {
+          final anchorPath = _anchorPaths[item]!;
+          if (path.length >= anchorPath.length &&
+              _pathsEqual(path.take(anchorPath.length), anchorPath)) {
+            newMap[key] = _deepModify(item, path, anchorPath, expectedNode);
+          } else {
+            newMap[key] = item;
+          }
+        } else {
+          newMap[key] = item;
+        }
+      }
+      return wrapAsYamlNode(newMap);
     }
 
     /// Should not ever reach here.
     throw PathError(path, subPath, tree);
   }
+}
+
+class _AliasEntryKey {
+  final YamlNode parent;
+  final Object? keyOrIndex;
+
+  _AliasEntryKey(this.parent, Object? keyOrIndex)
+      : keyOrIndex = keyOrIndex is YamlNode ? keyOrIndex.value : keyOrIndex;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _AliasEntryKey &&
+      parent == other.parent &&
+      deepEquals(keyOrIndex, other.keyOrIndex);
+
+  @override
+  int get hashCode => parent.hashCode ^ keyOrIndex.hashCode;
 }
