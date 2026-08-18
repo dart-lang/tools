@@ -392,7 +392,7 @@ void main() {
     test('[Example 2.13]', () {
       expectYamlLoads(cleanUpLiteral('''
         \\//||\\/||
-        // ||  ||__\n'''), '''
+        // ||  ||__'''), '''
         # ASCII Art
         --- |
           \\//||\\/||
@@ -400,8 +400,7 @@ void main() {
     });
 
     test('[Example 2.14]', () {
-      expectYamlLoads(
-          "Mark McGwire's year was crippled by a knee injury.\n", '''
+      expectYamlLoads("Mark McGwire's year was crippled by a knee injury.", '''
         --- >
           Mark McGwire's
           year was crippled
@@ -415,7 +414,7 @@ void main() {
           63 Home Runs
           0.288 Batting Average
 
-        What a year!\n'''), '''
+        What a year!'''), '''
         >
          Sammy Sosa completed another
          fine season with great stats.
@@ -430,7 +429,7 @@ void main() {
       expectYamlLoads({
         'name': 'Mark McGwire',
         'accomplishment': 'Mark set a major league home run record in 1998.\n',
-        'stats': '65 Home Runs\n0.278 Batting Average\n'
+        'stats': '65 Home Runs\n0.278 Batting Average'
       }, '''
         name: Mark McGwire
         accomplishment: >
@@ -716,17 +715,17 @@ void main() {
       test(
           'from \\r to \\n',
           () => expectYamlLoads(
-              ['foo\nbar\n'], indentLiteral('- |\n  foo\r  bar')));
+              ['foo\nbar'], indentLiteral('- |\n  foo\r  bar')));
       test(
           'from \\r\\n to \\n',
           () => expectYamlLoads(
-              ['foo\nbar\n'], indentLiteral('- |\n  foo\r\n  bar')));
+              ['foo\nbar'], indentLiteral('- |\n  foo\r\n  bar')));
     });
 
     test('[Example 5.11]', () {
       expectYamlLoads(cleanUpLiteral('''
         Line break (no glyph)
-        Line break (glyphed)\n'''), '''
+        Line break (glyphed)'''), '''
         |
           Line break (no glyph)
           Line break (glyphed)''');
@@ -1705,7 +1704,7 @@ void main() {
     test('[Example 8.21]', () {
       // The spec doesn't include a newline after "value" in the parsed map, but
       // the block scalar is clipped so it should be retained.
-      expectYamlLoads({'literal': 'value\n', 'folded': 'value\n'}, '''
+      expectYamlLoads({'literal': 'value\n', 'folded': 'value'}, '''
         literal: |2
           value
         folded:
