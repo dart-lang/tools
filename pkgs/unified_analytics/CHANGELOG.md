@@ -1,5 +1,7 @@
 ## 8.0.17-wip
 
+- Added optional `agentPlugin` parameter to the `Event.dartMCPEvent` constructor
+  to identify agent plugin usage.
 - Added optional `pubspecHasFlutterSdk`, `pubspecEnvironmentSdk`, and
   `pubspecDependencies` parameters to the `Event.dartCliCommandExecuted`
   constructor.

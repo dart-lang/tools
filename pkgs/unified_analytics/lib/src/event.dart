@@ -1118,11 +1118,15 @@ final class Event {
   ///
   /// The [type] identifies the kind of event this is, and [additionalData] is
   /// the actual data for the event.
+  ///
+  /// The [agentPlugin] is optional and is the name of the agent plugin that is
+  /// using the MCP server.
   Event.dartMCPEvent({
     required String client,
     required String clientVersion,
     required String serverVersion,
     required String type,
+    String? agentPlugin,
     CustomMetrics? additionalData,
   }) : this._(
          eventName: DashEvent.dartMCPEvent,
@@ -1131,6 +1135,7 @@ final class Event {
            'clientVersion': clientVersion,
            'serverVersion': serverVersion,
            'type': type,
+           'agentPlugin': ?agentPlugin,
            ...?additionalData?.toMap(),
          },
        );
