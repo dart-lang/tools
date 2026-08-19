@@ -9,6 +9,7 @@ import 'dart:typed_data';
 
 import 'errors.dart';
 import 'package_config.dart';
+import 'platform.dart' if (dart.library.io) 'platform_io.dart';
 import 'util.dart';
 
 const String _configVersionKey = 'configVersion';
@@ -154,6 +155,27 @@ PackageConfig parsePackageConfigJson(
     var parsedRootUri = Uri.parse(rootUri!);
     var relativeRoot = !hasAbsolutePath(parsedRootUri);
     var root = baseLocation.resolveUri(parsedRootUri);
+
+    if (root.hasAuthority && root.host != baseLocation.host) {
+      String errorMessage;
+      if (isWindows) {
+        var expected =
+            baseLocation.hasAuthority ? '"${baseLocation.host}"' : 'empty';
+        errorMessage = 'Package root URIs cannot contain a different host (authority) '
+            'than the workspace.\n'
+            'Expected host to be $expected, but found "${root.host}".\n'
+            'If you are using a network share for your dependencies or '
+            'PUB_CACHE, please mount that share as a local drive letter '
+            '(e.g., Z:\\).';
+      } else {
+        errorMessage = 'Package root URIs cannot contain a host (authority) component. '
+            'The rootUri must be a local file path. '
+            'Found invalid host: "${root.host}".';
+      }
+      onError(PackageConfigFormatException(errorMessage, entry));
+      return null;
+    }
+
     if (!root.path.endsWith('/')) root = root.replace(path: '${root.path}/');
     var packageRoot = root;
     if (packageUri != null) packageRoot = root.resolve(packageUri!);
