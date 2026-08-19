@@ -1,5 +1,5 @@
 ## 2.2.5-wip
-- Fix bug where appending to a nested block list before an outdented sibling threw an exception ([#2481](https://github.com/dart-lang/tools/issues/2481)).
+- Fix a bug where appending to a nested block list before an outdented sibling failed. ([#2481](https://github.com/dart-lang/tools/issues/2481)).
 
 ## 2.2.4
 
