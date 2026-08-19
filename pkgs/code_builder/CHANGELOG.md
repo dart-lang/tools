@@ -17,9 +17,10 @@
   syntax.
 - Require Dart `^3.10.0`
 - Add `Expression.nullSafeCascade`, `cascadeIndex`, `nullSafeCascadeIndex`,
-  `cascadeAssign`, `nullSafeCascadeAssign`, `cascadeInvoke`, and
-  `cascadeAssigns` for building null-aware cascades, cascaded index
-  assignments, and fluent multi-property cascade chains.
+  `cascadeAssign`, `nullSafeCascadeAssign`, `cascadeInvoke`,
+  `nullSafeCascadeInvoke`, `cascadeAssigns`, and `nullSafeCascadeAssigns` for
+  building null-aware cascades, cascaded index assignments, and fluent
+  multi-property cascade chains.
 
 ## 4.11.1
 

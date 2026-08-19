@@ -390,6 +390,30 @@ void main() {
     );
   });
 
+  test('should emit a null-aware cascade invoke helper', () {
+    expect(
+      refer('foo').nullSafeCascadeInvoke('bar', [literal(1)]),
+      equalsDart('foo?..bar(1)'),
+    );
+  });
+
+  test('should emit chained cascade assignments via nullSafeCascadeAssigns '
+      'with only the first cascade being null-aware', () {
+    expect(
+      refer(
+        'foo',
+      ).nullSafeCascadeAssigns({'bar': literal(1), 'baz': literal(2)}),
+      equalsDart('foo?..bar = 1..baz = 2'),
+    );
+  });
+
+  test(
+    'should emit nothing extra for nullSafeCascadeAssigns with no entries',
+    () {
+      expect(refer('foo').nullSafeCascadeAssigns({}), equalsDart('foo'));
+    },
+  );
+
   test('should emit invoking a method with a single positional argument', () {
     expect(refer('foo').call([literal(1)]), equalsDart('foo(1)'));
   });

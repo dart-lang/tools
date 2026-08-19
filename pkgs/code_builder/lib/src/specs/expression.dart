@@ -333,13 +333,23 @@ abstract class Expression implements Spec {
   Expression nullSafeCascadeAssign(String name, Expression value) =>
       nullSafeCascade(name).assign(value);
 
-  /// Returns an expression invoking `..<name>(...)` on this expression.
+  /// Invokes `..<name>(...)` on this expression.
   Expression cascadeInvoke(
     String name, [
     Iterable<Expression> positionalArguments = const [],
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
   ]) => cascade(name).call(positionalArguments, namedArguments, typeArguments);
+
+  /// Invokes `?..<name>(...)` on this expression.
+  Expression nullSafeCascadeInvoke(
+    String name, [
+    Iterable<Expression> positionalArguments = const [],
+    Map<String, Expression> namedArguments = const {},
+    List<Reference> typeArguments = const [],
+  ]) => nullSafeCascade(
+    name,
+  ).call(positionalArguments, namedArguments, typeArguments);
 
   /// Chains a `..<name> = <value>` cascade assignment for each entry in
   /// [assignments] onto this expression.
@@ -348,6 +358,23 @@ abstract class Expression implements Spec {
         this,
         (target, entry) => target.cascadeAssign(entry.key, entry.value),
       );
+
+  /// Chains a `?..<name> = <value>` cascade assignment for the first entry
+  /// in [assignments], followed by a `..<name> = <value>` cascade
+  /// assignment for each subsequent entry, onto this expression.
+  ///
+  /// Only the first cascade in a chain may be null-aware, so all following
+  /// assignments use the regular `..` cascade operator.
+  Expression nullSafeCascadeAssigns(Map<String, Expression> assignments) {
+    if (assignments.isEmpty) return this;
+    final first = assignments.entries.first;
+    return assignments.entries
+        .skip(1)
+        .fold<Expression>(
+          nullSafeCascadeAssign(first.key, first.value),
+          (target, entry) => target.cascadeAssign(entry.key, entry.value),
+        );
+  }
 
   /// Returns an expression accessing `?.<name>` on this expression.
   Expression nullSafeProperty(String name) => BinaryExpression._(
