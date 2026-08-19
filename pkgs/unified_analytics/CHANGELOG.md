@@ -1,3 +1,7 @@
+## 8.0.17
+- Added optional `agentPlugin` parameter to the `Event.dartMCPEvent` constructor to identify 
+agent plugin usage.
+
 ## 8.0.16
 
 - Added `Event.packageSkillsEvent` to track events from package:skills.
