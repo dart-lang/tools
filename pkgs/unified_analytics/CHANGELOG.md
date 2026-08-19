@@ -6,7 +6,6 @@
 - Dependencies are deterministically sorted and chunked using a hash-based
   algorithm salted with the canonical dependency set to fit within Google
   Analytics 4 parameter limitations without alphabetical or global package bias.
-- Run `dart format`.
 
 ## 8.0.17
 - Added optional `agentPlugin` parameter to the `Event.dartMCPEvent` constructor to identify 
