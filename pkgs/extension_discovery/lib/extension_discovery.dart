@@ -16,6 +16,8 @@ import 'src/yaml_config_format.dart';
 
 export 'src/package_config.dart' show PackageConfigException, findPackageConfig;
 
+final _invalidTargetPackageChars = RegExp(r'[\\/<>:"|?*]');
+
 /// Information about an extension for target package.
 final class Extension {
   /// Name of the package providing an extension.
@@ -129,6 +131,18 @@ Future<List<Extension>> findExtensions(
   bool useCache = true,
   Uri? packageConfig,
 }) async {
+  // Sanity check targetPackage
+  if (targetPackage.trim().isEmpty ||
+      targetPackage == '..' ||
+      targetPackage == '.' ||
+      targetPackage.contains(_invalidTargetPackageChars)) {
+    throw ArgumentError.value(
+      targetPackage,
+      'targetPackage',
+      'Must be a valid package name',
+    );
+  }
+
   packageConfig ??= await Isolate.packageConfig;
   if (packageConfig == null) {
     throw UnsupportedError(
