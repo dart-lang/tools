@@ -142,6 +142,41 @@ void main() {
       expect(resolver.resolve(p.toUri(fooDartPath).toString()), fooDartPath);
     });
 
+    test('resolves file URIs within sdkRoot', () async {
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+        sdkRoot: p.join(d.sandbox, 'sdk'),
+      );
+      final ioDartPath = p.join(d.sandbox, 'sdk', 'io', 'io.dart');
+      expect(resolver.resolve(p.toUri(ioDartPath).toString()), ioDartPath);
+    });
+
+    test('resolves file URIs within a known package root', () async {
+      final resolver = await Resolver.create(
+        packagesPath: p.join(
+          d.sandbox,
+          'foo',
+          '.dart_tool',
+          'package_config.json',
+        ),
+      );
+      final barDartPath = p.join(d.sandbox, 'bar', 'lib', 'bar.dart');
+      expect(resolver.resolve(p.toUri(barDartPath).toString()), barDartPath);
+    });
+
+    test('resolves file URIs within the current directory', () async {
+      final resolver = await Resolver.create();
+      final currentDirFile = File(
+        p.join(Directory.current.path, 'resolver_test_current_dir_probe.txt'),
+      )..writeAsStringSync('inside cwd');
+      addTearDown(currentDirFile.deleteSync);
+
+      expect(
+        resolver.resolve(p.toUri(currentDirFile.path).toString()),
+        currentDirFile.path,
+      );
+    });
+
     test('does not resolve file URIs outside every known root', () async {
       final resolver = await Resolver.create(
         packagePath: p.join(d.sandbox, 'foo'),

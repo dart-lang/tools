@@ -6,6 +6,11 @@
   completing and the resume request reaching the VM service.
 - Also ignore `SentinelException` when resuming the main isolate after
   collection, matching the existing `RPCError` handling there.
+- `Resolver.resolve` now rejects `file:` URIs that fall outside the known
+  package/SDK roots or the current directory, instead of resolving them
+  unconditionally. A `source` entry in coverage data pointing at an arbitrary
+  file (for example `file:///etc/passwd`) previously had its contents read
+  and printed by `format_coverage --pretty-print`.
 
 ## 1.15.1
 

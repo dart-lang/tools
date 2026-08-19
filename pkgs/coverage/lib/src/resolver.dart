@@ -119,8 +119,8 @@ class Resolver {
 
   bool _isWithinKnownRoots(String path) {
     final roots = _knownRoots ??= [
-      if (packagePath != null) packagePath!,
-      if (sdkRoot != null) sdkRoot!,
+      ?packagePath,
+      ?sdkRoot,
       ...?_packages?.values.map(p.fromUri),
       Directory.current.path,
     ].map(p.normalize).toList();
