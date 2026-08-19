@@ -1,7 +1,5 @@
-## 8.0.17
+## 8.0.18-wip
 
-- Added optional `agentPlugin` parameter to the `Event.dartMCPEvent` constructor
-  to identify agent plugin usage.
 - Added optional `pubspecHasFlutterSdk`, `pubspecEnvironmentSdk`, and
   `pubspecDependencies` parameters to the `Event.dartCliCommandExecuted`
   constructor.
@@ -9,6 +7,10 @@
   algorithm salted with the canonical dependency set to fit within Google
   Analytics 4 parameter limitations without alphabetical or global package bias.
 - Run `dart format`.
+
+## 8.0.17
+- Added optional `agentPlugin` parameter to the `Event.dartMCPEvent` constructor to identify 
+agent plugin usage.
 
 ## 8.0.16
 - Added `Event.packageSkillsEvent` to track events from package:skills.
