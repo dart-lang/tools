@@ -1,4 +1,4 @@
-## 8.0.17-wip
+## 8.0.17
 
 - Added optional `agentPlugin` parameter to the `Event.dartMCPEvent` constructor
   to identify agent plugin usage.
