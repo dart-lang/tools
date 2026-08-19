@@ -1105,7 +1105,7 @@ final class Event {
            'clientVersion': clientVersion,
            'serverVersion': serverVersion,
            'type': type,
-           'agentPlugin': agentPlugin,
+           'agentPlugin': ?agentPlugin,
            ...?additionalData?.toMap(),
          },
        );
