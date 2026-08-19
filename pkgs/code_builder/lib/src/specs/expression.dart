@@ -72,6 +72,23 @@ abstract class Expression implements Spec {
     '',
   );
 
+  /// Returns accessing the index operator (`[]`) on `this` via a cascade.
+  Expression cascadeIndex(Expression index) => BinaryExpression._(
+    this,
+    CodeExpression(Block.of([const Code('['), index.code, const Code(']')])),
+    '..',
+    addSpace: false,
+  );
+
+  /// Returns accessing the index operator (`[]`) on `this` via a null-aware
+  /// cascade.
+  Expression nullSafeCascadeIndex(Expression index) => BinaryExpression._(
+    this,
+    CodeExpression(Block.of([const Code('['), index.code, const Code(']')])),
+    '?..',
+    addSpace: false,
+  );
+
   /// Returns the result of `this` `is` [other].
   Expression isA(Expression other) => BinaryExpression._(this, other, 'is');
 
@@ -299,6 +316,38 @@ abstract class Expression implements Spec {
     '..',
     addSpace: false,
   );
+
+  /// Returns an expression accessing `?..<name>` on this expression.
+  Expression nullSafeCascade(String name) => BinaryExpression._(
+    this,
+    LiteralExpression._(name),
+    '?..',
+    addSpace: false,
+  );
+
+  /// Returns an expression setting `..<name> = <value>` on this expression.
+  Expression cascadeAssign(String name, Expression value) =>
+      cascade(name).assign(value);
+
+  /// Returns an expression setting `?..<name> = <value>` on this expression.
+  Expression nullSafeCascadeAssign(String name, Expression value) =>
+      nullSafeCascade(name).assign(value);
+
+  /// Returns an expression invoking `..<name>(...)` on this expression.
+  Expression cascadeInvoke(
+    String name, [
+    Iterable<Expression> positionalArguments = const [],
+    Map<String, Expression> namedArguments = const {},
+    List<Reference> typeArguments = const [],
+  ]) => cascade(name).call(positionalArguments, namedArguments, typeArguments);
+
+  /// Chains a `..<name> = <value>` cascade assignment for each entry in
+  /// [assignments] onto this expression.
+  Expression cascadeAssigns(Map<String, Expression> assignments) =>
+      assignments.entries.fold<Expression>(
+        this,
+        (target, entry) => target.cascadeAssign(entry.key, entry.value),
+      );
 
   /// Returns an expression accessing `?.<name>` on this expression.
   Expression nullSafeProperty(String name) => BinaryExpression._(
