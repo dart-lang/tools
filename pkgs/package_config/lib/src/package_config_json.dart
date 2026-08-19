@@ -160,7 +160,7 @@ PackageConfig parsePackageConfigJson(
       String errorMessage;
       if (isWindows) {
         var expected =
-            baseLocation.hasAuthority ? '"${baseLocation.host}"' : 'empty';
+            baseLocation.host.isNotEmpty ? '"${baseLocation.host}"' : 'empty';
         errorMessage = 'Package root URIs cannot contain a different host (authority) '
             'than the workspace.\n'
             'Expected host to be $expected, but found "${root.host}".\n'
