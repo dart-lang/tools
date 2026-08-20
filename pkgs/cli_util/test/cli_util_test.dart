@@ -105,7 +105,7 @@ void main() {
 
         runZoned(
           () {
-            expect(sdkPath, mockDartSdk.path);
+            expect(sdkPath, mockDartSdk.resolveSymbolicLinksSync());
           },
           zoneValues: {
             #environmentOverrides: <String, String>{
@@ -139,7 +139,7 @@ void main() {
 
         runZoned(
           () {
-            expect(sdkPath, mockSdk.path);
+            expect(sdkPath, mockSdk.resolveSymbolicLinksSync());
           },
           zoneValues: {
             #environmentOverrides: <String, String>{
