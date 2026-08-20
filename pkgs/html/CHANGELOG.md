@@ -3,6 +3,7 @@
 - Require Dart `3.6`
 - Added new `textContent` method to `Node` class that returns the text content of
   the node.
+- Fix XSS vulnerability in `htmlToCodeMarkup()` by escaping DOCTYPE, element, and attribute names.
 
 ## 0.15.6
 
