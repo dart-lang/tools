@@ -118,18 +118,12 @@ SourceEdit _appendToFlowList(
   String formattedValue;
   if (hasTrailing) {
     if (between.contains('\n')) {
-      final lineEnding = getLineEnding(yaml);
-      final lastNodeLineStart =
-          yaml.lastIndexOf('\n', lastNode.span.start.offset) + 1;
-      final lastNodeIndent = lastNode.span.start.offset - lastNodeLineStart;
-      final closingLineStart = yaml.lastIndexOf('\n', closingOffset) + 1;
-      final closingIndent = closingOffset - closingLineStart;
-      final extraIndent = lastNodeIndent > closingIndent
-          ? ' ' * (lastNodeIndent - closingIndent)
-          : '';
-      final closingIndentSpaces = ' ' * closingIndent;
-      formattedValue =
-          '$extraIndent$valueString,$lineEnding$closingIndentSpaces';
+      formattedValue = formatMultilineFlowTrailingEntry(
+        closingOffset: closingOffset,
+        lastEntryStartOffset: lastNode.span.start.offset,
+        newEntry: valueString,
+        yaml: yaml,
+      );
     } else {
       var v = valueString;
       if (!RegExp(r'\s$').hasMatch(between)) {

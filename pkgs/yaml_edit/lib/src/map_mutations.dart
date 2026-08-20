@@ -119,19 +119,13 @@ SourceEdit _addToFlowMap(
     String formattedValue;
     if (hasTrailing) {
       if (between.contains('\n')) {
-        final lineEnding = getLineEnding(yaml);
         final lastKey = map.nodes.keys.last as YamlNode;
-        final lastKeyLineStart =
-            yaml.lastIndexOf('\n', lastKey.span.start.offset) + 1;
-        final lastKeyIndent = lastKey.span.start.offset - lastKeyLineStart;
-        final closingLineStart = yaml.lastIndexOf('\n', closingOffset) + 1;
-        final closingIndent = closingOffset - closingLineStart;
-        final extraIndent = lastKeyIndent > closingIndent
-            ? ' ' * (lastKeyIndent - closingIndent)
-            : '';
-        final closingIndentSpaces = ' ' * closingIndent;
-        formattedValue =
-            '$extraIndent$entryString,$lineEnding$closingIndentSpaces';
+        formattedValue = formatMultilineFlowTrailingEntry(
+          closingOffset: closingOffset,
+          lastEntryStartOffset: lastKey.span.start.offset,
+          newEntry: entryString,
+          yaml: yaml,
+        );
       } else {
         var v = entryString;
         if (!RegExp(r'\s$').hasMatch(between)) {

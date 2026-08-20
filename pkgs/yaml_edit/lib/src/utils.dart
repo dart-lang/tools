@@ -604,3 +604,24 @@ bool betweenHasTrailingComma(String between) {
   }
   return false;
 }
+
+/// Formats a new entry [newEntry] for a multiline flow collection with a
+/// trailing comma.
+String formatMultilineFlowTrailingEntry({
+  required int closingOffset,
+  required int lastEntryStartOffset,
+  required String newEntry,
+  required String yaml,
+}) {
+  final lineEnding = getLineEnding(yaml);
+  final lastEntryLineStart = yaml.lastIndexOf('\n', lastEntryStartOffset) + 1;
+  final lastEntryIndent = lastEntryStartOffset - lastEntryLineStart;
+  final closingLineStart = yaml.lastIndexOf('\n', closingOffset) + 1;
+  final closingIndent = closingOffset - closingLineStart;
+  final extraIndent = lastEntryIndent > closingIndent
+      ? ' ' * (lastEntryIndent - closingIndent)
+      : '';
+  final closingIndentSpaces = ' ' * closingIndent;
+
+  return '$extraIndent$newEntry,$lineEnding$closingIndentSpaces';
+}
