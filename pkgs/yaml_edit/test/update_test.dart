@@ -736,7 +736,8 @@ c: 3
 {
   a: 1,
   b: 2,
-c: 3,}
+  c: 3,
+}
 '''));
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
       });
@@ -753,9 +754,36 @@ c: 3,}
 {
   a: 1,
   b: 2, # comment
-c: 3,}
+  c: 3,
+}
 '''));
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
+      });
+
+      test('nested flow map spanning multiple lines with trailing comma', () {
+        final doc = YamlEditor('''
+analyzer:
+  exclude:
+    {
+      foo: 1,
+      build: 2,
+    }
+''');
+        doc.update(['analyzer', 'exclude', 'android'], 3);
+        expect(doc.toString(), equals('''
+analyzer:
+  exclude:
+    {
+      foo: 1,
+      build: 2,
+      android: 3,
+    }
+'''));
+        expectYamlBuilderValue(doc, {
+          'analyzer': {
+            'exclude': {'foo': 1, 'build': 2, 'android': 3}
+          }
+        });
       });
 
       test('spanning multiple lines without trailing comma', () {

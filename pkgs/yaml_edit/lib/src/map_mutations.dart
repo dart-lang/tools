@@ -111,21 +111,39 @@ SourceEdit _addToFlowMap(
   if (insertionIndex == map.length) {
     final yaml = yamlEdit.toString();
     final lastNode = map.nodes.values.last;
-    final between =
-        yaml.substring(lastNode.span.end.offset, map.span.end.offset - 1);
+    final closingOffset = map.span.end.offset - 1;
+    final between = yaml.substring(lastNode.span.end.offset, closingOffset);
     final hasTrailing = betweenHasTrailingComma(between);
 
-    var formattedValue = '$keyString: $valueString';
+    final entryString = '$keyString: $valueString';
+    String formattedValue;
     if (hasTrailing) {
-      if (!RegExp(r'\s$').hasMatch(between)) {
-        formattedValue = ' $formattedValue';
+      if (between.contains('\n')) {
+        final lineEnding = getLineEnding(yaml);
+        final lastKey = map.nodes.keys.last as YamlNode;
+        final lastKeyLineStart =
+            yaml.lastIndexOf('\n', lastKey.span.start.offset) + 1;
+        final lastKeyIndent = lastKey.span.start.offset - lastKeyLineStart;
+        final closingLineStart = yaml.lastIndexOf('\n', closingOffset) + 1;
+        final closingIndent = closingOffset - closingLineStart;
+        final extraIndent = lastKeyIndent > closingIndent
+            ? ' ' * (lastKeyIndent - closingIndent)
+            : '';
+        final closingIndentSpaces = ' ' * closingIndent;
+        formattedValue =
+            '$extraIndent$entryString,$lineEnding$closingIndentSpaces';
+      } else {
+        var v = entryString;
+        if (!RegExp(r'\s$').hasMatch(between)) {
+          v = ' $v';
+        }
+        formattedValue = '$v,';
       }
-      formattedValue += ',';
     } else {
-      formattedValue = ', $formattedValue';
+      formattedValue = ', $entryString';
     }
 
-    return SourceEdit(map.span.end.offset - 1, 0, formattedValue);
+    return SourceEdit(closingOffset, 0, formattedValue);
   }
 
   final insertionOffset =

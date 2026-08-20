@@ -110,22 +110,38 @@ SourceEdit _appendToFlowList(
 
   final yaml = yamlEdit.toString();
   final lastNode = list.nodes.last;
-  final between =
-      yaml.substring(lastNode.span.end.offset, list.span.end.offset - 1);
+  final closingOffset = list.span.end.offset - 1;
+  final between = yaml.substring(lastNode.span.end.offset, closingOffset);
   final hasTrailing = betweenHasTrailingComma(between);
 
-  String valueString;
+  final valueString = yamlEncodeFlow(item);
+  String formattedValue;
   if (hasTrailing) {
-    valueString = yamlEncodeFlow(item);
-    if (!RegExp(r'\s$').hasMatch(between)) {
-      valueString = ' $valueString';
+    if (between.contains('\n')) {
+      final lineEnding = getLineEnding(yaml);
+      final lastNodeLineStart =
+          yaml.lastIndexOf('\n', lastNode.span.start.offset) + 1;
+      final lastNodeIndent = lastNode.span.start.offset - lastNodeLineStart;
+      final closingLineStart = yaml.lastIndexOf('\n', closingOffset) + 1;
+      final closingIndent = closingOffset - closingLineStart;
+      final extraIndent = lastNodeIndent > closingIndent
+          ? ' ' * (lastNodeIndent - closingIndent)
+          : '';
+      final closingIndentSpaces = ' ' * closingIndent;
+      formattedValue =
+          '$extraIndent$valueString,$lineEnding$closingIndentSpaces';
+    } else {
+      var v = valueString;
+      if (!RegExp(r'\s$').hasMatch(between)) {
+        v = ' $v';
+      }
+      formattedValue = '$v,';
     }
-    valueString += ',';
   } else {
-    valueString = _formatNewFlow(list, item, true);
+    formattedValue = _formatNewFlow(list, item, true);
   }
 
-  return SourceEdit(list.span.end.offset - 1, 0, valueString);
+  return SourceEdit(closingOffset, 0, formattedValue);
 }
 
 /// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to

@@ -278,7 +278,8 @@ a:
 [
   0,
   1,
-2,]
+  2,
+]
 '''));
       expectYamlBuilderValue(doc, [0, 1, 2]);
     });
@@ -295,9 +296,36 @@ a:
 [
   0,
   1, # comment
-2,]
+  2,
+]
 '''));
       expectYamlBuilderValue(doc, [0, 1, 2]);
+    });
+
+    test('nested flow list spanning multiple lines with trailing comma', () {
+      final doc = YamlEditor('''
+analyzer:
+  exclude:
+    [
+      foo/**,
+      build/**,
+    ]
+''');
+      doc.appendToList(['analyzer', 'exclude'], 'android/**');
+      expect(doc.toString(), equals('''
+analyzer:
+  exclude:
+    [
+      foo/**,
+      build/**,
+      android/**,
+    ]
+'''));
+      expectYamlBuilderValue(doc, {
+        'analyzer': {
+          'exclude': ['foo/**', 'build/**', 'android/**']
+        }
+      });
     });
 
     test('spanning multiple lines without trailing comma', () {
