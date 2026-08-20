@@ -1,6 +1,6 @@
 ## 2.2.5-wip
 
-- Fix `YamlEditor.appendToList` when appending to a flow list with a trailing comma.
+- Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
 
 ## 2.2.4
 

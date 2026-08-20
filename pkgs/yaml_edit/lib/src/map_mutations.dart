@@ -109,7 +109,23 @@ SourceEdit _addToFlowMap(
   final insertionIndex = getMapInsertionIndex(map, keyString);
 
   if (insertionIndex == map.length) {
-    return SourceEdit(map.span.end.offset - 1, 0, ', $keyString: $valueString');
+    final yaml = yamlEdit.toString();
+    final lastNode = map.nodes.values.last;
+    final between =
+        yaml.substring(lastNode.span.end.offset, map.span.end.offset - 1);
+    final hasTrailing = betweenHasTrailingComma(between);
+
+    var formattedValue = '$keyString: $valueString';
+    if (hasTrailing) {
+      if (!RegExp(r'\s$').hasMatch(between)) {
+        formattedValue = ' $formattedValue';
+      }
+      formattedValue += ',';
+    } else {
+      formattedValue = ', $formattedValue';
+    }
+
+    return SourceEdit(map.span.end.offset - 1, 0, formattedValue);
   }
 
   final insertionOffset =

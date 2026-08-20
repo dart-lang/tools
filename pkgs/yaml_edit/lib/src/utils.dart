@@ -586,3 +586,21 @@ extension YamlNodeExtension on YamlNode {
     return null;
   }
 }
+
+/// Checks if [between] contains a comma that is not part of a comment.
+bool betweenHasTrailingComma(String between) {
+  for (var i = 0; i < between.length; i++) {
+    final char = between[i];
+    if (char == '#') {
+      // Skip to next newline.
+      final nextNewline = between.indexOf('\n', i);
+      if (nextNewline == -1) break;
+      i = nextNewline;
+      continue;
+    }
+    if (char == ',') {
+      return true;
+    }
+  }
+  return false;
+}

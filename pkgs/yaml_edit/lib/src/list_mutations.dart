@@ -112,7 +112,7 @@ SourceEdit _appendToFlowList(
   final lastNode = list.nodes.last;
   final between =
       yaml.substring(lastNode.span.end.offset, list.span.end.offset - 1);
-  final hasTrailing = _betweenHasTrailingComma(between);
+  final hasTrailing = betweenHasTrailingComma(between);
 
   String valueString;
   if (hasTrailing) {
@@ -126,23 +126,6 @@ SourceEdit _appendToFlowList(
   }
 
   return SourceEdit(list.span.end.offset - 1, 0, valueString);
-}
-
-bool _betweenHasTrailingComma(String between) {
-  for (var i = 0; i < between.length; i++) {
-    final char = between[i];
-    if (char == '#') {
-      // skip to next newline
-      final nextNewline = between.indexOf('\n', i);
-      if (nextNewline == -1) break;
-      i = nextNewline;
-      continue;
-    }
-    if (char == ',') {
-      return true;
-    }
-  }
-  return false;
 }
 
 /// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
