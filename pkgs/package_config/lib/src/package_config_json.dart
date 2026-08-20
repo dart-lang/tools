@@ -154,6 +154,17 @@ PackageConfig parsePackageConfigJson(
     var parsedRootUri = Uri.parse(rootUri!);
     var relativeRoot = !hasAbsolutePath(parsedRootUri);
     var root = baseLocation.resolveUri(parsedRootUri);
+    if (root.host.isNotEmpty) {
+      onError(
+        PackageConfigFormatException(
+          'Package root URIs must not have a host (authority) component. '
+          'The rootUri must be a local file path. '
+          'Found: "${root.host}".',
+          entry,
+        ),
+      );
+      return null;
+    }
     if (!root.path.endsWith('/')) root = root.replace(path: '${root.path}/');
     var packageRoot = root;
     if (packageUri != null) packageRoot = root.resolve(packageUri!);

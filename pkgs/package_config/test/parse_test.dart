@@ -400,6 +400,10 @@ void main() {
             'package-URI',
             '{$cfg,"packages":[{$name,"rootUri":"package:x/x/"}]}',
           );
+          testThrows(
+            'has-host',
+            '{$cfg,"packages":[{$name,"rootUri":"file://attacker.com/share/"}]}',
+          );
         });
         group('package-URI root:', () {
           testThrows(
