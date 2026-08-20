@@ -12,9 +12,160 @@ import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 void main() {
-  group('sdkPath', () {
-    test('sdkPath', () {
+  group('sdkPath & dartExecutable', () {
+    test('resolves in active VM environment', () {
       expect(sdkPath, isNotNull);
+      expect(Directory(sdkPath!).existsSync(), isTrue);
+      expect(isValidSdkPath(sdkPath!), isTrue);
+
+      expect(dartExecutable, isNotNull);
+      expect(File(dartExecutable!).existsSync(), isTrue);
+    });
+
+    test('isValidSdkPath validation', () {
+      expect(isValidSdkPath(sdkPath!), isTrue);
+
+      final tempDir = Directory.systemTemp.createTempSync('invalid_sdk_test');
+      try {
+        expect(isValidSdkPath(tempDir.path), isFalse);
+
+        // Add dummy libraries.json
+        final libDir = Directory(p.join(tempDir.path, 'lib'))..createSync();
+        File(p.join(libDir.path, 'libraries.json')).writeAsStringSync('{}');
+        expect(
+          isValidSdkPath(tempDir.path),
+          isFalse,
+        ); // Missing bin/dart or version
+
+        // Add dummy version file
+        File(p.join(tempDir.path, 'version')).writeAsStringSync('3.8.0');
+        expect(isValidSdkPath(tempDir.path), isTrue);
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+
+    test('DART_ROOT / DART_SDK environment overrides', () {
+      final mockSdk = Directory.systemTemp.createTempSync('mock_sdk');
+      try {
+        Directory(p.join(mockSdk.path, 'lib')).createSync();
+        File(
+          p.join(mockSdk.path, 'lib', 'libraries.json'),
+        ).writeAsStringSync('{}');
+        File(p.join(mockSdk.path, 'version')).writeAsStringSync('3.8.0');
+
+        runZoned(
+          () {
+            expect(sdkPath, mockSdk.path);
+          },
+          zoneValues: {
+            #environmentOverrides: <String, String>{
+              'DART_ROOT': mockSdk.path,
+              '_DART_RESOLVED_EXECUTABLE': '',
+            },
+          },
+        );
+
+        runZoned(
+          () {
+            expect(sdkPath, mockSdk.path);
+          },
+          zoneValues: {
+            #environmentOverrides: <String, String>{
+              'DART_SDK': mockSdk.path,
+              '_DART_RESOLVED_EXECUTABLE': '',
+            },
+          },
+        );
+      } finally {
+        mockSdk.deleteSync(recursive: true);
+      }
+    });
+
+    test('PATH traversal with Flutter wrapper structure', () {
+      final tempDir = Directory.systemTemp.createTempSync('mock_path');
+      try {
+        final mockFlutter = Directory(p.join(tempDir.path, 'flutter'))
+          ..createSync();
+        final mockFlutterBin = Directory(p.join(mockFlutter.path, 'bin'))
+          ..createSync();
+        final mockDartSdk = Directory(
+          p.join(mockFlutter.path, 'bin', 'cache', 'dart-sdk'),
+        )..createSync(recursive: true);
+        Directory(p.join(mockDartSdk.path, 'lib')).createSync();
+        File(
+          p.join(mockDartSdk.path, 'lib', 'libraries.json'),
+        ).writeAsStringSync('{}');
+        File(p.join(mockDartSdk.path, 'version')).writeAsStringSync('3.8.0');
+
+        File(p.join(mockFlutterBin.path, 'dart')).createSync();
+
+        runZoned(
+          () {
+            expect(sdkPath, mockDartSdk.path);
+          },
+          zoneValues: {
+            #environmentOverrides: <String, String>{
+              'DART_ROOT': '',
+              'DART_SDK': '',
+              'FLUTTER_ROOT': '',
+              '_DART_RESOLVED_EXECUTABLE': '',
+              'PATH': mockFlutterBin.path,
+            },
+          },
+        );
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+
+    test('FLUTTER_ROOT fallback override', () {
+      final mockFlutter = Directory.systemTemp.createTempSync('mock_flutter');
+      try {
+        final mockDartSdk = Directory(
+          p.join(mockFlutter.path, 'bin', 'cache', 'dart-sdk'),
+        )..createSync(recursive: true);
+        Directory(p.join(mockDartSdk.path, 'lib')).createSync();
+        File(
+          p.join(mockDartSdk.path, 'lib', 'libraries.json'),
+        ).writeAsStringSync('{}');
+        File(p.join(mockDartSdk.path, 'version')).writeAsStringSync('3.8.0');
+
+        runZoned(
+          () {
+            expect(sdkPath, mockDartSdk.path);
+          },
+          zoneValues: {
+            #environmentOverrides: <String, String>{
+              'DART_ROOT': '',
+              'DART_SDK': '',
+              '_DART_RESOLVED_EXECUTABLE': '',
+              'PATH': '',
+              'FLUTTER_ROOT': mockFlutter.path,
+            },
+          },
+        );
+      } finally {
+        mockFlutter.deleteSync(recursive: true);
+      }
+    });
+
+    test('returns null when SDK is not found and environment is empty', () {
+      runZoned(
+        () {
+          expect(sdkPath, isNull);
+          expect(dartExecutable, isNull);
+        },
+        zoneValues: {
+          #environmentOverrides: <String, String>{
+            'DART_ROOT': '',
+            'DART_SDK': '',
+            'FLUTTER_ROOT': '',
+            'PATH': '',
+            '_DART_RESOLVED_EXECUTABLE': '',
+          },
+        },
+      );
     });
   });
 
