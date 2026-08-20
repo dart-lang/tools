@@ -23,6 +23,7 @@ void main() {
     });
 
     test('isValidSdkPath validation', () {
+      expect(isValidSdkPath(''), isFalse);
       expect(isValidSdkPath(sdkPath!), isTrue);
 
       final tempDir = Directory.systemTemp.createTempSync('invalid_sdk_test');
@@ -99,6 +100,8 @@ void main() {
         File(p.join(mockDartSdk.path, 'version')).writeAsStringSync('3.8.0');
 
         File(p.join(mockFlutterBin.path, 'dart')).createSync();
+        File(p.join(mockFlutterBin.path, 'dart.bat')).createSync();
+        File(p.join(mockFlutterBin.path, 'dart.exe')).createSync();
 
         runZoned(
           () {
@@ -111,6 +114,40 @@ void main() {
               'FLUTTER_ROOT': '',
               '_DART_RESOLVED_EXECUTABLE': '',
               'PATH': mockFlutterBin.path,
+            },
+          },
+        );
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+
+    test('PATH traversal handles quoted directory entries', () {
+      final tempDir = Directory.systemTemp.createTempSync('mock_path_quoted');
+      try {
+        final mockSdk = Directory(p.join(tempDir.path, 'dart-sdk'))
+          ..createSync();
+        Directory(p.join(mockSdk.path, 'lib')).createSync();
+        File(
+          p.join(mockSdk.path, 'lib', 'libraries.json'),
+        ).writeAsStringSync('{}');
+        File(p.join(mockSdk.path, 'version')).writeAsStringSync('3.8.0');
+        final binDir = Directory(p.join(mockSdk.path, 'bin'))..createSync();
+        File(p.join(binDir.path, 'dart')).createSync();
+        File(p.join(binDir.path, 'dart.bat')).createSync();
+        File(p.join(binDir.path, 'dart.exe')).createSync();
+
+        runZoned(
+          () {
+            expect(sdkPath, mockSdk.path);
+          },
+          zoneValues: {
+            #environmentOverrides: <String, String>{
+              'DART_ROOT': '',
+              'DART_SDK': '',
+              'FLUTTER_ROOT': '',
+              '_DART_RESOLVED_EXECUTABLE': '',
+              'PATH': '"${binDir.path}"',
             },
           },
         );

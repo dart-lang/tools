@@ -59,6 +59,7 @@ String? getSdkPath() => sdkPath;
 
 /// Checks whether [candidatePath] represents a valid Dart SDK directory layout.
 bool isValidSdkPath(String candidatePath) {
+  if (candidatePath.isEmpty) return false;
   final hasLibrariesJson =
       File(path.join(candidatePath, 'lib', 'libraries.json')).existsSync();
   final hasAllowedExperiments =
@@ -88,12 +89,12 @@ String? _resolveSdkPath() {
   // Tier 1: DART_ROOT and DART_SDK environment variables (explicit overrides)
   final dartRoot = _env['DART_ROOT'];
   if (dartRoot != null && dartRoot.isNotEmpty && isValidSdkPath(dartRoot)) {
-    return dartRoot;
+    return path.absolute(dartRoot);
   }
 
   final dartSdk = _env['DART_SDK'];
   if (dartSdk != null && dartSdk.isNotEmpty && isValidSdkPath(dartSdk)) {
-    return dartSdk;
+    return path.absolute(dartSdk);
   }
 
   // Tier 2: Platform.resolvedExecutable (Fast path for JIT VM)
@@ -102,55 +103,36 @@ String? _resolveSdkPath() {
   if (executablePath.isNotEmpty) {
     final candidate = path.dirname(path.dirname(executablePath));
     if (isValidSdkPath(candidate)) {
-      return candidate;
+      return path.absolute(candidate);
     }
   }
 
   // Tier 3: PATH traversal with Flutter cache awareness
-  final pathEnv = _env['PATH'];
-  if (pathEnv != null && pathEnv.isNotEmpty) {
-    final separator = Platform.isWindows ? ';' : ':';
-    final entries = pathEnv.split(separator);
+  for (final candidateExe in _getExecutablePaths('dart')) {
+    final file = File(candidateExe);
+    if (file.existsSync()) {
+      String resolved;
+      try {
+        resolved = file.resolveSymbolicLinksSync();
+      } on FileSystemException {
+        resolved = candidateExe;
+      }
 
-    final extensions =
-        Platform.isWindows
-            ? (_env['PATHEXT']
-                    ?.split(';')
-                    .where((e) => e.isNotEmpty)
-                    .toList() ??
-                const ['.exe', '.bat', '.cmd'])
-            : const [''];
+      // Direct SDK root check
+      final candidateSdk = path.dirname(path.dirname(resolved));
+      if (isValidSdkPath(candidateSdk)) {
+        return path.absolute(candidateSdk);
+      }
 
-    for (final entry in entries) {
-      if (entry.isEmpty) continue;
-      for (final ext in extensions) {
-        final candidateExe = path.join(entry, 'dart$ext');
-        final file = File(candidateExe);
-        if (file.existsSync()) {
-          String resolved;
-          try {
-            resolved = file.resolveSymbolicLinksSync();
-          } on FileSystemException {
-            resolved = candidateExe;
-          }
-
-          // Direct SDK root check
-          final candidateSdk = path.dirname(path.dirname(resolved));
-          if (isValidSdkPath(candidateSdk)) {
-            return candidateSdk;
-          }
-
-          // Flutter wrapper check (e.g. flutter/bin/dart -> flutter/bin/cache/dart-sdk)
-          final flutterCacheSdk = path.join(
-            candidateSdk,
-            'bin',
-            'cache',
-            'dart-sdk',
-          );
-          if (isValidSdkPath(flutterCacheSdk)) {
-            return flutterCacheSdk;
-          }
-        }
+      // Flutter wrapper check (e.g. flutter/bin/dart -> flutter/bin/cache/dart-sdk)
+      final flutterCacheSdk = path.join(
+        candidateSdk,
+        'bin',
+        'cache',
+        'dart-sdk',
+      );
+      if (isValidSdkPath(flutterCacheSdk)) {
+        return path.absolute(flutterCacheSdk);
       }
     }
   }
@@ -160,7 +142,7 @@ String? _resolveSdkPath() {
   if (flutterRoot != null && flutterRoot.isNotEmpty) {
     final flutterSdk = path.join(flutterRoot, 'bin', 'cache', 'dart-sdk');
     if (isValidSdkPath(flutterSdk)) {
-      return flutterSdk;
+      return path.absolute(flutterSdk);
     }
   }
 
@@ -172,36 +154,46 @@ String? _resolveDartExecutable() {
   if (sdk != null) {
     final exe = path.join(sdk, 'bin', Platform.isWindows ? 'dart.exe' : 'dart');
     if (File(exe).existsSync()) {
-      return exe;
+      return path.absolute(exe);
     }
   }
 
   // Fallback: search PATH directly if SDK structure wasn't complete
-  final pathEnv = _env['PATH'];
-  if (pathEnv != null && pathEnv.isNotEmpty) {
-    final separator = Platform.isWindows ? ';' : ':';
-    final entries = pathEnv.split(separator);
-    final extensions =
-        Platform.isWindows
-            ? (_env['PATHEXT']
-                    ?.split(';')
-                    .where((e) => e.isNotEmpty)
-                    .toList() ??
-                const ['.exe', '.bat', '.cmd'])
-            : const [''];
-
-    for (final entry in entries) {
-      if (entry.isEmpty) continue;
-      for (final ext in extensions) {
-        final candidate = path.join(entry, 'dart$ext');
-        if (File(candidate).existsSync()) {
-          return candidate;
-        }
-      }
+  for (final candidate in _getExecutablePaths('dart')) {
+    if (File(candidate).existsSync()) {
+      return path.absolute(candidate);
     }
   }
 
   return null;
+}
+
+Iterable<String> _getExecutablePaths(String executableName) sync* {
+  final pathEnv = _env['PATH'];
+  if (pathEnv == null || pathEnv.isEmpty) return;
+
+  final separator = Platform.isWindows ? ';' : ':';
+  final entries = pathEnv.split(separator);
+
+  final extensions =
+      Platform.isWindows
+          ? (_env['PATHEXT']?.split(';').where((e) => e.isNotEmpty).toList() ??
+              const ['.exe', '.bat', '.cmd', ''])
+          : const [''];
+
+  for (final entry in entries) {
+    if (entry.isEmpty) continue;
+    var cleanEntry = entry.trim();
+    if (cleanEntry.startsWith('"') &&
+        cleanEntry.endsWith('"') &&
+        cleanEntry.length >= 2) {
+      cleanEntry = cleanEntry.substring(1, cleanEntry.length - 1).trim();
+    }
+    if (cleanEntry.isEmpty) continue;
+    for (final ext in extensions) {
+      yield path.join(cleanEntry, '$executableName$ext');
+    }
+  }
 }
 
 /// The user-specific application configuration folder for the current platform.
