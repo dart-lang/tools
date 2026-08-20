@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:meta/meta.dart';
+
 import 'enums.dart';
 
 final class Event {
@@ -458,16 +460,44 @@ final class Event {
   ///
   /// * [exitCode] - the process exit code set as a result of running the
   ///   command.
+  ///
+  /// * [pubspecHasFlutterSdk] - whether the project's pubspec explicitly
+  ///   declares a dependency on the Flutter SDK (e.g. `sdk: flutter` or
+  ///   `environment.flutter`).
+  ///
+  /// * [pubspecDependencies] - a set of public package names depended upon by
+  ///   the project. Callers MUST verify packages against
+  ///   `.dart_tool/package_config.json` to ensure only public hosted packages
+  ///   (published to pub.dev or public registries) are passed. Non-hosted
+  ///   packages (path, git, un-versioned workspace members) must be excluded
+  ///   to prevent leaking proprietary or internal package names.
+  ///
+  /// * [pubspecEnvironmentSdk] - the Dart SDK version constraint declared in
+  ///   the project's pubspec (e.g. `^3.5.0` from `environment.sdk:`).
+  ///
+  /// NOTE FOR MAINTAINERS: Google Analytics 4 limits each event to at most 25
+  /// custom parameters. With standard metadata fields taking up 4–5 slots and
+  /// dependency chunking consuming up to 20 parameters (`pubspec_dep_0` through
+  /// `pubspec_dep_19`), adding any new parameters to this constructor requires
+  /// decreasing `maxChunks` in [chunkDependencies] to prevent dropping event
+  /// parameters.
   Event.dartCliCommandExecuted({
     required String name,
     required String enabledExperiments,
     int? exitCode,
+    bool? pubspecHasFlutterSdk,
+    Set<String>? pubspecDependencies,
+    String? pubspecEnvironmentSdk,
   }) : this._(
          eventName: DashEvent.dartCliCommandExecuted,
          eventData: {
            'name': name,
            'enabledExperiments': enabledExperiments,
            'exitCode': ?exitCode,
+           'pubspec_has_flutter_sdk': ?pubspecHasFlutterSdk,
+           'pubspec_environment_sdk': ?pubspecEnvironmentSdk,
+           if (pubspecDependencies != null)
+             ...chunkDependencies(pubspecDependencies),
          },
        );
 
@@ -1088,11 +1118,15 @@ final class Event {
   ///
   /// The [type] identifies the kind of event this is, and [additionalData] is
   /// the actual data for the event.
+  ///
+  /// The [agentPlugin] is optional and is the name of the agent plugin that is
+  /// using the MCP server.
   Event.dartMCPEvent({
     required String client,
     required String clientVersion,
     required String serverVersion,
     required String type,
+    String? agentPlugin,
     CustomMetrics? additionalData,
   }) : this._(
          eventName: DashEvent.dartMCPEvent,
@@ -1101,6 +1135,7 @@ final class Event {
            'clientVersion': clientVersion,
            'serverVersion': serverVersion,
            'type': type,
+           'agentPlugin': ?agentPlugin,
            ...?additionalData?.toMap(),
          },
        );
@@ -1203,4 +1238,107 @@ abstract base class CustomMetrics {
   ///
   /// This must be a JSON-encodable [Map].
   Map<String, Object> toMap();
+}
+
+/// Public helper in unified_analytics to sort and chunk dependencies.
+///
+/// Respects GA4's 100-character limit per parameter and 25-parameter limit
+/// per event.
+///
+/// To eliminate alphabetical bias (e.g., always omitting packages starting
+/// with 'z' when exceeding the 20-chunk cap) while preventing ecosystem-wide
+/// starvation of specific package names across projects, dependencies are
+/// sorted deterministically using a 32-bit FNV-1a hash salted with the
+/// project's canonical dependency set.
+///
+/// This ensures:
+/// 1. **Cross-Machine Stability**: Identical dependency sets always produce the
+///    exact same deterministic chunk payload across developers and CI runs.
+/// 2. **Cross-Project Diversity**: Different projects produce different hash
+///    permutations, ensuring no package is globally starved across the
+///    ecosystem under truncation.
+/// 3. **Zero PII**: Salt is derived strictly from public package names without
+///    relying on local paths, usernames, or private project identifiers.
+@visibleForTesting
+Map<String, String> chunkDependencies(Set<String> deps) {
+  if (deps.isEmpty) return const {};
+
+  // Compute a deterministic project-level salt from the canonical
+  // (alphabetically sorted) dependency set.
+  final sortedBase = deps.toList()..sort();
+  var setSalt = 2166136261;
+  for (final dep in sortedBase) {
+    setSalt = _fnv1a(dep, setSalt);
+  }
+
+  // Sort deterministically by salted FNV-1a hash value. Fall back to
+  // alphabetical comparison if there is a hash collision to guarantee absolute
+  // determinism.
+  final sortedDeps = deps.toList()
+    ..sort((a, b) {
+      final hashA = _fnv1a(a, setSalt);
+      final hashB = _fnv1a(b, setSalt);
+      if (hashA != hashB) {
+        return hashA.compareTo(hashB);
+      }
+      return a.compareTo(b);
+    });
+
+  final chunks = <String, String>{};
+  var currentChunk = <String>[];
+  var currentLength = 0;
+  var chunkIndex = 0;
+
+  // We have a maximum of 25 parameters per event in GA4. Standard event
+  // parameters (name, enabledExperiments, exitCode, pubspec_has_flutter_sdk)
+  // take up to 4 slots, leaving 21 slots. Capping at 20 chunks guarantees
+  // safety.
+  const maxChunks = 20;
+
+  for (final dep in sortedDeps) {
+    // Guard: Skip package names that are somehow longer than 100 characters
+    // to prevent violating GA4's value length limit.
+    if (dep.length > 100) continue;
+
+    final lengthToAdd = dep.length + (currentChunk.isEmpty ? 0 : 1);
+    if (currentLength + lengthToAdd > 100) {
+      chunks['pubspec_dep_$chunkIndex'] = currentChunk.join(',');
+      chunkIndex++;
+
+      // Stop adding chunks if we reach the GA4 parameter count safety limit
+      if (chunkIndex >= maxChunks) {
+        currentChunk = const [];
+        break;
+      }
+
+      currentChunk = [dep];
+      currentLength = dep.length;
+    } else {
+      currentChunk.add(dep);
+      currentLength += lengthToAdd;
+    }
+  }
+
+  if (currentChunk.isNotEmpty && chunkIndex < maxChunks) {
+    chunks['pubspec_dep_$chunkIndex'] = currentChunk.join(',');
+  }
+
+  return chunks;
+}
+
+/// Computes a deterministic 32-bit FNV-1a hash of a string with an optional
+/// seed.
+///
+/// This is used to shuffle dependency names in a stable, pseudo-random
+/// way to eliminate alphabetical and global package bias when sampling packages
+/// for telemetry while maintaining 100% determinism across runs.
+int _fnv1a(String s, [int seed = 2166136261]) {
+  var hash = seed;
+  for (var i = 0; i < s.length; i++) {
+    hash ^= s.codeUnitAt(i);
+    // Split the multiplication to prevent exceeding the 53-bit safe integer
+    // limit on the web.
+    hash = (((hash & 0xff) << 24) + (hash * 403)) & 0xffffffff;
+  }
+  return hash;
 }
