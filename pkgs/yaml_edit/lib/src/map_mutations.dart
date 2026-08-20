@@ -118,6 +118,9 @@ SourceEdit _addToFlowMap(
     final entryString = '$keyString: $valueString';
     String formattedValue;
     if (hasTrailing) {
+      // If there is already a trailing comma in the flow map, do not prepend
+      // another comma. If the flow map spans multiple lines with the closing
+      // brace on a new line, align the new entry with the previous elements.
       if (between.contains('\n')) {
         final lastKey = map.nodes.keys.last as YamlNode;
         formattedValue = formatMultilineFlowTrailingEntry(

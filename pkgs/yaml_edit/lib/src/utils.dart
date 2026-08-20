@@ -592,7 +592,7 @@ bool betweenHasTrailingComma(String between) {
   for (var i = 0; i < between.length; i++) {
     final char = between[i];
     if (char == '#') {
-      // Skip to next newline.
+      // Skip comments up to the next newline.
       final nextNewline = between.indexOf('\n', i);
       if (nextNewline == -1) break;
       i = nextNewline;
@@ -607,6 +607,10 @@ bool betweenHasTrailingComma(String between) {
 
 /// Formats a new entry [newEntry] for a multiline flow collection with a
 /// trailing comma.
+///
+/// Ensures the new entry matches the indentation of the previous entry and
+/// that the closing delimiter (closing bracket/brace) remains on its own line
+/// with its original indentation.
 String formatMultilineFlowTrailingEntry({
   required int closingOffset,
   required int lastEntryStartOffset,

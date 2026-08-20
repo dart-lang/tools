@@ -117,6 +117,9 @@ SourceEdit _appendToFlowList(
   final valueString = yamlEncodeFlow(item);
   String formattedValue;
   if (hasTrailing) {
+    // If there is already a trailing comma in the flow list, do not prepend
+    // another comma. If the flow list spans multiple lines with the closing
+    // bracket on a new line, align the new entry with the previous elements.
     if (between.contains('\n')) {
       formattedValue = formatMultilineFlowTrailingEntry(
         closingOffset: closingOffset,
