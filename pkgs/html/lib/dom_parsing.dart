@@ -8,7 +8,7 @@ library;
 
 import 'dom.dart';
 import 'html_escape.dart';
-import 'src/constants.dart' show rcdataElements;
+import 'src/constants.dart' show Namespaces, rcdataElements;
 
 // Export a function which was previously declared here.
 export 'html_escape.dart';
@@ -152,7 +152,9 @@ void writeTextNodeAsHtml(StringBuffer str, Text node) {
   final parent = node.parentNode;
   if (parent is Element) {
     final tag = parent.localName;
-    if (rcdataElements.contains(tag) || tag == 'plaintext') {
+    final ns = parent.namespaceUri;
+    if ((ns == null || ns == Namespaces.html) &&
+        (rcdataElements.contains(tag) || tag == 'plaintext')) {
       str.write(node.data);
       return;
     }

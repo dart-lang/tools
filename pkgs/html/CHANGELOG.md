@@ -1,5 +1,6 @@
 ## 0.15.7-wip
 
+- `writeTextNodeAsHtml`: Escape text inside `<script>` and `<style>`-like tags in foreign namespaces.
 - Require Dart `3.6`
 - Added new `textContent` method to `Node` class that returns the text content of
   the node.
