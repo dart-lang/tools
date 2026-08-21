@@ -14,13 +14,16 @@ import 'package:test/test.dart';
 void main() {
   group('sdkPath & dartExecutable', () {
     test('resolves in active VM environment', () {
-      if (sdkPath case final path?) {
-        expect(Directory(path).existsSync(), isTrue);
-        expect(isValidSdkPath(path), isTrue);
-
-        expect(dartExecutable, isNotNull);
-        expect(File(dartExecutable!).existsSync(), isTrue);
+      final path = sdkPath;
+      if (path == null) {
+        markTestSkipped('sdkPath is not available in this environment');
+        return;
       }
+      expect(Directory(path).existsSync(), isTrue);
+      expect(isValidSdkPath(path), isTrue);
+
+      expect(dartExecutable, isNotNull);
+      expect(File(dartExecutable!).existsSync(), isTrue);
     });
 
     test('isValidSdkPath validation', () {
