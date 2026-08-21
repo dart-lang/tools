@@ -6,6 +6,7 @@
 - Limit ["Noah's Ark" clause](https://html.spec.whatwg.org/multipage/parsing.html#list-of-active-formatting-elements) to avoid degenerate O(N^2) when parsing deeply nested formatting elements with unique attributes.
 - Added new `textContent` method to `Node` class that returns the text content of
   the node.
+- Fix XSS vulnerability in `htmlToCodeMarkup()` by escaping DOCTYPE, element, and attribute names.
 
 ## 0.15.6
 
