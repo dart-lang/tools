@@ -1,6 +1,29 @@
 ## 1.16.0-wip
 
 - Require Dart 3.9.
+- Support collecting and formatting web (V8 / Chrome) coverage reports in
+  `test_with_coverage` via the new `-p` / `--platform` flag. Web runs delegate
+  to `dart test --coverage`; VM runs continue to use the existing VM-service
+  collection flow. Platforms other than `vm` and `chrome` are rejected, as are
+  `--function-coverage` and `--branch-coverage` combined with a web platform,
+  and platform flags passed through to the test script.
+  Note that web coverage is measured on compiled JavaScript: code the compiler
+  drops cannot be reported as uncovered, so line counts and percentages are not
+  comparable to VM runs and `--fail-under` thresholds must be re-tuned per
+  platform.
+- `test_with_coverage` now fails immediately when the test process exits before
+  the VM service is ready (for example, when the test path does not exist)
+  instead of waiting forever, and exits with the test process's exit code.
+- `HitMap.parseFiles` now throws a `FormatException` when a file is neither a
+  `{"coverage": [...]}` report nor a raw V8 coverage list, instead of silently
+  ignoring it.
+- Add an `--include-test-files` flag to `test_with_coverage` (web platform
+  only) that includes coverage for test files and other non-library package
+  sources; by default only library code is reported, matching the VM flow.
+- Support parsing raw Chrome V8 coverage JSON lists in `HitMap.parseFiles`
+  (requires source and source-map providers to produce output).
+- Pre-flight `package:test` verification and `file:` URI normalization using
+  `package:package_config`.
 - Fixed a race condition in isolate teardown: ignore the benign errors
   produced when an isolate exits between its pause-on-exit callback
   completing and the resume request reaching the VM service.

@@ -32,8 +32,6 @@ final _env = {'PUB_CACHE': _pubCachePathInTestPkgSubDir};
 
 const _testPackageName = 'coverage_integration_test_for_test_with_coverage';
 
-int _port = 9300;
-
 Iterable<File> _dartFiles(String dir) =>
     Directory(p.join(_testPkgDirPath, dir)).listSync().whereType<File>();
 
@@ -74,6 +72,23 @@ dependency_overrides:
 
     final localPub = await _run(['pub', 'get']);
     await localPub.shouldExit(0);
+  });
+
+  tearDownAll(() async {
+    if (Platform.isWindows) {
+      final sandboxDir = Directory(d.sandbox);
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        try {
+          if (sandboxDir.existsSync()) {
+            for (final entity in sandboxDir.listSync()) {
+              entity.deleteSync(recursive: true);
+            }
+          }
+          break;
+        } catch (_) {}
+      }
+    }
   });
 
   test('dart run bin/test_with_coverage.dart -f', () async {
@@ -131,7 +146,7 @@ dependency_overrides:
       _testWithCoveragePath,
       '--fail-under=100',
       '--port',
-      '${_port++}',
+      '0',
     ]);
     await process.shouldExit(0);
   });
@@ -144,7 +159,7 @@ dependency_overrides:
       _testWithCoveragePath,
       '--fail-under=90',
       '--port',
-      '${_port++}',
+      '0',
       '--',
       '-N',
       'sum',
@@ -161,23 +176,235 @@ dependency_overrides:
       '-b',
       '--fail-under=90',
       '--port',
-      '${_port++}',
+      '0',
     ]);
     await process.shouldExit(0);
   });
   test('dart run bin/test_with_coverage.dart -b --fail-under fails'
       'when coverage is below threshold', () async {
-    // This should throw an exit(1) as percentage_covered=95.23 .
     final process = await _run([
       'run',
       _testWithCoveragePath,
       '-b',
       '--fail-under=99',
       '--port',
-      '${_port++}',
+      '0',
     ]);
     await process.shouldExit(1);
   });
+
+  test(
+    'dart run bin/test_with_coverage.dart -p chrome',
+    onPlatform: const {'windows': Skip('Chrome tests skipped on Windows')},
+    timeout: const Timeout(Duration(minutes: 5)),
+    () async {
+      final list = await _runTest([
+        'run',
+        _testWithCoveragePath,
+        '-p',
+        'chrome',
+      ]);
+      final sources = list.sources();
+      final lineHits = lineHitsFromSources(sources);
+
+      final libHits = lineHits['package:$_testPackageName/validate_lib.dart'];
+      expect(libHits, isNotNull);
+      expect(libHits![6], greaterThanOrEqualTo(1));
+      expect(libHits[14], greaterThanOrEqualTo(1));
+      expect(libHits[22], greaterThanOrEqualTo(1));
+      expect(
+        lineHits.keys.where((source) => source.endsWith('_test.dart')),
+        isEmpty,
+        reason: 'test files are excluded without --include-test-files',
+      );
+    },
+  );
+
+  test(
+    'dart run bin/test_with_coverage.dart -p chrome --include-test-files',
+    onPlatform: const {'windows': Skip('Chrome tests skipped on Windows')},
+    timeout: const Timeout(Duration(minutes: 5)),
+    () async {
+      final list = await _runTest([
+        'run',
+        _testWithCoveragePath,
+        '-p',
+        'chrome',
+        '--include-test-files',
+      ]);
+      final sources = list.sources();
+      final lineHits = lineHitsFromSources(sources);
+
+      expect(
+        lineHits.keys.where((source) => source.endsWith('_test.dart')),
+        isNotEmpty,
+        reason: '--include-test-files should include test sources',
+      );
+    },
+  );
+
+  test('dart run bin/test_with_coverage.dart -p firefox is rejected', () async {
+    final process = await _run(['run', _testWithCoveragePath, '-p', 'firefox']);
+    await process.shouldExit(1);
+  });
+
+  test(
+    'dart run bin/test_with_coverage.dart -f -p chrome is rejected',
+    () async {
+      final process = await _run([
+        'run',
+        _testWithCoveragePath,
+        '-f',
+        '-p',
+        'chrome',
+      ]);
+      await process.shouldExit(1);
+    },
+  );
+
+  // An unsupported platform must be rejected during argument parsing, before
+  // any test process is started. Asserting only on the exit code is not
+  // enough: `dart test -p <unsupported>` also exits 1, so a broken allowlist
+  // would still look like a pass.
+  test('dart run bin/test_with_coverage.dart -p firefox fails during '
+      'argument parsing', () async {
+    final process = await _run(['run', _testWithCoveragePath, '-p', 'firefox']);
+    await expectLater(
+      process.stdout,
+      emitsThrough(contains('Unsupported --platform "firefox"')),
+    );
+    await process.shouldExit(1);
+  });
+
+  test('dart run bin/test_with_coverage.dart -f -p chrome fails during '
+      'argument parsing', () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '-f',
+      '-p',
+      'chrome',
+    ]);
+    await expectLater(
+      process.stdout,
+      emitsThrough(
+        contains('--function-coverage is not supported for web platforms.'),
+      ),
+    );
+    await process.shouldExit(1);
+  });
+
+  test('dart run bin/test_with_coverage.dart -b -p chrome fails during '
+      'argument parsing', () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '-b',
+      '-p',
+      'chrome',
+    ]);
+    await expectLater(
+      process.stdout,
+      emitsThrough(
+        contains('--branch-coverage is not supported for web platforms.'),
+      ),
+    );
+    await process.shouldExit(1);
+  });
+
+  // A platform flag after `--` would reach `dart test` and override the
+  // validated platform, collecting coverage for something else entirely.
+  test('dart run bin/test_with_coverage.dart rejects a platform flag passed '
+      'to the test script', () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '-p',
+      'vm',
+      '--',
+      '-p',
+      'chrome',
+    ]);
+    await expectLater(
+      process.stdout,
+      emitsThrough(contains('Pass the platform with --platform')),
+    );
+    await process.shouldExit(1);
+  });
+
+  // A test process that dies without pausing must fail fast rather than
+  // waiting forever. Which guard fires depends on the SDK: some report a VM
+  // service URI even when the test script could not be loaded, so the failure
+  // is only detectable once collection is under way.
+  test('dart run bin/test_with_coverage.dart fails fast when the test process '
+      'cannot start', () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '--test',
+      p.join(d.sandbox, 'no_such_test_dir'),
+    ]);
+    await expectLater(
+      process.stderr,
+      emitsThrough(
+        anyOf(
+          contains('exited before the VM service was ready'),
+          contains('before coverage collection finished'),
+        ),
+      ),
+    );
+    await process.shouldExit(isNot(0));
+  });
+
+  // `--platform vm` is an advertised value and must take the VM service
+  // collection path, which is the only path that can produce function hits.
+  test(
+    'dart run bin/test_with_coverage.dart -p vm -f uses the VM flow',
+    () async {
+      final list = await _runTest([
+        'run',
+        _testWithCoveragePath,
+        '-p',
+        'vm',
+        '-f',
+      ]);
+
+      expect(
+        list.any((entry) => entry.containsKey('funcHits')),
+        isTrue,
+        reason:
+            '--platform vm must take the VM service collection path, which '
+            'is the only path that can report function coverage',
+      );
+
+      final sources = list.sources();
+      final functionHits = functionInfoFromSources(sources);
+
+      expect(functionHits['package:$_testPackageName/validate_lib.dart'], {
+        'product': 1,
+        'sum': 1,
+        'evaluateScore': 1,
+      });
+    },
+  );
+
+  // The exit code of the underlying test run must reach the caller, otherwise
+  // a red test suite is reported to CI as a success.
+  test(
+    'dart run bin/test_with_coverage.dart propagates a failing test run',
+    () async {
+      final process = await _run([
+        'run',
+        _testWithCoveragePath,
+        '--port',
+        '0',
+        '--',
+        '-N',
+        'no_such_test_name_xyz',
+      ]);
+      await process.shouldExit(isNot(0));
+    },
+  );
 }
 
 Future<TestProcess> _run(List<String> args) => TestProcess.start(
@@ -191,12 +418,7 @@ Future<List<Map<String, dynamic>>> _runTest(
   List<String> invokeArgs, {
   List<String>? extraArgs,
 }) async {
-  final process = await _run([
-    ...invokeArgs,
-    '--port',
-    '${_port++}',
-    ...?extraArgs,
-  ]);
+  final process = await _run([...invokeArgs, '--port', '0', ...?extraArgs]);
 
   await process.shouldExit(0);
 

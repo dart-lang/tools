@@ -3,45 +3,22 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:coverage/src/coverage_options.dart';
+
+import 'package:coverage/src/hitmap.dart';
 import 'package:coverage/src/util.dart';
 import 'package:meta/meta.dart';
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 
 import 'collect_coverage.dart' as collect_coverage;
 import 'format_coverage.dart' as format_coverage;
 
 final _allProcesses = <Process>[];
-
-Future<void> _dartRun(
-  List<String> args, {
-  required void Function(String) onStdout,
-  required void Function(String) onStderr,
-}) async {
-  final process = await Process.start(Platform.executable, args);
-  _allProcesses.add(process);
-
-  void listen(
-    Stream<List<int>> stream,
-    IOSink sink,
-    void Function(String) onLine,
-  ) {
-    final broadStream = stream.asBroadcastStream();
-    broadStream.listen(sink.add);
-    broadStream.lines().listen(onLine);
-  }
-
-  listen(process.stdout, stdout, onStdout);
-  listen(process.stderr, stderr, onStderr);
-
-  final result = await process.exitCode;
-  if (result != 0) {
-    throw ProcessException(Platform.executable, args, '', result);
-  }
-}
 
 void _killSubprocessesAndExit(ProcessSignal signal) {
   for (final process in _allProcesses) {
@@ -76,7 +53,7 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
   )
   ..addOption(
     'test',
-    help: 'Test script to run.',
+    help: 'Test script or directory to run.',
     defaultsTo: defaultOptions.testScript,
   )
   ..addFlag(
@@ -104,6 +81,23 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
         'the current package (including all subpackages, if this is a '
         'workspace).',
   )
+  ..addOption(
+    'platform',
+    abbr: 'p',
+    help:
+        'The platform on which to run the tests. Supported: vm, chrome. '
+        'Web coverage is measured on compiled JavaScript, so its line counts '
+        'and percentages are not comparable to vm: code the compiler drops '
+        'cannot be reported as uncovered. Re-tune --fail-under per platform.',
+  )
+  ..addFlag(
+    'include-test-files',
+    defaultsTo: false,
+    help:
+        'Include coverage for test files and other non-library package '
+        'sources. Only applies to web platform runs; VM runs always report '
+        'library coverage only.',
+  )
   ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
 
 class Flags {
@@ -115,7 +109,9 @@ class Flags {
     this.functionCoverage,
     this.branchCoverage,
     this.scopeOutput,
-    this.failUnder, {
+    this.failUnder,
+    this.platform,
+    this.includeTestFiles, {
     required this.rest,
   });
 
@@ -127,6 +123,8 @@ class Flags {
   final bool branchCoverage;
   final List<String> scopeOutput;
   final String? failUnder;
+  final String? platform;
+  final bool includeTestFiles;
   final List<String> rest;
 }
 
@@ -142,7 +140,7 @@ Future<Flags> parseArgs(
     print('''
 Runs tests and collects coverage for a package.
 
-By default this  script assumes it's being run from the root directory of a
+By default this script assumes it's being run from the root directory of a
 package, and outputs a coverage.json and lcov.info to ./coverage/
 
 Usage: test_with_coverage [OPTIONS...] [-- <test script OPTIONS>]
@@ -175,6 +173,38 @@ ${parser.usage}
     );
   }
 
+  const supportedPlatforms = {'vm', 'chrome'};
+  final platform = args.option('platform');
+  if (platform != null && !supportedPlatforms.contains(platform)) {
+    fail(
+      'Unsupported --platform "$platform". Coverage collection is only '
+      'supported on: ${supportedPlatforms.join(', ')}.',
+    );
+  }
+  if (platform == 'chrome') {
+    if (args.flag('function-coverage')) {
+      fail('--function-coverage is not supported for web platforms.');
+    }
+    if (args.flag('branch-coverage')) {
+      fail('--branch-coverage is not supported for web platforms.');
+    }
+  }
+
+  // Extra args are forwarded to `dart test`, where a second platform flag
+  // would silently override the validated one.
+  for (final arg in args.rest) {
+    if (arg == '-p' ||
+        arg == '--platform' ||
+        arg.startsWith('-p=') ||
+        arg.startsWith('--platform=')) {
+      fail(
+        'Pass the platform with --platform, not as an argument to the test '
+        'script. Coverage can only be collected for the platform this '
+        'command runs.',
+      );
+    }
+  }
+
   return Flags(
     packageDir,
     args.option('out') ?? path.join(packageDir, 'coverage'),
@@ -184,6 +214,8 @@ ${parser.usage}
     args.flag('branch-coverage'),
     args.multiOption('scope-output'),
     args.option('fail-under'),
+    platform,
+    args.flag('include-test-files'),
     rest: args.rest,
   );
 }
@@ -198,15 +230,37 @@ Future<void> main(List<String> arguments) async {
     await Directory(flags.outDir).create(recursive: true);
   }
 
+  final pkgConfig = await findPackageConfig(Directory(flags.packageDir));
+  if (pkgConfig == null) {
+    stderr.writeln(
+      'warning: package_config.json was not found for ${flags.packageDir}. '
+      'Make sure to run "dart pub get" in the package directory.',
+    );
+  } else {
+    final testPkg = pkgConfig['test'] ?? pkgConfig['test_core'];
+    if (testPkg == null) {
+      stderr.writeln(
+        'warning: package:test is not listed in package_config.json for '
+        '${flags.packageDir}. Make sure to run "dart pub get" in the package '
+        'directory.',
+      );
+    }
+  }
+
   _watchExitSignal(ProcessSignal.sighup);
   _watchExitSignal(ProcessSignal.sigint);
   if (!Platform.isWindows) {
     _watchExitSignal(ProcessSignal.sigterm);
   }
 
-  final serviceUriCompleter = Completer<Uri>();
-  final testProcess = _dartRun(
-    [
+  var exitCode = 0;
+
+  // VM runs use the existing VM-service pause/resume collection flow,
+  // unchanged. Web (chrome) runs delegate to `dart test --coverage`, which is
+  // the only way to collect coverage from a browser.
+  if (flags.platform == null || flags.platform == 'vm') {
+    final serviceUriCompleter = Completer<Uri>();
+    final testArgs = [
       if (flags.branchCoverage) '--branch-coverage',
       'run',
       '--pause-isolates-on-exit',
@@ -214,39 +268,209 @@ Future<void> main(List<String> arguments) async {
       '--enable-vm-service=${flags.port}',
       flags.testScript,
       ...flags.rest,
-    ],
-    onStdout: (line) {
+    ];
+    final process = await Process.start(
+      Platform.executable,
+      testArgs,
+      workingDirectory: flags.packageDir,
+    );
+    _allProcesses.add(process);
+
+    void listen(
+      Stream<List<int>> stream,
+      IOSink sink,
+      void Function(String) onLine,
+    ) {
+      final broadStream = stream.asBroadcastStream();
+      broadStream.listen(sink.add);
+      broadStream.lines().listen(onLine);
+    }
+
+    listen(process.stdout, stdout, (line) {
       if (!serviceUriCompleter.isCompleted) {
         final uri = extractVMServiceUri(line);
         if (uri != null) {
           serviceUriCompleter.complete(uri);
         }
       }
-    },
-    onStderr: (line) {
+    });
+    listen(process.stderr, stderr, (line) {
       if (!serviceUriCompleter.isCompleted) {
         if (line.contains('Could not start the VM service')) {
           _killSubprocessesAndExit(ProcessSignal.sigkill);
         }
       }
-    },
-  );
-  final serviceUri = await serviceUriCompleter.future;
+    });
 
-  final scopes = flags.scopeOutput.isEmpty
-      ? getAllWorkspaceNames(flags.packageDir)
-      : flags.scopeOutput;
-  await collect_coverage.main([
-    '--wait-paused',
-    '--resume-isolates',
-    '--uri=$serviceUri',
-    for (final scope in scopes) '--scope-output=$scope',
-    if (flags.branchCoverage) '--branch-coverage',
-    if (flags.functionCoverage) '--function-coverage',
-    '-o',
-    outJson,
-  ]);
-  await testProcess;
+    // If the test process exits before reporting a VM service URI there is
+    // nothing to collect from, and waiting for the URI would hang forever.
+    unawaited(
+      process.exitCode.then((code) {
+        if (!serviceUriCompleter.isCompleted) {
+          serviceUriCompleter.completeError(
+            ProcessException(
+              Platform.executable,
+              testArgs,
+              'Test process exited before the VM service was ready',
+              code,
+            ),
+          );
+        }
+      }),
+    );
+
+    final Uri serviceUri;
+    try {
+      serviceUri = await serviceUriCompleter.future;
+    } on ProcessException catch (e) {
+      stderr.writeln('${e.message} (exit code ${e.errorCode}).');
+      exit(e.errorCode == 0 ? 1 : e.errorCode);
+    }
+
+    final scopes = flags.scopeOutput.isEmpty
+        ? getAllWorkspaceNames(flags.packageDir)
+        : flags.scopeOutput;
+    final collection = collect_coverage.main([
+      '--wait-paused',
+      '--resume-isolates',
+      '--uri=$serviceUri',
+      for (final scope in scopes) '--scope-output=$scope',
+      if (flags.branchCoverage) '--branch-coverage',
+      if (flags.functionCoverage) '--function-coverage',
+      '-o',
+      outJson,
+    ]);
+
+    // The test process is paused on exit, so collection is what lets it
+    // finish. If it exits with an error first, it never reached that pause
+    // (for example, the test script failed to load) and `--wait-paused` would
+    // wait forever. Some SDKs report a service URI even in that case, so the
+    // check above is not enough on its own.
+    final collected = await Future.any<Object?>([
+      collection.then((_) => null),
+      process.exitCode,
+    ]);
+    if (collected is int && collected != 0) {
+      stderr.writeln(
+        'Test process exited with code $collected before coverage collection '
+        'finished.',
+      );
+      exit(collected);
+    }
+    await collection;
+    exitCode = await process.exitCode.timeout(
+      const Duration(seconds: 3),
+      onTimeout: () {
+        process.kill();
+        return 0;
+      },
+    );
+  } else {
+    final tempDir = Directory.systemTemp.createTempSync('coverage_');
+    try {
+      final testArgs = [
+        'test',
+        '--coverage=${tempDir.path}',
+        if (flags.branchCoverage) '--branch-coverage',
+        '-p',
+        flags.platform!,
+        flags.testScript,
+        ...flags.rest,
+      ];
+
+      final process = await Process.start(
+        Platform.executable,
+        testArgs,
+        workingDirectory: flags.packageDir,
+        mode: ProcessStartMode.inheritStdio,
+      );
+      _allProcesses.add(process);
+
+      exitCode = await process.exitCode;
+
+      final coverageFiles = tempDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.json'))
+          .toList();
+
+      if (coverageFiles.isNotEmpty) {
+        final hitmap = await HitMap.parseFiles(
+          coverageFiles,
+          packagePath: flags.packageDir,
+        );
+
+        final scopes =
+            (flags.scopeOutput.isEmpty
+                    ? getAllWorkspaceNames(flags.packageDir)
+                    : flags.scopeOutput)
+                .toSet();
+
+        final allCoverage = <Map<String, dynamic>>[];
+        hitmap.forEach((uriStr, map) {
+          var uri = Uri.tryParse(uriStr);
+          if (uri == null) return;
+          if (uri.scheme == 'file' && pkgConfig != null) {
+            final packageUri = pkgConfig.toPackageUri(uri);
+            if (packageUri != null) uri = packageUri;
+          }
+
+          final targetUri = uri;
+          // Library code resolves to a package: URI above; anything still on
+          // the file: scheme (test files, tools, ...) is only included when
+          // explicitly requested, matching the VM flow's lib-only reporting.
+          final isIncluded =
+              scopes.isEmpty ||
+              (targetUri.scheme == 'package' &&
+                  targetUri.pathSegments.isNotEmpty &&
+                  scopes.contains(targetUri.pathSegments.first)) ||
+              (flags.includeTestFiles &&
+                  targetUri.scheme == 'file' &&
+                  scopes.any((scope) {
+                    final package = pkgConfig?[scope];
+                    if (package != null) {
+                      return targetUri.toString().startsWith(
+                        package.root.toString(),
+                      );
+                    }
+                    return targetUri.path.contains('/$scope/');
+                  }));
+          if (isIncluded) {
+            allCoverage.add(hitmapToJson(map, targetUri));
+          }
+        });
+
+        if (allCoverage.isEmpty) {
+          stderr.writeln(
+            'warning: no coverage data matched ${scopes.join(', ')}. '
+            'Compiled web output may not map back to library sources; pass '
+            '--include-test-files to also report non-library sources.',
+          );
+        }
+
+        final jsonOutput = jsonEncode({
+          'type': 'CodeCoverage',
+          'coverage': allCoverage,
+        });
+        File(outJson).writeAsStringSync(jsonOutput);
+      } else {
+        stderr.writeln(
+          'warning: the test run produced no coverage files; the report will '
+          'be empty.',
+        );
+        File(outJson).writeAsStringSync(
+          jsonEncode({
+            'type': 'CodeCoverage',
+            'coverage': <Map<String, dynamic>>[],
+          }),
+        );
+      }
+    } finally {
+      try {
+        tempDir.deleteSync(recursive: true);
+      } catch (_) {}
+    }
+  }
 
   await format_coverage.main([
     '--lcov',
@@ -258,5 +482,6 @@ Future<void> main(List<String> arguments) async {
     outLcov,
     if (flags.failUnder != null) '--fail-under=${flags.failUnder}',
   ]);
-  exit(0);
+
+  exit(exitCode);
 }
