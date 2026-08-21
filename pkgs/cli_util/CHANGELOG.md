@@ -1,4 +1,4 @@
-## 0.6.0-wip
+## 0.6.0
 
 - **Breaking Change**: `sdkPath` now returns `String?` (returning `null` if no
   valid Dart SDK can be located).
