@@ -182,18 +182,21 @@ class Target {
 
     final cls = rehydrated.libraries.single.classes.single;
     expect(cls.name, 'Target');
-    expect(cls.isImmutable, isTrue);
-    expect(cls.isInternal, isFalse);
+    expect(cls.contracts, contains(MetaContract.immutable));
+    expect(cls.contracts, isNot(contains(MetaContract.internal)));
 
     final method = cls.methods.singleWhere((m) => m.name == 'calculate');
-    expect(method.isProtected, isTrue);
-    expect(method.isMustCallSuper, isTrue);
-    expect(method.isNonVirtual, isTrue);
-    expect(method.isUseResult, isTrue);
-    expect(method.isMustBeOverridden, isFalse);
-    expect(method.isVisibleForOverriding, isFalse);
+    expect(
+      method.contracts,
+      equals({
+        MetaContract.mustCallSuper,
+        MetaContract.nonVirtual,
+        MetaContract.protected,
+        MetaContract.useResult,
+      }),
+    );
 
-    // Verify false flags are omitted in JSON output
+    // Verify traits in JSON output
     final libJson = (jsonMap['libraries'] as List)
         .cast<Map<String, dynamic>>()[0];
     final classJson = (libJson['classes'] as List)
@@ -201,12 +204,95 @@ class Target {
     final methodJson = (classJson['methods'] as List)
         .cast<Map<String, dynamic>>()[0];
 
-    expect(methodJson, containsPair('isProtected', true));
-    expect(methodJson, containsPair('isMustCallSuper', true));
-    expect(methodJson, containsPair('isNonVirtual', true));
-    expect(methodJson, containsPair('isUseResult', true));
-    expect(methodJson, isNot(contains('isMustBeOverridden')));
-    expect(methodJson, isNot(contains('isVisibleForOverriding')));
+    expect(
+      classJson,
+      containsPair('traits', [
+        {
+          'namespace': 'meta',
+          'contracts': ['immutable'],
+        },
+      ]),
+    );
+    expect(
+      methodJson,
+      containsPair('traits', [
+        {
+          'namespace': 'meta',
+          'contracts': [
+            'mustCallSuper',
+            'nonVirtual',
+            'protected',
+            'useResult',
+          ],
+        },
+      ]),
+    );
+  }
+
+  void test_traits_deduplication_sorting_and_immutability() {
+    // 1. Verify MetaContractTrait deduplicates contracts and sorts them
+    // deterministically.
+    final metaTrait1 = MetaContractTrait([
+      MetaContract.useResult,
+      MetaContract.protected,
+      MetaContract.useResult,
+      MetaContract.immutable,
+      MetaContract.protected,
+      MetaContract.useResult,
+    ]);
+
+    expect(
+      metaTrait1.contracts.toList(),
+      equals([
+        MetaContract.immutable,
+        MetaContract.protected,
+        MetaContract.useResult,
+      ]),
+    );
+
+    // Verify immutability of contracts set
+    expect(
+      () => (metaTrait1.contracts as dynamic).add(MetaContract.internal),
+      throwsUnsupportedError,
+    );
+
+    // Verify equality with differently ordered construction
+    final metaTrait2 = MetaContractTrait([
+      MetaContract.protected,
+      MetaContract.immutable,
+      MetaContract.useResult,
+    ]);
+    expect(metaTrait1, equals(metaTrait2));
+    expect(metaTrait1.hashCode, equals(metaTrait2.hashCode));
+
+    // Verify fromJson gracefully ignores unknown contracts
+    final fromJsonTrait = MetaContractTrait.fromJson({
+      'namespace': 'meta',
+      'contracts': ['protected', 'unknownFutureContract', 'useResult'],
+    });
+    expect(
+      fromJsonTrait.contracts.toList(),
+      equals([MetaContract.protected, MetaContract.useResult]),
+    );
+
+    // 2. Verify ApiDeclaration deduplicates traits and sorts them
+    // deterministically.
+    final dummyExecutable = ApiExecutable(
+      name: 'foo',
+      kind: ApiExecutableKind.function,
+      typeParameters: const {},
+      returnType: const ApiVoidType(),
+      parameters: const [],
+      isStatic: true,
+      traits: [metaTrait1, metaTrait2, metaTrait1],
+    );
+
+    expect(dummyExecutable.traits.length, equals(1));
+    expect(dummyExecutable.traits.single, equals(metaTrait1));
+    expect(
+      () => (dummyExecutable.traits as dynamic).add(metaTrait1),
+      throwsUnsupportedError,
+    );
   }
 }
 
@@ -214,4 +300,9 @@ final class _ShowInternalDetailsCustomizer extends ApiSummaryCustomizer {
   @override
   bool shouldShowDetails(Element element, ApiSummaryContext context) =>
       element.name?.contains('Internal') ?? false;
+}
+
+extension on ApiDeclaration {
+  Set<MetaContract> get contracts =>
+      traits.whereType<MetaContractTrait>().firstOrNull?.contracts ?? const {};
 }

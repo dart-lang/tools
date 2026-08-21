@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'api_trait.dart';
 import 'api_type.dart';
 import 'json_utils.dart';
 import 'text_renderer.dart';
@@ -113,6 +114,7 @@ final class ApiLibrary {
   final List<ApiExtensionType> extensionTypes;
   final List<ApiExecutable> functions;
   final List<ApiTypeAlias> typeAliases;
+  final Set<ApiTrait> traits;
 
   ApiLibrary({
     required this.uri,
@@ -124,7 +126,10 @@ final class ApiLibrary {
     required this.extensionTypes,
     required this.functions,
     required this.typeAliases,
-  });
+    Iterable<ApiTrait> traits = const [],
+  }) : traits = traits.isEmpty
+           ? const {}
+           : Set.unmodifiable(traits.toSet().toList()..sort());
 
   factory ApiLibrary.fromJson(Map<String, dynamic> json) => ApiLibrary(
     uri: json['uri'] as String,
@@ -140,6 +145,7 @@ final class ApiLibrary {
     ),
     functions: parseList(json, 'functions', ApiExecutable.fromJson),
     typeAliases: parseList(json, 'typeAliases', ApiTypeAlias.fromJson),
+    traits: parseList(json, 'traits', ApiTrait.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -156,6 +162,7 @@ final class ApiLibrary {
       'functions': functions.map((e) => e.toJson()).toList(),
     if (typeAliases.isNotEmpty)
       'typeAliases': typeAliases.map((e) => e.toJson()).toList(),
+    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -166,22 +173,17 @@ sealed class ApiDeclaration {
   final String? locationUri;
   final ApiDeclarationStatus status;
   final bool isDeprecated;
-  final bool isExperimental;
+  final Set<ApiTrait> traits;
 
-  /// Whether this declaration is annotated with `@internal`.
-  final bool isInternal;
-
-  final bool isVisibleForTesting;
-
-  const ApiDeclaration({
+  ApiDeclaration({
     required this.name,
     this.locationUri,
     this.status = ApiDeclarationStatus.public,
     this.isDeprecated = false,
-    this.isExperimental = false,
-    this.isInternal = false,
-    this.isVisibleForTesting = false,
-  });
+    Iterable<ApiTrait> traits = const [],
+  }) : traits = traits.isEmpty
+           ? const {}
+           : Set.unmodifiable(traits.toSet().toList()..sort());
 }
 
 /// A summary of a Dart class, mixin, or enum declaration.
@@ -199,9 +201,6 @@ final class ApiClass extends ApiDeclaration {
   final List<ApiExecutable> constructors;
   final List<ApiExecutable> methods;
 
-  /// Whether this class is annotated with `@immutable`.
-  final bool isImmutable;
-
   ApiClass({
     required super.name,
     super.locationUri,
@@ -216,10 +215,7 @@ final class ApiClass extends ApiDeclaration {
     required this.constructors,
     required this.methods,
     super.isDeprecated,
-    super.isExperimental,
-    this.isImmutable = false,
-    super.isInternal,
-    super.isVisibleForTesting,
+    super.traits,
   });
 
   factory ApiClass.fromJson(Map<String, dynamic> json) => ApiClass(
@@ -245,10 +241,7 @@ final class ApiClass extends ApiDeclaration {
     constructors: parseList(json, 'constructors', ApiExecutable.fromJson),
     methods: parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
-    isExperimental: json['isExperimental'] as bool? ?? false,
-    isImmutable: json['isImmutable'] as bool? ?? false,
-    isInternal: json['isInternal'] as bool? ?? false,
-    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
+    traits: parseList(json, 'traits', ApiTrait.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -275,10 +268,7 @@ final class ApiClass extends ApiDeclaration {
       'constructors': constructors.map((e) => e.toJson()).toList(),
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (isExperimental) 'isExperimental': isExperimental,
-    if (isImmutable) 'isImmutable': isImmutable,
-    if (isInternal) 'isInternal': isInternal,
-    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
+    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -298,9 +288,7 @@ final class ApiExtension extends ApiDeclaration {
     required this.extendedType,
     required this.methods,
     super.isDeprecated,
-    super.isExperimental,
-    super.isInternal,
-    super.isVisibleForTesting,
+    super.traits,
   });
 
   factory ApiExtension.fromJson(Map<String, dynamic> json) => ApiExtension(
@@ -313,9 +301,7 @@ final class ApiExtension extends ApiDeclaration {
     ),
     methods: parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
-    isExperimental: json['isExperimental'] as bool? ?? false,
-    isInternal: json['isInternal'] as bool? ?? false,
-    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
+    traits: parseList(json, 'traits', ApiTrait.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -330,9 +316,7 @@ final class ApiExtension extends ApiDeclaration {
     'extendedType': extendedType.toJson(),
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (isExperimental) 'isExperimental': isExperimental,
-    if (isInternal) 'isInternal': isInternal,
-    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
+    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -356,9 +340,7 @@ final class ApiExtensionType extends ApiDeclaration {
     required this.constructors,
     required this.methods,
     super.isDeprecated,
-    super.isExperimental,
-    super.isInternal,
-    super.isVisibleForTesting,
+    super.traits,
   });
 
   factory ApiExtensionType.fromJson(Map<String, dynamic> json) =>
@@ -374,9 +356,7 @@ final class ApiExtensionType extends ApiDeclaration {
         constructors: parseList(json, 'constructors', ApiExecutable.fromJson),
         methods: parseList(json, 'methods', ApiExecutable.fromJson),
         isDeprecated: json['isDeprecated'] as bool? ?? false,
-        isExperimental: json['isExperimental'] as bool? ?? false,
-        isInternal: json['isInternal'] as bool? ?? false,
-        isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
+        traits: parseList(json, 'traits', ApiTrait.fromJson),
       );
 
   Map<String, dynamic> toJson() => {
@@ -395,9 +375,7 @@ final class ApiExtensionType extends ApiDeclaration {
       'constructors': constructors.map((e) => e.toJson()).toList(),
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (isExperimental) 'isExperimental': isExperimental,
-    if (isInternal) 'isInternal': isInternal,
-    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
+    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -419,25 +397,7 @@ final class ApiExecutable extends ApiDeclaration {
   /// Whether this executable represents an enum constant.
   final bool isEnumConstant;
 
-  /// Whether this executable is annotated with `@mustBeOverridden`.
-  final bool isMustBeOverridden;
-
-  /// Whether this executable is annotated with `@mustCallSuper`.
-  final bool isMustCallSuper;
-
-  /// Whether this executable is annotated with `@nonVirtual`.
-  final bool isNonVirtual;
-
-  /// Whether this executable is annotated with `@protected`.
-  final bool isProtected;
-
   final bool isStatic;
-
-  /// Whether this executable is annotated with `@useResult`.
-  final bool isUseResult;
-
-  /// Whether this executable is annotated with `@visibleForOverriding`.
-  final bool isVisibleForOverriding;
 
   ApiExecutable({
     required super.name,
@@ -450,16 +410,8 @@ final class ApiExecutable extends ApiDeclaration {
     required this.isStatic,
     this.isConst = false,
     this.isEnumConstant = false,
-    this.isMustBeOverridden = false,
-    this.isMustCallSuper = false,
-    this.isNonVirtual = false,
-    this.isProtected = false,
-    this.isUseResult = false,
-    this.isVisibleForOverriding = false,
     super.isDeprecated,
-    super.isExperimental,
-    super.isInternal,
-    super.isVisibleForTesting,
+    super.traits,
   });
 
   factory ApiExecutable.fromJson(Map<String, dynamic> json) => ApiExecutable(
@@ -476,15 +428,7 @@ final class ApiExecutable extends ApiDeclaration {
     isConst: json['isConst'] as bool? ?? false,
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isEnumConstant: json['isEnumConstant'] as bool? ?? false,
-    isExperimental: json['isExperimental'] as bool? ?? false,
-    isInternal: json['isInternal'] as bool? ?? false,
-    isMustBeOverridden: json['isMustBeOverridden'] as bool? ?? false,
-    isMustCallSuper: json['isMustCallSuper'] as bool? ?? false,
-    isNonVirtual: json['isNonVirtual'] as bool? ?? false,
-    isProtected: json['isProtected'] as bool? ?? false,
-    isUseResult: json['isUseResult'] as bool? ?? false,
-    isVisibleForOverriding: json['isVisibleForOverriding'] as bool? ?? false,
-    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
+    traits: parseList(json, 'traits', ApiTrait.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -503,17 +447,8 @@ final class ApiExecutable extends ApiDeclaration {
     if (isConst) 'isConst': isConst,
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isEnumConstant) 'isEnumConstant': isEnumConstant,
-    if (isExperimental) 'isExperimental': isExperimental,
-    if (isInternal) 'isInternal': isInternal,
-    if (isMustBeOverridden) 'isMustBeOverridden': isMustBeOverridden,
-    if (isMustCallSuper) 'isMustCallSuper': isMustCallSuper,
-    if (isNonVirtual) 'isNonVirtual': isNonVirtual,
-    if (isProtected) 'isProtected': isProtected,
     if (isStatic) 'isStatic': isStatic,
-    if (isUseResult) 'isUseResult': isUseResult,
-    if (isVisibleForOverriding)
-      'isVisibleForOverriding': isVisibleForOverriding,
-    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
+    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -531,9 +466,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     required this.typeParameters,
     required this.aliasedType,
     super.isDeprecated,
-    super.isExperimental,
-    super.isInternal,
-    super.isVisibleForTesting,
+    super.traits,
   });
 
   factory ApiTypeAlias.fromJson(Map<String, dynamic> json) => ApiTypeAlias(
@@ -543,9 +476,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     typeParameters: parseTypeParameters(json, 'typeParameters'),
     aliasedType: ApiType.fromJson(json['aliasedType'] as Map<String, dynamic>),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
-    isExperimental: json['isExperimental'] as bool? ?? false,
-    isInternal: json['isInternal'] as bool? ?? false,
-    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
+    traits: parseList(json, 'traits', ApiTrait.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -559,9 +490,7 @@ final class ApiTypeAlias extends ApiDeclaration {
       },
     'aliasedType': aliasedType.toJson(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (isExperimental) 'isExperimental': isExperimental,
-    if (isInternal) 'isInternal': isInternal,
-    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
+    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
   };
 }
 
