@@ -141,15 +141,21 @@ Meant to make it easy to run a benchmark executable across runtimes to validate
 performance impacts.
 
 -f, --flavor
-          [aot]     Compile and run as a native binary.
-          [jit]     Run as-is without compilation, using the just-in-time (JIT) runtime.
-          [js]      Compile to JavaScript and run on node.
-          [wasm]    Compile to WebAssembly and run on node.
+          [aot]           Compile and run as a native binary.
+          [jit]           Run as-is without compilation, using the just-in-time (JIT) runtime.
+          [js]            Compile to JavaScript and run on node.
+          [wasm]          Compile to WebAssembly and run on node.
 
-    --target        The target script to compile and run.
-                    (defaults to "benchmark/benchmark.dart")
--h, --help          Print usage information and quit.
--v, --verbose       Print the full stack trace if an exception is thrown.
+    --target              The target script to compile and run.
+                          (defaults to "benchmark/benchmark.dart")
+-h, --help                Print usage information and quit.
+-v, --verbose             Print the full stack trace if an exception is thrown.
+    --json                Output results as JSON for aggregation.
+    --fail-on-unstable    Exit with a non-zero code if any benchmark is unstable.
+    --force-run           Force running the benchmark even if guidelines are violated.
+    --isolate-mode        Run JIT sweeps in parallel Dart isolates rather than subprocesses.
+    --compiler-flag       Extra flags to pass to the compiler.
+    --vm-flag             Extra flags to pass to the runtime vm/node.
 ```
 
 Example usage:
