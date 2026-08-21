@@ -401,8 +401,16 @@ void main() {
             '{$cfg,"packages":[{$name,"rootUri":"package:x/x/"}]}',
           );
           testThrows(
-            'has-host',
-            '{$cfg,"packages":[{$name,"rootUri":"file://attacker.com/share/"}]}',
+            'has-unc-host',
+            '{$cfg,"packages":[{$name,"rootUri":"file://example.com/share/"}]}',
+          );
+          testThrows(
+            'has-unc-path-injection',
+            '{$cfg,"packages":[{$name,"rootUri":"file://///example.com/share/"}]}',
+          );
+          testThrows(
+            'has-unc-bypass',
+            '{$cfg,"packages":[{$name,"rootUri":"file://localhost/\\\\example.com/share/"}]}',
           );
         });
         group('package-URI root:', () {
