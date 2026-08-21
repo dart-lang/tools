@@ -8,16 +8,203 @@ library;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 
 export 'src/base_directories.dart';
 
-/// The path to the current Dart SDK.
-String get sdkPath => path.dirname(path.dirname(Platform.resolvedExecutable));
+/// The path to the root of the Dart SDK, or `null` if no SDK could be located.
+///
+/// Probes the host environment across four tiers (memoized on first access):
+/// 1. `Platform.resolvedExecutable` (active JIT VM runtime)
+/// 2. `DART_ROOT` and `DART_SDK` environment variables
+/// 3. `PATH` environment variable traversal (dereferencing symlinks and
+///    checking Flutter cache layouts)
+/// 4. `FLUTTER_ROOT/bin/cache/dart-sdk` fallback
+String? get sdkPath {
+  if (Zone.current[environmentOverridesKey] != null) {
+    return _resolveSdkPath();
+  }
+  if (!_sdkPathResolved) {
+    _cachedSdkPath = _resolveSdkPath();
+    _sdkPathResolved = true;
+  }
+  return _cachedSdkPath;
+}
+
+String? _cachedSdkPath;
+bool _sdkPathResolved = false;
+
+/// The path to the `dart` executable, or `null` if no executable could be
+/// located.
+///
+/// If a valid [sdkPath] is found, returns `<sdkPath>/bin/dart` (`dart.exe` on
+/// Windows). Otherwise, attempts direct `PATH` resolution for `dart`.
+String? get dartExecutable {
+  if (Zone.current[environmentOverridesKey] != null) {
+    return _resolveDartExecutable();
+  }
+  if (!_dartExecutableResolved) {
+    _cachedDartExecutable = _resolveDartExecutable();
+    _dartExecutableResolved = true;
+  }
+  return _cachedDartExecutable;
+}
+
+String? _cachedDartExecutable;
+bool _dartExecutableResolved = false;
 
 /// Returns the path to the current Dart SDK.
 @Deprecated("Use 'sdkPath' instead")
-String getSdkPath() => sdkPath;
+String? getSdkPath() => sdkPath;
+
+/// Checks whether [candidatePath] represents a valid Dart SDK directory layout.
+///
+/// Validates that [candidatePath] contains the required file markers of a Dart
+/// SDK:
+/// - A libraries configuration (`lib/libraries.json` or
+///   `lib/_internal/allowed_experiments.json`), AND
+/// - An executable or version file (`bin/dart` / `bin/dart.exe` or `version`).
+///
+/// Returns `false` if [candidatePath] is empty. Relative paths (such as `.` or
+/// subdirectories) are evaluated relative to the current working directory.
+bool isValidSdkPath(String candidatePath) {
+  if (candidatePath.isEmpty) return false;
+  final hasLibrariesJson =
+      File(path.join(candidatePath, 'lib', 'libraries.json')).existsSync();
+  final hasAllowedExperiments =
+      File(
+        path.join(
+          candidatePath,
+          'lib',
+          '_internal',
+          'allowed_experiments.json',
+        ),
+      ).existsSync();
+  final hasDartBin =
+      File(
+        path.join(
+          candidatePath,
+          'bin',
+          Platform.isWindows ? 'dart.exe' : 'dart',
+        ),
+      ).existsSync();
+  final hasVersion = File(path.join(candidatePath, 'version')).existsSync();
+
+  return (hasLibrariesJson || hasAllowedExperiments) &&
+      (hasDartBin || hasVersion);
+}
+
+String? _resolveSdkPath() {
+  // Tier 1: DART_ROOT and DART_SDK environment variables (explicit overrides)
+  final dartRoot = _env['DART_ROOT'];
+  if (dartRoot != null && dartRoot.isNotEmpty && isValidSdkPath(dartRoot)) {
+    return path.absolute(dartRoot);
+  }
+
+  final dartSdk = _env['DART_SDK'];
+  if (dartSdk != null && dartSdk.isNotEmpty && isValidSdkPath(dartSdk)) {
+    return path.absolute(dartSdk);
+  }
+
+  // Tier 2: Platform.resolvedExecutable (Fast path for JIT VM)
+  final executablePath =
+      _env['_DART_RESOLVED_EXECUTABLE'] ?? Platform.resolvedExecutable;
+  if (executablePath.isNotEmpty) {
+    final candidate = path.dirname(path.dirname(executablePath));
+    if (isValidSdkPath(candidate)) {
+      return path.absolute(candidate);
+    }
+  }
+
+  // Tier 3: PATH traversal with Flutter cache awareness
+  for (final candidateExe in _getExecutablePaths('dart')) {
+    final file = File(candidateExe);
+    if (file.existsSync()) {
+      String resolved;
+      try {
+        resolved = file.resolveSymbolicLinksSync();
+      } on FileSystemException {
+        resolved = candidateExe;
+      }
+
+      // Direct SDK root check
+      final candidateSdk = path.dirname(path.dirname(resolved));
+      if (isValidSdkPath(candidateSdk)) {
+        return path.absolute(candidateSdk);
+      }
+
+      // Flutter wrapper check (e.g. flutter/bin/dart -> flutter/bin/cache/dart-sdk)
+      final flutterCacheSdk = path.join(
+        candidateSdk,
+        'bin',
+        'cache',
+        'dart-sdk',
+      );
+      if (isValidSdkPath(flutterCacheSdk)) {
+        return path.absolute(flutterCacheSdk);
+      }
+    }
+  }
+
+  // Tier 4: FLUTTER_ROOT fallback
+  final flutterRoot = _env['FLUTTER_ROOT'];
+  if (flutterRoot != null && flutterRoot.isNotEmpty) {
+    final flutterSdk = path.join(flutterRoot, 'bin', 'cache', 'dart-sdk');
+    if (isValidSdkPath(flutterSdk)) {
+      return path.absolute(flutterSdk);
+    }
+  }
+
+  return null;
+}
+
+String? _resolveDartExecutable() {
+  final sdk = sdkPath;
+  if (sdk != null) {
+    final exe = path.join(sdk, 'bin', Platform.isWindows ? 'dart.exe' : 'dart');
+    if (File(exe).existsSync()) {
+      return path.absolute(exe);
+    }
+  }
+
+  // Fallback: search PATH directly if SDK structure wasn't complete
+  for (final candidate in _getExecutablePaths('dart')) {
+    if (File(candidate).existsSync()) {
+      return path.absolute(candidate);
+    }
+  }
+
+  return null;
+}
+
+Iterable<String> _getExecutablePaths(String executableName) sync* {
+  final pathEnv = _env['PATH'];
+  if (pathEnv == null || pathEnv.isEmpty) return;
+
+  final separator = Platform.isWindows ? ';' : ':';
+  final entries = pathEnv.split(separator);
+
+  final extensions =
+      Platform.isWindows
+          ? (_env['PATHEXT']?.split(';').where((e) => e.isNotEmpty).toList() ??
+              const ['.exe', '.bat', '.cmd', ''])
+          : const [''];
+
+  for (final entry in entries) {
+    if (entry.isEmpty) continue;
+    var cleanEntry = entry.trim();
+    if (cleanEntry.startsWith('"') &&
+        cleanEntry.endsWith('"') &&
+        cleanEntry.length >= 2) {
+      cleanEntry = cleanEntry.substring(1, cleanEntry.length - 1);
+    }
+    if (cleanEntry.isEmpty) continue;
+    for (final ext in extensions) {
+      yield path.join(cleanEntry, '$executableName$ext');
+    }
+  }
+}
 
 /// The user-specific application configuration folder for the current platform.
 ///
@@ -87,7 +274,11 @@ class EnvironmentNotFoundException implements Exception {
   String toString() => message;
 }
 
+/// Zone value key used for testing environment overrides.
+@visibleForTesting
+const environmentOverridesKey = #_environmentOverrides;
+
 // This zone override exists solely for testing (see lib/cli_util_test.dart).
 Map<String, String> get _env =>
-    (Zone.current[#environmentOverrides] as Map<String, String>?) ??
+    (Zone.current[environmentOverridesKey] as Map<String, String>?) ??
     Platform.environment;

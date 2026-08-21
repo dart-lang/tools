@@ -1,3 +1,14 @@
+## 0.6.0-wip
+
+- **Breaking Change**: `sdkPath` now returns `String?` (returning `null` if no
+  valid Dart SDK can be located).
+- Support robust SDK discovery for AOT-compiled tools (`dart install`,
+  `dart build cli`) probing `Platform.resolvedExecutable`, `DART_ROOT`,
+  `DART_SDK`, system `PATH` (with Flutter wrapper layout awareness), and
+  `FLUTTER_ROOT`.
+- Add `dartExecutable` getter (`String?`) to locate the `dart` binary.
+- Add `isValidSdkPath(String candidatePath)` validation helper.
+
 ## 0.5.2
 
 - Add a legend to multiselect dialogs to make the usage more obvious.
