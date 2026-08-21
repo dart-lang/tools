@@ -400,6 +400,18 @@ void main() {
             'package-URI',
             '{$cfg,"packages":[{$name,"rootUri":"package:x/x/"}]}',
           );
+          testThrows(
+            'has-unc-host',
+            '{$cfg,"packages":[{$name,"rootUri":"file://example.com/share/"}]}',
+          );
+          testThrows(
+            'has-unc-path-injection',
+            '{$cfg,"packages":[{$name,"rootUri":"file://///example.com/share/"}]}',
+          );
+          testThrows(
+            'has-unc-bypass',
+            '{$cfg,"packages":[{$name,"rootUri":"file://localhost/\\\\example.com/share/"}]}',
+          );
         });
         group('package-URI root:', () {
           testThrows(
@@ -422,6 +434,18 @@ void main() {
           testThrows(
             'package: URI',
             '{$cfg,"packages":[{$name,$root,"packageUri":"package:x/x/"}]}',
+          );
+          testThrows(
+            'has-unc-host',
+            '{$cfg,"packages":[{$name,$root,"packageUri":"file://example.com/share/"}]}',
+          );
+          testThrows(
+            'has-unc-path-injection',
+            '{$cfg,"packages":[{$name,$root,"packageUri":"file://///example.com/share/"}]}',
+          );
+          testThrows(
+            'has-unc-bypass',
+            '{$cfg,"packages":[{$name,$root,"packageUri":"file://localhost/\\\\example.com/share/"}]}',
           );
           testThrows(
             'not inside root',
