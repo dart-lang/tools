@@ -436,6 +436,18 @@ void main() {
             '{$cfg,"packages":[{$name,$root,"packageUri":"package:x/x/"}]}',
           );
           testThrows(
+            'has-unc-host',
+            '{$cfg,"packages":[{$name,$root,"packageUri":"file://example.com/share/"}]}',
+          );
+          testThrows(
+            'has-unc-path-injection',
+            '{$cfg,"packages":[{$name,$root,"packageUri":"file://///example.com/share/"}]}',
+          );
+          testThrows(
+            'has-unc-bypass',
+            '{$cfg,"packages":[{$name,$root,"packageUri":"file://localhost/\\\\example.com/share/"}]}',
+          );
+          testThrows(
             'not inside root',
             '{$cfg,"packages":[{$name,$root,"packageUri":"../other/"}]}',
           );

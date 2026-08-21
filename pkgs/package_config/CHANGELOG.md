@@ -1,6 +1,6 @@
 ## 3.0.1-wip
 
-- Forbid non-local file paths in `rootUri` to mitigate UNC path injection ([SMB NTLM leak](https://attack.mitre.org/techniques/T1187/)).
+- Forbid non-local file paths in `rootUri` and `packageUri` to mitigate UNC path injection ([SMB NTLM leak](https://attack.mitre.org/techniques/T1187/)).
 
 ## 3.0.0
 
