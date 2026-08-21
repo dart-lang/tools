@@ -1,5 +1,8 @@
 ## 4.12.0-wip
 
+- Add `MixinBuilder.onTypes` to support a mixin `on` clause with multiple
+  superclass constraints (e.g. `mixin Foo on A, B {}`). Takes precedence over
+  the existing single-type `on` field when non-empty.
 - Ensure scoped lint ignores
   (such as `// ignore_for_file: no_leading_underscores_for_library_prefixes`)
   are emitted at the top of the file before library annotations and directives.
