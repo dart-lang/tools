@@ -189,12 +189,10 @@ class DartEmitter extends Object
     out.write('mixin ${spec.name}');
     visitTypeParameters(spec.types.map((r) => r.type), out);
     if (spec.onTypes.isNotEmpty) {
-      out
-        ..write(' on ')
-        ..writeAll(
-          spec.onTypes.map<StringSink>((m) => m.type.accept(this)),
-          ',',
-        );
+      out.write(' on ');
+      visitAll<Reference>(spec.onTypes, out, (r) {
+        r.type.accept(this, out);
+      }, ',');
     } else if (spec.on != null) {
       out.write(' on ');
       spec.on!.type.accept(this, out);
