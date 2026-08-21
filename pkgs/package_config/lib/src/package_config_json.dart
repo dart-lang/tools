@@ -154,20 +154,6 @@ PackageConfig parsePackageConfigJson(
     var parsedRootUri = Uri.parse(rootUri!);
     var relativeRoot = !hasAbsolutePath(parsedRootUri);
     var root = baseLocation.resolveUri(parsedRootUri);
-    if (root.isScheme('file')) {
-      var windowsPath = root.toFilePath(windows: true);
-      if (windowsPath.startsWith(r'\\')) {
-        onError(
-          PackageConfigFormatException(
-            'Package root URIs must not evaluate to a Windows UNC path. '
-            'The rootUri must be a local file path. '
-            'Found: "$windowsPath".',
-            entry,
-          ),
-        );
-        return null;
-      }
-    }
     if (!root.path.endsWith('/')) root = root.replace(path: '${root.path}/');
     var packageRoot = root;
     if (packageUri != null) packageRoot = root.resolve(packageUri!);
