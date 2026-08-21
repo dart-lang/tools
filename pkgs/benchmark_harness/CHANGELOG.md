@@ -1,3 +1,8 @@
+## 2.5.0-wip
+
+- Added a compiler-safe, zero-cost `blackhole` utility to protect
+  microbenchmarks from dead-code elimination (DCE) and tree-shaking.
+
 ## 2.4.0
 
 - Added a `bench` command.

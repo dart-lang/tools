@@ -23,6 +23,37 @@ to call `run()` once by overriding the `exercise` method:
 
 `AsyncBenchmarkBase` already reports the average time to call `run()` __once__.
 
+## Preventing Dead-Code Elimination (DCE)
+
+Modern optimizing compilers (like the Dart VM, `dart2js`, and `dart2wasm`) are
+highly effective at tree-shaking and optimizing away unused computations. If a
+microbenchmark computes a value but never uses it, the compiler may eliminate
+the entire computation path, leading to deceptively fast but inaccurate
+timings (e.g., `0 us`).
+
+To defeat this, pass the computed value to the `blackhole` shorthand function.
+This registers the computation's result as live and forces the compiler to
+preserve the computation path, while introducing zero runtime execution
+overhead.
+
+```dart
+import 'package:benchmark_harness/benchmark_harness.dart';
+
+class MyBenchmark extends BenchmarkBase {
+  MyBenchmark() : super('MyBenchmark');
+
+  @override
+  void run() {
+    // Without passing 'result' to blackhole(), the compiler could optimize
+    // away the entire heavyCalculation() call.
+    final result = heavyCalculation();
+    blackhole(result);
+  }
+
+  int heavyCalculation() => 42 + 58;
+}
+```
+
 ## Comparing Results
 
 If you are running the same benchmark, on the same machine, running the same OS,
