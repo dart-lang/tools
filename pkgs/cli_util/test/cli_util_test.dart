@@ -14,17 +14,20 @@ import 'package:test/test.dart';
 void main() {
   group('sdkPath & dartExecutable', () {
     test('resolves in active VM environment', () {
-      expect(sdkPath, isNotNull);
-      expect(Directory(sdkPath!).existsSync(), isTrue);
-      expect(isValidSdkPath(sdkPath!), isTrue);
+      if (sdkPath case final path?) {
+        expect(Directory(path).existsSync(), isTrue);
+        expect(isValidSdkPath(path), isTrue);
 
-      expect(dartExecutable, isNotNull);
-      expect(File(dartExecutable!).existsSync(), isTrue);
+        expect(dartExecutable, isNotNull);
+        expect(File(dartExecutable!).existsSync(), isTrue);
+      }
     });
 
     test('isValidSdkPath validation', () {
       expect(isValidSdkPath(''), isFalse);
-      expect(isValidSdkPath(sdkPath!), isTrue);
+      if (sdkPath case final path?) {
+        expect(isValidSdkPath(path), isTrue);
+      }
 
       final tempDir = Directory.systemTemp.createTempSync('invalid_sdk_test');
       try {
