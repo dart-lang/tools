@@ -8,6 +8,7 @@ library;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 
 export 'src/base_directories.dart';
@@ -21,7 +22,7 @@ export 'src/base_directories.dart';
 ///    checking Flutter cache layouts)
 /// 4. `FLUTTER_ROOT/bin/cache/dart-sdk` fallback
 String? get sdkPath {
-  if (Zone.current[#environmentOverrides] != null) {
+  if (Zone.current[environmentOverridesKey] != null) {
     return _resolveSdkPath();
   }
   if (!_sdkPathResolved) {
@@ -40,7 +41,7 @@ bool _sdkPathResolved = false;
 /// If a valid [sdkPath] is found, returns `<sdkPath>/bin/dart` (`dart.exe` on
 /// Windows). Otherwise, attempts direct `PATH` resolution for `dart`.
 String? get dartExecutable {
-  if (Zone.current[#environmentOverrides] != null) {
+  if (Zone.current[environmentOverridesKey] != null) {
     return _resolveDartExecutable();
   }
   if (!_dartExecutableResolved) {
@@ -58,6 +59,15 @@ bool _dartExecutableResolved = false;
 String? getSdkPath() => sdkPath;
 
 /// Checks whether [candidatePath] represents a valid Dart SDK directory layout.
+///
+/// Validates that [candidatePath] contains the required file markers of a Dart
+/// SDK:
+/// - A libraries configuration (`lib/libraries.json` or
+///   `lib/_internal/allowed_experiments.json`), AND
+/// - An executable or version file (`bin/dart` / `bin/dart.exe` or `version`).
+///
+/// Returns `false` if [candidatePath] is empty. Relative paths (such as `.` or
+/// subdirectories) are evaluated relative to the current working directory.
 bool isValidSdkPath(String candidatePath) {
   if (candidatePath.isEmpty) return false;
   final hasLibrariesJson =
@@ -187,7 +197,7 @@ Iterable<String> _getExecutablePaths(String executableName) sync* {
     if (cleanEntry.startsWith('"') &&
         cleanEntry.endsWith('"') &&
         cleanEntry.length >= 2) {
-      cleanEntry = cleanEntry.substring(1, cleanEntry.length - 1).trim();
+      cleanEntry = cleanEntry.substring(1, cleanEntry.length - 1);
     }
     if (cleanEntry.isEmpty) continue;
     for (final ext in extensions) {
@@ -264,7 +274,11 @@ class EnvironmentNotFoundException implements Exception {
   String toString() => message;
 }
 
+/// Zone value key used for testing environment overrides.
+@visibleForTesting
+const environmentOverridesKey = #_environmentOverrides;
+
 // This zone override exists solely for testing (see lib/cli_util_test.dart).
 Map<String, String> get _env =>
-    (Zone.current[#environmentOverrides] as Map<String, String>?) ??
+    (Zone.current[environmentOverridesKey] as Map<String, String>?) ??
     Platform.environment;

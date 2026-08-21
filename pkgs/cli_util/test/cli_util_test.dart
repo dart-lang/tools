@@ -60,7 +60,7 @@ void main() {
             expect(sdkPath, mockSdk.path);
           },
           zoneValues: {
-            #environmentOverrides: <String, String>{
+            environmentOverridesKey: <String, String>{
               'DART_ROOT': mockSdk.path,
               '_DART_RESOLVED_EXECUTABLE': '',
             },
@@ -72,7 +72,7 @@ void main() {
             expect(sdkPath, mockSdk.path);
           },
           zoneValues: {
-            #environmentOverrides: <String, String>{
+            environmentOverridesKey: <String, String>{
               'DART_SDK': mockSdk.path,
               '_DART_RESOLVED_EXECUTABLE': '',
             },
@@ -108,7 +108,7 @@ void main() {
             expect(sdkPath, mockDartSdk.resolveSymbolicLinksSync());
           },
           zoneValues: {
-            #environmentOverrides: <String, String>{
+            environmentOverridesKey: <String, String>{
               'DART_ROOT': '',
               'DART_SDK': '',
               'FLUTTER_ROOT': '',
@@ -142,12 +142,12 @@ void main() {
             expect(sdkPath, mockSdk.resolveSymbolicLinksSync());
           },
           zoneValues: {
-            #environmentOverrides: <String, String>{
+            environmentOverridesKey: <String, String>{
               'DART_ROOT': '',
               'DART_SDK': '',
               'FLUTTER_ROOT': '',
               '_DART_RESOLVED_EXECUTABLE': '',
-              'PATH': '"${binDir.path}"',
+              'PATH': '  "${binDir.path}"  ',
             },
           },
         );
@@ -173,7 +173,7 @@ void main() {
             expect(sdkPath, mockDartSdk.path);
           },
           zoneValues: {
-            #environmentOverrides: <String, String>{
+            environmentOverridesKey: <String, String>{
               'DART_ROOT': '',
               'DART_SDK': '',
               '_DART_RESOLVED_EXECUTABLE': '',
@@ -194,7 +194,7 @@ void main() {
           expect(dartExecutable, isNull);
         },
         zoneValues: {
-          #environmentOverrides: <String, String>{
+          environmentOverridesKey: <String, String>{
             'DART_ROOT': '',
             'DART_SDK': '',
             'FLUTTER_ROOT': '',
@@ -222,7 +222,7 @@ void main() {
       expect(() {
         runZoned(
           () => applicationConfigHome('dart'),
-          zoneValues: {#environmentOverrides: <String, String>{}},
+          zoneValues: {environmentOverridesKey: <String, String>{}},
         );
       }, throwsA(isA<EnvironmentNotFoundException>()));
     });
