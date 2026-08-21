@@ -15,6 +15,18 @@ import 'package:test/test.dart';
 
 void main() {
   _testElementSpans();
+
+  test('CDATA parser differential avoids XSS payload hiding (b/536201494)', () {
+    final payload = '<svg><![CDATA[x]]]><img src=1 onerror=alert(1)>]]></svg>';
+    final document = parseFragment(payload);
+
+    final images = document.querySelectorAll('img');
+
+    // Check that <img> wasn't incorrectly swallowed as part of the CDATA block.
+    expect(images, isNotEmpty);
+    expect(images.first.attributes.containsKey('onerror'), isTrue);
+  });
+
   test('doctype is cloneable', () {
     final doc = parse('<!doctype HTML>');
     final doctype = doc.nodes[0] as DocumentType;
