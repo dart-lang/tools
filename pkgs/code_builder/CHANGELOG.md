@@ -16,6 +16,11 @@
 - Add `Pattern` AST and static methods for generating Dart 3 pattern matching
   syntax.
 - Require Dart `^3.10.0`
+- Add `Expression.nullSafeCascade`, `cascadeIndex`, `nullSafeCascadeIndex`,
+  `cascadeAssign`, `nullSafeCascadeAssign`, `cascadeInvoke`,
+  `nullSafeCascadeInvoke`, `cascadeAssigns`, and `nullSafeCascadeAssigns` for
+  building null-aware cascades, cascaded index assignments, and fluent
+  multi-property cascade chains.
 
 ## 4.11.1
 

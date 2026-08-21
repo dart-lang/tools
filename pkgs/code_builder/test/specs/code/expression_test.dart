@@ -358,6 +358,62 @@ void main() {
     expect(refer('foo').nullSafeProperty('bar'), equalsDart('foo?.bar'));
   });
 
+  test('should emit invoking a null-aware cascade property accessor', () {
+    expect(refer('foo').nullSafeCascade('bar'), equalsDart('foo?..bar'));
+  });
+
+  test('should emit a cascade assignment helper', () {
+    expect(
+      refer('foo').cascadeAssign('bar', literalTrue),
+      equalsDart('foo..bar = true'),
+    );
+  });
+
+  test('should emit a null-aware cascade assignment helper', () {
+    expect(
+      refer('foo').nullSafeCascadeAssign('bar', literalTrue),
+      equalsDart('foo?..bar = true'),
+    );
+  });
+
+  test('should emit a cascade invoke helper', () {
+    expect(
+      refer('foo').cascadeInvoke('bar', [literal(1)]),
+      equalsDart('foo..bar(1)'),
+    );
+  });
+
+  test('should emit chained cascade assignments via cascadeAssigns', () {
+    expect(
+      refer('foo').cascadeAssigns({'bar': literal(1), 'baz': literal(2)}),
+      equalsDart('foo..bar = 1..baz = 2'),
+    );
+  });
+
+  test('should emit a null-aware cascade invoke helper', () {
+    expect(
+      refer('foo').nullSafeCascadeInvoke('bar', [literal(1)]),
+      equalsDart('foo?..bar(1)'),
+    );
+  });
+
+  test('should emit chained cascade assignments via nullSafeCascadeAssigns '
+      'with only the first cascade being null-aware', () {
+    expect(
+      refer(
+        'foo',
+      ).nullSafeCascadeAssigns({'bar': literal(1), 'baz': literal(2)}),
+      equalsDart('foo?..bar = 1..baz = 2'),
+    );
+  });
+
+  test(
+    'should emit nothing extra for nullSafeCascadeAssigns with no entries',
+    () {
+      expect(refer('foo').nullSafeCascadeAssigns({}), equalsDart('foo'));
+    },
+  );
+
   test('should emit invoking a method with a single positional argument', () {
     expect(refer('foo').call([literal(1)]), equalsDart('foo(1)'));
   });
@@ -634,6 +690,28 @@ void main() {
           .assignVar('foo')
           .statement,
       equalsDart('var foo = bar[true] ??= false;'),
+    );
+  });
+
+  test('should emit a cascade index operator set', () {
+    expect(
+      refer('bar')
+          .cascadeIndex(literalString('key'))
+          .assign(literalFalse)
+          .assignVar('foo')
+          .statement,
+      equalsDart("var foo = bar..['key'] = false;"),
+    );
+  });
+
+  test('should emit a null-aware cascade index operator set', () {
+    expect(
+      refer('bar')
+          .nullSafeCascadeIndex(literalString('key'))
+          .assign(literalFalse)
+          .assignVar('foo')
+          .statement,
+      equalsDart("var foo = bar?..['key'] = false;"),
     );
   });
 
