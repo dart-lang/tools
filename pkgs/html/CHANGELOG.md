@@ -1,5 +1,6 @@
 ## 0.15.7-wip
 
+- Fix the tokenizer failing to close CDATA blocks when encountering extra brackets
 - Require Dart `3.6`
 - Added new `textContent` method to `Node` class that returns the text content of
   the node.
