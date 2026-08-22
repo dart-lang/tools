@@ -22,6 +22,12 @@ import 'token.dart';
 ///
 /// https://html.spec.whatwg.org/multipage/parsing.html#list-of-active-formatting-elements
 class ActiveFormattingElements extends ListProxy<Element?> {
+  /// Upper bound on how many trailing entries the Noah's-Ark clause scans.
+  ///
+  /// Prevents O(N^2) parse time on maliciously crafted nested formatting
+  /// elements with unique attributes.
+  static const int noahArkScanLimit = 256;
+
   /// Push an element into the active formatting elements.
   ///
   /// Prevents equivalent elements from appearing more than 3 times following
@@ -33,8 +39,9 @@ class ActiveFormattingElements extends ListProxy<Element?> {
   void add(Element? node) {
     var equalCount = 0;
     if (node != null) {
+      var scanned = 0;
       for (var element in reversed) {
-        if (element == null) {
+        if (element == null || scanned++ == noahArkScanLimit) {
           break;
         }
         if (_nodesEqual(element, node)) {
@@ -174,7 +181,11 @@ class TreeBuilder {
     // Step 2 and step 3: we start with the last element. So i is -1.
     var i = activeFormattingElements.length - 1;
     var entry = activeFormattingElements[i];
-    if (entry == null || openElements.contains(entry)) {
+    // Fast path: checking identity of the most recent formatting element
+    // avoids an O(n) `contains` scan on every formatting start tag.
+    if (entry == null ||
+        (openElements.isNotEmpty && identical(entry, openElements.last)) ||
+        openElements.contains(entry)) {
       return;
     }
 
