@@ -205,8 +205,35 @@ extension StringExtensions on String {
   /// Whether this string contains only whitespaces.
   bool get isBlank => trim().isEmpty;
 
-  /// Converts this string to a list of [Line].
-  List<Line> toLines() => LineSplitter.split(this).map(Line.new).toList();
+  /// Converts this string to a list of [Line], tracking the offset of each line
+  /// in this original source string.
+  List<Line> toLines() {
+    final lines = <Line>[];
+    var start = 0;
+    var i = 0;
+    final length = this.length;
+    while (i < length) {
+      final char = codeUnitAt(i);
+      if (char == $lf) {
+        lines.add(Line(substring(start, i), offset: start));
+        i++;
+        start = i;
+      } else if (char == $cr) {
+        lines.add(Line(substring(start, i), offset: start));
+        i++;
+        if (i < length && codeUnitAt(i) == $lf) {
+          i++;
+        }
+        start = i;
+      } else {
+        i++;
+      }
+    }
+    if (start < length) {
+      lines.add(Line(substring(start), offset: start));
+    }
+    return lines;
+  }
 
   /// Returns the last character.
   String last([int n = 1]) => substring(length - n);
