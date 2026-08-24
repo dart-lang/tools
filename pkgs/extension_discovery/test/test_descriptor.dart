@@ -3,7 +3,15 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert' show JsonEncoder;
-import 'dart:io' show Platform, Process;
+import 'dart:io'
+    show
+        Platform,
+        Process,
+        Link,
+        FileSystemEntity,
+        FileSystemEntityType,
+        File,
+        Directory;
 
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -17,6 +25,35 @@ d.FileDescriptor pubspec(Map<String, Object?> pubspec) =>
 
 Uri fileUri(String path) => Uri.file(d.path(path));
 Uri directoryUri(String path) => Uri.directory(d.path(path));
+
+class _LinkDescriptor extends d.Descriptor {
+  final String _target;
+
+  _LinkDescriptor(String name, this._target) : super(name);
+
+  String _path(String? parent) => Uri.directory(parent ?? d.sandbox)
+      .resolve(name)
+      .toFilePath(windows: Platform.isWindows);
+
+  @override
+  String describe() => 'link $name to $_target';
+
+  @override
+  Future<void> create([String? parent]) async {
+    final path = _path(parent);
+    final link = Link(path);
+    await link.create(_target);
+  }
+
+  @override
+  Future<void> validate([String? parent]) async {
+    final link = Link(_path(parent));
+    expect(await FileSystemEntity.isLink(link.path), isTrue);
+    expect(await link.target(), _target);
+  }
+}
+
+d.Descriptor link(String name, String target) => _LinkDescriptor(name, target);
 
 Future<String> dart([
   String? arg1,

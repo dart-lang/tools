@@ -6,8 +6,10 @@
 library;
 
 import 'dart:collection' show UnmodifiableListView;
-import 'dart:io' show File, IOException;
+import 'dart:io' show Directory, File, IOException;
 import 'dart:isolate' show Isolate;
+
+import 'package:path/path.dart' as path;
 
 import 'src/io.dart';
 import 'src/package_config.dart';
@@ -208,19 +210,23 @@ Future<List<Extension>> _findExtensions({
       final configStat = configFile.statSync();
       if (configStat.isFileOrLink) {
         if (configStat.isPossiblyModifiedAfter(registryStat.modified)) {
-          try {
-            registryUpdated = true;
-            registry[i] = (
-              package: p.package,
-              rootUri: p.rootUri,
-              packageUri: p.packageUri,
-              config: parseYamlFromConfigFile(await configFile.readAsString()),
-            );
-            continue;
-          } on FormatException {
-            // pass
-          } on IOException {
-            // pass
+          if (_isWithinPackageBoundary(rootUri, configFile)) {
+            try {
+              registryUpdated = true;
+              registry[i] = (
+                package: p.package,
+                rootUri: p.rootUri,
+                packageUri: p.packageUri,
+                config: parseYamlFromConfigFile(
+                  await configFile.readAsString(),
+                ),
+              );
+              continue;
+            } on FormatException {
+              // pass
+            } on IOException {
+              // pass
+            }
           }
           registryUpdated = true;
           registry[i] = (
@@ -254,12 +260,14 @@ Future<List<Extension>> _findExtensions({
         final configFile = File.fromUri(rootUri.resolve(configFileName));
         final configStat = configFile.statSync();
         if (configStat.isFileOrLink) {
-          return (
-            package: p.name,
-            rootUri: p.rootUri,
-            packageUri: p.packageUri,
-            config: parseYamlFromConfigFile(await configFile.readAsString()),
-          );
+          if (_isWithinPackageBoundary(rootUri, configFile)) {
+            return (
+              package: p.name,
+              rootUri: p.rootUri,
+              packageUri: p.packageUri,
+              config: parseYamlFromConfigFile(await configFile.readAsString()),
+            );
+          }
         }
       } on FormatException {
         // pass
@@ -296,4 +304,12 @@ Future<List<Extension>> _findExtensions({
             ))
         .toList(growable: false),
   );
+}
+
+/// Checks if [configFile] actually resides within [rootUri] after fully
+/// resolving symbolic links for both paths.
+bool _isWithinPackageBoundary(Uri rootUri, File configFile) {
+  final rootPath = Directory.fromUri(rootUri).resolveSymbolicLinksSync();
+  final realPath = configFile.resolveSymbolicLinksSync();
+  return path.isWithin(rootPath, realPath);
 }
