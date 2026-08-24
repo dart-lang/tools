@@ -3,15 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert' show JsonEncoder;
-import 'dart:io'
-    show
-        Platform,
-        Process,
-        Link,
-        FileSystemEntity,
-        FileSystemEntityType,
-        File,
-        Directory;
+import 'dart:io' show FileSystemEntity, Link, Platform, Process;
 
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -29,7 +21,7 @@ Uri directoryUri(String path) => Uri.directory(d.path(path));
 class _LinkDescriptor extends d.Descriptor {
   final String _target;
 
-  _LinkDescriptor(String name, this._target) : super(name);
+  _LinkDescriptor(super.name, this._target);
 
   String _path(String? parent) => Uri.directory(parent ?? d.sandbox)
       .resolve(name)

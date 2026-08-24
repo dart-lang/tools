@@ -64,7 +64,8 @@ void main() {
     }
     await d.dartPubGet(d.path('myapp'));
 
-    // Delete the safe file and create the symlink config.yaml utilizing test_descriptor
+    // Delete the safe file and create the symlink config.yaml utilizing
+    // test_descriptor
     File(d.path('evil_pkg/extension/devtools/config.yaml')).deleteSync();
 
     await d
