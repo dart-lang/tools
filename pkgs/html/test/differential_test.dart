@@ -96,7 +96,6 @@ final _knownIssues = {
   'noscript layout dropped (yahoo core)',
   'adoption agency algorithm nested loop',
   'isindex form expansion (action)',
-  'DOM Clobbering breaking test traversions',
 };
 
 void main() {
