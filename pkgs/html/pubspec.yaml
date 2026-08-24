@@ -20,3 +20,4 @@ dev_dependencies:
   dart_style: ^3.0.0
   path: ^1.8.0
   test: ^1.16.6
+  web: ^1.1.1
