@@ -1,4 +1,5 @@
 @TestOn('chrome')
+library;
 
 import 'dart:js_interop';
 
@@ -123,7 +124,7 @@ void main() {
 Map<String, int> _countWebTags(web.Document doc) {
   final counts = <String, int>{};
   final elements = doc.querySelectorAll('*');
-  for (int i = 0; i < elements.length; i++) {
+  for (var i = 0; i < elements.length; i++) {
     final tag = (elements.item(i) as web.Element).tagName.toLowerCase();
     counts[tag] = (counts[tag] ?? 0) + 1;
   }
