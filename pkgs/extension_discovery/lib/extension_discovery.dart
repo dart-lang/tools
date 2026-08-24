@@ -309,7 +309,11 @@ Future<List<Extension>> _findExtensions({
 /// Checks if [configFile] actually resides within [rootUri] after fully
 /// resolving symbolic links for both paths.
 bool _isWithinPackageBoundary(Uri rootUri, File configFile) {
-  final rootPath = Directory.fromUri(rootUri).resolveSymbolicLinksSync();
-  final realPath = configFile.resolveSymbolicLinksSync();
-  return path.isWithin(rootPath, realPath);
+  try {
+    final rootPath = Directory.fromUri(rootUri).resolveSymbolicLinksSync();
+    final realPath = configFile.resolveSymbolicLinksSync();
+    return path.isWithin(rootPath, realPath);
+  } on IOException {
+    return false;
+  }
 }
