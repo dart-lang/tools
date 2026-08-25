@@ -8,6 +8,7 @@
 import 'dart:collection' as collection;
 
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 
 import 'event.dart';
@@ -86,6 +87,7 @@ class YamlMap extends YamlNode with collection.MapMixin, UnmodifiableMapMixin {
       YamlMapWrapper(dartMap, sourceUrl, style: style);
 
   /// Users of the library should not use this constructor.
+  @internal
   YamlMap.internal(Map<dynamic, YamlNode> nodes, super.span, this.style)
       : nodes = UnmodifiableMapView<dynamic, YamlNode>(nodes),
         super._();
@@ -136,6 +138,7 @@ class YamlList extends YamlNode with collection.ListMixin {
       YamlListWrapper(dartList, sourceUrl, style: style);
 
   /// Users of the library should not use this constructor.
+  @internal
   YamlList.internal(List<YamlNode> nodes, super.span, this.style)
       : nodes = UnmodifiableListView<YamlNode>(nodes),
         super._();
@@ -170,11 +173,13 @@ class YamlScalar extends YamlNode {
   }
 
   /// Users of the library should not use this constructor.
+  @internal
   YamlScalar.internal(this.value, ScalarEvent scalar)
       : style = scalar.style,
         super._(scalar.span);
 
   /// Users of the library should not use this constructor.
+  @internal
   YamlScalar.internalWithSpan(this.value, SourceSpan span)
       : style = ScalarStyle.ANY,
         super._(span);

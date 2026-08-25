@@ -7,6 +7,7 @@
 
 import 'dart:collection';
 
+import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 
 import 'yaml_node.dart';
@@ -33,6 +34,7 @@ class YamlDocument {
   final bool endImplicit;
 
   /// Users of the library should not use this constructor.
+  @internal
   YamlDocument.internal(this.contents, this.span, this.versionDirective,
       List<TagDirective> tagDirectives,
       {this.startImplicit = false, this.endImplicit = false})
