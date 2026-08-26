@@ -651,11 +651,15 @@ final class Event {
   /// * [commandHasTerminal] - Boolean indicating if the flutter command ran
   ///   with a terminal.
   ///
+  /// * [hostArch] - the host CPU architecture executing the command (e.g.,
+  ///   "x64", "arm64", "arm", "ia32", "riscv64").
+  ///
   /// * [maxRss] - maximum resident size for a given flutter command.
   Event.flutterCommandResult({
     required String commandPath,
     required String result,
     required bool commandHasTerminal,
+    String? hostArch,
     int? maxRss,
   }) : this._(
          eventName: DashEvent.flutterCommandResult,
@@ -663,6 +667,7 @@ final class Event {
            'commandPath': commandPath,
            'result': result,
            'commandHasTerminal': commandHasTerminal,
+           'hostArch': ?hostArch,
            'maxRss': ?maxRss,
          },
        );
