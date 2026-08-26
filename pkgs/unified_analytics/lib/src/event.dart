@@ -428,8 +428,7 @@ final class Event {
   ///   context.
   ///
   /// * [languageVersionOverrides] - JSON-encoded map of the language version
-  ///   overrides specified for all of the libraries in the context.  Format:
-  ///   { "2.12":5,"3.10":2}
+  ///   overrides specified for all of the libraries in the context.
   Event.contextStructure({
     required int immediateFileCount,
     required int immediateFileLineCount,
@@ -442,8 +441,8 @@ final class Event {
     String libraryCycleLineCounts = '',
     String contextWorkspaceType = '',
     String numberOfPackagesInWorkspace = '',
-    Map<String, int> minSdkConstraints = const {},
-    Map<String, int> languageVersionOverrides = const {},
+    String minSdkConstraints = '',
+    String languageVersionOverrides = '',
   }) : this._(
          eventName: DashEvent.contextStructure,
          eventData: {

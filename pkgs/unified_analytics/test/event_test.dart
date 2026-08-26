@@ -174,11 +174,8 @@ void main() {
     expect(constructedEvent.eventData['libraryCycleLineCounts'], 'b');
     expect(constructedEvent.eventData['contextWorkspaceType'], '[0,1,2]');
     expect(constructedEvent.eventData['numberOfPackagesInWorkspace'], '32');
-    expect(constructedEvent.eventData['minSdkConstraints'], <String, int>{});
-    expect(
-      constructedEvent.eventData['languageVersionOverrides'],
-      <String, int>{},
-    );
+    expect(constructedEvent.eventData['minSdkConstraints'], '');
+    expect(constructedEvent.eventData['languageVersionOverrides'], '');
     expect(constructedEvent.eventData.length, 13);
   });
 
@@ -195,8 +192,8 @@ void main() {
       libraryCycleLineCounts: 'b',
       contextWorkspaceType: '[0,1,2]',
       numberOfPackagesInWorkspace: '32',
-      minSdkConstraints: {'2.12.0': 5, '3.0.0': 2},
-      languageVersionOverrides: {'2.12': 5, '3.10': 2},
+      minSdkConstraints: '{"2.12.0":5,"3.0.0":2}',
+      languageVersionOverrides: '{"2.12":5,"3.10":2}',
     );
 
     final constructedEvent = generateEvent();
@@ -216,11 +213,11 @@ void main() {
     expect(constructedEvent.eventData['numberOfPackagesInWorkspace'], '32');
     expect(
       constructedEvent.eventData['minSdkConstraints'],
-      {'2.12.0': 5, '3.0.0': 2},
+      '{"2.12.0":5,"3.0.0":2}',
     );
     expect(
       constructedEvent.eventData['languageVersionOverrides'],
-      {'2.12': 5, '3.10': 2},
+      '{"2.12":5,"3.10":2}',
     );
     expect(constructedEvent.eventData.length, 13);
   });

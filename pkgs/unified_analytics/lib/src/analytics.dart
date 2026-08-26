@@ -520,8 +520,7 @@ class AnalyticsImpl implements Analytics {
   bool get shouldShowMessage => _showMessage;
 
   @override
-  bool get telemetryEnabled =>
-      isExternal ? _configHandler.telemetryEnabled : true;
+  bool get telemetryEnabled => !isExternal || _configHandler.telemetryEnabled;
 
   @override
   Map<String, Map<String, Object?>> get userPropertyMap =>
@@ -655,6 +654,7 @@ class AnalyticsImpl implements Analytics {
 
   @override
   Future<void> setTelemetry(bool reportingBool) {
+    if (!isExternal) return Future.value();
     _configHandler.setTelemetry(reportingBool);
 
     // Creation of the [Event] for opting out
