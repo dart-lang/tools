@@ -1,4 +1,4 @@
-## 8.0.18-wip
+## 8.0.18
 
 - Added optional `hostArch` parameter to `Event.flutterCommandResult`.
 - Added optional `pubspecHasFlutterSdk`, `pubspecEnvironmentSdk`, and
