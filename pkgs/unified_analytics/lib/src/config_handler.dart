@@ -45,10 +45,9 @@ class ConfigHandler {
   bool _telemetryEnabled = true;
 
   ConfigHandler({required this.homeDirectory, required this.configFile})
-    : configFileLastModified =
-          isExternal && configFile.existsSync()
-              ? configFile.lastModifiedSync()
-              : DateTime.fromMillisecondsSinceEpoch(0) {
+    : configFileLastModified = isExternal && configFile.existsSync()
+          ? configFile.lastModifiedSync()
+          : DateTime.fromMillisecondsSinceEpoch(0) {
     // Call the method to parse the contents of the config file when
     // this class is initialized
     if (isExternal) {
