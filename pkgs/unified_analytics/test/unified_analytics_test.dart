@@ -14,6 +14,8 @@ import 'package:file/memory.dart';
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
+import 'package:unified_analytics/src/is_external.dart';
+import 'package:unified_analytics/src/user_property.dart';
 import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 import 'package:yaml/yaml.dart';
@@ -808,6 +810,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       'locale',
       'client_ide',
       'ai_agent',
+      'is_external',
     ];
     expect(
       analytics.userPropertyMap.keys.length,
@@ -822,6 +825,39 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       );
     }
   });
+
+  test('The isExternal constant is true by default', () {
+    expect(isExternal, true);
+  });
+
+  test(
+    'The UserProperty class correctly sets and exposes the is_external value',
+    () {
+      expect(
+        analytics.userPropertyMap['is_external']?['value'],
+        isExternal,
+        reason: 'The is_external user property should mirror isExternal',
+      );
+
+      final userProperty = UserProperty(
+        flutterChannel: flutterChannel,
+        host: 'macos',
+        flutterVersion: flutterVersion,
+        dartVersion: dartVersion,
+        tool: initialTool.label,
+        hostOsVersion: '14.0',
+        locale: 'en',
+        clientIde: null,
+        aiAgent: null,
+        sessionFile: sessionFile,
+      );
+      expect(userProperty.isExternal, isExternal);
+      expect(
+        userProperty.preparePayload()['is_external']?['value'],
+        isExternal,
+      );
+    },
+  );
 
   test(
     'The UserProperty class correctly sets and exposes the ai_agent value',

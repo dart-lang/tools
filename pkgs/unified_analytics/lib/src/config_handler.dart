@@ -9,6 +9,7 @@ import 'package:convert/convert.dart';
 import 'package:file/file.dart';
 
 import 'initializer.dart';
+import 'is_external.dart';
 import 'utils.dart';
 
 /// The regex pattern used to parse the disable analytics line.
@@ -44,10 +45,15 @@ class ConfigHandler {
   bool _telemetryEnabled = true;
 
   ConfigHandler({required this.homeDirectory, required this.configFile})
-    : configFileLastModified = configFile.lastModifiedSync() {
+    : configFileLastModified =
+          isExternal && configFile.existsSync()
+              ? configFile.lastModifiedSync()
+              : DateTime.fromMillisecondsSinceEpoch(0) {
     // Call the method to parse the contents of the config file when
     // this class is initialized
-    parseConfig();
+    if (isExternal) {
+      parseConfig();
+    }
   }
 
   /// Returns the telemetry state from the config file.
@@ -56,6 +62,9 @@ class ConfigHandler {
   /// last modified datetime is different from what was parsed when
   /// the class was initialized.
   bool get telemetryEnabled {
+    if (!isExternal) {
+      return true;
+    }
     if (configFileLastModified.isBefore(configFile.lastModifiedSync())) {
       parseConfig();
       configFileLastModified = configFile.lastModifiedSync();
@@ -68,6 +77,8 @@ class ConfigHandler {
   /// for the tool being passed in by the user and adding a
   /// [ToolInfo] object.
   void addTool({required String tool, required int versionNumber}) {
+    if (!isExternal) return;
+
     // Create the new instance of [ToolInfo] to be added
     // to the [parsedTools] map
     parsedTools[tool] = ToolInfo(
@@ -92,6 +103,8 @@ class ConfigHandler {
     required String tool,
     required int newVersionNumber,
   }) {
+    if (!isExternal) return;
+
     if (!parsedTools.containsKey(tool)) {
       return;
     }
@@ -132,6 +145,8 @@ class ConfigHandler {
   /// have been logged in the file, the dates they were last run, and
   /// determining if telemetry is enabled by parsing the file.
   void parseConfig() {
+    if (!isExternal) return;
+
     // Begin with the assumption that telemetry is always enabled
     _telemetryEnabled = true;
 
@@ -168,6 +183,8 @@ class ConfigHandler {
   /// This will reset the configuration file and clear the
   /// [parsedTools] map and trigger parsing the config again.
   void resetConfig() {
+    if (!isExternal) return;
+
     createConfigFile(configFile: configFile, homeDirectory: homeDirectory);
     parsedTools.clear();
     parseConfig();
@@ -175,6 +192,8 @@ class ConfigHandler {
 
   /// Disables the reporting capabilities if [reportingBool] is set to `false`.
   Future<void> setTelemetry(bool reportingBool) async {
+    if (!isExternal) return;
+
     final flag = reportingBool ? '1' : '0';
     final configString = await configFile.readAsString();
 

@@ -17,6 +17,7 @@ import 'enums.dart';
 import 'event.dart';
 import 'ga_client.dart';
 import 'initializer.dart';
+import 'is_external.dart';
 import 'log_handler.dart';
 import 'survey_handler.dart';
 import 'user_property.dart';
@@ -441,32 +442,34 @@ class AnalyticsImpl implements Analytics {
              .childDirectory(kDartToolDirectoryName)
              .childFile(kLogFileName),
        ) {
-    // This initializer class will let the instance know
-    // if it was the first run; if it is, nothing will be sent
-    // on the first run
-    if (firstRun) {
-      _showMessage = true;
-      _firstRun = true;
-    } else {
-      _showMessage = false;
-      _firstRun = false;
-    }
+    if (isExternal) {
+      // This initializer class will let the instance know
+      // if it was the first run; if it is, nothing will be sent
+      // on the first run
+      if (firstRun) {
+        _showMessage = true;
+        _firstRun = true;
+      } else {
+        _showMessage = false;
+        _firstRun = false;
+      }
 
-    // Check if the tool has already been onboarded, and if it
-    // has, check if the latest message version is greater to
-    // prompt the client to show a message
-    //
-    // If the tool has not been added to the config file, then
-    // we will show the message as well
-    final currentVersion =
-        _configHandler.parsedTools[tool.label]?.versionNumber ?? -1;
-    if (currentVersion < toolsMessageVersion) {
-      _showMessage = true;
+      // Check if the tool has already been onboarded, and if it
+      // has, check if the latest message version is greater to
+      // prompt the client to show a message
+      //
+      // If the tool has not been added to the config file, then
+      // we will show the message as well
+      final currentVersion =
+          _configHandler.parsedTools[tool.label]?.versionNumber ?? -1;
+      if (currentVersion < toolsMessageVersion) {
+        _showMessage = true;
 
-      // If the message version has been updated, it will be considered
-      // as if it was a first run and any events attempting to get sent
-      // will be blocked
-      _firstRun = true;
+        // If the message version has been updated, it will be considered
+        // as if it was a first run and any events attempting to get sent
+        // will be blocked
+        _firstRun = true;
+      }
     }
   }
 
@@ -517,7 +520,8 @@ class AnalyticsImpl implements Analytics {
   bool get shouldShowMessage => _showMessage;
 
   @override
-  bool get telemetryEnabled => _configHandler.telemetryEnabled;
+  bool get telemetryEnabled =>
+      isExternal ? _configHandler.telemetryEnabled : true;
 
   @override
   Map<String, Map<String, Object?>> get userPropertyMap =>
@@ -525,6 +529,8 @@ class AnalyticsImpl implements Analytics {
 
   @override
   void clientShowedMessage() {
+    if (!isExternal) return;
+
     // Check the tool needs to be added to the config file
     if (!_configHandler.parsedTools.containsKey(tool.label)) {
       _configHandler.addTool(

@@ -422,6 +422,14 @@ final class Event {
   ///
   /// * [numberOfPackagesInWorkspace] - JSON-encoded percentile values for the
   ///   number of packages in the Pub workspaces.
+  ///
+  /// * [minSdkConstraints] - JSON-encoded map of the minimum SDK constraints
+  ///   specified in the pubspec.yaml files for all of the packages in the
+  ///   context.
+  ///
+  /// * [languageVersionOverrides] - JSON-encoded map of the language version
+  ///   overrides specified for all of the libraries in the context.  Format:
+  ///   { "2.12":5,"3.10":2}
   Event.contextStructure({
     required int immediateFileCount,
     required int immediateFileLineCount,
@@ -434,6 +442,8 @@ final class Event {
     String libraryCycleLineCounts = '',
     String contextWorkspaceType = '',
     String numberOfPackagesInWorkspace = '',
+    Map<String, int> minSdkConstraints = const {},
+    Map<String, int> languageVersionOverrides = const {},
   }) : this._(
          eventName: DashEvent.contextStructure,
          eventData: {
@@ -448,6 +458,8 @@ final class Event {
            'libraryCycleLineCounts': libraryCycleLineCounts,
            'contextWorkspaceType': contextWorkspaceType,
            'numberOfPackagesInWorkspace': numberOfPackagesInWorkspace,
+           'minSdkConstraints': minSdkConstraints,
+           'languageVersionOverrides': languageVersionOverrides,
          },
        );
 

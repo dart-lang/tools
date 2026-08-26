@@ -6,6 +6,7 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 
 import 'constants.dart';
+import 'is_external.dart';
 import 'utils.dart';
 
 /// Creates the text file that will contain the client ID
@@ -80,10 +81,12 @@ bool runInitialization({required Directory homeDirectory}) {
 
   // When the config file doesn't exist, initialize it with the default tools
   // and the current date.
-  final configFile = dartToolDirectory.childFile(kConfigFileName);
-  if (!configFile.existsSync()) {
-    firstRun = true;
-    createConfigFile(configFile: configFile, homeDirectory: homeDirectory);
+  if (isExternal) {
+    final configFile = dartToolDirectory.childFile(kConfigFileName);
+    if (!configFile.existsSync()) {
+      firstRun = true;
+      createConfigFile(configFile: configFile, homeDirectory: homeDirectory);
+    }
   }
 
   // Begin initialization checks for the client id.
