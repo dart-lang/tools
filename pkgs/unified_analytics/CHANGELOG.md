@@ -1,5 +1,6 @@
 ## 8.0.18-wip
 
+- Added optional `hostArch` parameter to `Event.flutterCommandResult`.
 - Added optional `pubspecHasFlutterSdk`, `pubspecEnvironmentSdk`, and
   `pubspecDependencies` parameters to the `Event.dartCliCommandExecuted`
   constructor.

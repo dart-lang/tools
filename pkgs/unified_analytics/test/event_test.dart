@@ -663,6 +663,7 @@ void main() {
       commandPath: 'commandPath',
       result: 'result',
       commandHasTerminal: true,
+      hostArch: 'arm64',
       maxRss: 123,
     );
 
@@ -673,9 +674,32 @@ void main() {
     expect(constructedEvent.eventData['commandPath'], 'commandPath');
     expect(constructedEvent.eventData['result'], 'result');
     expect(constructedEvent.eventData['commandHasTerminal'], true);
+    expect(constructedEvent.eventData['hostArch'], 'arm64');
     expect(constructedEvent.eventData['maxRss'], 123);
-    expect(constructedEvent.eventData.length, 4);
+    expect(constructedEvent.eventData.length, 5);
   });
+
+  test(
+    'Event.flutterCommandResult constructed with optional values omitted',
+    () {
+      Event generateEvent() => Event.flutterCommandResult(
+        commandPath: 'commandPath',
+        result: 'result',
+        commandHasTerminal: true,
+      );
+
+      final constructedEvent = generateEvent();
+
+      expect(generateEvent, returnsNormally);
+      expect(constructedEvent.eventName, DashEvent.flutterCommandResult);
+      expect(constructedEvent.eventData['commandPath'], 'commandPath');
+      expect(constructedEvent.eventData['result'], 'result');
+      expect(constructedEvent.eventData['commandHasTerminal'], true);
+      expect(constructedEvent.eventData['hostArch'], isNull);
+      expect(constructedEvent.eventData['maxRss'], isNull);
+      expect(constructedEvent.eventData.length, 3);
+    },
+  );
 
   test('Event.flutterWasmDryRunPackage constructed', () {
     Event generateEvent() => Event.flutterWasmDryRunPackage(
