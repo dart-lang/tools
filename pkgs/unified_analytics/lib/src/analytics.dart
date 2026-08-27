@@ -442,34 +442,33 @@ class AnalyticsImpl implements Analytics {
              .childDirectory(kDartToolDirectoryName)
              .childFile(kLogFileName),
        ) {
-    if (isExternal) {
-      // This initializer class will let the instance know
-      // if it was the first run; if it is, nothing will be sent
-      // on the first run
-      if (firstRun) {
-        _showMessage = true;
-        _firstRun = true;
-      } else {
-        _showMessage = false;
-        _firstRun = false;
-      }
+    if (!isExternal) return;
+    // This initializer class will let the instance know
+    // if it was the first run; if it is, nothing will be sent
+    // on the first run
+    if (firstRun) {
+      _showMessage = true;
+      _firstRun = true;
+    } else {
+      _showMessage = false;
+      _firstRun = false;
+    }
 
-      // Check if the tool has already been onboarded, and if it
-      // has, check if the latest message version is greater to
-      // prompt the client to show a message
-      //
-      // If the tool has not been added to the config file, then
-      // we will show the message as well
-      final currentVersion =
-          _configHandler.parsedTools[tool.label]?.versionNumber ?? -1;
-      if (currentVersion < toolsMessageVersion) {
-        _showMessage = true;
+    // Check if the tool has already been onboarded, and if it
+    // has, check if the latest message version is greater to
+    // prompt the client to show a message
+    //
+    // If the tool has not been added to the config file, then
+    // we will show the message as well
+    final currentVersion =
+        _configHandler.parsedTools[tool.label]?.versionNumber ?? -1;
+    if (currentVersion < toolsMessageVersion) {
+      _showMessage = true;
 
-        // If the message version has been updated, it will be considered
-        // as if it was a first run and any events attempting to get sent
-        // will be blocked
-        _firstRun = true;
-      }
+      // If the message version has been updated, it will be considered
+      // as if it was a first run and any events attempting to get sent
+      // will be blocked
+      _firstRun = true;
     }
   }
 
