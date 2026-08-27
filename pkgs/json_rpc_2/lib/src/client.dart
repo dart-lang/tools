@@ -248,11 +248,9 @@ class Client {
   /// Determines whether the server's response is valid per the spec.
   bool _isResponseValid(Object? response) {
     if (response is! Map) return false;
-    if (strictProtocolChecks && !response.containsKey('jsonrpc')) {
-      return false;
-    }
-    if ((strictProtocolChecks || response.containsKey('jsonrpc')) &&
-        response['jsonrpc'] != '2.0') {
+    if (response.containsKey('jsonrpc')) {
+      if (response['jsonrpc'] != '2.0') return false;
+    } else if (strictProtocolChecks) {
       return false;
     }
     var id = response['id'];
