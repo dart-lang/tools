@@ -1,4 +1,4 @@
-## 4.12.0-wip
+## 4.12.0
 
 - Add `MixinBuilder.onTypes` to support a mixin `on` clause with multiple
   superclass constraints (e.g. `mixin Foo on A, B {}`). Takes precedence over
