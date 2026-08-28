@@ -32,8 +32,8 @@ void main() {
       }),
       d.dir('extension', [
         d.dir('devtools', [
-          d.json('config.yaml', {'secret': 'fake initial safe file'}),
-        ]),
+          d.json('config.yaml', {'secret': 'fake initial safe file'})
+        ])
       ]),
     ]).create();
 

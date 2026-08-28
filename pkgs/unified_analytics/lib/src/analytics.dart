@@ -554,8 +554,9 @@ class AnalyticsImpl implements Analytics {
     // Collect any errors encountered and send
     _sendPendingErrorEvents();
 
-    await Future.wait(_futures)
-        .timeout(Duration(milliseconds: delayDuration), onTimeout: () => []);
+    await Future.wait(
+      _futures,
+    ).timeout(Duration(milliseconds: delayDuration), onTimeout: () => []);
     _gaClient.close();
   }
 

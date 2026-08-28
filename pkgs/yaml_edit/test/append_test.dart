@@ -29,16 +29,13 @@ void main() {
 - 3
 ''');
       doc.appendToList([], 4);
-      expect(
-        doc.toString(),
-        equals('''
+      expect(doc.toString(), equals('''
 - 0
 - 1
 - 2
 - 3
 - 4
-'''),
-      );
+'''));
       expectYamlBuilderValue(doc, [0, 1, 2, 3, 4]);
     });
 
@@ -51,19 +48,16 @@ void main() {
   - 3
 ''');
       doc.appendToList([null], 4);
-      expect(
-        doc.toString(),
-        equals('''
+      expect(doc.toString(), equals('''
 ~:
   - 0
   - 1
   - 2
   - 3
   - 4
-'''),
-      );
+'''));
       expectYamlBuilderValue(doc, {
-        null: [0, 1, 2, 3, 4],
+        null: [0, 1, 2, 3, 4]
       });
     });
 
@@ -75,9 +69,7 @@ void main() {
 - 3
 ''');
       doc.appendToList([], [4, 5, 6]);
-      expect(
-        doc.toString(),
-        equals('''
+      expect(doc.toString(), equals('''
 - 0
 - 1
 - 2
@@ -85,14 +77,13 @@ void main() {
 - - 4
   - 5
   - 6
-'''),
-      );
+'''));
       expectYamlBuilderValue(doc, [
         0,
         1,
         2,
         3,
-        [4, 5, 6],
+        [4, 5, 6]
       ]);
     });
 
@@ -103,18 +94,15 @@ void main() {
   - 2
 ''');
       doc.appendToList([1], 3);
-      expect(
-        doc.toString(),
-        equals('''
+      expect(doc.toString(), equals('''
 - 0
 - - 1
   - 2
   - 3
-'''),
-      );
+'''));
       expectYamlBuilderValue(doc, [
         0,
-        [1, 2, 3],
+        [1, 2, 3]
       ]);
     });
 
@@ -126,24 +114,21 @@ void main() {
 ''');
       doc.appendToList([1], [3, 4, 5]);
 
-      expect(
-        doc.toString(),
-        equals('''
+      expect(doc.toString(), equals('''
 - 0
 - - 1
   - 2
   - - 3
     - 4
     - 5
-'''),
-      );
+'''));
       expectYamlBuilderValue(doc, [
         0,
         [
           1,
           2,
-          [3, 4, 5],
-        ],
+          [3, 4, 5]
+        ]
       ]);
     });
 
@@ -156,16 +141,13 @@ a:
 ''');
       yamlEditor.appendToList(['a', 1], false);
 
-      expect(
-        yamlEditor.toString(),
-        equals('''
+      expect(yamlEditor.toString(), equals('''
 a:
   1:
     - null
     - false
   2: null
-'''),
-      );
+'''));
     });
 
     test('block append (1)', () {
@@ -179,12 +161,10 @@ a:
     y: 4
 ''');
       yamlEditor.appendToList([], {
-        'z': {'x': 5, 'y': 6},
+        'z': {'x': 5, 'y': 6}
       });
 
-      expect(
-        yamlEditor.toString(),
-        equals('''
+      expect(yamlEditor.toString(), equals('''
 # comment
 - z:
     x: 1
@@ -195,8 +175,7 @@ a:
 - z:
     x: 5
     y: 6
-'''),
-      );
+'''));
     });
 
     test('block append (2)', () {
@@ -214,16 +193,13 @@ b:
       m: 2
       n: 4
 ''');
-      yamlEditor.appendToList(
-        ['a'],
-        {
-          'z': {'x': 5, 'y': 6},
-        },
-      );
+      yamlEditor.appendToList([
+        'a'
+      ], {
+        'z': {'x': 5, 'y': 6}
+      });
 
-      expect(
-        yamlEditor.toString(),
-        equals('''
+      expect(yamlEditor.toString(), equals('''
 # comment
 a:
   - z:
@@ -239,8 +215,7 @@ b:
   - w:
       m: 2
       n: 4
-'''),
-      );
+'''));
     });
 
     test('block append nested and with comments', () {
@@ -259,14 +234,13 @@ a:
 # comment
 ''');
       expect(
-        () => yamlEditor.appendToList(
-          ['a', 'e'],
-          {
-            'g': {'e': 3, 'f': 4},
-          },
-        ),
-        returnsNormally,
-      );
+          () => yamlEditor.appendToList([
+                'a',
+                'e'
+              ], {
+                'g': {'e': 3, 'f': 4}
+              }),
+          returnsNormally);
     });
   });
 
@@ -300,16 +274,13 @@ a:
 ]
 ''');
       doc.appendToList([], 2);
-      expect(
-        doc.toString(),
-        equals('''
+      expect(doc.toString(), equals('''
 [
   0,
   1,
   2,
 ]
-'''),
-      );
+'''));
       expectYamlBuilderValue(doc, [0, 1, 2]);
     });
 
@@ -321,16 +292,13 @@ a:
 ]
 ''');
       doc.appendToList([], 2);
-      expect(
-        doc.toString(),
-        equals('''
+      expect(doc.toString(), equals('''
 [
   0,
   1, # comment
   2,
 ]
-'''),
-      );
+'''));
       expectYamlBuilderValue(doc, [0, 1, 2]);
     });
 
@@ -344,9 +312,7 @@ analyzer:
     ]
 ''');
       doc.appendToList(['analyzer', 'exclude'], 'android/**');
-      expect(
-        doc.toString(),
-        equals('''
+      expect(doc.toString(), equals('''
 analyzer:
   exclude:
     [
@@ -354,12 +320,11 @@ analyzer:
       build/**,
       android/**,
     ]
-'''),
-      );
+'''));
       expectYamlBuilderValue(doc, {
         'analyzer': {
-          'exclude': ['foo/**', 'build/**', 'android/**'],
-        },
+          'exclude': ['foo/**', 'build/**', 'android/**']
+        }
       });
     });
 
@@ -371,15 +336,12 @@ analyzer:
 ]
 ''');
       doc.appendToList([], 2);
-      expect(
-        doc.toString(),
-        equals('''
+      expect(doc.toString(), equals('''
 [
   0,
   1
 , 2]
-'''),
-      );
+'''));
       expectYamlBuilderValue(doc, [0, 1, 2]);
     });
 

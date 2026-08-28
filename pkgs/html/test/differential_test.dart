@@ -30,16 +30,29 @@ final _testCases = [
   ),
   (
     name: 'adoption agency algorithm nested formatters limit',
-    html: '<b><p><b style=""><b style="font-weight:600"><b style=""><b style="font-weight:600"><b><b></b></b><b style="font-weight:600"><b style="font-weight:600"></b></b></b></b></b></b>',
+    html:
+        '<b><p><b style=""><b style="font-weight:600"><b style=""><b style="font-weight:600"><b><b></b></b><b style="font-weight:600"><b style="font-weight:600"></b></b></b></b></b></b>',
   ),
-  (name: 'noscript contents style dropped', html: '<noscript><style type="a">'),
+  (
+    name: 'noscript contents style dropped',
+    html: '<noscript><style type="a">',
+  ),
   (
     name: 'isindex form expansion (prompt)',
     html: '<isindex prompt><hr><hr><hr><hr><input>',
   ),
-  (name: 'frameset disallowed in template', html: '<ins><template><frameset>'),
-  (name: 'anchor active formatting overlapping menu', html: '<a><menu><a>'),
-  (name: 'noscript contents dropped (paragraphs)', html: '<noscript><p>'),
+  (
+    name: 'frameset disallowed in template',
+    html: '<ins><template><frameset>',
+  ),
+  (
+    name: 'anchor active formatting overlapping menu',
+    html: '<a><menu><a>',
+  ),
+  (
+    name: 'noscript contents dropped (paragraphs)',
+    html: '<noscript><p>',
+  ),
   (
     name: 'noscript contents dropped (anchors)',
     html: '<noscript><a></noscript>',
@@ -98,17 +111,11 @@ void main() {
       final pkgCounts = _countPkgTags(pkgDoc);
 
       if (_knownIssues.contains(c.name)) {
-        expect(
-          webCounts,
-          isNot(equals(pkgCounts)),
-          reason: 'Expected to fail per known issues list.',
-        );
+        expect(webCounts, isNot(equals(pkgCounts)),
+            reason: 'Expected to fail per known issues list.');
       } else {
-        expect(
-          webCounts,
-          equals(pkgCounts),
-          reason: 'Should parse identically',
-        );
+        expect(webCounts, equals(pkgCounts),
+            reason: 'Should parse identically');
       }
     });
   }

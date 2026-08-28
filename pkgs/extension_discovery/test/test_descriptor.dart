@@ -23,10 +23,9 @@ class _LinkDescriptor extends d.Descriptor {
 
   _LinkDescriptor(super.name, this._target);
 
-  String _path(String? parent) =>
-      Uri.directory(parent ?? d.sandbox)
-          .resolve(name)
-          .toFilePath(windows: Platform.isWindows);
+  String _path(String? parent) => Uri.directory(parent ?? d.sandbox)
+      .resolve(name)
+      .toFilePath(windows: Platform.isWindows);
 
   @override
   String describe() => 'link $name to $_target';
@@ -77,11 +76,8 @@ Future<String> dart([
     print(result.stderr);
     print(result.stdout);
   }
-  expect(
-    result.exitCode,
-    0,
-    reason: 'failed executing "dart ${arguments.join(' ')}"',
-  );
+  expect(result.exitCode, 0,
+      reason: 'failed executing "dart ${arguments.join(' ')}"');
   return result.stdout as String;
 }
 

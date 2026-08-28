@@ -14,11 +14,7 @@ import 'wrap.dart';
 /// Performs the string operation on [yamlEdit] to achieve the effect of setting
 /// the element at [key] to [newValue] when re-parsed.
 SourceEdit updateInMap(
-  YamlEditor yamlEdit,
-  YamlMap map,
-  Object? key,
-  YamlNode newValue,
-) {
+    YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
   if (!containsKey(map, key)) {
     final keyNode = wrapAsYamlNode(key);
 
@@ -52,11 +48,7 @@ SourceEdit removeInMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
 /// the [key]:[newValue] pair when reparsed, bearing in mind that this is a
 /// block map.
 SourceEdit _addToBlockMap(
-  YamlEditor yamlEdit,
-  YamlMap map,
-  Object key,
-  YamlNode newValue,
-) {
+    YamlEditor yamlEdit, YamlMap map, Object key, YamlNode newValue) {
   final yaml = yamlEdit.toString();
   final newIndentation =
       getMapIndentation(yaml, map) + getIndentation(yamlEdit);
@@ -105,11 +97,7 @@ SourceEdit _addToBlockMap(
 /// the [keyNode]:[newValue] pair when reparsed, bearing in mind that this is a
 /// flow map.
 SourceEdit _addToFlowMap(
-  YamlEditor yamlEdit,
-  YamlMap map,
-  YamlNode keyNode,
-  YamlNode newValue,
-) {
+    YamlEditor yamlEdit, YamlMap map, YamlNode keyNode, YamlNode newValue) {
   final keyString = yamlEncodeFlow(keyNode);
   final valueString = yamlEncodeFlow(newValue);
 
@@ -165,22 +153,15 @@ SourceEdit _addToFlowMap(
 /// replacing the value at [key] with [newValue] when reparsed, bearing in mind
 /// that this is a block map.
 SourceEdit _replaceInBlockMap(
-  YamlEditor yamlEdit,
-  YamlMap map,
-  Object? key,
-  YamlNode newValue,
-) {
+    YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
   final yaml = yamlEdit.toString();
   final lineEnding = getLineEnding(yaml);
   final newIndentation =
       getMapIndentation(yaml, map) + getIndentation(yamlEdit);
 
   final keyNode = getKeyNode(map, key);
-  var valueAsString = yamlEncodeBlock(
-    wrapAsYamlNode(newValue),
-    newIndentation,
-    lineEnding,
-  );
+  var valueAsString =
+      yamlEncodeBlock(wrapAsYamlNode(newValue), newIndentation, lineEnding);
   if (isCollection(newValue) &&
       !isFlowYamlCollectionNode(newValue) &&
       !isEmpty(newValue)) {
@@ -209,11 +190,7 @@ SourceEdit _replaceInBlockMap(
 /// replacing the value at [key] with [newValue] when reparsed, bearing in mind
 /// that this is a flow map.
 SourceEdit _replaceInFlowMap(
-  YamlEditor yamlEdit,
-  YamlMap map,
-  Object? key,
-  YamlNode newValue,
-) {
+    YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
   final valueSpan = map.nodes[key]!.span;
   final valueString = yamlEncodeFlow(newValue);
 
@@ -240,8 +217,7 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
       // A block map only exists because of its first key.
       start: entryIndex == 0 ? map.span.start.offset : keySpan.start.offset,
       end: valueNode.span.length == 0
-          ? keySpan.end.offset +
-                2 // Null value have no span. Skip ":".
+          ? keySpan.end.offset + 2 // Null value have no span. Skip ":".
           : getContentSensitiveEnd(valueNode),
     ),
     lineEnding: getLineEnding(yaml),
@@ -253,7 +229,7 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
 
       return (
         nearestLineEnding: yaml.lastIndexOf('\n', nextKeySpan.offset),
-        nextNodeColStart: nextKeySpan.column,
+        nextNodeColStart: nextKeySpan.column
       );
     },
   );

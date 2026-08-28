@@ -179,11 +179,9 @@ Future<List<Extension>> _findExtensions({
   required Uri packageConfigUri,
 }) async {
   final packageConfigFile = File.fromUri(packageConfigUri);
-  final registryFile = File.fromUri(
-    packageConfigFile.parent.uri.resolve(
-      'extension_discovery/$targetPackage.json',
-    ),
-  );
+  final registryFile = File.fromUri(packageConfigFile.parent.uri.resolve(
+    'extension_discovery/$targetPackage.json',
+  ));
 
   Registry? registry;
   final registryStat = registryFile.statSync();
@@ -256,37 +254,37 @@ Future<List<Extension>> _findExtensions({
     // Load packages from package_config.json
     final packages = await loadPackageConfig(packageConfigFile);
     registryUpdated = true;
-    registry = (await Future.wait(
-      packages.map((p) async {
-        try {
-          final rootUri = packageConfigUri.resolveUri(p.rootUri);
-          final configFile = File.fromUri(rootUri.resolve(configFileName));
-          final configStat = configFile.statSync();
-          if (configStat.isFileOrLink &&
-              _isWithinPackageBoundary(rootUri, configFile)) {
-            return (
-              package: p.name,
-              rootUri: p.rootUri,
-              packageUri: p.packageUri,
-              config: parseYamlFromConfigFile(await configFile.readAsString()),
-            );
-          }
-        } on FormatException {
-          // pass
-        } on IOException {
-          // pass
-        }
-        if (!p.rootUri.hasAbsolutePath) {
+    registry = (await Future.wait(packages.map((p) async {
+      try {
+        final rootUri = packageConfigUri.resolveUri(p.rootUri);
+        final configFile = File.fromUri(rootUri.resolve(configFileName));
+        final configStat = configFile.statSync();
+        if (configStat.isFileOrLink &&
+            _isWithinPackageBoundary(rootUri, configFile)) {
           return (
             package: p.name,
             rootUri: p.rootUri,
             packageUri: p.packageUri,
-            config: null,
+            config: parseYamlFromConfigFile(await configFile.readAsString()),
           );
         }
-        return null;
-      }),
-    )).whereType<RegistryEntry>().toList(growable: false);
+      } on FormatException {
+        // pass
+      } on IOException {
+        // pass
+      }
+      if (!p.rootUri.hasAbsolutePath) {
+        return (
+          package: p.name,
+          rootUri: p.rootUri,
+          packageUri: p.packageUri,
+          config: null,
+        );
+      }
+      return null;
+    })))
+        .whereType<RegistryEntry>()
+        .toList(growable: false);
   }
 
   // Save registry
@@ -297,14 +295,12 @@ Future<List<Extension>> _findExtensions({
   return UnmodifiableListView(
     registry
         .where((e) => e.config != null)
-        .map(
-          (e) => Extension._(
-            package: e.package,
-            rootUri: packageConfigUri.resolveUri(e.rootUri),
-            packageUri: e.packageUri,
-            config: e.config!,
-          ),
-        )
+        .map((e) => Extension._(
+              package: e.package,
+              rootUri: packageConfigUri.resolveUri(e.rootUri),
+              packageUri: e.packageUri,
+              config: e.config!,
+            ))
         .toList(growable: false),
   );
 }

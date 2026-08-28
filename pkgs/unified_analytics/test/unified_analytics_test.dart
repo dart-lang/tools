@@ -296,7 +296,8 @@ void main() {
     expect(
       configFile.readAsStringSync().startsWith(kConfigString),
       true,
-      reason: 'The config file should have the same message from the constants file',
+      reason:
+          'The config file should have the same message from the constants file',
     );
   });
 
@@ -637,10 +638,12 @@ void main() {
     );
   });
 
-  test('Config file resets when there is not exactly one match for the reporting flag', () async {
-    // Write to the config file a string that is not formatted correctly
-    // (ie. there is more than one match for the reporting flag)
-    configFile.writeAsStringSync('''
+  test(
+    'Config file resets when there is not exactly one match for the reporting flag',
+    () async {
+      // Write to the config file a string that is not formatted correctly
+      // (ie. there is more than one match for the reporting flag)
+      configFile.writeAsStringSync('''
 # INTRODUCTION
 #
 # This is the Flutter and Dart telemetry reporting
@@ -678,17 +681,18 @@ reporting=1
 # a number representing the version of the message that was
 # displayed.''');
 
-    // Disable telemetry which should result in a reset of the config file
-    await analytics.setTelemetry(false);
+      // Disable telemetry which should result in a reset of the config file
+      await analytics.setTelemetry(false);
 
-    expect(
-      configFile.readAsStringSync().startsWith(kConfigString),
-      true,
-      reason:
-          'The tool should have reset the config file '
-          'because it was not formatted correctly',
-    );
-  });
+      expect(
+        configFile.readAsStringSync().startsWith(kConfigString),
+        true,
+        reason:
+            'The tool should have reset the config file '
+            'because it was not formatted correctly',
+      );
+    },
+  );
 
   test('Config file resets when there is not exactly one match for the tool', () {
     // Write to the config file a string that is not formatted correctly
@@ -885,30 +889,34 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     },
   );
 
-  test('The UserProperty class truncates the ai_agent value to a maximum of 36 characters', () {
-    final longAgentAnalytics = Analytics.fake(
-      tool: initialTool,
-      homeDirectory: home,
-      flutterChannel: flutterChannel,
-      toolsMessageVersion: toolsMessageVersion,
-      toolsMessage: toolsMessage,
-      flutterVersion: flutterVersion,
-      dartVersion: dartVersion,
-      fs: fs,
-      platform: platform,
-      clientIde: 'CursorIDE',
-      agent:
-          'ThisIsAnExtremelyLongAgentNameThatExceedsThe36CharacterLimitOfGA4',
-    );
+  test(
+    'The UserProperty class truncates the ai_agent value to a maximum of 36 characters',
+    () {
+      final longAgentAnalytics = Analytics.fake(
+        tool: initialTool,
+        homeDirectory: home,
+        flutterChannel: flutterChannel,
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: flutterVersion,
+        dartVersion: dartVersion,
+        fs: fs,
+        platform: platform,
+        clientIde: 'CursorIDE',
+        agent:
+            'ThisIsAnExtremelyLongAgentNameThatExceedsThe36CharacterLimitOfGA4',
+      );
 
-    final expectedAgent = 'ThisIsAnExtremelyLongAgentNameThatEx';
-    expect(expectedAgent.length, 36);
-    expect(
-      longAgentAnalytics.userPropertyMap['ai_agent']?['value'],
-      expectedAgent,
-      reason: 'The ai_agent user property should be truncated to 36 characters',
-    );
-  });
+      final expectedAgent = 'ThisIsAnExtremelyLongAgentNameThatEx';
+      expect(expectedAgent.length, 36);
+      expect(
+        longAgentAnalytics.userPropertyMap['ai_agent']?['value'],
+        expectedAgent,
+        reason:
+            'The ai_agent user property should be truncated to 36 characters',
+      );
+    },
+  );
 
   test('AiAgent.detectAgentName detects AI agents based on environment', () {
     expect(AiAgent.detectAgentName(<String, String>{}), isNull);
@@ -1249,26 +1257,30 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     );
   });
 
-  test('The list of enabled features is included as an event parameter in every sent event', () {
-    final eventData = <String, dynamic>{'time': 5, 'command': 'run'};
+  test(
+    'The list of enabled features is included as an event parameter in every sent event',
+    () {
+      final eventData = <String, dynamic>{'time': 5, 'command': 'run'};
 
-    final Map<String, dynamic> body = generateRequestBody(
-      clientId: Uuid().generateV4(),
-      eventName: DashEvent.hotReloadTime,
-      eventData: eventData,
-      userProperty: analytics.userProperty,
-      enabledFeatures: 'enable-native-assets',
-    );
+      final Map<String, dynamic> body = generateRequestBody(
+        clientId: Uuid().generateV4(),
+        eventName: DashEvent.hotReloadTime,
+        eventData: eventData,
+        userProperty: analytics.userProperty,
+        enabledFeatures: 'enable-native-assets',
+      );
 
-    expect(
-      (body['events'][0] as Map<String, Object?>)['params'],
-      contains('enabled_features'),
-    );
-    expect(
-      (body['events'][0] as Map<String, dynamic>)['params']['enabled_features'],
-      'enable-native-assets',
-    );
-  });
+      expect(
+        (body['events'][0] as Map<String, Object?>)['params'],
+        contains('enabled_features'),
+      );
+      expect(
+        (body['events'][0]
+            as Map<String, dynamic>)['params']['enabled_features'],
+        'enable-native-assets',
+      );
+    },
+  );
 
   test('Check that log file is correctly persisting events sent', () {
     final int numberOfEvents = max((kLogFileLength * 0.1).floor(), 5);
@@ -1403,7 +1415,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     expect(
       query,
       isNull,
-      reason: 'The query should be null because `tool` is missing under `user_properties`',
+      reason:
+          'The query should be null because `tool` is missing under `user_properties`',
     );
   });
 
@@ -1427,7 +1440,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     expect(
       query,
       isNull,
-      reason: 'The query should be null because the `local_time` value is malformed',
+      reason:
+          'The query should be null because the `local_time` value is malformed',
     );
   });
 
@@ -1452,9 +1466,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       );
 
       // Parse the contents of the change log file
-      final changeLogFirstLineString = io.File('CHANGELOG.md')
-          .readAsLinesSync()
-          .first;
+      final changeLogFirstLineString = io.File(
+        'CHANGELOG.md',
+      ).readAsLinesSync().first;
       expect(
         changeLogFirstLineString.substring(3),
         kPackageVersion,
@@ -1465,74 +1479,71 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     },
   );
 
-  test(
-    'Null values for flutter parameters is reflected properly in log file',
-    () {
-      // Because we are using the `MemoryFileSystem.test` constructor,
-      // we don't have a real clock in the filesystem, and because we
-      // are checking the last modified timestamp for the session file
-      // to determine if we need to update the session id, manually setting
-      // that timestamp will ensure we are not updating session id when it
-      // first gets created
-      sessionFile.setLastModifiedSync(DateTime.now());
+  test('Null values for flutter parameters is reflected properly in log file', () {
+    // Because we are using the `MemoryFileSystem.test` constructor,
+    // we don't have a real clock in the filesystem, and because we
+    // are checking the last modified timestamp for the session file
+    // to determine if we need to update the session id, manually setting
+    // that timestamp will ensure we are not updating session id when it
+    // first gets created
+    sessionFile.setLastModifiedSync(DateTime.now());
 
-      // Use a for loop two initialize the second analytics instance
-      // twice to account for no events being sent on the first instance
-      // run for a given tool
-      Analytics? secondAnalytics;
-      for (var i = 0; i < 2; i++) {
-        secondAnalytics = Analytics.fake(
-          tool: secondTool,
-          homeDirectory: home,
-          // flutterChannel: flutterChannel,  THIS NEEDS TO REMAIN REMOVED
-          toolsMessageVersion: toolsMessageVersion,
-          toolsMessage: toolsMessage,
-          flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
-          dartVersion: 'Dart 2.19.0',
-          fs: fs,
-          platform: platform,
-        );
-        secondAnalytics.clientShowedMessage();
-      }
-
-      // Send an event and check that the query stats reflects what is expected
-      secondAnalytics!.send(testEvent);
-
-      // Query the log file stats to verify that there are two tools
-      final query = analytics.logFileStats()!;
-
-      expect(query.toolCount, {
-        'dart-tool': 1,
-      }, reason: 'There should have only been on tool that sent events');
-      expect(
-        query.flutterChannelCount.isEmpty,
-        true,
-        reason:
-            'The instance does not have flutter information so it should be 0',
+    // Use a for loop two initialize the second analytics instance
+    // twice to account for no events being sent on the first instance
+    // run for a given tool
+    Analytics? secondAnalytics;
+    for (var i = 0; i < 2; i++) {
+      secondAnalytics = Analytics.fake(
+        tool: secondTool,
+        homeDirectory: home,
+        // flutterChannel: flutterChannel,  THIS NEEDS TO REMAIN REMOVED
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
+        dartVersion: 'Dart 2.19.0',
+        fs: fs,
+        platform: platform,
       );
+      secondAnalytics.clientShowedMessage();
+    }
 
-      // Sending a query with the first analytics instance which has flutter information
-      // available should reflect in the query that there is 1 flutter channel present
-      analytics.send(testEvent);
-      final query2 = analytics.logFileStats()!;
+    // Send an event and check that the query stats reflects what is expected
+    secondAnalytics!.send(testEvent);
 
-      expect(
-        query2.toolCount,
-        {'dart-tool': 1, 'flutter-tool': 1},
-        reason:
-            'Two different analytics instances have '
-            'been initialized and sent events',
-      );
-      expect(
-        query2.sessionCount,
-        query.sessionCount,
-        reason: 'The session should have remained the same',
-      );
-      expect(query2.flutterChannelCount, {
-        'flutterChannel': 1,
-      }, reason: 'The first instance has flutter information initialized');
-    },
-  );
+    // Query the log file stats to verify that there are two tools
+    final query = analytics.logFileStats()!;
+
+    expect(query.toolCount, {
+      'dart-tool': 1,
+    }, reason: 'There should have only been on tool that sent events');
+    expect(
+      query.flutterChannelCount.isEmpty,
+      true,
+      reason:
+          'The instance does not have flutter information so it should be 0',
+    );
+
+    // Sending a query with the first analytics instance which has flutter information
+    // available should reflect in the query that there is 1 flutter channel present
+    analytics.send(testEvent);
+    final query2 = analytics.logFileStats()!;
+
+    expect(
+      query2.toolCount,
+      {'dart-tool': 1, 'flutter-tool': 1},
+      reason:
+          'Two different analytics instances have '
+          'been initialized and sent events',
+    );
+    expect(
+      query2.sessionCount,
+      query.sessionCount,
+      reason: 'The session should have remained the same',
+    );
+    expect(query2.flutterChannelCount, {
+      'flutterChannel': 1,
+    }, reason: 'The first instance has flutter information initialized');
+  });
 
   group('Testing against Google Analytics limitations:', () {
     // Link to limitations documentation

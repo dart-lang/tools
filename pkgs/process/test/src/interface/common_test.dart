@@ -259,24 +259,27 @@ void main() {
                   .having(
                     (
                       ProcessPackageExecutableNotFoundException
-                      notFoundException,
-                    ) => notFoundException.candidates,
+                          notFoundException,
+                    ) =>
+                        notFoundException.candidates,
                     'candidates',
                     isEmpty,
                   )
                   .having(
                     (
                       ProcessPackageExecutableNotFoundException
-                      notFoundException,
-                    ) => notFoundException.workingDirectory,
+                          notFoundException,
+                    ) =>
+                        notFoundException.workingDirectory,
                     'workingDirectory',
                     equals(workingDir.path),
                   )
                   .having(
                     (
                       ProcessPackageExecutableNotFoundException
-                      notFoundException,
-                    ) => notFoundException.toString(),
+                          notFoundException,
+                    ) =>
+                        notFoundException.toString(),
                     'toString',
                     contains(
                       '  Working Directory: C:\\.tmp_rand0\\work_dir_rand0\n'
@@ -392,24 +395,27 @@ void main() {
                   .having(
                     (
                       ProcessPackageExecutableNotFoundException
-                      notFoundException,
-                    ) => notFoundException.candidates,
+                          notFoundException,
+                    ) =>
+                        notFoundException.candidates,
                     'candidates',
                     isEmpty,
                   )
                   .having(
                     (
                       ProcessPackageExecutableNotFoundException
-                      notFoundException,
-                    ) => notFoundException.workingDirectory,
+                          notFoundException,
+                    ) =>
+                        notFoundException.workingDirectory,
                     'workingDirectory',
                     equals(workingDir.path),
                   )
                   .having(
                     (
                       ProcessPackageExecutableNotFoundException
-                      notFoundException,
-                    ) => notFoundException.toString(),
+                          notFoundException,
+                    ) =>
+                        notFoundException.toString(),
                     'toString',
                     contains(
                       '  Working Directory: /.tmp_rand0/work_dir_rand0\n'
@@ -538,7 +544,8 @@ void main() {
                 .having(
                   (
                     ProcessPackageExecutableNotFoundException notFoundException,
-                  ) => notFoundException.candidates,
+                  ) =>
+                      notFoundException.candidates,
                   'candidates',
                   equals(<String>[
                     '${tmpDir.path}/path1/command',
@@ -551,7 +558,8 @@ void main() {
                 .having(
                   (
                     ProcessPackageExecutableNotFoundException notFoundException,
-                  ) => notFoundException.toString(),
+                  ) =>
+                      notFoundException.toString(),
                   'toString',
                   contains(
                     'ProcessPackageExecutableNotFoundException: Found candidates, but lacked sufficient permissions to execute "command".\n'
@@ -598,14 +606,16 @@ void main() {
                 .having(
                   (
                     ProcessPackageExecutableNotFoundException notFoundException,
-                  ) => notFoundException.candidates,
+                  ) =>
+                      notFoundException.candidates,
                   'candidates',
                   isEmpty,
                 )
                 .having(
                   (
                     ProcessPackageExecutableNotFoundException notFoundException,
-                  ) => notFoundException.toString(),
+                  ) =>
+                      notFoundException.toString(),
                   'toString',
                   contains(
                     'ProcessPackageExecutableNotFoundException: Failed to find "non-existent-command" in the search path.\n'
@@ -648,8 +658,7 @@ void main() {
           expect(
             result.exitCode,
             0,
-            reason:
-                'runInShell: $runInShell\nstdout: ${result.stdout}\n'
+            reason: 'runInShell: $runInShell\nstdout: ${result.stdout}\n'
                 'stderr: ${result.stderr}',
           );
           expect(result.stdout, contains('hello'));

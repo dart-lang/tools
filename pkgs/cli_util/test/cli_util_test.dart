@@ -56,8 +56,9 @@ void main() {
       final mockSdk = Directory.systemTemp.createTempSync('mock_sdk');
       try {
         Directory(p.join(mockSdk.path, 'lib')).createSync();
-        File(p.join(mockSdk.path, 'lib', 'libraries.json'))
-            .writeAsStringSync('{}');
+        File(
+          p.join(mockSdk.path, 'lib', 'libraries.json'),
+        ).writeAsStringSync('{}');
         File(p.join(mockSdk.path, 'version')).writeAsStringSync('3.8.0');
 
         runZoned(
@@ -99,8 +100,9 @@ void main() {
           p.join(mockFlutter.path, 'bin', 'cache', 'dart-sdk'),
         )..createSync(recursive: true);
         Directory(p.join(mockDartSdk.path, 'lib')).createSync();
-        File(p.join(mockDartSdk.path, 'lib', 'libraries.json'))
-            .writeAsStringSync('{}');
+        File(
+          p.join(mockDartSdk.path, 'lib', 'libraries.json'),
+        ).writeAsStringSync('{}');
         File(p.join(mockDartSdk.path, 'version')).writeAsStringSync('3.8.0');
 
         File(p.join(mockFlutterBin.path, 'dart')).createSync();
@@ -132,8 +134,9 @@ void main() {
         final mockSdk = Directory(p.join(tempDir.path, 'dart-sdk'))
           ..createSync();
         Directory(p.join(mockSdk.path, 'lib')).createSync();
-        File(p.join(mockSdk.path, 'lib', 'libraries.json'))
-            .writeAsStringSync('{}');
+        File(
+          p.join(mockSdk.path, 'lib', 'libraries.json'),
+        ).writeAsStringSync('{}');
         File(p.join(mockSdk.path, 'version')).writeAsStringSync('3.8.0');
         final binDir = Directory(p.join(mockSdk.path, 'bin'))..createSync();
         File(p.join(binDir.path, 'dart')).createSync();
@@ -166,8 +169,9 @@ void main() {
           p.join(mockFlutter.path, 'bin', 'cache', 'dart-sdk'),
         )..createSync(recursive: true);
         Directory(p.join(mockDartSdk.path, 'lib')).createSync();
-        File(p.join(mockDartSdk.path, 'lib', 'libraries.json'))
-            .writeAsStringSync('{}');
+        File(
+          p.join(mockDartSdk.path, 'lib', 'libraries.json'),
+        ).writeAsStringSync('{}');
         File(p.join(mockDartSdk.path, 'version')).writeAsStringSync('3.8.0');
 
         runZoned(

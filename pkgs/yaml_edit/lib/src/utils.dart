@@ -28,9 +28,7 @@ T withYamlWarningCallback<T>(
   }
 }
 
-void _ignoreWarning(String warning, [SourceSpan? span]) {
-  /* ignore warning */
-}
+void _ignoreWarning(String warning, [SourceSpan? span]) {/* ignore warning */}
 
 /// Determines if [string] is dangerous by checking if parsing the plain string
 /// can return a result different from [string].
@@ -160,9 +158,8 @@ int getMapInsertionIndex(YamlMap map, Object newKey) {
     }
   }
 
-  final insertionIndex = keys.indexWhere(
-    (key) => key.compareTo(newKey as String) > 0,
-  );
+  final insertionIndex =
+      keys.indexWhere((key) => key.compareTo(newKey as String) > 0);
 
   if (insertionIndex != -1) return insertionIndex;
 
@@ -458,7 +455,7 @@ int indexOfLastLineEnding(
     /// See "Example 8.19 Compact Block Mappings" at
     /// https://yaml.org/spec/1.2.2/#822-block-mappings
     '-' || '?' || ':' => (compactCharOffset: startOffset, lineEndingIndex: -1),
-    _ => (compactCharOffset: -1, lineEndingIndex: -1),
+    _ => (compactCharOffset: -1, lineEndingIndex: -1)
   };
 }
 
