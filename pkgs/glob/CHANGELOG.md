@@ -6,6 +6,8 @@
   exhaustion. `Glob.matches()` uses regular expressions and is unaffected.
 - Allow `**` to match zero directories at the start of a pattern or following
   a separator (e.g. `**/foo` matches `foo` and `a/**/b` matches `a/b`).
+- Check the glob's path context against the file system's path context
+  when listing files, rather than using the unrelated platform path context.
 
 ## 2.1.3
 

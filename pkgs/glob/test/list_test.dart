@@ -8,6 +8,7 @@ library;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:file/memory.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:glob/src/utils.dart';
@@ -24,8 +25,16 @@ void main() {
   });
 
   group('list()', () {
-    test("fails if the context doesn't match the system context", () {
-      expect(Glob('*', context: p.url).list, throwsStateError);
+    test("fails if the fileSystem context doesn't match the glob context", () {
+      expect(Glob('*', context: p.url).list, throwsArgumentError);
+    });
+
+    test("does not fail if the fileSystem and glob contexts match", () {
+      // Shouldn't fail even if neither is the platform context.
+      Glob('*', context: p.posix)
+          .listFileSystem(MemoryFileSystem(style: FileSystemStyle.posix));
+      Glob('*', context: p.windows)
+          .listFileSystem(MemoryFileSystem(style: FileSystemStyle.windows));
     });
 
     test('returns empty list for non-existent case-sensitive directories',
@@ -43,8 +52,16 @@ void main() {
   });
 
   group('listSync()', () {
-    test("fails if the context doesn't match the system context", () {
-      expect(Glob('*', context: p.url).listSync, throwsStateError);
+    test("fails if the fileSystem context doesn't match the glob context", () {
+      expect(Glob('*', context: p.url).listSync, throwsArgumentError);
+    });
+
+    test("does not fail if the fileSystem and glob contexts match", () {
+      // Shouldn't fail even if neither is the platform context.
+      Glob('*', context: p.posix)
+          .listFileSystemSync(MemoryFileSystem(style: FileSystemStyle.posix));
+      Glob('*', context: p.windows)
+          .listFileSystemSync(MemoryFileSystem(style: FileSystemStyle.windows));
     });
 
     test('returns empty list for non-existent case-sensitive directories', () {
