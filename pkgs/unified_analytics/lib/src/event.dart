@@ -422,6 +422,18 @@ final class Event {
   ///
   /// * [numberOfPackagesInWorkspace] - JSON-encoded percentile values for the
   ///   number of packages in the Pub workspaces.
+  ///
+  /// * [minSdkConstraints] - JSON-encoded map of the minimum SDK constraints
+  ///   specified in the pubspec.yaml files for all of the packages in the
+  ///   context. The format of the map is "&lt;String,int&gt;" where the key
+  ///   is the SDK version (e.g., "2.12", "2.17", etc) and the value is the
+  ///   count of packages with that constraint.
+  ///
+  /// * [languageVersionOverrides] - JSON-encoded map of the language version
+  ///   overrides specified for all of the libraries in the context. The format
+  ///   of the map is "&lt;String,String&gt;" where the key is the language
+  ///   version override and the value is the count of libraries with that
+  ///   override.
   Event.contextStructure({
     required int immediateFileCount,
     required int immediateFileLineCount,
@@ -434,6 +446,8 @@ final class Event {
     String libraryCycleLineCounts = '',
     String contextWorkspaceType = '',
     String numberOfPackagesInWorkspace = '',
+    String minSdkConstraints = '',
+    String languageVersionOverrides = '',
   }) : this._(
          eventName: DashEvent.contextStructure,
          eventData: {
@@ -448,6 +462,8 @@ final class Event {
            'libraryCycleLineCounts': libraryCycleLineCounts,
            'contextWorkspaceType': contextWorkspaceType,
            'numberOfPackagesInWorkspace': numberOfPackagesInWorkspace,
+           'minSdkConstraints': minSdkConstraints,
+           'languageVersionOverrides': languageVersionOverrides,
          },
        );
 
@@ -651,11 +667,15 @@ final class Event {
   /// * [commandHasTerminal] - Boolean indicating if the flutter command ran
   ///   with a terminal.
   ///
+  /// * [hostArch] - the host CPU architecture executing the command (e.g.,
+  ///   "x64", "arm64", "arm", "ia32", "riscv64").
+  ///
   /// * [maxRss] - maximum resident size for a given flutter command.
   Event.flutterCommandResult({
     required String commandPath,
     required String result,
     required bool commandHasTerminal,
+    String? hostArch,
     int? maxRss,
   }) : this._(
          eventName: DashEvent.flutterCommandResult,
@@ -663,6 +683,7 @@ final class Event {
            'commandPath': commandPath,
            'result': result,
            'commandHasTerminal': commandHasTerminal,
+           'hostArch': ?hostArch,
            'maxRss': ?maxRss,
          },
        );

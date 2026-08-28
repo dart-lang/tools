@@ -14,7 +14,11 @@ import 'wrap.dart';
 /// Performs the string operation on [yamlEdit] to achieve the effect of setting
 /// the element at [key] to [newValue] when re-parsed.
 SourceEdit updateInMap(
-    YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
+  YamlEditor yamlEdit,
+  YamlMap map,
+  Object? key,
+  YamlNode newValue,
+) {
   if (!containsKey(map, key)) {
     final keyNode = wrapAsYamlNode(key);
 
@@ -48,7 +52,11 @@ SourceEdit removeInMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
 /// the [key]:[newValue] pair when reparsed, bearing in mind that this is a
 /// block map.
 SourceEdit _addToBlockMap(
-    YamlEditor yamlEdit, YamlMap map, Object key, YamlNode newValue) {
+  YamlEditor yamlEdit,
+  YamlMap map,
+  Object key,
+  YamlNode newValue,
+) {
   final yaml = yamlEdit.toString();
   final newIndentation =
       getMapIndentation(yaml, map) + getIndentation(yamlEdit);
@@ -97,7 +105,11 @@ SourceEdit _addToBlockMap(
 /// the [keyNode]:[newValue] pair when reparsed, bearing in mind that this is a
 /// flow map.
 SourceEdit _addToFlowMap(
-    YamlEditor yamlEdit, YamlMap map, YamlNode keyNode, YamlNode newValue) {
+  YamlEditor yamlEdit,
+  YamlMap map,
+  YamlNode keyNode,
+  YamlNode newValue,
+) {
   final keyString = yamlEncodeFlow(keyNode);
   final valueString = yamlEncodeFlow(newValue);
 
@@ -109,7 +121,38 @@ SourceEdit _addToFlowMap(
   final insertionIndex = getMapInsertionIndex(map, keyString);
 
   if (insertionIndex == map.length) {
-    return SourceEdit(map.span.end.offset - 1, 0, ', $keyString: $valueString');
+    final yaml = yamlEdit.toString();
+    final lastNode = map.nodes.values.last;
+    final closingOffset = map.span.end.offset - 1;
+    final between = yaml.substring(lastNode.span.end.offset, closingOffset);
+    final hasTrailing = betweenHasTrailingComma(between);
+
+    final entryString = '$keyString: $valueString';
+    String formattedValue;
+    if (hasTrailing) {
+      // If there is already a trailing comma in the flow map, do not prepend
+      // another comma. If the flow map spans multiple lines with the closing
+      // brace on a new line, align the new entry with the previous elements.
+      if (between.contains('\n')) {
+        final lastKey = map.nodes.keys.last as YamlNode;
+        formattedValue = formatMultilineFlowTrailingEntry(
+          closingOffset: closingOffset,
+          lastEntryStartOffset: lastKey.span.start.offset,
+          newEntry: entryString,
+          yaml: yaml,
+        );
+      } else {
+        var v = entryString;
+        if (!RegExp(r'\s$').hasMatch(between)) {
+          v = ' $v';
+        }
+        formattedValue = '$v,';
+      }
+    } else {
+      formattedValue = ', $entryString';
+    }
+
+    return SourceEdit(closingOffset, 0, formattedValue);
   }
 
   final insertionOffset =
@@ -122,15 +165,22 @@ SourceEdit _addToFlowMap(
 /// replacing the value at [key] with [newValue] when reparsed, bearing in mind
 /// that this is a block map.
 SourceEdit _replaceInBlockMap(
-    YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
+  YamlEditor yamlEdit,
+  YamlMap map,
+  Object? key,
+  YamlNode newValue,
+) {
   final yaml = yamlEdit.toString();
   final lineEnding = getLineEnding(yaml);
   final newIndentation =
       getMapIndentation(yaml, map) + getIndentation(yamlEdit);
 
   final keyNode = getKeyNode(map, key);
-  var valueAsString =
-      yamlEncodeBlock(wrapAsYamlNode(newValue), newIndentation, lineEnding);
+  var valueAsString = yamlEncodeBlock(
+    wrapAsYamlNode(newValue),
+    newIndentation,
+    lineEnding,
+  );
   if (isCollection(newValue) &&
       !isFlowYamlCollectionNode(newValue) &&
       !isEmpty(newValue)) {
@@ -159,7 +209,11 @@ SourceEdit _replaceInBlockMap(
 /// replacing the value at [key] with [newValue] when reparsed, bearing in mind
 /// that this is a flow map.
 SourceEdit _replaceInFlowMap(
-    YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
+  YamlEditor yamlEdit,
+  YamlMap map,
+  Object? key,
+  YamlNode newValue,
+) {
   final valueSpan = map.nodes[key]!.span;
   final valueString = yamlEncodeFlow(newValue);
 
@@ -186,7 +240,8 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
       // A block map only exists because of its first key.
       start: entryIndex == 0 ? map.span.start.offset : keySpan.start.offset,
       end: valueNode.span.length == 0
-          ? keySpan.end.offset + 2 // Null value have no span. Skip ":".
+          ? keySpan.end.offset +
+                2 // Null value have no span. Skip ":".
           : getContentSensitiveEnd(valueNode),
     ),
     lineEnding: getLineEnding(yaml),
@@ -198,7 +253,7 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
 
       return (
         nearestLineEnding: yaml.lastIndexOf('\n', nextKeySpan.offset),
-        nextNodeColStart: nextKeySpan.column
+        nextNodeColStart: nextKeySpan.column,
       );
     },
   );

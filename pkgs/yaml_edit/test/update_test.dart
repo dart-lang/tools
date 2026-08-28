@@ -133,18 +133,21 @@ c: 3
 ''');
         doc.update(['b', 'e'], 6);
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 b:
   d: 4
   e: 6
 c: 3
-'''));
+'''),
+        );
 
         expectYamlBuilderValue(doc, {
           'a': 1,
           'b': {'d': 4, 'e': 6},
-          'c': 3
+          'c': 3,
         });
       });
 
@@ -156,15 +159,18 @@ c: 3
 ''');
         doc.update(['b', 'e'], 6);
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 b: {d: 4, e: 6}
 c: 3
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {
           'a': 1,
           'b': {'d': 4, 'e': 6},
-          'c': 3
+          'c': 3,
         });
       });
 
@@ -175,9 +181,12 @@ a:
 ''');
         doc.update(['a'], true);
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: true
-'''));
+'''),
+        );
 
         expectYamlBuilderValue(doc, {'a': true});
       });
@@ -186,16 +195,17 @@ a: true
         final doc = YamlEditor('''
 a: 1
 ''');
-        doc.update([
-          'a'
-        ], [
-          {'a': true, 'b': false}
-        ]);
+        doc.update(
+          ['a'],
+          [
+            {'a': true, 'b': false},
+          ],
+        );
 
         expectYamlBuilderValue(doc, {
           'a': [
-            {'a': true, 'b': false}
-          ]
+            {'a': true, 'b': false},
+          ],
         });
       });
 
@@ -207,14 +217,17 @@ a:
   - null
 ''');
         doc.update(['a', 0], false);
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a:
   - false
 
   - null
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {
-          'a': [false, null]
+          'a': [false, null],
         });
       });
 
@@ -226,14 +239,17 @@ a:
   - null
 ''');
         doc.update(['a', 0], false);
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a:
   - false
 
   - null
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {
-          'a': [false, null]
+          'a': [false, null],
         });
       });
 
@@ -245,12 +261,15 @@ b: false
 ''');
         doc.update(['a', 0], true);
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a:
   - true
 
 b: false
-'''));
+'''),
+        );
       });
 
       test('nested (8)', () {
@@ -260,11 +279,14 @@ b: false
 ''');
         doc.update(['a'], {'retry': '3.0.1'});
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a:
   retry: 3.0.1
 b: false
-'''));
+'''),
+        );
       });
 
       test('nested (9)', () {
@@ -275,12 +297,15 @@ a: # comment
 ''');
         doc.update(['a'], {'retry': '3.0.1'});
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 # comment
 a:
   retry: 3.0.1 # comment
 # comment
-'''));
+'''),
+        );
       });
 
       test('nested scalar -> flow list', () {
@@ -293,7 +318,9 @@ c: 3
 ''');
         doc.update(['b', 'e'], [1, 2, 3]);
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 b:
   d: 4
@@ -302,14 +329,15 @@ b:
     - 2
     - 3
 c: 3
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {
           'a': 1,
           'b': {
             'd': 4,
-            'e': [1, 2, 3]
+            'e': [1, 2, 3],
           },
-          'c': 3
+          'c': 3,
         });
       });
 
@@ -323,11 +351,14 @@ c: 3
 ''');
         doc.update(['b'], 2);
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 b: 2
 c: 3
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
       });
 
@@ -343,17 +374,17 @@ b:
 ''');
         doc.update(['b'], 2);
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 b: 2
 
 
 # comment
-'''));
-        expectYamlBuilderValue(doc, {
-          'a': 1,
-          'b': 2,
-        });
+'''),
+        );
+        expectYamlBuilderValue(doc, {'a': 1, 'b': 2});
       });
 
       test('nested scalar -> block map', () {
@@ -366,7 +397,9 @@ c: 3
 ''');
         doc.update(['b', 'e'], {'x': 3, 'y': 4});
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 b:
   d: 4
@@ -374,14 +407,15 @@ b:
     x: 3
     y: 4
 c: 3
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {
           'a': 1,
           'b': {
             'd': 4,
-            'e': {'x': 3, 'y': 4}
+            'e': {'x': 3, 'y': 4},
           },
-          'c': 3
+          'c': 3,
         });
       });
 
@@ -395,17 +429,20 @@ c: 3
 ''');
         doc.update(['b', 'e'], 6);
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 b:
   d: 4
   e: 6 # comment
 c: 3
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {
           'a': 1,
           'b': {'d': 4, 'e': 6},
-          'c': 3
+          'c': 3,
         });
       });
 
@@ -421,7 +458,9 @@ c: 3
 ''');
         doc.update(['b', 'e'], 6);
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 b:
   d: 4 # comment
@@ -429,11 +468,12 @@ b:
   e: 6 # comment
 # comment
 c: 3
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {
           'a': 1,
           'b': {'d': 4, 'e': 6},
-          'c': 3
+          'c': 3,
         });
       });
     });
@@ -472,20 +512,25 @@ c: 3
       });
 
       test('with spacing', () {
-        final doc = YamlEditor("{ YAML:  YAML Ain't Markup Language , "
-            'XML: Extensible Markup Language , '
-            'HTML: Hypertext Markup Language }');
+        final doc = YamlEditor(
+          "{ YAML:  YAML Ain't Markup Language , "
+          'XML: Extensible Markup Language , '
+          'HTML: Hypertext Markup Language }',
+        );
         doc.update(['XML'], 'XML Markup Language');
 
         expect(
-            doc.toString(),
-            equals("{ YAML:  YAML Ain't Markup Language , "
-                'XML: XML Markup Language, '
-                'HTML: Hypertext Markup Language }'));
+          doc.toString(),
+          equals(
+            "{ YAML:  YAML Ain't Markup Language , "
+            'XML: XML Markup Language, '
+            'HTML: Hypertext Markup Language }',
+          ),
+        );
         expectYamlBuilderValue(doc, {
           'YAML': "YAML Ain't Markup Language",
           'XML': 'XML Markup Language',
-          'HTML': 'Hypertext Markup Language'
+          'HTML': 'Hypertext Markup Language',
         });
       });
     });
@@ -507,11 +552,14 @@ c: 3
 ''');
         doc.update([1], 2);
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 - 1
 - 2 
 - 3
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, [1, 2, 3]);
       });
 
@@ -521,7 +569,7 @@ c: 3
 
         expect(doc.toString(), equals('- - 1\n  - 2'));
         expectYamlBuilderValue(doc, [
-          [1, 2]
+          [1, 2],
         ]);
       });
 
@@ -541,11 +589,14 @@ c: 3
 ''');
         doc.update([1], 2);
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 - 1
 - 2 # comment
 - 3
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, [1, 2, 3]);
       });
 
@@ -567,20 +618,23 @@ c: 3
 - 3
 ''');
         doc.update([1, 1], 4);
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 - 0
 - - 0
   - 4
   - 2
 - 2
 - 3
-'''));
+'''),
+        );
 
         expectYamlBuilderValue(doc, [
           0,
           [0, 4, 2],
           2,
-          3
+          3,
         ]);
       });
 
@@ -591,16 +645,19 @@ c: 3
 ''');
         doc.update([0], {'item': 'Super Hoop', 'quantity': 1});
         doc.update([1], {'item': 'BasketBall', 'quantity': 4});
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 - item: Super Hoop
   quantity: 1
 - item: BasketBall
   quantity: 4
-'''));
+'''),
+        );
 
         expectYamlBuilderValue(doc, [
           {'item': 'Super Hoop', 'quantity': 1},
-          {'item': 'BasketBall', 'quantity': 4}
+          {'item': 'BasketBall', 'quantity': 4},
         ]);
       });
 
@@ -612,12 +669,15 @@ c: 3
 - 3
 ''');
         doc.update([1], 4);
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 - 0
 - 4
 - 2
 - 3
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, [0, 4, 2, 3]);
       });
 
@@ -632,7 +692,9 @@ c: 3
 - 3
 ''');
         doc.update([1, 'a', 0], 15);
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 - 0
 - a:
    - 15
@@ -640,14 +702,15 @@ c: 3
    - 3
 - 2
 - 3
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, [
           0,
           {
-            'a': [15, 2, 3]
+            'a': [15, 2, 3],
           },
           2,
-          3
+          3,
         ]);
       });
     });
@@ -667,7 +730,7 @@ c: 3
 
         expect(doc.toString(), equals('[[1, 2, 3]]'));
         expectYamlBuilderValue(doc, [
-          [1, 2, 3]
+          [1, 2, 3],
         ]);
       });
 
@@ -698,15 +761,18 @@ c: 3
 - []
 ''');
         doc.update([0, 'a'], [1]);
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 - {a: [1]}
 - []
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, [
           {
-            'a': [1]
+            'a': [1],
           },
-          []
+          [],
         ]);
       });
 
@@ -715,13 +781,119 @@ c: 3
         doc.update(['XML'], 'Extensible Markup Language');
 
         expect(
-            doc.toString(),
-            '{XML: Extensible Markup Language, '
-            "YAML: YAML Ain't Markup Language}");
+          doc.toString(),
+          '{XML: Extensible Markup Language, '
+          "YAML: YAML Ain't Markup Language}",
+        );
         expectYamlBuilderValue(doc, {
           'XML': 'Extensible Markup Language',
           'YAML': "YAML Ain't Markup Language",
         });
+      });
+
+      test('spanning multiple lines with trailing comma', () {
+        final doc = YamlEditor('''
+{
+  a: 1,
+  b: 2,
+}
+''');
+        doc.update(['c'], 3);
+        expect(
+          doc.toString(),
+          equals('''
+{
+  a: 1,
+  b: 2,
+  c: 3,
+}
+'''),
+        );
+        expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
+      });
+
+      test('spanning multiple lines with trailing comma and comment', () {
+        final doc = YamlEditor('''
+{
+  a: 1,
+  b: 2, # comment
+}
+''');
+        doc.update(['c'], 3);
+        expect(
+          doc.toString(),
+          equals('''
+{
+  a: 1,
+  b: 2, # comment
+  c: 3,
+}
+'''),
+        );
+        expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
+      });
+
+      test('nested flow map spanning multiple lines with trailing comma', () {
+        final doc = YamlEditor('''
+analyzer:
+  exclude:
+    {
+      foo: 1,
+      build: 2,
+    }
+''');
+        doc.update(['analyzer', 'exclude', 'android'], 3);
+        expect(
+          doc.toString(),
+          equals('''
+analyzer:
+  exclude:
+    {
+      foo: 1,
+      build: 2,
+      android: 3,
+    }
+'''),
+        );
+        expectYamlBuilderValue(doc, {
+          'analyzer': {
+            'exclude': {'foo': 1, 'build': 2, 'android': 3},
+          },
+        });
+      });
+
+      test('spanning multiple lines without trailing comma', () {
+        final doc = YamlEditor('''
+{
+  a: 1,
+  b: 2
+}
+''');
+        doc.update(['c'], 3);
+        expect(
+          doc.toString(),
+          equals('''
+{
+  a: 1,
+  b: 2
+, c: 3}
+'''),
+        );
+        expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
+      });
+
+      test('single line with trailing comma', () {
+        final doc = YamlEditor('{a: 1, b: 2, }');
+        doc.update(['c'], 3);
+        expect(doc.toString(), equals('{a: 1, b: 2, c: 3,}'));
+        expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
+      });
+
+      test('single line with trailing comma (no space)', () {
+        final doc = YamlEditor('{a: 1, b: 2,}');
+        doc.update(['c'], 3);
+        expect(doc.toString(), equals('{a: 1, b: 2, c: 3,}'));
+        expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
       });
     });
 
@@ -733,12 +905,15 @@ b: 2
 c: 3
 ''');
         doc.update(['d'], 4);
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 b: 2
 c: 3
 d: 4
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3, 'd': 4});
       });
 
@@ -771,9 +946,12 @@ b: 2
       test('(2)', () {
         final doc = YamlEditor('a: 1');
         doc.update(['b'], 2);
-        expect(doc.toString(), equals('''a: 1
+        expect(
+          doc.toString(),
+          equals('''a: 1
 b: 2
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2});
       });
 
@@ -783,15 +961,17 @@ a:
   aa: 1
   zz: 1
 ''');
-        doc.update([
-          'a',
-          'bb'
-        ], {
-          'aaa': {'dddd': 'c'},
-          'bbb': [0, 1, 2]
-        });
+        doc.update(
+          ['a', 'bb'],
+          {
+            'aaa': {'dddd': 'c'},
+            'bbb': [0, 1, 2],
+          },
+        );
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a:
   aa: 1
   bb:
@@ -802,16 +982,17 @@ a:
       - 1
       - 2
   zz: 1
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {
           'a': {
             'aa': 1,
             'bb': {
               'aaa': {'dddd': 'c'},
-              'bbb': [0, 1, 2]
+              'bbb': [0, 1, 2],
             },
-            'zz': 1
-          }
+            'zz': 1,
+          },
         });
       });
 
@@ -821,16 +1002,18 @@ a:
   aa: 1
   zz: 1
 ''');
-        doc.update([
-          'a',
-          'bb'
-        ], [
-          0,
-          [1, 2],
-          {'aaa': 'b', 'bbb': 'c'}
-        ]);
+        doc.update(
+          ['a', 'bb'],
+          [
+            0,
+            [1, 2],
+            {'aaa': 'b', 'bbb': 'c'},
+          ],
+        );
 
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a:
   aa: 1
   bb:
@@ -840,17 +1023,18 @@ a:
     - aaa: b
       bbb: c
   zz: 1
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {
           'a': {
             'aa': 1,
             'bb': [
               0,
               [1, 2],
-              {'aaa': 'b', 'bbb': 'c'}
+              {'aaa': 'b', 'bbb': 'c'},
             ],
-            'zz': 1
-          }
+            'zz': 1,
+          },
         });
       });
 
@@ -859,13 +1043,19 @@ a:
 ? Sammy Sosa
 ? Ken Griff''');
         doc.update(['Mark McGwire'], null);
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 ? Sammy Sosa
 ? Ken Griff
 Mark McGwire: null
-'''));
-        expectYamlBuilderValue(
-            doc, {'Sammy Sosa': null, 'Ken Griff': null, 'Mark McGwire': null});
+'''),
+        );
+        expectYamlBuilderValue(doc, {
+          'Sammy Sosa': null,
+          'Ken Griff': null,
+          'Mark McGwire': null,
+        });
       });
 
       test('with trailing newline', () {
@@ -877,14 +1067,17 @@ c: 3
 
 ''');
         doc.update(['d'], 4);
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 b: 2
 c: 3
 d: 4
 
 
-'''));
+'''),
+        );
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3, 'd': 4});
       });
 
@@ -898,7 +1091,7 @@ d: 4
         final doc = YamlEditor('a: b');
         doc.update(['a'], {'key': {}});
         expectYamlBuilderValue(doc, {
-          'a': {'key': {}}
+          'a': {'key': {}},
         });
       });
 
@@ -912,14 +1105,17 @@ c: 3
 ''');
 
         doc.update(['d'], 4);
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 b: 2
 c: 3
 d: 4
 
 
-'''));
+'''),
+        );
       });
 
       test('adds at the end when no key order is present', () {
@@ -930,12 +1126,15 @@ b: 3
 ''');
 
         doc.update(['d'], 4);
-        expect(doc.toString(), equals('''
+        expect(
+          doc.toString(),
+          equals('''
 a: 1
 c: 2
 b: 3
 d: 4
-'''));
+'''),
+        );
       });
     });
 
@@ -956,10 +1155,7 @@ d: 4
         final doc = YamlEditor('');
         doc.update(
           [],
-          wrapAsYamlNode(
-            {'key': {}},
-            collectionStyle: CollectionStyle.BLOCK,
-          ),
+          wrapAsYamlNode({'key': {}}, collectionStyle: CollectionStyle.BLOCK),
         );
         expectYamlBuilderValue(doc, {'key': {}});
       });
@@ -968,10 +1164,7 @@ d: 4
         final doc = YamlEditor('');
         doc.update(
           [],
-          wrapAsYamlNode(
-            {},
-            collectionStyle: CollectionStyle.BLOCK,
-          ),
+          wrapAsYamlNode({}, collectionStyle: CollectionStyle.BLOCK),
         );
         expectYamlBuilderValue(doc, {});
       });
@@ -992,10 +1185,7 @@ d: 4
         final doc = YamlEditor('');
         doc.update(
           [],
-          wrapAsYamlNode(
-            {'key': []},
-            collectionStyle: CollectionStyle.BLOCK,
-          ),
+          wrapAsYamlNode({'key': []}, collectionStyle: CollectionStyle.BLOCK),
         );
         expectYamlBuilderValue(doc, {'key': []});
       });
@@ -1004,10 +1194,7 @@ d: 4
         final doc = YamlEditor('');
         doc.update(
           [],
-          wrapAsYamlNode(
-            [],
-            collectionStyle: CollectionStyle.BLOCK,
-          ),
+          wrapAsYamlNode([], collectionStyle: CollectionStyle.BLOCK),
         );
         expectYamlBuilderValue(doc, []);
       });

@@ -174,7 +174,52 @@ void main() {
     expect(constructedEvent.eventData['libraryCycleLineCounts'], 'b');
     expect(constructedEvent.eventData['contextWorkspaceType'], '[0,1,2]');
     expect(constructedEvent.eventData['numberOfPackagesInWorkspace'], '32');
-    expect(constructedEvent.eventData.length, 11);
+    expect(constructedEvent.eventData['minSdkConstraints'], '');
+    expect(constructedEvent.eventData['languageVersionOverrides'], '');
+    expect(constructedEvent.eventData.length, 13);
+  });
+
+  test('Event.contextStructure constructed with optional parameters', () {
+    Event generateEvent() => Event.contextStructure(
+      immediateFileCount: 1,
+      immediateFileLineCount: 2,
+      numberOfContexts: 3,
+      transitiveFileCount: 4,
+      transitiveFileLineCount: 5,
+      transitiveFileUniqueCount: 6,
+      transitiveFileUniqueLineCount: 7,
+      libraryCycleLibraryCounts: 'a',
+      libraryCycleLineCounts: 'b',
+      contextWorkspaceType: '[0,1,2]',
+      numberOfPackagesInWorkspace: '32',
+      minSdkConstraints: '{"2.12.0":5,"3.0.0":2}',
+      languageVersionOverrides: '{"2.12":5,"3.10":2}',
+    );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.contextStructure);
+    expect(constructedEvent.eventData['immediateFileCount'], 1);
+    expect(constructedEvent.eventData['immediateFileLineCount'], 2);
+    expect(constructedEvent.eventData['numberOfContexts'], 3);
+    expect(constructedEvent.eventData['transitiveFileCount'], 4);
+    expect(constructedEvent.eventData['transitiveFileLineCount'], 5);
+    expect(constructedEvent.eventData['transitiveFileUniqueCount'], 6);
+    expect(constructedEvent.eventData['transitiveFileUniqueLineCount'], 7);
+    expect(constructedEvent.eventData['libraryCycleLibraryCounts'], 'a');
+    expect(constructedEvent.eventData['libraryCycleLineCounts'], 'b');
+    expect(constructedEvent.eventData['contextWorkspaceType'], '[0,1,2]');
+    expect(constructedEvent.eventData['numberOfPackagesInWorkspace'], '32');
+    expect(
+      constructedEvent.eventData['minSdkConstraints'],
+      '{"2.12.0":5,"3.0.0":2}',
+    );
+    expect(
+      constructedEvent.eventData['languageVersionOverrides'],
+      '{"2.12":5,"3.10":2}',
+    );
+    expect(constructedEvent.eventData.length, 13);
   });
 
   test('Event.dartCliCommandExecuted constructed', () {
@@ -663,6 +708,7 @@ void main() {
       commandPath: 'commandPath',
       result: 'result',
       commandHasTerminal: true,
+      hostArch: 'arm64',
       maxRss: 123,
     );
 
@@ -673,9 +719,32 @@ void main() {
     expect(constructedEvent.eventData['commandPath'], 'commandPath');
     expect(constructedEvent.eventData['result'], 'result');
     expect(constructedEvent.eventData['commandHasTerminal'], true);
+    expect(constructedEvent.eventData['hostArch'], 'arm64');
     expect(constructedEvent.eventData['maxRss'], 123);
-    expect(constructedEvent.eventData.length, 4);
+    expect(constructedEvent.eventData.length, 5);
   });
+
+  test(
+    'Event.flutterCommandResult constructed with optional values omitted',
+    () {
+      Event generateEvent() => Event.flutterCommandResult(
+        commandPath: 'commandPath',
+        result: 'result',
+        commandHasTerminal: true,
+      );
+
+      final constructedEvent = generateEvent();
+
+      expect(generateEvent, returnsNormally);
+      expect(constructedEvent.eventName, DashEvent.flutterCommandResult);
+      expect(constructedEvent.eventData['commandPath'], 'commandPath');
+      expect(constructedEvent.eventData['result'], 'result');
+      expect(constructedEvent.eventData['commandHasTerminal'], true);
+      expect(constructedEvent.eventData['hostArch'], isNull);
+      expect(constructedEvent.eventData['maxRss'], isNull);
+      expect(constructedEvent.eventData.length, 3);
+    },
+  );
 
   test('Event.flutterWasmDryRunPackage constructed', () {
     Event generateEvent() => Event.flutterWasmDryRunPackage(

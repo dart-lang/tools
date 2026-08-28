@@ -3,6 +3,9 @@
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
 * Mark internal constructors in `YamlDocument`, `YamlMap`, `YamlList`, and
   `YamlScalar` with `@internal`.
+
+## 3.1.4
+
 * Improve recovery for list entries without `-` prefix. When recovering, provide
   a more helpful error message suggesting the missing prefix.
 * Fix a bug where block strings terminated by `EOF` were not given an implicit

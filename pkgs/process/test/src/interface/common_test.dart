@@ -32,7 +32,7 @@ void main() {
         workingDir,
         dir1,
         dir2,
-        dir3
+        dir3,
       ]) {
         directory.deleteSync(recursive: true);
       }
@@ -48,7 +48,7 @@ void main() {
           operatingSystem: 'windows',
           environment: <String, String>{
             'PATH': '${dir1.path};${dir2.path}',
-            'PATHEXT': '.exe;.bat'
+            'PATHEXT': '.exe;.bat',
           },
         );
       });
@@ -173,8 +173,10 @@ void main() {
         // Windows supports absolute paths with '/' separators.
         final String expectedPath = fs.path.join(dir3.path, 'bla.exe');
         fs.file(expectedPath).createSync();
-        final String commandWithForwardSlashes =
-            expectedPath.replaceAll('\\', '/');
+        final String commandWithForwardSlashes = expectedPath.replaceAll(
+          '\\',
+          '/',
+        );
 
         final String? executablePath = getExecutablePath(
           commandWithForwardSlashes,
@@ -240,41 +242,53 @@ void main() {
         expect(executablePath, isNull);
       });
 
-      test('not found with throwOnFailure throws exception with match state',
-          () {
-        const String command = 'foo.exe';
-        expect(
+      test(
+        'not found with throwOnFailure throws exception with match state',
+        () {
+          const String command = 'foo.exe';
+          expect(
             () => getExecutablePath(
-                  command,
-                  workingDir.path,
-                  platform: platform,
-                  fs: fs,
-                  throwOnFailure: true,
-                ),
-            throwsA(isA<ProcessPackageExecutableNotFoundException>()
-                .having(
-                    (ProcessPackageExecutableNotFoundException
-                            notFoundException) =>
-                        notFoundException.candidates,
+              command,
+              workingDir.path,
+              platform: platform,
+              fs: fs,
+              throwOnFailure: true,
+            ),
+            throwsA(
+              isA<ProcessPackageExecutableNotFoundException>()
+                  .having(
+                    (
+                      ProcessPackageExecutableNotFoundException
+                      notFoundException,
+                    ) => notFoundException.candidates,
                     'candidates',
-                    isEmpty)
-                .having(
-                    (ProcessPackageExecutableNotFoundException
-                            notFoundException) =>
-                        notFoundException.workingDirectory,
+                    isEmpty,
+                  )
+                  .having(
+                    (
+                      ProcessPackageExecutableNotFoundException
+                      notFoundException,
+                    ) => notFoundException.workingDirectory,
                     'workingDirectory',
-                    equals(workingDir.path))
-                .having(
-                    (ProcessPackageExecutableNotFoundException
-                            notFoundException) =>
-                        notFoundException.toString(),
+                    equals(workingDir.path),
+                  )
+                  .having(
+                    (
+                      ProcessPackageExecutableNotFoundException
+                      notFoundException,
+                    ) => notFoundException.toString(),
                     'toString',
                     contains(
-                        '  Working Directory: C:\\.tmp_rand0\\work_dir_rand0\n'
-                        '  Search Path:\n'
-                        '    C:\\.tmp_rand0\\dir1_rand0\n'
-                        '    C:\\.tmp_rand0\\dir2_rand0\n'))));
-      });
+                      '  Working Directory: C:\\.tmp_rand0\\work_dir_rand0\n'
+                      '  Search Path:\n'
+                      '    C:\\.tmp_rand0\\dir1_rand0\n'
+                      '    C:\\.tmp_rand0\\dir2_rand0\n',
+                    ),
+                  ),
+            ),
+          );
+        },
+      );
 
       test('with absolute path when currentDirectory getter throws', () {
         final FileSystem fsNoCwd = MemoryFileSystemNoCwd(fs);
@@ -312,8 +326,9 @@ void main() {
 
       setUp(() {
         platform = FakePlatform(
-            operatingSystem: 'linux',
-            environment: <String, String>{'PATH': '${dir1.path}:${dir2.path}'});
+          operatingSystem: 'linux',
+          environment: <String, String>{'PATH': '${dir1.path}:${dir2.path}'},
+        );
       });
 
       test('absolute', () {
@@ -360,40 +375,53 @@ void main() {
         expect(executablePath, isNull);
       });
 
-      test('not found with throwOnFailure throws exception with match state',
-          () {
-        const String command = 'foo';
-        expect(
+      test(
+        'not found with throwOnFailure throws exception with match state',
+        () {
+          const String command = 'foo';
+          expect(
             () => getExecutablePath(
-                  command,
-                  workingDir.path,
-                  platform: platform,
-                  fs: fs,
-                  throwOnFailure: true,
-                ),
-            throwsA(isA<ProcessPackageExecutableNotFoundException>()
-                .having(
-                    (ProcessPackageExecutableNotFoundException
-                            notFoundException) =>
-                        notFoundException.candidates,
+              command,
+              workingDir.path,
+              platform: platform,
+              fs: fs,
+              throwOnFailure: true,
+            ),
+            throwsA(
+              isA<ProcessPackageExecutableNotFoundException>()
+                  .having(
+                    (
+                      ProcessPackageExecutableNotFoundException
+                      notFoundException,
+                    ) => notFoundException.candidates,
                     'candidates',
-                    isEmpty)
-                .having(
-                    (ProcessPackageExecutableNotFoundException
-                            notFoundException) =>
-                        notFoundException.workingDirectory,
+                    isEmpty,
+                  )
+                  .having(
+                    (
+                      ProcessPackageExecutableNotFoundException
+                      notFoundException,
+                    ) => notFoundException.workingDirectory,
                     'workingDirectory',
-                    equals(workingDir.path))
-                .having(
-                    (ProcessPackageExecutableNotFoundException
-                            notFoundException) =>
-                        notFoundException.toString(),
+                    equals(workingDir.path),
+                  )
+                  .having(
+                    (
+                      ProcessPackageExecutableNotFoundException
+                      notFoundException,
+                    ) => notFoundException.toString(),
                     'toString',
-                    contains('  Working Directory: /.tmp_rand0/work_dir_rand0\n'
-                        '  Search Path:\n'
-                        '    /.tmp_rand0/dir1_rand0\n'
-                        '    /.tmp_rand0/dir2_rand0\n'))));
-      });
+                    contains(
+                      '  Working Directory: /.tmp_rand0/work_dir_rand0\n'
+                      '  Search Path:\n'
+                      '    /.tmp_rand0/dir1_rand0\n'
+                      '    /.tmp_rand0/dir2_rand0\n',
+                    ),
+                  ),
+            ),
+          );
+        },
+      );
     });
   });
   group('Real Filesystem', () {
@@ -479,37 +507,38 @@ void main() {
     });
 
     test(
-        'Test that finding non-executable paths throws with proper information',
-        () {
-      if (localPlatform.isWindows) {
-        // Windows doesn't check for executable-ness, and we can't run 'chmod'
-        // on Windows anyhow.
-        return;
-      }
+      'Test that finding non-executable paths throws with proper information',
+      () {
+        if (localPlatform.isWindows) {
+          // Windows doesn't check for executable-ness, and we can't run 'chmod'
+          // on Windows anyhow.
+          return;
+        }
 
-      // Make the second command in the path executable, but not the first.
-      // No executable permissions
-      io.Process.runSync('chmod', <String>['0644', '--', command1.path]);
-      // Only group executable permissions
-      io.Process.runSync('chmod', <String>['0645', '--', command2.path]);
-      // Only other executable permissions
-      io.Process.runSync('chmod', <String>['0654', '--', command3.path]);
-      // All executable permissions, but not readable
-      io.Process.runSync('chmod', <String>['0311', '--', command4.path]);
+        // Make the second command in the path executable, but not the first.
+        // No executable permissions
+        io.Process.runSync('chmod', <String>['0644', '--', command1.path]);
+        // Only group executable permissions
+        io.Process.runSync('chmod', <String>['0645', '--', command2.path]);
+        // Only other executable permissions
+        io.Process.runSync('chmod', <String>['0654', '--', command3.path]);
+        // All executable permissions, but not readable
+        io.Process.runSync('chmod', <String>['0311', '--', command4.path]);
 
-      expect(
+        expect(
           () => getExecutablePath(
-                'command',
-                tmpDir.path,
-                platform: platform,
-                fs: fs,
-                throwOnFailure: true,
-              ),
-          throwsA(isA<ProcessPackageExecutableNotFoundException>()
-              .having(
-                  (ProcessPackageExecutableNotFoundException
-                          notFoundException) =>
-                      notFoundException.candidates,
+            'command',
+            tmpDir.path,
+            platform: platform,
+            fs: fs,
+            throwOnFailure: true,
+          ),
+          throwsA(
+            isA<ProcessPackageExecutableNotFoundException>()
+                .having(
+                  (
+                    ProcessPackageExecutableNotFoundException notFoundException,
+                  ) => notFoundException.candidates,
                   'candidates',
                   equals(<String>[
                     '${tmpDir.path}/path1/command',
@@ -517,69 +546,83 @@ void main() {
                     '${tmpDir.path}/path3/command',
                     '${tmpDir.path}/path4/command',
                     '${tmpDir.path}/path5/command',
-                  ]))
-              .having(
-                  (ProcessPackageExecutableNotFoundException
-                          notFoundException) =>
-                      notFoundException.toString(),
+                  ]),
+                )
+                .having(
+                  (
+                    ProcessPackageExecutableNotFoundException notFoundException,
+                  ) => notFoundException.toString(),
                   'toString',
                   contains(
-                      'ProcessPackageExecutableNotFoundException: Found candidates, but lacked sufficient permissions to execute "command".\n'
-                      '  Command: command\n'
-                      '  Working Directory: ${tmpDir.path}\n'
-                      '  Candidates:\n'
-                      '    ${tmpDir.path}/path1/command\n'
-                      '    ${tmpDir.path}/path2/command\n'
-                      '    ${tmpDir.path}/path3/command\n'
-                      '    ${tmpDir.path}/path4/command\n'
-                      '    ${tmpDir.path}/path5/command\n'
-                      '  Search Path:\n'
-                      '    ${tmpDir.path}/path1\n'
-                      '    ${tmpDir.path}/path2\n'
-                      '    ${tmpDir.path}/path3\n'
-                      '    ${tmpDir.path}/path4\n'
-                      '    ${tmpDir.path}/path5\n'))));
-    });
+                    'ProcessPackageExecutableNotFoundException: Found candidates, but lacked sufficient permissions to execute "command".\n'
+                    '  Command: command\n'
+                    '  Working Directory: ${tmpDir.path}\n'
+                    '  Candidates:\n'
+                    '    ${tmpDir.path}/path1/command\n'
+                    '    ${tmpDir.path}/path2/command\n'
+                    '    ${tmpDir.path}/path3/command\n'
+                    '    ${tmpDir.path}/path4/command\n'
+                    '    ${tmpDir.path}/path5/command\n'
+                    '  Search Path:\n'
+                    '    ${tmpDir.path}/path1\n'
+                    '    ${tmpDir.path}/path2\n'
+                    '    ${tmpDir.path}/path3\n'
+                    '    ${tmpDir.path}/path4\n'
+                    '    ${tmpDir.path}/path5\n',
+                  ),
+                ),
+          ),
+        );
+      },
+    );
 
-    test('Test that finding no executable paths throws with proper information',
-        () {
-      if (localPlatform.isWindows) {
-        // Windows doesn't check for executable-ness, and we can't run 'chmod'
-        // on Windows anyhow.
-        return;
-      }
+    test(
+      'Test that finding no executable paths throws with proper information',
+      () {
+        if (localPlatform.isWindows) {
+          // Windows doesn't check for executable-ness, and we can't run 'chmod'
+          // on Windows anyhow.
+          return;
+        }
 
-      expect(
+        expect(
           () => getExecutablePath(
-                'non-existent-command',
-                tmpDir.path,
-                platform: platform,
-                fs: fs,
-                throwOnFailure: true,
-              ),
-          throwsA(isA<ProcessPackageExecutableNotFoundException>()
-              .having(
-                  (ProcessPackageExecutableNotFoundException
-                          notFoundException) =>
-                      notFoundException.candidates,
+            'non-existent-command',
+            tmpDir.path,
+            platform: platform,
+            fs: fs,
+            throwOnFailure: true,
+          ),
+          throwsA(
+            isA<ProcessPackageExecutableNotFoundException>()
+                .having(
+                  (
+                    ProcessPackageExecutableNotFoundException notFoundException,
+                  ) => notFoundException.candidates,
                   'candidates',
-                  isEmpty)
-              .having(
-                  (ProcessPackageExecutableNotFoundException
-                          notFoundException) =>
-                      notFoundException.toString(),
+                  isEmpty,
+                )
+                .having(
+                  (
+                    ProcessPackageExecutableNotFoundException notFoundException,
+                  ) => notFoundException.toString(),
                   'toString',
                   contains(
-                      'ProcessPackageExecutableNotFoundException: Failed to find "non-existent-command" in the search path.\n'
-                      '  Command: non-existent-command\n'
-                      '  Working Directory: ${tmpDir.path}\n'
-                      '  Search Path:\n'
-                      '    ${tmpDir.path}/path1\n'
-                      '    ${tmpDir.path}/path2\n'
-                      '    ${tmpDir.path}/path3\n'
-                      '    ${tmpDir.path}/path4\n'
-                      '    ${tmpDir.path}/path5\n'))));
-    });
+                    'ProcessPackageExecutableNotFoundException: Failed to find "non-existent-command" in the search path.\n'
+                    '  Command: non-existent-command\n'
+                    '  Working Directory: ${tmpDir.path}\n'
+                    '  Search Path:\n'
+                    '    ${tmpDir.path}/path1\n'
+                    '    ${tmpDir.path}/path2\n'
+                    '    ${tmpDir.path}/path3\n'
+                    '    ${tmpDir.path}/path4\n'
+                    '    ${tmpDir.path}/path5\n',
+                  ),
+                ),
+          ),
+        );
+      },
+    );
 
     group('can actually execute files', () {
       void testCompileAndExecute(File mainFile) {
@@ -587,22 +630,28 @@ void main() {
         final exePath = '${mainFile.path}.exe';
         // Create an executable we can actually run.
         expect(
-            localProcessManager.runSync([
-              io.Platform.resolvedExecutable,
-              'compile',
-              'exe',
-              mainFile.path,
-              '-o',
-              exePath
-            ]).exitCode,
-            0);
+          localProcessManager.runSync([
+            io.Platform.resolvedExecutable,
+            'compile',
+            'exe',
+            mainFile.path,
+            '-o',
+            exePath,
+          ]).exitCode,
+          0,
+        );
 
         for (final runInShell in const [true, false]) {
-          final result =
-              localProcessManager.runSync([exePath], runInShell: runInShell);
-          expect(result.exitCode, 0,
-              reason: 'runInShell: $runInShell\nstdout: ${result.stdout}\n'
-                  'stderr: ${result.stderr}');
+          final result = localProcessManager.runSync([
+            exePath,
+          ], runInShell: runInShell);
+          expect(
+            result.exitCode,
+            0,
+            reason:
+                'runInShell: $runInShell\nstdout: ${result.stdout}\n'
+                'stderr: ${result.stderr}',
+          );
           expect(result.stdout, contains('hello'));
         }
       }
@@ -618,19 +667,22 @@ void main() {
         testCompileAndExecute(main);
       });
 
-      test('with parenthesis in the command name', () async {
-        final dir = tmpDir.childDirectory('theP()ath');
-        final main = dir.childFile('main.dart')
-          ..createSync(recursive: true)
-          ..writeAsStringSync('''
+      test(
+        'with parenthesis in the command name',
+        () async {
+          final dir = tmpDir.childDirectory('theP()ath');
+          final main = dir.childFile('main.dart')
+            ..createSync(recursive: true)
+            ..writeAsStringSync('''
 void main() {
   print('hello');
 }''');
-        testCompileAndExecute(main);
-      },
-          skip: io.Platform.isWindows
-              ? 'https://github.com/dart-lang/tools/issues/2139'
-              : null);
+          testCompileAndExecute(main);
+        },
+        skip: io.Platform.isWindows
+            ? 'https://github.com/dart-lang/tools/issues/2139'
+            : null,
+      );
 
       test('with spaces and parenthesis in the command name', () async {
         final dir = tmpDir.childDirectory('the P()ath');
