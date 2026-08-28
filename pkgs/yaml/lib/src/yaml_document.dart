@@ -13,6 +13,7 @@ import 'package:source_span/source_span.dart';
 import 'yaml_node.dart';
 
 /// A YAML document, complete with metadata.
+@Deprecated.subclass('Users of the library should not subclass this type.')
 class YamlDocument {
   /// The contents of the document.
   final YamlNode contents;
@@ -34,6 +35,8 @@ class YamlDocument {
   final bool endImplicit;
 
   /// Users of the library should not use this constructor.
+  ///
+  /// @nodoc
   @internal
   YamlDocument.internal(this.contents, this.span, this.versionDirective,
       List<TagDirective> tagDirectives,
