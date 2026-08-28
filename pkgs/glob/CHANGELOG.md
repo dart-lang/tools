@@ -1,4 +1,9 @@
-## 2.2.0-wip
+## 2.2.1-wip
+
+- Check the glob's path context against the file system's path context
+  when listing files, rather than using the unrelated platform path context.
+
+## 2.2.0
 
 - Limit option expansion during glob listing (`list()` and `listSync()`) to a
   maximum of 10,000 branches. Globs with combinatorial option expansions
@@ -6,8 +11,6 @@
   exhaustion. `Glob.matches()` uses regular expressions and is unaffected.
 - Allow `**` to match zero directories at the start of a pattern or following
   a separator (e.g. `**/foo` matches `foo` and `a/**/b` matches `a/b`).
-- Check the glob's path context against the file system's path context
-  when listing files, rather than using the unrelated platform path context.
 
 ## 2.1.3
 

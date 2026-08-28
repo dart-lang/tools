@@ -210,8 +210,8 @@ Future<List<Extension>> _findExtensions({
       final configStat = configFile.statSync();
       if (configStat.isFileOrLink) {
         if (configStat.isPossiblyModifiedAfter(registryStat.modified)) {
-          if (_isWithinPackageBoundary(rootUri, configFile)) {
-            try {
+          try {
+            if (_isWithinPackageBoundary(rootUri, configFile)) {
               registryUpdated = true;
               registry[i] = (
                 package: p.package,
@@ -222,11 +222,11 @@ Future<List<Extension>> _findExtensions({
                 ),
               );
               continue;
-            } on FormatException {
-              // pass
-            } on IOException {
-              // pass
             }
+          } on FormatException {
+            // pass
+          } on IOException {
+            // pass
           }
           registryUpdated = true;
           registry[i] = (
@@ -259,15 +259,14 @@ Future<List<Extension>> _findExtensions({
         final rootUri = packageConfigUri.resolveUri(p.rootUri);
         final configFile = File.fromUri(rootUri.resolve(configFileName));
         final configStat = configFile.statSync();
-        if (configStat.isFileOrLink) {
-          if (_isWithinPackageBoundary(rootUri, configFile)) {
-            return (
-              package: p.name,
-              rootUri: p.rootUri,
-              packageUri: p.packageUri,
-              config: parseYamlFromConfigFile(await configFile.readAsString()),
-            );
-          }
+        if (configStat.isFileOrLink &&
+            _isWithinPackageBoundary(rootUri, configFile)) {
+          return (
+            package: p.name,
+            rootUri: p.rootUri,
+            packageUri: p.packageUri,
+            config: parseYamlFromConfigFile(await configFile.readAsString()),
+          );
         }
       } on FormatException {
         // pass
