@@ -13,7 +13,6 @@ import 'package:source_span/source_span.dart';
 import 'yaml_node.dart';
 
 /// A YAML document, complete with metadata.
-@Deprecated.subclass('Users of the library should not subclass this type.')
 class YamlDocument {
   /// The contents of the document.
   final YamlNode contents;
