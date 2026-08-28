@@ -8,7 +8,6 @@
 // ignore_for_file: avoid_dynamic_calls
 
 import 'package:test/test.dart';
-import 'package:yaml/src/error_listener.dart';
 import 'package:yaml/yaml.dart';
 
 import 'utils.dart';
