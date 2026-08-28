@@ -13,6 +13,8 @@ const _separators = {
   40, 41, 60, 62, 64, 44, 59, 58, 92, 34, 47, 91, 93, 63, 61, 123, 125, 32, 9 //
 };
 
+const _exceptionBadEnding = MimeMultipartException('Bad multipart ending');
+
 bool _isTokenChar(int byte) =>
     byte > 31 && byte < 128 && !_separators.contains(byte);
 
@@ -125,12 +127,27 @@ class BoundMultipartStream {
           _index = 0;
           _parse();
         }, onDone: () {
+          if (_multipartController case final controller?) {
+            _multipartController = null;
+            if (_state != _doneCode) {
+              controller.addError(_exceptionBadEnding);
+            }
+            controller.close();
+          }
           if (_state != _doneCode) {
-            _controller
-                .addError(const MimeMultipartException('Bad multipart ending'));
+            _controller.addError(_exceptionBadEnding);
           }
           _controller.close();
-        }, onError: _controller.addError);
+        }, onError: (Object error, StackTrace stackTrace) {
+          if (_multipartController case final controller?) {
+            _multipartController = null;
+            controller.addError(error, stackTrace);
+            controller.close();
+            _tryPropagateControllerState();
+          }
+          _state = _failCode;
+          _controller.addError(error, stackTrace);
+        });
       };
   }
 
