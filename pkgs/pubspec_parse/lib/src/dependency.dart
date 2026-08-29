@@ -142,36 +142,14 @@ class GitDependency extends Dependency {
   /// See https://dart.dev/tools/pub/dependencies#git-packages.
   final String? tagPattern;
 
-  /// The version constraint specified next to the `git` source, if any.
+  /// The version constraint specified next to the `git` source.
   ///
+  /// `null` if no constraint is specified, which pub treats as any version.
   /// This is mostly useful together with [tagPattern].
   @JsonKey(includeFromJson: false)
   final VersionConstraint? version;
 
-  GitDependency(
-    this.url, {
-    this.ref,
-    this.path,
-    this.tagPattern,
-    this.version,
-  }) {
-    if (tagPattern case final tagPattern?) {
-      if (tagPattern.split(_tagPatternVersionMarker).length != 2) {
-        throw ArgumentError.value(
-          tagPattern,
-          'tagPattern',
-          'Must contain a single "$_tagPatternVersionMarker".',
-        );
-      }
-      if (ref != null) {
-        throw ArgumentError.value(
-          tagPattern,
-          'tagPattern',
-          'Cannot be used together with "ref".',
-        );
-      }
-    }
-  }
+  GitDependency(this.url, {this.ref, this.path, this.tagPattern, this.version});
 
   factory GitDependency.fromData(Object? data, {VersionConstraint? version}) {
     if (data is String) {
@@ -180,6 +158,7 @@ class GitDependency extends Dependency {
 
     if (data is Map) {
       final parsed = _$GitDependencyFromJson(data);
+      _validateTagPattern(data, parsed);
       return GitDependency(
         parsed.url,
         ref: parsed.ref,
@@ -190,6 +169,29 @@ class GitDependency extends Dependency {
     }
 
     throw ArgumentError.value(data, 'git', 'Must be a String or a Map.');
+  }
+
+  static void _validateTagPattern(Map data, GitDependency parsed) {
+    final tagPattern = parsed.tagPattern;
+    if (tagPattern == null) {
+      return;
+    }
+    if (tagPattern.split(_tagPatternVersionMarker).length != 2) {
+      throw CheckedFromJsonException(
+        data,
+        'tag_pattern',
+        'GitDependency',
+        'Must contain a single "$_tagPatternVersionMarker".',
+      );
+    }
+    if (parsed.ref != null) {
+      throw CheckedFromJsonException(
+        data,
+        'tag_pattern',
+        'GitDependency',
+        'Cannot be used together with "ref".',
+      );
+    }
   }
 
   @override
