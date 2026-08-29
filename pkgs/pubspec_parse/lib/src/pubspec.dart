@@ -99,6 +99,13 @@ class Pubspec {
   /// Specifies how to resolve dependencies with the surrounding Pub Workspace.
   final String? resolution;
 
+  /// Configuration for hooks, such as native build or link hooks.
+  ///
+  /// May include `user_defines` and other settings.
+  ///
+  /// See https://dart.dev/tools/pub/pubspec#hooks.
+  final Map<String, dynamic>? hooks;
+
   /// If [author] and [authors] are both provided, their values are combined
   /// with duplicates eliminated.
   Pubspec(
@@ -121,6 +128,7 @@ class Pubspec {
     this.description,
     this.workspace,
     this.resolution,
+    this.hooks,
     Map<String, Dependency>? dependencies,
     Map<String, Dependency>? devDependencies,
     Map<String, Dependency>? dependencyOverrides,
