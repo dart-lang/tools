@@ -34,6 +34,7 @@ void main() {
     expect(value.workspace, isNull);
     expect(value.resolution, isNull);
     expect(value.executables, isEmpty);
+    expect(value.hooks, isNull);
   });
 
   test('all fields set', () async {
@@ -58,6 +59,11 @@ void main() {
       ],
       'workspace': ['pkg1', 'pkg2'],
       'resolution': 'workspace',
+      'hooks': {
+        'user_defines': {
+          'my_package': {'enable_experimental': true},
+        },
+      },
       'executables': {
         'my_script': 'bin/my_script.dart',
         'my_script2': 'bin/my_script2.dart',
@@ -101,6 +107,11 @@ void main() {
     expect(value.workspace!.first, 'pkg1');
     expect(value.workspace!.last, 'pkg2');
     expect(value.resolution, 'workspace');
+    expect(value.hooks, {
+      'user_defines': {
+        'my_package': {'enable_experimental': true},
+      },
+    });
   });
 
   test('environment values can be null', () async {
@@ -261,6 +272,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
       }, lenient: true);
       expect(value.name, 'sample');
       expect(value.executables, isEmpty);
+      expect(value.hooks, isNull);
     });
   });
 
@@ -395,6 +407,42 @@ line 4, column 10: Unsupported value for "sdk". Could not parse version "silly".
         "Unsupported value for \"issue_tracker\". type 'YamlMap' is not a subtype of type 'String'",
         skipTryPub: true,
       );
+    });
+  });
+
+  group('hooks', () {
+    test('map', () async {
+      final value = await parse({
+        ...defaultPubspec,
+        'hooks': {
+          'user_defines': {
+            'my_package': {'enable_experimental': true},
+          },
+        },
+      });
+      expect(value.hooks, {
+        'user_defines': {
+          'my_package': {'enable_experimental': true},
+        },
+      });
+    });
+
+    test('not a map', () {
+      expectParseThrowsContaining(
+        {...defaultPubspec, 'hooks': 1},
+        "Unsupported value for \"hooks\". type 'int' is not a subtype of type 'Map<dynamic, dynamic>?'",
+        skipTryPub: true,
+      );
+    });
+
+    test('invalid data - lenient', () async {
+      final value = await parse(
+        {...defaultPubspec, 'hooks': 1},
+        skipTryPub: true,
+        lenient: true,
+      );
+      expect(value.name, 'sample');
+      expect(value.hooks, isNull);
     });
   });
 

@@ -39,6 +39,7 @@ void main() {
         'funding': null,
         'topics': null,
         'ignored_advisories': null,
+        'hooks': null,
       });
     });
 
@@ -65,6 +66,11 @@ void main() {
         ],
         'workspace': ['pkg1', 'pkg2'],
         'resolution': 'workspace',
+        'hooks': {
+          'user_defines': {
+            'my_package': {'enable_experimental': true},
+          },
+        },
         'executables': {
           'my_script': 'bin/my_script.dart',
           'my_script2': 'bin/my_script2.dart',
@@ -106,6 +112,11 @@ void main() {
         'ignored_advisories': ['111', '222'],
         'workspace': ['pkg1', 'pkg2'],
         'resolution': 'workspace',
+        'hooks': {
+          'user_defines': {
+            'my_package': {'enable_experimental': true},
+          },
+        },
         'executables': {
           'my_script': 'bin/my_script.dart',
           'my_script2': 'bin/my_script2.dart',
@@ -139,6 +150,7 @@ void main() {
       expect(newValue.workspace, value.workspace);
       expect(newValue.resolution, value.resolution);
       expect(newValue.executables, value.executables);
+      expect(newValue.hooks, value.hooks);
     });
 
     test('all fields set', () async {
@@ -163,6 +175,11 @@ void main() {
         ],
         'workspace': ['pkg1', 'pkg2'],
         'resolution': 'workspace',
+        'hooks': {
+          'user_defines': {
+            'my_package': {'enable_experimental': true},
+          },
+        },
         'executables': {
           'my_script': 'bin/my_script.dart',
           'my_script2': 'bin/my_script2.dart',
@@ -200,6 +217,7 @@ void main() {
       expect(newValue.workspace, value.workspace);
       expect(newValue.resolution, value.resolution);
       expect(newValue.executables, value.executables);
+      expect(newValue.hooks, value.hooks);
     });
 
     test('dependencies', () async {
