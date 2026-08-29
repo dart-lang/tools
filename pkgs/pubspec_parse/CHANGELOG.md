@@ -1,3 +1,8 @@
+## 1.7.0-wip
+
+- Added `tagPattern` and `version` fields to `GitDependency`, to support the
+  `tag_pattern` key for git dependencies introduced in Dart 3.9.
+
 ## 1.6.0
 
 - Added `toJson` method to `Pubspec` to serialize the object back to a `Map`.

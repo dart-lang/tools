@@ -81,7 +81,10 @@ Dependency? _fromJson(Object? data, String name) {
         final key = matchedKeys.single;
 
         return switch (key) {
-          'git' => GitDependency.fromData(data[key]),
+          'git' => GitDependency.fromData(
+            data[key],
+            version: _optionalConstraintFromData(data),
+          ),
           'path' => PathDependency.fromData(data[key]),
           'sdk' => _$SdkDependencyFromJson(data),
           'hosted' => _$HostedDependencyFromJson(
@@ -131,15 +134,59 @@ class GitDependency extends Dependency {
   final String? ref;
   final String? path;
 
-  GitDependency(this.url, {this.ref, this.path});
+  /// A pattern used to find version tagged commits in the repository.
+  ///
+  /// Must contain a single `{{version}}` marker, for example `v{{version}}`.
+  /// Cannot be combined with [ref].
+  ///
+  /// See https://dart.dev/tools/pub/dependencies#git-packages.
+  final String? tagPattern;
 
-  factory GitDependency.fromData(Object? data) {
+  /// The version constraint specified next to the `git` source, if any.
+  ///
+  /// This is mostly useful together with [tagPattern].
+  @JsonKey(includeFromJson: false)
+  final VersionConstraint? version;
+
+  GitDependency(
+    this.url, {
+    this.ref,
+    this.path,
+    this.tagPattern,
+    this.version,
+  }) {
+    if (tagPattern case final tagPattern?) {
+      if (tagPattern.split(_tagPatternVersionMarker).length != 2) {
+        throw ArgumentError.value(
+          tagPattern,
+          'tagPattern',
+          'Must contain a single "$_tagPatternVersionMarker".',
+        );
+      }
+      if (ref != null) {
+        throw ArgumentError.value(
+          tagPattern,
+          'tagPattern',
+          'Cannot be used together with "ref".',
+        );
+      }
+    }
+  }
+
+  factory GitDependency.fromData(Object? data, {VersionConstraint? version}) {
     if (data is String) {
       data = {'url': data};
     }
 
     if (data is Map) {
-      return _$GitDependencyFromJson(data);
+      final parsed = _$GitDependencyFromJson(data);
+      return GitDependency(
+        parsed.url,
+        ref: parsed.ref,
+        path: parsed.path,
+        tagPattern: parsed.tagPattern,
+        version: version,
+      );
     }
 
     throw ArgumentError.value(data, 'git', 'Must be a String or a Map.');
@@ -150,19 +197,29 @@ class GitDependency extends Dependency {
       other is GitDependency &&
       other.url == url &&
       other.ref == ref &&
-      other.path == path;
+      other.path == path &&
+      other.tagPattern == tagPattern &&
+      other.version == version;
 
   @override
-  int get hashCode => Object.hash(url, ref, path);
+  int get hashCode => Object.hash(url, ref, path, tagPattern, version);
 
   @override
   String toString() => 'GitDependency: url@$url';
 
   @override
   Map<String, dynamic> toJson() => {
-    'git': {'url': url.toString(), 'ref': ?ref, 'path': ?path},
+    'git': {
+      'url': url.toString(),
+      'ref': ?ref,
+      'path': ?path,
+      'tag_pattern': ?tagPattern,
+    },
+    'version': ?version?.toString(),
   };
 }
+
+const _tagPatternVersionMarker = '{{version}}';
 
 Uri? _parseUriOrNull(String? value) => value == null ? null : Uri.parse(value);
 
@@ -306,3 +363,23 @@ class HostedDetails {
 
 VersionConstraint _constraintFromString(String? input) =>
     input == null ? VersionConstraint.any : VersionConstraint.parse(input);
+
+VersionConstraint? _optionalConstraintFromData(Map data) {
+  final value = data['version'];
+  if (value == null) {
+    return null;
+  }
+  if (value is! String) {
+    throw CheckedFromJsonException(
+      data,
+      'version',
+      'GitDependency',
+      '`$value` is not a String.',
+    );
+  }
+  try {
+    return VersionConstraint.parse(value);
+  } on FormatException catch (e) {
+    throw CheckedFromJsonException(data, 'version', 'GitDependency', e.message);
+  }
+}
