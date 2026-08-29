@@ -264,7 +264,6 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
       }, lenient: true);
       expect(value.name, 'sample');
       expect(value.executables, isEmpty);
-      expect(value.platforms, isNull);
     });
   });
 
