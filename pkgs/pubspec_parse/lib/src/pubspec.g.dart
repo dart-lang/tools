@@ -61,6 +61,10 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
         (v) => (v as List<dynamic>?)?.map((e) => e as String).toList(),
       ),
       resolution: $checkedConvert('resolution', (v) => v as String?),
+      falseSecrets: $checkedConvert(
+        'false_secrets',
+        (v) => (v as List<dynamic>?)?.map((e) => e as String).toList(),
+      ),
       dependencies: $checkedConvert(
         'dependencies',
         (v) => parseDeps(v as Map?),
@@ -88,6 +92,7 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
     'publishTo': 'publish_to',
     'issueTracker': 'issue_tracker',
     'ignoredAdvisories': 'ignored_advisories',
+    'falseSecrets': 'false_secrets',
     'devDependencies': 'dev_dependencies',
     'dependencyOverrides': 'dependency_overrides',
   },
@@ -116,4 +121,5 @@ Map<String, dynamic> _$PubspecToJson(Pubspec instance) => <String, dynamic>{
   'executables': _serializeExecutables(instance.executables),
   'workspace': instance.workspace,
   'resolution': instance.resolution,
+  'false_secrets': instance.falseSecrets,
 };
