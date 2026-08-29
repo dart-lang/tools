@@ -1,3 +1,7 @@
+## 1.7.0-wip
+
+- Added `platforms` field to `Pubspec`.
+
 ## 1.6.0
 
 - Added `toJson` method to `Pubspec` to serialize the object back to a `Map`.
