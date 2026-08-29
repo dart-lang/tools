@@ -10,6 +10,11 @@ import 'package:test/test.dart';
 
 import 'test_utils.dart';
 
+/// The pub client only accepts `tag_pattern` from Dart 3.9, so the
+/// cross-check against it is skipped on older SDKs.
+final _sdkSupportsTagPattern =
+    Version.parse(Platform.version.split(' ').first) >= Version(3, 9, 0);
+
 void main() {
   group('hosted', _hostedDependency);
   group('git', _gitDependency);
@@ -331,10 +336,14 @@ line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hos
   });
 
   test('map with tag_pattern and version', () async {
-    final dep = await _dependency<GitDependency>({
-      'git': {'url': 'url', 'path': 'path', 'tag_pattern': 'v{{version}}'},
-      'version': '^1.2.3',
-    }, sdkConstraint: '^3.9.0');
+    final dep = await _dependency<GitDependency>(
+      {
+        'git': {'url': 'url', 'path': 'path', 'tag_pattern': 'v{{version}}'},
+        'version': '^1.2.3',
+      },
+      sdkConstraint: '^3.9.0',
+      skipTryPub: !_sdkSupportsTagPattern,
+    );
     expect(dep.url.toString(), 'url');
     expect(dep.path, 'path');
     expect(dep.ref, isNull);
@@ -344,9 +353,13 @@ line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hos
   });
 
   test('map with tag_pattern without version', () async {
-    final dep = await _dependency<GitDependency>({
-      'git': {'url': 'url', 'tag_pattern': 'v{{version}}'},
-    }, sdkConstraint: '^3.9.0');
+    final dep = await _dependency<GitDependency>(
+      {
+        'git': {'url': 'url', 'tag_pattern': 'v{{version}}'},
+      },
+      sdkConstraint: '^3.9.0',
+      skipTryPub: !_sdkSupportsTagPattern,
+    );
     expect(dep.tagPattern, 'v{{version}}');
     expect(dep.version, isNull);
   });
