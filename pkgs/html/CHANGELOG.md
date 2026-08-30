@@ -1,4 +1,4 @@
-## 0.15.7-wip
+## 0.15.7
 
 - `writeTextNodeAsHtml`: Escape text inside `<script>` and `<style>`-like tags in foreign namespaces.
 - Fix the tokenizer failing to close CDATA blocks when encountering extra brackets

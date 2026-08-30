@@ -103,8 +103,42 @@ SourceEdit removeInList(YamlEditor yamlEdit, YamlList list, int index) {
 /// flow list.
 SourceEdit _appendToFlowList(
     YamlEditor yamlEdit, YamlList list, YamlNode item) {
-  final valueString = _formatNewFlow(list, item, true);
-  return SourceEdit(list.span.end.offset - 1, 0, valueString);
+  if (list.isEmpty) {
+    final valueString = _formatNewFlow(list, item, true);
+    return SourceEdit(list.span.end.offset - 1, 0, valueString);
+  }
+
+  final yaml = yamlEdit.toString();
+  final lastNode = list.nodes.last;
+  final closingOffset = list.span.end.offset - 1;
+  final between = yaml.substring(lastNode.span.end.offset, closingOffset);
+  final hasTrailing = betweenHasTrailingComma(between);
+
+  final valueString = yamlEncodeFlow(item);
+  String formattedValue;
+  if (hasTrailing) {
+    // If there is already a trailing comma in the flow list, do not prepend
+    // another comma. If the flow list spans multiple lines with the closing
+    // bracket on a new line, align the new entry with the previous elements.
+    if (between.contains('\n')) {
+      formattedValue = formatMultilineFlowTrailingEntry(
+        closingOffset: closingOffset,
+        lastEntryStartOffset: lastNode.span.start.offset,
+        newEntry: valueString,
+        yaml: yaml,
+      );
+    } else {
+      var v = valueString;
+      if (!RegExp(r'\s$').hasMatch(between)) {
+        v = ' $v';
+      }
+      formattedValue = '$v,';
+    }
+  } else {
+    formattedValue = _formatNewFlow(list, item, true);
+  }
+
+  return SourceEdit(closingOffset, 0, formattedValue);
 }
 
 /// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to

@@ -6,8 +6,10 @@
 library;
 
 import 'dart:collection' show UnmodifiableListView;
-import 'dart:io' show File, IOException;
+import 'dart:io' show Directory, File, IOException;
 import 'dart:isolate' show Isolate;
+
+import 'package:path/path.dart' as path;
 
 import 'src/io.dart';
 import 'src/package_config.dart';
@@ -209,14 +211,18 @@ Future<List<Extension>> _findExtensions({
       if (configStat.isFileOrLink) {
         if (configStat.isPossiblyModifiedAfter(registryStat.modified)) {
           try {
-            registryUpdated = true;
-            registry[i] = (
-              package: p.package,
-              rootUri: p.rootUri,
-              packageUri: p.packageUri,
-              config: parseYamlFromConfigFile(await configFile.readAsString()),
-            );
-            continue;
+            if (_isWithinPackageBoundary(rootUri, configFile)) {
+              registryUpdated = true;
+              registry[i] = (
+                package: p.package,
+                rootUri: p.rootUri,
+                packageUri: p.packageUri,
+                config: parseYamlFromConfigFile(
+                  await configFile.readAsString(),
+                ),
+              );
+              continue;
+            }
           } on FormatException {
             // pass
           } on IOException {
@@ -253,7 +259,8 @@ Future<List<Extension>> _findExtensions({
         final rootUri = packageConfigUri.resolveUri(p.rootUri);
         final configFile = File.fromUri(rootUri.resolve(configFileName));
         final configStat = configFile.statSync();
-        if (configStat.isFileOrLink) {
+        if (configStat.isFileOrLink &&
+            _isWithinPackageBoundary(rootUri, configFile)) {
           return (
             package: p.name,
             rootUri: p.rootUri,
@@ -296,4 +303,16 @@ Future<List<Extension>> _findExtensions({
             ))
         .toList(growable: false),
   );
+}
+
+/// Checks if [configFile] actually resides within [rootUri] after fully
+/// resolving symbolic links for both paths.
+bool _isWithinPackageBoundary(Uri rootUri, File configFile) {
+  try {
+    final rootPath = Directory.fromUri(rootUri).resolveSymbolicLinksSync();
+    final realPath = configFile.resolveSymbolicLinksSync();
+    return path.isWithin(rootPath, realPath);
+  } on IOException {
+    return false;
+  }
 }

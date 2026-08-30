@@ -1,4 +1,4 @@
-## 2.2.0-wip
+## 2.2.0
 
 - Limit option expansion during glob listing (`list()` and `listSync()`) to a
   maximum of 10,000 branches. Globs with combinatorial option expansions

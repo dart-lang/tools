@@ -1,6 +1,8 @@
 ## 2.2.5-wip
 - Fix a bug where appending to a nested block list before an outdented sibling failed. ([#2481](https://github.com/dart-lang/tools/issues/2481)).
 
+- Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
+
 ## 2.2.4
 
 -  Removes comments associated with a node when `remove` is called.
