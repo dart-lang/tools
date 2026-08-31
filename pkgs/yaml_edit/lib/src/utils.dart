@@ -92,19 +92,24 @@ bool isBlockNode(YamlNode node) {
 }
 
 /// Returns the content sensitive ending offset of [yamlNode] (i.e. where the
-/// last meaningful content happens)
-int getContentSensitiveEnd(YamlNode yamlNode) {
+/// Recursively gets the content-sensitive end offset of [yamlNode].
+int getContentSensitiveEnd(YamlNode yamlNode, [Set<YamlNode>? visited]) {
+  final activeVisited = visited ?? Set<YamlNode>.identity();
+  if (!activeVisited.add(yamlNode)) {
+    return yamlNode.span.end.offset;
+  }
+
   if (yamlNode is YamlList) {
-    if (yamlNode.style == CollectionStyle.FLOW) {
+    if (yamlNode.style == CollectionStyle.FLOW || yamlNode.isEmpty) {
       return yamlNode.span.end.offset;
     } else {
-      return getContentSensitiveEnd(yamlNode.nodes.last);
+      return getContentSensitiveEnd(yamlNode.nodes.last, activeVisited);
     }
   } else if (yamlNode is YamlMap) {
-    if (yamlNode.style == CollectionStyle.FLOW) {
+    if (yamlNode.style == CollectionStyle.FLOW || yamlNode.isEmpty) {
       return yamlNode.span.end.offset;
     } else {
-      return getContentSensitiveEnd(yamlNode.nodes.values.last);
+      return getContentSensitiveEnd(yamlNode.nodes.values.last, activeVisited);
     }
   }
 
@@ -212,15 +217,19 @@ int getListIndentation(String yaml, YamlList list) {
     throw UnsupportedError('Unable to get indentation for empty block list');
   }
 
-  final lastSpanOffset = list.nodes.last.span.start.offset;
-  final lastHyphen = yaml.lastIndexOf('-', lastSpanOffset - 1);
+  for (final node in list.nodes.reversed) {
+    final offset = node.span.start.offset;
+    if (offset <= 0) continue;
+    final hyphen = yaml.lastIndexOf('-', offset - 1);
+    if (hyphen < 0) continue;
+    if (hyphen == 0) return 0;
 
-  if (lastHyphen == 0) return lastHyphen;
+    final newLine = yaml.lastIndexOf('\n', hyphen - 1);
+    if (newLine < 0) return hyphen;
+    return hyphen - newLine - 1;
+  }
 
-  // Look for '\n' that's before hyphen
-  final lastNewLine = yaml.lastIndexOf('\n', lastHyphen - 1);
-
-  return lastHyphen - lastNewLine - 1;
+  return 0;
 }
 
 /// Gets the indentation level of [map]. This is 0 if it is a flow map,
