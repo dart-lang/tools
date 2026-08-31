@@ -39,3 +39,11 @@
 # #
 <<<
 <h1></h1>
+>>> header containing a link uses the link text, not the target
+### [Task](/packages/fpdart/lib/src/task.dart)
+<<<
+<h3 id="task"><a href="/packages/fpdart/lib/src/task.dart">Task</a></h3>
+>>> header containing an image omits it entirely
+### A [Link text](http://example.com) ![with image](http://example.com/favicon.gif) header
+<<<
+<h3 id="a-link-text--header">A <a href="http://example.com">Link text</a> <img src="http://example.com/favicon.gif" alt="with image" /> header</h3>
