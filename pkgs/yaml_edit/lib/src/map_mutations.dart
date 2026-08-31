@@ -64,7 +64,9 @@ SourceEdit _addToBlockMap(
     /// Adjusts offset to after the trailing newline of the last entry, if it
     /// exists
     if (insertionIndex == map.length) {
-      final lastValueSpanEnd = getContentSensitiveEnd(map.nodes.values.last);
+      final lastKey = map.nodes.keys.last;
+      final lastValueSpanEnd =
+          yamlEdit.getTrueContentSensitiveEnd(map, lastKey);
       final nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd);
 
       if (nextNewLineIndex != -1) {
@@ -186,16 +188,20 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   final mapSize = map.length;
   final keySpan = keyNode.span;
 
+  final hasAnchor = yaml.substring(map.span.start.offset).startsWith('&');
+
   return removeBlockCollectionEntry(
     yaml,
     blockCollection: map,
     collectionIndent: getMapIndentation(yaml, map),
-    isFirstEntry: entryIndex == 0,
+    isFirstEntry: entryIndex == 0 && !hasAnchor,
     isSingleEntry: mapSize == 1,
     isLastEntry: entryIndex >= mapSize - 1,
     nodeToRemoveOffset: (
       // A block map only exists because of its first key.
-      start: entryIndex == 0 ? map.span.start.offset : keySpan.start.offset,
+      start: entryIndex == 0 && !hasAnchor
+          ? map.span.start.offset
+          : keySpan.start.offset,
       end: valueNode.span.length == 0
           ? keySpan.end.offset + 2 // Null value have no span. Skip ":".
           : yamlEdit.getTrueContentSensitiveEnd(map, key),
