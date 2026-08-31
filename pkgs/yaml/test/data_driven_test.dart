@@ -8,24 +8,27 @@ import 'package:yaml/yaml.dart';
 
 void main() {
   group('Valid YAML', () {
-    var validDir = Directory('valid_yaml'); // run from 'test/' or package root
-    // we use relative paths safely
     var rootValidDir = Directory('test/valid_yaml');
-    if (rootValidDir.existsSync()) {
-      for (var file in rootValidDir.listSync(recursive: true).whereType<File>()) {
+    if (!rootValidDir.existsSync()) {
+      rootValidDir = Directory('valid_yaml');
+    }
+    if (!rootValidDir.existsSync()) throw StateError("valid_yaml directory not found");
+    for (var file in rootValidDir.listSync(recursive: true).whereType<File>()) {
         if (!file.path.endsWith('.yaml')) continue;
         test(file.path, () {
           var content = file.readAsStringSync();
           expect(() => loadYaml(content), returnsNormally);
         });
-      }
     }
   });
 
   group('Invalid YAML', () {
     var rootInvalidDir = Directory('test/invalid_yaml');
-    if (rootInvalidDir.existsSync()) {
-      for (var file in rootInvalidDir.listSync(recursive: true).whereType<File>()) {
+    if (!rootInvalidDir.existsSync()) {
+      rootInvalidDir = Directory('invalid_yaml');
+    }
+    if (!rootInvalidDir.existsSync()) throw StateError("invalid_yaml directory not found");
+    for (var file in rootInvalidDir.listSync(recursive: true).whereType<File>()) {
         if (!file.path.endsWith('.yaml')) continue;
         test(file.path, () {
           var content = file.readAsStringSync();
@@ -39,7 +42,6 @@ void main() {
           }
           expect(err, isNotNull, reason: 'Expected a YamlException to be thrown');
         });
-      }
     }
   });
 }
