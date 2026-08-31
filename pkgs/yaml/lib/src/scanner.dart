@@ -376,7 +376,7 @@ class Scanner {
 
     if (!_inBlockContext && _scanner.column <= _indent) {
       _scanner.error(
-          "Flow collection nodes cannot be less indented than their block context.",
+          "Flow nodes cannot be less indented than their block context.",
           length: 1);
     }
 
@@ -1461,10 +1461,11 @@ class Scanner {
     var trailingBreaks = '';
     var whitespace = StringBuffer();
     var indent = _indent + 1;
-    if (!_inBlockContext && _scanner.column <= _indent)
+    if (!_inBlockContext && _scanner.column <= _indent) {
       _scanner.error(
-          "Flow collection nodes cannot be less indented than their block context.",
+          "Flow nodes cannot be less indented than their block context.",
           length: 1);
+    }
 
     while (true) {
       // Check for a document indicator.
@@ -1527,11 +1528,7 @@ class Scanner {
       }
 
       // Check the indentation level.
-      if (_inBlockContext) {
-        if (_scanner.column < indent) break;
-      } else {
-        if (_scanner.column <= _indent) break;
-      }
+      if (_inBlockContext ? _scanner.column < indent : _scanner.column <= _indent) break;
     }
 
     // Allow a simple key after a plain scalar with leading blanks.
