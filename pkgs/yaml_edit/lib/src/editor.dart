@@ -256,7 +256,52 @@ class YamlEditor {
             ? parentCollection.nodes[keyOrIndex] ??
                 getYamlMapEntry(parentCollection, keyOrIndex).valueNode
             : (parentCollection as YamlList).nodes[keyOrIndex as int]);
-    return getContentSensitiveEnd(node);
+
+    return _getContentSensitiveEndWithAliases(node);
+  }
+
+  int _getContentSensitiveEndWithAliases(YamlNode yamlNode,
+      [Set<YamlNode>? visited]) {
+    final activeVisited = visited ?? Set<YamlNode>.identity();
+    if (!activeVisited.add(yamlNode)) {
+      return yamlNode.span.end.offset;
+    }
+
+    if (yamlNode is YamlList) {
+      if (yamlNode.style == CollectionStyle.FLOW || yamlNode.isEmpty) {
+        return yamlNode.span.end.offset;
+      } else {
+        final lastIdx = yamlNode.length - 1;
+        final lastItem = yamlNode.nodes[lastIdx];
+        final aliasSpan =
+            _aliasReferenceSpans[_AliasEntryKey(yamlNode, lastIdx)];
+        if (aliasSpan != null) {
+          if (activeVisited.contains(lastItem)) {
+            return yamlNode.span.end.offset;
+          }
+          return aliasSpan.end.offset;
+        }
+        return _getContentSensitiveEndWithAliases(lastItem, activeVisited);
+      }
+    } else if (yamlNode is YamlMap) {
+      if (yamlNode.style == CollectionStyle.FLOW || yamlNode.isEmpty) {
+        return yamlNode.span.end.offset;
+      } else {
+        final lastKey = yamlNode.nodes.keys.last;
+        final lastValue = yamlNode.nodes[lastKey]!;
+        final aliasSpan =
+            _aliasReferenceSpans[_AliasEntryKey(yamlNode, lastKey)];
+        if (aliasSpan != null) {
+          if (activeVisited.contains(lastValue)) {
+            return yamlNode.span.end.offset;
+          }
+          return aliasSpan.end.offset;
+        }
+        return _getContentSensitiveEndWithAliases(lastValue, activeVisited);
+      }
+    }
+
+    return yamlNode.span.end.offset;
   }
 
   /// Checks whether the child at [keyOrIndex] in [parentCollection] is an
@@ -290,28 +335,122 @@ class YamlEditor {
     return true;
   }
 
-  Set<String> _collectSubAnchorTags(YamlNode node) {
-    final tags = <String>{};
+  String _getTargetValueRepresentation(
+    YamlNode parentCollection,
+    Object? keyOrIndex,
+    YamlNode targetNode,
+    String anchorTag,
+  ) {
+    final span = getTrueSpan(parentCollection, keyOrIndex, targetNode);
+    var text = span.text;
+    if (text.startsWith('$anchorTag ')) {
+      text = text.substring(anchorTag.length + 1);
+    } else if (text.startsWith(anchorTag)) {
+      text = text.substring(anchorTag.length);
+    }
+
+    if ((targetNode is YamlMap || targetNode is YamlList) &&
+        !isFlowYamlCollectionNode(targetNode)) {
+      if (!text.startsWith(RegExp(r'\r?\n'))) {
+        text = '\n$text';
+      }
+      return text.trimRight();
+    }
+
+    return text.trim();
+  }
+
+  _IntraTemplateInfo _collectIntraTemplateAnchors(
+    YamlNode anchorNode,
+    List<Object?> anchorPath,
+  ) {
+    final anchorTags = <String>{};
+    final anchorValues = <String, String>{};
     final visited = Set<YamlNode>.identity();
-    void walk(YamlNode current) {
+
+    void walk(YamlNode current, List<Object?> currentPath) {
       if (!visited.add(current)) return;
+
       if (current is YamlMap) {
         for (final entry in current.nodes.entries) {
-          final tag = getAnchorTag(current, entry.key);
-          if (tag != null) tags.add(tag);
-          walk(entry.value);
+          final key = entry.key;
+          final value = entry.value;
+          final unwrappedKey = key is YamlNode ? key.value : key;
+          final childPath = [...currentPath, unwrappedKey];
+
+          if (_isAliasReferenceNode(value, childPath)) {
+            // Alias references do not define anchors here.
+            continue;
+          }
+
+          final tag = getAnchorTag(current, key);
+          if (tag != null) {
+            anchorTags.add(tag);
+            anchorValues[tag] =
+                _getTargetValueRepresentation(current, key, value, tag);
+          }
+
+          if (value is YamlMap || value is YamlList) {
+            walk(value, childPath);
+          }
         }
       } else if (current is YamlList) {
         for (var i = 0; i < current.nodes.length; i++) {
+          final item = current.nodes[i];
+          final childPath = [...currentPath, i];
+
+          if (_isAliasReferenceNode(item, childPath)) {
+            // Alias references do not define anchors here.
+            continue;
+          }
+
           final tag = getAnchorTag(current, i);
-          if (tag != null) tags.add(tag);
-          walk(current.nodes[i]);
+          if (tag != null) {
+            anchorTags.add(tag);
+            anchorValues[tag] =
+                _getTargetValueRepresentation(current, i, item, tag);
+          }
+
+          if (item is YamlMap || item is YamlList) {
+            walk(item, childPath);
+          }
         }
       }
     }
 
-    walk(node);
-    return tags;
+    walk(anchorNode, anchorPath);
+
+    // Strip nested sub-anchor tags from anchor values.
+    for (final tag in anchorValues.keys) {
+      for (final subTag in anchorTags) {
+        anchorValues[tag] = anchorValues[tag]!.replaceAll('$subTag ', '');
+        anchorValues[tag] = anchorValues[tag]!.replaceAll(
+          RegExp('${RegExp.escape(subTag)}\\r?\\n'),
+          '\n',
+        );
+      }
+    }
+
+    // Resolve any nested intra-template aliases within anchor values.
+    for (final tag in anchorValues.keys) {
+      for (final otherTag in anchorValues.keys) {
+        final name = otherTag.substring(1);
+        final val = anchorValues[otherTag]!;
+        if (val.startsWith(RegExp(r'\r?\n'))) {
+          anchorValues[tag] = anchorValues[tag]!.replaceAll(
+            RegExp(r'[ \t]*\*' + RegExp.escape(name) + r'(?![a-zA-Z0-9_-])'),
+            val,
+          );
+        } else {
+          anchorValues[tag] = anchorValues[tag]!.replaceAll(
+            RegExp(r'\*' + RegExp.escape(name) + r'(?![a-zA-Z0-9_-])'),
+            val,
+          );
+        }
+      }
+    }
+
+    return _IntraTemplateInfo(anchorTags, anchorValues);
   }
 
   String _getUnfoldedText(
@@ -319,8 +458,9 @@ class YamlEditor {
     Object? keyOfAnchor,
     YamlNode anchorNode,
     int targetIndentation,
-    String lineEnding,
-  ) {
+    String lineEnding, {
+    List<Object?>? anchorPath,
+  }) {
     final span = getTrueSpan(parentOfAnchor, keyOfAnchor, anchorNode);
     var text = span.text;
 
@@ -334,12 +474,33 @@ class YamlEditor {
       }
     }
 
-    // Strip nested sub-anchor definition tags to prevent duplicate anchor
-    // definitions.
-    final subAnchorTags = _collectSubAnchorTags(anchorNode);
-    for (final tag in subAnchorTags) {
+    final resolvedAnchorPath = anchorPath ?? _anchorPaths[anchorNode] ?? [];
+    final intraInfo =
+        _collectIntraTemplateAnchors(anchorNode, resolvedAnchorPath);
+
+    // Strip nested intra-template sub-anchor definition tags to prevent
+    // duplicate anchor definitions.
+    for (final tag in intraInfo.anchorTags) {
       text = text.replaceAll('$tag ', '');
       text = text.replaceAll(RegExp('${RegExp.escape(tag)}\\r?\\n'), '\n');
+    }
+
+    // Expand intra-template alias references inline so the decoupled copy is
+    // completely self-contained.
+    final sortedTags = intraInfo.anchorValues.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    for (final tag in sortedTags) {
+      final targetValue = intraInfo.anchorValues[tag]!;
+      final anchorName = tag.substring(1);
+      if (targetValue.startsWith(RegExp(r'\r?\n'))) {
+        final aliasRegex = RegExp(
+            r'[ \t]*\*' + RegExp.escape(anchorName) + r'(?![a-zA-Z0-9_-])');
+        text = text.replaceAll(aliasRegex, targetValue);
+      } else {
+        final aliasRegex =
+            RegExp(r'\*' + RegExp.escape(anchorName) + r'(?![a-zA-Z0-9_-])');
+        text = text.replaceAll(aliasRegex, targetValue);
+      }
     }
 
     if (anchorNode is YamlMap || anchorNode is YamlList) {
@@ -413,6 +574,7 @@ class YamlEditor {
       anchorNode,
       targetIndentation,
       lineEnding,
+      anchorPath: anchorPath,
     );
 
     final aliasSpan = getTrueSpan(parentCollection, keyOrIndex, node);
@@ -1205,7 +1367,7 @@ class YamlEditor {
   }
 }
 
-class _AliasEntryKey {
+final class _AliasEntryKey {
   final YamlNode parent;
   final Object? keyOrIndex;
 
@@ -1220,4 +1382,11 @@ class _AliasEntryKey {
 
   @override
   int get hashCode => parent.hashCode ^ keyOrIndex.hashCode;
+}
+
+final class _IntraTemplateInfo {
+  final Set<String> anchorTags;
+  final Map<String, String> anchorValues;
+
+  _IntraTemplateInfo(this.anchorTags, this.anchorValues);
 }

@@ -522,5 +522,174 @@ custom_job:
       expect(doc.parseAt(['template', 'timeout']).value, equals(30));
       expect(doc.parseAt(['custom_job', 'timeout']).value, equals(30));
     });
+
+    test('copyOnWrite inlines intra-template aliases and strips sub-anchors',
+        () {
+      final doc = YamlEditor(
+        '''
+base: &job
+  timeout: &d 30
+  task: *d
+
+custom: *job
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['custom', 'timeout'], 45);
+      expect(doc.toString(), equals('''
+base: &job
+  timeout: &d 30
+  task: *d
+
+custom:
+  timeout: 45
+  task: 30
+'''));
+      expect(doc.parseAt(['base', 'timeout']).value, equals(30));
+      expect(doc.parseAt(['base', 'task']).value, equals(30));
+      expect(doc.parseAt(['custom', 'timeout']).value, equals(45));
+      expect(doc.parseAt(['custom', 'task']).value, equals(30));
+    });
+
+    test('copyOnWrite inlines intra-template aliases, preserving extra aliases',
+        () {
+      final doc = YamlEditor(
+        '''
+base_env: &env
+  REGION: us-central1
+  ZONE: us-central1-a
+
+base_job: &job
+  timeout: &d 30
+  task: *d
+  env: *env
+
+custom_job: *job
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['custom_job', 'timeout'], 45);
+      expect(doc.toString(), equals('''
+base_env: &env
+  REGION: us-central1
+  ZONE: us-central1-a
+
+base_job: &job
+  timeout: &d 30
+  task: *d
+  env: *env
+
+custom_job:
+  timeout: 45
+  task: 30
+  env: *env
+'''));
+
+      // Updating extra-template anchor base_env propagates to custom_job.env
+      // via preserved *env.
+      doc.update(['base_env', 'REGION'], 'us-east1');
+      expect(
+          doc.parseAt(['base_job', 'env', 'REGION']).value, equals('us-east1'));
+      expect(doc.parseAt(['custom_job', 'env', 'REGION']).value,
+          equals('us-east1'));
+
+      // Mutating custom_job.env.ZONE unfolds *env locally on-demand.
+      doc.update(['custom_job', 'env', 'ZONE'], 'us-central1-b');
+      expect(doc.parseAt(['base_env', 'ZONE']).value, equals('us-central1-a'));
+      expect(doc.parseAt(['custom_job', 'env', 'ZONE']).value,
+          equals('us-central1-b'));
+    });
+
+    test(
+        'subsequent mutation to base template updates base without affecting '
+        'decoupled copy or failing assertions', () {
+      final doc = YamlEditor(
+        '''
+base: &job
+  timeout: &d 30
+  task: *d
+
+custom: *job
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['custom', 'timeout'], 45);
+      expect(doc.parseAt(['custom', 'task']).value, equals(30));
+
+      // Updating base updates base but does not affect decoupled copy or
+      // fail assertions.
+      doc.update(['base', 'timeout'], 50);
+      expect(doc.parseAt(['base', 'timeout']).value, equals(50));
+      expect(doc.parseAt(['base', 'task']).value, equals(50));
+      expect(doc.parseAt(['custom', 'timeout']).value, equals(45));
+      expect(doc.parseAt(['custom', 'task']).value, equals(30));
+      expect(doc.toString(), equals('''
+base: &job
+  timeout: &d 50
+  task: *d
+
+custom:
+  timeout: 45
+  task: 30
+'''));
+    });
+
+    test(
+        'subsequent removal of base template succeeds cleanly without '
+        'AliasException or dangling references', () {
+      final doc = YamlEditor(
+        '''
+base: &job
+  timeout: &d 30
+  task: *d
+
+custom: *job
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['custom', 'timeout'], 45);
+      expect(doc.parseAt(['custom', 'task']).value, equals(30));
+
+      // Removing base succeeds cleanly because custom has no dangling
+      // references to &job or &d.
+      expect(() => doc.remove(['base']), returnsNormally);
+      expect(doc.parseAt(['custom', 'timeout']).value, equals(45));
+      expect(doc.parseAt(['custom', 'task']).value, equals(30));
+      expect(() => doc.parseAt(['base']), throwsArgumentError);
+      expect(doc.toString(), equals('''
+custom:
+  timeout: 45
+  task: 30
+'''));
+    });
+
+    test(
+        'flow style intra-template aliases expand inline and allow cleanly '
+        'removing base', () {
+      final doc = YamlEditor(
+        '''
+base: &job { def: &d 30, task: *d }
+custom: *job
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['custom', 'def'], 40);
+      expect(doc.toString(), equals('''
+base: &job { def: &d 30, task: *d }
+custom: { def: 40, task: 30 }
+'''));
+
+      expect(() => doc.remove(['base']), returnsNormally);
+      expect(doc.parseAt(['custom', 'def']).value, equals(40));
+      expect(doc.parseAt(['custom', 'task']).value, equals(30));
+      expect(doc.toString(), equals('''
+custom: { def: 40, task: 30 }
+'''));
+    });
   });
 }
