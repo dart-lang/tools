@@ -6,6 +6,10 @@
 - Dependencies are deterministically sorted and chunked using a hash-based
   algorithm salted with the canonical dependency set to fit within Google
   Analytics 4 parameter limitations without alphabetical or global package bias.
+- `LogHandler.logFileStats` no longer reads the log file into memory when it
+  exceeds `kMaxLogFileSize`, and discards any `FileSystemException` thrown
+  while reading it, to avoid crashing or exhausting memory on an abnormally
+  large or corrupted log file.
 
 ## 8.0.17
 - Added optional `agentPlugin` parameter to the `Event.dartMCPEvent` constructor to identify 

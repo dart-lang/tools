@@ -350,6 +350,54 @@ void main() {
     );
   });
 
+  test('logFileStats returns null without reading the file when it exceeds '
+      'kMaxLogFileSize', () async {
+    var readAsLinesSyncCalled = false;
+    final logFile = _FakeFile('log.txt')
+      .._statSyncImpl = (() => _FakeFileStat(kMaxLogFileSize + 1))
+      .._readAsLinesSyncImpl = (() {
+        readAsLinesSyncCalled = true;
+        return <String>[];
+      });
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      readAsLinesSyncCalled,
+      isFalse,
+      reason:
+          'The file should not be read into memory when it exceeds '
+          'kMaxLogFileSize, to avoid OOM on abnormally large log files',
+    );
+  });
+
+  test('logFileStats returns null and records an analyticsException when '
+      'reading the log file throws a FileSystemException', () async {
+    final logFile = _FakeFile('log.txt')
+      .._statSyncImpl = (() => _FakeFileStat(0))
+      .._readAsLinesSyncImpl = () {
+        throw const FileSystemException(
+          "Failed to decode data using encoding 'utf-8'",
+          'log.txt',
+        );
+      };
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      logHandler.errorSet,
+      contains(
+        Event.analyticsException(
+          workflow: 'LogHandler.logFileStats',
+          error: 'FileSystemException',
+          description:
+              "message: Failed to decode data using encoding 'utf-8'\n"
+              'path: log.txt',
+        ),
+      ),
+    );
+  });
+
   test('truncateStringToLength returns same string when '
       'max length greater than string length', () {
     final testString = 'Version 14.1 (Build 23B74)';
