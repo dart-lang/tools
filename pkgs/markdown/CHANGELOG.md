@@ -43,6 +43,10 @@
   CommonMark definition of an absolute URI.
 * `headerPattern` no longer backtracks quadratically on ATX headings with many
   spaces before the text, and ATX headings may contain `U+2028` and `U+2029`.
+* Fixes header id generation (from `HeaderWithIdSyntax` and
+  `SetextHeaderWithIdSyntax`) to use each header's fully inline-parsed text,
+  so that a header containing a link uses the link's text instead of its
+  target, and a header containing an image omits it entirely.
 
 ## 7.4.0
 
