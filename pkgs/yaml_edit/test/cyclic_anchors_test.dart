@@ -141,10 +141,7 @@ a: &node
 
       doc.update(['a'], {'val': 2});
       expect(doc.parseAt(['a', 'val']).value, equals(2));
-      expect(doc.toString(), equals('''
-a: &node
-  val: 2
-'''));
+      expect(doc.toString(), equals('a: &node\n  val: 2'));
     });
 
     test('replacing cyclic anchor with scalar if parsed', () {
@@ -160,9 +157,7 @@ a: &node
 
       doc.update(['a'], 'leaf_value');
       expect(doc.parseAt(['a']).value, equals('leaf_value'));
-      expect(doc.toString(), equals('''
-a: &node leaf_value
-'''));
+      expect(doc.toString(), equals('a: &node leaf_value'));
     });
   });
 }
