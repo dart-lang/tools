@@ -1,0 +1,5 @@
+# Flow sequence of integers inside sequence root context, > indent (1 > 0)
+- [
+  1,
+  2
+ ]

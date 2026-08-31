@@ -1,0 +1,10 @@
+# Tests valid comma indentation in deeply nested flow
+a:
+  foo:
+    [
+      [
+        a
+      ]
+      ,
+      b
+    ]

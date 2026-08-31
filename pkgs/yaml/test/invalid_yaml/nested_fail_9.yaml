@@ -1,0 +1,6 @@
+# Tests invalid flow sequence bracket under block sequence at col 0
+- foo
+- 
+[
+  a
+]
