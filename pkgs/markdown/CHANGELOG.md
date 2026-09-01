@@ -1,5 +1,10 @@
 ## 7.4.1-wip
 
+* Fixes header id generation (from `HeaderWithIdSyntax` and
+  `SetextHeaderWithIdSyntax`) to use each header's fully inline-parsed text,
+  so that a header containing a link uses the link's text instead of its
+  target, and a header containing an image omits it entirely.
+
 ## 7.4.0
 
 * Adds `linkBuilder`/`imageLinkBuilder` alternatives to `linkResolver`/  
