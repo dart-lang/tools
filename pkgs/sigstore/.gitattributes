@@ -1,0 +1,9 @@
+# Ensure LF line endings are preserved
+* text=auto eol=lf
+
+# Test fixtures must be treated as binary to prevent CRLF alterations on Windows
+test/fixtures/** -text
+
+# Collapse generated bindings and fixtures in PR reviews and diffs
+lib/src/bindings/** linguist-generated=true
+test/fixtures/sample_bundle.json linguist-generated=true
