@@ -8,6 +8,12 @@ import 'utils.dart';
 
 /// A mixin that implements the line- and column-tracking functionality of
 /// [LineScanner].
+///
+/// For example:
+///
+/// class MyScanner extends StringScanner with LineScannerMixin {
+///   MyScanner(super.string);
+/// }
 mixin LineScannerMixin on StringScanner {
   /// The scanner's current (zero-based) line number.
   int get line => _line;
