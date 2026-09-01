@@ -6,6 +6,9 @@
   exhaustion. `Glob.matches()` uses regular expressions and is unaffected.
 - Allow `**` to match zero directories at the start of a pattern or following
   a separator (e.g. `**/foo` matches `foo` and `a/**/b` matches `a/b`).
+- Fixed a `StateError` ("Bad state: No element") thrown by `matches()` and
+  `matchAsPrefix()` for patterns with an empty option branch, such as
+  `{**/,}foo.dart`.
 
 ## 2.1.3
 
