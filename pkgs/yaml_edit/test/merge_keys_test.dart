@@ -474,4 +474,107 @@ service: {<<: *defaults}
       expect(doc.parseAt(['service', 'timeout']).value, equals(30));
     });
   });
+
+  group('Advanced and Edge Case Merge Keys', () {
+    test('deeply nested merge keys under copyOnWrite (3 levels)', () {
+      final doc = YamlEditor(
+        '''
+defaults: &defaults
+  server:
+    security:
+      tls:
+        enabled: true
+        cert: /etc/ssl/cert.pem
+service:
+  <<: *defaults
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(
+        ['service', 'server', 'security', 'tls', 'cert'],
+        '/new/cert.pem',
+      );
+      expect(
+        doc.parseAt(['service', 'server', 'security', 'tls', 'cert']).value,
+        equals('/new/cert.pem'),
+      );
+      expect(
+        doc.parseAt(['defaults', 'server', 'security', 'tls', 'cert']).value,
+        equals('/etc/ssl/cert.pem'),
+      );
+    });
+
+    test('combining direct alias and merge key under copyOnWrite', () {
+      final doc = YamlEditor(
+        '''
+.default_env: &default_env
+  NODE_ENV: production
+  LOG_LEVEL: info
+
+.job_template: &job_template
+  <<: *default_env
+  timeout: 30
+
+deploy_job: *job_template
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['deploy_job', 'timeout'], 45);
+      expect(doc.parseAt(['deploy_job', 'timeout']).value, equals(45));
+      expect(doc.parseAt(['.job_template', 'timeout']).value, equals(30));
+
+      doc.update(['deploy_job', 'LOG_LEVEL'], 'debug');
+      expect(doc.parseAt(['deploy_job', 'LOG_LEVEL']).value, equals('debug'));
+      expect(doc.parseAt(['.default_env', 'LOG_LEVEL']).value, equals('info'));
+    });
+
+    test('multi-merge precedence with shadowing under reference', () {
+      final doc = YamlEditor(
+        '''
+first: &first
+  timeout: 30
+  retry: 2
+second: &second
+  timeout: 60
+  rate_limit: 100
+service:
+  <<: [*first, *second]
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      expect(doc.parseAt(['service', 'timeout']).value, equals(30));
+      doc.update(['service', 'timeout'], 45);
+      expect(doc.parseAt(['first', 'timeout']).value, equals(45));
+      expect(doc.parseAt(['second', 'timeout']).value, equals(60));
+
+      doc.update(['service', 'rate_limit'], 200);
+      expect(doc.parseAt(['second', 'rate_limit']).value, equals(200));
+    });
+
+    test('resiliency to null or non-map merge keys', () {
+      final doc = YamlEditor(
+        '''
+service1:
+  <<: null
+  name: s1
+service2:
+  <<: "not a map"
+  name: s2
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      expect(doc.parseAt(['service1', 'name']).value, equals('s1'));
+      expect(() => doc.parseAt(['service1', 'nonexistent']), throwsPathError);
+      doc.update(['service1', 'name'], 'updated1');
+      expect(doc.parseAt(['service1', 'name']).value, equals('updated1'));
+
+      expect(doc.parseAt(['service2', 'name']).value, equals('s2'));
+      doc.update(['service2', 'name'], 'updated2');
+      expect(doc.parseAt(['service2', 'name']).value, equals('updated2'));
+    });
+  });
 }

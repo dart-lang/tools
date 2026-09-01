@@ -692,4 +692,72 @@ custom: { def: 40, task: 30 }
 '''));
     });
   });
+
+  group('List splicing, insertion, and comment preservation', () {
+    test('spliceList and insertIntoList on aliased list under reference', () {
+      final doc = YamlEditor(
+        '''
+base: &list
+  - a
+  - b
+  - c
+consumer: *list
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.spliceList(['consumer'], 1, 1, ['x', 'y']);
+      expect(doc.parseAt(['base', 1]).value, equals('x'));
+      expect(doc.parseAt(['base', 2]).value, equals('y'));
+      expect(doc.parseAt(['consumer', 1]).value, equals('x'));
+
+      doc.insertIntoList(['consumer'], 0, 'first');
+      expect(doc.parseAt(['base', 0]).value, equals('first'));
+      expect(doc.parseAt(['consumer', 0]).value, equals('first'));
+    });
+
+    test('spliceList and insertIntoList on aliased list under copyOnWrite', () {
+      final doc = YamlEditor(
+        '''
+base: &list
+  - a
+  - b
+  - c
+consumer: *list
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.spliceList(['consumer'], 1, 1, ['x', 'y']);
+      expect(doc.parseAt(['base', 1]).value, equals('b'));
+      expect(doc.parseAt(['consumer', 1]).value, equals('x'));
+      expect(doc.parseAt(['consumer', 2]).value, equals('y'));
+
+      doc.insertIntoList(['consumer'], 0, 'first');
+      expect(doc.parseAt(['base', 0]).value, equals('a'));
+      expect(doc.parseAt(['consumer', 0]).value, equals('first'));
+    });
+
+    test('preserves inline and header comments during copyOnWrite unfolding',
+        () {
+      final doc = YamlEditor(
+        '''
+# Job template definition
+template: &job
+  # Execution timeout
+  timeout: 30 # default
+  retries: 2
+
+custom: *job
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['custom', 'retries'], 5);
+      expect(doc.toString(), contains('# Execution timeout'));
+      expect(doc.toString(), contains('# default'));
+      expect(doc.parseAt(['custom', 'timeout']).value, equals(30));
+      expect(doc.parseAt(['custom', 'retries']).value, equals(5));
+    });
+  });
 }
