@@ -85,12 +85,14 @@ class MimeTypeResolver {
   /// selective bits. The [mask] must have the same length as [bytes].
   void addMagicNumber(List<int> bytes, String mimeType, {List<int>? mask}) {
     if (mask != null && bytes.length != mask.length) {
-      throw ArgumentError('Bytes and mask are of different lengths');
+      throw ArgumentError('Bytes and mask are of different lengths', 'mask');
     }
-    if (bytes.length > _magicNumbersMaxLength) {
-      _magicNumbersMaxLength = bytes.length;
+    final numbersString = String.fromCharCodes(bytes);
+    final length = matchLength(numbersString);
+    if (length > _magicNumbersMaxLength) {
+      _magicNumbersMaxLength = length;
     }
-    _magicNumbers.add(MagicNumber(mimeType, String.fromCharCodes(bytes),
+    _magicNumbers.add(MagicNumber(mimeType, numbersString,
         mask == null ? null : String.fromCharCodes(mask)));
   }
 
