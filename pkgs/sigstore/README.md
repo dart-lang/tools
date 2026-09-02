@@ -1,6 +1,6 @@
 # Sigstore Dart Client (`package:sigstore`)
 
-A Dart client library for [Sigstore](https://www.sigstore.dev/) focused on **cryptographic bundle inspection and artifact verification**. It wraps the official [`sigstore-rs`](https://github.com/sigstore/sigstore-rs) verification crates (`sigstore-verify`, `sigstore-trust-root`, `sigstore-types`) using **[Diplomat](https://github.com/rust-diplomat/diplomat)** for FFI code generation and Dart **Native Assets** (`hook/build.dart`).
+A Dart client library for [Sigstore](https://www.sigstore.dev/) focused on **cryptographic bundle inspection and artifact verification**. It wraps the official [`sigstore-rust`](https://github.com/sigstore/sigstore-rust) verification crates (`sigstore-verify`, `sigstore-trust-root`, `sigstore-types`) using **[Diplomat](https://github.com/rust-diplomat/diplomat)** for FFI code generation and Dart **Native Assets** (`hook/build.dart`).
 
 > [!NOTE]
 > **Scope**: This package is **verification-only**. It verifies artifacts and software supply chain signatures against Sigstore bundles (including Fulcio X.509 certificates, Rekor transparency logs, RFC 3161 timestamps, and custom/production/staging trusted roots). Keyless signing (which requires interactive OIDC authorization and CA submission) is not part of this package.
