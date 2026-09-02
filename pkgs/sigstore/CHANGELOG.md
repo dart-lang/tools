@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- Update documentation and package description to correctly reference `sigstore-rust`.
+
 ## 0.1.4
 
 - Add comprehensive API documentation to all FFI types, enums, variants, and methods.
