@@ -3,6 +3,8 @@
 - Added `tagPattern` and `version` fields to `GitDependency`, to support the
   `tag_pattern` key for git dependencies introduced in Dart 3.9.
 - Added a usage example.
+- Added `version` to `PathDependency`, exposing the constraint from an
+  accompanying `version` key instead of silently discarding it.
 
 ## 1.6.0
 
