@@ -1,3 +1,7 @@
+## 2.2.5-wip
+
+- Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
+
 ## 2.2.4
 
 -  Removes comments associated with a node when `remove` is called.

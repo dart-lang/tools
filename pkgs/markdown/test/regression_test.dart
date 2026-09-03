@@ -53,4 +53,31 @@ a <!--
     final html = markdownToHtml(input);
     expect(html, '<p>$input</p>\n');
   });
+
+  test('setext heading underline is not an empty list item, GFM #2108', () {
+    // See https://github.com/dart-lang/tools/issues/2108.
+    // With `ExtensionSet.gitHubFlavored`, `UnorderedListWithCheckboxSyntax`
+    // used to be checked before `SetextHeaderSyntax`, so a lone `-` line
+    // continuing a paragraph was parsed as an empty list item instead of a
+    // setext H2 underline.
+    final html = markdownToHtml(
+      'I am paragraph\n-',
+      extensionSet: ExtensionSet.gitHubFlavored,
+    );
+    expect(html, '<h2>I am paragraph</h2>\n');
+  });
+
+  test('long unbroken word does not take quadratic time', () {
+    // The plain-text accelerator regex required a trailing whitespace, so a
+    // long run of word characters that reached the end of a line without one
+    // (a single long word) forced the regex to backtrack across the whole run
+    // at every position, giving quadratic parse time. A ~200k character word
+    // used to take tens of seconds; it should now be effectively instant.
+    final input = '${'a' * 200000}\n';
+
+    final time = Stopwatch()..start();
+    final html = markdownToHtml(input); // Should not hang.
+    expect(html, isNotNull); // To use the output.
+    expect(time.elapsedMilliseconds, lessThan(10000));
+  });
 }

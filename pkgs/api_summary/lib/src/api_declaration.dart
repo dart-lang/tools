@@ -47,17 +47,54 @@ enum ApiClassModifier {
 final class ApiSummary {
   final String name;
 
+  /// The SDK and platform environment constraints of the package, mapping
+  /// environment names (such as 'sdk' or 'flutter') to their version
+  /// constraints.
+  final Map<String, String> environment;
+
+  /// The executables exposed by the package, mapping executable names to
+  /// their target script paths within `bin/`.
+  final Map<String, String?> executables;
+
   final List<ApiLibrary> libraries;
 
-  ApiSummary({required this.name, required this.libraries});
+  ApiSummary({
+    required this.name,
+    Map<String, String>? environment,
+    Map<String, String?>? executables,
+    required this.libraries,
+  }) : environment = environment == null || environment.isEmpty
+           ? const {}
+           : Map.unmodifiable(
+               Map.fromEntries(
+                 environment.entries.toList()
+                   ..sort((a, b) => a.key.compareTo(b.key)),
+               ),
+             ),
+       executables = executables == null || executables.isEmpty
+           ? const {}
+           : Map.unmodifiable(
+               Map.fromEntries(
+                 executables.entries.toList()
+                   ..sort((a, b) => a.key.compareTo(b.key)),
+               ),
+             );
 
   factory ApiSummary.fromJson(Map<String, dynamic> json) => ApiSummary(
     name: json['name'] as String,
+    environment: (json['environment'] as Map<String, dynamic>?)?.map(
+      (k, v) => MapEntry(k, v as String),
+    ),
+    executables: (json['executables'] as Map<String, dynamic>?)?.map(
+      (k, v) => MapEntry(k, v as String?),
+    ),
     libraries: parseList(json, 'libraries', ApiLibrary.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
     'name': name,
+    if (environment.isNotEmpty) 'environment': environment,
+    if (executables.isNotEmpty) 'executables': executables,
     'libraries': libraries.map((e) => e.toJson()).toList(),
   };
 
@@ -130,6 +167,10 @@ sealed class ApiDeclaration {
   final ApiDeclarationStatus status;
   final bool isDeprecated;
   final bool isExperimental;
+
+  /// Whether this declaration is annotated with `@internal`.
+  final bool isInternal;
+
   final bool isVisibleForTesting;
 
   const ApiDeclaration({
@@ -138,6 +179,7 @@ sealed class ApiDeclaration {
     this.status = ApiDeclarationStatus.public,
     this.isDeprecated = false,
     this.isExperimental = false,
+    this.isInternal = false,
     this.isVisibleForTesting = false,
   });
 }
@@ -157,6 +199,9 @@ final class ApiClass extends ApiDeclaration {
   final List<ApiExecutable> constructors;
   final List<ApiExecutable> methods;
 
+  /// Whether this class is annotated with `@immutable`.
+  final bool isImmutable;
+
   ApiClass({
     required super.name,
     super.locationUri,
@@ -172,6 +217,8 @@ final class ApiClass extends ApiDeclaration {
     required this.methods,
     super.isDeprecated,
     super.isExperimental,
+    this.isImmutable = false,
+    super.isInternal,
     super.isVisibleForTesting,
   });
 
@@ -199,6 +246,8 @@ final class ApiClass extends ApiDeclaration {
     methods: parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
+    isImmutable: json['isImmutable'] as bool? ?? false,
+    isInternal: json['isInternal'] as bool? ?? false,
     isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
   );
 
@@ -227,6 +276,8 @@ final class ApiClass extends ApiDeclaration {
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isExperimental) 'isExperimental': isExperimental,
+    if (isImmutable) 'isImmutable': isImmutable,
+    if (isInternal) 'isInternal': isInternal,
     if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
   };
 }
@@ -248,6 +299,7 @@ final class ApiExtension extends ApiDeclaration {
     required this.methods,
     super.isDeprecated,
     super.isExperimental,
+    super.isInternal,
     super.isVisibleForTesting,
   });
 
@@ -262,6 +314,7 @@ final class ApiExtension extends ApiDeclaration {
     methods: parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
+    isInternal: json['isInternal'] as bool? ?? false,
     isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
   );
 
@@ -278,6 +331,7 @@ final class ApiExtension extends ApiDeclaration {
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isExperimental) 'isExperimental': isExperimental,
+    if (isInternal) 'isInternal': isInternal,
     if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
   };
 }
@@ -303,6 +357,7 @@ final class ApiExtensionType extends ApiDeclaration {
     required this.methods,
     super.isDeprecated,
     super.isExperimental,
+    super.isInternal,
     super.isVisibleForTesting,
   });
 
@@ -320,6 +375,7 @@ final class ApiExtensionType extends ApiDeclaration {
         methods: parseList(json, 'methods', ApiExecutable.fromJson),
         isDeprecated: json['isDeprecated'] as bool? ?? false,
         isExperimental: json['isExperimental'] as bool? ?? false,
+        isInternal: json['isInternal'] as bool? ?? false,
         isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
       );
 
@@ -340,6 +396,7 @@ final class ApiExtensionType extends ApiDeclaration {
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isExperimental) 'isExperimental': isExperimental,
+    if (isInternal) 'isInternal': isInternal,
     if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
   };
 }
@@ -354,7 +411,6 @@ final class ApiExecutable extends ApiDeclaration {
   final Map<String, ApiType?> typeParameters;
   final ApiType returnType;
   final List<ApiParameter> parameters;
-  final bool isStatic;
 
   /// Whether this executable is a const constructor, field, or top-level
   /// variable.
@@ -362,6 +418,27 @@ final class ApiExecutable extends ApiDeclaration {
 
   /// Whether this executable represents an enum constant.
   final bool isEnumConstant;
+
+  /// Whether this executable is annotated with `@mustBeOverridden`.
+  final bool isMustBeOverridden;
+
+  /// Whether this executable is annotated with `@mustCallSuper`.
+  final bool isMustCallSuper;
+
+  /// Whether this executable is annotated with `@nonVirtual`.
+  final bool isNonVirtual;
+
+  /// Whether this executable is annotated with `@protected`.
+  final bool isProtected;
+
+  final bool isStatic;
+
+  /// Whether this executable is annotated with `@useResult`.
+  final bool isUseResult;
+
+  /// Whether this executable is annotated with `@visibleForOverriding`.
+  final bool isVisibleForOverriding;
+
   ApiExecutable({
     required super.name,
     super.locationUri,
@@ -373,8 +450,15 @@ final class ApiExecutable extends ApiDeclaration {
     required this.isStatic,
     this.isConst = false,
     this.isEnumConstant = false,
+    this.isMustBeOverridden = false,
+    this.isMustCallSuper = false,
+    this.isNonVirtual = false,
+    this.isProtected = false,
+    this.isUseResult = false,
+    this.isVisibleForOverriding = false,
     super.isDeprecated,
     super.isExperimental,
+    super.isInternal,
     super.isVisibleForTesting,
   });
 
@@ -390,9 +474,16 @@ final class ApiExecutable extends ApiDeclaration {
     parameters: parseList(json, 'parameters', ApiParameter.fromJson),
     isStatic: json['isStatic'] as bool? ?? false,
     isConst: json['isConst'] as bool? ?? false,
-    isEnumConstant: json['isEnumConstant'] as bool? ?? false,
     isDeprecated: json['isDeprecated'] as bool? ?? false,
+    isEnumConstant: json['isEnumConstant'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
+    isInternal: json['isInternal'] as bool? ?? false,
+    isMustBeOverridden: json['isMustBeOverridden'] as bool? ?? false,
+    isMustCallSuper: json['isMustCallSuper'] as bool? ?? false,
+    isNonVirtual: json['isNonVirtual'] as bool? ?? false,
+    isProtected: json['isProtected'] as bool? ?? false,
+    isUseResult: json['isUseResult'] as bool? ?? false,
+    isVisibleForOverriding: json['isVisibleForOverriding'] as bool? ?? false,
     isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
   );
 
@@ -409,11 +500,19 @@ final class ApiExecutable extends ApiDeclaration {
     'returnType': returnType.toJson(),
     if (parameters.isNotEmpty)
       'parameters': parameters.map((e) => e.toJson()).toList(),
-    if (isStatic) 'isStatic': isStatic,
     if (isConst) 'isConst': isConst,
-    if (isEnumConstant) 'isEnumConstant': isEnumConstant,
     if (isDeprecated) 'isDeprecated': isDeprecated,
+    if (isEnumConstant) 'isEnumConstant': isEnumConstant,
     if (isExperimental) 'isExperimental': isExperimental,
+    if (isInternal) 'isInternal': isInternal,
+    if (isMustBeOverridden) 'isMustBeOverridden': isMustBeOverridden,
+    if (isMustCallSuper) 'isMustCallSuper': isMustCallSuper,
+    if (isNonVirtual) 'isNonVirtual': isNonVirtual,
+    if (isProtected) 'isProtected': isProtected,
+    if (isStatic) 'isStatic': isStatic,
+    if (isUseResult) 'isUseResult': isUseResult,
+    if (isVisibleForOverriding)
+      'isVisibleForOverriding': isVisibleForOverriding,
     if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
   };
 }
@@ -433,6 +532,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     required this.aliasedType,
     super.isDeprecated,
     super.isExperimental,
+    super.isInternal,
     super.isVisibleForTesting,
   });
 
@@ -444,6 +544,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     aliasedType: ApiType.fromJson(json['aliasedType'] as Map<String, dynamic>),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isExperimental: json['isExperimental'] as bool? ?? false,
+    isInternal: json['isInternal'] as bool? ?? false,
     isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
   );
 
@@ -459,6 +560,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     'aliasedType': aliasedType.toJson(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isExperimental) 'isExperimental': isExperimental,
+    if (isInternal) 'isInternal': isInternal,
     if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
   };
 }

@@ -110,17 +110,6 @@ abstract mixin class CodeEmitter implements CodeVisitor<StringSink> {
   }
 }
 
-/// Represents a code block that requires lazy visiting.
-class LazyCode implements Code {
-  final Spec Function(SpecVisitor) generate;
-
-  const LazyCode._(this.generate);
-
-  @override
-  R accept<R>(CodeVisitor<R> visitor, [R? context]) =>
-      generate(visitor).accept(visitor, context);
-}
-
 /// Returns a generic [Code] that is lazily generated when visited.
 Code lazyCode(Code Function() generate) => _LazyCode(generate);
 

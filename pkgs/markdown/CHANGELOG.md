@@ -1,3 +1,10 @@
+## 7.4.1-wip
+
+* Fix quadratic parsing time on a long unbroken run of word characters (for
+  example a single very long word). The plain-text accelerator regex required
+  a trailing whitespace, so a run reaching the end of a line without one
+  backtracked across the whole run at every position.
+
 ## 7.4.0
 
 * Adds `linkBuilder`/`imageLinkBuilder` alternatives to `linkResolver`/  
@@ -13,6 +20,9 @@
   quantifiers to RFC limits, improving performance on inputs with long sequences
   of dots or alphanumeric characters.
 * Escape image description text when assigning it to the `alt` attribute.
+* Fixes `ExtensionSet.gitHubFlavored` so a lone `-` (or `=`) line that
+  continues a paragraph is parsed as a setext heading underline instead of
+  an empty list item.
 
 ## 7.3.1
 

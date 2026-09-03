@@ -48,8 +48,10 @@ String? getExecutablePath(
     // the cwd path. In this case, fall back on '.'.
     workingDirectory ??= '.';
   }
-  final Context context =
-      Context(style: fs.path.style, current: workingDirectory);
+  final Context context = Context(
+    style: fs.path.style,
+    current: workingDirectory,
+  );
 
   // TODO(goderbauer): refactor when github.com/google/platform.dart/issues/2
   //     is available.
@@ -74,8 +76,12 @@ String? getExecutablePath(
       ? <String>[workingDirectory]
       : platform.environment['PATH']!.split(pathSeparator);
 
-  final List<String> candidates =
-      _getCandidatePaths(executable, searchPath, extensions, context);
+  final List<String> candidates = _getCandidatePaths(
+    executable,
+    searchPath,
+    extensions,
+    context,
+  );
   final List<String> foundCandidates = <String>[];
   for (final String path in candidates) {
     final File candidate = fs.file(path);
@@ -146,8 +152,10 @@ List<String> _getCandidatePaths(
     return withExtensions;
   }
   return searchPaths
-      .map((String path) =>
-          withExtensions.map((String command) => context.join(path, command)))
+      .map(
+        (String path) =>
+            withExtensions.map((String command) => context.join(path, command)),
+      )
       .expand((Iterable<String> e) => e)
       .toList()
       .cast<String>();

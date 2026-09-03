@@ -32,7 +32,8 @@ Future<ApiSummary> apiSummary(
   String? packageName,
   ApiSummaryCustomizer? customizer,
 }) async {
-  final resolvedPackageName = packageName ?? _extractPackageName(packagePath);
+  final pubspec = _extractPubspecDetails(packagePath);
+  final resolvedPackageName = packageName ?? pubspec.name;
   final provider = PhysicalResourceProvider.INSTANCE;
   final libPath = provider.pathContext.join(packagePath, 'lib');
   if (!provider.getFolder(libPath).exists) {
@@ -47,31 +48,90 @@ Future<ApiSummary> apiSummary(
     resolvedPackageName,
     context,
     customizer ?? const ApiSummaryCustomizer(),
+    environment: pubspec.environment,
+    executables: pubspec.executables,
   );
 }
 
-String _extractPackageName(String packagePath) {
+typedef _PubspecDetails = ({
+  String name,
+  Map<String, String> environment,
+  Map<String, String?> executables,
+});
+
+_PubspecDetails _extractPubspecDetails(String packagePath) {
   final pubspecFile = File(p.join(packagePath, 'pubspec.yaml'));
   if (!pubspecFile.existsSync()) {
     throw ArgumentError('No pubspec.yaml found at "$packagePath".');
   }
   final content = pubspecFile.readAsStringSync();
-  final yaml = loadYaml(content);
-  if (yaml case {'name': final String name}) {
-    return name;
-  }
-  if (yaml is! Map) {
-    throw ArgumentError(
-      'Expected pubspec.yaml at ${pubspecFile.path} to be a YAML map.',
+  final YamlMap yaml;
+  try {
+    yaml = switch (loadYaml(content, sourceUrl: pubspecFile.uri)) {
+      final YamlMap map => map,
+      _ => throw FormatException('Expected pubspec to be a YAML map.', content),
+    };
+  } on FormatException catch (e) {
+    throw FormatException(
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: ${e.message}',
+      content,
+      e.offset,
     );
   }
-  if (yaml['name'] == null) {
-    throw ArgumentError(
-      'Could not find a "name" field in pubspec.yaml at ${pubspecFile.path}.',
-    );
-  }
-  throw ArgumentError(
-    'The "name" field in pubspec.yaml at ${pubspecFile.path} must be a '
-    'string.',
-  );
+
+  final name = switch (yaml['name']) {
+    final String name => name,
+    _ => throw FormatException(
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+      'Expected pubspec to contain a "name" string.',
+      content,
+    ),
+  };
+
+  final environment = switch (yaml['environment']) {
+    final Map<dynamic, dynamic> envMap => {
+      for (final MapEntry(:key, :value) in envMap.entries)
+        if (key is String && value != null)
+          key: switch (value) {
+            final String s => s,
+            final num n => n.toString(),
+            final bool b => b.toString(),
+            _ => throw FormatException(
+              'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+              'Expected environment constraint for "$key" to be a string or '
+              'scalar.',
+              content,
+            ),
+          },
+    },
+    null => const <String, String>{},
+    _ => throw FormatException(
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+      'Expected "environment" to be a YAML map.',
+      content,
+    ),
+  };
+
+  final executables = switch (yaml['executables']) {
+    final Map<dynamic, dynamic> execMap => {
+      for (final MapEntry(:key, :value) in execMap.entries)
+        if (key is String)
+          key: switch (value) {
+            final String? s => s,
+            _ => throw FormatException(
+              'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+              'Expected executable target for "$key" to be a string or null.',
+              content,
+            ),
+          },
+    },
+    null => const <String, String?>{},
+    _ => throw FormatException(
+      'Failed to parse pubspec.yaml at ${pubspecFile.path}: '
+      'Expected "executables" to be a YAML map.',
+      content,
+    ),
+  };
+
+  return (name: name, environment: environment, executables: executables);
 }
