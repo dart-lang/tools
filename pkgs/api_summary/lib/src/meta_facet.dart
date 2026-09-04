@@ -9,7 +9,7 @@ library;
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 
-import 'api_trait.dart';
+import 'api_facet.dart';
 
 /// Contractual annotations from `package:meta`.
 enum MetaContract implements Comparable<MetaContract> {
@@ -32,20 +32,20 @@ enum MetaContract implements Comparable<MetaContract> {
   int compareTo(MetaContract other) => name.compareTo(other.name);
 }
 
-/// An [ApiTrait] capturing `package:meta` contracts.
-final class MetaContractTrait implements ApiTrait {
+/// An [ApiFacet] capturing `package:meta` contracts.
+final class MetaContractFacet implements ApiFacet {
   @override
   String get namespace => 'meta';
 
-  /// The set of active metadata contracts associated with this trait.
+  /// The set of active metadata contracts associated with this facet.
   final Set<MetaContract> contracts;
 
-  MetaContractTrait(Iterable<MetaContract> contracts)
+  MetaContractFacet(Iterable<MetaContract> contracts)
     : contracts = Set.unmodifiable(contracts.toSet().toList()..sort());
 
   /// Extracts active `package:meta` contracts from [element], or returns `null`
   /// if none are present.
-  static MetaContractTrait? fromElement(Element element) {
+  static MetaContractFacet? fromElement(Element element) {
     final contracts = <MetaContract>{};
     void check(Metadata metadata) {
       if (metadata.hasExperimental) contracts.add(MetaContract.experimental);
@@ -71,10 +71,10 @@ final class MetaContractTrait implements ApiTrait {
       check(element.variable.nonSynthetic.metadata);
     }
 
-    return contracts.isNotEmpty ? MetaContractTrait(contracts) : null;
+    return contracts.isNotEmpty ? MetaContractFacet(contracts) : null;
   }
 
-  factory MetaContractTrait.fromJson(Map<String, dynamic> json) {
+  factory MetaContractFacet.fromJson(Map<String, dynamic> json) {
     final list = json['contracts'] as List<dynamic>? ?? const [];
     final set = <MetaContract>{};
     for (final item in list) {
@@ -87,7 +87,7 @@ final class MetaContractTrait implements ApiTrait {
         }
       }
     }
-    return MetaContractTrait(set);
+    return MetaContractFacet(set);
   }
 
   @override
@@ -101,10 +101,10 @@ final class MetaContractTrait implements ApiTrait {
       contracts.map((e) => e.textLabel).toList();
 
   @override
-  int compareTo(ApiTrait other) {
+  int compareTo(ApiFacet other) {
     final diff = namespace.compareTo(other.namespace);
     if (diff != 0) return diff;
-    if (other is MetaContractTrait) {
+    if (other is MetaContractFacet) {
       final thisStr = contracts.map((e) => e.name).join(',');
       final otherStr = other.contracts.map((e) => e.name).join(',');
       return thisStr.compareTo(otherStr);
@@ -115,7 +115,7 @@ final class MetaContractTrait implements ApiTrait {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MetaContractTrait &&
+      other is MetaContractFacet &&
           const SetEquality<MetaContract>().equals(contracts, other.contracts);
 
   @override

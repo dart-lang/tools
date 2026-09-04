@@ -14,10 +14,10 @@ import 'package:collection/collection.dart';
 
 import 'api_declaration.dart';
 import 'api_summary_customizer.dart';
-import 'api_trait.dart';
+import 'api_facet.dart';
 import 'api_type.dart';
 import 'extensions.dart';
-import 'meta_trait.dart';
+import 'meta_facet.dart';
 
 /// Traverses the public libraries of [packageName] within [context] to build
 /// a canonical [ApiSummary] representation.
@@ -151,7 +151,7 @@ final class _ApiBuilder {
           () => _ApiLibraryBuilder(
             library.uri.toString(),
             isPublicEntryPoint: library.uri.isInPublicLibOf(_pkgName),
-            traits: _extractTraits(library),
+            facets: _extractFacets(library),
           ),
         );
         switch (apiElement) {
@@ -214,7 +214,7 @@ final class _ApiBuilder {
           () => _ApiLibraryBuilder(
             library.uri.toString(),
             isPublicEntryPoint: true,
-            traits: _extractTraits(library),
+            facets: _extractFacets(library),
           ),
         );
       }
@@ -427,7 +427,7 @@ final class _ApiBuilder {
       constructors: constructors,
       methods: methods,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      traits: _extractTraits(element),
+      facets: _extractFacets(element),
     );
   }
 
@@ -454,7 +454,7 @@ final class _ApiBuilder {
       typeParameters: _extractTypeParameters(element.typeParameters),
       methods: methods,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      traits: _extractTraits(element),
+      facets: _extractFacets(element),
     );
   }
 
@@ -486,7 +486,7 @@ final class _ApiBuilder {
       constructors: constructors,
       methods: methods,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      traits: _extractTraits(element),
+      facets: _extractFacets(element),
     );
   }
 
@@ -495,8 +495,8 @@ final class _ApiBuilder {
       (element is PropertyAccessorElement &&
           element.variable.nonSynthetic.metadata.hasDeprecated);
 
-  List<ApiTrait> _extractTraits(Element element) => [
-    ?MetaContractTrait.fromElement(element),
+  List<ApiFacet> _extractFacets(Element element) => [
+    ?MetaContractFacet.fromElement(element),
   ];
 
   ApiExecutable _buildExecutable(
@@ -547,7 +547,7 @@ final class _ApiBuilder {
       isConst: isConst,
       isDeprecated: _isDeprecated(element),
       isEnumConstant: isEnumConstant,
-      traits: _extractTraits(element),
+      facets: _extractFacets(element),
     );
   }
 
@@ -561,7 +561,7 @@ final class _ApiBuilder {
     typeParameters: _extractTypeParameters(element.typeParameters),
     aliasedType: _describeType(element.aliasedType),
     isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-    traits: _extractTraits(element),
+    facets: _extractFacets(element),
   );
 }
 
@@ -569,7 +569,7 @@ final class _ApiBuilder {
 final class _ApiLibraryBuilder {
   final String uri;
   final bool isPublicEntryPoint;
-  final List<ApiTrait> traits;
+  final List<ApiFacet> facets;
   final classes = <ApiClass>[];
   final enums = <ApiClass>[];
   final mixins = <ApiClass>[];
@@ -581,7 +581,7 @@ final class _ApiLibraryBuilder {
   _ApiLibraryBuilder(
     this.uri, {
     required this.isPublicEntryPoint,
-    this.traits = const [],
+    this.facets = const [],
   });
 
   ApiLibrary build() {
@@ -602,7 +602,7 @@ final class _ApiLibraryBuilder {
       extensionTypes: extensionTypes,
       functions: functions,
       typeAliases: typeAliases,
-      traits: traits,
+      facets: facets,
     );
   }
 }

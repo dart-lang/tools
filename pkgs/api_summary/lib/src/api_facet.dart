@@ -2,12 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'meta_trait.dart';
+import 'meta_facet.dart';
 
-/// Base interface for domain-specific, contractual, or runtime traits attached
+/// Base interface for domain-specific, contractual, or runtime facets attached
 /// to an API declaration or library.
-abstract interface class ApiTrait implements Comparable<ApiTrait> {
-  /// The namespace identifying the trait kind (e.g. `'meta'`, `'js'`, `'ffi'`).
+abstract interface class ApiFacet implements Comparable<ApiFacet> {
+  /// The namespace identifying the facet kind (e.g. `'meta'`, `'js'`, `'ffi'`).
   String get namespace;
 
   /// Text representation for human-readable parentheticals in `api.txt`.
@@ -16,13 +16,13 @@ abstract interface class ApiTrait implements Comparable<ApiTrait> {
   /// JSON serialization for `api.json`.
   Map<String, dynamic> toJson();
 
-  /// Deserializes an [ApiTrait] from a JSON map containing a `'namespace'`
+  /// Deserializes an [ApiFacet] from a JSON map containing a `'namespace'`
   /// field.
-  static ApiTrait fromJson(Map<String, dynamic> json) {
+  static ApiFacet fromJson(Map<String, dynamic> json) {
     final namespace = json['namespace'] as String?;
     return switch (namespace) {
-      'meta' => MetaContractTrait.fromJson(json),
-      _ => throw FormatException('Unknown ApiTrait namespace: "$namespace"'),
+      'meta' => MetaContractFacet.fromJson(json),
+      _ => throw FormatException('Unknown ApiFacet namespace: "$namespace"'),
     };
   }
 }

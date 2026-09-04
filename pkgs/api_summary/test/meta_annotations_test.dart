@@ -196,7 +196,7 @@ class Target {
       }),
     );
 
-    // Verify traits in JSON output
+    // Verify facets in JSON output
     final libJson = (jsonMap['libraries'] as List)
         .cast<Map<String, dynamic>>()[0];
     final classJson = (libJson['classes'] as List)
@@ -206,7 +206,7 @@ class Target {
 
     expect(
       classJson,
-      containsPair('traits', [
+      containsPair('facets', [
         {
           'namespace': 'meta',
           'contracts': ['immutable'],
@@ -215,7 +215,7 @@ class Target {
     );
     expect(
       methodJson,
-      containsPair('traits', [
+      containsPair('facets', [
         {
           'namespace': 'meta',
           'contracts': [
@@ -229,10 +229,10 @@ class Target {
     );
   }
 
-  void test_traits_deduplication_sorting_and_immutability() {
-    // 1. Verify MetaContractTrait deduplicates contracts and sorts them
+  void test_facets_deduplication_sorting_and_immutability() {
+    // 1. Verify MetaContractFacet deduplicates contracts and sorts them
     // deterministically.
-    final metaTrait1 = MetaContractTrait([
+    final metaFacet1 = MetaContractFacet([
       MetaContract.useResult,
       MetaContract.protected,
       MetaContract.useResult,
@@ -242,7 +242,7 @@ class Target {
     ]);
 
     expect(
-      metaTrait1.contracts.toList(),
+      metaFacet1.contracts.toList(),
       equals([
         MetaContract.immutable,
         MetaContract.protected,
@@ -252,30 +252,30 @@ class Target {
 
     // Verify immutability of contracts set
     expect(
-      () => (metaTrait1.contracts as dynamic).add(MetaContract.internal),
+      () => (metaFacet1.contracts as dynamic).add(MetaContract.internal),
       throwsUnsupportedError,
     );
 
     // Verify equality with differently ordered construction
-    final metaTrait2 = MetaContractTrait([
+    final metaFacet2 = MetaContractFacet([
       MetaContract.protected,
       MetaContract.immutable,
       MetaContract.useResult,
     ]);
-    expect(metaTrait1, equals(metaTrait2));
-    expect(metaTrait1.hashCode, equals(metaTrait2.hashCode));
+    expect(metaFacet1, equals(metaFacet2));
+    expect(metaFacet1.hashCode, equals(metaFacet2.hashCode));
 
     // Verify fromJson gracefully ignores unknown contracts
-    final fromJsonTrait = MetaContractTrait.fromJson({
+    final fromJsonFacet = MetaContractFacet.fromJson({
       'namespace': 'meta',
       'contracts': ['protected', 'unknownFutureContract', 'useResult'],
     });
     expect(
-      fromJsonTrait.contracts.toList(),
+      fromJsonFacet.contracts.toList(),
       equals([MetaContract.protected, MetaContract.useResult]),
     );
 
-    // 2. Verify ApiDeclaration deduplicates traits and sorts them
+    // 2. Verify ApiDeclaration deduplicates facets and sorts them
     // deterministically.
     final dummyExecutable = ApiExecutable(
       name: 'foo',
@@ -284,13 +284,13 @@ class Target {
       returnType: const ApiVoidType(),
       parameters: const [],
       isStatic: true,
-      traits: [metaTrait1, metaTrait2, metaTrait1],
+      facets: [metaFacet1, metaFacet2, metaFacet1],
     );
 
-    expect(dummyExecutable.traits.length, equals(1));
-    expect(dummyExecutable.traits.single, equals(metaTrait1));
+    expect(dummyExecutable.facets.length, equals(1));
+    expect(dummyExecutable.facets.single, equals(metaFacet1));
     expect(
-      () => (dummyExecutable.traits as dynamic).add(metaTrait1),
+      () => (dummyExecutable.facets as dynamic).add(metaFacet1),
       throwsUnsupportedError,
     );
   }
@@ -304,5 +304,5 @@ final class _ShowInternalDetailsCustomizer extends ApiSummaryCustomizer {
 
 extension on ApiDeclaration {
   Set<MetaContract> get contracts =>
-      traits.whereType<MetaContractTrait>().firstOrNull?.contracts ?? const {};
+      facets.whereType<MetaContractFacet>().firstOrNull?.contracts ?? const {};
 }

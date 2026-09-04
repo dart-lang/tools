@@ -128,10 +128,10 @@ final class _ApiTextRenderer {
 
   void _renderLibrary(ApiLibrary library, Node<MemberSortKey> node) {
     node.text.add(Uri.parse(library.uri));
-    if (library.traits.isNotEmpty) {
+    if (library.facets.isNotEmpty) {
       final parentheticals = <List<Object?>>[];
-      for (final trait in library.traits) {
-        for (final segment in trait.parentheticalSegments) {
+      for (final facet in library.facets) {
+        for (final segment in facet.parentheticalSegments) {
           parentheticals.add([segment]);
         }
       }
@@ -637,8 +637,8 @@ final class _ApiTextRenderer {
     if (element.isDeprecated) {
       parentheticals.add(['deprecated']);
     }
-    for (final trait in element.traits) {
-      for (final segment in trait.parentheticalSegments) {
+    for (final facet in element.facets) {
+      for (final segment in facet.parentheticalSegments) {
         parentheticals.add([segment]);
       }
     }
