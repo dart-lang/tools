@@ -17,6 +17,7 @@ import 'api_facet.dart';
 import 'api_summary_customizer.dart';
 import 'api_type.dart';
 import 'extensions.dart';
+import 'js_facet.dart';
 import 'meta_facet.dart';
 
 /// Traverses the public libraries of [packageName] within [context] to build
@@ -497,6 +498,8 @@ final class _ApiBuilder {
 
   List<ApiFacet> _extractFacets(Element element) => [
     ?MetaContractFacet.fromElement(element),
+    ?JsBindingFacet.fromElement(element),
+    ?JsExportFacet.fromElement(element),
   ];
 
   ApiExecutable _buildExecutable(

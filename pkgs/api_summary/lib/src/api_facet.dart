@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'js_facet.dart';
 import 'meta_facet.dart';
 
 /// Base interface for domain-specific, contractual, or runtime facets attached
@@ -22,6 +23,8 @@ abstract interface class ApiFacet implements Comparable<ApiFacet> {
     final namespace = json['namespace'] as String?;
     return switch (namespace) {
       'meta' => MetaContractFacet.fromJson(json),
+      'js' => JsBindingFacet.fromJson(json),
+      'js_export' => JsExportFacet.fromJson(json),
       _ => throw FormatException('Unknown ApiFacet namespace: "$namespace"'),
     };
   }
