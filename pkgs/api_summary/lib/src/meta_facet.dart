@@ -41,7 +41,9 @@ final class MetaContractFacet implements ApiFacet {
   final Set<MetaContract> contracts;
 
   MetaContractFacet(Iterable<MetaContract> contracts)
-    : contracts = Set.unmodifiable(contracts.toSet().toList()..sort());
+    : contracts = contracts.isEmpty
+          ? const {}
+          : Set.unmodifiable(contracts.sorted());
 
   /// Extracts active `package:meta` contracts from [element], or returns `null`
   /// if none are present.

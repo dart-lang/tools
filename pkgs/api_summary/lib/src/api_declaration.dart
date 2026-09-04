@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:collection/collection.dart';
+
 import 'api_facet.dart';
 import 'api_type.dart';
 import 'json_utils.dart';
@@ -127,9 +129,7 @@ final class ApiLibrary {
     required this.functions,
     required this.typeAliases,
     Iterable<ApiFacet> facets = const [],
-  }) : facets = facets.isEmpty
-           ? const {}
-           : Set.unmodifiable(facets.toSet().toList()..sort());
+  }) : facets = facets.isEmpty ? const {} : Set.unmodifiable(facets.sorted());
 
   factory ApiLibrary.fromJson(Map<String, dynamic> json) => ApiLibrary(
     uri: json['uri'] as String,
@@ -181,9 +181,7 @@ sealed class ApiDeclaration {
     this.status = ApiDeclarationStatus.public,
     this.isDeprecated = false,
     Iterable<ApiFacet> facets = const [],
-  }) : facets = facets.isEmpty
-           ? const {}
-           : Set.unmodifiable(facets.toSet().toList()..sort());
+  }) : facets = facets.isEmpty ? const {} : Set.unmodifiable(facets.sorted());
 }
 
 /// A summary of a Dart class, mixin, or enum declaration.

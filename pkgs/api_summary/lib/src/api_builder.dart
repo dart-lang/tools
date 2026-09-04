@@ -13,8 +13,8 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
 import 'api_declaration.dart';
-import 'api_summary_customizer.dart';
 import 'api_facet.dart';
+import 'api_summary_customizer.dart';
 import 'api_type.dart';
 import 'extensions.dart';
 import 'meta_facet.dart';
