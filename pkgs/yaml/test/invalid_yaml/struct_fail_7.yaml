@@ -1,0 +1,5 @@
+# Inline flow sequence with closing bracket at column 0
+key:
+ [ a,
+   b
+]

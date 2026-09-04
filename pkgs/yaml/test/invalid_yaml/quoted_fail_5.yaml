@@ -1,0 +1,6 @@
+# Invalid double quoted inside flow at col 0
+key:
+  [
+    "line1
+line2"
+  ]

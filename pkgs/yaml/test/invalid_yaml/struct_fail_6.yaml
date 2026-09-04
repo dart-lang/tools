@@ -1,0 +1,4 @@
+# Closing bracket of flow map less indented than block mapping key
+  key: {
+   a: b
+ }

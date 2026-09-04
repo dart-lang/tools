@@ -1,0 +1,6 @@
+# Flow list brackets indented more than parent block mapping key
+key:
+ [
+  a,
+  b
+ ]

@@ -1,0 +1,4 @@
+# Inline flow sequence with newlines and correctly indented brackets
+key:
+ [ a,
+   b ]
