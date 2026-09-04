@@ -99,6 +99,14 @@ class Pubspec {
   /// Specifies how to resolve dependencies with the surrounding Pub Workspace.
   final String? resolution;
 
+  /// The platforms this package explicitly declares support for.
+  ///
+  /// Keys are platform names, such as `android`, `ios`, `linux`, `macos`,
+  /// `web` and `windows`. Values are currently always `null`.
+  ///
+  /// See https://dart.dev/tools/pub/pubspec#platforms.
+  final Map<String, dynamic>? platforms;
+
   /// If [author] and [authors] are both provided, their values are combined
   /// with duplicates eliminated.
   Pubspec(
@@ -121,6 +129,7 @@ class Pubspec {
     this.description,
     this.workspace,
     this.resolution,
+    this.platforms,
     Map<String, Dependency>? dependencies,
     Map<String, Dependency>? devDependencies,
     Map<String, Dependency>? dependencyOverrides,

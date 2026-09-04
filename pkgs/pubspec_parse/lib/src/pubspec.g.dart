@@ -61,6 +61,10 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
         (v) => (v as List<dynamic>?)?.map((e) => e as String).toList(),
       ),
       resolution: $checkedConvert('resolution', (v) => v as String?),
+      platforms: $checkedConvert(
+        'platforms',
+        (v) => (v as Map?)?.map((k, e) => MapEntry(k as String, e)),
+      ),
       dependencies: $checkedConvert(
         'dependencies',
         (v) => parseDeps(v as Map?),
@@ -116,4 +120,5 @@ Map<String, dynamic> _$PubspecToJson(Pubspec instance) => <String, dynamic>{
   'executables': _serializeExecutables(instance.executables),
   'workspace': instance.workspace,
   'resolution': instance.resolution,
+  'platforms': instance.platforms,
 };
