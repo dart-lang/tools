@@ -4,6 +4,7 @@
 
 import '../ast.dart';
 import '../block_parser.dart';
+import '../line.dart';
 import '../patterns.dart';
 import 'block_syntax.dart';
 import 'setext_header_syntax.dart';
@@ -23,7 +24,7 @@ class ParagraphSyntax extends BlockSyntax {
 
   @override
   Node? parse(BlockParser parser) {
-    final childLines = <String>[parser.current.content];
+    final childLines = <Line>[parser.current];
 
     parser.advance();
     var interruptedBySetextHeading = false;
@@ -34,7 +35,7 @@ class ParagraphSyntax extends BlockSyntax {
         interruptedBySetextHeading = syntax is SetextHeaderSyntax;
         break;
       }
-      childLines.add(parser.current.content);
+      childLines.add(parser.current);
       parser.advance();
     }
 
@@ -43,7 +44,11 @@ class ParagraphSyntax extends BlockSyntax {
       return null;
     }
 
-    final contents = UnparsedContent(childLines.join('\n').trimRight());
+    final text = childLines.map((line) => line.content).join('\n');
+    final contents = UnparsedContent(
+      text.trimRight(),
+      ContentOffsetMapper(childLines),
+    );
     return Element('p', [contents]);
   }
 }

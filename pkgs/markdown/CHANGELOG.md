@@ -23,6 +23,9 @@
 * Fixes `ExtensionSet.gitHubFlavored` so a lone `-` (or `=`) line that
   continues a paragraph is parsed as a setext heading underline instead of
   an empty list item.
+* Adds `offset`/`length` to `Element`, populated for inline code spans
+  (`` `code` ``) parsed from a top-level paragraph or atx header, so that
+  their location in the original source can be recovered (#1287).
 
 ## 7.3.1
 
