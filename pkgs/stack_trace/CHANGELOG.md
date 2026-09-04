@@ -1,4 +1,4 @@
-## 1.12.2-dev
+## 1.12.2
 
 * Relax parsing of V8 traces to allow a missing initial description.
 

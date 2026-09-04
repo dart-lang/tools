@@ -28,11 +28,13 @@ jobs:
         include:
           - sdk: dev
             run-tests: true
+          - sdk: dev
+            check-formatting: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
         with:
           sdk: ${{matrix.sdk}}
 
@@ -41,7 +43,7 @@ jobs:
       - run: dart analyze --fatal-infos
 
       - run: dart format --output=none --set-exit-if-changed .
-        if: ${{matrix.run-tests}}
+        if: ${{matrix.check-formatting}}
 
       - run: dart test
         if: ${{matrix.run-tests}}

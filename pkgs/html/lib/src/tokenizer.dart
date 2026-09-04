@@ -1888,8 +1888,10 @@ class HtmlTokenizer implements Iterator<Token> {
       data.add(ch);
       // TODO(jmesserly): it'd be nice if we had an easier way to match the end,
       // perhaps with a "peek" API.
-      if (ch == ']' && matchedEnd < 2) {
-        matchedEnd++;
+      if (ch == ']') {
+        if (matchedEnd < 2) {
+          matchedEnd++;
+        }
       } else if (ch == '>' && matchedEnd == 2) {
         // Remove "]]>" from the end.
         data.removeLast();

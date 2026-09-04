@@ -1,4 +1,4 @@
-## 2.1.0-wip
+## 2.1.0
 
 * Switched to using the Apache httpd mime.conf table as the source of truth for
   mime types.
