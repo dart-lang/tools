@@ -54,6 +54,16 @@ libraries:
                       libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
                 isNamed: true
+              - name: facets
+                type:
+                  kind: interface
+                  name: Iterable
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
+                isNamed: true
               - name: immediateSubtypes
                 type:
                   kind: interface
@@ -151,16 +161,6 @@ libraries:
                   name: ApiType
                   libraryUri: package:api_summary/src/api_type.dart
                   isNullable: true
-                isNamed: true
-              - name: traits
-                type:
-                  kind: interface
-                  name: Iterable
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiTrait
-                      libraryUri: package:api_summary/src/api_trait.dart
                 isNamed: true
               - name: typeParameters
                 type:
@@ -305,6 +305,17 @@ libraries:
           - ApiExtensionType
           - ApiTypeAlias
         methods:
+          - name: facets
+            locationUri: package:api_summary/src/api_declaration.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: Set
+              libraryUri: dart:core
+              typeArguments:
+                - kind: interface
+                  name: ApiFacet
+                  libraryUri: package:api_summary/src/api_facet.dart
           - name: isDeprecated
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -334,17 +345,6 @@ libraries:
               kind: interface
               name: ApiDeclarationStatus
               libraryUri: package:api_summary/src/api_declaration.dart
-          - name: traits
-            locationUri: package:api_summary/src/api_declaration.dart
-            kind: getter
-            returnType:
-              kind: interface
-              name: Set
-              libraryUri: dart:core
-              typeArguments:
-                - kind: interface
-                  name: ApiTrait
-                  libraryUri: package:api_summary/src/api_trait.dart
       - name: ApiDynamicType
         locationUri: package:api_summary/src/api_type.dart
         supertype:
@@ -434,6 +434,16 @@ libraries:
               name: ApiExecutable
               libraryUri: package:api_summary/src/api_declaration.dart
             parameters:
+              - name: facets
+                type:
+                  kind: interface
+                  name: Iterable
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
+                isNamed: true
               - name: isConst
                 type:
                   kind: interface
@@ -503,16 +513,6 @@ libraries:
                   kind: interface
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
-                isNamed: true
-              - name: traits
-                type:
-                  kind: interface
-                  name: Iterable
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiTrait
-                      libraryUri: package:api_summary/src/api_trait.dart
                 isNamed: true
               - name: typeParameters
                 type:
@@ -646,6 +646,16 @@ libraries:
                   libraryUri: package:api_summary/src/api_type.dart
                 isRequired: true
                 isNamed: true
+              - name: facets
+                type:
+                  kind: interface
+                  name: Iterable
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
+                isNamed: true
               - name: isDeprecated
                 type:
                   kind: interface
@@ -682,16 +692,6 @@ libraries:
                   kind: interface
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
-                isNamed: true
-              - name: traits
-                type:
-                  kind: interface
-                  name: Iterable
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiTrait
-                      libraryUri: package:api_summary/src/api_trait.dart
                 isNamed: true
               - name: typeParameters
                 type:
@@ -801,6 +801,16 @@ libraries:
                       libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
                 isNamed: true
+              - name: facets
+                type:
+                  kind: interface
+                  name: Iterable
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
+                isNamed: true
               - name: interfaces
                 type:
                   kind: interface
@@ -855,16 +865,6 @@ libraries:
                   kind: interface
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
-                isNamed: true
-              - name: traits
-                type:
-                  kind: interface
-                  name: Iterable
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiTrait
-                      libraryUri: package:api_summary/src/api_trait.dart
                 isNamed: true
               - name: typeParameters
                 type:
@@ -949,6 +949,74 @@ libraries:
                   name: ApiType
                   libraryUri: package:api_summary/src/api_type.dart
                   isNullable: true
+      - name: ApiFacet
+        locationUri: package:api_summary/src/api_facet.dart
+        supertype:
+          kind: interface
+          name: Object
+          libraryUri: dart:core
+        interfaces:
+          - kind: interface
+            name: Comparable
+            libraryUri: dart:core
+            typeArguments:
+              - kind: interface
+                name: ApiFacet
+                libraryUri: package:api_summary/src/api_facet.dart
+        modifiers:
+          - abstract
+          - interface
+        methods:
+          - name: fromJson
+            locationUri: package:api_summary/src/api_facet.dart
+            kind: method
+            returnType:
+              kind: interface
+              name: ApiFacet
+              libraryUri: package:api_summary/src/api_facet.dart
+            parameters:
+              - name: json
+                type:
+                  kind: interface
+                  name: Map
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: String
+                      libraryUri: dart:core
+                    - kind: dynamic
+                isRequired: true
+            isStatic: true
+          - name: namespace
+            locationUri: package:api_summary/src/api_facet.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+          - name: parentheticalSegments
+            locationUri: package:api_summary/src/api_facet.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: List
+              libraryUri: dart:core
+              typeArguments:
+                - kind: interface
+                  name: String
+                  libraryUri: dart:core
+          - name: toJson
+            locationUri: package:api_summary/src/api_facet.dart
+            kind: method
+            returnType:
+              kind: interface
+              name: Map
+              libraryUri: dart:core
+              typeArguments:
+                - kind: interface
+                  name: String
+                  libraryUri: dart:core
+                - kind: dynamic
       - name: ApiFunctionType
         locationUri: package:api_summary/src/api_type.dart
         supertype:
@@ -1280,6 +1348,16 @@ libraries:
                       libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
                 isNamed: true
+              - name: facets
+                type:
+                  kind: interface
+                  name: Iterable
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
+                isNamed: true
               - name: functions
                 type:
                   kind: interface
@@ -1308,16 +1386,6 @@ libraries:
                       name: ApiClass
                       libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
-                isNamed: true
-              - name: traits
-                type:
-                  kind: interface
-                  name: Iterable
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiTrait
-                      libraryUri: package:api_summary/src/api_trait.dart
                 isNamed: true
               - name: typeAliases
                 type:
@@ -1382,6 +1450,17 @@ libraries:
                 - kind: interface
                   name: ApiExtension
                   libraryUri: package:api_summary/src/api_declaration.dart
+          - name: facets
+            locationUri: package:api_summary/src/api_declaration.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: Set
+              libraryUri: dart:core
+              typeArguments:
+                - kind: interface
+                  name: ApiFacet
+                  libraryUri: package:api_summary/src/api_facet.dart
           - name: functions
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -1423,17 +1502,6 @@ libraries:
                   name: String
                   libraryUri: dart:core
                 - kind: dynamic
-          - name: traits
-            locationUri: package:api_summary/src/api_declaration.dart
-            kind: getter
-            returnType:
-              kind: interface
-              name: Set
-              libraryUri: dart:core
-              typeArguments:
-                - kind: interface
-                  name: ApiTrait
-                  libraryUri: package:api_summary/src/api_trait.dart
           - name: typeAliases
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2097,74 +2165,6 @@ libraries:
                   name: ApiSummaryContext
                   libraryUri: package:api_summary/src/api_summary_customizer.dart
                 isRequired: true
-      - name: ApiTrait
-        locationUri: package:api_summary/src/api_trait.dart
-        supertype:
-          kind: interface
-          name: Object
-          libraryUri: dart:core
-        interfaces:
-          - kind: interface
-            name: Comparable
-            libraryUri: dart:core
-            typeArguments:
-              - kind: interface
-                name: ApiTrait
-                libraryUri: package:api_summary/src/api_trait.dart
-        modifiers:
-          - abstract
-          - interface
-        methods:
-          - name: fromJson
-            locationUri: package:api_summary/src/api_trait.dart
-            kind: method
-            returnType:
-              kind: interface
-              name: ApiTrait
-              libraryUri: package:api_summary/src/api_trait.dart
-            parameters:
-              - name: json
-                type:
-                  kind: interface
-                  name: Map
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: String
-                      libraryUri: dart:core
-                    - kind: dynamic
-                isRequired: true
-            isStatic: true
-          - name: namespace
-            locationUri: package:api_summary/src/api_trait.dart
-            kind: getter
-            returnType:
-              kind: interface
-              name: String
-              libraryUri: dart:core
-          - name: parentheticalSegments
-            locationUri: package:api_summary/src/api_trait.dart
-            kind: getter
-            returnType:
-              kind: interface
-              name: List
-              libraryUri: dart:core
-              typeArguments:
-                - kind: interface
-                  name: String
-                  libraryUri: dart:core
-          - name: toJson
-            locationUri: package:api_summary/src/api_trait.dart
-            kind: method
-            returnType:
-              kind: interface
-              name: Map
-              libraryUri: dart:core
-              typeArguments:
-                - kind: interface
-                  name: String
-                  libraryUri: dart:core
-                - kind: dynamic
       - name: ApiType
         locationUri: package:api_summary/src/api_type.dart
         supertype:
@@ -2256,6 +2256,16 @@ libraries:
                   libraryUri: package:api_summary/src/api_type.dart
                 isRequired: true
                 isNamed: true
+              - name: facets
+                type:
+                  kind: interface
+                  name: Iterable
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
+                isNamed: true
               - name: isDeprecated
                 type:
                   kind: interface
@@ -2281,16 +2291,6 @@ libraries:
                   kind: interface
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
-                isNamed: true
-              - name: traits
-                type:
-                  kind: interface
-                  name: Iterable
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiTrait
-                      libraryUri: package:api_summary/src/api_trait.dart
                 isNamed: true
               - name: typeParameters
                 type:
@@ -2476,26 +2476,26 @@ libraries:
                   name: String
                   libraryUri: dart:core
                 - kind: dynamic
-      - name: JsBindingTrait
-        locationUri: package:api_summary/src/js_trait.dart
+      - name: JsBindingFacet
+        locationUri: package:api_summary/src/js_facet.dart
         supertype:
           kind: interface
           name: Object
           libraryUri: dart:core
         interfaces:
           - kind: interface
-            name: ApiTrait
-            libraryUri: package:api_summary/src/api_trait.dart
+            name: ApiFacet
+            libraryUri: package:api_summary/src/api_facet.dart
         modifiers:
           - final
         constructors:
           - name: fromJson
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: constructor
             returnType:
               kind: interface
-              name: JsBindingTrait
-              libraryUri: package:api_summary/src/js_trait.dart
+              name: JsBindingFacet
+              libraryUri: package:api_summary/src/js_facet.dart
             parameters:
               - name: json
                 type:
@@ -2509,12 +2509,12 @@ libraries:
                     - kind: dynamic
                 isRequired: true
           - name: new
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: constructor
             returnType:
               kind: interface
-              name: JsBindingTrait
-              libraryUri: package:api_summary/src/js_trait.dart
+              name: JsBindingFacet
+              libraryUri: package:api_summary/src/js_facet.dart
             parameters:
               - name: name
                 type:
@@ -2526,7 +2526,7 @@ libraries:
             isConst: true
         methods:
           - name: ==
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: method
             returnType:
               kind: interface
@@ -2540,7 +2540,7 @@ libraries:
                   libraryUri: dart:core
                 isRequired: true
           - name: compareTo
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: method
             returnType:
               kind: interface
@@ -2550,16 +2550,16 @@ libraries:
               - name: other
                 type:
                   kind: interface
-                  name: ApiTrait
-                  libraryUri: package:api_summary/src/api_trait.dart
+                  name: ApiFacet
+                  libraryUri: package:api_summary/src/api_facet.dart
                 isRequired: true
           - name: fromElement
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: method
             returnType:
               kind: interface
-              name: JsBindingTrait
-              libraryUri: package:api_summary/src/js_trait.dart
+              name: JsBindingFacet
+              libraryUri: package:api_summary/src/js_facet.dart
               isNullable: true
             parameters:
               - name: element
@@ -2570,14 +2570,14 @@ libraries:
                 isRequired: true
             isStatic: true
           - name: hashCode
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: int
               libraryUri: dart:core
           - name: name
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: getter
             returnType:
               kind: interface
@@ -2585,14 +2585,14 @@ libraries:
               libraryUri: dart:core
               isNullable: true
           - name: namespace
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: String
               libraryUri: dart:core
           - name: parentheticalSegments
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: getter
             returnType:
               kind: interface
@@ -2603,7 +2603,7 @@ libraries:
                   name: String
                   libraryUri: dart:core
           - name: toJson
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: method
             returnType:
               kind: interface
@@ -2614,26 +2614,26 @@ libraries:
                   name: String
                   libraryUri: dart:core
                 - kind: dynamic
-      - name: JsExportTrait
-        locationUri: package:api_summary/src/js_trait.dart
+      - name: JsExportFacet
+        locationUri: package:api_summary/src/js_facet.dart
         supertype:
           kind: interface
           name: Object
           libraryUri: dart:core
         interfaces:
           - kind: interface
-            name: ApiTrait
-            libraryUri: package:api_summary/src/api_trait.dart
+            name: ApiFacet
+            libraryUri: package:api_summary/src/api_facet.dart
         modifiers:
           - final
         constructors:
           - name: fromJson
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: constructor
             returnType:
               kind: interface
-              name: JsExportTrait
-              libraryUri: package:api_summary/src/js_trait.dart
+              name: JsExportFacet
+              libraryUri: package:api_summary/src/js_facet.dart
             parameters:
               - name: json
                 type:
@@ -2647,12 +2647,12 @@ libraries:
                     - kind: dynamic
                 isRequired: true
           - name: new
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: constructor
             returnType:
               kind: interface
-              name: JsExportTrait
-              libraryUri: package:api_summary/src/js_trait.dart
+              name: JsExportFacet
+              libraryUri: package:api_summary/src/js_facet.dart
             parameters:
               - name: name
                 type:
@@ -2664,7 +2664,7 @@ libraries:
             isConst: true
         methods:
           - name: ==
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: method
             returnType:
               kind: interface
@@ -2678,7 +2678,7 @@ libraries:
                   libraryUri: dart:core
                 isRequired: true
           - name: compareTo
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: method
             returnType:
               kind: interface
@@ -2688,16 +2688,16 @@ libraries:
               - name: other
                 type:
                   kind: interface
-                  name: ApiTrait
-                  libraryUri: package:api_summary/src/api_trait.dart
+                  name: ApiFacet
+                  libraryUri: package:api_summary/src/api_facet.dart
                 isRequired: true
           - name: fromElement
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: method
             returnType:
               kind: interface
-              name: JsExportTrait
-              libraryUri: package:api_summary/src/js_trait.dart
+              name: JsExportFacet
+              libraryUri: package:api_summary/src/js_facet.dart
               isNullable: true
             parameters:
               - name: element
@@ -2708,14 +2708,14 @@ libraries:
                 isRequired: true
             isStatic: true
           - name: hashCode
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: int
               libraryUri: dart:core
           - name: name
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: getter
             returnType:
               kind: interface
@@ -2723,14 +2723,14 @@ libraries:
               libraryUri: dart:core
               isNullable: true
           - name: namespace
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: String
               libraryUri: dart:core
           - name: parentheticalSegments
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: getter
             returnType:
               kind: interface
@@ -2741,7 +2741,7 @@ libraries:
                   name: String
                   libraryUri: dart:core
           - name: toJson
-            locationUri: package:api_summary/src/js_trait.dart
+            locationUri: package:api_summary/src/js_facet.dart
             kind: method
             returnType:
               kind: interface
@@ -2752,26 +2752,26 @@ libraries:
                   name: String
                   libraryUri: dart:core
                 - kind: dynamic
-      - name: MetaContractTrait
-        locationUri: package:api_summary/src/meta_trait.dart
+      - name: MetaContractFacet
+        locationUri: package:api_summary/src/meta_facet.dart
         supertype:
           kind: interface
           name: Object
           libraryUri: dart:core
         interfaces:
           - kind: interface
-            name: ApiTrait
-            libraryUri: package:api_summary/src/api_trait.dart
+            name: ApiFacet
+            libraryUri: package:api_summary/src/api_facet.dart
         modifiers:
           - final
         constructors:
           - name: fromJson
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: constructor
             returnType:
               kind: interface
-              name: MetaContractTrait
-              libraryUri: package:api_summary/src/meta_trait.dart
+              name: MetaContractFacet
+              libraryUri: package:api_summary/src/meta_facet.dart
             parameters:
               - name: json
                 type:
@@ -2785,12 +2785,12 @@ libraries:
                     - kind: dynamic
                 isRequired: true
           - name: new
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: constructor
             returnType:
               kind: interface
-              name: MetaContractTrait
-              libraryUri: package:api_summary/src/meta_trait.dart
+              name: MetaContractFacet
+              libraryUri: package:api_summary/src/meta_facet.dart
             parameters:
               - name: contracts
                 type:
@@ -2800,11 +2800,11 @@ libraries:
                   typeArguments:
                     - kind: interface
                       name: MetaContract
-                      libraryUri: package:api_summary/src/meta_trait.dart
+                      libraryUri: package:api_summary/src/meta_facet.dart
                 isRequired: true
         methods:
           - name: ==
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: method
             returnType:
               kind: interface
@@ -2818,7 +2818,7 @@ libraries:
                   libraryUri: dart:core
                 isRequired: true
           - name: compareTo
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: method
             returnType:
               kind: interface
@@ -2828,11 +2828,11 @@ libraries:
               - name: other
                 type:
                   kind: interface
-                  name: ApiTrait
-                  libraryUri: package:api_summary/src/api_trait.dart
+                  name: ApiFacet
+                  libraryUri: package:api_summary/src/api_facet.dart
                 isRequired: true
           - name: contracts
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
@@ -2841,14 +2841,14 @@ libraries:
               typeArguments:
                 - kind: interface
                   name: MetaContract
-                  libraryUri: package:api_summary/src/meta_trait.dart
+                  libraryUri: package:api_summary/src/meta_facet.dart
           - name: fromElement
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: method
             returnType:
               kind: interface
-              name: MetaContractTrait
-              libraryUri: package:api_summary/src/meta_trait.dart
+              name: MetaContractFacet
+              libraryUri: package:api_summary/src/meta_facet.dart
               isNullable: true
             parameters:
               - name: element
@@ -2859,21 +2859,21 @@ libraries:
                 isRequired: true
             isStatic: true
           - name: hashCode
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: int
               libraryUri: dart:core
           - name: namespace
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: String
               libraryUri: dart:core
           - name: parentheticalSegments
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
@@ -2884,7 +2884,7 @@ libraries:
                   name: String
                   libraryUri: dart:core
           - name: toJson
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: method
             returnType:
               kind: interface
@@ -3107,7 +3107,7 @@ libraries:
             isConst: true
             isStatic: true
       - name: MetaContract
-        locationUri: package:api_summary/src/meta_trait.dart
+        locationUri: package:api_summary/src/meta_facet.dart
         interfaces:
           - kind: interface
             name: Comparable
@@ -3115,10 +3115,10 @@ libraries:
             typeArguments:
               - kind: interface
                 name: MetaContract
-                libraryUri: package:api_summary/src/meta_trait.dart
+                libraryUri: package:api_summary/src/meta_facet.dart
         methods:
           - name: compareTo
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: method
             returnType:
               kind: interface
@@ -3129,97 +3129,97 @@ libraries:
                 type:
                   kind: interface
                   name: MetaContract
-                  libraryUri: package:api_summary/src/meta_trait.dart
+                  libraryUri: package:api_summary/src/meta_facet.dart
                 isRequired: true
           - name: experimental
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/meta_trait.dart
+              libraryUri: package:api_summary/src/meta_facet.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: immutable
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/meta_trait.dart
+              libraryUri: package:api_summary/src/meta_facet.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: internal
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/meta_trait.dart
+              libraryUri: package:api_summary/src/meta_facet.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: mustBeOverridden
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/meta_trait.dart
+              libraryUri: package:api_summary/src/meta_facet.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: mustCallSuper
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/meta_trait.dart
+              libraryUri: package:api_summary/src/meta_facet.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: nonVirtual
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/meta_trait.dart
+              libraryUri: package:api_summary/src/meta_facet.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: protected
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/meta_trait.dart
+              libraryUri: package:api_summary/src/meta_facet.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: textLabel
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: String
               libraryUri: dart:core
           - name: useResult
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/meta_trait.dart
+              libraryUri: package:api_summary/src/meta_facet.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: values
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
@@ -3228,26 +3228,26 @@ libraries:
               typeArguments:
                 - kind: interface
                   name: MetaContract
-                  libraryUri: package:api_summary/src/meta_trait.dart
+                  libraryUri: package:api_summary/src/meta_facet.dart
             isConst: true
             isStatic: true
           - name: visibleForOverriding
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/meta_trait.dart
+              libraryUri: package:api_summary/src/meta_facet.dart
             isConst: true
             isEnumConstant: true
             isStatic: true
           - name: visibleForTesting
-            locationUri: package:api_summary/src/meta_trait.dart
+            locationUri: package:api_summary/src/meta_facet.dart
             kind: getter
             returnType:
               kind: interface
               name: MetaContract
-              libraryUri: package:api_summary/src/meta_trait.dart
+              libraryUri: package:api_summary/src/meta_facet.dart
             isConst: true
             isEnumConstant: true
             isStatic: true

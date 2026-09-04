@@ -8,22 +8,22 @@ library;
 
 import 'package:analyzer/dart/element/element.dart';
 
-import 'api_trait.dart';
+import 'api_facet.dart';
 
-/// An [ApiTrait] capturing a `@JS([name])` annotation from `dart:js_interop`
+/// An [ApiFacet] capturing a `@JS([name])` annotation from `dart:js_interop`
 /// or `package:js`.
-final class JsBindingTrait implements ApiTrait {
+final class JsBindingFacet implements ApiFacet {
   @override
   String get namespace => 'js';
 
   /// The customized JavaScript symbol name, if provided.
   final String? name;
 
-  const JsBindingTrait([this.name]);
+  const JsBindingFacet([this.name]);
 
   /// Extracts a `@JS([name])` annotation from [element], or returns `null`
   /// if not present.
-  static JsBindingTrait? fromElement(Element element) {
+  static JsBindingFacet? fromElement(Element element) {
     for (final metadata in _metadataFor(element)) {
       for (final annotation in metadata.annotations) {
         final constant = annotation.computeConstantValue();
@@ -36,15 +36,15 @@ final class JsBindingTrait implements ApiTrait {
         if (typeElement.name == 'JS' &&
             (uri == 'dart:js_interop' || uri == 'package:js/js.dart')) {
           final name = constant.getField('name')?.toStringValue();
-          return JsBindingTrait(name);
+          return JsBindingFacet(name);
         }
       }
     }
     return null;
   }
 
-  factory JsBindingTrait.fromJson(Map<String, dynamic> json) =>
-      JsBindingTrait(json['name'] as String?);
+  factory JsBindingFacet.fromJson(Map<String, dynamic> json) =>
+      JsBindingFacet(json['name'] as String?);
 
   @override
   Map<String, dynamic> toJson() => {
@@ -58,10 +58,10 @@ final class JsBindingTrait implements ApiTrait {
   ];
 
   @override
-  int compareTo(ApiTrait other) {
+  int compareTo(ApiFacet other) {
     final diff = namespace.compareTo(other.namespace);
     if (diff != 0) return diff;
-    if (other is JsBindingTrait) {
+    if (other is JsBindingFacet) {
       return (name ?? '').compareTo(other.name ?? '');
     }
     return 0;
@@ -69,26 +69,26 @@ final class JsBindingTrait implements ApiTrait {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is JsBindingTrait && name == other.name;
+      identical(this, other) || other is JsBindingFacet && name == other.name;
 
   @override
   int get hashCode => Object.hash(namespace, name);
 }
 
-/// An [ApiTrait] capturing a `@JSExport([name])` annotation from
+/// An [ApiFacet] capturing a `@JSExport([name])` annotation from
 /// `dart:js_interop`.
-final class JsExportTrait implements ApiTrait {
+final class JsExportFacet implements ApiFacet {
   @override
   String get namespace => 'js_export';
 
   /// The customized exported property name, if provided.
   final String? name;
 
-  const JsExportTrait([this.name]);
+  const JsExportFacet([this.name]);
 
   /// Extracts a `@JSExport([name])` annotation from [element], or returns
   /// `null` if not present.
-  static JsExportTrait? fromElement(Element element) {
+  static JsExportFacet? fromElement(Element element) {
     for (final metadata in _metadataFor(element)) {
       for (final annotation in metadata.annotations) {
         final constant = annotation.computeConstantValue();
@@ -101,15 +101,15 @@ final class JsExportTrait implements ApiTrait {
         if (typeElement.name == 'JSExport' &&
             (uri == 'dart:js_interop' || uri.contains('interop'))) {
           final name = constant.getField('name')?.toStringValue();
-          return JsExportTrait(name);
+          return JsExportFacet(name);
         }
       }
     }
     return null;
   }
 
-  factory JsExportTrait.fromJson(Map<String, dynamic> json) =>
-      JsExportTrait(json['name'] as String?);
+  factory JsExportFacet.fromJson(Map<String, dynamic> json) =>
+      JsExportFacet(json['name'] as String?);
 
   @override
   Map<String, dynamic> toJson() => {
@@ -123,10 +123,10 @@ final class JsExportTrait implements ApiTrait {
   ];
 
   @override
-  int compareTo(ApiTrait other) {
+  int compareTo(ApiFacet other) {
     final diff = namespace.compareTo(other.namespace);
     if (diff != 0) return diff;
-    if (other is JsExportTrait) {
+    if (other is JsExportFacet) {
       return (name ?? '').compareTo(other.name ?? '');
     }
     return 0;
@@ -134,7 +134,7 @@ final class JsExportTrait implements ApiTrait {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is JsExportTrait && name == other.name;
+      identical(this, other) || other is JsExportFacet && name == other.name;
 
   @override
   int get hashCode => Object.hash(namespace, name);

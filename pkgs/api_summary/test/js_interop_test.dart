@@ -101,20 +101,20 @@ class ExportedService {
 
     final lib = rehydrated.libraries.single;
     final windowExt = lib.extensionTypes.singleWhere((e) => e.name == 'Window');
-    final windowJs = windowExt.traits.whereType<JsBindingTrait>().firstOrNull;
+    final windowJs = windowExt.facets.whereType<JsBindingFacet>().firstOrNull;
     expect(windowJs, isNotNull);
     expect(windowJs!.name, isNull);
 
     final docGetter = windowExt.methods.singleWhere((m) => m.name == 'doc');
-    final docJs = docGetter.traits.whereType<JsBindingTrait>().firstOrNull;
+    final docJs = docGetter.facets.whereType<JsBindingFacet>().firstOrNull;
     expect(docJs, isNotNull);
     expect(docJs!.name, 'document');
 
     final exportedClass = lib.classes.singleWhere(
       (c) => c.name == 'ExportedService',
     );
-    final exportedClassJs = exportedClass.traits
-        .whereType<JsExportTrait>()
+    final exportedClassJs = exportedClass.facets
+        .whereType<JsExportFacet>()
         .firstOrNull;
     expect(exportedClassJs, isNotNull);
     expect(exportedClassJs!.name, isNull);
@@ -122,8 +122,8 @@ class ExportedService {
     final computeMethod = exportedClass.methods.singleWhere(
       (m) => m.name == 'computeValue',
     );
-    final computeMethodJs = computeMethod.traits
-        .whereType<JsExportTrait>()
+    final computeMethodJs = computeMethod.facets
+        .whereType<JsExportFacet>()
         .firstOrNull;
     expect(computeMethodJs, isNotNull);
     expect(computeMethodJs!.name, 'customCompute');
@@ -154,17 +154,17 @@ extension type Element(JSObject _) implements JSObject {}
     expect(rehydrated.toString(), equals(text));
 
     final lib = rehydrated.libraries.single;
-    final trait = lib.traits.whereType<JsBindingTrait>().single;
-    expect(trait.name, 'DOM');
+    final facet = lib.facets.whereType<JsBindingFacet>().single;
+    expect(facet.name, 'DOM');
   }
 
-  void test_js_traits_sorting_equality_and_deduplication() {
-    const js1 = JsBindingTrait('foo');
-    const js2 = JsBindingTrait('foo');
-    const js3 = JsBindingTrait('bar');
-    const jsExport1 = JsExportTrait('compute');
-    const jsExport2 = JsExportTrait('compute');
-    final meta = MetaContractTrait([MetaContract.protected]);
+  void test_js_facets_sorting_equality_and_deduplication() {
+    const js1 = JsBindingFacet('foo');
+    const js2 = JsBindingFacet('foo');
+    const js3 = JsBindingFacet('bar');
+    const jsExport1 = JsExportFacet('compute');
+    const jsExport2 = JsExportFacet('compute');
+    final meta = MetaContractFacet([MetaContract.protected]);
 
     // Equality & Hash code
     expect(js1, equals(js2));
@@ -194,10 +194,10 @@ extension type Element(JSObject _) implements JSObject {}
       returnType: const ApiVoidType(),
       parameters: const [],
       isStatic: true,
-      traits: [meta, js1, jsExport1, js2, js1],
+      facets: [meta, js1, jsExport1, js2, js1],
     );
 
-    expect(exec.traits.toList(), equals([js1, jsExport1, meta]));
-    expect(() => (exec.traits as dynamic).add(js3), throwsUnsupportedError);
+    expect(exec.facets.toList(), equals([js1, jsExport1, meta]));
+    expect(() => (exec.facets as dynamic).add(js3), throwsUnsupportedError);
   }
 }

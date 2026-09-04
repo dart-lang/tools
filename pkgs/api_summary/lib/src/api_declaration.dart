@@ -2,7 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'api_trait.dart';
+import 'package:collection/collection.dart';
+
+import 'api_facet.dart';
 import 'api_type.dart';
 import 'json_utils.dart';
 import 'text_renderer.dart';
@@ -114,7 +116,7 @@ final class ApiLibrary {
   final List<ApiExtensionType> extensionTypes;
   final List<ApiExecutable> functions;
   final List<ApiTypeAlias> typeAliases;
-  final Set<ApiTrait> traits;
+  final Set<ApiFacet> facets;
 
   ApiLibrary({
     required this.uri,
@@ -126,10 +128,8 @@ final class ApiLibrary {
     required this.extensionTypes,
     required this.functions,
     required this.typeAliases,
-    Iterable<ApiTrait> traits = const [],
-  }) : traits = traits.isEmpty
-           ? const {}
-           : Set.unmodifiable(traits.toSet().toList()..sort());
+    Iterable<ApiFacet> facets = const [],
+  }) : facets = facets.isEmpty ? const {} : Set.unmodifiable(facets.sorted());
 
   factory ApiLibrary.fromJson(Map<String, dynamic> json) => ApiLibrary(
     uri: json['uri'] as String,
@@ -145,7 +145,7 @@ final class ApiLibrary {
     ),
     functions: parseList(json, 'functions', ApiExecutable.fromJson),
     typeAliases: parseList(json, 'typeAliases', ApiTypeAlias.fromJson),
-    traits: parseList(json, 'traits', ApiTrait.fromJson),
+    facets: parseList(json, 'facets', ApiFacet.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -162,7 +162,7 @@ final class ApiLibrary {
       'functions': functions.map((e) => e.toJson()).toList(),
     if (typeAliases.isNotEmpty)
       'typeAliases': typeAliases.map((e) => e.toJson()).toList(),
-    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -173,17 +173,15 @@ sealed class ApiDeclaration {
   final String? locationUri;
   final ApiDeclarationStatus status;
   final bool isDeprecated;
-  final Set<ApiTrait> traits;
+  final Set<ApiFacet> facets;
 
   ApiDeclaration({
     required this.name,
     this.locationUri,
     this.status = ApiDeclarationStatus.public,
     this.isDeprecated = false,
-    Iterable<ApiTrait> traits = const [],
-  }) : traits = traits.isEmpty
-           ? const {}
-           : Set.unmodifiable(traits.toSet().toList()..sort());
+    Iterable<ApiFacet> facets = const [],
+  }) : facets = facets.isEmpty ? const {} : Set.unmodifiable(facets.sorted());
 }
 
 /// A summary of a Dart class, mixin, or enum declaration.
@@ -215,7 +213,7 @@ final class ApiClass extends ApiDeclaration {
     required this.constructors,
     required this.methods,
     super.isDeprecated,
-    super.traits,
+    super.facets,
   });
 
   factory ApiClass.fromJson(Map<String, dynamic> json) => ApiClass(
@@ -241,7 +239,7 @@ final class ApiClass extends ApiDeclaration {
     constructors: parseList(json, 'constructors', ApiExecutable.fromJson),
     methods: parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
-    traits: parseList(json, 'traits', ApiTrait.fromJson),
+    facets: parseList(json, 'facets', ApiFacet.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -268,7 +266,7 @@ final class ApiClass extends ApiDeclaration {
       'constructors': constructors.map((e) => e.toJson()).toList(),
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -288,7 +286,7 @@ final class ApiExtension extends ApiDeclaration {
     required this.extendedType,
     required this.methods,
     super.isDeprecated,
-    super.traits,
+    super.facets,
   });
 
   factory ApiExtension.fromJson(Map<String, dynamic> json) => ApiExtension(
@@ -301,7 +299,7 @@ final class ApiExtension extends ApiDeclaration {
     ),
     methods: parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
-    traits: parseList(json, 'traits', ApiTrait.fromJson),
+    facets: parseList(json, 'facets', ApiFacet.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -316,7 +314,7 @@ final class ApiExtension extends ApiDeclaration {
     'extendedType': extendedType.toJson(),
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -340,7 +338,7 @@ final class ApiExtensionType extends ApiDeclaration {
     required this.constructors,
     required this.methods,
     super.isDeprecated,
-    super.traits,
+    super.facets,
   });
 
   factory ApiExtensionType.fromJson(Map<String, dynamic> json) =>
@@ -356,7 +354,7 @@ final class ApiExtensionType extends ApiDeclaration {
         constructors: parseList(json, 'constructors', ApiExecutable.fromJson),
         methods: parseList(json, 'methods', ApiExecutable.fromJson),
         isDeprecated: json['isDeprecated'] as bool? ?? false,
-        traits: parseList(json, 'traits', ApiTrait.fromJson),
+        facets: parseList(json, 'facets', ApiFacet.fromJson),
       );
 
   Map<String, dynamic> toJson() => {
@@ -375,7 +373,7 @@ final class ApiExtensionType extends ApiDeclaration {
       'constructors': constructors.map((e) => e.toJson()).toList(),
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -411,7 +409,7 @@ final class ApiExecutable extends ApiDeclaration {
     this.isConst = false,
     this.isEnumConstant = false,
     super.isDeprecated,
-    super.traits,
+    super.facets,
   });
 
   factory ApiExecutable.fromJson(Map<String, dynamic> json) => ApiExecutable(
@@ -428,7 +426,7 @@ final class ApiExecutable extends ApiDeclaration {
     isConst: json['isConst'] as bool? ?? false,
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isEnumConstant: json['isEnumConstant'] as bool? ?? false,
-    traits: parseList(json, 'traits', ApiTrait.fromJson),
+    facets: parseList(json, 'facets', ApiFacet.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -448,7 +446,7 @@ final class ApiExecutable extends ApiDeclaration {
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isEnumConstant) 'isEnumConstant': isEnumConstant,
     if (isStatic) 'isStatic': isStatic,
-    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -466,7 +464,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     required this.typeParameters,
     required this.aliasedType,
     super.isDeprecated,
-    super.traits,
+    super.facets,
   });
 
   factory ApiTypeAlias.fromJson(Map<String, dynamic> json) => ApiTypeAlias(
@@ -476,7 +474,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     typeParameters: parseTypeParameters(json, 'typeParameters'),
     aliasedType: ApiType.fromJson(json['aliasedType'] as Map<String, dynamic>),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
-    traits: parseList(json, 'traits', ApiTrait.fromJson),
+    facets: parseList(json, 'facets', ApiFacet.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -490,7 +488,7 @@ final class ApiTypeAlias extends ApiDeclaration {
       },
     'aliasedType': aliasedType.toJson(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (traits.isNotEmpty) 'traits': traits.map((e) => e.toJson()).toList(),
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 
