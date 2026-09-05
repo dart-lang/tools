@@ -115,6 +115,45 @@ This is the average amount of time it takes to run `run()` 10 times for
 `BenchmarkBase` and once for `AsyncBenchmarkBase`.
 > `us` is an abbreviation for microseconds.
 
+## Detailed measurement (CV%)
+
+For benchmarks where one `run()` is comfortably above the timer noise
+floor (≥ ~100 µs, typically ms-scale), `BenchmarkBase` exposes
+`reportDetailed()` which times each `run()` call individually and emits a
+median, coefficient of variation, sample count, and minimum sample
+alongside the mean. Use it to gauge how stable a measurement is.
+
+```dart
+class JsonParse extends BenchmarkBase {
+  const JsonParse() : super('JsonParse');
+
+  @override
+  void run() {
+    // ~5 ms of work
+  }
+}
+
+void main() {
+  const JsonParse().reportDetailed();
+}
+```
+
+```console
+JsonParse: avg=4.812 ms · median=4.785 ms · CV=2.13% · samples=415 · min=4.703 ms
+```
+
+`reportDetailed` always calls `run()` directly (any `exercise` override
+is bypassed), so the printed mean is *per `run()` call*, not per 10
+calls. The default time budget is 2 seconds; pass
+`reportDetailed(minimumMillis: 10000)` to collect more samples on slow
+benchmarks. CV computed from very few samples carries large uncertainty,
+so aim for at least a few dozen.
+
+For custom rendering (JSON, CSV, etc.), call `measureDetailed()` and
+format the returned `DetailedMeasurement` (which exposes `samples`,
+`meanMicros`, `medianMicros`, `minMicros`, `stddevMicros`,
+`coefficientOfVariation`) yourself.
+
 ## `bench` command
 
 A convenience command available in `package:benchmark_harness`.
