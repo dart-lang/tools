@@ -218,6 +218,35 @@ b:
 '''));
     });
 
+    test('block append nested to list', () {
+      final yamlEditor = YamlEditor('''
+family:
+  - title: Parent
+    children:
+      - title: kid1
+      - title: kid2
+  - title: Uncle
+''');
+
+      expect(
+          () => yamlEditor
+              .appendToList(['family', 0, 'children'], {'title': 'kid3'}),
+          returnsNormally);
+      expectYamlBuilderValue(yamlEditor, {
+        'family': [
+          {
+            'title': 'Parent',
+            'children': [
+              {'title': 'kid1'},
+              {'title': 'kid2'},
+              {'title': 'kid3'},
+            ],
+          },
+          {'title': 'Uncle'},
+        ]
+      });
+    });
+
     test('block append nested and with comments', () {
       final yamlEditor = YamlEditor('''
 a:
