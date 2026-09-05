@@ -26,6 +26,10 @@ GitDependency _$GitDependencyFromJson(Map json) =>
         $checkedConvert('url', (v) => parseGitUri(v as String)),
         ref: $checkedConvert('ref', (v) => v as String?),
         path: $checkedConvert('path', (v) => v as String?),
+        version: $checkedConvert(
+          'version',
+          (v) => _constraintFromString(v as String?),
+        ),
       );
       return val;
     });
