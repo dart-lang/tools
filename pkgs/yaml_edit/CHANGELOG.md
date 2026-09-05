@@ -1,4 +1,6 @@
-## 2.2.5-wip
+## 2.3.0-wip
+
+- Support configurable alias and anchor handling via `AliasBehavior` option on `YamlEditor`.
 
 - Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
 
