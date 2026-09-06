@@ -1,3 +1,8 @@
+## 2.2.1-wip
+
+- Check the glob's path context against the file system's path context
+  when listing files, rather than using the unrelated platform path context.
+
 ## 2.2.0
 
 - Limit option expansion during glob listing (`list()` and `listSync()`) to a
