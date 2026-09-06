@@ -99,6 +99,12 @@ class Pubspec {
   /// Specifies how to resolve dependencies with the surrounding Pub Workspace.
   final String? resolution;
 
+  /// Gitignore style patterns for files that pub should not search for
+  /// leaked secrets when publishing.
+  ///
+  /// See https://dart.dev/tools/pub/pubspec#false_secrets.
+  final List<String>? falseSecrets;
+
   /// If [author] and [authors] are both provided, their values are combined
   /// with duplicates eliminated.
   Pubspec(
@@ -121,6 +127,7 @@ class Pubspec {
     this.description,
     this.workspace,
     this.resolution,
+    this.falseSecrets,
     Map<String, Dependency>? dependencies,
     Map<String, Dependency>? devDependencies,
     Map<String, Dependency>? dependencyOverrides,

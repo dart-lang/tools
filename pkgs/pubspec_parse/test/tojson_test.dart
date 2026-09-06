@@ -39,6 +39,7 @@ void main() {
         'funding': null,
         'topics': null,
         'ignored_advisories': null,
+        'false_secrets': null,
       });
     });
 
@@ -65,6 +66,7 @@ void main() {
         ],
         'workspace': ['pkg1', 'pkg2'],
         'resolution': 'workspace',
+        'false_secrets': ['/lib/src/hardcoded_api_key.dart', '/test/*.pem'],
         'executables': {
           'my_script': 'bin/my_script.dart',
           'my_script2': 'bin/my_script2.dart',
@@ -106,6 +108,7 @@ void main() {
         'ignored_advisories': ['111', '222'],
         'workspace': ['pkg1', 'pkg2'],
         'resolution': 'workspace',
+        'false_secrets': ['/lib/src/hardcoded_api_key.dart', '/test/*.pem'],
         'executables': {
           'my_script': 'bin/my_script.dart',
           'my_script2': 'bin/my_script2.dart',
@@ -139,6 +142,7 @@ void main() {
       expect(newValue.workspace, value.workspace);
       expect(newValue.resolution, value.resolution);
       expect(newValue.executables, value.executables);
+      expect(newValue.falseSecrets, value.falseSecrets);
     });
 
     test('all fields set', () async {
@@ -163,6 +167,7 @@ void main() {
         ],
         'workspace': ['pkg1', 'pkg2'],
         'resolution': 'workspace',
+        'false_secrets': ['/lib/src/hardcoded_api_key.dart', '/test/*.pem'],
         'executables': {
           'my_script': 'bin/my_script.dart',
           'my_script2': 'bin/my_script2.dart',
@@ -200,6 +205,7 @@ void main() {
       expect(newValue.workspace, value.workspace);
       expect(newValue.resolution, value.resolution);
       expect(newValue.executables, value.executables);
+      expect(newValue.falseSecrets, value.falseSecrets);
     });
 
     test('dependencies', () async {
