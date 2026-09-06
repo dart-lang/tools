@@ -204,6 +204,8 @@ void main() {
           headerBytes: [0xFF, 0xF1, 0x0D, 0x0A, 0x1A, 0x0A]);
       _expectMimeType('file', 'audio/ogg',
           headerBytes: [0x4F, 0x70, 0x75, 0x0D, 0x0A, 0x1A, 0x0A]);
+      _expectMimeType('file', 'video/x-matroska',
+          headerBytes: [0x1A, 0x45, 0xDF, 0xA3, 0x0D, 0x0A, 0x1A, 0x0A]);
       _expectMimeType('file', 'audio/x-aiff', headerBytes: [
         0x46,
         0x4F,
@@ -321,12 +323,6 @@ void main() {
     final magicMimes = initialMagicNumbers.map((magic) => magic.mimeType);
 
     for (final mime in magicMimes) {
-      if (mime == 'audio/weba') {
-        // TODO(devoncarew): We need to remove or rename audio/weba; it's not a
-        // mime type.
-        continue;
-      }
-
       expect(
         extensionFromMime(mime),
         isNotNull,

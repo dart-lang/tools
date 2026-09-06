@@ -2,6 +2,8 @@
 
 * Switched to using the Apache httpd mime.conf table as the source of truth for
   mime types.
+* Fixed the magic number for the EBML header (`1A 45 DF A3`) to resolve to
+  `video/x-matroska` instead of the non-standard `audio/weba`.
 
 Mime type additions:
 - `application/vnd.geogebra.slides`
