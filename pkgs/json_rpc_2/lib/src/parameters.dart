@@ -28,7 +28,20 @@ class Parameters {
   /// will be automatically rejected. To avoid this, use [Parameter.valueOr].
   final dynamic value;
 
-  Parameters(this.method, this.value);
+  /// The id of the request that called [method].
+  ///
+  /// JSON-RPC allows a string, a number, or `null` here. A notification has no
+  /// id, and reaches a method as `null` too. Read [isNotification] to tell
+  /// those apart.
+  final Object? id;
+
+  /// Whether the request that called [method] was a notification.
+  ///
+  /// A notification gets no response. Whatever the method returns for one is
+  /// dropped.
+  final bool isNotification;
+
+  Parameters(this.method, this.value, {this.id, this.isNotification = false});
 
   /// Returns a single parameter.
   ///
@@ -106,7 +119,8 @@ class Parameters {
 ///     // "params.value" is "{'scores': {'home': [5, 10, 17]}}"
 ///     params['scores']['home'][2].asInt // => 17
 class Parameter extends Parameters {
-  // The parent parameters, used to construct [_path].
+  // The parent parameters, used to construct [_path] and to reach the request
+  // this parameter came from.
   final Parameters _parent;
 
   /// The key used to access `this`, used to construct [_path].
@@ -153,6 +167,12 @@ class Parameter extends Parameters {
 
   /// Whether this parameter exists.
   bool get exists => true;
+
+  @override
+  Object? get id => _parent.id;
+
+  @override
+  bool get isNotification => _parent.isNotification;
 
   Parameter._(super.method, super.value, this._parent, this._key);
 

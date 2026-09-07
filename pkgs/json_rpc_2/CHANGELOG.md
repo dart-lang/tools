@@ -1,3 +1,10 @@
+## 4.2.0-wip
+
+* `Parameters` now carries `id`. A method can read it.
+* Add `Parameters.isNotification`, to tell a notification apart from a request
+  with a `null` id.
+* A class that implements `Parameters` now needs `id` and `isNotification`.
+
 ## 4.1.0
 
 * Forward errors within `Peer` when it is acting as a client.

@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:json_rpc_2/error_code.dart' as error_code;
@@ -34,6 +35,60 @@ void main() {
           },
           'id': 1234
         })));
+  });
+
+  test('passes the id of the request being answered', () {
+    controller.server.registerMethod(
+        'foo',
+        (json_rpc.Parameters params) =>
+            {'id': params.id, 'nested': params['param'].id});
+
+    expect(
+        controller.handleRequest({
+          'jsonrpc': '2.0',
+          'method': 'foo',
+          'params': {'param': 'value'},
+          'id': 1234
+        }),
+        completion(equals({
+          'jsonrpc': '2.0',
+          'result': {'id': 1234, 'nested': 1234},
+          'id': 1234
+        })));
+  });
+
+  test('a null id is not a notification', () {
+    controller.server.registerMethod(
+        'foo',
+        (json_rpc.Parameters params) =>
+            {'id': params.id, 'notification': params.isNotification});
+
+    expect(
+        controller
+            .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': null}),
+        completion(equals({
+          'jsonrpc': '2.0',
+          'result': {'id': null, 'notification': false},
+          'id': null
+        })));
+  });
+
+  test('a request with no id is a notification', () async {
+    final completer = Completer<json_rpc.Parameters>();
+    controller.server.registerMethod('foo', (json_rpc.Parameters params) {
+      completer.complete(params);
+    });
+
+    unawaited(controller.handleRequest({
+      'jsonrpc': '2.0',
+      'method': 'foo',
+      'params': {'param': 'value'}
+    }));
+
+    var params = await completer.future;
+    expect(params.id, isNull);
+    expect(params.isNotification, isTrue);
+    expect(params['param'].isNotification, isTrue);
   });
 
   test('calls a method that takes no parameters', () {
