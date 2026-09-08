@@ -188,6 +188,9 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   final mapSize = map.length;
   final keySpan = keyNode.span;
 
+  // If the map itself has an anchor (e.g. `&mapAnchor`), removing the first
+  // entry must not delete the map's anchor definition, so we start at the
+  // key's span rather than the map's start span.
   final hasAnchor = yaml.substring(map.span.start.offset).startsWith('&');
 
   return removeBlockCollectionEntry(

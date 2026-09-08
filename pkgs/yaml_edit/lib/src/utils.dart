@@ -212,6 +212,9 @@ int getListIndentation(String yaml, YamlList list) {
     throw UnsupportedError('Unable to get indentation for empty block list');
   }
 
+  // Iterate backwards to find a node with a valid hyphen in the source text.
+  // We cannot rely solely on the last node because if it is an alias reference,
+  // its AST span points to the anchor definition elsewhere in the document.
   for (final node in list.nodes.reversed) {
     final offset = node.span.start.offset;
     if (offset <= 0) continue;

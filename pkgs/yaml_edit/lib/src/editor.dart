@@ -142,6 +142,11 @@ class YamlEditor {
     _aliasReferenceSpans = {};
 
     /// Performs a DFS on [_contents] to detect alias nodes.
+    // package:yaml shares the identical YamlNode instance for an anchor
+    // definition and all its alias references. Identity tracking is required
+    // because YamlNode implements structural equality, which would conflate
+    // distinct nodes having identical contents with shared alias references.
+    // The first encounter in DFS is recorded as the anchor definition.
     final firstVisited = Map<YamlNode, List<Object?>>.identity();
     void collectAliases(YamlNode node, List<Object?> path) {
       if (!firstVisited.containsKey(node)) {
@@ -352,6 +357,10 @@ class YamlEditor {
     return text.trim();
   }
 
+  /// Collects sub-anchors defined within [anchorNode] and their string
+  /// representations so intra-template alias references can be expanded inline
+  /// and duplicate sub-anchor definitions can be stripped during shallow
+  /// unfolding. References to external anchors are left intact.
   _IntraTemplateInfo _collectIntraTemplateAnchors(
     YamlNode anchorNode,
     List<Object?> anchorPath,
@@ -475,7 +484,9 @@ class YamlEditor {
     }
 
     // Expand intra-template alias references inline so the decoupled copy is
-    // completely self-contained.
+    // completely self-contained. Sort by descending tag length so longer
+    // anchor names are replaced before shorter prefixes (e.g. `*ref_long`
+    // before `*ref`).
     final sortedTags = intraInfo.anchorValues.keys.toList()
       ..sort((a, b) => b.length.compareTo(a.length));
     for (final tag in sortedTags) {
@@ -571,6 +582,9 @@ class YamlEditor {
     var length = aliasSpan.length;
     var replacement = unfoldedText;
 
+    // If the unfolded block replacement begins with a newline, consume the
+    // preceding space (e.g. in `key: *alias`) to avoid leaving trailing
+    // whitespace after the colon or hyphen.
     if (unfoldedText.startsWith(lineEnding) &&
         start > 0 &&
         _yaml[start - 1] == ' ') {
@@ -582,6 +596,13 @@ class YamlEditor {
     _performEdit(edit, aliasPath, anchorNode);
   }
 
+  /// Resolves any alias references encountered along [path] according to
+  /// [aliasBehavior].
+  ///
+  /// When [resolveLeaf] is `true`, the node at the end of [path] is also
+  /// resolved (used by list mutations where the path targets the collection
+  /// itself). Otherwise, only intermediate path segments are resolved because
+  /// an update replaces the leaf node directly.
   Iterable<Object?> _resolvePath(Iterable<Object?> path,
       {bool resolveLeaf = false}) {
     final pathList = path.toList();
@@ -745,6 +766,8 @@ class YamlEditor {
       }
       final expectedList = [...parentNode.nodes]..[keyOrIndex] = valueNode;
       if (aliasBehavior != AliasBehavior.disallow) {
+        // If an anchor definition was updated, update sibling alias references
+        // pointing to it so the expected AST matches the re-parsed document.
         for (var i = 0; i < expectedList.length; i++) {
           if (i != keyOrIndex &&
               _isAliasReferenceNode(
@@ -758,6 +781,8 @@ class YamlEditor {
       }
       final expected = wrapAsYamlNode(expectedList);
       if (aliasBehavior != AliasBehavior.disallow && expected is YamlListWrap) {
+        // Restore self-referential cyclic alias references pointing to the
+        // collection itself.
         for (var i = 0; i < expectedList.length; i++) {
           if (_isAliasReferenceNode(
               parentNode.nodes[i], [...collectionPath, i])) {
@@ -782,6 +807,9 @@ class YamlEditor {
       final expectedMap = updatedYamlMap(parentNode, (nodes) {
         nodes[keyOrIndex] = valueNode;
         if (aliasBehavior != AliasBehavior.disallow) {
+          // If an anchor definition was updated, update sibling alias
+          // references pointing to it so the expected AST matches the re-parsed
+          // document.
           for (final k in nodes.keys.toList()) {
             if (!deepEquals(k, keyOrIndex) &&
                 nodes[k] is YamlNode &&
@@ -798,6 +826,8 @@ class YamlEditor {
 
       if (aliasBehavior != AliasBehavior.disallow &&
           expectedMap is YamlMapWrap) {
+        // Restore self-referential cyclic alias references pointing to the
+        // collection itself.
         for (final entry in parentNode.nodes.entries) {
           final k = entry.key;
           final node = entry.value;
@@ -973,6 +1003,8 @@ class YamlEditor {
       checkAlias: aliasBehavior == AliasBehavior.disallow,
     );
 
+    // Disallow removing an anchor definition if alias references still point
+    // to it, which would leave dangling references and corrupt the document.
     if (aliasBehavior != AliasBehavior.disallow &&
         _aliases.contains(nodeToRemove) &&
         _anchorPaths[nodeToRemove] != null &&
@@ -1160,6 +1192,8 @@ class YamlEditor {
     _initialize(); // update tracking of aliases
   }
 
+  /// Returns whether there are any active alias references in the document
+  /// that point to [anchorNode].
   bool _hasActiveReferencesToAnchor(YamlNode anchorNode) {
     final anchorPath = _anchorPaths[anchorNode];
     if (anchorPath == null) return false;
@@ -1230,6 +1264,12 @@ class YamlEditor {
         tree, path.toList(), subPath.toList(), expectedNode);
   }
 
+  /// Produces the expected AST by replacing the node at [targetPath] with
+  /// [expectedNode] and propagating the change to all alias references in the
+  /// document whose anchor definition was modified.
+  ///
+  /// Uses an identity-based [visited] set to guard against infinite loops on
+  /// cyclic YAML structures.
   YamlNode _updateNodeAndAliases(
     YamlNode tree,
     List<Object?> targetPath,

@@ -46,6 +46,9 @@ SourceEdit updateInList(
 
     var end = yamlEdit.getTrueContentSensitiveEnd(list, index);
     final anchorTag = yamlEdit.getAnchorTag(list, index);
+    // Preserve any anchor definition on this element. For block collections
+    // starting on a new line, place the anchor tag on the hyphen line before
+    // the newline; otherwise format it inline.
     if (anchorTag != null) {
       if (valueString.startsWith(lineEnding)) {
         valueString = ' $anchorTag$valueString';
