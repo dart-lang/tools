@@ -190,26 +190,26 @@ class YamlEditor {
     var i = searchStart;
     while (i < yaml.length) {
       final ch = yaml.codeUnitAt(i);
-      if (ch == 0x23) {
+      if (ch == 0x23 /* # */) {
         while (i < yaml.length &&
-            yaml.codeUnitAt(i) != 0x0A &&
-            yaml.codeUnitAt(i) != 0x0D) {
+            yaml.codeUnitAt(i) != 0x0A /* \n */ &&
+            yaml.codeUnitAt(i) != 0x0D /* \r */) {
           i++;
         }
-      } else if (ch == 0x2A) {
+      } else if (ch == 0x2A /* * */) {
         final starIndex = i;
         i++;
         while (i < yaml.length) {
           final c = yaml.codeUnitAt(i);
-          if (c == 0x20 ||
-              c == 0x09 ||
-              c == 0x0A ||
-              c == 0x0D ||
-              c == 0x5B ||
-              c == 0x5D ||
-              c == 0x7B ||
-              c == 0x7D ||
-              c == 0x2C) {
+          if (c == 0x20 /* space */ ||
+              c == 0x09 /* tab */ ||
+              c == 0x0A /* \n */ ||
+              c == 0x0D /* \r */ ||
+              c == 0x5B /* [ */ ||
+              c == 0x5D /* ] */ ||
+              c == 0x7B /* { */ ||
+              c == 0x7D /* } */ ||
+              c == 0x2C /* , */) {
             break;
           }
           i++;
