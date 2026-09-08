@@ -187,6 +187,10 @@ class YamlEditor {
       }
     }
 
+    // Scan forward through the YAML source to locate the alias reference
+    // token (`*anchor`) and its span, skipping comments. The AST node for an
+    // alias shares the span of the original anchor definition, so we must
+    // scan the source text to find the actual span of the alias reference.
     var i = searchStart;
     while (i < yaml.length) {
       final ch = yaml.codeUnitAt(i);
