@@ -10,7 +10,7 @@ import 'test_utils.dart';
 
 void main() {
   group('AliasBehavior.disallow (default)', () {
-    test('throws AliasException on any alias touch', () {
+    test('throws AliasException on any alias touch in maps', () {
       final doc = YamlEditor('''
 a: &user
   name: Alice
@@ -19,6 +19,17 @@ b: *user
       expect(() => doc.update(['b', 'name'], 'John'), throwsAliasException);
       expect(() => doc.update(['a', 'name'], 'John'), throwsAliasException);
       expect(() => doc.remove(['b']), throwsAliasException);
+    });
+
+    test('throws AliasException on list element mutations and removals', () {
+      final doc = YamlEditor('''
+- &item 1
+- *item
+''');
+      expect(() => doc.update([1], 2), throwsAliasException);
+      expect(() => doc.update([0], 2), throwsAliasException);
+      expect(() => doc.remove([1]), throwsAliasException);
+      expect(() => doc.remove([0]), throwsAliasException);
     });
   });
 
@@ -329,6 +340,37 @@ b: *user
       doc.remove(['b']);
       doc.remove(['a']);
       expect(doc.toString(), equals('{}\n'));
+    });
+
+    test('locates alias span across intervening comments', () {
+      final doc = YamlEditor(
+        '''
+a: &val
+  x: 1
+b: # comment before alias
+  *val
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      final trueSpan = doc.getTrueSpan(doc.parseAt([]), 'b');
+      expect(trueSpan.text, equals('*val'));
+
+      doc.update(['b', 'x'], 2);
+      expect(doc.parseAt(['a', 'x']).value, equals(2));
+      expect(doc.parseAt(['b', 'x']).value, equals(2));
+
+      final doc2 = YamlEditor(
+        '''
+a: &scalar 1
+b: # comment before alias
+  *scalar
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+      doc2.update(['b'], 2);
+      expect(doc2.parseAt(['a']).value, equals(1));
+      expect(doc2.parseAt(['b']).value, equals(2));
     });
   });
 
@@ -691,6 +733,74 @@ custom: { def: 40, task: 30 }
 custom: { def: 40, task: 30 }
 '''));
     });
+
+    test('copyOnWrite unfolds alias element inside a list', () {
+      final doc = YamlEditor(
+        '''
+items:
+  - &item
+    foo: 1
+    bar: 2
+other:
+  - *item
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['other', 0, 'foo'], 42);
+      expect(doc.parseAt(['items', 0, 'foo']).value, equals(1));
+      expect(doc.parseAt(['other', 0, 'foo']).value, equals(42));
+      expect(doc.parseAt(['other', 0, 'bar']).value, equals(2));
+    });
+
+    test('copyOnWrite inlines intra-template sub-anchors defined within a list',
+        () {
+      final doc = YamlEditor(
+        '''
+tpl: &tpl
+  items:
+    - &sub 10
+  ref: *sub
+copy: *tpl
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['copy', 'items', 0], 99);
+      expect(doc.parseAt(['tpl', 'items', 0]).value, equals(10));
+      expect(doc.parseAt(['tpl', 'ref']).value, equals(10));
+      expect(doc.parseAt(['copy', 'items', 0]).value, equals(99));
+      expect(doc.parseAt(['copy', 'ref']).value, equals(10));
+
+      doc.remove(['tpl']);
+      expect(doc.parseAt(['copy', 'items', 0]).value, equals(99));
+      expect(doc.parseAt(['copy', 'ref']).value, equals(10));
+    });
+
+    test(
+        'copyOnWrite inlines intra-template multi-line block collection '
+        'sub-anchors', () {
+      final doc = YamlEditor(
+        '''
+tpl: &tpl
+  sub: &sub
+    x: 1
+    y: 2
+  ref: *sub
+copy: *tpl
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['copy', 'ref', 'x'], 99);
+      expect(doc.parseAt(['tpl', 'sub', 'x']).value, equals(1));
+      expect(doc.parseAt(['copy', 'ref', 'x']).value, equals(99));
+      expect(doc.parseAt(['copy', 'ref', 'y']).value, equals(2));
+      expect(doc.parseAt(['copy', 'sub', 'x']).value, equals(1));
+
+      doc.remove(['tpl']);
+      expect(doc.parseAt(['copy', 'ref', 'x']).value, equals(99));
+    });
   });
 
   group('List splicing, insertion, and comment preservation', () {
@@ -758,6 +868,30 @@ custom: *job
       expect(doc.toString(), contains('# default'));
       expect(doc.parseAt(['custom', 'timeout']).value, equals(30));
       expect(doc.parseAt(['custom', 'retries']).value, equals(5));
+    });
+  });
+
+  group('isAnchorDefinition', () {
+    test('identifies anchor definitions in maps and lists', () {
+      final doc = YamlEditor('''
+map:
+  a: &mapAnchor val
+  b: *mapAnchor
+  c: plain
+list:
+  - &listAnchor 10
+  - *listAnchor
+  - 20
+''');
+      final map = doc.parseAt(['map']);
+      expect(doc.isAnchorDefinition(map, 'a'), isTrue);
+      expect(doc.isAnchorDefinition(map, 'b'), isFalse);
+      expect(doc.isAnchorDefinition(map, 'c'), isFalse);
+
+      final list = doc.parseAt(['list']);
+      expect(doc.isAnchorDefinition(list, 0), isTrue);
+      expect(doc.isAnchorDefinition(list, 1), isFalse);
+      expect(doc.isAnchorDefinition(list, 2), isFalse);
     });
   });
 }
