@@ -154,6 +154,7 @@ class UnparsedContent implements Node {
 class ContentOffsetMapper {
   final List<Line> _lines;
 
+  /// Constructs a [ContentOffsetMapper] with the given [_lines].
   ContentOffsetMapper(this._lines);
 
   /// Returns the offset in the original source document corresponding to
