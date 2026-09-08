@@ -16,7 +16,7 @@ import 'collect_coverage.dart' as collect_coverage;
 import 'format_coverage.dart' as format_coverage;
 
 final _allProcesses = <Process>[];
-final _dartExecutable = dartExecutable ?? 'dart';
+String get _dartExecutable => dartExecutable ?? 'dart';
 
 Future<void> _dartRun(
   List<String> args, {

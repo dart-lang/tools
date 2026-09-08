@@ -10,7 +10,7 @@ import 'package:cli_util/cli_util.dart';
 import 'collect.dart';
 import 'util.dart';
 
-final _dartExecutable = dartExecutable ?? 'dart';
+String get _dartExecutable => dartExecutable ?? 'dart';
 
 Future<Map<String, dynamic>> runAndCollect(
   String scriptPath, {
