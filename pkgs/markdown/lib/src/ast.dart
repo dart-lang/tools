@@ -142,7 +142,7 @@ class UnparsedContent implements Node {
   /// document, when available.
   final ContentOffsetMapper? offsetMapper;
 
-  UnparsedContent(this.textContent, [this.offsetMapper]);
+  UnparsedContent(this.textContent, {this.offsetMapper});
 
   @override
   void accept(NodeVisitor visitor) {}

@@ -47,7 +47,7 @@ class ParagraphSyntax extends BlockSyntax {
     final text = childLines.map((line) => line.content).join('\n');
     final contents = UnparsedContent(
       text.trimRight(),
-      ContentOffsetMapper(childLines),
+      offsetMapper: ContentOffsetMapper(childLines),
     );
     return Element('p', [contents]);
   }

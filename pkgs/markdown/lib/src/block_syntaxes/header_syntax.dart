@@ -59,6 +59,8 @@ class HeaderSyntax extends BlockSyntax {
               offset: currentOffset + openMarkerEnd + leadingWhitespace,
             ),
           ]);
-    return Element('h$level', [UnparsedContent(content, contentOffsetMapper)]);
+    return Element('h$level', [
+      UnparsedContent(content, offsetMapper: contentOffsetMapper),
+    ]);
   }
 }
