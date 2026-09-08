@@ -188,21 +188,28 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   final mapSize = map.length;
   final keySpan = keyNode.span;
 
-  // If the map itself has an anchor (e.g. `&mapAnchor`), removing the first
-  // entry must not delete the map's anchor definition, so we start at the
-  // key's span rather than the map's start span.
-  final hasAnchor = yaml.substring(map.span.start.offset).startsWith('&');
+  // If the map itself has a header preceding the first key (such as an anchor
+  // `&mapAnchor` or a type tag `!tag`), removing the first entry must not
+  // delete the map header, so we start at the key's span rather than the map's
+  // start span.
+  final hasMapHeader = map.span.start.offset < keySpan.start.offset &&
+      (() {
+        final prefix = yaml
+            .substring(map.span.start.offset, keySpan.start.offset)
+            .trimLeft();
+        return prefix.startsWith('&') || prefix.startsWith('!');
+      })();
 
   return removeBlockCollectionEntry(
     yaml,
     blockCollection: map,
     collectionIndent: getMapIndentation(yaml, map),
-    isFirstEntry: entryIndex == 0 && !hasAnchor,
+    isFirstEntry: entryIndex == 0 && !hasMapHeader,
     isSingleEntry: mapSize == 1,
     isLastEntry: entryIndex >= mapSize - 1,
     nodeToRemoveOffset: (
       // A block map only exists because of its first key.
-      start: entryIndex == 0 && !hasAnchor
+      start: entryIndex == 0 && !hasMapHeader
           ? map.span.start.offset
           : keySpan.start.offset,
       end: valueNode.span.length == 0

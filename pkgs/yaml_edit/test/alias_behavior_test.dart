@@ -894,4 +894,72 @@ list:
       expect(doc.isAnchorDefinition(list, 2), isFalse);
     });
   });
+
+  group('Block map header preservation during removal', () {
+    test('preserves tag and anchor when removing first entry', () {
+      final doc = YamlEditor(
+        '''
+parent: !!map &mapAnchor
+  first: 1
+  second: 2
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.remove(['parent', 'first']);
+      expect(doc.toString(), equals('''
+parent: !!map &mapAnchor
+  second: 2
+'''));
+      expect(doc.parseAt(['parent', 'second']).value, equals(2));
+    });
+
+    test('preserves anchor and tag when removing first entry', () {
+      final doc = YamlEditor(
+        '''
+parent: &mapAnchor !!map
+  first: 1
+  second: 2
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.remove(['parent', 'first']);
+      expect(doc.toString(), equals('''
+parent: &mapAnchor !!map
+  second: 2
+'''));
+      expect(doc.parseAt(['parent', 'second']).value, equals(2));
+    });
+
+    test('preserves map tag without anchor when removing first entry', () {
+      final doc = YamlEditor('''
+parent: !!map
+  first: 1
+  second: 2
+''');
+
+      doc.remove(['parent', 'first']);
+      expect(doc.toString(), equals('''
+parent: !!map
+  second: 2
+'''));
+      expect(doc.parseAt(['parent', 'second']).value, equals(2));
+    });
+
+    test('correctly removes first key when the key has an anchor', () {
+      final doc = YamlEditor('''
+parent:
+  &keyAnchor first: 1
+  second: 2
+''');
+
+      doc.remove(['parent', 'first']);
+      expect(doc.toString(), equals('''
+parent:
+  second: 2
+'''));
+      expect(doc.parseAt(['parent', 'second']).value, equals(2));
+    });
+  });
 }
