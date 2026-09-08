@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:cli_util/cli_util.dart';
 import 'package:coverage/src/coverage_options.dart';
 import 'package:coverage/src/util.dart';
 import 'package:meta/meta.dart';
@@ -15,13 +16,14 @@ import 'collect_coverage.dart' as collect_coverage;
 import 'format_coverage.dart' as format_coverage;
 
 final _allProcesses = <Process>[];
+final _dartExecutable = dartExecutable ?? 'dart';
 
 Future<void> _dartRun(
   List<String> args, {
   required void Function(String) onStdout,
   required void Function(String) onStderr,
 }) async {
-  final process = await Process.start(Platform.executable, args);
+  final process = await Process.start(_dartExecutable, args);
   _allProcesses.add(process);
 
   void listen(
@@ -39,7 +41,7 @@ Future<void> _dartRun(
 
   final result = await process.exitCode;
   if (result != 0) {
-    throw ProcessException(Platform.executable, args, '', result);
+    throw ProcessException(_dartExecutable, args, '', result);
   }
 }
 
