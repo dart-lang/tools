@@ -168,13 +168,8 @@ class Parameter extends Parameters {
   /// Whether this parameter exists.
   bool get exists => true;
 
-  @override
-  Object? get id => _parent.id;
-
-  @override
-  bool get isNotification => _parent.isNotification;
-
-  Parameter._(super.method, super.value, this._parent, this._key);
+  Parameter._(super.method, super.value, this._parent, this._key)
+      : super(id: _parent.id, isNotification: _parent.isNotification);
 
   /// Returns [value], or [defaultValue] if this parameter wasn't passed.
   dynamic valueOr(Object? defaultValue) => value;
