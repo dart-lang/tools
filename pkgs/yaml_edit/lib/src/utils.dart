@@ -92,24 +92,19 @@ bool isBlockNode(YamlNode node) {
 }
 
 /// Returns the content sensitive ending offset of [yamlNode] (i.e. where the
-/// Recursively gets the content-sensitive end offset of [yamlNode].
-int getContentSensitiveEnd(YamlNode yamlNode, [Set<YamlNode>? visited]) {
-  final activeVisited = visited ?? Set<YamlNode>.identity();
-  if (!activeVisited.add(yamlNode)) {
-    return yamlNode.span.end.offset;
-  }
-
+/// last meaningful content happens)
+int getContentSensitiveEnd(YamlNode yamlNode) {
   if (yamlNode is YamlList) {
     if (yamlNode.style == CollectionStyle.FLOW || yamlNode.isEmpty) {
       return yamlNode.span.end.offset;
     } else {
-      return getContentSensitiveEnd(yamlNode.nodes.last, activeVisited);
+      return getContentSensitiveEnd(yamlNode.nodes.last);
     }
   } else if (yamlNode is YamlMap) {
     if (yamlNode.style == CollectionStyle.FLOW || yamlNode.isEmpty) {
       return yamlNode.span.end.offset;
     } else {
-      return getContentSensitiveEnd(yamlNode.nodes.values.last, activeVisited);
+      return getContentSensitiveEnd(yamlNode.nodes.values.last);
     }
   }
 

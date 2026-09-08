@@ -35,33 +35,17 @@ YamlMap updatedYamlMap(YamlMap map, Function(Map) update) {
 ///
 /// If a [YamlNode] is passed in, no further wrapping will be done, and the
 /// [collectionStyle]/[scalarStyle] will not be applied.
-///
-/// It is an error if a cyclic collection of Dart [Map]s or [List]s is provided.
 YamlNode wrapAsYamlNode(
   Object? value, {
   CollectionStyle collectionStyle = CollectionStyle.ANY,
   ScalarStyle scalarStyle = ScalarStyle.ANY,
-  Set<Object?>? visited,
 }) {
   if (value is YamlScalar) {
     assertValidScalar(value.value);
     return value;
-  }
-
-  visited ??= Set<Object?>.identity();
-  if (!visited.add(value)) {
-    if (value is YamlNode) return value;
-    throw UnsupportedError('Cannot wrap cyclic collection');
-  }
-
-  if (value is YamlList) {
+  } else if (value is YamlList) {
     for (final item in value.nodes) {
-      wrapAsYamlNode(
-        item,
-        collectionStyle: collectionStyle,
-        scalarStyle: scalarStyle,
-        visited: visited,
-      );
+      wrapAsYamlNode(item);
     }
 
     return value;
@@ -69,18 +53,8 @@ YamlNode wrapAsYamlNode(
     /// Both [entry.key] and [entry.values] are guaranteed to be [YamlNode]s,
     /// so running this will just assert that they are valid scalars.
     for (final entry in value.nodes.entries) {
-      wrapAsYamlNode(
-        entry.key,
-        collectionStyle: collectionStyle,
-        scalarStyle: scalarStyle,
-        visited: visited,
-      );
-      wrapAsYamlNode(
-        entry.value,
-        collectionStyle: collectionStyle,
-        scalarStyle: scalarStyle,
-        visited: visited,
-      );
+      wrapAsYamlNode(entry.key);
+      wrapAsYamlNode(entry.value);
     }
 
     return value;
@@ -89,14 +63,12 @@ YamlNode wrapAsYamlNode(
       value,
       collectionStyle: collectionStyle,
       scalarStyle: scalarStyle,
-      visited: visited,
     );
   } else if (value is List) {
     return YamlListWrap(
       value,
       collectionStyle: collectionStyle,
       scalarStyle: scalarStyle,
-      visited: visited,
     );
   } else {
     assertValidScalar(value);
@@ -145,7 +117,6 @@ class YamlMapWrap
     CollectionStyle collectionStyle = CollectionStyle.ANY,
     ScalarStyle scalarStyle = ScalarStyle.ANY,
     Object? sourceUrl,
-    Set<Object?>? visited,
   }) {
     final wrappedMap = deepEqualsMap<dynamic, YamlNode>();
 
@@ -154,13 +125,11 @@ class YamlMapWrap
         entry.key,
         collectionStyle: collectionStyle,
         scalarStyle: scalarStyle,
-        visited: visited,
       );
       final wrappedValue = wrapAsYamlNode(
         entry.value,
         collectionStyle: collectionStyle,
         scalarStyle: scalarStyle,
-        visited: visited,
       );
       wrappedMap[wrappedKey] = wrappedValue;
     }
@@ -215,7 +184,6 @@ class YamlListWrap with collection.ListMixin implements YamlList {
     CollectionStyle collectionStyle = CollectionStyle.ANY,
     ScalarStyle scalarStyle = ScalarStyle.ANY,
     Object? sourceUrl,
-    Set<Object?>? visited,
   }) {
     return YamlListWrap._(
       dartList
@@ -223,7 +191,6 @@ class YamlListWrap with collection.ListMixin implements YamlList {
                 v,
                 collectionStyle: collectionStyle,
                 scalarStyle: scalarStyle,
-                visited: visited,
               ))
           .toList(),
       style: collectionStyle,

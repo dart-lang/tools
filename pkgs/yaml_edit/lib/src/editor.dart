@@ -266,13 +266,7 @@ class YamlEditor {
     return _getContentSensitiveEndWithAliases(node);
   }
 
-  int _getContentSensitiveEndWithAliases(YamlNode yamlNode,
-      [Set<YamlNode>? visited]) {
-    final activeVisited = visited ?? Set<YamlNode>.identity();
-    if (!activeVisited.add(yamlNode)) {
-      return yamlNode.span.end.offset;
-    }
-
+  int _getContentSensitiveEndWithAliases(YamlNode yamlNode) {
     if (yamlNode is YamlList) {
       if (yamlNode.style == CollectionStyle.FLOW || yamlNode.isEmpty) {
         return yamlNode.span.end.offset;
@@ -282,12 +276,9 @@ class YamlEditor {
         final aliasSpan =
             _aliasReferenceSpans[_AliasEntryKey(yamlNode, lastIdx)];
         if (aliasSpan != null) {
-          if (activeVisited.contains(lastItem)) {
-            return yamlNode.span.end.offset;
-          }
           return aliasSpan.end.offset;
         }
-        return _getContentSensitiveEndWithAliases(lastItem, activeVisited);
+        return _getContentSensitiveEndWithAliases(lastItem);
       }
     } else if (yamlNode is YamlMap) {
       if (yamlNode.style == CollectionStyle.FLOW || yamlNode.isEmpty) {
@@ -298,12 +289,9 @@ class YamlEditor {
         final aliasSpan =
             _aliasReferenceSpans[_AliasEntryKey(yamlNode, lastKey)];
         if (aliasSpan != null) {
-          if (activeVisited.contains(lastValue)) {
-            return yamlNode.span.end.offset;
-          }
           return aliasSpan.end.offset;
         }
-        return _getContentSensitiveEndWithAliases(lastValue, activeVisited);
+        return _getContentSensitiveEndWithAliases(lastValue);
       }
     }
 
@@ -372,11 +360,7 @@ class YamlEditor {
   ) {
     final anchorTags = <String>{};
     final anchorValues = <String, String>{};
-    final visited = Set<YamlNode>.identity();
-
     void walk(YamlNode current, List<Object?> currentPath) {
-      if (!visited.add(current)) return;
-
       if (current is YamlMap) {
         for (final entry in current.nodes.entries) {
           final key = entry.key;
@@ -1383,9 +1367,8 @@ class YamlEditor {
     YamlNode tree,
     List<Object?> targetPath,
     List<Object?> currentPath,
-    YamlNode expectedNode, [
-    Set<YamlNode>? visited,
-  ]) {
+    YamlNode expectedNode,
+  ) {
     final isOnTargetPath = currentPath.length <= targetPath.length &&
         _pathsEqual(currentPath, targetPath.take(currentPath.length));
 
@@ -1393,105 +1376,90 @@ class YamlEditor {
       return expectedNode;
     }
 
-    final activeVisited = visited ?? Set<YamlNode>.identity();
-    if (!activeVisited.add(tree)) {
-      return tree;
-    }
+    final keyOrIndex = isOnTargetPath ? targetPath[currentPath.length] : null;
 
-    try {
-      final keyOrIndex = isOnTargetPath ? targetPath[currentPath.length] : null;
-
-      if (tree is YamlList) {
-        if (isOnTargetPath && !isValidIndex(keyOrIndex, tree.length)) {
-          throw PathError(targetPath, currentPath, tree);
-        }
-
-        final newNodes = <YamlNode>[];
-        for (var i = 0; i < tree.length; i++) {
-          final item = tree.nodes[i];
-          if (isOnTargetPath && i == keyOrIndex) {
-            newNodes.add(_updateNodeAndAliases(
-              item,
-              targetPath,
-              [...currentPath, i],
-              expectedNode,
-              activeVisited,
-            ));
-          } else if (aliasBehavior != AliasBehavior.disallow &&
-              _isAliasReferenceNode(item, [...currentPath, i])) {
-            final anchorPath = _anchorPaths[item]!;
-            newNodes.add(_updateNodeAndAliases(
-              item,
-              targetPath,
-              anchorPath,
-              expectedNode,
-              activeVisited,
-            ));
-          } else if (aliasBehavior != AliasBehavior.disallow &&
-              (item is YamlMap || item is YamlList)) {
-            newNodes.add(_updateNodeAndAliases(
-              item,
-              targetPath,
-              [...currentPath, i],
-              expectedNode,
-              activeVisited,
-            ));
-          } else {
-            newNodes.add(item);
-          }
-        }
-        return wrapAsYamlNode(newNodes);
-      }
-
-      if (tree is YamlMap) {
-        if (isOnTargetPath && !containsKey(tree, keyOrIndex)) {
-          throw PathError(targetPath, currentPath, tree);
-        }
-        final newMap = <Object?, Object?>{};
-        for (final entry in tree.nodes.entries) {
-          final key = entry.key;
-          final item = entry.value;
-          if (isOnTargetPath && deepEquals(key, keyOrIndex)) {
-            newMap[key] = _updateNodeAndAliases(
-              item,
-              targetPath,
-              [...currentPath, key],
-              expectedNode,
-              activeVisited,
-            );
-          } else if (aliasBehavior != AliasBehavior.disallow &&
-              _isAliasReferenceNode(item, [...currentPath, key])) {
-            final anchorPath = _anchorPaths[item]!;
-            newMap[key] = _updateNodeAndAliases(
-              item,
-              targetPath,
-              anchorPath,
-              expectedNode,
-              activeVisited,
-            );
-          } else if (aliasBehavior != AliasBehavior.disallow &&
-              (item is YamlMap || item is YamlList)) {
-            newMap[key] = _updateNodeAndAliases(
-              item,
-              targetPath,
-              [...currentPath, key],
-              expectedNode,
-              activeVisited,
-            );
-          } else {
-            newMap[key] = item;
-          }
-        }
-        return wrapAsYamlNode(newMap);
-      }
-
-      if (isOnTargetPath) {
+    if (tree is YamlList) {
+      if (isOnTargetPath && !isValidIndex(keyOrIndex, tree.length)) {
         throw PathError(targetPath, currentPath, tree);
       }
-      return tree;
-    } finally {
-      activeVisited.remove(tree);
+
+      final newNodes = <YamlNode>[];
+      for (var i = 0; i < tree.length; i++) {
+        final item = tree.nodes[i];
+        if (isOnTargetPath && i == keyOrIndex) {
+          newNodes.add(_updateNodeAndAliases(
+            item,
+            targetPath,
+            [...currentPath, i],
+            expectedNode,
+          ));
+        } else if (aliasBehavior != AliasBehavior.disallow &&
+            _isAliasReferenceNode(item, [...currentPath, i])) {
+          final anchorPath = _anchorPaths[item]!;
+          newNodes.add(_updateNodeAndAliases(
+            item,
+            targetPath,
+            anchorPath,
+            expectedNode,
+          ));
+        } else if (aliasBehavior != AliasBehavior.disallow &&
+            (item is YamlMap || item is YamlList)) {
+          newNodes.add(_updateNodeAndAliases(
+            item,
+            targetPath,
+            [...currentPath, i],
+            expectedNode,
+          ));
+        } else {
+          newNodes.add(item);
+        }
+      }
+      return wrapAsYamlNode(newNodes);
     }
+
+    if (tree is YamlMap) {
+      if (isOnTargetPath && !containsKey(tree, keyOrIndex)) {
+        throw PathError(targetPath, currentPath, tree);
+      }
+      final newMap = <Object?, Object?>{};
+      for (final entry in tree.nodes.entries) {
+        final key = entry.key;
+        final item = entry.value;
+        if (isOnTargetPath && deepEquals(key, keyOrIndex)) {
+          newMap[key] = _updateNodeAndAliases(
+            item,
+            targetPath,
+            [...currentPath, key],
+            expectedNode,
+          );
+        } else if (aliasBehavior != AliasBehavior.disallow &&
+            _isAliasReferenceNode(item, [...currentPath, key])) {
+          final anchorPath = _anchorPaths[item]!;
+          newMap[key] = _updateNodeAndAliases(
+            item,
+            targetPath,
+            anchorPath,
+            expectedNode,
+          );
+        } else if (aliasBehavior != AliasBehavior.disallow &&
+            (item is YamlMap || item is YamlList)) {
+          newMap[key] = _updateNodeAndAliases(
+            item,
+            targetPath,
+            [...currentPath, key],
+            expectedNode,
+          );
+        } else {
+          newMap[key] = item;
+        }
+      }
+      return wrapAsYamlNode(newMap);
+    }
+
+    if (isOnTargetPath) {
+      throw PathError(targetPath, currentPath, tree);
+    }
+    return tree;
   }
 }
 
