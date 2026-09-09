@@ -261,6 +261,39 @@ a:
       expect(doc.parseAt(['list', 1]).value, equals('next'));
     });
 
+    test('preserves multiple trailing newlines of nested |+ when appending',
+        () {
+      final doc = YamlEditor('list:\n  - map_key: |+\n      hello\n\n\n');
+      doc.appendToList(['list'], 'next');
+      final result = doc.toString();
+      expect(result,
+          equals('list:\n  - map_key: |+\n      hello\n\n\n  - next\n'));
+      expect(doc.parseAt(['list', 0, 'map_key']).value, equals('hello\n\n\n'));
+      expect(doc.parseAt(['list', 1]).value, equals('next'));
+    });
+
+    test(
+        'preserves multiple trailing newlines of nested list |+ when appending',
+        () {
+      final doc = YamlEditor('list:\n  - - |+\n      hello\n\n\n');
+      doc.appendToList(['list'], 'next');
+      final result = doc.toString();
+      expect(result, equals('list:\n  - - |+\n      hello\n\n\n  - next\n'));
+      expect(doc.parseAt(['list', 0, 0]).value, equals('hello\n\n\n'));
+      expect(doc.parseAt(['list', 1]).value, equals('next'));
+    });
+
+    test('preserves multiple trailing newlines of nested >+ when appending',
+        () {
+      final doc = YamlEditor('list:\n  - map_key: >+\n      hello\n\n\n');
+      doc.appendToList(['list'], 'next');
+      final result = doc.toString();
+      expect(result,
+          equals('list:\n  - map_key: >+\n      hello\n\n\n  - next\n'));
+      expect(doc.parseAt(['list', 0, 'map_key']).value, equals('hello\n\n\n'));
+      expect(doc.parseAt(['list', 1]).value, equals('next'));
+    });
+
     test('appends to list ending with single-line scalar without newlines', () {
       final doc = YamlEditor('list:\n  - item');
       doc.appendToList(['list'], 'item2');

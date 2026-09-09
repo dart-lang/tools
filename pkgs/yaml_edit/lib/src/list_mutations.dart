@@ -161,9 +161,24 @@ SourceEdit _appendToBlockList(
     if (nextNewLineIndex == -1) {
       formattedValue = getLineEnding(yaml) + formattedValue;
     } else {
-      if (lastNode is YamlScalar &&
-          (lastNode.style == ScalarStyle.LITERAL ||
-              lastNode.style == ScalarStyle.FOLDED)) {
+      var deepestNode = lastNode;
+      while (true) {
+        if (deepestNode is YamlList &&
+            deepestNode.style == CollectionStyle.BLOCK &&
+            deepestNode.isNotEmpty) {
+          deepestNode = deepestNode.nodes.last;
+        } else if (deepestNode is YamlMap &&
+            deepestNode.style == CollectionStyle.BLOCK &&
+            deepestNode.isNotEmpty) {
+          deepestNode = deepestNode.nodes.values.last;
+        } else {
+          break;
+        }
+      }
+
+      if (deepestNode is YamlScalar &&
+          (deepestNode.style == ScalarStyle.LITERAL ||
+              deepestNode.style == ScalarStyle.FOLDED)) {
         while (nextNewLineIndex + 1 < yaml.length) {
           final nextLineEnd = yaml.indexOf('\n', nextNewLineIndex + 1);
           final lineSlice = nextLineEnd == -1
