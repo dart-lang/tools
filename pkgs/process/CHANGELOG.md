@@ -1,4 +1,4 @@
-## 5.0.6-wip
+## 5.0.6
 
 * Add an example app.
 * Fix `getExecutablePath()` to support forward slashes on Windows.

@@ -1,5 +1,5 @@
 name: io
-version: 1.1.0-wip
+version: 1.1.0
 description: >-
   Utilities for the Dart VM Runtime including support for ANSI colors, file
   copying, and standard exit code values.

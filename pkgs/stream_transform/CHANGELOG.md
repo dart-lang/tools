@@ -1,4 +1,4 @@
-## 2.1.2-wip
+## 2.1.2
 
 - Fix an exception when a subscription to a `combineLatest` stream is canceled
   while there is an ongoing asynchronous combine callback.

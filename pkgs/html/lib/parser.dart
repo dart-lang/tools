@@ -1487,8 +1487,10 @@ class InBodyPhase extends Phase {
     final element = tree.openElements.last;
 
     final matchingElements = <Node?>[];
+    var scanned = 0;
     for (Node? node in tree.activeFormattingElements.reversed) {
-      if (node == null) {
+      if (node == null ||
+          scanned++ >= ActiveFormattingElements.noahArkScanLimit) {
         break;
       } else if (isMatchingFormattingElement(node as Element, element)) {
         matchingElements.add(node);
