@@ -962,4 +962,164 @@ parent:
       expect(doc.parseAt(['parent', 'second']).value, equals(2));
     });
   });
+
+  group('aliasReferencePattern', () {
+    test('matches alias references accurately with special characters', () {
+      final pattern = aliasReferencePattern('a.b/c@d+1');
+      expect(pattern.hasMatch('*a.b/c@d+1'), isTrue);
+      expect(pattern.hasMatch('*a.b/c@d+1,'), isTrue);
+      expect(pattern.hasMatch('*a.b/c@d+1]'), isTrue);
+      expect(pattern.hasMatch('*a.b/c@d+1}'), isTrue);
+      expect(pattern.hasMatch('*a.b/c@d+1\n'), isTrue);
+      expect(pattern.hasMatch('*a.b/c@d+1 '), isTrue);
+      expect(pattern.hasMatch('*a.b/c@d+1\t'), isTrue);
+
+      // Positive lookahead prevents matching prefixes of longer anchor names
+      expect(pattern.hasMatch('*a.b/c@d+1_extra'), isFalse);
+      expect(pattern.hasMatch('*a.b/c@d+1.more'), isFalse);
+      expect(pattern.hasMatch('*a.b/c@d+1/sub'), isFalse);
+    });
+
+    test('matches with leading whitespace when requested', () {
+      final withWs =
+          aliasReferencePattern('ref', includeLeadingWhitespace: true);
+      expect(withWs.hasMatch('  *ref'), isTrue);
+      expect(withWs.hasMatch('\t*ref'), isTrue);
+      expect(withWs.firstMatch('  *ref')!.group(0), equals('  *ref'));
+
+      final withoutWs = aliasReferencePattern('ref');
+      expect(withoutWs.firstMatch('  *ref')!.group(0), equals('*ref'));
+    });
+  });
+
+  group('Anchor names with ., /, @, + and intra-template aliases', () {
+    test('copyOnWrite unfolding with dots, slashes, at, plus in anchor names',
+        () {
+      final doc = YamlEditor(
+        '''
+template: &tmpl.v1/prod@main+build
+  config:
+    url: https://example.com
+    port: 8080
+service: *tmpl.v1/prod@main+build
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['service', 'config', 'port'], 9090);
+      expect(doc.toString(), equals('''
+template: &tmpl.v1/prod@main+build
+  config:
+    url: https://example.com
+    port: 8080
+service:
+  config:
+    url: https://example.com
+    port: 9090
+'''));
+      expect(doc.parseAt(['template', 'config', 'port']).value, equals(8080));
+      expect(doc.parseAt(['service', 'config', 'port']).value, equals(9090));
+    });
+
+    test('nested intra-template aliases with prefix names are sorted correctly',
+        () {
+      final doc = YamlEditor(
+        '''
+tmpl: &t
+  sub_long: &prefix_long 100
+  sub_short: &prefix 200
+  use_short: *prefix
+  use_long: *prefix_long
+copy: *t
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['copy', 'use_short'], 999);
+      final result = doc.toString();
+      expect(result, contains('use_long: 100'));
+      expect(result, contains('use_short: 999'));
+      expect(doc.parseAt(['copy', 'use_long']).value, equals(100));
+      expect(doc.parseAt(['copy', 'use_short']).value, equals(999));
+      expect(doc.parseAt(['tmpl', 'use_long']).value, equals(100));
+      expect(doc.parseAt(['tmpl', 'use_short']).value, equals(200));
+    });
+
+    test('nested intra-template aliases with dots and slashes prefix names',
+        () {
+      final doc = YamlEditor(
+        '''
+tmpl: &root
+  short: &a.b 1
+  longer: &a.b.c 2
+  slash_short: &x/y 3
+  slash_longer: &x/y/z 4
+  ref_short: *a.b
+  ref_longer: *a.b.c
+  ref_slash_short: *x/y
+  ref_slash_longer: *x/y/z
+dest: *root
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.update(['dest', 'ref_short'], 111);
+      final result = doc.toString();
+      expect(result, contains('ref_short: 111'));
+      expect(result, contains('ref_longer: 2'));
+      expect(result, contains('ref_slash_short: 3'));
+      expect(result, contains('ref_slash_longer: 4'));
+    });
+  });
+
+  group('Appending to block list ending with alias reference', () {
+    test('appends to list end rather than anchor definition', () {
+      final doc = YamlEditor(
+        '''
+anchors:
+  def: &target 42
+items:
+  - 1
+  - *target
+''',
+        aliasBehavior: AliasBehavior.reference,
+      );
+
+      doc.appendToList(['items'], 99);
+      expect(doc.toString(), equals('''
+anchors:
+  def: &target 42
+items:
+  - 1
+  - *target
+  - 99
+'''));
+      expect(doc.parseAt(['items', 0]).value, equals(1));
+      expect(doc.parseAt(['items', 1]).value, equals(42));
+      expect(doc.parseAt(['items', 2]).value, equals(99));
+      expect(doc.parseAt(['anchors', 'def']).value, equals(42));
+    });
+
+    test('appends to block list ending with alias reference in copyOnWrite',
+        () {
+      final doc = YamlEditor(
+        '''
+anchors:
+  def: &target val
+items:
+  - *target
+''',
+        aliasBehavior: AliasBehavior.copyOnWrite,
+      );
+
+      doc.appendToList(['items'], 'added');
+      expect(doc.toString(), equals('''
+anchors:
+  def: &target val
+items:
+  - *target
+  - added
+'''));
+    });
+  });
 }

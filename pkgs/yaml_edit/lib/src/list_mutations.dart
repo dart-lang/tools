@@ -140,12 +140,28 @@ SourceEdit _appendToBlockList(
   // Adjusts offset to after the trailing newline of the last entry, if it
   // exists
   if (list.isNotEmpty) {
+    final lastNode = list.nodes.last;
     final lastValueSpanEnd =
         yamlEdit.getTrueContentSensitiveEnd(list, list.length - 1);
-    final nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd);
+    var nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd);
     if (nextNewLineIndex == -1) {
       formattedValue = getLineEnding(yaml) + formattedValue;
     } else {
+      if (lastNode is YamlScalar &&
+          (lastNode.style == ScalarStyle.LITERAL ||
+              lastNode.style == ScalarStyle.FOLDED)) {
+        while (nextNewLineIndex + 1 < yaml.length) {
+          final nextLineEnd = yaml.indexOf('\n', nextNewLineIndex + 1);
+          final lineSlice = nextLineEnd == -1
+              ? yaml.substring(nextNewLineIndex + 1)
+              : yaml.substring(nextNewLineIndex + 1, nextLineEnd);
+          if (lineSlice.trim().isEmpty && nextLineEnd != -1) {
+            nextNewLineIndex = nextLineEnd;
+          } else {
+            break;
+          }
+        }
+      }
       offset = nextNewLineIndex + 1;
     }
   }
