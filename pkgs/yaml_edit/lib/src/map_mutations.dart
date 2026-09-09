@@ -174,9 +174,14 @@ SourceEdit _replaceInBlockMap(
     valueAsString = ' $valueAsString';
   }
 
-  /// Find the colon after the key, preventing deletion of the colon when
-  /// quoted keys have whitespace before the colon.
-  final start = yaml.indexOf(':', keyNode.span.end.offset) + 1;
+  /// Find the association colon after the key, skipping whitespace and
+  /// comments. Throws [UnsupportedError] if no colon exists for this key
+  /// (e.g. an explicit key without a value).
+  final colonIndex = _findAssociationColon(yaml, keyNode.span.end.offset);
+  if (colonIndex == -1) {
+    throw UnsupportedError('Association colon not found after key');
+  }
+  final start = colonIndex + 1;
   var end = getContentSensitiveEnd(map.nodes[key]!);
 
   /// `package:yaml` parses empty nodes in a way where the start/end of the
@@ -185,6 +190,31 @@ SourceEdit _replaceInBlockMap(
   if (end < start) end = start;
 
   return SourceEdit(start, end - start, valueAsString);
+}
+
+/// Finds the index of the association colon (`:`) belonging to a key in
+/// [yaml], starting from [startOffset].
+///
+/// Skips whitespace and comments. Returns `-1` if no colon is found before
+/// encountering another token or reaching the end of the input.
+int _findAssociationColon(String yaml, int startOffset) {
+  var i = startOffset;
+  while (i < yaml.length) {
+    final c = yaml.codeUnitAt(i);
+    if (YamlChar.isWhitespace(c) || YamlChar.isLineBreak(c)) {
+      i++;
+    } else if (c == YamlChar.hash) {
+      i++;
+      while (i < yaml.length && !YamlChar.isLineBreak(yaml.codeUnitAt(i))) {
+        i++;
+      }
+    } else if (c == YamlChar.colon) {
+      return i;
+    } else {
+      return -1;
+    }
+  }
+  return -1;
 }
 
 /// Performs the string operation on [yamlEdit] to achieve the effect of
@@ -200,11 +230,14 @@ SourceEdit _replaceInFlowMap(
   final colonIndex = findNextFlowDelimiter(
     yaml,
     keyNode.span.end.offset,
-    delimiters: {YamlChar.colon},
+    delimiters: {YamlChar.colon, YamlChar.comma, YamlChar.rightCurly},
   );
+  if (colonIndex == -1 || yaml.codeUnitAt(colonIndex) != YamlChar.colon) {
+    throw UnsupportedError('Association colon not found after key');
+  }
 
   var start = valueSpan.start.offset;
-  if (valueSpan.length == 0 && colonIndex != -1) {
+  if (valueSpan.length == 0) {
     if (start < colonIndex + 1) {
       start = colonIndex + 1;
     }
