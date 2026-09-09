@@ -10,6 +10,7 @@
 - Fix appending to block lists ending with keep-chomping block scalars (`|+`).
 - Fix literal and folded block scalar encoding with CRLF line endings.
 - Support updating empty values in flow maps without whitespace after the colon.
+- Throw `UnsupportedError` when attempting to update the value of an explicit key that has no colon.
 
 ## 2.2.4
 
