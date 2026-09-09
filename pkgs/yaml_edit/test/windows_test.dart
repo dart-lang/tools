@@ -228,9 +228,10 @@ a: 1\r
         ['key'],
         wrapAsYamlNode('line1\nline2', scalarStyle: ScalarStyle.LITERAL),
       );
-      final result = doc.toString();
-      expect(result, contains('|-\r\n'));
-      expect(result, isNot(contains('|-\n ')));
+      expect(
+        doc.toString(),
+        equals('key: |-\r\n    line1\r\n    line2\r\nother: 1\r\n'),
+      );
       expect(doc.parseAt(['key']).value, equals('line1\nline2'));
     });
 
@@ -240,8 +241,10 @@ a: 1\r
         ['key'],
         wrapAsYamlNode('line1\nline2', scalarStyle: ScalarStyle.FOLDED),
       );
-      final result = doc.toString();
-      expect(result, contains('>-\r\n'));
+      expect(
+        doc.toString(),
+        equals('key: >-\r\n    line1\r\n\r\n    line2\r\nother: 1\r\n'),
+      );
       expect(doc.parseAt(['key']).value, equals('line1\nline2'));
     });
   });
