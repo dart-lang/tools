@@ -19,8 +19,14 @@ abstract final class YamlChar {
   /// Character code for space (` `).
   static const int space = 0x20;
 
+  /// Character code for quotation mark / double quote (`"`).
+  static const int doubleQuote = 0x22;
+
   /// Character code for number sign / hash (`#`).
   static const int hash = 0x23;
+
+  /// Character code for apostrophe / single quote (`'`).
+  static const int singleQuote = 0x27;
 
   /// Character code for asterisk (`*`).
   static const int asterisk = 0x2A;
@@ -36,6 +42,9 @@ abstract final class YamlChar {
 
   /// Character code for question mark (`?`).
   static const int question = 0x3F;
+
+  /// Character code for reverse solidus / backslash (`\`).
+  static const int backslash = 0x5C;
 
   /// Character code for left square bracket (`[`).
   static const int leftSquare = 0x5B;

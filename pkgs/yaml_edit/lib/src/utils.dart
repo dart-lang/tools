@@ -596,17 +596,17 @@ int _findCommentStartOnLine(String yaml, int lineStart, int lineEnd) {
     final prev = i > lineStart ? yaml.codeUnitAt(i - 1) : YamlChar.space;
 
     if (inSingleQuote) {
-      if (c == 0x27 /* ' */) {
-        if (i + 1 < lineEnd && yaml.codeUnitAt(i + 1) == 0x27) {
+      if (c == YamlChar.singleQuote) {
+        if (i + 1 < lineEnd && yaml.codeUnitAt(i + 1) == YamlChar.singleQuote) {
           i++;
         } else {
           inSingleQuote = false;
         }
       }
     } else if (inDoubleQuote) {
-      if (c == 0x5C /* \ */) {
+      if (c == YamlChar.backslash) {
         i++;
-      } else if (c == 0x22 /* " */) {
+      } else if (c == YamlChar.doubleQuote) {
         inDoubleQuote = false;
       }
     } else {
@@ -615,9 +615,9 @@ int _findCommentStartOnLine(String yaml, int lineStart, int lineEnd) {
           YamlChar.isFlowIndicator(prev) ||
           prev == YamlChar.colon;
 
-      if (c == 0x27 /* ' */ && isQuoteStart) {
+      if (c == YamlChar.singleQuote && isQuoteStart) {
         inSingleQuote = true;
-      } else if (c == 0x22 /* " */ && isQuoteStart) {
+      } else if (c == YamlChar.doubleQuote && isQuoteStart) {
         inDoubleQuote = true;
       } else if (c == YamlChar.hash) {
         if (i == lineStart ||
@@ -653,8 +653,9 @@ int findNextFlowDelimiter(
     final prev = i > 0 ? yaml.codeUnitAt(i - 1) : YamlChar.space;
 
     if (inSingleQuote) {
-      if (code == 0x27 /* ' */) {
-        if (i + 1 < yaml.length && yaml.codeUnitAt(i + 1) == 0x27) {
+      if (code == YamlChar.singleQuote) {
+        if (i + 1 < yaml.length &&
+            yaml.codeUnitAt(i + 1) == YamlChar.singleQuote) {
           i++;
         } else {
           inSingleQuote = false;
@@ -662,10 +663,10 @@ int findNextFlowDelimiter(
       }
       i++;
     } else if (inDoubleQuote) {
-      if (code == 0x5C /* \ */) {
+      if (code == YamlChar.backslash) {
         i += 2;
         continue;
-      } else if (code == 0x22 /* " */) {
+      } else if (code == YamlChar.doubleQuote) {
         inDoubleQuote = false;
       }
       i++;
@@ -685,10 +686,10 @@ int findNextFlowDelimiter(
         } else {
           i++;
         }
-      } else if (code == 0x27 /* ' */ && isQuoteStart) {
+      } else if (code == YamlChar.singleQuote && isQuoteStart) {
         inSingleQuote = true;
         i++;
-      } else if (code == 0x22 /* " */ && isQuoteStart) {
+      } else if (code == YamlChar.doubleQuote && isQuoteStart) {
         inDoubleQuote = true;
         i++;
       } else if (delimiters.contains(code)) {
