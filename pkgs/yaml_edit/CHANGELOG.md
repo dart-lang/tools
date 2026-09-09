@@ -2,6 +2,14 @@
 
 - Support configurable alias and anchor handling via `AliasBehavior` option on `YamlEditor`.
 
+## 2.2.5-wip
+
+- Harden flow collection delimiter scanning to skip comments.
+- Fix deletion of colon when modifying block map keys with spaces before the colon.
+- Fix appending to block lists ending with keep-chomping block scalars (`|+`).
+- Fix literal and folded block scalar encoding with CRLF line endings.
+- Support updating empty values in flow maps without whitespace after the colon.
+
 ## 2.2.4
 
 -  Removes comments associated with a node when `remove` is called.
