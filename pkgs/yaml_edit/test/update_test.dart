@@ -816,6 +816,20 @@ analyzer:
         expect(doc.toString(), equals('{a: 1, b: 2, c: 3,}'));
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
       });
+
+      test('updating explicit key without colon throws UnsupportedError', () {
+        expect(() => YamlEditor('{? key}').update(['key'], 123),
+            throwsUnsupportedError);
+        expect(() => YamlEditor('{? key, foo: bar}').update(['key'], 123),
+            throwsUnsupportedError);
+      });
+
+      test('updating explicit key with colon succeeds', () {
+        final doc = YamlEditor('{? key: old}');
+        doc.update(['key'], 'new');
+        expect(doc.toString(), equals('{? key: new}'));
+        expectYamlBuilderValue(doc, {'key': 'new'});
+      });
     });
 
     group('block map', () {
@@ -959,6 +973,30 @@ Mark McGwire: null
 '''));
         expectYamlBuilderValue(
             doc, {'Sammy Sosa': null, 'Ken Griff': null, 'Mark McGwire': null});
+      });
+
+      test('updating explicit key without colon throws UnsupportedError', () {
+        expect(() => YamlEditor('? key\n').update(['key'], 123),
+            throwsUnsupportedError);
+        expect(() => YamlEditor('? key\nfoo: bar\n').update(['key'], 123),
+            throwsUnsupportedError);
+        expect(
+            () => YamlEditor('? key # comment with : here\n')
+                .update(['key'], 123),
+            throwsUnsupportedError);
+      });
+
+      test('updating explicit key with colon succeeds', () {
+        final doc = YamlEditor('''
+? key
+: old
+''');
+        doc.update(['key'], 'new');
+        expect(doc.toString(), equals('''
+? key
+: new
+'''));
+        expectYamlBuilderValue(doc, {'key': 'new'});
       });
 
       test('with trailing newline', () {
