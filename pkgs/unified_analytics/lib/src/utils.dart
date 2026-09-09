@@ -29,8 +29,7 @@ String get dateStamp {
 /// If the environment variable is set and not "false", return the
 /// corresponding boolean value. Otherwise, return the [defaultValue].
 bool areAnalyticsSuppressed({bool defaultValue = false}) {
-  final value =
-      io.Platform.environment[DashEnvVar.suppressAnalytics.name];
+  final value = io.Platform.environment[DashEnvVar.suppressAnalytics.name];
   if (value != null) {
     try {
       return bool.parse(value);
