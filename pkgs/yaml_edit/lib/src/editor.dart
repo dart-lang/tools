@@ -7,8 +7,10 @@ import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
 import 'alias_behavior.dart';
+import 'char_codes.dart';
 import 'equality.dart';
 import 'errors.dart';
+
 import 'list_mutations.dart';
 import 'map_mutations.dart';
 import 'source_edit.dart';
@@ -199,28 +201,14 @@ class YamlEditor {
     var i = searchStart;
     while (i < yaml.length) {
       final ch = yaml.codeUnitAt(i);
-      if (ch == 0x23 /* # */) {
-        while (i < yaml.length &&
-            yaml.codeUnitAt(i) != 0x0A /* \n */ &&
-            yaml.codeUnitAt(i) != 0x0D /* \r */) {
+      if (ch == YamlChar.hash) {
+        while (i < yaml.length && !YamlChar.isLineBreak(yaml.codeUnitAt(i))) {
           i++;
         }
-      } else if (ch == 0x2A /* * */) {
+      } else if (ch == YamlChar.asterisk) {
         final starIndex = i;
         i++;
-        while (i < yaml.length) {
-          final c = yaml.codeUnitAt(i);
-          if (c == 0x20 /* space */ ||
-              c == 0x09 /* tab */ ||
-              c == 0x0A /* \n */ ||
-              c == 0x0D /* \r */ ||
-              c == 0x5B /* [ */ ||
-              c == 0x5D /* ] */ ||
-              c == 0x7B /* { */ ||
-              c == 0x7D /* } */ ||
-              c == 0x2C /* , */) {
-            break;
-          }
+        while (i < yaml.length && YamlChar.isAnchorChar(yaml.codeUnitAt(i))) {
           i++;
         }
         return SourceSpanBase(SourceLocation(starIndex), SourceLocation(i),
@@ -429,19 +417,23 @@ class YamlEditor {
       }
     }
 
-    // Resolve any nested intra-template aliases within anchor values.
+    // Resolve any nested intra-template aliases within anchor values. Sort
+    // keys by descending length so longer anchor names are replaced before
+    // shorter prefixes.
+    final sortedKeys = anchorValues.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
     for (final tag in anchorValues.keys) {
-      for (final otherTag in anchorValues.keys) {
+      for (final otherTag in sortedKeys) {
         final name = otherTag.substring(1);
         final val = anchorValues[otherTag]!;
         if (val.startsWith(RegExp(r'\r?\n'))) {
           anchorValues[tag] = anchorValues[tag]!.replaceAll(
-            RegExp(r'[ \t]*\*' + RegExp.escape(name) + r'(?![a-zA-Z0-9_-])'),
+            aliasReferencePattern(name, includeLeadingWhitespace: true),
             val,
           );
         } else {
           anchorValues[tag] = anchorValues[tag]!.replaceAll(
-            RegExp(r'\*' + RegExp.escape(name) + r'(?![a-zA-Z0-9_-])'),
+            aliasReferencePattern(name),
             val,
           );
         }
@@ -493,12 +485,11 @@ class YamlEditor {
       final targetValue = intraInfo.anchorValues[tag]!;
       final anchorName = tag.substring(1);
       if (targetValue.startsWith(RegExp(r'\r?\n'))) {
-        final aliasRegex = RegExp(
-            r'[ \t]*\*' + RegExp.escape(anchorName) + r'(?![a-zA-Z0-9_-])');
+        final aliasRegex =
+            aliasReferencePattern(anchorName, includeLeadingWhitespace: true);
         text = text.replaceAll(aliasRegex, targetValue);
       } else {
-        final aliasRegex =
-            RegExp(r'\*' + RegExp.escape(anchorName) + r'(?![a-zA-Z0-9_-])');
+        final aliasRegex = aliasReferencePattern(anchorName);
         text = text.replaceAll(aliasRegex, targetValue);
       }
     }
@@ -1418,4 +1409,22 @@ final class _IntraTemplateInfo {
   final Map<String, String> anchorValues;
 
   _IntraTemplateInfo(this.anchorTags, this.anchorValues);
+}
+
+/// Returns a [RegExp] matching alias references to [anchorName]
+/// (`*anchorName`).
+///
+/// Uses a positive lookahead `(?=[\s,\[\]{}]|$)` to match YAML delimiter
+/// boundaries, ensuring anchor names containing special characters (e.g. `.`,
+/// `/`, `@`, `+`) match accurately and do not match substrings of longer
+/// anchor names.
+///
+/// If [includeLeadingWhitespace] is `true`, leading spaces and tabs before the
+/// `*` are also matched.
+///
+/// Runs in O(1) time complexity to compile the pattern.
+RegExp aliasReferencePattern(String anchorName,
+    {bool includeLeadingWhitespace = false}) {
+  final prefix = includeLeadingWhitespace ? r'[ \t]*\*' : r'\*';
+  return RegExp('$prefix${RegExp.escape(anchorName)}(?=[\\s,\\[\\]{}]|\$)');
 }

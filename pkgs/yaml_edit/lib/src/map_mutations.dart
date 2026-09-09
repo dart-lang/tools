@@ -4,6 +4,7 @@
 
 import 'package:yaml/yaml.dart';
 
+import 'char_codes.dart';
 import 'editor.dart';
 import 'equality.dart';
 import 'source_edit.dart';
@@ -151,9 +152,9 @@ SourceEdit _replaceInBlockMap(
     valueAsString = ' $valueAsString';
   }
 
-  /// +1 accounts for the colon
-  // TODO: What if here is a whitespace following the key, before the colon?
-  final start = keyNode.span.end.offset + 1;
+  /// Find the colon after the key, preventing deletion of the colon when
+  /// quoted keys have whitespace before the colon.
+  final start = yaml.indexOf(':', keyNode.span.end.offset) + 1;
   var end = yamlEdit.getTrueContentSensitiveEnd(map, key);
 
   /// `package:yaml` parses empty nodes in a way where the start/end of the
@@ -176,7 +177,25 @@ SourceEdit _replaceInFlowMap(
     valueString = '$anchorTag $valueString';
   }
 
-  return SourceEdit(valueSpan.start.offset, valueSpan.length, valueString);
+  final yaml = yamlEdit.toString();
+  final keyNode = getKeyNode(map, key);
+  final colonIndex = findNextFlowDelimiter(
+    yaml,
+    keyNode.span.end.offset,
+    delimiters: {YamlChar.colon},
+  );
+
+  var start = valueSpan.start.offset;
+  if (valueSpan.length == 0 && colonIndex != -1) {
+    if (start < colonIndex + 1) {
+      start = colonIndex + 1;
+    }
+    if (start <= colonIndex + 1) {
+      valueString = ' $valueString';
+    }
+  }
+
+  return SourceEdit(start, valueSpan.length, valueString);
 }
 
 /// Performs the string operation on [yamlEdit] to achieve the effect of
@@ -242,15 +261,33 @@ SourceEdit _removeFromFlowMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   final yaml = yamlEdit.toString();
 
   if (deepEquals(keyNode, map.keys.first)) {
-    start = yaml.lastIndexOf('{', start - 1) + 1;
+    start = findPreviousFlowDelimiter(
+          yaml,
+          start - 1,
+          delimiters: {YamlChar.leftCurly},
+        ) +
+        1;
 
     if (deepEquals(keyNode, map.keys.last)) {
-      end = yaml.indexOf('}', end);
+      end = findNextFlowDelimiter(
+        yaml,
+        end,
+        delimiters: {YamlChar.rightCurly},
+      );
     } else {
-      end = yaml.indexOf(',', end) + 1;
+      end = findNextFlowDelimiter(
+            yaml,
+            end,
+            delimiters: {YamlChar.comma},
+          ) +
+          1;
     }
   } else {
-    start = yaml.lastIndexOf(',', start - 1);
+    start = findPreviousFlowDelimiter(
+      yaml,
+      start - 1,
+      delimiters: {YamlChar.comma},
+    );
   }
 
   return SourceEdit(start, end - start, '');

@@ -7,6 +7,7 @@ import 'dart:math';
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
+import 'char_codes.dart';
 import 'editor.dart';
 import 'source_edit.dart';
 import 'wrap.dart';
@@ -203,11 +204,13 @@ int getIndentation(YamlEditor editor) {
 /// but returns the number of spaces before the hyphen of elements for
 /// block lists.
 ///
-/// Throws [UnsupportedError] if an empty block map is passed in.
+/// It is an error if [list] is an empty block list.
+///
+/// Throws [UnsupportedError] if [list] is an empty block list.
 int getListIndentation(String yaml, YamlList list) {
   if (list.style == CollectionStyle.FLOW) return 0;
 
-  /// An empty block map doesn't really exist.
+  /// An empty block list doesn't really exist.
   if (list.isEmpty) {
     throw UnsupportedError('Unable to get indentation for empty block list');
   }
@@ -215,11 +218,17 @@ int getListIndentation(String yaml, YamlList list) {
   // Iterate backwards to find a node with a valid hyphen in the source text.
   // We cannot rely solely on the last node because if it is an alias reference,
   // its AST span points to the anchor definition elsewhere in the document.
+  final listStart = list.span.start.offset;
+  final listEnd = list.span.end.offset;
+
   for (final node in list.nodes.reversed) {
-    final offset = node.span.start.offset;
-    if (offset <= 0) continue;
-    final hyphen = yaml.lastIndexOf('-', offset - 1);
-    if (hyphen < 0) continue;
+    final nodeStart = node.span.start.offset;
+    final nodeEnd = node.span.end.offset;
+    if (nodeStart < listStart || nodeEnd > listEnd) continue;
+    if (nodeStart <= 0) continue;
+
+    final hyphen = yaml.lastIndexOf('-', nodeStart - 1);
+    if (hyphen < listStart) continue;
     if (hyphen == 0) return 0;
 
     final newLine = yaml.lastIndexOf('\n', hyphen - 1);
@@ -227,7 +236,7 @@ int getListIndentation(String yaml, YamlList list) {
     return hyphen - newLine - 1;
   }
 
-  return 0;
+  return list.span.start.column;
 }
 
 /// Gets the indentation level of [map]. This is 0 if it is a flow map,
@@ -592,4 +601,165 @@ extension YamlNodeExtension on YamlNode {
     if (me is YamlList) return me.style;
     return null;
   }
+}
+
+int _findCommentStartOnLine(String yaml, int lineStart, int lineEnd) {
+  var inSingleQuote = false;
+  var inDoubleQuote = false;
+  for (var i = lineStart; i < lineEnd; i++) {
+    final c = yaml.codeUnitAt(i);
+    final prev = i > lineStart ? yaml.codeUnitAt(i - 1) : YamlChar.space;
+
+    if (inSingleQuote) {
+      if (c == 0x27 /* ' */) {
+        if (i + 1 < lineEnd && yaml.codeUnitAt(i + 1) == 0x27) {
+          i++;
+        } else {
+          inSingleQuote = false;
+        }
+      }
+    } else if (inDoubleQuote) {
+      if (c == 0x5C /* \ */) {
+        i++;
+      } else if (c == 0x22 /* " */) {
+        inDoubleQuote = false;
+      }
+    } else {
+      final isQuoteStart = i == lineStart ||
+          YamlChar.isWhitespace(prev) ||
+          YamlChar.isFlowIndicator(prev) ||
+          prev == YamlChar.colon;
+
+      if (c == 0x27 /* ' */ && isQuoteStart) {
+        inSingleQuote = true;
+      } else if (c == 0x22 /* " */ && isQuoteStart) {
+        inDoubleQuote = true;
+      } else if (c == YamlChar.hash) {
+        if (i == lineStart ||
+            YamlChar.isWhitespace(prev) ||
+            YamlChar.isLineBreak(prev)) {
+          return i;
+        }
+      }
+    }
+  }
+  return -1;
+}
+
+/// Searches forward from [offset] in [yaml] to find the index of the next
+/// character matching any of the specified [delimiters], skipping `# ...`
+/// comments.
+///
+/// Returns `-1` if no matching delimiter is found, or if [yaml] is empty or
+/// [offset] is greater than or equal to `yaml.length`.
+///
+/// Runs in O(N) where N is the length of [yaml] from [offset].
+int findNextFlowDelimiter(
+  String yaml,
+  int offset, {
+  required Set<int> delimiters,
+}) {
+  if (yaml.isEmpty || offset >= yaml.length) return -1;
+  var inSingleQuote = false;
+  var inDoubleQuote = false;
+  var i = max(0, offset);
+  while (i < yaml.length) {
+    final code = yaml.codeUnitAt(i);
+    final prev = i > 0 ? yaml.codeUnitAt(i - 1) : YamlChar.space;
+
+    if (inSingleQuote) {
+      if (code == 0x27 /* ' */) {
+        if (i + 1 < yaml.length && yaml.codeUnitAt(i + 1) == 0x27) {
+          i++;
+        } else {
+          inSingleQuote = false;
+        }
+      }
+      i++;
+    } else if (inDoubleQuote) {
+      if (code == 0x5C /* \ */) {
+        i += 2;
+        continue;
+      } else if (code == 0x22 /* " */) {
+        inDoubleQuote = false;
+      }
+      i++;
+    } else {
+      final isQuoteStart = i == 0 ||
+          YamlChar.isWhitespace(prev) ||
+          YamlChar.isFlowIndicator(prev) ||
+          prev == YamlChar.colon;
+
+      if (code == YamlChar.hash) {
+        final isComment =
+            i == 0 || YamlChar.isWhitespace(prev) || YamlChar.isLineBreak(prev);
+        if (isComment) {
+          while (i < yaml.length && !YamlChar.isLineBreak(yaml.codeUnitAt(i))) {
+            i++;
+          }
+        } else {
+          i++;
+        }
+      } else if (code == 0x27 /* ' */ && isQuoteStart) {
+        inSingleQuote = true;
+        i++;
+      } else if (code == 0x22 /* " */ && isQuoteStart) {
+        inDoubleQuote = true;
+        i++;
+      } else if (delimiters.contains(code)) {
+        return i;
+      } else {
+        i++;
+      }
+    }
+  }
+  return -1;
+}
+
+/// Searches backward from [offset] in [yaml] to find the index of the previous
+/// character matching any of the specified [delimiters], skipping `# ...`
+/// comments.
+///
+/// Returns `-1` if no matching delimiter is found, or if [yaml] is empty or
+/// [offset] is less than `0`.
+///
+/// Runs in O(N) where N is the length of [yaml] up to [offset].
+int findPreviousFlowDelimiter(
+  String yaml,
+  int offset, {
+  required Set<int> delimiters,
+}) {
+  if (yaml.isEmpty || offset < 0) return -1;
+  var i = min(offset, yaml.length - 1);
+  while (i >= 0) {
+    final prevLf = i > 0 ? yaml.lastIndexOf('\n', i - 1) : -1;
+    final prevCr = i > 0 ? yaml.lastIndexOf('\r', i - 1) : -1;
+    final lineStart = max(prevLf, prevCr) + 1;
+
+    final nextLf = yaml.indexOf('\n', lineStart);
+    final nextCr = yaml.indexOf('\r', lineStart);
+    final int lineEnd;
+    if (nextLf == -1 && nextCr == -1) {
+      lineEnd = yaml.length;
+    } else if (nextLf == -1) {
+      lineEnd = nextCr;
+    } else if (nextCr == -1) {
+      lineEnd = nextLf;
+    } else {
+      lineEnd = min(nextLf, nextCr);
+    }
+
+    final commentStart = _findCommentStartOnLine(yaml, lineStart, lineEnd);
+    if (commentStart != -1 && i >= commentStart) {
+      i = commentStart - 1;
+    }
+
+    while (i >= lineStart) {
+      if (delimiters.contains(yaml.codeUnitAt(i))) {
+        return i;
+      }
+      i--;
+    }
+  }
+  return -1;
 }
