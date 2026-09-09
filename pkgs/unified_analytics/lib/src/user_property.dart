@@ -10,6 +10,7 @@ import 'package:file/file.dart';
 import 'constants.dart';
 import 'event.dart';
 import 'initializer.dart';
+import 'is_external.dart' as ie;
 import 'utils.dart';
 
 class UserProperty {
@@ -22,6 +23,7 @@ class UserProperty {
   final String locale;
   final String? clientIde;
   final String? aiAgent;
+  final bool isExternal = ie.isExternal;
 
   final File sessionFile;
 
@@ -162,5 +164,6 @@ class UserProperty {
     'locale': locale,
     'client_ide': clientIde,
     'ai_agent': aiAgent,
+    'is_external': isExternal,
   };
 }

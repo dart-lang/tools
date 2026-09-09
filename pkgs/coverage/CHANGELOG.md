@@ -6,6 +6,9 @@
   completing and the resume request reaching the VM service.
 - Also ignore `SentinelException` when resuming the main isolate after
   collection, matching the existing `RPCError` handling there.
+- `Resolver.resolve` now rejects `file:` URIs that fall outside the known
+  package/SDK roots or the current directory, instead of resolving them
+  unconditionally.
 
 ## 1.15.1
 

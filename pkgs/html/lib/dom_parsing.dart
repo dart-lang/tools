@@ -8,7 +8,7 @@ library;
 
 import 'dom.dart';
 import 'html_escape.dart';
-import 'src/constants.dart' show rcdataElements;
+import 'src/constants.dart' show Namespaces, rcdataElements;
 
 // Export a function which was previously declared here.
 export 'html_escape.dart';
@@ -81,23 +81,27 @@ class CodeMarkupVisitor extends TreeVisitor {
 
   @override
   void visitDocumentType(DocumentType node) {
-    _str.write('<code class="markup doctype">&lt;!DOCTYPE ${node.name}>'
+    var name = node.name ?? '';
+    if (name.isNotEmpty) name = ' ${htmlSerializeEscape(name)}';
+    _str.write('<code class="markup doctype">&lt;!DOCTYPE$name>'
         '</code>');
   }
 
   @override
   void visitText(Text node) {
-    writeTextNodeAsHtml(_str, node);
+    _str.write(htmlSerializeEscape(node.data));
   }
 
   @override
   void visitElement(Element node) {
     final tag = node.localName;
-    _str.write('&lt;<code class="markup element-name">$tag</code>');
+    final escapedTag = tag != null ? htmlSerializeEscape(tag) : null;
+    _str.write('&lt;<code class="markup element-name">$escapedTag</code>');
     if (node.attributes.isNotEmpty) {
       node.attributes.forEach((key, v) {
-        v = htmlSerializeEscape(v, attributeMode: true);
-        _str.write(' <code class="markup attribute-name">$key</code>'
+        final escapedKey = htmlSerializeEscape(key.toString());
+        v = htmlSerializeEscape(v);
+        _str.write(' <code class="markup attribute-name">$escapedKey</code>'
             '=<code class="markup attribute-value">"$v"</code>');
       });
     }
@@ -107,8 +111,10 @@ class CodeMarkupVisitor extends TreeVisitor {
     } else if (isVoidElement(tag)) {
       _str.write('>');
       return;
+    } else {
+      _str.write('>');
     }
-    _str.write('&lt;/<code class="markup element-name">$tag</code>>');
+    _str.write('&lt;/<code class="markup element-name">$escapedTag</code>>');
   }
 
   @override
@@ -152,7 +158,9 @@ void writeTextNodeAsHtml(StringBuffer str, Text node) {
   final parent = node.parentNode;
   if (parent is Element) {
     final tag = parent.localName;
-    if (rcdataElements.contains(tag) || tag == 'plaintext') {
+    final ns = parent.namespaceUri;
+    if ((ns == null || ns == Namespaces.html) &&
+        (rcdataElements.contains(tag) || tag == 'plaintext')) {
       str.write(node.data);
       return;
     }

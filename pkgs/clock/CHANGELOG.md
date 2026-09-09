@@ -1,4 +1,4 @@
-## 1.1.3-wip
+## 1.1.3
 
 * Keep microseconds when using `monthsAgo`, `monthsFromNow` and `yearsAgo`
 

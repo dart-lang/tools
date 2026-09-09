@@ -17,6 +17,7 @@ import 'enums.dart';
 import 'event.dart';
 import 'ga_client.dart';
 import 'initializer.dart';
+import 'is_external.dart';
 import 'log_handler.dart';
 import 'survey_handler.dart';
 import 'user_property.dart';
@@ -441,6 +442,7 @@ class AnalyticsImpl implements Analytics {
              .childDirectory(kDartToolDirectoryName)
              .childFile(kLogFileName),
        ) {
+    if (!isExternal) return;
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
     // on the first run
@@ -517,7 +519,7 @@ class AnalyticsImpl implements Analytics {
   bool get shouldShowMessage => _showMessage;
 
   @override
-  bool get telemetryEnabled => _configHandler.telemetryEnabled;
+  bool get telemetryEnabled => !isExternal || _configHandler.telemetryEnabled;
 
   @override
   Map<String, Map<String, Object?>> get userPropertyMap =>
@@ -525,6 +527,8 @@ class AnalyticsImpl implements Analytics {
 
   @override
   void clientShowedMessage() {
+    if (!isExternal) return;
+
     // Check the tool needs to be added to the config file
     if (!_configHandler.parsedTools.containsKey(tool.label)) {
       _configHandler.addTool(
@@ -649,6 +653,7 @@ class AnalyticsImpl implements Analytics {
 
   @override
   Future<void> setTelemetry(bool reportingBool) {
+    if (!isExternal) return Future.value();
     _configHandler.setTelemetry(reportingBool);
 
     // Creation of the [Event] for opting out

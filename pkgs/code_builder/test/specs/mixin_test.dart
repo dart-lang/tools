@@ -126,6 +126,36 @@ void main() {
     );
   });
 
+  test('should create a mixin on multiple superclass constraints', () {
+    expect(
+      Mixin(
+        (b) => b
+          ..name = 'Foo'
+          ..onTypes.addAll([
+            TypeReference((b) => b.symbol = 'Bar'),
+            TypeReference((b) => b.symbol = 'Baz'),
+          ]),
+      ),
+      equalsDart(r'''
+        mixin Foo on Bar, Baz {}
+      '''),
+    );
+  });
+
+  test('should prefer onTypes over on when both are set', () {
+    expect(
+      Mixin(
+        (b) => b
+          ..name = 'Foo'
+          ..on = TypeReference((b) => b.symbol = 'Ignored')
+          ..onTypes.add(TypeReference((b) => b.symbol = 'Bar')),
+      ),
+      equalsDart(r'''
+        mixin Foo on Bar {}
+      '''),
+    );
+  });
+
   test('should create a mixin implementing another mixin', () {
     expect(
       Mixin(

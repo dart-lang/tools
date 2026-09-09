@@ -1,4 +1,4 @@
-## 1.6.0-wip
+## 1.6.0
 
 - Added `toJson` method to `Pubspec` to serialize the object back to a `Map`.
 - Parse `HostedDetails.url` as a non-git URI.

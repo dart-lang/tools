@@ -1,7 +1,13 @@
-## 3.1.4-wip
+## 3.2.0-wip
+
+* Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
+
+## 3.1.4
 
 * Improve recovery for list entries without `-` prefix. When recovering, provide
   a more helpful error message suggesting the missing prefix.
+* Fix a bug where block strings terminated by `EOF` were not given an implicit
+  newline.
 * Fix parsing of plain scalars starting with indicator characters (`?`, `:`, and `-`).
 * Throw a `FormatException` when parsing self-referential collections instead of
   a `StackOverflow`. Yaml definitions with collections nested within themselves

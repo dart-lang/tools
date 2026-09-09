@@ -1,5 +1,10 @@
 ## 7.4.1-wip
 
+* Fix quadratic parsing time on a long unbroken run of word characters (for
+  example a single very long word). The plain-text accelerator regex required
+  a trailing whitespace, so a run reaching the end of a line without one
+  backtracked across the whole run at every position.
+
 ## 7.4.0
 
 * Adds `linkBuilder`/`imageLinkBuilder` alternatives to `linkResolver`/  

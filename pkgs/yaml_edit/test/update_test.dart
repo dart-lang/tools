@@ -723,6 +723,99 @@ c: 3
           'YAML': "YAML Ain't Markup Language",
         });
       });
+
+      test('spanning multiple lines with trailing comma', () {
+        final doc = YamlEditor('''
+{
+  a: 1,
+  b: 2,
+}
+''');
+        doc.update(['c'], 3);
+        expect(doc.toString(), equals('''
+{
+  a: 1,
+  b: 2,
+  c: 3,
+}
+'''));
+        expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
+      });
+
+      test('spanning multiple lines with trailing comma and comment', () {
+        final doc = YamlEditor('''
+{
+  a: 1,
+  b: 2, # comment
+}
+''');
+        doc.update(['c'], 3);
+        expect(doc.toString(), equals('''
+{
+  a: 1,
+  b: 2, # comment
+  c: 3,
+}
+'''));
+        expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
+      });
+
+      test('nested flow map spanning multiple lines with trailing comma', () {
+        final doc = YamlEditor('''
+analyzer:
+  exclude:
+    {
+      foo: 1,
+      build: 2,
+    }
+''');
+        doc.update(['analyzer', 'exclude', 'android'], 3);
+        expect(doc.toString(), equals('''
+analyzer:
+  exclude:
+    {
+      foo: 1,
+      build: 2,
+      android: 3,
+    }
+'''));
+        expectYamlBuilderValue(doc, {
+          'analyzer': {
+            'exclude': {'foo': 1, 'build': 2, 'android': 3}
+          }
+        });
+      });
+
+      test('spanning multiple lines without trailing comma', () {
+        final doc = YamlEditor('''
+{
+  a: 1,
+  b: 2
+}
+''');
+        doc.update(['c'], 3);
+        expect(doc.toString(), equals('''
+{
+  a: 1,
+  b: 2
+, c: 3}
+'''));
+        expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
+      });
+
+      test('single line with trailing comma', () {
+        final doc = YamlEditor('{a: 1, b: 2, }');
+        doc.update(['c'], 3);
+        expect(doc.toString(), equals('{a: 1, b: 2, c: 3,}'));
+        expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
+      });
+
+      test('single line with trailing comma (no space)', () {
+        final doc = YamlEditor('{a: 1, b: 2,}');
+        doc.update(['c'], 3);
+        expect(doc.toString(), equals('{a: 1, b: 2, c: 3,}'));
+        expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
+      });
     });
 
     group('block map', () {
