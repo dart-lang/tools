@@ -14,24 +14,9 @@ import 'package:yaml_edit/yaml_edit.dart';
 
 import 'fuzzer.dart';
 
-/// Files with tests that are broken, so we have to skip them
-final _skippedFiles = [
-  'anchors_aliases.yaml',
-  'block_strings.yaml',
-  'complex_keys.yaml',
-  'complex.yaml',
-  'deep_nesting_comments_1.yaml',
-  'deep_nesting_comments_2.yaml',
-  'deep_nesting.yaml',
-  'empty_nodes.yaml',
-  'explicit_key_value.yaml',
-  'flow_block_mix.yaml',
-  'mangled_json.yaml',
-  'simple_comments.yaml',
-  'tabs_and_whitespace.yaml',
-  'tags.yaml',
-  'tricky_strings.yaml',
-];
+/// Files with tests that are broken, so we have to skip them.
+/// All 15 previously-failing files now pass with the CST layout engine!
+final _skippedFiles = <String>[];
 
 /// The crash tests will attempt to enumerate all JSON paths in each input
 /// document and then proceed to make arbitrary mutations trying to see if

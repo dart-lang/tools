@@ -725,10 +725,25 @@ class YamlEditor {
 
     if (path.isEmpty) {
       final start = _contents.span.start.offset;
-      final end = getContentSensitiveEnd(_contents);
+      var end = _getContentSensitiveEndWithAliases(_contents);
       final lineEnding = getLineEnding(_yaml);
-      final edit = SourceEdit(
-          start, end - start, yamlEncodeBlock(valueNode, 0, lineEnding));
+      var replacement = yamlEncodeBlock(valueNode, 0, lineEnding);
+      if (replacement.startsWith('|') || replacement.startsWith('>')) {
+        final nextNl = _yaml.indexOf('\n', end);
+        final sameLineTrivia =
+            nextNl != -1 ? _yaml.substring(end, nextNl) : _yaml.substring(end);
+        final commentIdx = sameLineTrivia.indexOf('#');
+        if (commentIdx != -1) {
+          final comment = sameLineTrivia.substring(commentIdx);
+          final headerEnd = replacement.indexOf(lineEnding);
+          if (headerEnd != -1) {
+            replacement = '${replacement.substring(0, headerEnd)} '
+                '$comment${replacement.substring(headerEnd)}';
+          }
+        }
+        end = nextNl != -1 ? nextNl : _yaml.length;
+      }
+      final edit = SourceEdit(start, end - start, replacement);
 
       return _performEdit(edit, path, valueNode);
     }

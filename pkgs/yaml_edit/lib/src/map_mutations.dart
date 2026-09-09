@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:math';
+
 import 'package:yaml/yaml.dart';
 
 import 'char_codes.dart';
@@ -78,9 +80,46 @@ SourceEdit _addToBlockMap(
     } else {
       final keyAtIndex = map.nodes.keys.toList()[insertionIndex] as YamlNode;
       final keySpanStart = keyAtIndex.span.start.offset;
-      final prevNewLineIndex = yaml.lastIndexOf('\n', keySpanStart);
+      final int minOffset;
+      if (insertionIndex > 0) {
+        final prevKey = map.nodes.keys.toList()[insertionIndex - 1];
+        final prevEnd = yamlEdit.getTrueContentSensitiveEnd(map, prevKey);
+        final prevNl = yaml.indexOf('\n', prevEnd);
+        minOffset = prevNl != -1 ? prevNl + 1 : prevEnd;
+      } else {
+        minOffset = map.span.start.offset;
+      }
 
-      offset = prevNewLineIndex + 1;
+      var isCompactFirstKey = false;
+      if (insertionIndex == 0) {
+        final compact = indexOfCompactChar(yaml, keySpanStart);
+        if (compact.compactCharOffset != -1) {
+          isCompactFirstKey = true;
+          offset = keySpanStart;
+          formattedValue = '';
+        }
+      }
+
+      if (!isCompactFirstKey) {
+        var scan = keySpanStart;
+        while (scan > minOffset) {
+          final prevNl = yaml.lastIndexOf('\n', scan - 1);
+          if (prevNl < minOffset - 1) {
+            final line = yaml.substring(minOffset, scan).trim();
+            if (line.startsWith('#') || line.isEmpty) {
+              scan = minOffset;
+            }
+            break;
+          }
+          final line = yaml.substring(prevNl + 1, scan).trim();
+          if (line.startsWith('#') || line.isEmpty) {
+            scan = prevNl + 1;
+          } else {
+            break;
+          }
+        }
+        offset = scan;
+      }
     }
   }
 
@@ -91,6 +130,14 @@ SourceEdit _addToBlockMap(
     formattedValue += '$keyString:$lineEnding$valueString$lineEnding';
   } else {
     formattedValue += '$keyString: $valueString$lineEnding';
+  }
+
+  if (map.isNotEmpty && insertionIndex == 0) {
+    final firstKeyNode = map.nodes.keys.first as YamlNode;
+    final compact = indexOfCompactChar(yaml, firstKeyNode.span.start.offset);
+    if (compact.compactCharOffset != -1) {
+      formattedValue += ' ' * getMapIndentation(yaml, map);
+    }
   }
 
   return SourceEdit(offset, 0, formattedValue);
@@ -210,6 +257,31 @@ SourceEdit _replaceInBlockMap(
   /// empty value node is the end of the key node, so we have to adjust for
   /// this.
   if (end < start) end = start;
+
+  if (valueAsString.trimLeft().startsWith('|') ||
+      valueAsString.trimLeft().startsWith('>')) {
+    final nextNl = yaml.indexOf('\n', end);
+    final sameLineTrivia =
+        nextNl != -1 ? yaml.substring(end, nextNl) : yaml.substring(end);
+    final mapIndent = getMapIndentation(yaml, map);
+    if (sameLineTrivia.contains('#')) {
+      final comment = sameLineTrivia.substring(sameLineTrivia.indexOf('#'));
+      final headerNl = valueAsString.indexOf(lineEnding);
+      if (headerNl != -1) {
+        valueAsString = '${valueAsString.substring(0, headerNl)} '
+            '$comment${valueAsString.substring(headerNl)}';
+      } else {
+        valueAsString = '$valueAsString $comment';
+      }
+      end = nextNl != -1 ? nextNl : yaml.length;
+      end = indexOfLastLineEnding(yaml,
+          offset: nextNl != -1 ? nextNl : end, blockIndent: mapIndent);
+      end = min(end, yaml.length);
+    } else if (nextNl != -1) {
+      end = indexOfLastLineEnding(yaml, offset: nextNl, blockIndent: mapIndent);
+      end = min(end, yaml.length);
+    }
+  }
 
   return SourceEdit(start, end - start, valueAsString);
 }

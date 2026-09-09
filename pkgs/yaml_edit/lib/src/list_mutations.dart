@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:math';
+
 import 'package:yaml/yaml.dart';
 
 import 'char_codes.dart';
@@ -63,6 +65,31 @@ SourceEdit updateInList(
       offset++;
       end = offset;
       valueString = ' $valueString';
+    }
+
+    if (valueString.trimLeft().startsWith('|') ||
+        valueString.trimLeft().startsWith('>')) {
+      final nextNl = yaml.indexOf('\n', end);
+      final sameLineTrivia =
+          nextNl != -1 ? yaml.substring(end, nextNl) : yaml.substring(end);
+      if (sameLineTrivia.contains('#')) {
+        final comment = sameLineTrivia.substring(sameLineTrivia.indexOf('#'));
+        final headerNl = valueString.indexOf(lineEnding);
+        if (headerNl != -1) {
+          valueString = '${valueString.substring(0, headerNl)} '
+              '$comment${valueString.substring(headerNl)}';
+        } else {
+          valueString = '$valueString $comment';
+        }
+        end = nextNl != -1 ? nextNl : yaml.length;
+        end = indexOfLastLineEnding(yaml,
+            offset: nextNl != -1 ? nextNl : end, blockIndent: listIndentation);
+        end = min(end, yaml.length);
+      } else if (nextNl != -1) {
+        end = indexOfLastLineEnding(yaml,
+            offset: nextNl, blockIndent: listIndentation);
+        end = min(end, yaml.length);
+      }
     }
 
     return SourceEdit(offset, end - offset, valueString);
@@ -251,6 +278,17 @@ SourceEdit _insertInBlockList(
   final yaml = yamlEdit.toString();
 
   final currSequenceOffset = yaml.lastIndexOf('-', currNodeStart - 1);
+
+  final lineStart = currSequenceOffset > 0
+      ? yaml.lastIndexOf('\n', currSequenceOffset - 1) + 1
+      : 0;
+  final linePrefix = yaml.substring(lineStart, currSequenceOffset);
+
+  if (linePrefix.trim().isNotEmpty && index == 0) {
+    final currentSequenceCol = currSequenceOffset - lineStart;
+    formattedValue = '$formattedValue${' ' * currentSequenceCol}';
+    return SourceEdit(currSequenceOffset, 0, formattedValue);
+  }
 
   final (isNested, offset) = _isNestedInBlockList(currSequenceOffset, yaml);
 
