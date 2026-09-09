@@ -862,7 +862,7 @@ class NoOpAnalytics implements Analytics {
   final bool okToSend = false;
 
   @override
-  final bool isExternal = false;
+  final bool isExternal = ie.isExternal;
 
   @override
   final Map<String, ToolInfo> parsedTools = const <String, ToolInfo>{};
