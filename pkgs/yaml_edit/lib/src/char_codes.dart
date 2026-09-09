@@ -7,46 +7,46 @@
 ///
 /// Constants and predicates adhere to the [YAML 1.2 specification](https://yaml.org/spec/1.2.2/).
 abstract final class YamlChar {
-  /// Character code for horizontal tab (`\t`, `#x09`).
+  /// Character code for horizontal tab (`\t`).
   static const int tab = 0x09;
 
-  /// Character code for line feed (`\n`, `#x0A`).
+  /// Character code for line feed (`\n`).
   static const int lineFeed = 0x0A;
 
-  /// Character code for carriage return (`\r`, `#x0D`).
+  /// Character code for carriage return (`\r`).
   static const int carriageReturn = 0x0D;
 
-  /// Character code for space (` `, `#x20`).
+  /// Character code for space (` `).
   static const int space = 0x20;
 
-  /// Character code for number sign / hash (`#`, `#x23`).
+  /// Character code for number sign / hash (`#`).
   static const int hash = 0x23;
 
-  /// Character code for asterisk (`*`, `#x2A`).
+  /// Character code for asterisk (`*`).
   static const int asterisk = 0x2A;
 
-  /// Character code for comma (`,`, `#x2C`).
+  /// Character code for comma (`,`).
   static const int comma = 0x2C;
 
-  /// Character code for hyphen-minus (`-`, `#x2D`).
+  /// Character code for hyphen-minus (`-`).
   static const int hyphen = 0x2D;
 
-  /// Character code for colon (`:`, `#x3A`).
+  /// Character code for colon (`:`).
   static const int colon = 0x3A;
 
-  /// Character code for question mark (`?`, `#x3F`).
+  /// Character code for question mark (`?`).
   static const int question = 0x3F;
 
-  /// Character code for left square bracket (`[`, `#x5B`).
+  /// Character code for left square bracket (`[`).
   static const int leftSquare = 0x5B;
 
-  /// Character code for right square bracket (`]`, `#x5D`).
+  /// Character code for right square bracket (`]`).
   static const int rightSquare = 0x5D;
 
-  /// Character code for left curly brace (`{`, `#x7B`).
+  /// Character code for left curly brace (`{`).
   static const int leftCurly = 0x7B;
 
-  /// Character code for right curly brace (`}`, `#x7D`).
+  /// Character code for right curly brace (`}`).
   static const int rightCurly = 0x7D;
 
   /// Returns `true` if [codeUnit] represents YAML whitespace (`space`
