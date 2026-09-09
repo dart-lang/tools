@@ -464,6 +464,24 @@ b:
       expectYamlBuilderValue(doc, [0, 2, 3]);
     });
 
+    test('with comments containing hyphens', () {
+      final doc = YamlEditor('''
+- 0
+# comment - with hyphen
+- 1 # trailing - comment
+# another - comment
+- 2
+''');
+      doc.remove([1]);
+      expect(doc.toString(), equals('''
+- 0
+# comment - with hyphen
+# another - comment
+- 2
+'''));
+      expectYamlBuilderValue(doc, [0, 2]);
+    });
+
     test('nested list', () {
       final doc = YamlEditor('''
 - - - 0

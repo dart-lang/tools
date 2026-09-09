@@ -78,11 +78,12 @@ SourceEdit _addToBlockMap(
         formattedValue = lineEnding + formattedValue;
       }
     } else {
-      final keyAtIndex = map.nodes.keys.toList()[insertionIndex] as YamlNode;
+      final keys = map.nodes.keys.toList();
+      final keyAtIndex = keys[insertionIndex] as YamlNode;
       final keySpanStart = keyAtIndex.span.start.offset;
       final int minOffset;
       if (insertionIndex > 0) {
-        final prevKey = map.nodes.keys.toList()[insertionIndex - 1];
+        final prevKey = keys[insertionIndex - 1];
         final prevEnd = yamlEdit.getTrueContentSensitiveEnd(map, prevKey);
         final prevNl = yaml.indexOf('\n', prevEnd);
         minOffset = prevNl != -1 ? prevNl + 1 : prevEnd;
@@ -102,6 +103,11 @@ SourceEdit _addToBlockMap(
 
       if (!isCompactFirstKey) {
         var scan = keySpanStart;
+        while (scan > 0 &&
+            (yaml.codeUnitAt(scan - 1) == 0x20 ||
+                yaml.codeUnitAt(scan - 1) == 0x09)) {
+          scan--;
+        }
         while (scan > minOffset) {
           final prevNl = yaml.lastIndexOf('\n', scan - 1);
           if (prevNl < minOffset - 1) {
@@ -194,7 +200,7 @@ SourceEdit _addToFlowMap(
   }
 
   final insertionOffset =
-      (map.nodes.keys.toList()[insertionIndex] as YamlNode).span.start.offset;
+      (map.nodes.keys.elementAt(insertionIndex) as YamlNode).span.start.offset;
 
   return SourceEdit(insertionOffset, 0, '$keyString: $valueString, ');
 }

@@ -272,7 +272,33 @@ class CstList {
 
       var hyphenOffset = -1;
       if (list.style == CollectionStyle.BLOCK) {
-        hyphenOffset = yaml.lastIndexOf('-', trueSpan.start.offset);
+        var scan = prevLineEnd <= trueSpan.start.offset
+            ? prevLineEnd
+            : list.span.start.offset;
+        while (scan < trueSpan.start.offset) {
+          final c = yaml.codeUnitAt(scan);
+          if (YamlChar.isWhitespace(c) || YamlChar.isLineBreak(c)) {
+            scan++;
+          } else if (c == YamlChar.hash) {
+            scan++;
+            while (scan < yaml.length &&
+                !YamlChar.isLineBreak(yaml.codeUnitAt(scan))) {
+              scan++;
+            }
+          } else if (c == YamlChar.hyphen) {
+            final next =
+                scan + 1 < yaml.length ? yaml.codeUnitAt(scan + 1) : -1;
+            if (next == -1 ||
+                YamlChar.isWhitespace(next) ||
+                YamlChar.isLineBreak(next)) {
+              hyphenOffset = scan;
+              break;
+            }
+            scan++;
+          } else {
+            scan++;
+          }
+        }
       }
 
       var triviaStart = prevLineEnd;
