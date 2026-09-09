@@ -175,11 +175,24 @@ SourceEdit _replaceInBlockMap(
   }
 
   /// Find the association colon after the key, skipping whitespace and
-  /// comments. Throws [UnsupportedError] if no colon exists for this key
-  /// (e.g. an explicit key without a value).
+  /// comments. If no colon exists for this key (e.g. an explicit key without
+  /// a value), insert a new association line with the colon and value.
   final colonIndex = _findAssociationColon(yaml, keyNode.span.end.offset);
   if (colonIndex == -1) {
-    throw UnsupportedError('Association colon not found after key');
+    final mapIndent = getMapIndentation(yaml, map);
+    final nextNewLine = yaml.indexOf('\n', keyNode.span.end.offset);
+    if (nextNewLine == -1) {
+      return SourceEdit(
+        yaml.length,
+        0,
+        '$lineEnding${' ' * mapIndent}:$valueAsString$lineEnding',
+      );
+    }
+    return SourceEdit(
+      nextNewLine + 1,
+      0,
+      '${' ' * mapIndent}:$valueAsString$lineEnding',
+    );
   }
   final start = colonIndex + 1;
   var end = getContentSensitiveEnd(map.nodes[key]!);
@@ -233,7 +246,7 @@ SourceEdit _replaceInFlowMap(
     delimiters: {YamlChar.colon, YamlChar.comma, YamlChar.rightCurly},
   );
   if (colonIndex == -1 || yaml.codeUnitAt(colonIndex) != YamlChar.colon) {
-    throw UnsupportedError('Association colon not found after key');
+    return SourceEdit(keyNode.span.end.offset, 0, ': $valueString');
   }
 
   var start = valueSpan.start.offset;

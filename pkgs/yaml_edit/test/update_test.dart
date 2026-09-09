@@ -817,11 +817,16 @@ analyzer:
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
       });
 
-      test('updating explicit key without colon throws UnsupportedError', () {
-        expect(() => YamlEditor('{? key}').update(['key'], 123),
-            throwsUnsupportedError);
-        expect(() => YamlEditor('{? key, foo: bar}').update(['key'], 123),
-            throwsUnsupportedError);
+      test('updating explicit key without colon succeeds', () {
+        final doc = YamlEditor('{? key}');
+        doc.update(['key'], 'value');
+        expect(doc.toString(), equals('{? key: value}'));
+        expectYamlBuilderValue(doc, {'key': 'value'});
+
+        final doc2 = YamlEditor('{? key, foo: bar}');
+        doc2.update(['key'], 'value');
+        expect(doc2.toString(), equals('{? key: value, foo: bar}'));
+        expectYamlBuilderValue(doc2, {'key': 'value', 'foo': 'bar'});
       });
 
       test('updating explicit key with colon succeeds', () {
@@ -975,15 +980,56 @@ Mark McGwire: null
             doc, {'Sammy Sosa': null, 'Ken Griff': null, 'Mark McGwire': null});
       });
 
-      test('updating explicit key without colon throws UnsupportedError', () {
-        expect(() => YamlEditor('? key\n').update(['key'], 123),
-            throwsUnsupportedError);
-        expect(() => YamlEditor('? key\nfoo: bar\n').update(['key'], 123),
-            throwsUnsupportedError);
-        expect(
-            () => YamlEditor('? key # comment with : here\n')
-                .update(['key'], 123),
-            throwsUnsupportedError);
+      test('updating explicit key without colon succeeds', () {
+        final doc1 = YamlEditor('? key\n');
+        doc1.update(['key'], 123);
+        expect(doc1.toString(), equals('? key\n: 123\n'));
+        expectYamlBuilderValue(doc1, {'key': 123});
+
+        final doc2 = YamlEditor('? key');
+        doc2.update(['key'], 123);
+        expect(doc2.toString(), equals('? key\n: 123\n'));
+        expectYamlBuilderValue(doc2, {'key': 123});
+
+        final doc3 = YamlEditor('''
+? key
+foo: bar
+''');
+        doc3.update(['key'], 123);
+        expect(doc3.toString(), equals('''
+? key
+: 123
+foo: bar
+'''));
+        expectYamlBuilderValue(doc3, {'key': 123, 'foo': 'bar'});
+
+        final doc4 = YamlEditor('''
+? key # comment with : here
+foo: bar
+''');
+        doc4.update(['key'], 123);
+        expect(doc4.toString(), equals('''
+? key # comment with : here
+: 123
+foo: bar
+'''));
+        expectYamlBuilderValue(doc4, {'key': 123, 'foo': 'bar'});
+
+        final doc5 = YamlEditor('''
+parent:
+  ? key
+  foo: bar
+''');
+        doc5.update(['parent', 'key'], 123);
+        expect(doc5.toString(), equals('''
+parent:
+  ? key
+  : 123
+  foo: bar
+'''));
+        expectYamlBuilderValue(doc5, {
+          'parent': {'key': 123, 'foo': 'bar'}
+        });
       });
 
       test('updating explicit key with colon succeeds', () {
