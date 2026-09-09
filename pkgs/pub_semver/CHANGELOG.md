@@ -1,4 +1,4 @@
-## 2.2.1-wip
+## 2.2.1
 
 - Fix parsing of pre-release and build identifiers to only treat pure-digit
   base-10 identifiers as integers, treating hexadecimal and signed identifiers

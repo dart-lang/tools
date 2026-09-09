@@ -84,8 +84,9 @@ class ProcessPackageExecutableNotFoundException
 
   @override
   String toString() {
-    final StringBuffer buffer =
-        StringBuffer('ProcessPackageExecutableNotFoundException: $message\n');
+    final StringBuffer buffer = StringBuffer(
+      'ProcessPackageExecutableNotFoundException: $message\n',
+    );
     // Don't add an extra space if there are no arguments.
     final String args = arguments.isNotEmpty ? ' ${arguments.join(' ')}' : '';
     buffer.writeln('  Command: $executable$args');

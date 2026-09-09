@@ -292,9 +292,10 @@ class _ListTreeNode {
   void makeRecursive() {
     if (isRecursive) return;
     var children = this.children!;
-    _validator = OptionsNode(children.entries.map((entry) {
+    _validator = OptionsNode(children.entries.expand((entry) {
       entry.value.makeRecursive();
-      return _join([entry.key, entry.value._validator!]);
+      return entry.value._validator!.options
+          .map((option) => _join([entry.key, option]));
     }), caseSensitive: _caseSensitive);
     this.children = null;
   }
@@ -490,15 +491,15 @@ class _ListTreeNode {
 
 /// Joins each [components] into a new glob where each component is separated by
 /// a path separator.
-SequenceNode _join(Iterable<AstNode> components) {
-  var componentsList = components.toList();
-  var first = componentsList.removeAt(0);
-  var nodes = [first];
-  for (var component in componentsList) {
-    nodes.add(LiteralNode('/', caseSensitive: first.caseSensitive));
-    nodes.add(component);
-  }
-  return SequenceNode(nodes, caseSensitive: first.caseSensitive);
+SequenceNode _join(Iterable<SequenceNode> components) {
+  var first = components.first;
+  return SequenceNode([
+    ...first.nodes,
+    for (var component in components.skip(1)) ...[
+      LiteralNode('/', caseSensitive: first.caseSensitive),
+      ...component.nodes,
+    ],
+  ], caseSensitive: first.caseSensitive);
 }
 
 extension on Stream<FileSystemEntity> {

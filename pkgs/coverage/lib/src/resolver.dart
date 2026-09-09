@@ -89,7 +89,9 @@ class Resolver {
       return resolveSymbolicLinks(p.join(packagePath, pathInPackage));
     }
     if (uri.scheme == 'file') {
-      return resolveSymbolicLinks(p.fromUri(uri));
+      final resolved = resolveSymbolicLinks(p.fromUri(uri));
+      if (resolved == null || !_isWithinKnownRoots(resolved)) return null;
+      return resolved;
     }
     // We cannot deal with anything else.
     failed.add('$uri');
@@ -102,6 +104,30 @@ class Resolver {
     final type = FileSystemEntity.typeSync(normalizedPath, followLinks: true);
     if (type == FileSystemEntityType.notFound) return null;
     return File(normalizedPath).resolveSymbolicLinksSync();
+  }
+
+  /// The directories a `file:` URI is allowed to resolve into.
+  ///
+  /// `source` entries in coverage data are supplied by whatever produced the
+  /// coverage JSON, which this library treats as untrusted input: nothing
+  /// stops a crafted `file://` URI from pointing anywhere on disk, and
+  /// callers (`format_coverage --pretty-print`, `filterIgnored`) read the
+  /// resolved path's contents into their output. Without this check, a
+  /// coverage.json with `"source": "file:///etc/passwd"` gets that file's
+  /// contents printed straight into the coverage report.
+  List<String>? _knownRoots;
+
+  bool _isWithinKnownRoots(String path) {
+    final roots = _knownRoots ??= [
+      ?packagePath,
+      ?sdkRoot,
+      ...?_packages?.values.map(p.fromUri),
+      Directory.current.path,
+    ].map(p.normalize).toList();
+    final normalized = p.normalize(path);
+    return roots.any(
+      (root) => normalized == root || p.isWithin(root, normalized),
+    );
   }
 
   static Map<String, Uri> _parsePackages(String packagesPath) {

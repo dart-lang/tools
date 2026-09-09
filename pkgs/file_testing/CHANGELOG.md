@@ -1,4 +1,4 @@
-## 3.1.0-wip
+## 3.1.0
 
 * Changed the type of several matchers to `TypeMatcher` which allows cascading
   their usage with `.having` and similar. 

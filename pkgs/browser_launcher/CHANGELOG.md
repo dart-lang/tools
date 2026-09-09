@@ -1,4 +1,4 @@
-## 1.2.0-wip
+## 1.2.0
 
 - Add `--test-type` and `--disable-session-crashed-bubble` flags when launching
   chrome to prevent some warnings.

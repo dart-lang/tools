@@ -66,4 +66,18 @@ a <!--
     );
     expect(html, '<h2>I am paragraph</h2>\n');
   });
+
+  test('long unbroken word does not take quadratic time', () {
+    // The plain-text accelerator regex required a trailing whitespace, so a
+    // long run of word characters that reached the end of a line without one
+    // (a single long word) forced the regex to backtrack across the whole run
+    // at every position, giving quadratic parse time. A ~200k character word
+    // used to take tens of seconds; it should now be effectively instant.
+    final input = '${'a' * 200000}\n';
+
+    final time = Stopwatch()..start();
+    final html = markdownToHtml(input); // Should not hang.
+    expect(html, isNotNull); // To use the output.
+    expect(time.elapsedMilliseconds, lessThan(10000));
+  });
 }

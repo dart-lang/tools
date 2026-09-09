@@ -145,6 +145,7 @@ void main() {
         expect(
             await list('deep/**/?/?'),
             unorderedEquals([
+              p.join('deep', 'a', 'b'),
               p.join('deep', 'a', 'b', 'c'),
               p.join('deep', 'a', 'b', 'c', 'd')
             ]));

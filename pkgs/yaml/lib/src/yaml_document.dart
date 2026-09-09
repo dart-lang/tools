@@ -33,6 +33,8 @@ class YamlDocument {
   final bool endImplicit;
 
   /// Users of the library should not use this constructor.
+  ///
+  /// @nodoc
   YamlDocument.internal(this.contents, this.span, this.versionDirective,
       List<TagDirective> tagDirectives,
       {this.startImplicit = false, this.endImplicit = false})

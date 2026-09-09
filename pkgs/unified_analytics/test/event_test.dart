@@ -7,7 +7,6 @@ import 'dart:mirrors';
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/src/event.dart';
-import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
   test('Event.analysisStatistics constructed', () {
@@ -175,7 +174,52 @@ void main() {
     expect(constructedEvent.eventData['libraryCycleLineCounts'], 'b');
     expect(constructedEvent.eventData['contextWorkspaceType'], '[0,1,2]');
     expect(constructedEvent.eventData['numberOfPackagesInWorkspace'], '32');
-    expect(constructedEvent.eventData.length, 11);
+    expect(constructedEvent.eventData['minSdkConstraints'], '');
+    expect(constructedEvent.eventData['languageVersionOverrides'], '');
+    expect(constructedEvent.eventData.length, 13);
+  });
+
+  test('Event.contextStructure constructed with optional parameters', () {
+    Event generateEvent() => Event.contextStructure(
+      immediateFileCount: 1,
+      immediateFileLineCount: 2,
+      numberOfContexts: 3,
+      transitiveFileCount: 4,
+      transitiveFileLineCount: 5,
+      transitiveFileUniqueCount: 6,
+      transitiveFileUniqueLineCount: 7,
+      libraryCycleLibraryCounts: 'a',
+      libraryCycleLineCounts: 'b',
+      contextWorkspaceType: '[0,1,2]',
+      numberOfPackagesInWorkspace: '32',
+      minSdkConstraints: '{"2.12.0":5,"3.0.0":2}',
+      languageVersionOverrides: '{"2.12":5,"3.10":2}',
+    );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.contextStructure);
+    expect(constructedEvent.eventData['immediateFileCount'], 1);
+    expect(constructedEvent.eventData['immediateFileLineCount'], 2);
+    expect(constructedEvent.eventData['numberOfContexts'], 3);
+    expect(constructedEvent.eventData['transitiveFileCount'], 4);
+    expect(constructedEvent.eventData['transitiveFileLineCount'], 5);
+    expect(constructedEvent.eventData['transitiveFileUniqueCount'], 6);
+    expect(constructedEvent.eventData['transitiveFileUniqueLineCount'], 7);
+    expect(constructedEvent.eventData['libraryCycleLibraryCounts'], 'a');
+    expect(constructedEvent.eventData['libraryCycleLineCounts'], 'b');
+    expect(constructedEvent.eventData['contextWorkspaceType'], '[0,1,2]');
+    expect(constructedEvent.eventData['numberOfPackagesInWorkspace'], '32');
+    expect(
+      constructedEvent.eventData['minSdkConstraints'],
+      '{"2.12.0":5,"3.0.0":2}',
+    );
+    expect(
+      constructedEvent.eventData['languageVersionOverrides'],
+      '{"2.12":5,"3.10":2}',
+    );
+    expect(constructedEvent.eventData.length, 13);
   });
 
   test('Event.dartCliCommandExecuted constructed', () {
@@ -196,6 +240,174 @@ void main() {
     );
     expect(constructedEvent.eventData['exitCode'], 0);
     expect(constructedEvent.eventData.length, 3);
+  });
+
+  test('Event.dartCliCommandExecuted constructed with Set of dependencies', () {
+    final deps = {'path', 'meta', 'collection'};
+    Event generateEvent() => Event.dartCliCommandExecuted(
+      name: 'name',
+      enabledExperiments: 'enabledExperiments',
+      exitCode: 0,
+      pubspecHasFlutterSdk: true,
+      pubspecDependencies: deps,
+      pubspecEnvironmentSdk: '^3.0.0',
+    );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.dartCliCommandExecuted);
+    expect(constructedEvent.eventData['name'], 'name');
+    expect(
+      constructedEvent.eventData['enabledExperiments'],
+      'enabledExperiments',
+    );
+    expect(constructedEvent.eventData['exitCode'], 0);
+    expect(constructedEvent.eventData['pubspec_has_flutter_sdk'], true);
+    expect(constructedEvent.eventData['pubspec_environment_sdk'], '^3.0.0');
+
+    // Delegates chunking to chunkDependencies
+    final expectedChunks = chunkDependencies(deps);
+    expect(
+      constructedEvent.eventData['pubspec_dep_0'],
+      expectedChunks['pubspec_dep_0'],
+    );
+    expect(constructedEvent.eventData.length, 6);
+  });
+
+  test('Event.dartCliCommandExecuted delegates to chunkDependencies', () {
+    final deps = <String>{};
+    for (var i = 1; i <= 50; i++) {
+      deps.add('dep_$i');
+    }
+
+    final event = Event.dartCliCommandExecuted(
+      name: 'name',
+      enabledExperiments: 'enabledExperiments',
+      pubspecDependencies: deps,
+    );
+
+    final expected = chunkDependencies(deps);
+    for (final entry in expected.entries) {
+      expect(event.eventData[entry.key], entry.value);
+    }
+  });
+
+  group('chunkDependencies', () {
+    test('empty set returns empty map', () {
+      expect(chunkDependencies({}), isEmpty);
+    });
+
+    test('sorts deterministically using salted FNV-1a hash values', () {
+      final deps = {'path', 'meta', 'collection', 'args', 'yaml', 'http'};
+
+      // Verification of determinism across multiple calls
+      final result1 = chunkDependencies(deps);
+      final result2 = chunkDependencies(deps);
+      expect(result1, result2);
+
+      // Verify that it is NOT sorted alphabetically.
+      // Alphabetical order would be: args, collection, http, meta, path, yaml
+      final alphabeticalList = deps.toList()..sort();
+      final reportedList = result1['pubspec_dep_0']!.split(',');
+      expect(reportedList, isNot(alphabeticalList));
+    });
+
+    test(
+      'salts ordering by dependency set to eliminate ecosystem-wide starvation',
+      () {
+        final depsA = {
+          'path',
+          'meta',
+          'collection',
+          'args',
+          'yaml',
+          'http',
+          'shelf',
+        };
+        final depsB = {
+          'path',
+          'meta',
+          'collection',
+          'args',
+          'yaml',
+          'http',
+          'async',
+        };
+
+        final resultA = chunkDependencies(depsA);
+        final resultB = chunkDependencies(depsB);
+
+        // Both results are deterministic across repeated runs
+        expect(resultA, chunkDependencies(depsA));
+        expect(resultB, chunkDependencies(depsB));
+
+        // The common packages ('path', 'meta', 'collection', etc.) should have
+        // different relative orderings between project A and project B because
+        // each project computes a unique dependency-set salt.
+        final commonInA = resultA['pubspec_dep_0']!
+            .split(',')
+            .where((p) => p != 'shelf')
+            .toList();
+        final commonInB = resultB['pubspec_dep_0']!
+            .split(',')
+            .where((p) => p != 'async')
+            .toList();
+        expect(commonInA, isNot(commonInB));
+      },
+    );
+
+    test('chunks correctly based on 100-character limit', () {
+      // 10 dependencies, each 16 characters.
+      // Delimited by ',' means 17 characters per dep (except last).
+      final deps = <String>{};
+      for (var i = 1; i <= 10; i++) {
+        deps.add('dep_${i.toString().padLeft(2, '0')}_123456789');
+      }
+
+      final result = chunkDependencies(deps);
+
+      // Since each dep is 16 chars, 6 deps would be 6 * 16 + 5 = 101 chars,
+      // which is > 100. So max 5 deps fit in a single chunk
+      // (5 * 16 + 4 = 84 chars). Therefore, it must be split across
+      // exactly 2 chunks.
+      expect(result.containsKey('pubspec_dep_0'), isTrue);
+      expect(result.containsKey('pubspec_dep_1'), isTrue);
+      expect(result.containsKey('pubspec_dep_2'), isFalse);
+
+      expect(result['pubspec_dep_0']!.length, lessThanOrEqualTo(100));
+      expect(result['pubspec_dep_1']!.length, lessThanOrEqualTo(100));
+
+      final allReported = <String>{
+        ...result['pubspec_dep_0']!.split(','),
+        ...result['pubspec_dep_1']!.split(','),
+      };
+      expect(allReported, deps);
+    });
+
+    test('caps at 20 chunks', () {
+      // Generate 150 dependencies, each 15 characters.
+      // This would require ~24 chunks, but must be capped at 20.
+      final deps = <String>{};
+      for (var i = 1; i <= 150; i++) {
+        deps.add('dep_${i.toString().padLeft(3, '0')}_12345678');
+      }
+
+      final result = chunkDependencies(deps);
+
+      expect(result.containsKey('pubspec_dep_0'), isTrue);
+      expect(result.containsKey('pubspec_dep_19'), isTrue);
+      expect(result.containsKey('pubspec_dep_20'), isFalse);
+      expect(result.length, 20);
+    });
+
+    test('guards against and skips package names > 100 characters', () {
+      final longName = 'a' * 101;
+      final result = chunkDependencies({longName, 'path'});
+
+      expect(result['pubspec_dep_0'], 'path');
+      expect(result.length, 1);
+    });
   });
 
   test('Event.doctorValidatorResult constructed', () {
@@ -496,6 +708,7 @@ void main() {
       commandPath: 'commandPath',
       result: 'result',
       commandHasTerminal: true,
+      hostArch: 'arm64',
       maxRss: 123,
     );
 
@@ -506,9 +719,32 @@ void main() {
     expect(constructedEvent.eventData['commandPath'], 'commandPath');
     expect(constructedEvent.eventData['result'], 'result');
     expect(constructedEvent.eventData['commandHasTerminal'], true);
+    expect(constructedEvent.eventData['hostArch'], 'arm64');
     expect(constructedEvent.eventData['maxRss'], 123);
-    expect(constructedEvent.eventData.length, 4);
+    expect(constructedEvent.eventData.length, 5);
   });
+
+  test(
+    'Event.flutterCommandResult constructed with optional values omitted',
+    () {
+      Event generateEvent() => Event.flutterCommandResult(
+        commandPath: 'commandPath',
+        result: 'result',
+        commandHasTerminal: true,
+      );
+
+      final constructedEvent = generateEvent();
+
+      expect(generateEvent, returnsNormally);
+      expect(constructedEvent.eventName, DashEvent.flutterCommandResult);
+      expect(constructedEvent.eventData['commandPath'], 'commandPath');
+      expect(constructedEvent.eventData['result'], 'result');
+      expect(constructedEvent.eventData['commandHasTerminal'], true);
+      expect(constructedEvent.eventData['hostArch'], isNull);
+      expect(constructedEvent.eventData['maxRss'], isNull);
+      expect(constructedEvent.eventData.length, 3);
+    },
+  );
 
   test('Event.flutterWasmDryRunPackage constructed', () {
     Event generateEvent() => Event.flutterWasmDryRunPackage(
