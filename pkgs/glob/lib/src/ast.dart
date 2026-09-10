@@ -73,10 +73,10 @@ class SequenceNode extends AstNode {
   }
 
   @override
-  bool get canMatchAbsolute => nodes.first.canMatchAbsolute;
+  bool get canMatchAbsolute => nodes.isNotEmpty && nodes.first.canMatchAbsolute;
 
   @override
-  bool get canMatchRelative => nodes.first.canMatchRelative;
+  bool get canMatchRelative => nodes.isEmpty || nodes.first.canMatchRelative;
 
   SequenceNode(Iterable<AstNode> nodes, {bool caseSensitive = true})
       : nodes = nodes.toList(),
