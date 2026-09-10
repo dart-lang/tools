@@ -247,8 +247,7 @@ void _gitDependency() {
     expect(dep.toString(), 'GitDependency: url@url');
   });
 
-  test('string with version key is ignored', () async {
-    // Regression test for https://github.com/dart-lang/pubspec_parse/issues/13
+  test('string with version key exposes the constraint', () async {
     final dep = await _dependency<GitDependency>({
       'git': 'url',
       'version': '^1.2.3',
@@ -256,7 +255,21 @@ void _gitDependency() {
     expect(dep.url.toString(), 'url');
     expect(dep.path, isNull);
     expect(dep.ref, isNull);
+    expect(dep.version, VersionConstraint.parse('^1.2.3'));
     expect(dep.toString(), 'GitDependency: url@url');
+  });
+
+  test('without a version key defaults to any', () async {
+    final dep = await _dependency<GitDependency>({'git': 'url'});
+    expect(dep.version, VersionConstraint.any);
+  });
+
+  test('map with version key exposes the constraint', () async {
+    final dep = await _dependency<GitDependency>({
+      'git': {'url': 'url', 'path': 'path', 'ref': 'ref'},
+      'version': '^1.2.3',
+    });
+    expect(dep.version, VersionConstraint.parse('^1.2.3'));
   });
 
   test('string with user@ URL', () async {
@@ -349,13 +362,19 @@ void _pathDependency() {
     expect(dep.toString(), 'PathDependency: path@../path');
   });
 
-  test('valid with version key is ignored', () async {
+  test('valid with version key exposes the constraint', () async {
     final dep = await _dependency<PathDependency>({
       'path': '../path',
       'version': '^1.2.3',
     });
     expect(dep.path, '../path');
+    expect(dep.version, VersionConstraint.parse('^1.2.3'));
     expect(dep.toString(), 'PathDependency: path@../path');
+  });
+
+  test('without a version key defaults to any', () async {
+    final dep = await _dependency<PathDependency>({'path': '../path'});
+    expect(dep.version, VersionConstraint.any);
   });
 
   test('valid with random extra key fails', () {

@@ -81,8 +81,11 @@ Dependency? _fromJson(Object? data, String name) {
         final key = matchedKeys.single;
 
         return switch (key) {
-          'git' => GitDependency.fromData(data[key]),
-          'path' => PathDependency.fromData(data[key]),
+          'git' => GitDependency.fromData(data[key], version: data['version']),
+          'path' => PathDependency.fromData(
+            data[key],
+            version: data['version'],
+          ),
           'sdk' => _$SdkDependencyFromJson(data),
           'hosted' => _$HostedDependencyFromJson(
             data,
@@ -131,15 +134,26 @@ class GitDependency extends Dependency {
   final String? ref;
   final String? path;
 
-  GitDependency(this.url, {this.ref, this.path});
+  /// The constraint from the `version` key that may accompany a `git`
+  /// dependency.
+  ///
+  /// This isn't used to select a revision, but pub's solver still validates
+  /// it against the resolved package's version.
+  @JsonKey(fromJson: _constraintFromString)
+  final VersionConstraint version;
 
-  factory GitDependency.fromData(Object? data) {
+  GitDependency(this.url, {this.ref, this.path, VersionConstraint? version})
+    : version = version ?? VersionConstraint.any;
+
+  factory GitDependency.fromData(Object? data, {Object? version}) {
     if (data is String) {
       data = {'url': data};
     }
 
     if (data is Map) {
-      return _$GitDependencyFromJson(data);
+      return _$GitDependencyFromJson(
+        version == null ? data : {...data, 'version': version},
+      );
     }
 
     throw ArgumentError.value(data, 'git', 'Must be a String or a Map.');
@@ -150,10 +164,11 @@ class GitDependency extends Dependency {
       other is GitDependency &&
       other.url == url &&
       other.ref == ref &&
-      other.path == path;
+      other.path == path &&
+      other.version == version;
 
   @override
-  int get hashCode => Object.hash(url, ref, path);
+  int get hashCode => Object.hash(url, ref, path, version);
 
   @override
   String toString() => 'GitDependency: url@$url';
@@ -161,6 +176,7 @@ class GitDependency extends Dependency {
   @override
   Map<String, dynamic> toJson() => {
     'git': {'url': url.toString(), 'ref': ?ref, 'path': ?path},
+    if (version != VersionConstraint.any) 'version': version.toString(),
   };
 }
 
@@ -202,27 +218,41 @@ Uri? _tryParseScpUri(String value) {
 class PathDependency extends Dependency {
   final String path;
 
-  PathDependency(this.path);
+  /// The constraint from the `version` key that may accompany a `path`
+  /// dependency.
+  ///
+  /// This isn't used to select the dependency, but pub's solver still
+  /// validates it against the resolved package's version.
+  final VersionConstraint version;
 
-  factory PathDependency.fromData(Object? data) {
+  PathDependency(this.path, {VersionConstraint? version})
+    : version = version ?? VersionConstraint.any;
+
+  factory PathDependency.fromData(Object? data, {Object? version}) {
     if (data is String) {
-      return PathDependency(data);
+      return PathDependency(
+        data,
+        version: _constraintFromString(version as String?),
+      );
     }
     throw ArgumentError.value(data, 'path', 'Must be a String.');
   }
 
   @override
   bool operator ==(Object other) =>
-      other is PathDependency && other.path == path;
+      other is PathDependency && other.path == path && other.version == version;
 
   @override
-  int get hashCode => path.hashCode;
+  int get hashCode => Object.hash(path, version);
 
   @override
   String toString() => 'PathDependency: path@$path';
 
   @override
-  Map<String, dynamic> toJson() => {'path': path};
+  Map<String, dynamic> toJson() => {
+    'path': path,
+    if (version != VersionConstraint.any) 'version': version.toString(),
+  };
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)

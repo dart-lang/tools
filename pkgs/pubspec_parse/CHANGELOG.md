@@ -1,3 +1,9 @@
+## 1.7.0-wip
+
+- Added `version` to `GitDependency` and `PathDependency`, exposing the
+  constraint from an accompanying `version` key instead of silently
+  discarding it.
+
 ## 1.6.0
 
 - Added `toJson` method to `Pubspec` to serialize the object back to a `Map`.
