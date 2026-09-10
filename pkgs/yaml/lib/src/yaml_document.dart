@@ -9,6 +9,7 @@ import 'dart:collection';
 
 import 'package:source_span/source_span.dart';
 
+import 'layout.dart';
 import 'yaml_node.dart';
 
 /// A YAML document, complete with metadata.
@@ -18,6 +19,14 @@ class YamlDocument {
 
   /// The span covering the entire document.
   final SourceSpan span;
+
+  /// Leading layout elements (comments, indentation, blank lines) preceding
+  /// this document when layout retention is enabled.
+  final List<LayoutElement> leadingLayout;
+
+  /// Trailing layout elements following this document when layout retention
+  /// is enabled.
+  final List<LayoutElement> trailingLayout;
 
   /// The version directive for the document, if any.
   final VersionDirective? versionDirective;
@@ -37,7 +46,10 @@ class YamlDocument {
   /// @nodoc
   YamlDocument.internal(this.contents, this.span, this.versionDirective,
       List<TagDirective> tagDirectives,
-      {this.startImplicit = false, this.endImplicit = false})
+      {this.startImplicit = false,
+      this.endImplicit = false,
+      this.leadingLayout = const [],
+      this.trailingLayout = const []})
       : tagDirectives = UnmodifiableListView(tagDirectives);
 
   @override

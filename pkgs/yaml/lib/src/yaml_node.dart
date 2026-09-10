@@ -11,6 +11,7 @@ import 'package:collection/collection.dart';
 import 'package:source_span/source_span.dart';
 
 import 'event.dart';
+import 'layout.dart';
 import 'null_span.dart';
 import 'style.dart';
 import 'yaml_node_wrapper.dart';
@@ -31,6 +32,16 @@ abstract class YamlNode {
   /// this node.
   SourceSpan get span => _span;
   SourceSpan _span;
+
+  /// Leading layout elements (comments, indentation, blank lines) preceding
+  /// this node when layout retention is enabled.
+  List<LayoutElement> get leadingLayout => _leadingLayout;
+  List<LayoutElement> _leadingLayout = const [];
+
+  /// Trailing layout elements (same-line comments or whitespace) following
+  /// this node when layout retention is enabled.
+  List<LayoutElement> get trailingLayout => _trailingLayout;
+  List<LayoutElement> _trailingLayout = const [];
 
   YamlNode._(this._span);
 
@@ -92,6 +103,11 @@ class YamlMap extends YamlNode with collection.MapMixin, UnmodifiableMapMixin {
 
   @override
   dynamic operator [](Object? key) => nodes[key]?.value;
+
+  /// The source span of the association colon (`:`) for [key], or `null`
+  /// if this is an explicit key without a colon or the key does not exist.
+  SourceSpan? colonSpan(Object? key) => _colonSpans?[key];
+  Map<dynamic, SourceSpan>? _colonSpans;
 }
 
 // TODO(nweiz): Use UnmodifiableListMixin when issue 18970 is fixed.
@@ -147,6 +163,15 @@ class YamlList extends YamlNode with collection.ListMixin {
   void operator []=(int index, Object? value) {
     throw UnsupportedError('Cannot modify an unmodifiable List');
   }
+
+  /// The source span of the sequence entry indicator (`-`) for the element
+  /// at [index], or `null` if this is a flow list or the index is out of
+  /// bounds.
+  SourceSpan? dashSpan(int index) =>
+      _dashSpans != null && index >= 0 && index < _dashSpans!.length
+          ? _dashSpans![index]
+          : null;
+  List<SourceSpan?>? _dashSpans;
 }
 
 /// A wrapped scalar value parsed from YAML.
@@ -188,4 +213,30 @@ class YamlScalar extends YamlNode {
 /// This method is not exposed publicly.
 void setSpan(YamlNode node, SourceSpan span) {
   node._span = span;
+}
+
+/// Sets the layout elements of a [YamlNode].
+///
+/// This method is not exposed publicly.
+void setLayout(
+  YamlNode node, {
+  List<LayoutElement> leading = const [],
+  List<LayoutElement> trailing = const [],
+}) {
+  node._leadingLayout = leading;
+  node._trailingLayout = trailing;
+}
+
+/// Sets the colon spans for entries in a [YamlMap].
+///
+/// This method is not exposed publicly.
+void setColonSpans(YamlMap map, Map<dynamic, SourceSpan> colonSpans) {
+  map._colonSpans = colonSpans;
+}
+
+/// Sets the dash spans for entries in a [YamlList].
+///
+/// This method is not exposed publicly.
+void setDashSpans(YamlList list, List<SourceSpan?> dashSpans) {
+  list._dashSpans = dashSpans;
 }

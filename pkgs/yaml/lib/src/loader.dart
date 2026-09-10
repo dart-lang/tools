@@ -38,9 +38,15 @@ class Loader {
 
   /// Creates a loader that loads [source].
   factory Loader(String source,
-      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener}) {
+      {Uri? sourceUrl,
+      bool recover = false,
+      ErrorListener? errorListener,
+      bool retainLayout = false}) {
     var parser = Parser(source,
-        sourceUrl: sourceUrl, recover: recover, errorListener: errorListener);
+        sourceUrl: sourceUrl,
+        recover: recover,
+        errorListener: errorListener,
+        retainLayout: retainLayout);
     var event = parser.parse();
     assert(event.type == EventType.streamStart);
     return Loader._(parser, event.span);
@@ -79,7 +85,9 @@ class Loader {
         firstEvent.versionDirective,
         firstEvent.tagDirectives,
         startImplicit: firstEvent.isImplicit,
-        endImplicit: lastEvent.isImplicit);
+        endImplicit: lastEvent.isImplicit,
+        leadingLayout: firstEvent.leadingLayout,
+        trailingLayout: lastEvent.trailingLayout);
   }
 
   /// Composes a node.
@@ -128,6 +136,8 @@ class Loader {
       node = _parseScalar(scalar);
     }
 
+    setLayout(node,
+        leading: scalar.leadingLayout, trailing: scalar.trailingLayout);
     _registerAnchor(scalar.anchor, node);
     return node;
   }
@@ -141,6 +151,7 @@ class Loader {
     }
 
     var children = <YamlNode>[];
+    var dashSpans = <SourceSpan?>[];
     var node = YamlList.internal(children, firstEvent.span, firstEvent.style);
     _registerAnchor(firstEvent.anchor, node);
 
@@ -149,6 +160,7 @@ class Loader {
       if (firstEvent.anchor case final anchor?) _activeAnchors.add(anchor);
       event = _parser.parse();
       while (event.type != EventType.sequenceEnd) {
+        dashSpans.add(_parser.lastDashSpan);
         children.add(_loadNode(event));
         event = _parser.parse();
       }
@@ -157,6 +169,11 @@ class Loader {
     }
 
     setSpan(node, firstEvent.span.expand(event.span));
+    setLayout(node,
+        leading: firstEvent.leadingLayout, trailing: event.trailingLayout);
+    if (dashSpans.any((s) => s != null)) {
+      setDashSpans(node, dashSpans);
+    }
     return node;
   }
 
@@ -169,6 +186,7 @@ class Loader {
     }
 
     var children = deepEqualsMap<dynamic, YamlNode>();
+    var colonSpans = deepEqualsMap<dynamic, SourceSpan>();
     var node = YamlMap.internal(children, firstEvent.span, firstEvent.style);
     _registerAnchor(firstEvent.anchor, node);
 
@@ -178,7 +196,12 @@ class Loader {
       event = _parser.parse();
       while (event.type != EventType.mappingEnd) {
         var key = _loadNode(event);
-        var value = _loadNode(_parser.parse());
+        var valueEvent = _parser.parse();
+        var colonSpan = _parser.lastColonSpan;
+        if (colonSpan != null) {
+          colonSpans[key] = colonSpan;
+        }
+        var value = _loadNode(valueEvent);
         if (children.containsKey(key)) {
           throw YamlException('Duplicate mapping key.', key.span);
         }
@@ -191,6 +214,11 @@ class Loader {
     }
 
     setSpan(node, firstEvent.span.expand(event.span));
+    setLayout(node,
+        leading: firstEvent.leadingLayout, trailing: event.trailingLayout);
+    if (colonSpans.isNotEmpty) {
+      setColonSpans(node, colonSpans);
+    }
     return node;
   }
 

@@ -10,6 +10,7 @@ import 'dart:collection';
 import 'package:collection/collection.dart' as pkg_collection;
 import 'package:source_span/source_span.dart';
 
+import 'layout.dart';
 import 'null_span.dart';
 import 'style.dart';
 import 'yaml_node.dart';
@@ -25,6 +26,15 @@ class YamlMapWrapper extends MapBase
 
   @override
   final SourceSpan span;
+
+  @override
+  List<LayoutElement> get leadingLayout => const [];
+
+  @override
+  List<LayoutElement> get trailingLayout => const [];
+
+  @override
+  SourceSpan? colonSpan(Object? key) => null;
 
   @override
   final Map<dynamic, YamlNode> nodes;
@@ -101,6 +111,15 @@ class YamlListWrapper extends ListBase implements YamlList {
 
   @override
   final SourceSpan span;
+
+  @override
+  List<LayoutElement> get leadingLayout => const [];
+
+  @override
+  List<LayoutElement> get trailingLayout => const [];
+
+  @override
+  SourceSpan? dashSpan(int index) => null;
 
   @override
   final List<YamlNode> nodes;

@@ -12,6 +12,7 @@ import 'package:source_span/source_span.dart';
 import 'package:string_scanner/string_scanner.dart';
 
 import 'error_listener.dart';
+import 'layout.dart';
 import 'style.dart';
 import 'token.dart';
 import 'utils.dart';
@@ -97,6 +98,18 @@ class Scanner {
 
   /// Whether this scanner should attempt to recover when parsing invalid YAML.
   final bool _recover;
+
+  /// Whether this scanner retains layout elements (whitespace, comments, line
+  /// breaks).
+  final bool _retainLayout;
+
+  /// Layout elements pending to be attached as leading layout to the next
+  /// token.
+  final _pendingLeadingLayout = <LayoutElement>[];
+
+  /// The most recently emitted token from the source text (used for trailing
+  /// layout).
+  Token? _lastToken;
 
   /// A listener to report YAML errors to.
   final ErrorListener? _errorListener;
@@ -286,8 +299,12 @@ class Scanner {
 
   /// Creates a scanner that scans [source].
   Scanner(String source,
-      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener})
+      {Uri? sourceUrl,
+      bool recover = false,
+      ErrorListener? errorListener,
+      bool retainLayout = false})
       : _recover = recover,
+        _retainLayout = retainLayout,
         _errorListener = errorListener,
         _scanner = SpanScanner.eager(source, sourceUrl: sourceUrl);
 
@@ -605,7 +622,22 @@ class Scanner {
     _resetIndent();
     _removeSimpleKey();
     _simpleKeyAllowed = false;
-    _tokens.add(Token(TokenType.streamEnd, _scanner.emptySpan));
+    _tokens.add(Token(TokenType.streamEnd, _scanner.emptySpan,
+        leadingLayout: _takePendingLeadingLayout()));
+  }
+
+  void _emitToken(Token token) {
+    if (_retainLayout) {
+      _lastToken = token;
+    }
+    _tokens.add(token);
+  }
+
+  List<LayoutElement> _takePendingLeadingLayout() {
+    if (!_retainLayout || _pendingLeadingLayout.isEmpty) return const [];
+    var layout = List.of(_pendingLeadingLayout);
+    _pendingLeadingLayout.clear();
+    return layout;
   }
 
   /// Produces a [TokenType.versionDirective] or [TokenType.tagDirective]
@@ -615,7 +647,7 @@ class Scanner {
     _removeSimpleKey();
     _simpleKeyAllowed = false;
     var directive = _scanDirective();
-    if (directive != null) _tokens.add(directive);
+    if (directive != null) _emitToken(directive);
   }
 
   /// Produces a [TokenType.documentStart] or [TokenType.documentEnd] token.
@@ -630,7 +662,8 @@ class Scanner {
     _scanner.readCodePoint();
     _scanner.readCodePoint();
 
-    _tokens.add(Token(type, _scanner.spanFrom(start)));
+    _emitToken(Token(type, _scanner.spanFrom(start),
+        leadingLayout: _takePendingLeadingLayout()));
   }
 
   /// Produces a [TokenType.flowSequenceStart] or
@@ -745,21 +778,22 @@ class Scanner {
   void _addCharToken(TokenType type) {
     var start = _scanner.state;
     _scanner.readCodePoint();
-    _tokens.add(Token(type, _scanner.spanFrom(start)));
+    _emitToken(Token(type, _scanner.spanFrom(start),
+        leadingLayout: _takePendingLeadingLayout()));
   }
 
   /// Produces a [TokenType.alias] or [TokenType.anchor] token.
   void _fetchAnchor({bool anchor = true}) {
     _saveSimpleKey();
     _simpleKeyAllowed = false;
-    _tokens.add(_scanAnchor(anchor: anchor));
+    _emitToken(_scanAnchor(anchor: anchor));
   }
 
   /// Produces a [TokenType.tag] token.
   void _fetchTag() {
     _saveSimpleKey();
     _simpleKeyAllowed = false;
-    _tokens.add(_scanTag());
+    _emitToken(_scanTag());
   }
 
   /// Produces a [TokenType.scalar] token with style [ScalarStyle.LITERAL] or
@@ -767,7 +801,7 @@ class Scanner {
   void _fetchBlockScalar({bool literal = false}) {
     _removeSimpleKey();
     _simpleKeyAllowed = true;
-    _tokens.add(_scanBlockScalar(literal: literal));
+    _emitToken(_scanBlockScalar(literal: literal));
   }
 
   /// Produces a [TokenType.scalar] token with style [ScalarStyle.SINGLE_QUOTED]
@@ -775,14 +809,14 @@ class Scanner {
   void _fetchFlowScalar({bool singleQuote = false}) {
     _saveSimpleKey();
     _simpleKeyAllowed = false;
-    _tokens.add(_scanFlowScalar(singleQuote: singleQuote));
+    _emitToken(_scanFlowScalar(singleQuote: singleQuote));
   }
 
   /// Produces a [TokenType.scalar] token with style [ScalarStyle.PLAIN].
   void _fetchPlainScalar() {
     _saveSimpleKey();
     _simpleKeyAllowed = false;
-    _tokens.add(_scanPlainScalar());
+    _emitToken(_scanPlainScalar());
   }
 
   /// Eats whitespace and comments until the next token is found.
@@ -792,34 +826,86 @@ class Scanner {
       // Allow the BOM to start a line.
       if (_scanner.column == 0) _scanner.scan('\uFEFF');
 
-      // Eat whitespace.
-      //
-      // libyaml disallows tabs after "-", "?", or ":", but the spec allows
-      // them. See section 6.2: http://yaml.org/spec/1.2/spec.html#id2778241.
-      while (_scanner.peekChar() == SP ||
-          ((!_inBlockContext || !afterLineBreak) &&
-              _scanner.peekChar() == TAB)) {
-        _scanner.readChar();
-      }
+      if (!_retainLayout) {
+        // Eat whitespace.
+        //
+        // libyaml disallows tabs after "-", "?", or ":", but the spec allows
+        // them. See section 6.2: http://yaml.org/spec/1.2/spec.html#id2778241.
+        while (_scanner.peekChar() == SP ||
+            ((!_inBlockContext || !afterLineBreak) &&
+                _scanner.peekChar() == TAB)) {
+          _scanner.readChar();
+        }
 
-      if (_scanner.peekChar() == TAB) {
-        _scanner.error('Tab characters are not allowed as indentation.',
-            length: 1);
-      }
+        if (_scanner.peekChar() == TAB) {
+          _scanner.error('Tab characters are not allowed as indentation.',
+              length: 1);
+        }
 
-      // Eat a comment until a line break.
-      _skipComment();
+        // Eat a comment until a line break.
+        _skipComment();
 
-      // If we're at a line break, eat it.
-      if (_isBreak) {
-        _skipLine();
+        // If we're at a line break, eat it.
+        if (_isBreak) {
+          _skipLine();
 
-        // In the block context, a new line may start a simple key.
-        if (_inBlockContext) _simpleKeyAllowed = true;
-        afterLineBreak = true;
+          // In the block context, a new line may start a simple key.
+          if (_inBlockContext) _simpleKeyAllowed = true;
+          afterLineBreak = true;
+        } else {
+          // Otherwise we've found a token.
+          break;
+        }
       } else {
-        // Otherwise we've found a token.
-        break;
+        // Retaining layout:
+        var wsStart = _scanner.state;
+        while (_scanner.peekChar() == SP ||
+            ((!_inBlockContext || !afterLineBreak) &&
+                _scanner.peekChar() == TAB)) {
+          _scanner.readChar();
+        }
+
+        if (_scanner.state.position > wsStart.position) {
+          var wsSpan = _scanner.spanFrom(wsStart);
+          var elem = WhitespaceElement(wsSpan);
+          if (!afterLineBreak && _lastToken != null) {
+            _lastToken!.trailingLayout.add(elem);
+          } else {
+            _pendingLeadingLayout.add(elem);
+          }
+        }
+
+        if (_scanner.peekChar() == TAB) {
+          _scanner.error('Tab characters are not allowed as indentation.',
+              length: 1);
+        }
+
+        // Check for comment.
+        if (_scanner.peekChar() == HASH) {
+          var commentStart = _scanner.state;
+          while (!_isBreakOrEnd) {
+            _scanner.readChar();
+          }
+          var commentSpan = _scanner.spanFrom(commentStart);
+          if (!afterLineBreak && _lastToken != null) {
+            _lastToken!.trailingLayout
+                .add(CommentElement(commentSpan, isTrailing: true));
+          } else {
+            _pendingLeadingLayout.add(CommentElement(commentSpan));
+          }
+        }
+
+        if (_isBreak) {
+          var breakStart = _scanner.state;
+          _skipLine();
+          var breakSpan = _scanner.spanFrom(breakStart);
+          _pendingLeadingLayout.add(NewlineElement(breakSpan));
+
+          if (_inBlockContext) _simpleKeyAllowed = true;
+          afterLineBreak = true;
+        } else {
+          break;
+        }
       }
     }
   }
@@ -831,6 +917,7 @@ class Scanner {
   ///     %TAG    !yaml!  tag:yaml.org,2002:  \n
   ///     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   Token? _scanDirective() {
+    var leading = _takePendingLeadingLayout();
     var start = _scanner.state;
 
     // Eat '%'.
@@ -839,9 +926,9 @@ class Scanner {
     Token token;
     var name = _scanDirectiveName();
     if (name == 'YAML') {
-      token = _scanVersionDirectiveValue(start);
+      token = _scanVersionDirectiveValue(start, leadingLayout: leading);
     } else if (name == 'TAG') {
-      token = _scanTagDirectiveValue(start);
+      token = _scanTagDirectiveValue(start, leadingLayout: leading);
     } else {
       warn('Warning: unknown directive.', _scanner.spanFrom(start));
 
@@ -855,15 +942,36 @@ class Scanner {
     }
 
     // Eat the rest of the line, including any comments.
-    _skipBlanks();
-    _skipComment();
+    if (_retainLayout) {
+      var wsStart = _scanner.state;
+      _skipBlanks();
+      if (_scanner.state.position > wsStart.position) {
+        token.trailingLayout.add(WhitespaceElement(_scanner.spanFrom(wsStart)));
+      }
+      if (_scanner.peekChar() == HASH) {
+        var commentStart = _scanner.state;
+        _skipComment();
+        token.trailingLayout.add(CommentElement(
+            _scanner.spanFrom(commentStart),
+            isTrailing: true));
+      }
+    } else {
+      _skipBlanks();
+      _skipComment();
+    }
 
     if (!_isBreakOrEnd) {
       throw YamlException('Expected comment or line break after directive.',
           _scanner.spanFrom(start));
     }
 
-    _skipLine();
+    if (_retainLayout && _isBreak) {
+      var breakStart = _scanner.state;
+      _skipLine();
+      _pendingLeadingLayout.add(NewlineElement(_scanner.spanFrom(breakStart)));
+    } else {
+      _skipLine();
+    }
     return token;
   }
 
@@ -896,14 +1004,16 @@ class Scanner {
   ///
   ///      %YAML   1.2     # a comment \n
   ///           ^^^^^^
-  Token _scanVersionDirectiveValue(LineScannerState start) {
+  Token _scanVersionDirectiveValue(LineScannerState start,
+      {List<LayoutElement>? leadingLayout}) {
     _skipBlanks();
 
     var major = _scanVersionDirectiveNumber();
     _scanner.expect('.');
     var minor = _scanVersionDirectiveNumber();
 
-    return VersionDirectiveToken(_scanner.spanFrom(start), major, minor);
+    return VersionDirectiveToken(_scanner.spanFrom(start), major, minor,
+        leadingLayout: leadingLayout ?? const []);
   }
 
   /// Scans the version number of a version directive.
@@ -930,7 +1040,8 @@ class Scanner {
   ///
   ///      %TAG    !yaml!  tag:yaml.org,2002:  \n
   ///          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  Token _scanTagDirectiveValue(LineScannerState start) {
+  Token _scanTagDirectiveValue(LineScannerState start,
+      {List<LayoutElement>? leadingLayout}) {
     _skipBlanks();
 
     var handle = _scanTagHandle(directive: true);
@@ -945,7 +1056,8 @@ class Scanner {
       throw YamlException('Expected whitespace.', _scanner.emptySpan);
     }
 
-    return TagDirectiveToken(_scanner.spanFrom(start), handle, prefix);
+    return TagDirectiveToken(_scanner.spanFrom(start), handle, prefix,
+        leadingLayout: leadingLayout ?? const []);
   }
 
   /// Scans a [TokenType.anchor] token.
@@ -978,15 +1090,19 @@ class Scanner {
           'Expected alphanumeric character.', _scanner.emptySpan);
     }
 
+    var leading = _takePendingLeadingLayout();
     if (anchor) {
-      return AnchorToken(_scanner.spanFrom(start), name);
+      return AnchorToken(_scanner.spanFrom(start), name,
+          leadingLayout: leading);
     } else {
-      return AliasToken(_scanner.spanFrom(start), name);
+      return AliasToken(_scanner.spanFrom(start), name,
+          leadingLayout: leading);
     }
   }
 
   /// Scans a [TokenType.tag] token.
   Token _scanTag() {
+    var leading = _takePendingLeadingLayout();
     String? handle;
     String suffix;
     var start = _scanner.state;
@@ -1026,7 +1142,8 @@ class Scanner {
     // libyaml insists on whitespace after a tag, but example 7.2 indicates
     // that it's not required: http://yaml.org/spec/1.2/spec.html#id2786720.
 
-    return TagToken(_scanner.spanFrom(start), handle, suffix);
+    return TagToken(_scanner.spanFrom(start), handle, suffix,
+        leadingLayout: leading);
   }
 
   /// Scans a tag handle.
@@ -1092,6 +1209,7 @@ class Scanner {
 
   /// Scans a block scalar.
   Token _scanBlockScalar({bool literal = false}) {
+    var leading = _takePendingLeadingLayout();
     var start = _scanner.state;
 
     // Eat the indicator '|' or '>'.
@@ -1219,7 +1337,8 @@ class Scanner {
     if (chomping == _Chomping.keep) buffer.write(trailingBreaks);
 
     return ScalarToken(_scanner.spanFrom(start, end), buffer.toString(),
-        literal ? ScalarStyle.LITERAL : ScalarStyle.FOLDED);
+        literal ? ScalarStyle.LITERAL : ScalarStyle.FOLDED,
+        leadingLayout: leading);
   }
 
   /// Scans indentation spaces and line breaks for a block scalar.
@@ -1259,6 +1378,7 @@ class Scanner {
 
   // Scans a quoted scalar.
   Token _scanFlowScalar({bool singleQuote = false}) {
+    var leading = _takePendingLeadingLayout();
     var start = _scanner.state;
     var buffer = StringBuffer();
 
@@ -1438,11 +1558,13 @@ class Scanner {
     _scanner.readChar();
 
     return ScalarToken(_scanner.spanFrom(start), buffer.toString(),
-        singleQuote ? ScalarStyle.SINGLE_QUOTED : ScalarStyle.DOUBLE_QUOTED);
+        singleQuote ? ScalarStyle.SINGLE_QUOTED : ScalarStyle.DOUBLE_QUOTED,
+        leadingLayout: leading);
   }
 
   /// Scans a plain scalar.
   Token _scanPlainScalar() {
+    var leading = _takePendingLeadingLayout();
     var start = _scanner.state;
     var end = _scanner.state;
     var buffer = StringBuffer();
@@ -1518,8 +1640,13 @@ class Scanner {
     // Allow a simple key after a plain scalar with leading blanks.
     if (leadingBreak.isNotEmpty) _simpleKeyAllowed = true;
 
+    if (_retainLayout) {
+      _scanner.state = end;
+    }
+
     return ScalarToken(
-        _scanner.spanFrom(start, end), buffer.toString(), ScalarStyle.PLAIN);
+        _scanner.spanFrom(start, end), buffer.toString(), ScalarStyle.PLAIN,
+        leadingLayout: leading);
   }
 
   /// Moves past the current line break, if there is one.
