@@ -1,5 +1,7 @@
 ## 3.0.1-wip
 
+- Forbid Windows UNC paths in `rootUri` and `packageUri` to mitigate UNC path injection ([SMB NTLM leak](https://attack.mitre.org/techniques/T1187/)).
+
 ## 3.0.0
 
 - Adds discovery API to find both a configuration and its location:

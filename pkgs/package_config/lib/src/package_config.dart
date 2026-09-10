@@ -821,6 +821,22 @@ class SimplePackage implements Package {
         root = root.replace(path: '${root.path}/');
       }
     }
+
+    if (!fatalError && root.isScheme('file')) {
+      var windowsPath = root.toFilePath(windows: true);
+      if (windowsPath.startsWith(r'\\')) {
+        onError(
+          PackageConfigArgumentError(
+            root,
+            'root',
+            'Package root URIs must not evaluate to a Windows UNC path. '
+                'The rootUri must be a local file path. '
+                'Found: "$windowsPath".',
+          ),
+        );
+        fatalError = true;
+      }
+    }
     if (packageUriRoot == null) {
       packageUriRoot = root;
     } else if (!fatalError) {
@@ -844,6 +860,22 @@ class SimplePackage implements Package {
           ),
         );
         packageUriRoot = root;
+      } else {
+        if (packageUriRoot.isScheme('file')) {
+          var windowsPath = packageUriRoot.toFilePath(windows: true);
+          if (windowsPath.startsWith(r'\\')) {
+            onError(
+              PackageConfigArgumentError(
+                packageUriRoot,
+                'packageUriRoot',
+                'Package URIs must not evaluate to a Windows UNC path. '
+                    'The packageUri must be a local file path. '
+                    'Found: "$windowsPath".',
+              ),
+            );
+            packageUriRoot = root;
+          }
+        }
       }
     }
     if (fatalError) return null;
