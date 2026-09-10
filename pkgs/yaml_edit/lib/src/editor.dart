@@ -183,15 +183,25 @@ class YamlEditor {
       String yaml, YamlNode parentCollection, Object? keyOrIndex) {
     int searchStart;
     if (parentCollection is YamlMap) {
-      final keyNode = getKeyNode(parentCollection, keyOrIndex);
-      searchStart = keyNode.span.end.offset;
-    } else {
+      final colon = parentCollection.colonSpan(keyOrIndex);
+      if (colon != null) {
+        searchStart = colon.end.offset;
+      } else {
+        final keyNode = getKeyNode(parentCollection, keyOrIndex);
+        searchStart = keyNode.span.end.offset;
+      }
+    } else if (parentCollection is YamlList) {
       final idx = keyOrIndex as int;
-      if (idx > 0) {
+      final dash = parentCollection.dashSpan(idx);
+      if (dash != null) {
+        searchStart = dash.end.offset;
+      } else if (idx > 0) {
         searchStart = getTrueContentSensitiveEnd(parentCollection, idx - 1);
       } else {
         searchStart = parentCollection.span.start.offset;
       }
+    } else {
+      searchStart = parentCollection.span.start.offset;
     }
 
     // Scan forward through the YAML source to locate the alias reference
@@ -725,25 +735,16 @@ class YamlEditor {
 
     if (path.isEmpty) {
       final start = _contents.span.start.offset;
-      var end = _getContentSensitiveEndWithAliases(_contents);
       final lineEnding = getLineEnding(_yaml);
-      var replacement = yamlEncodeBlock(valueNode, 0, lineEnding);
-      if (replacement.startsWith('|') || replacement.startsWith('>')) {
-        final nextNl = _yaml.indexOf('\n', end);
-        final sameLineTrivia =
-            nextNl != -1 ? _yaml.substring(end, nextNl) : _yaml.substring(end);
-        final commentIdx = sameLineTrivia.indexOf('#');
-        if (commentIdx != -1) {
-          final comment = sameLineTrivia.substring(commentIdx);
-          final headerEnd = replacement.indexOf(lineEnding);
-          if (headerEnd != -1) {
-            replacement = '${replacement.substring(0, headerEnd)} '
-                '$comment${replacement.substring(headerEnd)}';
-          }
-        }
-        end = nextNl != -1 ? nextNl : _yaml.length;
-      }
-      final edit = SourceEdit(start, end - start, replacement);
+      final rawReplacement = yamlEncodeBlock(valueNode, 0, lineEnding);
+      final (:replacement, :endOffset) = preserveTrailingCommentOnBlockScalar(
+        oldNode: _contents,
+        yaml: _yaml,
+        replacement: rawReplacement,
+        currentEndOffset: _getContentSensitiveEndWithAliases(_contents),
+        lineEnding: lineEnding,
+      );
+      final edit = SourceEdit(start, endOffset - start, replacement);
 
       return _performEdit(edit, path, valueNode);
     }

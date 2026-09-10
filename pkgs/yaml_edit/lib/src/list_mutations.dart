@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:math';
-
 import 'package:yaml/yaml.dart';
 
 import 'char_codes.dart';
@@ -69,27 +67,16 @@ SourceEdit updateInList(
 
     if (valueString.trimLeft().startsWith('|') ||
         valueString.trimLeft().startsWith('>')) {
-      final nextNl = yaml.indexOf('\n', end);
-      final sameLineTrivia =
-          nextNl != -1 ? yaml.substring(end, nextNl) : yaml.substring(end);
-      if (sameLineTrivia.contains('#')) {
-        final comment = sameLineTrivia.substring(sameLineTrivia.indexOf('#'));
-        final headerNl = valueString.indexOf(lineEnding);
-        if (headerNl != -1) {
-          valueString = '${valueString.substring(0, headerNl)} '
-              '$comment${valueString.substring(headerNl)}';
-        } else {
-          valueString = '$valueString $comment';
-        }
-        end = nextNl != -1 ? nextNl : yaml.length;
-        end = indexOfLastLineEnding(yaml,
-            offset: nextNl != -1 ? nextNl : end, blockIndent: listIndentation);
-        end = min(end, yaml.length);
-      } else if (nextNl != -1) {
-        end = indexOfLastLineEnding(yaml,
-            offset: nextNl, blockIndent: listIndentation);
-        end = min(end, yaml.length);
-      }
+      final (:replacement, :endOffset) = preserveTrailingCommentOnBlockScalar(
+        oldNode: currValue,
+        yaml: yaml,
+        replacement: valueString,
+        currentEndOffset: end,
+        lineEnding: lineEnding,
+        blockIndent: listIndentation,
+      );
+      valueString = replacement;
+      end = endOffset;
     }
 
     return SourceEdit(offset, end - offset, valueString);
@@ -280,7 +267,8 @@ SourceEdit _insertInBlockList(
   final currNodeStart = currNode.span.start.offset;
   final yaml = yamlEdit.toString();
 
-  final currSequenceOffset = yaml.lastIndexOf('-', currNodeStart - 1);
+  final currSequenceOffset = list.dashSpan(index)?.start.offset ??
+      yaml.lastIndexOf('-', currNodeStart - 1);
 
   final lineStart = currSequenceOffset > 0
       ? yaml.lastIndexOf('\n', currSequenceOffset - 1) + 1
@@ -439,14 +427,24 @@ SourceEdit _removeFromBlockList(
     isSingleEntry: listSize == 1,
     isLastEntry: index >= listSize - 1,
     nodeToRemoveOffset: (
-      start: yaml.lastIndexOf(
-        '-',
-        isEmptySpan ? span.start.offset : span.start.offset - 1,
-      ),
-      end: isEmptySpan ? end + 1 : end,
+      start: list.dashSpan(index)?.start.offset ??
+          yaml.lastIndexOf(
+            '-',
+            isEmptySpan ? span.start.offset : span.start.offset - 1,
+          ),
+      end: isEmptySpan ? (list.dashSpan(index)?.end.offset ?? end + 1) : end,
     ),
     lineEnding: getLineEnding(yaml),
     nextBlockNodeInfo: () {
+      final nextDash = list.dashSpan(index + 1);
+      if (nextDash != null) {
+        final hyphenOffset = nextDash.start.offset;
+        final nearestLineEnding = yaml.lastIndexOf('\n', hyphenOffset);
+        return (
+          nearestLineEnding: nearestLineEnding,
+          nextNodeColStart: nextDash.start.column,
+        );
+      }
       final nextNodeSpan = yamlEdit.getTrueSpan(list, index + 1);
       final offset = nextNodeSpan.start.offset;
 

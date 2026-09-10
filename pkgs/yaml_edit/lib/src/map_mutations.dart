@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:math';
-
 import 'package:yaml/yaml.dart';
 
 import 'char_codes.dart';
@@ -252,7 +250,9 @@ SourceEdit _replaceInBlockMap(
   /// Find the association colon after the key, skipping whitespace and
   /// comments. If no colon exists for this key (e.g. an explicit key without
   /// a value), insert a new association line with the colon and value.
-  final colonIndex = _findAssociationColon(yaml, keyNode.span.end.offset);
+  final colonSpan = map.colonSpan(key);
+  final colonIndex = colonSpan?.start.offset ??
+      _findAssociationColon(yaml, keyNode.span.end.offset);
   if (colonIndex == -1) {
     final mapIndent = getMapIndentation(yaml, map);
     final nextNewLine = yaml.indexOf('\n', keyNode.span.end.offset);
@@ -279,27 +279,17 @@ SourceEdit _replaceInBlockMap(
 
   if (valueAsString.trimLeft().startsWith('|') ||
       valueAsString.trimLeft().startsWith('>')) {
-    final nextNl = yaml.indexOf('\n', end);
-    final sameLineTrivia =
-        nextNl != -1 ? yaml.substring(end, nextNl) : yaml.substring(end);
-    final mapIndent = getMapIndentation(yaml, map);
-    if (sameLineTrivia.contains('#')) {
-      final comment = sameLineTrivia.substring(sameLineTrivia.indexOf('#'));
-      final headerNl = valueAsString.indexOf(lineEnding);
-      if (headerNl != -1) {
-        valueAsString = '${valueAsString.substring(0, headerNl)} '
-            '$comment${valueAsString.substring(headerNl)}';
-      } else {
-        valueAsString = '$valueAsString $comment';
-      }
-      end = nextNl != -1 ? nextNl : yaml.length;
-      end = indexOfLastLineEnding(yaml,
-          offset: nextNl != -1 ? nextNl : end, blockIndent: mapIndent);
-      end = min(end, yaml.length);
-    } else if (nextNl != -1) {
-      end = indexOfLastLineEnding(yaml, offset: nextNl, blockIndent: mapIndent);
-      end = min(end, yaml.length);
-    }
+    final targetNode = map.nodes[key] ?? keyNode;
+    final (:replacement, :endOffset) = preserveTrailingCommentOnBlockScalar(
+      oldNode: targetNode,
+      yaml: yaml,
+      replacement: valueAsString,
+      currentEndOffset: end,
+      lineEnding: lineEnding,
+      blockIndent: getMapIndentation(yaml, map),
+    );
+    valueAsString = replacement;
+    end = endOffset;
   }
 
   return SourceEdit(start, end - start, valueAsString);
@@ -344,11 +334,13 @@ SourceEdit _replaceInFlowMap(
 
   final yaml = yamlEdit.toString();
   final keyNode = getKeyNode(map, key);
-  final colonIndex = findNextFlowDelimiter(
-    yaml,
-    keyNode.span.end.offset,
-    delimiters: {YamlChar.colon, YamlChar.comma, YamlChar.rightCurly},
-  );
+  final colonSpan = map.colonSpan(key);
+  final colonIndex = colonSpan?.start.offset ??
+      findNextFlowDelimiter(
+        yaml,
+        keyNode.span.end.offset,
+        delimiters: {YamlChar.colon, YamlChar.comma, YamlChar.rightCurly},
+      );
   if (colonIndex == -1 || yaml.codeUnitAt(colonIndex) != YamlChar.colon) {
     return SourceEdit(keyNode.span.end.offset, 0, ': $valueString');
   }
@@ -400,7 +392,7 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
           ? map.span.start.offset
           : keySpan.start.offset,
       end: valueNode.span.length == 0
-          ? keySpan.end.offset + 2 // Null value have no span. Skip ":".
+          ? (map.colonSpan(key)?.end.offset ?? keySpan.end.offset + 2)
           : yamlEdit.getTrueContentSensitiveEnd(map, key),
     ),
     lineEnding: getLineEnding(yaml),

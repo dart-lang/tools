@@ -215,6 +215,11 @@ int getListIndentation(String yaml, YamlList list) {
     throw UnsupportedError('Unable to get indentation for empty block list');
   }
 
+  final firstDash = list.dashSpan(0);
+  if (firstDash != null) {
+    return firstDash.start.column;
+  }
+
   // Iterate backwards to find a node with a valid hyphen in the source text.
   // We cannot rely solely on the last node because if it is an alias reference,
   // its AST span points to the anchor definition elsewhere in the document.
@@ -249,16 +254,13 @@ int getMapIndentation(String yaml, YamlMap map) {
     throw UnsupportedError('Unable to get indentation for empty block map');
   }
 
-  /// Use the number of spaces between the last key and the newline as
-  /// indentation.
   final lastKey = map.nodes.keys.last as YamlNode;
   final lastSpanOffset = lastKey.span.start.offset;
   final lastNewLine = yaml.lastIndexOf('\n', lastSpanOffset);
   final lastQuestionMark = yaml.lastIndexOf('?', lastSpanOffset);
 
   if (lastQuestionMark == -1) {
-    if (lastNewLine == -1) return lastSpanOffset;
-    return lastSpanOffset - lastNewLine - 1;
+    return lastKey.span.start.column;
   }
 
   /// If there is a question mark, it might be a complex key. Check if it
@@ -268,7 +270,7 @@ int getMapIndentation(String yaml, YamlMap map) {
     return lastQuestionMark - lastNewLine - 1;
   }
 
-  return lastSpanOffset - lastNewLine - 1;
+  return lastKey.span.start.column;
 }
 
 /// Returns the detected line ending used in [yaml], more specifically, whether
@@ -805,4 +807,79 @@ String formatMultilineFlowTrailingEntry({
   final closingIndentSpaces = ' ' * closingIndent;
 
   return '$extraIndent$newEntry,$lineEnding$closingIndentSpaces';
+}
+
+/// Preserves any trailing same-line comment when replacing a node with a block
+/// scalar (`|` or `>`).
+({String replacement, int endOffset}) preserveTrailingCommentOnBlockScalar({
+  required YamlNode oldNode,
+  required String yaml,
+  required String replacement,
+  required int currentEndOffset,
+  required String lineEnding,
+  int? blockIndent,
+}) {
+  if (!replacement.trimLeft().startsWith('|') &&
+      !replacement.trimLeft().startsWith('>')) {
+    return (replacement: replacement, endOffset: currentEndOffset);
+  }
+
+  // First check if oldNode has a retained trailing comment.
+  final trailingComment =
+      oldNode.trailingLayout.whereType<CommentElement>().firstOrNull;
+
+  String? commentText;
+  var end = currentEndOffset;
+
+  if (trailingComment != null) {
+    commentText = trailingComment.text;
+    end = trailingComment.span.end.offset;
+  } else {
+    // Fallback: check text on the same line after currentEndOffset.
+    final nextNl = yaml.indexOf('\n', currentEndOffset);
+    final sameLine = nextNl != -1
+        ? yaml.substring(currentEndOffset, nextNl)
+        : yaml.substring(currentEndOffset);
+    final commentIdx = sameLine.indexOf('#');
+    if (commentIdx != -1) {
+      commentText = sameLine.substring(commentIdx);
+      end = nextNl != -1 ? nextNl : yaml.length;
+    }
+  }
+
+  var updatedReplacement = replacement;
+  if (commentText != null) {
+    final headerEnd = updatedReplacement.indexOf(lineEnding);
+    if (headerEnd != -1) {
+      updatedReplacement = '${updatedReplacement.substring(0, headerEnd)} '
+          '$commentText${updatedReplacement.substring(headerEnd)}';
+    } else {
+      updatedReplacement = '$updatedReplacement $commentText';
+    }
+
+    if (blockIndent != null) {
+      final nextNl = yaml.indexOf('\n', end);
+      end = indexOfLastLineEnding(yaml,
+          offset: nextNl != -1 ? nextNl : end, blockIndent: blockIndent);
+      end = min(end, yaml.length);
+    } else {
+      final nextNl = yaml.indexOf('\n', end);
+      if (nextNl != -1) {
+        end = nextNl;
+      }
+    }
+  } else {
+    final nextNl = yaml.indexOf('\n', end);
+    if (nextNl != -1) {
+      if (blockIndent != null) {
+        end = indexOfLastLineEnding(yaml,
+            offset: nextNl, blockIndent: blockIndent);
+        end = min(end, yaml.length);
+      } else {
+        end = nextNl;
+      }
+    }
+  }
+
+  return (replacement: updatedReplacement, endOffset: end);
 }
