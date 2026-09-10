@@ -9,7 +9,7 @@ import 'package:convert/convert.dart';
 import 'package:file/file.dart';
 
 import 'initializer.dart';
-import 'is_external.dart';
+import 'is_external.dart' as ie;
 import 'utils.dart';
 
 /// The regex pattern used to parse the disable analytics line.
@@ -36,6 +36,7 @@ class ConfigHandler {
 
   final Directory homeDirectory;
   final File configFile;
+  final bool isExternal;
 
   final Map<String, ToolInfo> parsedTools = <String, ToolInfo>{};
 
@@ -44,10 +45,13 @@ class ConfigHandler {
   /// Reporting enabled unless specified by user
   bool _telemetryEnabled = true;
 
-  ConfigHandler({required this.homeDirectory, required this.configFile})
-    : configFileLastModified = isExternal && configFile.existsSync()
-          ? configFile.lastModifiedSync()
-          : DateTime.fromMillisecondsSinceEpoch(0) {
+  ConfigHandler({
+    required this.homeDirectory,
+    required this.configFile,
+    this.isExternal = ie.isExternal,
+  }) : configFileLastModified = isExternal && configFile.existsSync()
+           ? configFile.lastModifiedSync()
+           : DateTime.fromMillisecondsSinceEpoch(0) {
     // Call the method to parse the contents of the config file when
     // this class is initialized
     if (isExternal) {
