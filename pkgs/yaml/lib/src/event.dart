@@ -42,11 +42,15 @@ class DocumentStartEvent extends Event {
   /// `===` sequence).
   final bool isImplicit;
 
+  /// The source span of the `---` start marker, if explicit.
+  final FileSpan? startMarkerSpan;
+
   DocumentStartEvent(
     FileSpan span, {
     this.versionDirective,
     List<TagDirective>? tagDirectives,
     this.isImplicit = true,
+    this.startMarkerSpan,
     super.leadingLayout,
     super.trailingLayout,
   })  : tagDirectives = tagDirectives ?? [],
@@ -62,9 +66,13 @@ class DocumentEndEvent extends Event {
   /// `...` sequence).
   final bool isImplicit;
 
+  /// The source span of the `...` end marker, if explicit.
+  final FileSpan? endMarkerSpan;
+
   DocumentEndEvent(
     FileSpan span, {
     this.isImplicit = true,
+    this.endMarkerSpan,
     super.leadingLayout,
     super.trailingLayout,
   }) : super(EventType.documentEnd, span);
@@ -94,6 +102,9 @@ abstract class _ValueEvent extends Event {
   /// The name of the value's anchor, or `null` if it wasn't anchored.
   final String? anchor;
 
+  /// The source span of the value's anchor definition (`&anchor`), or `null`.
+  final FileSpan? anchorSpan;
+
   /// The text of the value's tag, or `null` if it wasn't tagged.
   final String? tag;
 
@@ -101,6 +112,7 @@ abstract class _ValueEvent extends Event {
     super.type,
     super.span, {
     this.anchor,
+    this.anchorSpan,
     this.tag,
     super.leadingLayout,
     super.trailingLayout,
@@ -128,6 +140,7 @@ class ScalarEvent extends _ValueEvent {
     this.value,
     this.style, {
     super.anchor,
+    super.anchorSpan,
     super.tag,
     super.leadingLayout,
     super.trailingLayout,
@@ -142,11 +155,16 @@ class SequenceStartEvent extends _ValueEvent {
   /// The style of the collection in the original source.
   final CollectionStyle style;
 
+  /// The source span of the opening bracket (`[`), or `null` if block style.
+  final FileSpan? openSpan;
+
   SequenceStartEvent(
     FileSpan span,
     this.style, {
     super.anchor,
+    super.anchorSpan,
     super.tag,
+    this.openSpan,
     super.leadingLayout,
     super.trailingLayout,
   }) : super(EventType.sequenceStart, span);
@@ -157,11 +175,16 @@ class MappingStartEvent extends _ValueEvent {
   /// The style of the collection in the original source.
   final CollectionStyle style;
 
+  /// The source span of the opening brace (`{`), or `null` if block style.
+  final FileSpan? openSpan;
+
   MappingStartEvent(
     FileSpan span,
     this.style, {
     super.anchor,
+    super.anchorSpan,
     super.tag,
+    this.openSpan,
     super.leadingLayout,
     super.trailingLayout,
   }) : super(EventType.mappingStart, span);

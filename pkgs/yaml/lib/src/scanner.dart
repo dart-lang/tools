@@ -951,9 +951,8 @@ class Scanner {
       if (_scanner.peekChar() == HASH) {
         var commentStart = _scanner.state;
         _skipComment();
-        token.trailingLayout.add(CommentElement(
-            _scanner.spanFrom(commentStart),
-            isTrailing: true));
+        token.trailingLayout.add(
+            CommentElement(_scanner.spanFrom(commentStart), isTrailing: true));
       }
     } else {
       _skipBlanks();
@@ -1095,8 +1094,7 @@ class Scanner {
       return AnchorToken(_scanner.spanFrom(start), name,
           leadingLayout: leading);
     } else {
-      return AliasToken(_scanner.spanFrom(start), name,
-          leadingLayout: leading);
+      return AliasToken(_scanner.spanFrom(start), name, leadingLayout: leading);
     }
   }
 

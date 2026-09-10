@@ -48,6 +48,22 @@ class Parser {
   /// The source span of the most recently parsed value colon (`:`), if any.
   FileSpan? lastColonSpan;
 
+  /// The source span of the most recently parsed flow entry comma (`,`),
+  /// if any.
+  FileSpan? lastCommaSpan;
+
+  /// The source span of the most recently parsed flow opening bracket/brace,
+  /// if any.
+  FileSpan? lastOpenSpan;
+
+  /// The source span of the most recently parsed flow closing bracket/brace,
+  /// if any.
+  FileSpan? lastCloseSpan;
+
+  /// The source span of the most recently parsed anchor definition (`&anchor`),
+  /// if any.
+  FileSpan? lastAnchorSpan;
+
   /// Whether layout elements and spans should be retained.
   final bool _retainLayout;
 
@@ -76,6 +92,10 @@ class Parser {
       if (isDone) throw StateError('No more events.');
       lastDashSpan = null;
       lastColonSpan = null;
+      lastCommaSpan = null;
+      lastOpenSpan = null;
+      lastCloseSpan = null;
+      lastAnchorSpan = null;
       var event = _stateMachine();
       return event;
     } on StringScannerException catch (error) {
@@ -207,6 +227,7 @@ class Parser {
         versionDirective: versionDirective,
         tagDirectives: tagDirectives,
         isImplicit: false,
+        startMarkerSpan: token.span,
         leadingLayout: token.leadingLayout,
         trailingLayout: token.trailingLayout);
   }
@@ -248,6 +269,7 @@ class Parser {
       _scanner.scan();
       return DocumentEndEvent(token.span,
           isImplicit: false,
+          endMarkerSpan: token.span,
           leadingLayout: token.leadingLayout,
           trailingLayout: token.trailingLayout);
     } else {
@@ -305,11 +327,14 @@ class Parser {
     }
 
     String? anchor;
+    FileSpan? anchorSpan;
     TagToken? tagToken;
     var span = token.span.start.pointSpan();
     var nodeLeadingLayout = combineLeading(token.leadingLayout);
     Token parseAnchor(AnchorToken token) {
       anchor = token.name;
+      anchorSpan = token.span;
+      if (_retainLayout) lastAnchorSpan = token.span;
       span = span.expand(token.span);
       return _scanner.advance()!;
     }
@@ -345,7 +370,10 @@ class Parser {
     if (indentlessSequence && token.type == TokenType.blockEntry) {
       _state = _State.INDENTLESS_SEQUENCE_ENTRY;
       return SequenceStartEvent(span.expand(token.span), CollectionStyle.BLOCK,
-          anchor: anchor, tag: tag, leadingLayout: nodeLeadingLayout);
+          anchor: anchor,
+          anchorSpan: anchorSpan,
+          tag: tag,
+          leadingLayout: nodeLeadingLayout);
     }
 
     if (token is ScalarToken) {
@@ -356,6 +384,7 @@ class Parser {
       _scanner.scan();
       return ScalarEvent(span.expand(token.span), token.value, token.style,
           anchor: anchor,
+          anchorSpan: anchorSpan,
           tag: tag,
           leadingLayout: nodeLeadingLayout,
           trailingLayout: token.trailingLayout);
@@ -365,7 +394,9 @@ class Parser {
       _state = _State.FLOW_SEQUENCE_FIRST_ENTRY;
       return SequenceStartEvent(span.expand(token.span), CollectionStyle.FLOW,
           anchor: anchor,
+          anchorSpan: anchorSpan,
           tag: tag,
+          openSpan: token.span,
           leadingLayout: nodeLeadingLayout,
           trailingLayout: token.trailingLayout);
     }
@@ -374,7 +405,9 @@ class Parser {
       _state = _State.FLOW_MAPPING_FIRST_KEY;
       return MappingStartEvent(span.expand(token.span), CollectionStyle.FLOW,
           anchor: anchor,
+          anchorSpan: anchorSpan,
           tag: tag,
+          openSpan: token.span,
           leadingLayout: nodeLeadingLayout,
           trailingLayout: token.trailingLayout);
     }
@@ -382,19 +415,28 @@ class Parser {
     if (block && token.type == TokenType.blockSequenceStart) {
       _state = _State.BLOCK_SEQUENCE_FIRST_ENTRY;
       return SequenceStartEvent(span.expand(token.span), CollectionStyle.BLOCK,
-          anchor: anchor, tag: tag, leadingLayout: nodeLeadingLayout);
+          anchor: anchor,
+          anchorSpan: anchorSpan,
+          tag: tag,
+          leadingLayout: nodeLeadingLayout);
     }
 
     if (block && token.type == TokenType.blockMappingStart) {
       _state = _State.BLOCK_MAPPING_FIRST_KEY;
       return MappingStartEvent(span.expand(token.span), CollectionStyle.BLOCK,
-          anchor: anchor, tag: tag, leadingLayout: nodeLeadingLayout);
+          anchor: anchor,
+          anchorSpan: anchorSpan,
+          tag: tag,
+          leadingLayout: nodeLeadingLayout);
     }
 
     if (anchor != null || tag != null) {
       _state = _states.removeLast();
       return ScalarEvent(span, '', ScalarStyle.PLAIN,
-          anchor: anchor, tag: tag, leadingLayout: nodeLeadingLayout);
+          anchor: anchor,
+          anchorSpan: anchorSpan,
+          tag: tag,
+          leadingLayout: nodeLeadingLayout);
     }
 
     throw YamlException('Expected node content.', span);
@@ -542,12 +584,13 @@ class Parser {
 
     if (_retainLayout) lastColonSpan = token.span;
     var start = token.span.start;
+    var colonEnd = token.span.end;
     token = _scanner.advance()!;
     if (token.type == TokenType.key ||
         token.type == TokenType.value ||
         token.type == TokenType.blockEnd) {
       _state = _State.BLOCK_MAPPING_KEY;
-      return _processEmptyScalar(start);
+      return _processEmptyScalar(_retainLayout ? colonEnd : start);
     } else {
       _states.add(_State.BLOCK_MAPPING_KEY);
       return _parseNode(block: true, indentlessSequence: true);
@@ -579,6 +622,7 @@ class Parser {
               token.span.start.pointSpan());
         }
 
+        if (_retainLayout) lastCommaSpan = token.span;
         token = _scanner.advance()!;
       }
 
@@ -678,6 +722,7 @@ class Parser {
               token.span.start.pointSpan());
         }
 
+        if (_retainLayout) lastCommaSpan = token.span;
         token = _scanner.advance()!;
       }
 
@@ -726,6 +771,8 @@ class Parser {
         _states.add(_State.FLOW_MAPPING_KEY);
         return _parseNode();
       }
+      _state = _State.FLOW_MAPPING_KEY;
+      return _processEmptyScalar(token.span.start);
     }
 
     _state = _State.FLOW_MAPPING_KEY;

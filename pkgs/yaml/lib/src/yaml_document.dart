@@ -41,6 +41,13 @@ class YamlDocument {
   /// Whether the end of the document was implicit (versus explicit via `...`).
   final bool endImplicit;
 
+  /// The source span of the document start marker (`---`), or `null` if
+  /// implicit.
+  final SourceSpan? startMarkerSpan;
+
+  /// The source span of the document end marker (`...`), or `null` if implicit.
+  final SourceSpan? endMarkerSpan;
+
   /// Users of the library should not use this constructor.
   ///
   /// @nodoc
@@ -48,6 +55,8 @@ class YamlDocument {
       List<TagDirective> tagDirectives,
       {this.startImplicit = false,
       this.endImplicit = false,
+      this.startMarkerSpan,
+      this.endMarkerSpan,
       this.leadingLayout = const [],
       this.trailingLayout = const []})
       : tagDirectives = UnmodifiableListView(tagDirectives);

@@ -160,14 +160,101 @@ list:
       }
     });
 
+    test('captures entrySpans, openSpan, closeSpan for mappings', () {
+      const yaml = '''
+root:
+  # comment a
+  a: 1
+  # comment b
+  b: 2
+flow: { x: 10, y: 20 }
+''';
+      final doc = loadYamlDocument(yaml, retainLayout: true);
+      final root = doc.contents as YamlMap;
+      final inner = root.nodes['root']! as YamlMap;
+
+      expect(inner.entrySpan('a'), isNotNull);
+      expect(inner.entrySpan('b'), isNotNull);
+
+      // Verify that entry 'a' starts before '# comment a' and ends at 'b'
+      final entryASpan = inner.entrySpan('a')!;
+      expect(entryASpan.text, contains('# comment a'));
+      expect(entryASpan.text, contains('a: 1'));
+
+      final flow = root.nodes['flow']! as YamlMap;
+      expect(flow.openSpan, isNotNull);
+      expect(flow.openSpan!.text, '{');
+      expect(flow.closeSpan, isNotNull);
+      expect(flow.closeSpan!.text, '}');
+      expect(flow.commaSpan('y'), isNotNull);
+      expect(flow.commaSpan('y')!.text, ',');
+      expect(flow.entrySpan('x'), isNotNull);
+      expect(flow.entrySpan('y'), isNotNull);
+    });
+
+    test('captures entrySpans, openSpan, closeSpan for lists', () {
+      const yaml = '''
+items:
+  - 10
+  - 20
+flow: [1, 2, 3]
+''';
+      final root = loadYaml(yaml, retainLayout: true) as YamlMap;
+      final items = root.nodes['items']! as YamlList;
+      expect(items.entrySpan(0), isNotNull);
+      expect(items.entrySpan(1), isNotNull);
+      expect(items.entrySpan(0)!.text, contains('10'));
+      expect(items.entrySpan(1)!.text, contains('20'));
+
+      final flow = root.nodes['flow']! as YamlList;
+      expect(flow.openSpan, isNotNull);
+      expect(flow.openSpan!.text, '[');
+      expect(flow.closeSpan, isNotNull);
+      expect(flow.closeSpan!.text, ']');
+      expect(flow.commaSpan(1), isNotNull);
+      expect(flow.commaSpan(1)!.text, ',');
+    });
+
+    test('captures anchorSpan, aliasSpan, and document markers', () {
+      const yaml = '''
+---
+anchor_item: &my_anchor value
+alias_item: *my_anchor
+...
+''';
+      final doc = loadYamlDocument(yaml, retainLayout: true);
+      expect(doc.startMarkerSpan, isNotNull);
+      expect(doc.startMarkerSpan!.text, '---');
+      expect(doc.endMarkerSpan, isNotNull);
+      expect(doc.endMarkerSpan!.text, '...');
+
+      final root = doc.contents as YamlMap;
+      final anchorNode = root.nodes['anchor_item']!;
+      expect(anchorNode.anchorSpan, isNotNull);
+      expect(anchorNode.anchorSpan!.text, '&my_anchor');
+
+      expect(root.aliasSpan('alias_item'), isNotNull);
+      expect(root.aliasSpan('alias_item')!.text, '*my_anchor');
+    });
+
     test('wrappers preserve layout retention accessors', () {
       final map = YamlMap.wrap({'key': 'value'});
       expect(map.colonSpan('key'), isNull);
+      expect(map.entrySpan('key'), isNull);
+      expect(map.aliasSpan('key'), isNull);
+      expect(map.commaSpan('key'), isNull);
+      expect(map.openSpan, isNull);
+      expect(map.closeSpan, isNull);
       expect(map.leadingLayout, isEmpty);
       expect(map.trailingLayout, isEmpty);
 
       final list = YamlList.wrap(['item']);
       expect(list.dashSpan(0), isNull);
+      expect(list.entrySpan(0), isNull);
+      expect(list.aliasSpan(0), isNull);
+      expect(list.commaSpan(0), isNull);
+      expect(list.openSpan, isNull);
+      expect(list.closeSpan, isNull);
       expect(list.leadingLayout, isEmpty);
       expect(list.trailingLayout, isEmpty);
     });

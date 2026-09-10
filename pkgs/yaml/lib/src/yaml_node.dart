@@ -43,6 +43,11 @@ abstract class YamlNode {
   List<LayoutElement> get trailingLayout => _trailingLayout;
   List<LayoutElement> _trailingLayout = const [];
 
+  /// The source span of the anchor definition (`&anchor`), or `null` if this
+  /// node does not define an anchor.
+  SourceSpan? get anchorSpan => _anchorSpan;
+  SourceSpan? _anchorSpan;
+
   YamlNode._(this._span);
 
   /// The inner value of this node.
@@ -108,6 +113,28 @@ class YamlMap extends YamlNode with collection.MapMixin, UnmodifiableMapMixin {
   /// if this is an explicit key without a colon or the key does not exist.
   SourceSpan? colonSpan(Object? key) => _colonSpans?[key];
   Map<dynamic, SourceSpan>? _colonSpans;
+
+  /// The source span of the entire entry for [key], including delimiters
+  /// and attached layout comments, or `null` if layout retention is disabled.
+  SourceSpan? entrySpan(Object? key) => _entrySpans?[key];
+  Map<dynamic, SourceSpan>? _entrySpans;
+
+  /// The source span of the alias reference (`*alias`) for [key], or `null`
+  /// if the value was not parsed from an alias reference.
+  SourceSpan? aliasSpan(Object? key) => _aliasSpans?[key];
+  Map<dynamic, SourceSpan>? _aliasSpans;
+
+  /// The source span of the separating comma (`,`) for [key] in a flow map.
+  SourceSpan? commaSpan(Object? key) => _commaSpans?[key];
+  Map<dynamic, SourceSpan>? _commaSpans;
+
+  /// The source span of the opening brace (`{`) for a flow map, or `null`.
+  SourceSpan? get openSpan => _openSpan;
+  SourceSpan? _openSpan;
+
+  /// The source span of the closing brace (`}`) for a flow map, or `null`.
+  SourceSpan? get closeSpan => _closeSpan;
+  SourceSpan? _closeSpan;
 }
 
 // TODO(nweiz): Use UnmodifiableListMixin when issue 18970 is fixed.
@@ -172,6 +199,37 @@ class YamlList extends YamlNode with collection.ListMixin {
           ? _dashSpans![index]
           : null;
   List<SourceSpan?>? _dashSpans;
+
+  /// The source span of the entire entry for [index], including delimiters
+  /// and attached layout comments, or `null` if layout retention is disabled.
+  SourceSpan? entrySpan(int index) =>
+      _entrySpans != null && index >= 0 && index < _entrySpans!.length
+          ? _entrySpans![index]
+          : null;
+  List<SourceSpan?>? _entrySpans;
+
+  /// The source span of the alias reference (`*alias`) for the element at
+  /// [index], or `null` if the item was not parsed from an alias reference.
+  SourceSpan? aliasSpan(int index) =>
+      _aliasSpans != null && index >= 0 && index < _aliasSpans!.length
+          ? _aliasSpans![index]
+          : null;
+  List<SourceSpan?>? _aliasSpans;
+
+  /// The source span of the separating comma (`,`) for [index] in a flow list.
+  SourceSpan? commaSpan(int index) =>
+      _commaSpans != null && index >= 0 && index < _commaSpans!.length
+          ? _commaSpans![index]
+          : null;
+  List<SourceSpan?>? _commaSpans;
+
+  /// The source span of the opening bracket (`[`) for a flow list, or `null`.
+  SourceSpan? get openSpan => _openSpan;
+  SourceSpan? _openSpan;
+
+  /// The source span of the closing bracket (`]`) for a flow list, or `null`.
+  SourceSpan? get closeSpan => _closeSpan;
+  SourceSpan? _closeSpan;
 }
 
 /// A wrapped scalar value parsed from YAML.
@@ -234,9 +292,56 @@ void setColonSpans(YamlMap map, Map<dynamic, SourceSpan> colonSpans) {
   map._colonSpans = colonSpans;
 }
 
+/// Sets all layout spans for entries in a [YamlMap].
+///
+/// This method is not exposed publicly.
+void setMapLayoutSpans(
+  YamlMap map, {
+  Map<dynamic, SourceSpan>? colonSpans,
+  Map<dynamic, SourceSpan>? entrySpans,
+  Map<dynamic, SourceSpan>? aliasSpans,
+  Map<dynamic, SourceSpan>? commaSpans,
+  SourceSpan? openSpan,
+  SourceSpan? closeSpan,
+}) {
+  map._colonSpans = colonSpans;
+  map._entrySpans = entrySpans;
+  map._aliasSpans = aliasSpans;
+  map._commaSpans = commaSpans;
+  map._openSpan = openSpan;
+  map._closeSpan = closeSpan;
+}
+
 /// Sets the dash spans for entries in a [YamlList].
 ///
 /// This method is not exposed publicly.
 void setDashSpans(YamlList list, List<SourceSpan?> dashSpans) {
   list._dashSpans = dashSpans;
+}
+
+/// Sets all layout spans for entries in a [YamlList].
+///
+/// This method is not exposed publicly.
+void setListLayoutSpans(
+  YamlList list, {
+  List<SourceSpan?>? dashSpans,
+  List<SourceSpan?>? entrySpans,
+  List<SourceSpan?>? aliasSpans,
+  List<SourceSpan?>? commaSpans,
+  SourceSpan? openSpan,
+  SourceSpan? closeSpan,
+}) {
+  list._dashSpans = dashSpans;
+  list._entrySpans = entrySpans;
+  list._aliasSpans = aliasSpans;
+  list._commaSpans = commaSpans;
+  list._openSpan = openSpan;
+  list._closeSpan = closeSpan;
+}
+
+/// Sets the anchor definition span of a [YamlNode].
+///
+/// This method is not exposed publicly.
+void setAnchorSpan(YamlNode node, SourceSpan? anchorSpan) {
+  node._anchorSpan = anchorSpan;
 }

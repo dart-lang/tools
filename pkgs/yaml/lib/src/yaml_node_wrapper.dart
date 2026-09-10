@@ -34,7 +34,25 @@ class YamlMapWrapper extends MapBase
   List<LayoutElement> get trailingLayout => const [];
 
   @override
+  SourceSpan? get anchorSpan => null;
+
+  @override
   SourceSpan? colonSpan(Object? key) => null;
+
+  @override
+  SourceSpan? entrySpan(Object? key) => null;
+
+  @override
+  SourceSpan? aliasSpan(Object? key) => null;
+
+  @override
+  SourceSpan? commaSpan(Object? key) => null;
+
+  @override
+  SourceSpan? get openSpan => null;
+
+  @override
+  SourceSpan? get closeSpan => null;
 
   @override
   final Map<dynamic, YamlNode> nodes;
@@ -119,7 +137,25 @@ class YamlListWrapper extends ListBase implements YamlList {
   List<LayoutElement> get trailingLayout => const [];
 
   @override
+  SourceSpan? get anchorSpan => null;
+
+  @override
   SourceSpan? dashSpan(int index) => null;
+
+  @override
+  SourceSpan? entrySpan(int index) => null;
+
+  @override
+  SourceSpan? aliasSpan(int index) => null;
+
+  @override
+  SourceSpan? commaSpan(int index) => null;
+
+  @override
+  SourceSpan? get openSpan => null;
+
+  @override
+  SourceSpan? get closeSpan => null;
 
   @override
   final List<YamlNode> nodes;
