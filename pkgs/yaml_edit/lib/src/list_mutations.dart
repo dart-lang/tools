@@ -201,26 +201,29 @@ SourceEdit _appendToBlockList(
   // Adjusts offset to after the trailing newline of the last entry, if it
   // exists
   if (list.isNotEmpty) {
-    final lastNode = list.nodes.last;
     final lastValueSpanEnd =
         yamlEdit.getTrueContentSensitiveEnd(list, list.length - 1);
     var nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd);
     if (nextNewLineIndex == -1) {
       formattedValue = getLineEnding(yaml) + formattedValue;
     } else {
-      if (lastNode is YamlScalar &&
-          (lastNode.style == ScalarStyle.LITERAL ||
-              lastNode.style == ScalarStyle.FOLDED)) {
-        while (nextNewLineIndex + 1 < yaml.length) {
-          final nextLineEnd = yaml.indexOf('\n', nextNewLineIndex + 1);
-          final lineSlice = nextLineEnd == -1
-              ? yaml.substring(nextNewLineIndex + 1)
-              : yaml.substring(nextNewLineIndex + 1, nextLineEnd);
-          if (lineSlice.trim().isEmpty && nextLineEnd != -1) {
-            nextNewLineIndex = nextLineEnd;
+      while (nextNewLineIndex + 1 < yaml.length) {
+        final nextLineEnd = yaml.indexOf('\n', nextNewLineIndex + 1);
+        final lineSlice = nextLineEnd == -1
+            ? yaml.substring(nextNewLineIndex + 1)
+            : yaml.substring(nextNewLineIndex + 1, nextLineEnd);
+        final trimmed = lineSlice.trim();
+        if (trimmed.isEmpty && nextLineEnd != -1) {
+          nextNewLineIndex = nextLineEnd;
+        } else if (trimmed.startsWith('#')) {
+          final commentIndent = lineSlice.length - lineSlice.trimLeft().length;
+          if (commentIndent >= indentSize) {
+            nextNewLineIndex = nextLineEnd != -1 ? nextLineEnd : yaml.length;
           } else {
             break;
           }
+        } else {
+          break;
         }
       }
       offset = nextNewLineIndex + 1;

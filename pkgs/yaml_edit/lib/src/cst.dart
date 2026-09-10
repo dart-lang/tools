@@ -161,7 +161,9 @@ class CstMap {
       final kStart = keySpan.start.offset;
       final kEnd = keySpan.end.offset;
 
-      final colonOffset = _findColon(yaml, kEnd);
+      final colonSpan = map.colonSpan(keyNode);
+      final colonOffset =
+          colonSpan != null ? colonSpan.start.offset : _findColon(yaml, kEnd);
 
       final trueValueSpan = editor.getTrueSpan(map, keyNode, valueNode);
       final valueContentEnd =
@@ -272,31 +274,36 @@ class CstList {
 
       var hyphenOffset = -1;
       if (list.style == CollectionStyle.BLOCK) {
-        var scan = prevLineEnd <= trueSpan.start.offset
-            ? prevLineEnd
-            : list.span.start.offset;
-        while (scan < trueSpan.start.offset) {
-          final c = yaml.codeUnitAt(scan);
-          if (YamlChar.isWhitespace(c) || YamlChar.isLineBreak(c)) {
-            scan++;
-          } else if (c == YamlChar.hash) {
-            scan++;
-            while (scan < yaml.length &&
-                !YamlChar.isLineBreak(yaml.codeUnitAt(scan))) {
+        final dashSpan = list.dashSpan(i);
+        if (dashSpan != null) {
+          hyphenOffset = dashSpan.start.offset;
+        } else {
+          var scan = prevLineEnd <= trueSpan.start.offset
+              ? prevLineEnd
+              : list.span.start.offset;
+          while (scan < trueSpan.start.offset) {
+            final c = yaml.codeUnitAt(scan);
+            if (YamlChar.isWhitespace(c) || YamlChar.isLineBreak(c)) {
+              scan++;
+            } else if (c == YamlChar.hash) {
+              scan++;
+              while (scan < yaml.length &&
+                  !YamlChar.isLineBreak(yaml.codeUnitAt(scan))) {
+                scan++;
+              }
+            } else if (c == YamlChar.hyphen) {
+              final next =
+                  scan + 1 < yaml.length ? yaml.codeUnitAt(scan + 1) : -1;
+              if (next == -1 ||
+                  YamlChar.isWhitespace(next) ||
+                  YamlChar.isLineBreak(next)) {
+                hyphenOffset = scan;
+                break;
+              }
+              scan++;
+            } else {
               scan++;
             }
-          } else if (c == YamlChar.hyphen) {
-            final next =
-                scan + 1 < yaml.length ? yaml.codeUnitAt(scan + 1) : -1;
-            if (next == -1 ||
-                YamlChar.isWhitespace(next) ||
-                YamlChar.isLineBreak(next)) {
-              hyphenOffset = scan;
-              break;
-            }
-            scan++;
-          } else {
-            scan++;
           }
         }
       }

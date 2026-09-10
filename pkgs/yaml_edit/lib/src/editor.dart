@@ -133,7 +133,7 @@ class YamlEditor {
       YamlEditor._(yaml, aliasBehavior);
 
   YamlEditor._(this._yaml, this.aliasBehavior)
-      : _contents = loadYamlNode(_yaml) {
+      : _contents = loadYamlNode(_yaml, retainLayout: true) {
     _initialize();
   }
 
@@ -1172,7 +1172,8 @@ class YamlEditor {
     // Check that the edit does actually parse
     final YamlNode actualTree;
     try {
-      actualTree = withYamlWarningCallback(() => loadYamlNode(updatedYaml));
+      actualTree = withYamlWarningCallback(
+          () => loadYamlNode(updatedYaml, retainLayout: true));
     } on YamlException {
       throw createAssertionError(
         'Failed to produce valid YAML after modification.',

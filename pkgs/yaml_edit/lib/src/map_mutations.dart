@@ -70,9 +70,28 @@ SourceEdit _addToBlockMap(
       final lastKey = map.nodes.keys.last;
       final lastValueSpanEnd =
           yamlEdit.getTrueContentSensitiveEnd(map, lastKey);
-      final nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd);
+      var nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd);
 
       if (nextNewLineIndex != -1) {
+        final mapIndent = getMapIndentation(yaml, map);
+        while (nextNewLineIndex + 1 < yaml.length) {
+          final nextLineEnd = yaml.indexOf('\n', nextNewLineIndex + 1);
+          final lineSlice = nextLineEnd == -1
+              ? yaml.substring(nextNewLineIndex + 1)
+              : yaml.substring(nextNewLineIndex + 1, nextLineEnd);
+          final trimmed = lineSlice.trim();
+          if (trimmed.startsWith('#')) {
+            final commentIndent =
+                lineSlice.length - lineSlice.trimLeft().length;
+            if (commentIndent > mapIndent) {
+              nextNewLineIndex = nextLineEnd != -1 ? nextLineEnd : yaml.length;
+            } else {
+              break;
+            }
+          } else {
+            break;
+          }
+        }
         offset = nextNewLineIndex + 1;
       } else {
         formattedValue = lineEnding + formattedValue;
@@ -108,23 +127,17 @@ SourceEdit _addToBlockMap(
                 yaml.codeUnitAt(scan - 1) == 0x09)) {
           scan--;
         }
-        while (scan > minOffset) {
-          final prevNl = yaml.lastIndexOf('\n', scan - 1);
-          if (prevNl < minOffset - 1) {
-            final line = yaml.substring(minOffset, scan).trim();
-            if (line.startsWith('#') || line.isEmpty) {
-              scan = minOffset;
-            }
-            break;
-          }
-          final line = yaml.substring(prevNl + 1, scan).trim();
-          if (line.startsWith('#') || line.isEmpty) {
-            scan = prevNl + 1;
-          } else {
-            break;
+        if (scan > 0 && yaml.codeUnitAt(scan - 1) == 0x3F) {
+          scan--;
+          while (scan > 0 &&
+              (yaml.codeUnitAt(scan - 1) == 0x20 ||
+                  yaml.codeUnitAt(scan - 1) == 0x09)) {
+            scan--;
           }
         }
-        offset = scan;
+        final prevNewLineIndex =
+            scan > 0 ? yaml.lastIndexOf('\n', scan - 1) : -1;
+        offset = prevNewLineIndex != -1 ? prevNewLineIndex + 1 : minOffset;
       }
     }
   }
