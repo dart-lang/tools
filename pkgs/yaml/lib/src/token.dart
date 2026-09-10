@@ -7,6 +7,7 @@
 
 import 'package:source_span/source_span.dart';
 
+import 'layout.dart';
 import 'scanner.dart';
 import 'style.dart';
 
@@ -14,114 +15,103 @@ import 'style.dart';
 class Token {
   final TokenType type;
   final FileSpan span;
+  final List<LayoutElement> leadingLayout;
+  final List<LayoutElement> trailingLayout;
 
-  Token(this.type, this.span);
+  Token(
+    this.type,
+    this.span, {
+    this.leadingLayout = const [],
+    List<LayoutElement>? trailingLayout,
+  }) : trailingLayout = trailingLayout ?? [];
 
   @override
   String toString() => type.toString();
 }
 
 /// A token representing a `%YAML` directive.
-class VersionDirectiveToken implements Token {
-  @override
-  TokenType get type => TokenType.versionDirective;
-  @override
-  final FileSpan span;
-
+class VersionDirectiveToken extends Token {
   /// The declared major version of the document.
   final int major;
 
   /// The declared minor version of the document.
   final int minor;
 
-  VersionDirectiveToken(this.span, this.major, this.minor);
+  VersionDirectiveToken(FileSpan span, this.major, this.minor,
+      {super.leadingLayout, super.trailingLayout})
+      : super(TokenType.versionDirective, span);
 
   @override
   String toString() => 'VERSION_DIRECTIVE $major.$minor';
 }
 
 /// A token representing a `%TAG` directive.
-class TagDirectiveToken implements Token {
-  @override
-  TokenType get type => TokenType.tagDirective;
-  @override
-  final FileSpan span;
-
+class TagDirectiveToken extends Token {
   /// The tag handle used in the document.
   final String handle;
 
   /// The tag prefix that the handle maps to.
   final String prefix;
 
-  TagDirectiveToken(this.span, this.handle, this.prefix);
+  TagDirectiveToken(FileSpan span, this.handle, this.prefix,
+      {super.leadingLayout, super.trailingLayout})
+      : super(TokenType.tagDirective, span);
 
   @override
   String toString() => 'TAG_DIRECTIVE $handle $prefix';
 }
 
 /// A token representing an anchor (`&foo`).
-class AnchorToken implements Token {
-  @override
-  TokenType get type => TokenType.anchor;
-  @override
-  final FileSpan span;
-
+class AnchorToken extends Token {
   final String name;
 
-  AnchorToken(this.span, this.name);
+  AnchorToken(FileSpan span, this.name,
+      {super.leadingLayout, super.trailingLayout})
+      : super(TokenType.anchor, span);
 
   @override
   String toString() => 'ANCHOR $name';
 }
 
 /// A token representing an alias (`*foo`).
-class AliasToken implements Token {
-  @override
-  TokenType get type => TokenType.alias;
-  @override
-  final FileSpan span;
-
+class AliasToken extends Token {
   final String name;
 
-  AliasToken(this.span, this.name);
+  AliasToken(FileSpan span, this.name,
+      {super.leadingLayout, super.trailingLayout})
+      : super(TokenType.alias, span);
 
   @override
   String toString() => 'ALIAS $name';
 }
 
 /// A token representing a tag (`!foo`).
-class TagToken implements Token {
-  @override
-  TokenType get type => TokenType.tag;
-  @override
-  final FileSpan span;
-
+class TagToken extends Token {
   /// The tag handle for named tags.
   final String? handle;
 
   /// The tag suffix.
   final String suffix;
 
-  TagToken(this.span, this.handle, this.suffix);
+  TagToken(FileSpan span, this.handle, this.suffix,
+      {super.leadingLayout, super.trailingLayout})
+      : super(TokenType.tag, span);
 
   @override
   String toString() => 'TAG $handle $suffix';
 }
 
 /// A scalar value.
-class ScalarToken implements Token {
-  @override
-  TokenType get type => TokenType.scalar;
-  @override
-  final FileSpan span;
-
+class ScalarToken extends Token {
   /// The unparsed contents of the value..
   final String value;
 
   /// The style of the scalar in the original source.
   final ScalarStyle style;
 
-  ScalarToken(this.span, this.value, this.style);
+  ScalarToken(FileSpan span, this.value, this.style,
+      {super.leadingLayout, super.trailingLayout})
+      : super(TokenType.scalar, span);
 
   @override
   String toString() => 'SCALAR $style "$value"';

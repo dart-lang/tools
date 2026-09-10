@@ -12,6 +12,7 @@ import 'package:string_scanner/string_scanner.dart';
 
 import 'error_listener.dart';
 import 'event.dart';
+import 'layout.dart';
 import 'scanner.dart';
 import 'style.dart';
 import 'token.dart';
@@ -40,6 +41,32 @@ class Parser {
   /// Whether the parser has finished parsing.
   bool get isDone => _state == _State.END;
 
+  /// The source span of the most recently parsed block entry hyphen (`-`),
+  /// if any.
+  FileSpan? lastDashSpan;
+
+  /// The source span of the most recently parsed value colon (`:`), if any.
+  FileSpan? lastColonSpan;
+
+  /// The source span of the most recently parsed flow entry comma (`,`),
+  /// if any.
+  FileSpan? lastCommaSpan;
+
+  /// The source span of the most recently parsed flow opening bracket/brace,
+  /// if any.
+  FileSpan? lastOpenSpan;
+
+  /// The source span of the most recently parsed flow closing bracket/brace,
+  /// if any.
+  FileSpan? lastCloseSpan;
+
+  /// The source span of the most recently parsed anchor definition (`&anchor`),
+  /// if any.
+  FileSpan? lastAnchorSpan;
+
+  /// Whether layout elements and spans should be retained.
+  final bool _retainLayout;
+
   /// Creates a parser that parses [source].
   ///
   /// If [recover] is true, will attempt to recover from parse errors and may
@@ -47,17 +74,28 @@ class Parser {
   /// its onError method will be called for each error recovered from. It is not
   /// valid to provide [errorListener] if [recover] is false.
   Parser(String source,
-      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener})
+      {Uri? sourceUrl,
+      bool recover = false,
+      ErrorListener? errorListener,
+      bool retainLayout = false})
       : assert(recover || errorListener == null),
+        _retainLayout = retainLayout,
         _scanner = Scanner(source,
             sourceUrl: sourceUrl,
             recover: recover,
-            errorListener: errorListener);
+            errorListener: errorListener,
+            retainLayout: retainLayout);
 
   /// Consumes and returns the next event.
   Event parse() {
     try {
       if (isDone) throw StateError('No more events.');
+      lastDashSpan = null;
+      lastColonSpan = null;
+      lastCommaSpan = null;
+      lastOpenSpan = null;
+      lastCloseSpan = null;
+      lastAnchorSpan = null;
       var event = _stateMachine();
       return event;
     } on StringScannerException catch (error) {
@@ -169,7 +207,9 @@ class Parser {
     if (token.type == TokenType.streamEnd) {
       _state = _State.END;
       _scanner.scan();
-      return Event(EventType.streamEnd, token.span);
+      return Event(EventType.streamEnd, token.span,
+          leadingLayout: token.leadingLayout,
+          trailingLayout: token.trailingLayout);
     }
 
     // Parse an explicit document.
@@ -186,7 +226,10 @@ class Parser {
     return DocumentStartEvent(start.expand(token.span),
         versionDirective: versionDirective,
         tagDirectives: tagDirectives,
-        isImplicit: false);
+        isImplicit: false,
+        startMarkerSpan: token.span,
+        leadingLayout: token.leadingLayout,
+        trailingLayout: token.trailingLayout);
   }
 
   /// Parses the productions:
@@ -224,7 +267,11 @@ class Parser {
     var token = _scanner.peek()!;
     if (token.type == TokenType.documentEnd) {
       _scanner.scan();
-      return DocumentEndEvent(token.span, isImplicit: false);
+      return DocumentEndEvent(token.span,
+          isImplicit: false,
+          endMarkerSpan: token.span,
+          leadingLayout: token.leadingLayout,
+          trailingLayout: token.trailingLayout);
     } else {
       return DocumentEndEvent(token.span.start.pointSpan());
     }
@@ -257,20 +304,37 @@ class Parser {
   ///                                                                   ******
   ///     flow_content         ::= flow_collection | SCALAR
   ///                                                ******
-  Event _parseNode({bool block = false, bool indentlessSequence = false}) {
+  Event _parseNode(
+      {bool block = false,
+      bool indentlessSequence = false,
+      List<LayoutElement>? extraLeadingLayout}) {
     var token = _scanner.peek()!;
+
+    List<LayoutElement> combineLeading(List<LayoutElement> primary) {
+      if (extraLeadingLayout == null || extraLeadingLayout.isEmpty) {
+        return primary;
+      }
+      if (primary.isEmpty) return extraLeadingLayout;
+      return [...extraLeadingLayout, ...primary];
+    }
 
     if (token is AliasToken) {
       _scanner.scan();
       _state = _states.removeLast();
-      return AliasEvent(token.span, token.name);
+      return AliasEvent(token.span, token.name,
+          leadingLayout: combineLeading(token.leadingLayout),
+          trailingLayout: token.trailingLayout);
     }
 
     String? anchor;
+    FileSpan? anchorSpan;
     TagToken? tagToken;
     var span = token.span.start.pointSpan();
+    var nodeLeadingLayout = combineLeading(token.leadingLayout);
     Token parseAnchor(AnchorToken token) {
       anchor = token.name;
+      anchorSpan = token.span;
+      if (_retainLayout) lastAnchorSpan = token.span;
       span = span.expand(token.span);
       return _scanner.advance()!;
     }
@@ -306,7 +370,10 @@ class Parser {
     if (indentlessSequence && token.type == TokenType.blockEntry) {
       _state = _State.INDENTLESS_SEQUENCE_ENTRY;
       return SequenceStartEvent(span.expand(token.span), CollectionStyle.BLOCK,
-          anchor: anchor, tag: tag);
+          anchor: anchor,
+          anchorSpan: anchorSpan,
+          tag: tag,
+          leadingLayout: nodeLeadingLayout);
     }
 
     if (token is ScalarToken) {
@@ -316,36 +383,60 @@ class Parser {
       _state = _states.removeLast();
       _scanner.scan();
       return ScalarEvent(span.expand(token.span), token.value, token.style,
-          anchor: anchor, tag: tag);
+          anchor: anchor,
+          anchorSpan: anchorSpan,
+          tag: tag,
+          leadingLayout: nodeLeadingLayout,
+          trailingLayout: token.trailingLayout);
     }
 
     if (token.type == TokenType.flowSequenceStart) {
       _state = _State.FLOW_SEQUENCE_FIRST_ENTRY;
       return SequenceStartEvent(span.expand(token.span), CollectionStyle.FLOW,
-          anchor: anchor, tag: tag);
+          anchor: anchor,
+          anchorSpan: anchorSpan,
+          tag: tag,
+          openSpan: token.span,
+          leadingLayout: nodeLeadingLayout,
+          trailingLayout: token.trailingLayout);
     }
 
     if (token.type == TokenType.flowMappingStart) {
       _state = _State.FLOW_MAPPING_FIRST_KEY;
       return MappingStartEvent(span.expand(token.span), CollectionStyle.FLOW,
-          anchor: anchor, tag: tag);
+          anchor: anchor,
+          anchorSpan: anchorSpan,
+          tag: tag,
+          openSpan: token.span,
+          leadingLayout: nodeLeadingLayout,
+          trailingLayout: token.trailingLayout);
     }
 
     if (block && token.type == TokenType.blockSequenceStart) {
       _state = _State.BLOCK_SEQUENCE_FIRST_ENTRY;
       return SequenceStartEvent(span.expand(token.span), CollectionStyle.BLOCK,
-          anchor: anchor, tag: tag);
+          anchor: anchor,
+          anchorSpan: anchorSpan,
+          tag: tag,
+          leadingLayout: nodeLeadingLayout);
     }
 
     if (block && token.type == TokenType.blockMappingStart) {
       _state = _State.BLOCK_MAPPING_FIRST_KEY;
       return MappingStartEvent(span.expand(token.span), CollectionStyle.BLOCK,
-          anchor: anchor, tag: tag);
+          anchor: anchor,
+          anchorSpan: anchorSpan,
+          tag: tag,
+          leadingLayout: nodeLeadingLayout);
     }
 
     if (anchor != null || tag != null) {
       _state = _states.removeLast();
-      return ScalarEvent(span, '', ScalarStyle.PLAIN, anchor: anchor, tag: tag);
+      return ScalarEvent(span, '', ScalarStyle.PLAIN,
+          anchor: anchor,
+          anchorSpan: anchorSpan,
+          tag: tag,
+          leadingLayout: nodeLeadingLayout);
     }
 
     throw YamlException('Expected node content.', span);
@@ -360,16 +451,18 @@ class Parser {
     var token = _scanner.peek()!;
 
     if (token.type == TokenType.blockEntry) {
+      if (_retainLayout) lastDashSpan = token.span;
+      var dashLeadingLayout = token.leadingLayout;
       var start = token.span.start;
       token = _scanner.advance()!;
 
       if (token.type == TokenType.blockEntry ||
           token.type == TokenType.blockEnd) {
         _state = _State.BLOCK_SEQUENCE_ENTRY;
-        return _processEmptyScalar(start);
+        return _processEmptyScalar(start, leadingLayout: dashLeadingLayout);
       } else {
         _states.add(_State.BLOCK_SEQUENCE_ENTRY);
-        return _parseNode(block: true);
+        return _parseNode(block: true, extraLeadingLayout: dashLeadingLayout);
       }
     }
 
@@ -405,6 +498,8 @@ class Parser {
       return Event(EventType.sequenceEnd, token.span.start.pointSpan());
     }
 
+    if (_retainLayout) lastDashSpan = token.span;
+    var dashLeadingLayout = token.leadingLayout;
     var start = token.span.start;
     token = _scanner.advance()!;
 
@@ -413,10 +508,10 @@ class Parser {
         token.type == TokenType.value ||
         token.type == TokenType.blockEnd) {
       _state = _State.INDENTLESS_SEQUENCE_ENTRY;
-      return _processEmptyScalar(start);
+      return _processEmptyScalar(start, leadingLayout: dashLeadingLayout);
     } else {
       _states.add(_State.INDENTLESS_SEQUENCE_ENTRY);
-      return _parseNode(block: true);
+      return _parseNode(block: true, extraLeadingLayout: dashLeadingLayout);
     }
   }
 
@@ -433,6 +528,7 @@ class Parser {
   Event _parseBlockMappingKey() {
     var token = _scanner.peek()!;
     if (token.type == TokenType.key) {
+      var keyLeadingLayout = token.leadingLayout;
       var start = token.span.start;
       token = _scanner.advance()!;
 
@@ -440,10 +536,13 @@ class Parser {
           token.type == TokenType.value ||
           token.type == TokenType.blockEnd) {
         _state = _State.BLOCK_MAPPING_VALUE;
-        return _processEmptyScalar(start);
+        return _processEmptyScalar(start, leadingLayout: keyLeadingLayout);
       } else {
         _states.add(_State.BLOCK_MAPPING_VALUE);
-        return _parseNode(block: true, indentlessSequence: true);
+        return _parseNode(
+            block: true,
+            indentlessSequence: true,
+            extraLeadingLayout: keyLeadingLayout);
       }
     }
 
@@ -483,13 +582,15 @@ class Parser {
       return _processEmptyScalar(token.span.start);
     }
 
+    if (_retainLayout) lastColonSpan = token.span;
     var start = token.span.start;
+    var colonEnd = token.span.end;
     token = _scanner.advance()!;
     if (token.type == TokenType.key ||
         token.type == TokenType.value ||
         token.type == TokenType.blockEnd) {
       _state = _State.BLOCK_MAPPING_KEY;
-      return _processEmptyScalar(start);
+      return _processEmptyScalar(_retainLayout ? colonEnd : start);
     } else {
       _states.add(_State.BLOCK_MAPPING_KEY);
       return _parseNode(block: true, indentlessSequence: true);
@@ -521,6 +622,7 @@ class Parser {
               token.span.start.pointSpan());
         }
 
+        if (_retainLayout) lastCommaSpan = token.span;
         token = _scanner.advance()!;
       }
 
@@ -572,6 +674,7 @@ class Parser {
     var token = _scanner.peek()!;
 
     if (token.type == TokenType.value) {
+      if (_retainLayout) lastColonSpan = token.span;
       token = _scanner.advance()!;
       if (token.type != TokenType.flowEntry &&
           token.type != TokenType.flowSequenceEnd) {
@@ -619,19 +722,22 @@ class Parser {
               token.span.start.pointSpan());
         }
 
+        if (_retainLayout) lastCommaSpan = token.span;
         token = _scanner.advance()!;
       }
 
       if (token.type == TokenType.key) {
+        var keyLeadingLayout = token.leadingLayout;
         token = _scanner.advance()!;
         if (token.type != TokenType.value &&
             token.type != TokenType.flowEntry &&
             token.type != TokenType.flowMappingEnd) {
           _states.add(_State.FLOW_MAPPING_VALUE);
-          return _parseNode();
+          return _parseNode(extraLeadingLayout: keyLeadingLayout);
         } else {
           _state = _State.FLOW_MAPPING_VALUE;
-          return _processEmptyScalar(token.span.start);
+          return _processEmptyScalar(token.span.start,
+              leadingLayout: keyLeadingLayout);
         }
       } else if (token.type != TokenType.flowMappingEnd) {
         _states.add(_State.FLOW_MAPPING_EMPTY_VALUE);
@@ -658,12 +764,15 @@ class Parser {
     }
 
     if (token.type == TokenType.value) {
+      if (_retainLayout) lastColonSpan = token.span;
       token = _scanner.advance()!;
       if (token.type != TokenType.flowEntry &&
           token.type != TokenType.flowMappingEnd) {
         _states.add(_State.FLOW_MAPPING_KEY);
         return _parseNode();
       }
+      _state = _State.FLOW_MAPPING_KEY;
+      return _processEmptyScalar(token.span.start);
     }
 
     _state = _State.FLOW_MAPPING_KEY;
@@ -671,8 +780,12 @@ class Parser {
   }
 
   /// Generate an empty scalar event.
-  Event _processEmptyScalar(SourceLocation location) =>
-      ScalarEvent(location.pointSpan() as FileSpan, '', ScalarStyle.PLAIN);
+  Event _processEmptyScalar(SourceLocation location,
+          {List<LayoutElement>? leadingLayout,
+          List<LayoutElement>? trailingLayout}) =>
+      ScalarEvent(location.pointSpan() as FileSpan, '', ScalarStyle.PLAIN,
+          leadingLayout: leadingLayout ?? const [],
+          trailingLayout: trailingLayout ?? const []);
 
   /// Parses directives.
   (VersionDirective?, List<TagDirective>) _processDirectives() {
