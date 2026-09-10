@@ -111,7 +111,8 @@ class YamlEditor {
 
   factory YamlEditor(String yaml) => YamlEditor._(yaml);
 
-  YamlEditor._(this._yaml) : _contents = loadYamlNode(_yaml) {
+  YamlEditor._(this._yaml)
+      : _contents = loadYamlNode(_yaml, retainLayout: true) {
     _initialize();
   }
 
@@ -241,10 +242,16 @@ class YamlEditor {
 
     if (path.isEmpty) {
       final start = _contents.span.start.offset;
-      final end = getContentSensitiveEnd(_contents);
       final lineEnding = getLineEnding(_yaml);
-      final edit = SourceEdit(
-          start, end - start, yamlEncodeBlock(valueNode, 0, lineEnding));
+      final rawReplacement = yamlEncodeBlock(valueNode, 0, lineEnding);
+      final (:replacement, :endOffset) = preserveTrailingCommentOnBlockScalar(
+        oldNode: _contents,
+        yaml: _yaml,
+        replacement: rawReplacement,
+        currentEndOffset: getContentSensitiveEnd(_contents),
+        lineEnding: lineEnding,
+      );
+      final edit = SourceEdit(start, endOffset - start, replacement);
 
       return _performEdit(edit, path, valueNode);
     }
@@ -571,7 +578,8 @@ class YamlEditor {
     // Check that the edit does actually parse
     final YamlNode actualTree;
     try {
-      actualTree = withYamlWarningCallback(() => loadYamlNode(updatedYaml));
+      actualTree = withYamlWarningCallback(
+          () => loadYamlNode(updatedYaml, retainLayout: true));
     } on YamlException {
       throw createAssertionError(
         'Failed to produce valid YAML after modification.',

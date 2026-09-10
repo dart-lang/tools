@@ -36,8 +36,11 @@ SourceEdit updateInList(
     ///
     /// By virtue of [yamlEncodeBlockString], collections automatically
     /// have the necessary line endings.
-    if ((newValue is List && (newValue as List).isNotEmpty) ||
-        (newValue is Map && (newValue as Map).isNotEmpty)) {
+    final isBlockColl = isCollection(newValue) &&
+        !isFlowYamlCollectionNode(newValue) &&
+        !isEmpty(newValue);
+
+    if (isBlockColl) {
       valueString = valueString.substring(indentation);
     } else if (currValue.collectionStyle == CollectionStyle.BLOCK) {
       valueString += lineEnding;
@@ -48,6 +51,20 @@ SourceEdit updateInList(
       offset++;
       end = offset;
       valueString = ' $valueString';
+    }
+
+    if (valueString.trimLeft().startsWith('|') ||
+        valueString.trimLeft().startsWith('>')) {
+      final (:replacement, :endOffset) = preserveTrailingCommentOnBlockScalar(
+        oldNode: currValue,
+        yaml: yaml,
+        replacement: valueString,
+        currentEndOffset: end,
+        lineEnding: lineEnding,
+        blockIndent: listIndentation,
+      );
+      valueString = replacement;
+      end = endOffset;
     }
 
     return SourceEdit(offset, end - offset, valueString);
@@ -325,10 +342,14 @@ SourceEdit _insertInFlowList(
   final formattedValue = _formatNewFlow(list, item);
 
   final yaml = yamlEdit.toString();
-  final currNode = list.nodes[index];
-  final currNodeStart = currNode.span.start.offset;
-  var start = yaml.lastIndexOf(RegExp(r',|\['), currNodeStart - 1) + 1;
-  if (yaml[start] == ' ') start++;
+  var start = index == 0
+      ? (list.openSpan != null
+          ? list.openSpan!.end.offset
+          : (list.span.start.offset + 1))
+      : (list.commaSpan(index) != null
+          ? list.commaSpan(index)!.end.offset
+          : list.nodes[index].span.start.offset);
+  if (start < yaml.length && yaml[start] == ' ') start++;
 
   return SourceEdit(start, 0, formattedValue);
 }
@@ -357,14 +378,24 @@ SourceEdit _removeFromBlockList(
     isSingleEntry: listSize == 1,
     isLastEntry: index >= listSize - 1,
     nodeToRemoveOffset: (
-      start: yaml.lastIndexOf(
-        '-',
-        isEmptySpan ? span.start.offset : span.start.offset - 1,
-      ),
-      end: isEmptySpan ? end + 1 : end,
+      start: list.dashSpan(index)?.start.offset ??
+          yaml.lastIndexOf(
+            '-',
+            isEmptySpan ? span.start.offset : span.start.offset - 1,
+          ),
+      end: isEmptySpan ? (list.dashSpan(index)?.end.offset ?? end + 1) : end,
     ),
     lineEnding: getLineEnding(yaml),
     nextBlockNodeInfo: () {
+      final nextDash = list.dashSpan(index + 1);
+      if (nextDash != null) {
+        final hyphenOffset = nextDash.start.offset;
+        final nearestLineEnding = yaml.lastIndexOf('\n', hyphenOffset);
+        return (
+          nearestLineEnding: nearestLineEnding,
+          nextNodeColStart: nextDash.start.column,
+        );
+      }
       final nextNode = list.nodes[index + 1];
       final nextNodeSpan = nextNode.span;
       final offset = nextNodeSpan.start.offset;
@@ -392,6 +423,24 @@ SourceEdit _removeFromBlockList(
 SourceEdit _removeFromFlowList(
     YamlEditor yamlEdit, YamlList list, YamlNode nodeToRemove, int index) {
   RangeError.checkValueInInterval(index, 0, list.length - 1);
+
+  if (list.length == 1) {
+    final start = list.openSpan != null
+        ? list.openSpan!.end.offset
+        : (list.span.start.offset + 1);
+    final end = list.closeSpan != null
+        ? list.closeSpan!.start.offset
+        : (list.span.end.offset - 1);
+    return SourceEdit(start, end - start, '');
+  }
+
+  final entrySpan = list.entrySpan(index);
+  if (entrySpan != null) {
+    final start = (index == 0 && list.openSpan != null)
+        ? list.openSpan!.end.offset
+        : entrySpan.start.offset;
+    return SourceEdit(start, entrySpan.end.offset - start, '');
+  }
 
   final span = nodeToRemove.span;
   final yaml = yamlEdit.toString();
