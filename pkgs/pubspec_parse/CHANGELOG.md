@@ -1,6 +1,6 @@
 ## 1.6.1
 
-- Added usage examples to the README.
+- Added a usage example.
 
 ## 1.6.0
 
