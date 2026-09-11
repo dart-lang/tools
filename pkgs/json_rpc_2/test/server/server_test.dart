@@ -74,9 +74,11 @@ void main() {
   });
 
   test('a request with no id is a notification', () async {
-    final completer = Completer<json_rpc.Parameters>();
+    json_rpc.Parameters? received;
+    final handled = Completer<void>();
     controller.server.registerMethod('foo', (json_rpc.Parameters params) {
-      completer.complete(params);
+      received = params;
+      handled.complete();
     });
 
     unawaited(controller.handleRequest({
@@ -85,10 +87,10 @@ void main() {
       'params': {'param': 'value'}
     }));
 
-    var params = await completer.future;
-    expect(params.id, isNull);
-    expect(params.isNotification, isTrue);
-    expect(params['param'].isNotification, isTrue);
+    await handled.future;
+    expect(received!.id, isNull);
+    expect(received!.isNotification, isTrue);
+    expect(received!['param'].isNotification, isTrue);
   });
 
   test('calls a method that takes no parameters', () {
