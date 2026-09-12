@@ -1,6 +1,8 @@
 ## 2.2.5-wip
 
 - Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
+- Fix flow list and flow map mutations when comments contain delimiter characters.
+- Support updating empty values in flow maps without whitespace after the colon.
 
 ## 2.2.4
 
