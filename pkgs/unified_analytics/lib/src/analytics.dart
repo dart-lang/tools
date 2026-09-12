@@ -17,7 +17,7 @@ import 'enums.dart';
 import 'event.dart';
 import 'ga_client.dart';
 import 'initializer.dart';
-import 'is_external.dart';
+import 'is_external.dart' as ie;
 import 'log_handler.dart';
 import 'survey_handler.dart';
 import 'user_property.dart';
@@ -206,6 +206,10 @@ abstract class Analytics {
   /// file contents.
   bool get okToSend;
 
+  /// Boolean indicating whether this instance is configured for an external
+  /// build.
+  bool get isExternal;
+
   /// Returns a map object with all of the tools that have been parsed
   /// out of the configuration file.
   Map<String, ToolInfo> get parsedTools;
@@ -317,8 +321,12 @@ abstract class Analytics {
     int toolsMessageVersion = kToolsMessageVersion,
     String toolsMessage = kToolsMessage,
     bool enableAsserts = true,
+    bool isExternal = true,
   }) {
-    final firstRun = runInitialization(homeDirectory: homeDirectory);
+    final firstRun = runInitialization(
+      homeDirectory: homeDirectory,
+      isExternal: isExternal,
+    );
 
     return FakeAnalytics._(
       tool: tool,
@@ -343,6 +351,7 @@ abstract class Analytics {
       agent: agent,
       firstRun: firstRun,
       enableAsserts: enableAsserts,
+      isExternal: isExternal,
     );
   }
 }
@@ -351,6 +360,8 @@ class AnalyticsImpl implements Analytics {
   final DashTool tool;
   final FileSystem fs;
   final int toolsMessageVersion;
+  @override
+  final bool isExternal;
   final ConfigHandler _configHandler;
   final GAClient _gaClient;
   final SurveyHandler _surveyHandler;
@@ -405,6 +416,7 @@ class AnalyticsImpl implements Analytics {
     required bool enableAsserts,
     required bool firstRun,
     String? agent,
+    this.isExternal = ie.isExternal,
   }) : _gaClient = gaClient,
        _surveyHandler = surveyHandler,
        _enableAsserts = enableAsserts,
@@ -429,6 +441,7 @@ class AnalyticsImpl implements Analytics {
          locale: io.Platform.localeName,
          clientIde: clientIde,
          aiAgent: agent != null ? truncateStringToLength(agent, 36) : null,
+         isExternal: isExternal,
        ),
        _enabledFeatures = enabledFeatures,
        _configHandler = ConfigHandler(
@@ -436,6 +449,7 @@ class AnalyticsImpl implements Analytics {
          configFile: homeDirectory
              .childDirectory(kDartToolDirectoryName)
              .childFile(kConfigFileName),
+         isExternal: isExternal,
        ),
        _logHandler = LogHandler(
          logFile: homeDirectory
@@ -797,6 +811,7 @@ class FakeAnalytics extends AnalyticsImpl {
     super.toolsMessageVersion = kToolsMessageVersion,
     super.gaClient = const FakeGAClient(),
     super.enableAsserts = true,
+    super.isExternal = true,
   });
 
   /// Getter to reference the private [UserProperty].
@@ -845,6 +860,9 @@ class NoOpAnalytics implements Analytics {
 
   @override
   final bool okToSend = false;
+
+  @override
+  final bool isExternal = ie.isExternal;
 
   @override
   final Map<String, ToolInfo> parsedTools = const <String, ToolInfo>{};

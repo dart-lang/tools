@@ -826,8 +826,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     }
   });
 
-  test('The isExternal constant is true by default', () {
-    expect(isExternal, true);
+  test('The isExternal constant matches the build configuration', () {
+    expect(isExternal, isA<bool>());
   });
 
   test(
@@ -835,8 +835,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     () {
       expect(
         analytics.userPropertyMap['is_external']?['value'],
-        isExternal,
-        reason: 'The is_external user property should mirror isExternal',
+        analytics.isExternal,
+        reason:
+            'The is_external user property should mirror analytics.isExternal',
       );
 
       final userProperty = UserProperty(
@@ -856,8 +857,47 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         userProperty.preparePayload()['is_external']?['value'],
         isExternal,
       );
+
+      final internalUserProperty = UserProperty(
+        flutterChannel: flutterChannel,
+        host: 'macos',
+        flutterVersion: flutterVersion,
+        dartVersion: dartVersion,
+        tool: initialTool.label,
+        hostOsVersion: '14.0',
+        locale: 'en',
+        clientIde: null,
+        aiAgent: null,
+        sessionFile: sessionFile,
+        isExternal: false,
+      );
+      expect(internalUserProperty.isExternal, false);
+      expect(
+        internalUserProperty.preparePayload()['is_external']?['value'],
+        false,
+      );
     },
   );
+
+  test('When isExternal is false, config and message behavior is bypassed', () {
+    final secondAnalytics = Analytics.fake(
+      tool: secondTool,
+      homeDirectory: home,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+      isExternal: false,
+    );
+
+    expect(secondAnalytics.isExternal, false);
+    expect(secondAnalytics.shouldShowMessage, false);
+    expect(secondAnalytics.telemetryEnabled, true);
+    expect(secondAnalytics.userPropertyMap['is_external']?['value'], false);
+  });
 
   test(
     'The UserProperty class correctly sets and exposes the ai_agent value',

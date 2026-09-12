@@ -17,6 +17,7 @@ export 'src/api_facet.dart';
 export 'src/api_summary_customizer.dart'
     show ApiSummaryContext, ApiSummaryCustomizer;
 export 'src/api_type.dart';
+export 'src/js_facet.dart';
 export 'src/meta_facet.dart';
 
 /// Creates a canonical [ApiSummary] model of the public API of a package.
