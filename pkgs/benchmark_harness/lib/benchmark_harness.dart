@@ -4,4 +4,12 @@
 
 export 'src/async_benchmark_base.dart';
 export 'src/benchmark_base.dart' show BenchmarkBase;
-export 'src/score_emitter.dart';
+export 'src/measurement.dart'
+    show DetailedMeasurement, Measurement, measureRunsDirect;
+export 'src/score_emitter.dart'
+    show
+        PrintEmitter,
+        PrintEmitterV2,
+        ScoreEmitter,
+        ScoreEmitterV2,
+        printDetailedMeasurement;
