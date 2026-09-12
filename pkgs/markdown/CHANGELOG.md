@@ -4,6 +4,9 @@
   example a single very long word). The plain-text accelerator regex required
   a trailing whitespace, so a run reaching the end of a line without one
   backtracked across the whole run at every position.
+* Adds `offset`/`length` to `Element`, populated for inline code spans
+  (`` `code` ``) parsed from a top-level paragraph or atx header, so that
+  their location in the original source can be recovered (#1287).
 
 ## 7.4.0
 
