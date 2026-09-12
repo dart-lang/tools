@@ -37,7 +37,7 @@ void main() {
         })));
   });
 
-  test('passes the id of the request being answered', () {
+  test('passes the ID of the request being answered', () {
     controller.server.registerMethod(
         'foo',
         (json_rpc.Parameters params) =>
@@ -57,7 +57,7 @@ void main() {
         })));
   });
 
-  test('a null id is not a notification', () {
+  test('a null ID is not a notification', () {
     controller.server.registerMethod(
         'foo',
         (json_rpc.Parameters params) =>
@@ -73,7 +73,7 @@ void main() {
         })));
   });
 
-  test('a request with no id is a notification', () async {
+  test('a request with no ID is a notification', () async {
     json_rpc.Parameters? received;
     final handled = Completer<void>();
     controller.server.registerMethod('foo', (json_rpc.Parameters params) {

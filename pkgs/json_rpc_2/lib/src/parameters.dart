@@ -28,10 +28,10 @@ class Parameters {
   /// will be automatically rejected. To avoid this, use [Parameter.valueOr].
   final dynamic value;
 
-  /// The id of the request that called [method].
+  /// The ID of the request that called [method].
   ///
   /// JSON-RPC allows a string, a number, or `null` here. A notification has no
-  /// id, and reaches a method as `null` too. Read [isNotification] to tell
+  /// ID, and reaches a method as `null` too. Read [isNotification] to tell
   /// those apart.
   final Object? id;
 

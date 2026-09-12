@@ -2,7 +2,7 @@
 
 * `Parameters` now carries `id`. A method can read it.
 * Add `Parameters.isNotification`, to tell a notification apart from a request
-  with a `null` id.
+  with a `null` ID.
 * A class that implements `Parameters` now needs `id` and `isNotification`.
 
 ## 4.1.0
