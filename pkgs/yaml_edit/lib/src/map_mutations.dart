@@ -143,8 +143,8 @@ SourceEdit _addToFlowMap(
     return SourceEdit(closingOffset, 0, formattedValue);
   }
 
-  final insertionOffset =
-      (map.nodes.keys.toList()[insertionIndex] as YamlNode).span.start.offset;
+  final keyAtIndex = map.nodes.keys.toList()[insertionIndex] as YamlNode;
+  final insertionOffset = keyAtIndex.span.start.offset;
 
   return SourceEdit(insertionOffset, 0, '$keyString: $valueString, ');
 }
@@ -173,15 +173,26 @@ SourceEdit _replaceInBlockMap(
     valueAsString = ' $valueAsString';
   }
 
-  /// +1 accounts for the colon
-  // TODO: What if here is a whitespace following the key, before the colon?
-  final start = keyNode.span.end.offset + 1;
-  var end = getContentSensitiveEnd(map.nodes[key]!);
+  final colon = map.colonSpan(keyNode);
+  final start = colon != null ? colon.end.offset : keyNode.span.end.offset + 1;
+  var end = getContentSensitiveEnd(map.nodes[keyNode] ?? map.nodes[key]!);
 
-  /// `package:yaml` parses empty nodes in a way where the start/end of the
-  /// empty value node is the end of the key node, so we have to adjust for
-  /// this.
   if (end < start) end = start;
+
+  if (valueAsString.trimLeft().startsWith('|') ||
+      valueAsString.trimLeft().startsWith('>')) {
+    final targetNode = map.nodes[keyNode] ?? map.nodes[key] ?? keyNode;
+    final (:replacement, :endOffset) = preserveTrailingCommentOnBlockScalar(
+      oldNode: targetNode,
+      yaml: yaml,
+      replacement: valueAsString,
+      currentEndOffset: end,
+      lineEnding: lineEnding,
+      blockIndent: getMapIndentation(yaml, map),
+    );
+    valueAsString = replacement;
+    end = endOffset;
+  }
 
   return SourceEdit(start, end - start, valueAsString);
 }
@@ -191,10 +202,19 @@ SourceEdit _replaceInBlockMap(
 /// that this is a flow map.
 SourceEdit _replaceInFlowMap(
     YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
-  final valueSpan = map.nodes[key]!.span;
+  final keyNode = getKeyNode(map, key);
+  final colon = map.colonSpan(keyNode);
+  final valueSpan = (map.nodes[keyNode] ?? map.nodes[key]!).span;
   final valueString = yamlEncodeFlow(newValue);
+  final offset = colon != null ? colon.end.offset : valueSpan.start.offset;
+  final length = colon != null
+      ? (valueSpan.end.offset - colon.end.offset)
+      : valueSpan.length;
+  final replacement = colon != null && !valueString.startsWith(' ')
+      ? ' $valueString'
+      : valueString;
 
-  return SourceEdit(valueSpan.start.offset, valueSpan.length, valueString);
+  return SourceEdit(offset, length, replacement);
 }
 
 /// Performs the string operation on [yamlEdit] to achieve the effect of
@@ -206,30 +226,37 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   final mapSize = map.length;
   final keySpan = keyNode.span;
 
+  final hasMapHeader = map.span.start.offset < keySpan.start.offset &&
+      (() {
+        final prefix = yaml
+            .substring(map.span.start.offset, keySpan.start.offset)
+            .trimLeft();
+        return prefix.startsWith('&') || prefix.startsWith('!');
+      })();
+
   return removeBlockCollectionEntry(
     yaml,
     blockCollection: map,
     collectionIndent: getMapIndentation(yaml, map),
-    isFirstEntry: entryIndex == 0,
+    isFirstEntry: entryIndex == 0 && !hasMapHeader,
     isSingleEntry: mapSize == 1,
     isLastEntry: entryIndex >= mapSize - 1,
     nodeToRemoveOffset: (
-      // A block map only exists because of its first key.
-      start: entryIndex == 0 ? map.span.start.offset : keySpan.start.offset,
+      start: entryIndex == 0 && !hasMapHeader
+          ? map.span.start.offset
+          : keySpan.start.offset,
       end: valueNode.span.length == 0
-          ? keySpan.end.offset + 2 // Null value have no span. Skip ":".
+          ? (map.colonSpan(keyNode)?.end.offset ?? keySpan.end.offset + 2)
           : getContentSensitiveEnd(valueNode),
     ),
     lineEnding: getLineEnding(yaml),
-
-    // Only called when the next node is present. Never before.
     nextBlockNodeInfo: () {
       final nextKeyNode = map.nodes.keys.elementAt(entryIndex + 1) as YamlNode;
       final nextKeySpan = nextKeyNode.span.start;
 
       return (
         nearestLineEnding: yaml.lastIndexOf('\n', nextKeySpan.offset),
-        nextNodeColStart: nextKeySpan.column
+        nextNodeColStart: nextKeySpan.column,
       );
     },
   );
@@ -239,16 +266,33 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
 /// removing the [key] from the map, bearing in mind that this is a flow
 /// map.
 SourceEdit _removeFromFlowMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
-  final (index: _, :keyNode, :valueNode) = getYamlMapEntry(map, key);
+  final (index: entryIndex, :keyNode, :valueNode) = getYamlMapEntry(map, key);
+
+  if (map.length == 1) {
+    final start = map.openSpan != null
+        ? map.openSpan!.end.offset
+        : (map.span.start.offset + 1);
+    final end = map.closeSpan != null
+        ? map.closeSpan!.start.offset
+        : (map.span.end.offset - 1);
+    return SourceEdit(start, end - start, '');
+  }
+
+  final entrySpan = map.entrySpan(keyNode);
+  if (entrySpan != null) {
+    final start = (entryIndex == 0 && map.openSpan != null)
+        ? map.openSpan!.end.offset
+        : entrySpan.start.offset;
+    return SourceEdit(start, entrySpan.end.offset - start, '');
+  }
 
   var start = keyNode.span.start.offset;
   var end = valueNode.span.end.offset;
   final yaml = yamlEdit.toString();
 
-  if (deepEquals(keyNode, map.keys.first)) {
+  if (entryIndex == 0) {
     start = yaml.lastIndexOf('{', start - 1) + 1;
-
-    if (deepEquals(keyNode, map.keys.last)) {
+    if (map.length == 1) {
       end = yaml.indexOf('}', end);
     } else {
       end = yaml.indexOf(',', end) + 1;

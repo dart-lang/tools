@@ -90,6 +90,15 @@ class YamlScalarWrap implements YamlScalar {
   @override
   final dynamic value;
 
+  @override
+  SourceSpan? get anchorSpan => null;
+
+  @override
+  List<LayoutElement> get leadingLayout => const [];
+
+  @override
+  List<LayoutElement> get trailingLayout => const [];
+
   YamlScalarWrap(this.value, {this.style = ScalarStyle.ANY, Object? sourceUrl})
       : span = shellSpan(sourceUrl);
 
@@ -111,6 +120,33 @@ class YamlMapWrap
 
   @override
   final SourceSpan span;
+
+  @override
+  SourceSpan? get anchorSpan => null;
+
+  @override
+  SourceSpan? aliasSpan(Object? key) => null;
+
+  @override
+  SourceSpan? get closeSpan => null;
+
+  @override
+  SourceSpan? commaSpan(Object? key) => null;
+
+  @override
+  SourceSpan? entrySpan(Object? key) => null;
+
+  @override
+  SourceSpan? get openSpan => null;
+
+  @override
+  List<LayoutElement> get leadingLayout => const [];
+
+  @override
+  List<LayoutElement> get trailingLayout => const [];
+
+  @override
+  SourceSpan? colonSpan(Object? key) => null;
 
   factory YamlMapWrap(
     Map dartMap, {
@@ -170,6 +206,33 @@ class YamlListWrap with collection.ListMixin implements YamlList {
 
   @override
   final SourceSpan span;
+
+  @override
+  SourceSpan? get anchorSpan => null;
+
+  @override
+  SourceSpan? aliasSpan(int index) => null;
+
+  @override
+  SourceSpan? get closeSpan => null;
+
+  @override
+  SourceSpan? commaSpan(int index) => null;
+
+  @override
+  SourceSpan? entrySpan(int index) => null;
+
+  @override
+  SourceSpan? get openSpan => null;
+
+  @override
+  List<LayoutElement> get leadingLayout => const [];
+
+  @override
+  List<LayoutElement> get trailingLayout => const [];
+
+  @override
+  SourceSpan? dashSpan(int index) => null;
 
   @override
   int get length => nodes.length;
