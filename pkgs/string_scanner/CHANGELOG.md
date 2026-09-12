@@ -1,5 +1,8 @@
 ## 1.4.2-wip
 
+* Add `LineScannerMixin` to allow custom subclasses of `StringScanner` to share
+  eager line and column tracking logic.
+
 ## 1.4.1
 
 * Move to `dart-lang/tools` monorepo.
