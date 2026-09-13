@@ -5,6 +5,7 @@
 import 'dart:convert' show json;
 import 'dart:io';
 
+import 'chrome.dart';
 import 'resolver.dart';
 import 'util.dart';
 
@@ -155,22 +156,40 @@ class HitMap {
     bool checkIgnoredLines = false,
     @Deprecated('Use packagePath') String? packagesPath,
     String? packagePath,
+    Future<String?> Function(String scriptId)? sourceProvider,
+    Future<String?> Function(String scriptId)? sourceMapProvider,
   }) async {
     final globalHitmap = <String, HitMap>{};
+    Future<Map<String, HitMap>> parse(List jsonResult) => HitMap.parseJson(
+      jsonResult.whereType<Map<String, dynamic>>().toList(),
+      checkIgnoredLines: checkIgnoredLines,
+      // ignore: deprecated_member_use_from_same_package
+      packagesPath: packagesPath,
+      packagePath: packagePath,
+    );
     for (var file in files) {
       final contents = file.readAsStringSync();
-      final jsonMap = json.decode(contents) as Map<String, dynamic>;
-      if (jsonMap.containsKey('coverage')) {
-        final jsonResult = jsonMap['coverage'] as List;
-        globalHitmap.merge(
-          await HitMap.parseJson(
-            jsonResult.cast<Map<String, dynamic>>(),
-            checkIgnoredLines: checkIgnoredLines,
-            // ignore: deprecated_member_use_from_same_package
-            packagesPath: packagesPath,
-            packagePath: packagePath,
-          ),
-        );
+      switch (json.decode(contents)) {
+        // VM-service-style {"coverage": [...]} report.
+        case {'coverage': final List jsonResult}:
+          globalHitmap.merge(await parse(jsonResult));
+        // Raw Chrome V8 precise coverage JSON list.
+        case final List v8Entries:
+          final chromeReport = await parseChromeCoverage(
+            v8Entries.whereType<Map<String, dynamic>>().toList(),
+            sourceProvider ?? ((scriptId) async => null),
+            sourceMapProvider ?? ((scriptId) async => null),
+            (sourceUrl, scriptId) async => Uri.tryParse(sourceUrl),
+          );
+          if (chromeReport case {'coverage': final List jsonResult}) {
+            globalHitmap.merge(await parse(jsonResult));
+          }
+        case final decoded:
+          throw FormatException(
+            'Unrecognized coverage JSON in "${file.path}". Expected a '
+            '{"coverage": [...]} report or a raw V8 coverage list, but got '
+            '${decoded.runtimeType}.',
+          );
       }
     }
     return globalHitmap;
