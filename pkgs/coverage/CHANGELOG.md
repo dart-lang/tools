@@ -14,14 +14,14 @@
 - `test_with_coverage` now fails immediately when the test process exits before
   the VM service is ready (for example, when the test path does not exist)
   instead of waiting forever, and exits with the test process's exit code.
-- `HitMap.parseFiles` now throws a `FormatException` when a file is neither a
-  `{"coverage": [...]}` report nor a raw V8 coverage list, instead of silently
-  ignoring it.
+- `HitMap.parseFiles` now throws a `FormatException` when a file is not a valid
+  `{"coverage": [...]}` report, instead of silently ignoring it.
+- Add `HitMap.parseChromeFiles` to parse Chrome/V8 coverage JSON files
+  (supporting both `{"coverage": [...]}` and raw V8 lists with source and
+  source-map providers).
 - Add an `--include-test-files` flag to `test_with_coverage` (web platform
   only) that includes coverage for test files and other non-library package
   sources; by default only library code is reported, matching the VM flow.
-- Support parsing raw Chrome V8 coverage JSON lists in `HitMap.parseFiles`
-  (requires source and source-map providers to produce output).
 - Pre-flight `package:test` verification and `file:` URI normalization using
   `package:package_config`.
 - Fixed a race condition in isolate teardown: ignore the benign errors

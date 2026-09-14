@@ -271,7 +271,7 @@ dependency_overrides:
     final process = await _run(['run', _testWithCoveragePath, '-p', 'firefox']);
     await expectLater(
       process.stdout,
-      emitsThrough(contains('Unsupported --platform "firefox"')),
+      emitsThrough(contains('"firefox" is not an allowed value for option')),
     );
     await process.shouldExit(1);
   });

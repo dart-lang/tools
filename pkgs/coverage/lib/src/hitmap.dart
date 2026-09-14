@@ -156,8 +156,6 @@ class HitMap {
     bool checkIgnoredLines = false,
     @Deprecated('Use packagePath') String? packagesPath,
     String? packagePath,
-    Future<String?> Function(String scriptId)? sourceProvider,
-    Future<String?> Function(String scriptId)? sourceMapProvider,
   }) async {
     final globalHitmap = <String, HitMap>{};
     Future<Map<String, HitMap>> parse(List jsonResult) => HitMap.parseJson(
@@ -170,7 +168,39 @@ class HitMap {
     for (var file in files) {
       final contents = file.readAsStringSync();
       switch (json.decode(contents)) {
-        // VM-service-style {"coverage": [...]} report.
+        case {'coverage': final List jsonResult}:
+          globalHitmap.merge(await parse(jsonResult));
+        case final decoded:
+          throw FormatException(
+            'Unrecognized coverage JSON in "${file.path}". Expected a '
+            '{"coverage": [...]} report, but got ${decoded.runtimeType}.',
+          );
+      }
+    }
+    return globalHitmap;
+  }
+
+  /// Generates a merged hitmap from a set of Chrome/web coverage JSON files.
+  ///
+  /// Supports both standard `{"coverage": [...]}` JSON reports and raw V8
+  /// precise coverage JSON lists.
+  static Future<Map<String, HitMap>> parseChromeFiles(
+    Iterable<File> files, {
+    bool checkIgnoredLines = false,
+    String? packagePath,
+    Future<String?> Function(String scriptId)? sourceProvider,
+    Future<String?> Function(String scriptId)? sourceMapProvider,
+  }) async {
+    final globalHitmap = <String, HitMap>{};
+    Future<Map<String, HitMap>> parse(List jsonResult) => HitMap.parseJson(
+      jsonResult.whereType<Map<String, dynamic>>().toList(),
+      checkIgnoredLines: checkIgnoredLines,
+      packagePath: packagePath,
+    );
+    for (var file in files) {
+      final contents = file.readAsStringSync();
+      switch (json.decode(contents)) {
+        // VM-service-style {"coverage": [...]} report (emitted by dart test --coverage).
         case {'coverage': final List jsonResult}:
           globalHitmap.merge(await parse(jsonResult));
         // Raw Chrome V8 precise coverage JSON list.

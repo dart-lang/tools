@@ -113,7 +113,7 @@ void main() {
     }
   });
 
-  test('HitMap.parseFiles handles raw V8 list with providers', () async {
+  test('HitMap.parseChromeFiles handles raw V8 list with providers', () async {
     final preciseCoverage =
         json.decode(
               await File(
@@ -125,7 +125,7 @@ void main() {
     final tempFile = File('${tempDir.path}/raw_v8.json');
     tempFile.writeAsStringSync(jsonEncode(preciseCoverage));
     try {
-      final hitmap = await HitMap.parseFiles(
+      final hitmap = await HitMap.parseChromeFiles(
         [tempFile],
         sourceProvider: (scriptId) async => sourceProvider(scriptId),
         sourceMapProvider: (scriptId) async => sourceMapProvider(scriptId),
@@ -141,7 +141,7 @@ void main() {
   });
 
   // Regression tests for the `scriptId` validation added alongside the
-  // pattern-matching dispatch in `HitMap.parseFiles`.
+  // pattern-matching dispatch in `HitMap.parseChromeFiles`.
   test('parseChromeCoverage rejects an entry with a missing scriptId', () {
     expect(
       parseChromeCoverage(
@@ -208,33 +208,59 @@ void main() {
     }
   });
 
-  test('HitMap.parseFiles skips non-map entries in a raw V8 list', () async {
-    final preciseCoverage =
-        json.decode(
-              await File(
-                'test/test_files/chrome_precise_report.txt',
-              ).readAsString(),
-            )
-            as List;
-    final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_mixed_');
-    final tempFile = File('${tempDir.path}/raw_v8.json');
-    tempFile.writeAsStringSync(
-      jsonEncode(<dynamic>['not-a-map', 42, ...preciseCoverage]),
-    );
-    try {
-      final hitmap = await HitMap.parseFiles(
-        [tempFile],
-        sourceProvider: (scriptId) async => sourceProvider(scriptId),
-        sourceMapProvider: (scriptId) async => sourceMapProvider(scriptId),
+  test(
+    'HitMap.parseChromeFiles skips non-map entries in a raw V8 list',
+    () async {
+      final preciseCoverage =
+          json.decode(
+                await File(
+                  'test/test_files/chrome_precise_report.txt',
+                ).readAsString(),
+              )
+              as List;
+      final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_mixed_');
+      final tempFile = File('${tempDir.path}/raw_v8.json');
+      tempFile.writeAsStringSync(
+        jsonEncode(<dynamic>['not-a-map', 42, ...preciseCoverage]),
       );
-      expect(hitmap.keys, anyElement(contains('main_test.dart')));
-    } finally {
-      tempDir.deleteSync(recursive: true);
-    }
-  });
+      try {
+        final hitmap = await HitMap.parseChromeFiles(
+          [tempFile],
+          sourceProvider: (scriptId) async => sourceProvider(scriptId),
+          sourceMapProvider: (scriptId) async => sourceMapProvider(scriptId),
+        );
+        expect(hitmap.keys, anyElement(contains('main_test.dart')));
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    },
+  );
 
-  test('HitMap.parseFiles returns an empty hitmap for a raw V8 list when no '
-      'providers are supplied', () async {
+  test(
+    'HitMap.parseChromeFiles returns an empty hitmap for a raw V8 list when no '
+    'providers are supplied',
+    () async {
+      final preciseCoverage =
+          json.decode(
+                await File(
+                  'test/test_files/chrome_precise_report.txt',
+                ).readAsString(),
+              )
+              as List;
+      final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_noprov_');
+      final tempFile = File('${tempDir.path}/raw_v8.json');
+      tempFile.writeAsStringSync(jsonEncode(preciseCoverage));
+      try {
+        // The default providers must resolve to null (not throw), so a raw V8
+        // report without source/source-map access degrades to an empty hitmap.
+        expect(await HitMap.parseChromeFiles([tempFile]), isEmpty);
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    },
+  );
+
+  test('HitMap.parseFiles rejects a raw V8 list', () async {
     final preciseCoverage =
         json.decode(
               await File(
@@ -242,13 +268,14 @@ void main() {
               ).readAsString(),
             )
             as List;
-    final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_noprov_');
+    final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_reject_');
     final tempFile = File('${tempDir.path}/raw_v8.json');
     tempFile.writeAsStringSync(jsonEncode(preciseCoverage));
     try {
-      // The default providers must resolve to null (not throw), so a raw V8
-      // report without source/source-map access degrades to an empty hitmap.
-      expect(await HitMap.parseFiles([tempFile]), isEmpty);
+      expect(
+        () => HitMap.parseFiles([tempFile]),
+        throwsA(isA<FormatException>()),
+      );
     } finally {
       tempDir.deleteSync(recursive: true);
     }
