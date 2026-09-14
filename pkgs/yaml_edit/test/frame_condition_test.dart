@@ -85,5 +85,15 @@ key: # Comment on key line
         ),
       );
     });
+
+    test('succeeds when replacing entire document', () {
+      final yaml = '''
+# Header
+foo: 123
+''';
+      final editor = YamlEditor(yaml);
+      editor.update([], {'bar': 456});
+      expect(editor.toString(), contains('bar: 456'));
+    });
   });
 }

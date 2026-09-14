@@ -589,7 +589,7 @@ class YamlEditor {
       );
     }
 
-    // Frame-condition assertion (Phase 0 / L4):
+    // Frame-condition assertion:
     // Bytes outside the edited span must be unchanged, and comments outside
     // the modified subtree must be strictly preserved.
     _assertFrameCondition(
@@ -655,7 +655,7 @@ class YamlEditor {
     throw PathError(path, subPath, tree);
   }
 
-  /// Asserts the frame condition (L4) on the applied [edit]:
+  /// Asserts the frame condition on the applied [edit]:
   /// 1. Bytes outside the edited span
   ///    `[edit.offset, edit.offset + edit.length)` must be unchanged.
   /// 2. Disjoint comments outside the modified subtree must be strictly
@@ -709,10 +709,15 @@ class YamlEditor {
 
     if (lostCommentTexts.isEmpty) return;
 
-    if (path.isEmpty &&
-        expectedNode is YamlScalar &&
-        expectedNode.value == null) {
-      // Entire document cleared (e.g. remove([])).
+    final isDocumentReplacement = path.isEmpty &&
+        ((expectedNode is YamlScalar && expectedNode.value == null) ||
+            (edit.offset == _contents.span.start.offset &&
+                edit.length ==
+                    getContentSensitiveEnd(_contents) -
+                        _contents.span.start.offset));
+
+    if (isDocumentReplacement) {
+      // Entire document replaced or cleared.
       return;
     }
 
@@ -744,14 +749,13 @@ class YamlEditor {
         }
       } else {
         // List item removal.
-        int? removedIndex;
+        var removedIndex = targetNode.length - 1;
         for (var i = 0; i < expectedNode.length; i++) {
           if (!deepEquals(targetNode.nodes[i], expectedNode.nodes[i])) {
             removedIndex = i;
             break;
           }
         }
-        removedIndex ??= targetNode.length - 1;
         final removedItem = targetNode.nodes[removedIndex];
         final itemLineStart =
             initialYaml.lastIndexOf('\n', removedItem.span.start.offset) + 1;
@@ -778,7 +782,7 @@ class YamlEditor {
           }
           // In a block list, trailing comments indented under the item:
           if (targetNode.style == CollectionStyle.BLOCK) {
-            final nextItemStart = removedIndex! < targetNode.length - 1
+            final nextItemStart = removedIndex < targetNode.length - 1
                 ? targetNode.nodes[removedIndex + 1].span.start.offset
                 : initialYaml.length;
             if (c.offset >= itemLineEnd && c.end <= nextItemStart) {
@@ -809,9 +813,10 @@ class YamlEditor {
         final oldValue =
             updatedKey != null ? targetNode.nodes[updatedKey] : null;
         if (oldValue is YamlMap || oldValue is YamlList) {
+          final oldCollection = oldValue as YamlNode;
           isAllowedRemoval = (c) =>
-              c.offset >= oldValue!.span.start.offset &&
-              c.end <= oldValue.span.end.offset;
+              c.offset >= oldCollection.span.start.offset &&
+              c.end <= oldCollection.span.end.offset;
         } else {
           isAllowedRemoval = (_) => false;
         }
@@ -900,7 +905,9 @@ final class _YamlComment {
 
 List<_YamlComment> _extractComments(String yaml, YamlNode root) {
   final spans = <SourceSpan>[];
+  final visited = <YamlNode>{};
   void collect(YamlNode node) {
+    if (!visited.add(node)) return;
     if (node is YamlScalar) {
       spans.add(node.span);
     } else if (node is YamlMap) {
