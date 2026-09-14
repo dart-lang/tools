@@ -264,10 +264,13 @@ SourceEdit buildUpdate(
 
     case CstFlowPair():
       if (findEntryIndex(parent, step) == null) {
-        throw PathError.unexpected(
-            path,
-            'Cannot add a key to $step to a single-pair flow mapping, which '
-            'can hold only one entry');
+        final keyText = yamlEncodeFlow(wrapAsYamlNode(step));
+        final valueText = yamlEncodeFlow(value);
+        final existingText =
+            document.source.substring(parent.contentStart, parent.end);
+        final replacement = '{$existingText, $keyText: $valueText}';
+        return SourceEdit(
+            parent.contentStart, parent.end - parent.contentStart, replacement);
       }
       return _replaceFlowValue(parent.pairValue, value);
 
@@ -286,7 +289,29 @@ SourceEdit _replaceRoot(
     // root of such a document replaces the document.
     return SourceEdit(0, document.source.length, text);
   }
-  return SourceEdit(root.start, root.contentEnd - root.start, text);
+  var lineEnd = root.contentEnd;
+  while (lineEnd < document.source.length &&
+      document.source[lineEnd] != '\n' &&
+      document.source[lineEnd] != '\r') {
+    lineEnd++;
+  }
+  final trailingLine = document.source.substring(root.contentEnd, lineEnd);
+  final hasTrailingComment = trailingLine.contains('#');
+  final isBlockScalar = (text.startsWith('|') || text.startsWith('>')) &&
+      text.contains(style.lineEnding);
+
+  final String textToInsert;
+  final int replaceEnd;
+  if (isBlockScalar && hasTrailingComment) {
+    textToInsert = _liftTrailingCommentToBlockScalarHeader(
+        text, trailingLine, style.lineEnding);
+    replaceEnd = lineEnd;
+  } else {
+    textToInsert = text;
+    replaceEnd = root.contentEnd;
+  }
+
+  return SourceEdit(root.start, replaceEnd - root.start, textToInsert);
 }
 
 /// Replaces the value of a block sequence entry.
@@ -317,11 +342,47 @@ SourceEdit _replaceBlockSeqValue(
       encoded += style.lineEnding;
     }
   }
+
+  var lineEnd = entry.value.contentEnd;
+  while (lineEnd < document.source.length &&
+      document.source[lineEnd] != '\n' &&
+      document.source[lineEnd] != '\r') {
+    lineEnd++;
+  }
+  final trailingLine =
+      document.source.substring(entry.value.contentEnd, lineEnd);
+  final hasTrailingComment = trailingLine.contains('#');
+  final isBlockScalar = (encoded.startsWith('|') || encoded.startsWith('>')) &&
+      encoded.contains(style.lineEnding);
+
+  final String textToInsert;
+  final int replaceEnd;
+  if (isBlockScalar && hasTrailingComment) {
+    textToInsert = _liftTrailingCommentToBlockScalarHeader(
+        encoded, trailingLine, style.lineEnding);
+    replaceEnd = lineEnd;
+  } else {
+    textToInsert = encoded;
+    replaceEnd = entry.value.contentEnd;
+  }
+
   return SourceEdit(
     entry.dashStart + 1,
-    entry.value.contentEnd - entry.dashStart - 1,
-    ' $encoded',
+    replaceEnd - entry.dashStart - 1,
+    ' $textToInsert',
   );
+}
+
+String _liftTrailingCommentToBlockScalarHeader(
+  String encodedText,
+  String trailingLine,
+  String lineEnding,
+) {
+  final firstBreak = encodedText.indexOf(lineEnding);
+  if (firstBreak == -1) return encodedText;
+  final indicator = encodedText.substring(0, firstBreak);
+  final body = encodedText.substring(firstBreak);
+  return '$indicator$trailingLine$body';
 }
 
 /// Replaces the value of a block mapping entry, rewriting the space after the
@@ -337,13 +398,51 @@ SourceEdit _replaceBlockMapValue(
 
   final colon = entry.colon;
   if (colon == null) {
-    // An explicit key written without a value, as in `? a`. There is no `:` to
-    // reuse, so write one.
-    final separator = encoded.ownLine ? ':${style.lineEnding}' : ': ';
+    // An explicit key written without a value, as in `? a`.
+    var lineEnd = entry.value.contentEnd;
+    while (lineEnd < document.source.length &&
+        document.source[lineEnd] != '\n' &&
+        document.source[lineEnd] != '\r') {
+      lineEnd++;
+    }
+    final trailingLine =
+        document.source.substring(entry.value.contentEnd, lineEnd);
+    final hasTrailingComment = trailingLine.contains('#');
+    final isBlockScalar =
+        (encoded.text.startsWith('|') || encoded.text.startsWith('>')) &&
+            encoded.text.contains(style.lineEnding);
+
+    final String textToInsert;
+    final int replaceEnd;
+    if (isBlockScalar && hasTrailingComment) {
+      textToInsert = _liftTrailingCommentToBlockScalarHeader(
+          encoded.text, trailingLine, style.lineEnding);
+      replaceEnd = lineEnd;
+    } else {
+      textToInsert = encoded.text;
+      replaceEnd = entry.value.contentEnd;
+    }
+
+    final atLineStart = entry.value.start == 0 ||
+        document.source[entry.value.start - 1] == '\n' ||
+        document.source[entry.value.start - 1] == '\r';
+    final linePrefix = atLineStart ? '' : style.lineEnding;
+
+    var fullText = encoded.ownLine
+        ? '$linePrefix${' ' * keyColumn}:${style.lineEnding}$textToInsert'
+        : '$linePrefix${' ' * keyColumn}: $textToInsert';
+
+    final followedByBreakOrContent = replaceEnd < document.source.length &&
+        (document.source[replaceEnd] != '\n' &&
+            document.source[replaceEnd] != '\r');
+    if (atLineStart && followedByBreakOrContent && !fullText.endsWith(style.lineEnding)) {
+      fullText = '$fullText${style.lineEnding}';
+    }
+
     return SourceEdit(
         entry.value.start,
-        entry.value.contentEnd - entry.value.start,
-        '$separator${encoded.text}');
+        replaceEnd - entry.value.start,
+        fullText);
   }
 
   final separator = document.source.substring(colon + 1, entry.value.start);
@@ -351,11 +450,46 @@ SourceEdit _replaceBlockMapValue(
     return _replaceInPlace(document, style, entry.value, value);
   }
 
+  var lineEnd = entry.value.contentEnd;
+  while (lineEnd < document.source.length &&
+      document.source[lineEnd] != '\n' &&
+      document.source[lineEnd] != '\r') {
+    lineEnd++;
+  }
+  final trailingLine =
+      document.source.substring(entry.value.contentEnd, lineEnd);
+  final hasTrailingComment = trailingLine.contains('#');
+  final isBlockScalar =
+      (encoded.text.startsWith('|') || encoded.text.startsWith('>')) &&
+          encoded.text.contains(style.lineEnding);
+
+  final int replaceEnd;
+  var textToInsert = encoded.text;
+  if (isBlockScalar && hasTrailingComment) {
+    textToInsert = _liftTrailingCommentToBlockScalarHeader(
+        encoded.text, trailingLine, style.lineEnding);
+    replaceEnd = lineEnd;
+  } else if (isBlockScalar) {
+    replaceEnd = lineEnd;
+  } else {
+    replaceEnd = entry.value.contentEnd;
+  }
+
+  if (!encoded.ownLine &&
+      document.source.substring(colon + 1, entry.value.start).contains('\n')) {
+    final endsWithBreak = replaceEnd > 0 &&
+        (document.source[replaceEnd - 1] == '\n' ||
+            document.source[replaceEnd - 1] == '\r');
+    if (endsWithBreak && !textToInsert.endsWith(style.lineEnding)) {
+      textToInsert = '$textToInsert${style.lineEnding}';
+    }
+  }
+
   final joiner = encoded.ownLine ? style.lineEnding : ' ';
   return SourceEdit(
     colon + 1,
-    entry.value.contentEnd - colon - 1,
-    '$joiner${encoded.text}',
+    replaceEnd - colon - 1,
+    '$joiner$textToInsert',
   );
 }
 
@@ -431,10 +565,11 @@ SourceEdit _appendBlockMapEntry(
   Object? key,
   YamlNode value,
 ) {
-  // Keeping sorted keys sorted only makes sense for keys that can be ordered
-  // against the existing ones; anything else is appended.
-  final index =
+  final isCompact = map.entries.first.lineStart !=
+      document.lineStartOf(map.entries.first.keyStart);
+  final rawIndex =
       key == null ? map.entries.length : getMapInsertionIndex(map.value, key);
+  final index = (isCompact && rawIndex == 0) ? map.entries.length : rawIndex;
   final column = document.columnOf(map.entries.first.keyStart);
   final encoded = encodeValue(value, style, indicatorColumn: column);
   final keyText = yamlEncodeFlow(wrapAsYamlNode(key));
@@ -674,6 +809,12 @@ SourceEdit buildRemove(CstDocument document, List<Object?> path) {
       if (index == null) throw PathError(path, path, parent.value);
       return _removeFlowEntry(parent, index);
 
+    case CstFlowPair():
+      if (!deepEquals(parent.key.value, step)) {
+        throw PathError(path, path, parent.value);
+      }
+      return SourceEdit(parent.contentStart, parent.end - parent.contentStart, '{}');
+
     default:
       throw PathError.unexpected(
           path, 'Scalar ${parent.value} does not have key $step');
@@ -710,7 +851,8 @@ SourceEdit _removeBlockEntry(
             ? 2
             : 1)
         : 0;
-    return SourceEdit(contentStart, end - breakLen - contentStart, emptyText);
+    final text = document.columnOf(contentStart) == 0 ? '  $emptyText' : emptyText;
+    return SourceEdit(contentStart, end - breakLen - contentStart, text);
   }
 
   final src = document.source;

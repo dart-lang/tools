@@ -224,6 +224,9 @@ class YamlEditor {
     final pathAsList = path.toList();
 
     if (pathAsList.isEmpty) {
+      if (_aliases.contains(_contents)) {
+        throw AliasException(pathAsList, _contents);
+      }
       return _performEdit(
           buildUpdate(_document, pathAsList, valueNode), pathAsList, valueNode);
     }
@@ -231,6 +234,7 @@ class YamlEditor {
     final collectionPath = pathAsList.take(pathAsList.length - 1).toList();
     final keyOrIndex = pathAsList.last;
     final parentNode = _traverse(collectionPath, checkAlias: true);
+    _traverse(pathAsList, checkAlias: true, orElse: () => wrapAsYamlNode(null));
 
     if (parentNode is YamlList) {
       if (keyOrIndex is! int) {
