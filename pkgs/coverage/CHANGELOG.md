@@ -1,5 +1,6 @@
 ## 1.16.0-wip
 
+- Migrate Dart subprocess spawning to `package:cli_util` (`dartExecutable ?? 'dart'`) to support AOT-compiled executables (`dart compile exe` / `dart install`).
 - Require Dart 3.9.
 - Fixed a race condition in isolate teardown: ignore the benign errors
   produced when an isolate exits between its pause-on-exit callback
