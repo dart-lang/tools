@@ -6,12 +6,12 @@ import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
+import 'cst.dart';
+import 'cst_mutations.dart';
 import 'equality.dart';
 import 'errors.dart';
-import 'list_mutations.dart';
-import 'map_mutations.dart';
 import 'source_edit.dart';
-import 'strings.dart';
+
 import 'utils.dart';
 import 'wrap.dart';
 
@@ -75,12 +75,21 @@ class YamlEditor {
   List<SourceEdit> get edits => [..._edits];
 
   /// Current YAML string.
-  String _yaml;
+  String get _yaml => _document.source;
+
+  /// The concrete syntax tree of the current document.
+  ///
+  /// This is what every modification works from. It records where each piece of
+  /// syntax is written, under an invariant — checked whenever it is built —
+  /// that its slots tile the source exactly. Modifications therefore never have
+  /// to search the source for a delimiter, and an edit expressed against one of
+  /// its slots cannot disturb anything outside that slot.
+  CstDocument _document;
 
   /// Root node of YAML AST.
-  YamlNode _contents;
+  YamlNode get _contents => _document.value;
 
-  /// Stores the list of nodes in [_contents] that are connected by aliases.
+  /// The nodes of [_contents] that are the target of an alias.
   ///
   /// When a node is anchored with an alias and subsequently referenced,
   /// the full content of the anchored node is thought to be copied in the
@@ -103,7 +112,7 @@ class YamlEditor {
   /// any modification is taking place.
   ///
   /// See 7.1 Alias Nodes: https://yaml.org/spec/1.2/spec.html#id2786196
-  Set<YamlNode> _aliases = {};
+  Set<YamlNode> get _aliases => _document.aliasedValues;
 
   /// Returns the current YAML string.
   @override
@@ -111,33 +120,7 @@ class YamlEditor {
 
   factory YamlEditor(String yaml) => YamlEditor._(yaml);
 
-  YamlEditor._(this._yaml) : _contents = loadYamlNode(_yaml) {
-    _initialize();
-  }
-
-  /// Traverses the YAML tree formed to detect alias nodes.
-  void _initialize() {
-    _aliases = {};
-
-    /// Performs a DFS on [_contents] to detect alias nodes.
-    final visited = <YamlNode>{};
-    void collectAliases(YamlNode node) {
-      if (visited.add(node)) {
-        if (node is YamlMap) {
-          node.nodes.forEach((key, value) {
-            collectAliases(key as YamlNode);
-            collectAliases(value);
-          });
-        } else if (node is YamlList) {
-          node.nodes.forEach(collectAliases);
-        }
-      } else {
-        _aliases.add(node);
-      }
-    }
-
-    collectAliases(_contents);
-  }
+  YamlEditor._(String yaml) : _document = CstDocument.parse(yaml);
 
   /// Parses the document to return [YamlNode] currently present at [path].
   ///
@@ -238,19 +221,14 @@ class YamlEditor {
   /// ```
   void update(Iterable<Object?> path, Object? value) {
     final valueNode = wrapAsYamlNode(value);
+    final pathAsList = path.toList();
 
-    if (path.isEmpty) {
-      final start = _contents.span.start.offset;
-      final end = getContentSensitiveEnd(_contents);
-      final lineEnding = getLineEnding(_yaml);
-      final edit = SourceEdit(
-          start, end - start, yamlEncodeBlock(valueNode, 0, lineEnding));
-
-      return _performEdit(edit, path, valueNode);
+    if (pathAsList.isEmpty) {
+      return _performEdit(
+          buildUpdate(_document, pathAsList, valueNode), pathAsList, valueNode);
     }
 
-    final pathAsList = path.toList();
-    final collectionPath = pathAsList.take(path.length - 1);
+    final collectionPath = pathAsList.take(pathAsList.length - 1).toList();
     final keyOrIndex = pathAsList.last;
     final parentNode = _traverse(collectionPath, checkAlias: true);
 
@@ -261,15 +239,14 @@ class YamlEditor {
       final expected = wrapAsYamlNode(
         [...parentNode.nodes]..[keyOrIndex] = valueNode,
       );
-
-      return _performEdit(updateInList(this, parentNode, keyOrIndex, valueNode),
+      return _performEdit(buildUpdate(_document, pathAsList, valueNode),
           collectionPath, expected);
     }
 
     if (parentNode is YamlMap) {
       final expectedMap =
           updatedYamlMap(parentNode, (nodes) => nodes[keyOrIndex] = valueNode);
-      return _performEdit(updateInMap(this, parentNode, keyOrIndex, valueNode),
+      return _performEdit(buildUpdate(_document, pathAsList, valueNode),
           collectionPath, expectedMap);
     }
 
@@ -327,16 +304,17 @@ class YamlEditor {
   /// ```
   void insertIntoList(Iterable<Object?> path, int index, Object? value) {
     final valueNode = wrapAsYamlNode(value);
+    final pathAsList = path.toList();
 
-    final list = _traverseToList(path, checkAlias: true);
+    final list = _traverseToList(pathAsList, checkAlias: true);
     RangeError.checkValueInInterval(index, 0, list.length);
 
-    final edit = insertInList(this, list, index, valueNode);
     final expected = wrapAsYamlNode(
       [...list.nodes]..insert(index, valueNode),
     );
 
-    _performEdit(edit, path, expected);
+    _performEdit(buildInsert(_document, pathAsList, index, valueNode),
+        pathAsList, expected);
   }
 
   /// Changes the contents of the list at [path] by removing [deleteCount]
@@ -412,37 +390,35 @@ class YamlEditor {
   /// '''
   /// ```
   YamlNode remove(Iterable<Object?> path) {
-    late SourceEdit edit;
-    late YamlNode expectedNode;
-    final nodeToRemove = _traverse(path, checkAlias: true);
+    final pathAsList = path.toList();
+    final nodeToRemove = _traverse(pathAsList, checkAlias: true);
 
-    if (path.isEmpty) {
-      edit = SourceEdit(0, _yaml.length, '');
-      expectedNode = wrapAsYamlNode(null);
-
-      /// Parsing an empty YAML document returns YamlScalar with value `null`.
-      _performEdit(edit, path, expectedNode);
+    if (pathAsList.isEmpty) {
+      // Parsing an empty YAML document returns a YamlScalar with value `null`.
+      _performEdit(
+          buildRemove(_document, pathAsList), pathAsList, wrapAsYamlNode(null));
       return nodeToRemove;
     }
 
-    final pathAsList = path.toList();
-    final collectionPath = pathAsList.take(path.length - 1);
+    final collectionPath = pathAsList.take(pathAsList.length - 1).toList();
     final keyOrIndex = pathAsList.last;
     final parentNode = _traverse(collectionPath);
 
+    final YamlNode expectedNode;
     if (parentNode is YamlList) {
-      edit = removeInList(this, parentNode, keyOrIndex as int);
       expectedNode = wrapAsYamlNode(
-        [...parentNode.nodes]..removeAt(keyOrIndex),
+        [...parentNode.nodes]..removeAt(keyOrIndex as int),
       );
     } else if (parentNode is YamlMap) {
-      edit = removeInMap(this, parentNode, keyOrIndex);
-
       expectedNode =
           updatedYamlMap(parentNode, (nodes) => nodes.remove(keyOrIndex));
+    } else {
+      throw PathError.unexpected(
+          path, 'Scalar $parentNode does not have key $keyOrIndex');
     }
 
-    _performEdit(edit, collectionPath, expectedNode);
+    _performEdit(
+        buildRemove(_document, pathAsList), collectionPath, expectedNode);
 
     return nodeToRemove;
   }
@@ -568,20 +544,29 @@ class YamlEditor {
     final initialYaml = _yaml;
     final updatedYaml = edit.apply(_yaml);
 
-    // Check that the edit does actually parse
-    final YamlNode actualTree;
+    // Check that the edit does actually parse, and that the result is a
+    // document we can go on to model. Rebuilding the CST re-checks its tiling
+    // invariant, so an edit that produced something we could not edit again is
+    // rejected here rather than at the next call.
+    final CstDocument updated;
     try {
-      actualTree = withYamlWarningCallback(() => loadYamlNode(updatedYaml));
+      updated = withYamlWarningCallback(() => CstDocument.parse(updatedYaml));
     } on YamlException {
       throw createAssertionError(
         'Failed to produce valid YAML after modification.',
         initialYaml,
         updatedYaml,
       );
+    } on CstException {
+      throw createAssertionError(
+        'Modification produced YAML that cannot be modelled.',
+        initialYaml,
+        updatedYaml,
+      );
     }
 
     // Check that the edit is semantically correct
-    if (!deepEquals(actualTree, expectedTree)) {
+    if (!deepEquals(updated.value, expectedTree)) {
       throw createAssertionError(
         'Modification did not result in expected result.',
         initialYaml,
@@ -591,10 +576,8 @@ class YamlEditor {
 
     // Update state of YamlEditor, when we've validated that the edit was
     // semantically correct!
-    _yaml = updatedYaml;
-    _contents = actualTree;
+    _document = updated;
     _edits.add(edit);
-    _initialize(); // update tracking of aliases
   }
 
   /// Utility method to produce an updated YAML tree equivalent to converting
