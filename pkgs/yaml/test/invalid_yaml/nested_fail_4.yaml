@@ -1,0 +1,7 @@
+# Tests invalid flow mapping colon at col 0
+foo:
+  {
+    a
+:
+    b
+  }

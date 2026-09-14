@@ -1,0 +1,6 @@
+# Tests valid flow sequence bracket under block sequence
+- foo
+- 
+  [
+    a
+  ]

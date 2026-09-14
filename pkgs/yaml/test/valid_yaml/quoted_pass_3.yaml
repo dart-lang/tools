@@ -1,0 +1,4 @@
+# Valid double quoted in sequence
+seq:
+  - "line1
+    line2"

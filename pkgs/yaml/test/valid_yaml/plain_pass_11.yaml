@@ -1,0 +1,8 @@
+# Multi-line plain scalar in flow mapping > block indent (3 > 2)
+block:
+  key: {
+   plain
+   key:
+    plain
+    value
+  }

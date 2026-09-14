@@ -1,0 +1,4 @@
+# Deeply nested block sequence, brackets properly indented
+- - [
+     a
+    ]

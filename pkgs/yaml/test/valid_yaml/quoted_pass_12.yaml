@@ -1,0 +1,5 @@
+# Invalid single quoted string with late indent failure
+key:
+  'line1
+   line2
+line3'

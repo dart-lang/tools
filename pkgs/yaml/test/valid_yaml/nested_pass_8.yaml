@@ -1,0 +1,7 @@
+# Tests valid deeply nested flow mapping brace
+foo:
+  [
+    {
+      a: b
+    }
+  ]

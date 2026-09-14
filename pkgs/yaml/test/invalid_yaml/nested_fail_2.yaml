@@ -1,0 +1,7 @@
+# Tests invalid flow sequence comma at col 0
+foo:
+  [
+    a
+,
+    b
+  ]
