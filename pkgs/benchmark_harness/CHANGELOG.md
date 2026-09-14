@@ -1,3 +1,7 @@
+## 2.4.1-wip
+
+- Migrate `bench` command Dart subprocess spawning to `package:cli_util` (`dartExecutable ?? 'dart'`) to support AOT-compiled executables (`dart compile exe` / `dart install`).
+
 ## 2.4.0
 
 - Added a `bench` command.

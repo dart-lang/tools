@@ -10,11 +10,12 @@ import 'dart:io';
 
 import 'package:benchmark_harness/src/bench_command/bench_options.dart';
 import 'package:benchmark_harness/src/bench_command/compile_and_run.dart';
+import 'package:cli_util/cli_util.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('readme', () async {
-    final output = await Process.run(Platform.executable, [
+    final output = await Process.run(dartExecutable ?? 'dart', [
       'bin/bench.dart',
       '--help',
     ]);
@@ -45,6 +46,27 @@ void main() {
 
     tearDownAll(() {
       tempDir.deleteSync(recursive: true);
+    });
+
+    test('AOT compiled bench executable can compile and run target', () async {
+      final benchExe = tempDir.uri.resolve('bench.exe').toFilePath();
+      final compileResult = await Process.run(dartExecutable ?? 'dart', [
+        'compile',
+        'exe',
+        'bin/bench.dart',
+        '-o',
+        benchExe,
+      ]);
+      expect(compileResult.exitCode, 0, reason: '${compileResult.stderr}');
+
+      final runResult = await Process.run(benchExe, [
+        '--flavor',
+        'jit',
+        '--target',
+        testFilePath,
+      ]);
+      expect(runResult.exitCode, 0, reason: '${runResult.stderr}');
+      expect(runResult.stdout, contains('8589934592'));
     });
 
     group('BenchOptions.fromArgs', () {

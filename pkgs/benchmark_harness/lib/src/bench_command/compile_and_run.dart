@@ -4,7 +4,11 @@
 
 import 'dart:io';
 
+import 'package:cli_util/cli_util.dart';
+
 import 'bench_options.dart';
+
+String get _dartExecutable => dartExecutable ?? 'dart';
 
 // TODO(kevmoo): allow the user to specify custom flags – for compile and/or run
 
@@ -107,7 +111,7 @@ class _JITRunner extends _Runner {
 
   @override
   Future<void> _runImpl() async {
-    await _runProc(_Stage.run, Platform.executable, [target]);
+    await _runProc(_Stage.run, _dartExecutable, [target]);
   }
 }
 
@@ -117,7 +121,7 @@ class _AOTRunner extends _Runner {
   @override
   Future<void> _runImpl() async {
     final outFile = _outputFile('exe');
-    await _runProc(_Stage.compile, Platform.executable, [
+    await _runProc(_Stage.compile, _dartExecutable, [
       'compile',
       'exe',
       target,
@@ -135,7 +139,7 @@ class _JSRunner extends _Runner {
   @override
   Future<void> _runImpl() async {
     final outFile = _outputFile('js');
-    await _runProc(_Stage.compile, Platform.executable, [
+    await _runProc(_Stage.compile, _dartExecutable, [
       'compile',
       'js',
       target,
@@ -154,7 +158,7 @@ class _WasmRunner extends _Runner {
   @override
   Future<void> _runImpl() async {
     final outFile = _outputFile('wasm');
-    await _runProc(_Stage.compile, Platform.executable, [
+    await _runProc(_Stage.compile, _dartExecutable, [
       'compile',
       'wasm',
       target,
