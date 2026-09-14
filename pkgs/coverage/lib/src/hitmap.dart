@@ -200,7 +200,8 @@ class HitMap {
     for (var file in files) {
       final contents = file.readAsStringSync();
       switch (json.decode(contents)) {
-        // VM-service-style {"coverage": [...]} report (emitted by dart test --coverage).
+        // VM-service-style {"coverage": [...]} report (emitted by dart test
+        // --coverage).
         case {'coverage': final List jsonResult}:
           globalHitmap.merge(await parse(jsonResult));
         // Raw Chrome V8 precise coverage JSON list.
