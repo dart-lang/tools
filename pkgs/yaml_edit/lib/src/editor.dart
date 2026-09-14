@@ -589,6 +589,18 @@ class YamlEditor {
       );
     }
 
+    // Frame-condition assertion (Phase 0 / L4):
+    // Bytes outside the edited span must be unchanged, and comments outside
+    // the modified subtree must be strictly preserved.
+    _assertFrameCondition(
+      initialYaml,
+      updatedYaml,
+      edit,
+      path,
+      expectedNode,
+      actualTree,
+    );
+
     // Update state of YamlEditor, when we've validated that the edit was
     // semantically correct!
     _yaml = updatedYaml;
@@ -642,4 +654,306 @@ class YamlEditor {
     /// Should not ever reach here.
     throw PathError(path, subPath, tree);
   }
+
+  /// Asserts the frame condition (L4) on the applied [edit]:
+  /// 1. Bytes outside the edited span
+  ///    `[edit.offset, edit.offset + edit.length)` must be unchanged.
+  /// 2. Disjoint comments outside the modified subtree must be strictly
+  ///    preserved (the comment multiset must change only as intended).
+  void _assertFrameCondition(
+    String initialYaml,
+    String updatedYaml,
+    SourceEdit edit,
+    Iterable<Object?> path,
+    YamlNode expectedNode,
+    YamlNode actualTree,
+  ) {
+    // 1. Verify byte-level frame outside the edited span.
+    final suffixLength = initialYaml.length - (edit.offset + edit.length);
+    if (edit.offset < 0 ||
+        edit.length < 0 ||
+        edit.offset + edit.length > initialYaml.length ||
+        updatedYaml.length !=
+            edit.offset + edit.replacement.length + suffixLength ||
+        !updatedYaml.startsWith(initialYaml.substring(0, edit.offset)) ||
+        updatedYaml.substring(edit.offset + edit.replacement.length) !=
+            initialYaml.substring(edit.offset + edit.length)) {
+      throw createAssertionError(
+        'Modification altered bytes outside the edited span.',
+        initialYaml,
+        updatedYaml,
+      );
+    }
+
+    // 2. Verify comment preservation (multiset frame condition).
+    final initialComments = _extractComments(initialYaml, _contents);
+    if (initialComments.isEmpty) return;
+
+    final updatedComments = _extractComments(updatedYaml, actualTree);
+    final initialCounts = <String, int>{};
+    for (final c in initialComments) {
+      initialCounts[c.text] = (initialCounts[c.text] ?? 0) + 1;
+    }
+    final updatedCounts = <String, int>{};
+    for (final c in updatedComments) {
+      updatedCounts[c.text] = (updatedCounts[c.text] ?? 0) + 1;
+    }
+
+    final lostCommentTexts = <String>{};
+    for (final entry in initialCounts.entries) {
+      final updatedCount = updatedCounts[entry.key] ?? 0;
+      if (updatedCount < entry.value) {
+        lostCommentTexts.add(entry.key);
+      }
+    }
+
+    if (lostCommentTexts.isEmpty) return;
+
+    if (path.isEmpty &&
+        expectedNode is YamlScalar &&
+        expectedNode.value == null) {
+      // Entire document cleared (e.g. remove([])).
+      return;
+    }
+
+    final targetNode = path.isEmpty ? _contents : _traverse(path);
+
+    bool Function(_YamlComment) isAllowedRemoval;
+
+    if (targetNode is YamlList && expectedNode is YamlList) {
+      if (expectedNode.length >= targetNode.length) {
+        // Insertion or updating existing list item.
+        int? updatedIndex;
+        for (var i = 0; i < targetNode.length; i++) {
+          if (!deepEquals(targetNode.nodes[i], expectedNode.nodes[i])) {
+            updatedIndex = i;
+            break;
+          }
+        }
+        if (updatedIndex != null) {
+          final oldItem = targetNode.nodes[updatedIndex];
+          if (oldItem is YamlMap || oldItem is YamlList) {
+            isAllowedRemoval = (c) =>
+                c.offset >= oldItem.span.start.offset &&
+                c.end <= oldItem.span.end.offset;
+          } else {
+            isAllowedRemoval = (_) => false;
+          }
+        } else {
+          isAllowedRemoval = (_) => false;
+        }
+      } else {
+        // List item removal.
+        int? removedIndex;
+        for (var i = 0; i < expectedNode.length; i++) {
+          if (!deepEquals(targetNode.nodes[i], expectedNode.nodes[i])) {
+            removedIndex = i;
+            break;
+          }
+        }
+        removedIndex ??= targetNode.length - 1;
+        final removedItem = targetNode.nodes[removedIndex];
+        final itemLineStart =
+            initialYaml.lastIndexOf('\n', removedItem.span.start.offset) + 1;
+        var itemLineEnd =
+            initialYaml.indexOf('\n', removedItem.span.end.offset);
+        if (itemLineEnd == -1) itemLineEnd = initialYaml.length;
+
+        isAllowedRemoval = (c) {
+          // Inside the removed item subtree:
+          if (c.offset >= removedItem.span.start.offset &&
+              c.end <= removedItem.span.end.offset) {
+            return true;
+          }
+          // On the line(s) of the removed item:
+          if (c.offset >= itemLineStart && c.end <= itemLineEnd) {
+            return true;
+          }
+          // In a flow list, leading comment before first item (after '['):
+          if (targetNode.style == CollectionStyle.FLOW && removedIndex == 0) {
+            if (c.offset >= targetNode.span.start.offset &&
+                c.end <= removedItem.span.start.offset) {
+              return true;
+            }
+          }
+          // In a block list, trailing comments indented under the item:
+          if (targetNode.style == CollectionStyle.BLOCK) {
+            final nextItemStart = removedIndex! < targetNode.length - 1
+                ? targetNode.nodes[removedIndex + 1].span.start.offset
+                : initialYaml.length;
+            if (c.offset >= itemLineEnd && c.end <= nextItemStart) {
+              final nextLineStart = nextItemStart < initialYaml.length
+                  ? initialYaml.lastIndexOf('\n', nextItemStart) + 1
+                  : initialYaml.length;
+              if (c.end <= nextLineStart) {
+                return true;
+              }
+            }
+          }
+          return false;
+        };
+      }
+    } else if (targetNode is YamlMap && expectedNode is YamlMap) {
+      if (expectedNode.length > targetNode.length) {
+        // Adding new key: no comments allowed to be removed.
+        isAllowedRemoval = (_) => false;
+      } else if (expectedNode.length == targetNode.length) {
+        // Updating an existing key.
+        Object? updatedKey;
+        for (final key in targetNode.keys) {
+          if (!deepEquals(targetNode[key], expectedNode[key])) {
+            updatedKey = key;
+            break;
+          }
+        }
+        final oldValue =
+            updatedKey != null ? targetNode.nodes[updatedKey] : null;
+        if (oldValue is YamlMap || oldValue is YamlList) {
+          isAllowedRemoval = (c) =>
+              c.offset >= oldValue!.span.start.offset &&
+              c.end <= oldValue.span.end.offset;
+        } else {
+          isAllowedRemoval = (_) => false;
+        }
+      } else {
+        // Map entry removal.
+        final removedKey =
+            targetNode.keys.firstWhere((k) => !expectedNode.containsKey(k));
+        final (index: entryIndex, :keyNode, :valueNode) =
+            getYamlMapEntry(targetNode, removedKey);
+        final keyLineStart =
+            initialYaml.lastIndexOf('\n', keyNode.span.start.offset) + 1;
+        var valueLineEnd = initialYaml.indexOf('\n', valueNode.span.end.offset);
+        if (valueLineEnd == -1) valueLineEnd = initialYaml.length;
+
+        isAllowedRemoval = (c) {
+          // Inside the value node subtree:
+          if (c.offset >= valueNode.span.start.offset &&
+              c.end <= valueNode.span.end.offset) {
+            return true;
+          }
+          // On the line(s) of key or value:
+          if (c.offset >= keyLineStart && c.end <= valueLineEnd) {
+            return true;
+          }
+          // In a flow map, leading comments before first key (after '{'):
+          if (targetNode.style == CollectionStyle.FLOW && entryIndex == 0) {
+            if (c.offset >= targetNode.span.start.offset &&
+                c.end <= keyNode.span.start.offset) {
+              return true;
+            }
+          }
+          // In a block map, trailing comments indented under the entry:
+          if (targetNode.style == CollectionStyle.BLOCK) {
+            final nextEntryStart = entryIndex < targetNode.length - 1
+                ? (targetNode.nodes.keys.elementAt(entryIndex + 1) as YamlNode)
+                    .span
+                    .start
+                    .offset
+                : initialYaml.length;
+            if (c.offset >= valueLineEnd && c.end <= nextEntryStart) {
+              final nextLineStart = nextEntryStart < initialYaml.length
+                  ? initialYaml.lastIndexOf('\n', nextEntryStart) + 1
+                  : initialYaml.length;
+              if (c.end <= nextLineStart) {
+                return true;
+              }
+            }
+          }
+          return false;
+        };
+      }
+    } else {
+      if (targetNode is YamlScalar) {
+        isAllowedRemoval = (_) => false;
+      } else {
+        isAllowedRemoval = (c) =>
+            c.offset >= targetNode.span.start.offset &&
+            c.end <= targetNode.span.end.offset;
+      }
+    }
+
+    for (final c in initialComments) {
+      if (lostCommentTexts.contains(c.text)) {
+        final inEditRange =
+            c.end > edit.offset && c.offset < edit.offset + edit.length;
+        if (inEditRange && !isAllowedRemoval(c)) {
+          throw createAssertionError(
+            'Frame condition violation: comment "${c.text}" was '
+            'unintentionally removed.',
+            initialYaml,
+            updatedYaml,
+          );
+        }
+      }
+    }
+  }
+}
+
+final class _YamlComment {
+  final int offset;
+  final int end;
+  final String text;
+
+  _YamlComment(this.offset, this.end, this.text);
+}
+
+List<_YamlComment> _extractComments(String yaml, YamlNode root) {
+  final spans = <SourceSpan>[];
+  void collect(YamlNode node) {
+    if (node is YamlScalar) {
+      spans.add(node.span);
+    } else if (node is YamlMap) {
+      for (final entry in node.nodes.entries) {
+        if (entry.key is YamlNode) collect(entry.key as YamlNode);
+        collect(entry.value);
+      }
+    } else if (node is YamlList) {
+      for (final item in node.nodes) {
+        collect(item);
+      }
+    }
+  }
+
+  collect(root);
+  spans.sort((a, b) => a.start.offset.compareTo(b.start.offset));
+
+  final comments = <_YamlComment>[];
+  var i = 0;
+  final len = yaml.length;
+  var spanIdx = 0;
+
+  while (i < len) {
+    while (spanIdx < spans.length && spans[spanIdx].end.offset <= i) {
+      spanIdx++;
+    }
+    if (spanIdx < spans.length &&
+        spans[spanIdx].start.offset <= i &&
+        i < spans[spanIdx].end.offset) {
+      i = spans[spanIdx].end.offset;
+      continue;
+    }
+
+    if (yaml[i] == '#') {
+      final prev = i > 0 ? yaml[i - 1] : '\n';
+      if (i == 0 ||
+          prev == ' ' ||
+          prev == '\t' ||
+          prev == '\n' ||
+          prev == '\r') {
+        final start = i;
+        while (i < len && yaml[i] != '\n' && yaml[i] != '\r') {
+          i++;
+        }
+        final text = yaml.substring(start, i).trimRight();
+        comments.add(_YamlComment(start, i, text));
+      } else {
+        i++;
+      }
+    } else {
+      i++;
+    }
+  }
+
+  return comments;
 }
