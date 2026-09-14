@@ -48,6 +48,7 @@ import 'src/version.dart';
 
 export 'src/ast.dart'
     show
+        ContentOffsetMapper,
         Element,
         LinkBuilder,
         Node,
