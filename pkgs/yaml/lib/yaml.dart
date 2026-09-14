@@ -13,13 +13,11 @@ import 'src/yaml_exception.dart';
 import 'src/yaml_node.dart';
 
 export 'src/error_listener.dart';
-export 'src/layout.dart';
 export 'src/style.dart';
 export 'src/utils.dart' show YamlWarningCallback, yamlWarningCallback;
 export 'src/yaml_document.dart';
 export 'src/yaml_exception.dart';
-export 'src/yaml_node.dart'
-    hide setColonSpans, setDashSpans, setLayout, setSpan;
+export 'src/yaml_node.dart' hide setSpan;
 
 /// Loads a single document from a YAML string.
 ///
@@ -39,19 +37,12 @@ export 'src/yaml_node.dart'
 /// return invalid or synthetic nodes. If [errorListener] is also supplied, its
 /// onError method will be called for each error recovered from. It is not valid
 /// to provide [errorListener] if [recover] is false.
-///
-/// If [retainLayout] is true, preserves non-semantic source layout elements
-/// (comments, whitespace, newlines) and source spans for colons and hyphens.
 dynamic loadYaml(String yaml,
-        {Uri? sourceUrl,
-        bool recover = false,
-        ErrorListener? errorListener,
-        bool retainLayout = false}) =>
+        {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener}) =>
     loadYamlNode(yaml,
             sourceUrl: sourceUrl,
             recover: recover,
-            errorListener: errorListener,
-            retainLayout: retainLayout)
+            errorListener: errorListener)
         .value;
 
 /// Loads a single document from a YAML string as a [YamlNode].
@@ -59,19 +50,12 @@ dynamic loadYaml(String yaml,
 /// This is just like [loadYaml], except that where [loadYaml] would return a
 /// normal Dart value this returns a [YamlNode] instead. This allows the caller
 /// to be confident that the return value will always be a [YamlNode].
-///
-/// If [retainLayout] is true, preserves non-semantic source layout elements
-/// (comments, whitespace, newlines) and source spans for colons and hyphens.
 YamlNode loadYamlNode(String yaml,
-        {Uri? sourceUrl,
-        bool recover = false,
-        ErrorListener? errorListener,
-        bool retainLayout = false}) =>
+        {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener}) =>
     loadYamlDocument(yaml,
             sourceUrl: sourceUrl,
             recover: recover,
-            errorListener: errorListener,
-            retainLayout: retainLayout)
+            errorListener: errorListener)
         .contents;
 
 /// Loads a single document from a YAML string as a [YamlDocument].
@@ -79,19 +63,10 @@ YamlNode loadYamlNode(String yaml,
 /// This is just like [loadYaml], except that where [loadYaml] would return a
 /// normal Dart value this returns a [YamlDocument] instead. This allows the
 /// caller to access document metadata.
-///
-/// If [retainLayout] is true, preserves non-semantic source layout elements
-/// (comments, whitespace, newlines) and source spans for colons and hyphens.
 YamlDocument loadYamlDocument(String yaml,
-    {Uri? sourceUrl,
-    bool recover = false,
-    ErrorListener? errorListener,
-    bool retainLayout = false}) {
+    {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener}) {
   var loader = Loader(yaml,
-      sourceUrl: sourceUrl,
-      recover: recover,
-      errorListener: errorListener,
-      retainLayout: retainLayout);
+      sourceUrl: sourceUrl, recover: recover, errorListener: errorListener);
   var document = loader.load();
   if (document == null) {
     return YamlDocument.internal(YamlScalar.internalWithSpan(null, loader.span),
@@ -116,12 +91,8 @@ YamlDocument loadYamlDocument(String yaml,
 ///
 /// If [sourceUrl] is passed, it's used as the URL from which the YAML
 /// originated for error reporting.
-///
-/// If [retainLayout] is true, preserves non-semantic source layout elements
-/// (comments, whitespace, newlines) and source spans for colons and hyphens.
-YamlList loadYamlStream(String yaml,
-    {Uri? sourceUrl, bool retainLayout = false}) {
-  var loader = Loader(yaml, sourceUrl: sourceUrl, retainLayout: retainLayout);
+YamlList loadYamlStream(String yaml, {Uri? sourceUrl}) {
+  var loader = Loader(yaml, sourceUrl: sourceUrl);
 
   var documents = <YamlDocument>[];
   var document = loader.load();
@@ -142,12 +113,8 @@ YamlList loadYamlStream(String yaml,
 ///
 /// This is like [loadYamlStream], except that it returns [YamlDocument]s with
 /// metadata wrapping the document contents.
-///
-/// If [retainLayout] is true, preserves non-semantic source layout elements
-/// (comments, whitespace, newlines) and source spans for colons and hyphens.
-List<YamlDocument> loadYamlDocuments(String yaml,
-    {Uri? sourceUrl, bool retainLayout = false}) {
-  var loader = Loader(yaml, sourceUrl: sourceUrl, retainLayout: retainLayout);
+List<YamlDocument> loadYamlDocuments(String yaml, {Uri? sourceUrl}) {
+  var loader = Loader(yaml, sourceUrl: sourceUrl);
 
   var documents = <YamlDocument>[];
   var document = loader.load();
