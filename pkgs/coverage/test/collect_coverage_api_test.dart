@@ -116,8 +116,8 @@ void main() {
     expect(result[_sampleAppFileUri]!.lineHits.containsValue(0), isTrue);
     expect(result[_isolateLibFileUri]!.lineHits.containsValue(0), isTrue);
 
-    // Clear _sampleAppFileUri's cache entry, then gather coverage again. We're
-    // doing this to verify that force compilation is disabled for these
+    // Clear _sampleAppFileUri's cache entry, then gather coverage again.
+    // We're doing this to verify that force compilation is disabled for these
     // libraries. The result should be that _isolateLibFileUri should be the
     // same, but _sampleAppFileUri should be missing all its missed lines.
     coverableLineCache[_sampleAppFileUri] = {};
@@ -128,7 +128,8 @@ void main() {
       coverage2['coverage'] as List<Map<String, dynamic>>,
     );
 
-    // _isolateLibFileUri still has missed lines, but _sampleAppFileUri doesn't.
+    // _isolateLibFileUri still has missed lines, but _sampleAppFileUri
+    // doesn't.
     expect(result2[_sampleAppFileUri]!.lineHits.containsValue(0), isFalse);
     expect(result2[_isolateLibFileUri]!.lineHits.containsValue(0), isTrue);
 
