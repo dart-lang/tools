@@ -592,14 +592,17 @@ class YamlEditor {
     // Frame-condition assertion:
     // Bytes outside the edited span must be unchanged, and comments outside
     // the modified subtree must be strictly preserved.
-    _assertFrameCondition(
-      initialYaml,
-      updatedYaml,
-      edit,
-      path,
-      expectedNode,
-      actualTree,
-    );
+    assert(() {
+      _assertFrameCondition(
+        initialYaml,
+        updatedYaml,
+        edit,
+        path,
+        expectedNode,
+        actualTree,
+      );
+      return true;
+    }());
 
     // Update state of YamlEditor, when we've validated that the edit was
     // semantically correct!
@@ -726,8 +729,11 @@ class YamlEditor {
     bool Function(_YamlComment) isAllowedRemoval;
 
     if (targetNode is YamlList && expectedNode is YamlList) {
-      if (expectedNode.length >= targetNode.length) {
-        // Insertion or updating existing list item.
+      if (expectedNode.length > targetNode.length) {
+        // List insertion: no comments allowed to be removed.
+        isAllowedRemoval = (_) => false;
+      } else if (expectedNode.length == targetNode.length) {
+        // Updating existing list item.
         int? updatedIndex;
         for (var i = 0; i < targetNode.length; i++) {
           if (!deepEquals(targetNode.nodes[i], expectedNode.nodes[i])) {
@@ -749,11 +755,22 @@ class YamlEditor {
         }
       } else {
         // List item removal.
-        var removedIndex = targetNode.length - 1;
-        for (var i = 0; i < expectedNode.length; i++) {
-          if (!deepEquals(targetNode.nodes[i], expectedNode.nodes[i])) {
+        var removedIndex = -1;
+        for (var i = 0; i < targetNode.length; i++) {
+          final span = targetNode.nodes[i].span;
+          if (span.start.offset >= edit.offset &&
+              span.end.offset <= edit.offset + edit.length) {
             removedIndex = i;
             break;
+          }
+        }
+        if (removedIndex == -1) {
+          removedIndex = targetNode.length - 1;
+          for (var i = 0; i < expectedNode.length; i++) {
+            if (!deepEquals(targetNode.nodes[i], expectedNode.nodes[i])) {
+              removedIndex = i;
+              break;
+            }
           }
         }
         final removedItem = targetNode.nodes[removedIndex];

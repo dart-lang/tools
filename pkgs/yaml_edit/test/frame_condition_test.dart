@@ -95,5 +95,27 @@ foo: 123
       editor.update([], {'bar': 456});
       expect(editor.toString(), contains('bar: 456'));
     });
+
+    test('allows removing list item when list has duplicate values', () {
+      final yaml = '''
+- a # Comment on first
+- a # Comment on second
+''';
+      final editor = YamlEditor(yaml);
+      editor.remove([0]);
+      expect(editor.toString(), contains('- a # Comment on second'));
+      expect(editor.toString(), isNot(contains('# Comment on first')));
+    });
+
+    test('preserves comments during list insertion', () {
+      final yaml = '''
+- a # Comment a
+- b # Comment b
+''';
+      final editor = YamlEditor(yaml);
+      editor.insertIntoList([], 0, 'new_first');
+      expect(editor.toString(), contains('# Comment a'));
+      expect(editor.toString(), contains('# Comment b'));
+    });
   });
 }
