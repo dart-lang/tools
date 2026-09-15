@@ -1016,6 +1016,26 @@ final class _CstBuilder {
               src[end - 1] == '\r')) {
         end--;
       }
+    } else if ((value.style == ScalarStyle.LITERAL ||
+            value.style == ScalarStyle.FOLDED) &&
+        value.value is String) {
+      final str = value.value as String;
+      var trailingBreaks = 0;
+      for (var i = str.length - 1; i >= 0 && str[i] == '\n'; i--) {
+        trailingBreaks++;
+      }
+      var extraLines = trailingBreaks - 1;
+      while (extraLines > 0 && end < length) {
+        while (end < length && !_isBreak(end)) {
+          end++;
+        }
+        if (end < length && _isBreak(end)) {
+          end = _pastBreak(end);
+          extraLines--;
+        } else {
+          break;
+        }
+      }
     }
     if (end < contentStart) {
       _fail('scalar ends before it starts');
@@ -1063,7 +1083,9 @@ final class _CstBuilder {
         lineStart: lineStart,
         dashStart: dashStart,
         value: childNode,
-        end: _consumeTrailingLine(),
+        end: childNode is CstBlockSeq || childNode is CstBlockMap
+            ? childNode.end
+            : _consumeTrailingLine(),
       ));
     }
     if (entries.isEmpty) {
@@ -1140,7 +1162,9 @@ final class _CstBuilder {
         key: keyNode,
         colon: colon,
         value: valueNode,
-        end: _consumeTrailingLine(),
+        end: valueNode is CstBlockSeq || valueNode is CstBlockMap
+            ? valueNode.end
+            : _consumeTrailingLine(),
       ));
     });
     if (entries.isEmpty) {

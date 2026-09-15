@@ -224,6 +224,15 @@ SourceEdit buildUpdate(
   List<Object?> path,
   YamlNode value,
 ) {
+  final edit = _buildUpdate(document, path, value);
+  return _preventBlockScalarSwallowingComments(document, edit);
+}
+
+SourceEdit _buildUpdate(
+  CstDocument document,
+  List<Object?> path,
+  YamlNode value,
+) {
   final style = LayoutStyle.of(document);
 
   if (path.isEmpty) return _replaceRoot(document, style, value);
@@ -290,7 +299,11 @@ SourceEdit _replaceRoot(
     return SourceEdit(0, document.source.length, text);
   }
   var lineEnd = root.contentEnd;
-  while (lineEnd < document.source.length &&
+  final atLineBoundary = root.contentEnd > 0 &&
+      (document.source[root.contentEnd - 1] == '\n' ||
+          document.source[root.contentEnd - 1] == '\r');
+  while (!atLineBoundary &&
+      lineEnd < document.source.length &&
       document.source[lineEnd] != '\n' &&
       document.source[lineEnd] != '\r') {
     lineEnd++;
@@ -344,7 +357,11 @@ SourceEdit _replaceBlockSeqValue(
   }
 
   var lineEnd = entry.value.contentEnd;
-  while (lineEnd < document.source.length &&
+  final atLineBoundary = entry.value.contentEnd > 0 &&
+      (document.source[entry.value.contentEnd - 1] == '\n' ||
+          document.source[entry.value.contentEnd - 1] == '\r');
+  while (!atLineBoundary &&
+      lineEnd < document.source.length &&
       document.source[lineEnd] != '\n' &&
       document.source[lineEnd] != '\r') {
     lineEnd++;
@@ -435,14 +452,14 @@ SourceEdit _replaceBlockMapValue(
     final followedByBreakOrContent = replaceEnd < document.source.length &&
         (document.source[replaceEnd] != '\n' &&
             document.source[replaceEnd] != '\r');
-    if (atLineStart && followedByBreakOrContent && !fullText.endsWith(style.lineEnding)) {
+    if (atLineStart &&
+        followedByBreakOrContent &&
+        !fullText.endsWith(style.lineEnding)) {
       fullText = '$fullText${style.lineEnding}';
     }
 
     return SourceEdit(
-        entry.value.start,
-        replaceEnd - entry.value.start,
-        fullText);
+        entry.value.start, replaceEnd - entry.value.start, fullText);
   }
 
   final separator = document.source.substring(colon + 1, entry.value.start);
@@ -451,7 +468,11 @@ SourceEdit _replaceBlockMapValue(
   }
 
   var lineEnd = entry.value.contentEnd;
-  while (lineEnd < document.source.length &&
+  final atLineBoundary = entry.value.contentEnd > 0 &&
+      (document.source[entry.value.contentEnd - 1] == '\n' ||
+          document.source[entry.value.contentEnd - 1] == '\r');
+  while (!atLineBoundary &&
+      lineEnd < document.source.length &&
       document.source[lineEnd] != '\n' &&
       document.source[lineEnd] != '\r') {
     lineEnd++;
@@ -519,7 +540,36 @@ SourceEdit _replaceInPlace(
       text = '${' ' * column}$text';
     }
   }
-  return SourceEdit(old.start, old.contentEnd - old.start, text);
+
+  var lineEnd = old.contentEnd;
+  final atLineBoundary = old.contentEnd > 0 &&
+      (document.source[old.contentEnd - 1] == '\n' ||
+          document.source[old.contentEnd - 1] == '\r');
+  while (!atLineBoundary &&
+      lineEnd < document.source.length &&
+      document.source[lineEnd] != '\n' &&
+      document.source[lineEnd] != '\r') {
+    lineEnd++;
+  }
+  final trailingLine = document.source.substring(old.contentEnd, lineEnd);
+  final hasTrailingComment = trailingLine.contains('#');
+  final trimmedText = text.trimLeft();
+  final isBlockScalar =
+      (trimmedText.startsWith('|') || trimmedText.startsWith('>')) &&
+          text.contains(style.lineEnding);
+
+  final int replaceEnd;
+  if (isBlockScalar && hasTrailingComment) {
+    text = _liftTrailingCommentToBlockScalarHeader(
+        text, trailingLine, style.lineEnding);
+    replaceEnd = lineEnd;
+  } else if (isBlockScalar) {
+    replaceEnd = lineEnd;
+  } else {
+    replaceEnd = old.contentEnd;
+  }
+
+  return SourceEdit(old.start, replaceEnd - old.start, text);
 }
 
 /// Replaces a value inside a flow collection, where everything stays on one
@@ -629,6 +679,16 @@ SourceEdit _appendFlowMapEntry(
 
 /// Builds the edit that inserts [value] at [index] of the sequence at [path].
 SourceEdit buildInsert(
+  CstDocument document,
+  List<Object?> path,
+  int index,
+  YamlNode value,
+) {
+  final edit = _buildInsert(document, path, index, value);
+  return _preventBlockScalarSwallowingComments(document, edit);
+}
+
+SourceEdit _buildInsert(
   CstDocument document,
   List<Object?> path,
   int index,
@@ -813,7 +873,8 @@ SourceEdit buildRemove(CstDocument document, List<Object?> path) {
       if (!deepEquals(parent.key.value, step)) {
         throw PathError(path, path, parent.value);
       }
-      return SourceEdit(parent.contentStart, parent.end - parent.contentStart, '{}');
+      return SourceEdit(
+          parent.contentStart, parent.end - parent.contentStart, '{}');
 
     default:
       throw PathError.unexpected(
@@ -851,7 +912,13 @@ SourceEdit _removeBlockEntry(
             ? 2
             : 1)
         : 0;
-    final text = document.columnOf(contentStart) == 0 ? '  $emptyText' : emptyText;
+    final col = document.columnOf(contentStart);
+    final text = (col == 0 &&
+            contentStart > 0 &&
+            (document.source[contentStart - 1] == '\n' ||
+                document.source[contentStart - 1] == '\r'))
+        ? '  $emptyText'
+        : emptyText;
     return SourceEdit(contentStart, end - breakLen - contentStart, text);
   }
 
@@ -972,4 +1039,100 @@ SourceEdit _removeFlowEntry(CstFlowCollection collection, int index) {
   final previous = entries[index - 1];
   final from = previous.comma ?? previous.end;
   return SourceEdit(from, collection.closeStart - from, '');
+}
+
+/// Prevents an inserted or updated block scalar from swallowing subsequent
+/// comment lines that happen to be indented at or beyond the scalar's
+/// indentation level.
+///
+/// In YAML, a block scalar continues until indentation drops below its body
+/// indentation, and `#` characters on lines indented at or beyond that level
+/// are parsed as literal text rather than comments. When comments following
+/// the edit have indentation greater than or equal to the scalar's body, they
+/// are re-indented to column 0 so they remain comments.
+SourceEdit _preventBlockScalarSwallowingComments(
+  CstDocument document,
+  SourceEdit edit,
+) {
+  final text = edit.replacement;
+  final lines = text.split('\n');
+  int? headerLineIndex;
+  final headerPattern = RegExp(r'(?:^|[\s:-])([|>][+-]?)(?:\s+#.*)?$');
+  for (var i = lines.length - 1; i >= 0; i--) {
+    final line = lines[i];
+    if (headerPattern.hasMatch(line)) {
+      headerLineIndex = i;
+      break;
+    }
+  }
+
+  if (headerLineIndex == null) return edit;
+
+  int? bodyIndent;
+  for (var i = headerLineIndex + 1; i < lines.length; i++) {
+    final line = lines[i];
+    if (line.trim().isNotEmpty) {
+      bodyIndent = line.length - line.trimLeft().length;
+      break;
+    }
+  }
+
+  if (bodyIndent == null || bodyIndent == 0) return edit;
+
+  final endOffset = edit.offset + edit.length;
+  var pos = endOffset;
+  if (pos < document.source.length &&
+      (document.source[pos] == '\n' || document.source[pos] == '\r')) {
+    if (pos + 1 < document.source.length &&
+        document.source[pos] == '\r' &&
+        document.source[pos + 1] == '\n') {
+      pos += 2;
+    } else {
+      pos += 1;
+    }
+  }
+  var extraLength = pos - endOffset;
+  final buffer = StringBuffer();
+
+  while (pos < document.source.length) {
+    var lineEnd = pos;
+    while (lineEnd < document.source.length &&
+        document.source[lineEnd] != '\n' &&
+        document.source[lineEnd] != '\r') {
+      lineEnd++;
+    }
+    final nextBreak = lineEnd < document.source.length
+        ? (lineEnd + 1 < document.source.length &&
+                document.source[lineEnd] == '\r' &&
+                document.source[lineEnd + 1] == '\n'
+            ? lineEnd + 2
+            : lineEnd + 1)
+        : lineEnd;
+
+    final line = document.source.substring(pos, lineEnd);
+    final trimmed = line.trimLeft();
+    if (trimmed.startsWith('#')) {
+      final col = line.length - trimmed.length;
+      if (col >= bodyIndent) {
+        final breakChars = document.source.substring(lineEnd, nextBreak);
+        buffer.write('$trimmed$breakChars');
+        extraLength += nextBreak - pos;
+        pos = nextBreak;
+        continue;
+      }
+    }
+    break;
+  }
+
+  if (buffer.isEmpty) return edit;
+
+  final rep = edit.replacement.endsWith('\n') || edit.replacement.endsWith('\r')
+      ? edit.replacement
+      : '${edit.replacement}\n';
+
+  return SourceEdit(
+    edit.offset,
+    edit.length + extraLength,
+    '$rep$buffer',
+  );
 }
