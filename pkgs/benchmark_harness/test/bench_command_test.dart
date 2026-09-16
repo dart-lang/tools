@@ -15,7 +15,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('readme', () async {
-    final output = await Process.run(dartExecutable ?? 'dart', [
+    final output = await Process.run(dartExecutable!, [
       'bin/bench.dart',
       '--help',
     ]);
@@ -50,7 +50,7 @@ void main() {
 
     test('AOT compiled bench executable can compile and run target', () async {
       final benchExe = tempDir.uri.resolve('bench.exe').toFilePath();
-      final compileResult = await Process.run(dartExecutable ?? 'dart', [
+      final compileResult = await Process.run(dartExecutable!, [
         'compile',
         'exe',
         'bin/bench.dart',

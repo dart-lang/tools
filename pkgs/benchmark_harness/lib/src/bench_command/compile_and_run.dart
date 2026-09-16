@@ -8,7 +8,8 @@ import 'package:cli_util/cli_util.dart';
 
 import 'bench_options.dart';
 
-String get _dartExecutable => dartExecutable ?? 'dart';
+String get _dartExecutable =>
+    dartExecutable ?? (throw StateError('Could not locate a Dart executable.'));
 
 // TODO(kevmoo): allow the user to specify custom flags – for compile and/or run
 
