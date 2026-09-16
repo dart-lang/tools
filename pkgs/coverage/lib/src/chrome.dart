@@ -28,7 +28,12 @@ Future<Map<String, dynamic>> parseChromeCoverage(
 ) async {
   final coverageReport = <Uri, Map<int, bool>>{};
   for (var entry in preciseCoverage) {
-    final scriptId = entry['scriptId'] as String;
+    final scriptId = entry['scriptId'];
+    if (scriptId is! String) {
+      throw FormatException(
+        'Chrome coverage entry is missing a string "scriptId": $entry',
+      );
+    }
 
     final mapResponse = await sourceMapProvider(scriptId);
     if (mapResponse == null) continue;
