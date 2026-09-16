@@ -342,24 +342,22 @@ void main() {
       'file:///workspace/other_pkg/test/bar_test.dart': HitMap({30: 1}),
     };
 
-    test(
-      'normalizes lib file: URIs to package: URIs and filters to matching scope',
-      () {
-        final result = filterHitmapByScope(
-          sampleHitmap,
-          scopes: {'my_pkg'},
-          pkgConfig: pkgConfig,
-        );
-        final uris = result.map((e) => (e['source'] as String)).toList();
-        expect(
-          uris,
-          unorderedEquals([
-            'package:my_pkg/src/foo.dart',
-            'package:my_pkg/src/in_lib.dart',
-          ]),
-        );
-      },
-    );
+    test('normalizes lib file: URIs to package: URIs and filters to matching '
+        'scope', () {
+      final result = filterHitmapByScope(
+        sampleHitmap,
+        scopes: {'my_pkg'},
+        pkgConfig: pkgConfig,
+      );
+      final uris = result.map((e) => e['source'] as String).toList();
+      expect(
+        uris,
+        unorderedEquals([
+          'package:my_pkg/src/foo.dart',
+          'package:my_pkg/src/in_lib.dart',
+        ]),
+      );
+    });
 
     test('includes non-lib file: URIs only when includeTestFiles is true', () {
       final result = filterHitmapByScope(
@@ -368,7 +366,7 @@ void main() {
         pkgConfig: pkgConfig,
         includeTestFiles: true,
       );
-      final uris = result.map((e) => (e['source'] as String)).toList();
+      final uris = result.map((e) => e['source'] as String).toList();
       expect(
         uris,
         unorderedEquals([
@@ -385,7 +383,7 @@ void main() {
         scopes: {'my_pkg'},
         includeTestFiles: true,
       );
-      final uris = result.map((e) => (e['source'] as String)).toList();
+      final uris = result.map((e) => e['source'] as String).toList();
       expect(
         uris,
         unorderedEquals([
