@@ -16,7 +16,8 @@ import 'collect_coverage.dart' as collect_coverage;
 import 'format_coverage.dart' as format_coverage;
 
 final _allProcesses = <Process>[];
-String get _dartExecutable => dartExecutable ?? 'dart';
+String get _dartExecutable =>
+    dartExecutable ?? (throw StateError('Could not locate a Dart executable.'));
 
 Future<void> _dartRun(
   List<String> args, {

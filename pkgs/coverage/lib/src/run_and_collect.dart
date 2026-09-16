@@ -10,7 +10,8 @@ import 'package:cli_util/cli_util.dart';
 import 'collect.dart';
 import 'util.dart';
 
-String get _dartExecutable => dartExecutable ?? 'dart';
+String get _dartExecutable =>
+    dartExecutable ?? (throw StateError('Could not locate a Dart executable.'));
 
 Future<Map<String, dynamic>> runAndCollect(
   String scriptPath, {
