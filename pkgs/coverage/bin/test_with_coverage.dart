@@ -363,70 +363,10 @@ Future<int> _runVmTestsAndCollectCoverage(Flags flags, String outJson) async {
   );
 }
 
-bool _matchesFileScope(
-  Uri targetUri,
-  Set<String> scopes,
-  PackageConfig? pkgConfig,
-) {
-  final targetStr = targetUri.toString();
-  for (final scope in scopes) {
-    final package = pkgConfig?[scope];
-    if (package != null) {
-      if (targetStr.startsWith(package.root.toString())) return true;
-      continue;
-    }
-    if (targetUri.path.contains('/$scope/')) return true;
-  }
-  return false;
-}
-
-bool _isUriInScope(
-  Uri targetUri, {
-  required Set<String> scopes,
-  required PackageConfig? pkgConfig,
-  required bool includeTestFiles,
-}) {
-  if (scopes.isEmpty) return true;
-  if (targetUri.scheme == 'package' && targetUri.pathSegments.isNotEmpty) {
-    return scopes.contains(targetUri.pathSegments.first);
-  }
-  if (includeTestFiles && targetUri.scheme == 'file') {
-    return _matchesFileScope(targetUri, scopes, pkgConfig);
-  }
-  return false;
-}
-
-List<Map<String, dynamic>> _filterHitmapByScope(
-  Map<String, HitMap> hitmap, {
-  required Set<String> scopes,
-  required PackageConfig? pkgConfig,
-  required bool includeTestFiles,
-}) {
-  final allCoverage = <Map<String, dynamic>>[];
-  for (final MapEntry(key: uriStr, value: map) in hitmap.entries) {
-    var uri = Uri.tryParse(uriStr);
-    if (uri == null) continue;
-    if (uri.scheme == 'file' && pkgConfig != null) {
-      final packageUri = pkgConfig.toPackageUri(uri);
-      if (packageUri != null) uri = packageUri;
-    }
-
-    // Library code resolves to a package: URI above; anything still on
-    // the file: scheme (test files, tools, ...) is only included when
-    // explicitly requested, matching the VM flow's lib-only reporting.
-    if (_isUriInScope(
-      uri,
-      scopes: scopes,
-      pkgConfig: pkgConfig,
-      includeTestFiles: includeTestFiles,
-    )) {
-      allCoverage.add(hitmapToJson(map, uri));
-    }
-  }
-  return allCoverage;
-}
-
-Future<void> _writeWebCoverageReport(
+/// Writes intermediate `coverage.json` (`outJson`) for [_formatCoverage] to
+/// format into `lcov.info` (`outLcov`), matching `collect_coverage.main` in
+/// the VM flow.
+Future<void> _writeWebCoverageJson(
   List<File> coverageFiles,
   Flags flags,
   PackageConfig? pkgConfig,
@@ -457,7 +397,7 @@ Future<void> _writeWebCoverageReport(
               : flags.scopeOutput)
           .toSet();
 
-  final allCoverage = _filterHitmapByScope(
+  final allCoverage = filterHitmapByScope(
     hitmap,
     scopes: scopes,
     pkgConfig: pkgConfig,
@@ -479,11 +419,8 @@ Future<void> _writeWebCoverageReport(
   File(outJson).writeAsStringSync(jsonOutput);
 }
 
-Future<int> _runWebTestsAndCollectCoverage(
-  Flags flags,
-  PackageConfig? pkgConfig,
-  String outJson,
-) async {
+Future<int> _runWebTestsAndCollectCoverage(Flags flags, String outJson) async {
+  final pkgConfig = await _loadAndValidatePackageConfig(flags.packageDir);
   final tempDir = Directory.systemTemp.createTempSync('coverage_');
   try {
     final testArgs = [
@@ -512,7 +449,7 @@ Future<int> _runWebTestsAndCollectCoverage(
         .where((f) => f.path.endsWith('.json'))
         .toList();
 
-    await _writeWebCoverageReport(coverageFiles, flags, pkgConfig, outJson);
+    await _writeWebCoverageJson(coverageFiles, flags, pkgConfig, outJson);
     return exitCode;
   } finally {
     try {
@@ -543,13 +480,12 @@ Future<void> main(List<String> arguments) async {
     await Directory(flags.outDir).create(recursive: true);
   }
 
-  final pkgConfig = await _loadAndValidatePackageConfig(flags.packageDir);
   _registerSignalHandlers();
 
   final isVm = flags.platform == null || flags.platform == 'vm';
   final exitCode = isVm
       ? await _runVmTestsAndCollectCoverage(flags, outJson)
-      : await _runWebTestsAndCollectCoverage(flags, pkgConfig, outJson);
+      : await _runWebTestsAndCollectCoverage(flags, outJson);
 
   await _formatCoverage(flags, outJson, outLcov);
   exit(exitCode);

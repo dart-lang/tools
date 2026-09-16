@@ -5,6 +5,8 @@
 import 'dart:convert' show json;
 import 'dart:io';
 
+import 'package:package_config/package_config.dart';
+
 import 'chrome.dart';
 import 'resolver.dart';
 import 'util.dart';
@@ -425,4 +427,36 @@ List _sortHits(List hits) {
       .map((item) => [item.hitRange, item.hitCount])
       .expand((item) => item)
       .toList();
+}
+
+/// Filters [hitmap] to scripts matching [scopes], converting `file:` URIs
+/// inside package libraries to `package:` URIs via [pkgConfig], and returns
+/// a legacy JSON coverage list suitable for writing to `coverage.json`.
+List<Map<String, dynamic>> filterHitmapByScope(
+  Map<String, HitMap> hitmap, {
+  required Set<String> scopes,
+  PackageConfig? pkgConfig,
+  bool includeTestFiles = false,
+}) {
+  final allCoverage = <Map<String, dynamic>>[];
+  for (final MapEntry(key: uriStr, value: map) in hitmap.entries) {
+    var uri = Uri.tryParse(uriStr);
+    if (uri == null) continue;
+    if (uri.scheme == 'file' && pkgConfig != null) {
+      final packageUri = pkgConfig.toPackageUri(uri);
+      if (packageUri != null) uri = packageUri;
+    }
+
+    // Library code resolves to a package: URI above; anything still on
+    // the file: scheme (test files, tools, ...) is only included when
+    // explicitly requested, matching the VM flow's lib-only reporting.
+    if (scopes.includesUri(
+      uri,
+      pkgConfig: pkgConfig,
+      includeTestFiles: includeTestFiles,
+    )) {
+      allCoverage.add(hitmapToJson(map, uri));
+    }
+  }
+  return allCoverage;
 }

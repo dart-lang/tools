@@ -10,6 +10,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:coverage/coverage.dart';
+import 'package:coverage/src/hitmap.dart';
+import 'package:coverage/src/util.dart';
+import 'package:package_config/package_config.dart';
 import 'package:test/test.dart';
 
 // The scriptId for the main_test.js in the sample report.
@@ -313,5 +316,104 @@ void main() {
         }
       });
     }
+  });
+
+  group('filterHitmapByScope and ScopedOutput', () {
+    final pkgConfig = PackageConfig([
+      Package(
+        'my_pkg',
+        Uri.parse('file:///workspace/my_pkg/'),
+        packageUriRoot: Uri.parse('file:///workspace/my_pkg/lib/'),
+        languageVersion: LanguageVersion(3, 0),
+      ),
+      Package(
+        'other_pkg',
+        Uri.parse('file:///workspace/other_pkg/'),
+        packageUriRoot: Uri.parse('file:///workspace/other_pkg/lib/'),
+        languageVersion: LanguageVersion(3, 0),
+      ),
+    ]);
+
+    final sampleHitmap = <String, HitMap>{
+      'package:my_pkg/src/foo.dart': HitMap({1: 2, 2: 0}),
+      'package:other_pkg/src/bar.dart': HitMap({10: 1}),
+      'file:///workspace/my_pkg/lib/src/in_lib.dart': HitMap({5: 3}),
+      'file:///workspace/my_pkg/test/foo_test.dart': HitMap({20: 1}),
+      'file:///workspace/other_pkg/test/bar_test.dart': HitMap({30: 1}),
+    };
+
+    test(
+      'normalizes lib file: URIs to package: URIs and filters to matching scope',
+      () {
+        final result = filterHitmapByScope(
+          sampleHitmap,
+          scopes: {'my_pkg'},
+          pkgConfig: pkgConfig,
+        );
+        final uris = result.map((e) => (e['source'] as String)).toList();
+        expect(
+          uris,
+          unorderedEquals([
+            'package:my_pkg/src/foo.dart',
+            'package:my_pkg/src/in_lib.dart',
+          ]),
+        );
+      },
+    );
+
+    test('includes non-lib file: URIs only when includeTestFiles is true', () {
+      final result = filterHitmapByScope(
+        sampleHitmap,
+        scopes: {'my_pkg'},
+        pkgConfig: pkgConfig,
+        includeTestFiles: true,
+      );
+      final uris = result.map((e) => (e['source'] as String)).toList();
+      expect(
+        uris,
+        unorderedEquals([
+          'package:my_pkg/src/foo.dart',
+          'package:my_pkg/src/in_lib.dart',
+          'file:///workspace/my_pkg/test/foo_test.dart',
+        ]),
+      );
+    });
+
+    test('matches fallback /<scope>/ path when pkgConfig is null', () {
+      final result = filterHitmapByScope(
+        sampleHitmap,
+        scopes: {'my_pkg'},
+        includeTestFiles: true,
+      );
+      final uris = result.map((e) => (e['source'] as String)).toList();
+      expect(
+        uris,
+        unorderedEquals([
+          'package:my_pkg/src/foo.dart',
+          'file:///workspace/my_pkg/lib/src/in_lib.dart',
+          'file:///workspace/my_pkg/test/foo_test.dart',
+        ]),
+      );
+    });
+
+    test('includes all entries when scopes is empty', () {
+      final result = filterHitmapByScope(
+        sampleHitmap,
+        scopes: <String>{},
+        pkgConfig: pkgConfig,
+      );
+      expect(result, hasLength(sampleHitmap.length));
+    });
+
+    test('ScopedOutput.includesScript handles null and package: URIs', () {
+      expect({'my_pkg'}.includesScript(null), isFalse);
+      expect(<String>{}.includesScript('file:///anything.dart'), isTrue);
+      expect({'my_pkg'}.includesScript('package:my_pkg/foo.dart'), isTrue);
+      expect({'my_pkg'}.includesScript('package:other_pkg/foo.dart'), isFalse);
+      expect(
+        {'my_pkg'}.includesScript('file:///workspace/my_pkg/test/a.dart'),
+        isFalse,
+      );
+    });
   });
 }

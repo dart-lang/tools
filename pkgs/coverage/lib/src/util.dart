@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 import 'package:vm_service/vm_service.dart';
 import 'package:yaml/yaml.dart';
@@ -209,4 +210,45 @@ YamlMap _loadPubspec(String packageRoot) {
   final pubspecPath = getPubspecPath(packageRoot);
   final yaml = File(pubspecPath).readAsStringSync();
   return loadYaml(yaml, sourceUrl: Uri.file(pubspecPath)) as YamlMap;
+}
+
+extension ScopedOutput on Set<String> {
+  /// Returns whether [targetUri] falls within the package scopes in `this`.
+  ///
+  /// If `this` is empty, all scripts are included.
+  /// Otherwise, `package:` URIs match when their package name is in `this`.
+  /// When [includeTestFiles] is true, `file:` URIs match when they reside
+  /// under a package root in [pkgConfig] matching `this` (or contain
+  /// `/<scope>/`).
+  bool includesUri(
+    Uri targetUri, {
+    PackageConfig? pkgConfig,
+    bool includeTestFiles = false,
+  }) {
+    if (isEmpty) return true;
+    if (targetUri.scheme == 'package' && targetUri.pathSegments.isNotEmpty) {
+      return contains(targetUri.pathSegments.first);
+    }
+    if (includeTestFiles && targetUri.scheme == 'file') {
+      final targetStr = targetUri.toString();
+      for (final scope in this) {
+        final package = pkgConfig?[scope];
+        if (package != null) {
+          if (targetStr.startsWith(package.root.toString())) return true;
+          continue;
+        }
+        if (targetUri.path.contains('/$scope/')) return true;
+      }
+    }
+    return false;
+  }
+
+  /// Returns whether [scriptUriString] falls within the package scopes in
+  /// `this`.
+  bool includesScript(String? scriptUriString) {
+    if (scriptUriString == null) return false;
+    final uri = Uri.tryParse(scriptUriString);
+    if (uri == null) return false;
+    return includesUri(uri);
+  }
 }
