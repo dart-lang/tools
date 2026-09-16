@@ -10,6 +10,7 @@ environment:
 dependencies:
   args: ^2.0.0
   cli_config: ^0.2.0
+  cli_util: ^0.6.0
   glob: ^2.1.2
   logging: ^1.0.0
   meta: ^1.0.2
