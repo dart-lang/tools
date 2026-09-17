@@ -12,6 +12,7 @@ import 'equality.dart';
 import 'error_listener.dart';
 import 'event.dart';
 import 'parser.dart';
+import 'token.dart';
 import 'yaml_document.dart';
 import 'yaml_exception.dart';
 import 'yaml_node.dart';
@@ -36,17 +37,27 @@ class Loader {
   FileSpan get span => _span;
   FileSpan _span;
 
+  /// Whether tokens should be retained on loaded documents.
+  final bool _retainTokens;
+
   /// Creates a loader that loads [source].
   factory Loader(String source,
-      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener}) {
+      {Uri? sourceUrl,
+      bool recover = false,
+      bool retainTokens = false,
+      ErrorListener? errorListener}) {
     var parser = Parser(source,
-        sourceUrl: sourceUrl, recover: recover, errorListener: errorListener);
+        sourceUrl: sourceUrl,
+        recover: recover,
+        retainTokens: retainTokens,
+        errorListener: errorListener);
     var event = parser.parse();
     assert(event.type == EventType.streamStart);
-    return Loader._(parser, event.span);
+    return Loader._(parser, event.span, retainTokens: retainTokens);
   }
 
-  Loader._(this._parser, this._span);
+  Loader._(this._parser, this._span, {bool retainTokens = false})
+      : _retainTokens = retainTokens;
 
   /// Loads the next document from the stream.
   ///
@@ -66,6 +77,13 @@ class Loader {
     return document;
   }
 
+  /// All non-empty tokens emitted so far, sorted by start offset, if
+  /// `retainTokens` was enabled.
+  List<Token>? get tokens => _retainTokens
+      ? (List.of(_parser.tokens)
+        ..sort((a, b) => a.span.start.offset.compareTo(b.span.start.offset)))
+      : null;
+
   /// Composes a document object.
   YamlDocument _loadDocument(DocumentStartEvent firstEvent) {
     var contents = _loadNode(_parser.parse());
@@ -79,7 +97,8 @@ class Loader {
         firstEvent.versionDirective,
         firstEvent.tagDirectives,
         startImplicit: firstEvent.isImplicit,
-        endImplicit: lastEvent.isImplicit);
+        endImplicit: lastEvent.isImplicit,
+        tokens: tokens);
   }
 
   /// Composes a node.

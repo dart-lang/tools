@@ -63,19 +63,56 @@ YamlNode loadYamlNode(String yaml,
 /// This is just like [loadYaml], except that where [loadYaml] would return a
 /// normal Dart value this returns a [YamlDocument] instead. This allows the
 /// caller to access document metadata.
+///
+/// If [sourceUrl] is passed, it is used as the URL from which the YAML
+/// originated for error reporting.
+///
+/// If [recover] is `true`, the loader attempts to recover from parse errors and
+/// may return invalid or synthetic nodes. If [errorListener] is also supplied,
+/// its [ErrorListener.onError] method is called for each error recovered from.
+/// It is an error if [errorListener] is provided when [recover] is `false`.
+///
+/// If [retainTokens] is `true`, [YamlDocument.tokens] is populated with all
+/// non-empty lexical tokens (including comments, structural indicators,
+/// anchors, tags, aliases, and scalars) emitted while scanning [yaml], sorted
+/// in ascending source order by start offset. Token sorting runs in
+/// $\mathcal{O}(n \log n)$ time where $n$ is the number of emitted tokens.
+/// Import `package:yaml/tokens.dart` to inspect specific `Token` subtypes.
+///
+/// Throws a [YamlException] if [yaml] is malformed and [recover] is `false`, or
+/// if [yaml] contains more than one document.
 YamlDocument loadYamlDocument(String yaml,
-    {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener}) {
+    {Uri? sourceUrl,
+    bool recover = false,
+    bool retainTokens = false,
+    ErrorListener? errorListener}) {
   var loader = Loader(yaml,
-      sourceUrl: sourceUrl, recover: recover, errorListener: errorListener);
+      sourceUrl: sourceUrl,
+      recover: recover,
+      retainTokens: retainTokens,
+      errorListener: errorListener);
   var document = loader.load();
   if (document == null) {
     return YamlDocument.internal(YamlScalar.internalWithSpan(null, loader.span),
-        loader.span, null, const []);
+        loader.span, null, const [],
+        tokens: loader.tokens);
   }
 
   var nextDocument = loader.load();
   if (nextDocument != null) {
     throw YamlException('Only expected one document.', nextDocument.span);
+  }
+
+  if (retainTokens) {
+    return YamlDocument.internal(
+      document.contents,
+      document.span,
+      document.versionDirective,
+      document.tagDirectives,
+      startImplicit: document.startImplicit,
+      endImplicit: document.endImplicit,
+      tokens: loader.tokens,
+    );
   }
 
   return document;

@@ -289,6 +289,87 @@ SourceEdit _buildUpdate(
   }
 }
 
+/// Extracts any inline comment associated with [oldNode] that would otherwise
+/// be lost by replacing [oldNode], and returns the replacement end offset.
+({String? commentToAttach, int replaceEnd}) _extractNodeComment(
+  CstDocument document,
+  CstNode oldNode, {
+  required bool newIsBlockScalar,
+}) {
+  var lineEnd = oldNode.contentEnd;
+  final atLineBoundary = oldNode.contentEnd > 0 &&
+      (document.source[oldNode.contentEnd - 1] == '\n' ||
+          document.source[oldNode.contentEnd - 1] == '\r');
+  while (!atLineBoundary &&
+      lineEnd < document.source.length &&
+      document.source[lineEnd] != '\n' &&
+      document.source[lineEnd] != '\r') {
+    lineEnd++;
+  }
+  final trailingLine = document.source.substring(oldNode.contentEnd, lineEnd);
+  if (trailingLine.contains('#')) {
+    if (newIsBlockScalar) {
+      return (commentToAttach: trailingLine, replaceEnd: lineEnd);
+    }
+    // Leave trailingLine in place after oldNode.contentEnd.
+    return (commentToAttach: null, replaceEnd: oldNode.contentEnd);
+  }
+
+  // If oldNode is a block scalar with a header comment inside its span,
+  // replacing oldNode.contentEnd will delete that comment unless we extract it.
+  if (oldNode is CstScalar &&
+      (oldNode.style == ScalarStyle.LITERAL ||
+          oldNode.style == ScalarStyle.FOLDED)) {
+    final text = document.source.substring(oldNode.contentStart, oldNode.end);
+    final firstNl = text.indexOf('\n');
+    if (firstNl != -1) {
+      var headerLine = text.substring(0, firstNl);
+      if (headerLine.endsWith('\r')) {
+        headerLine = headerLine.substring(0, headerLine.length - 1);
+      }
+      final hashIdx = headerLine.indexOf('#');
+      if (hashIdx != -1) {
+        var commentStart = hashIdx;
+        while (commentStart > 0 &&
+            (headerLine[commentStart - 1] == ' ' ||
+                headerLine[commentStart - 1] == '\t')) {
+          commentStart--;
+        }
+        var comment = headerLine.substring(commentStart);
+        if (!comment.startsWith(' ') && !comment.startsWith('\t')) {
+          comment = ' $comment';
+        }
+        return (commentToAttach: comment, replaceEnd: oldNode.contentEnd);
+      }
+    }
+  }
+
+  return (
+    commentToAttach: null,
+    replaceEnd: newIsBlockScalar ? lineEnd : oldNode.contentEnd,
+  );
+}
+
+/// Attaches [comment] to [replacement], lifting it to the header line if
+/// [isBlockScalar] is true, or appending it otherwise.
+String _attachCommentToReplacement(
+  String replacement,
+  String? comment,
+  String lineEnding, {
+  required bool isBlockScalar,
+}) {
+  if (comment == null) return replacement;
+  if (isBlockScalar) {
+    final firstBreak = replacement.indexOf(lineEnding);
+    if (firstBreak != -1) {
+      return '${replacement.substring(0, firstBreak)}'
+          '$comment'
+          '${replacement.substring(firstBreak)}';
+    }
+  }
+  return '$replacement$comment';
+}
+
 SourceEdit _replaceRoot(
     CstDocument document, LayoutStyle style, YamlNode value) {
   final text = yamlEncodeBlock(value, 0, style.lineEnding);
@@ -298,31 +379,19 @@ SourceEdit _replaceRoot(
     // root of such a document replaces the document.
     return SourceEdit(0, document.source.length, text);
   }
-  var lineEnd = root.contentEnd;
-  final atLineBoundary = root.contentEnd > 0 &&
-      (document.source[root.contentEnd - 1] == '\n' ||
-          document.source[root.contentEnd - 1] == '\r');
-  while (!atLineBoundary &&
-      lineEnd < document.source.length &&
-      document.source[lineEnd] != '\n' &&
-      document.source[lineEnd] != '\r') {
-    lineEnd++;
-  }
-  final trailingLine = document.source.substring(root.contentEnd, lineEnd);
-  final hasTrailingComment = trailingLine.contains('#');
   final isBlockScalar = (text.startsWith('|') || text.startsWith('>')) &&
       text.contains(style.lineEnding);
-
-  final String textToInsert;
-  final int replaceEnd;
-  if (isBlockScalar && hasTrailingComment) {
-    textToInsert = _liftTrailingCommentToBlockScalarHeader(
-        text, trailingLine, style.lineEnding);
-    replaceEnd = lineEnd;
-  } else {
-    textToInsert = text;
-    replaceEnd = root.contentEnd;
-  }
+  final (:commentToAttach, :replaceEnd) = _extractNodeComment(
+    document,
+    root,
+    newIsBlockScalar: isBlockScalar,
+  );
+  final textToInsert = _attachCommentToReplacement(
+    text,
+    commentToAttach,
+    style.lineEnding,
+    isBlockScalar: isBlockScalar,
+  );
 
   return SourceEdit(root.start, replaceEnd - root.start, textToInsert);
 }
@@ -356,50 +425,25 @@ SourceEdit _replaceBlockSeqValue(
     }
   }
 
-  var lineEnd = entry.value.contentEnd;
-  final atLineBoundary = entry.value.contentEnd > 0 &&
-      (document.source[entry.value.contentEnd - 1] == '\n' ||
-          document.source[entry.value.contentEnd - 1] == '\r');
-  while (!atLineBoundary &&
-      lineEnd < document.source.length &&
-      document.source[lineEnd] != '\n' &&
-      document.source[lineEnd] != '\r') {
-    lineEnd++;
-  }
-  final trailingLine =
-      document.source.substring(entry.value.contentEnd, lineEnd);
-  final hasTrailingComment = trailingLine.contains('#');
   final isBlockScalar = (encoded.startsWith('|') || encoded.startsWith('>')) &&
       encoded.contains(style.lineEnding);
-
-  final String textToInsert;
-  final int replaceEnd;
-  if (isBlockScalar && hasTrailingComment) {
-    textToInsert = _liftTrailingCommentToBlockScalarHeader(
-        encoded, trailingLine, style.lineEnding);
-    replaceEnd = lineEnd;
-  } else {
-    textToInsert = encoded;
-    replaceEnd = entry.value.contentEnd;
-  }
+  final (:commentToAttach, :replaceEnd) = _extractNodeComment(
+    document,
+    entry.value,
+    newIsBlockScalar: isBlockScalar,
+  );
+  final textToInsert = _attachCommentToReplacement(
+    ' $encoded',
+    commentToAttach,
+    style.lineEnding,
+    isBlockScalar: isBlockScalar,
+  );
 
   return SourceEdit(
     entry.dashStart + 1,
     replaceEnd - entry.dashStart - 1,
-    ' $textToInsert',
+    textToInsert,
   );
-}
-
-String _liftTrailingCommentToBlockScalarHeader(
-  String encodedText,
-  String trailingLine,
-  String lineEnding,
-) {
-  final firstBreak = encodedText.indexOf(lineEnding);
-  if (firstBreak == -1) return encodedText;
-  final indicator = encodedText.substring(0, firstBreak);
-  final body = encodedText.substring(firstBreak);
-  return '$indicator$trailingLine$body';
 }
 
 /// Replaces the value of a block mapping entry, rewriting the space after the
@@ -412,42 +456,32 @@ SourceEdit _replaceBlockMapValue(
 ) {
   final keyColumn = document.columnOf(entry.keyStart);
   final encoded = encodeValue(value, style, indicatorColumn: keyColumn);
+  final isBlockScalar =
+      (encoded.text.startsWith('|') || encoded.text.startsWith('>')) &&
+          encoded.text.contains(style.lineEnding);
 
   final colon = entry.colon;
   if (colon == null) {
     // An explicit key written without a value, as in `? a`.
-    var lineEnd = entry.value.contentEnd;
-    while (lineEnd < document.source.length &&
-        document.source[lineEnd] != '\n' &&
-        document.source[lineEnd] != '\r') {
-      lineEnd++;
-    }
-    final trailingLine =
-        document.source.substring(entry.value.contentEnd, lineEnd);
-    final hasTrailingComment = trailingLine.contains('#');
-    final isBlockScalar =
-        (encoded.text.startsWith('|') || encoded.text.startsWith('>')) &&
-            encoded.text.contains(style.lineEnding);
-
-    final String textToInsert;
-    final int replaceEnd;
-    if (isBlockScalar && hasTrailingComment) {
-      textToInsert = _liftTrailingCommentToBlockScalarHeader(
-          encoded.text, trailingLine, style.lineEnding);
-      replaceEnd = lineEnd;
-    } else {
-      textToInsert = encoded.text;
-      replaceEnd = entry.value.contentEnd;
-    }
-
+    final (:commentToAttach, :replaceEnd) = _extractNodeComment(
+      document,
+      entry.value,
+      newIsBlockScalar: isBlockScalar,
+    );
     final atLineStart = entry.value.start == 0 ||
         document.source[entry.value.start - 1] == '\n' ||
         document.source[entry.value.start - 1] == '\r';
     final linePrefix = atLineStart ? '' : style.lineEnding;
 
     var fullText = encoded.ownLine
-        ? '$linePrefix${' ' * keyColumn}:${style.lineEnding}$textToInsert'
-        : '$linePrefix${' ' * keyColumn}: $textToInsert';
+        ? '$linePrefix${' ' * keyColumn}:${style.lineEnding}${encoded.text}'
+        : '$linePrefix${' ' * keyColumn}: ${encoded.text}';
+    fullText = _attachCommentToReplacement(
+      fullText,
+      commentToAttach,
+      style.lineEnding,
+      isBlockScalar: isBlockScalar,
+    );
 
     final followedByBreakOrContent = replaceEnd < document.source.length &&
         (document.source[replaceEnd] != '\n' &&
@@ -467,34 +501,12 @@ SourceEdit _replaceBlockMapValue(
     return _replaceInPlace(document, style, entry.value, value);
   }
 
-  var lineEnd = entry.value.contentEnd;
-  final atLineBoundary = entry.value.contentEnd > 0 &&
-      (document.source[entry.value.contentEnd - 1] == '\n' ||
-          document.source[entry.value.contentEnd - 1] == '\r');
-  while (!atLineBoundary &&
-      lineEnd < document.source.length &&
-      document.source[lineEnd] != '\n' &&
-      document.source[lineEnd] != '\r') {
-    lineEnd++;
-  }
-  final trailingLine =
-      document.source.substring(entry.value.contentEnd, lineEnd);
-  final hasTrailingComment = trailingLine.contains('#');
-  final isBlockScalar =
-      (encoded.text.startsWith('|') || encoded.text.startsWith('>')) &&
-          encoded.text.contains(style.lineEnding);
-
-  final int replaceEnd;
+  final (:commentToAttach, :replaceEnd) = _extractNodeComment(
+    document,
+    entry.value,
+    newIsBlockScalar: isBlockScalar,
+  );
   var textToInsert = encoded.text;
-  if (isBlockScalar && hasTrailingComment) {
-    textToInsert = _liftTrailingCommentToBlockScalarHeader(
-        encoded.text, trailingLine, style.lineEnding);
-    replaceEnd = lineEnd;
-  } else if (isBlockScalar) {
-    replaceEnd = lineEnd;
-  } else {
-    replaceEnd = entry.value.contentEnd;
-  }
 
   if (!encoded.ownLine &&
       document.source.substring(colon + 1, entry.value.start).contains('\n')) {
@@ -507,10 +519,16 @@ SourceEdit _replaceBlockMapValue(
   }
 
   final joiner = encoded.ownLine ? style.lineEnding : ' ';
+  final fullReplacement = _attachCommentToReplacement(
+    '$joiner$textToInsert',
+    commentToAttach,
+    style.lineEnding,
+    isBlockScalar: isBlockScalar,
+  );
   return SourceEdit(
     colon + 1,
     replaceEnd - colon - 1,
-    '$joiner$textToInsert',
+    fullReplacement,
   );
 }
 
@@ -541,33 +559,21 @@ SourceEdit _replaceInPlace(
     }
   }
 
-  var lineEnd = old.contentEnd;
-  final atLineBoundary = old.contentEnd > 0 &&
-      (document.source[old.contentEnd - 1] == '\n' ||
-          document.source[old.contentEnd - 1] == '\r');
-  while (!atLineBoundary &&
-      lineEnd < document.source.length &&
-      document.source[lineEnd] != '\n' &&
-      document.source[lineEnd] != '\r') {
-    lineEnd++;
-  }
-  final trailingLine = document.source.substring(old.contentEnd, lineEnd);
-  final hasTrailingComment = trailingLine.contains('#');
   final trimmedText = text.trimLeft();
   final isBlockScalar =
       (trimmedText.startsWith('|') || trimmedText.startsWith('>')) &&
           text.contains(style.lineEnding);
-
-  final int replaceEnd;
-  if (isBlockScalar && hasTrailingComment) {
-    text = _liftTrailingCommentToBlockScalarHeader(
-        text, trailingLine, style.lineEnding);
-    replaceEnd = lineEnd;
-  } else if (isBlockScalar) {
-    replaceEnd = lineEnd;
-  } else {
-    replaceEnd = old.contentEnd;
-  }
+  final (:commentToAttach, :replaceEnd) = _extractNodeComment(
+    document,
+    old,
+    newIsBlockScalar: isBlockScalar,
+  );
+  text = _attachCommentToReplacement(
+    text,
+    commentToAttach,
+    style.lineEnding,
+    isBlockScalar: isBlockScalar,
+  );
 
   return SourceEdit(old.start, replaceEnd - old.start, text);
 }
@@ -761,7 +767,8 @@ SourceEdit _insertIntoFlowCollection(
 
   if (index < entries.length) {
     // Write the new entry where the entry it precedes begins, followed by a
-    // separator. The displaced entry keeps its own leading trivia.
+    // separator. The displaced entry keeps its own leading whitespace and
+    // comments.
     final at = entries[index].contentStart;
     return SourceEdit(at, 0, '$text, ');
   }
@@ -862,12 +869,12 @@ SourceEdit buildRemove(CstDocument document, List<Object?> path) {
       if (step is! int || step < 0 || step >= parent.entries.length) {
         throw PathError(path, path, parent.value);
       }
-      return _removeFlowEntry(parent, step);
+      return _removeFlowEntry(document, parent, step);
 
     case CstFlowMap():
       final index = findEntryIndex(parent, step);
       if (index == null) throw PathError(path, path, parent.value);
-      return _removeFlowEntry(parent, index);
+      return _removeFlowEntry(document, parent, index);
 
     case CstFlowPair():
       if (!deepEquals(parent.key.value, step)) {
@@ -1005,12 +1012,14 @@ SourceEdit _removeBlockEntry(
 }
 
 /// Removes one entry of a flow collection, along with the comma that separates
-/// it from its neighbours.
-///
-/// Which comma goes depends on where the entry is: an entry that is not last
-/// takes the comma that follows it, and the last entry takes the one before it,
-/// so that the collection is never left with a stray separator.
-SourceEdit _removeFlowEntry(CstFlowCollection collection, int index) {
+/// it from its neighbours, while preserving any leading full-line comments and
+/// sibling trailing comments.
+SourceEdit _removeFlowEntry(
+  CstDocument document,
+  CstFlowCollection collection,
+  int index,
+) {
+  final src = document.source;
   final entries = collection.entries;
   final entry = entries[index];
 
@@ -1022,8 +1031,30 @@ SourceEdit _removeFlowEntry(CstFlowCollection collection, int index) {
   if (index == 0) {
     final comma = entry.comma;
     if (comma != null) {
-      return SourceEdit(
-          collection.openEnd, (comma + 1) - collection.openEnd, '');
+      final beforeEntry = src.substring(collection.openEnd, entry.contentStart);
+      final nextContent = entries[1].contentStart;
+      final afterComma = src.substring(comma + 1, nextContent);
+      if (beforeEntry.contains('#') &&
+          !src.substring(entry.contentStart, comma).contains('\n')) {
+        if (!afterComma.contains('\n')) {
+          return SourceEdit(
+              entry.contentStart, nextContent - entry.contentStart, '');
+        }
+        final lastNl = beforeEntry.lastIndexOf('\n');
+        final start =
+            lastNl != -1 ? collection.openEnd + lastNl + 1 : entry.contentStart;
+        final nl = afterComma.indexOf('\n');
+        final end = comma + 1 + nl + 1;
+        return SourceEdit(start, end - start, '');
+      }
+      var end = comma + 1;
+      final nl = afterComma.indexOf('\n');
+      final sameLineAfterComma =
+          nl != -1 ? afterComma.substring(0, nl) : afterComma;
+      if (sameLineAfterComma.contains('#')) {
+        end += nl != -1 ? nl : afterComma.length;
+      }
+      return SourceEdit(collection.openEnd, end - collection.openEnd, '');
     }
     final next = entries[1];
     return SourceEdit(
@@ -1032,12 +1063,32 @@ SourceEdit _removeFlowEntry(CstFlowCollection collection, int index) {
 
   if (index < entries.length - 1) {
     final next = entries[index + 1];
+    final entryEnd = entry.comma != null ? entry.comma! + 1 : entry.end;
+    final afterEntry = src.substring(entryEnd, next.contentStart);
+    if (afterEntry.contains('#')) {
+      final nl = afterEntry.indexOf('\n');
+      if (nl != -1) {
+        final prev = entries[index - 1];
+        final prevEnd = prev.comma != null ? prev.comma! + 1 : prev.end;
+        final beforeEntry = src.substring(prevEnd, entry.contentStart);
+        final lastNl = beforeEntry.lastIndexOf('\n');
+        final start = lastNl != -1 ? prevEnd + lastNl + 1 : entry.contentStart;
+        return SourceEdit(start, (entryEnd + nl + 1) - start, '');
+      }
+    }
     return SourceEdit(
         entry.contentStart, next.contentStart - entry.contentStart, '');
   }
 
   final previous = entries[index - 1];
   final from = previous.comma ?? previous.end;
+  final prevEnd = previous.comma != null ? previous.comma! + 1 : previous.end;
+  final beforeEntry = src.substring(prevEnd, entry.contentStart);
+  final lastNl = beforeEntry.lastIndexOf('\n');
+  if (beforeEntry.contains('#') && lastNl != -1) {
+    return SourceEdit(from, collection.closeStart - from,
+        beforeEntry.substring(0, lastNl + 1));
+  }
   return SourceEdit(from, collection.closeStart - from, '');
 }
 
