@@ -4,6 +4,7 @@
   example a single very long word). The plain-text accelerator regex required
   a trailing whitespace, so a run reaching the end of a line without one
   backtracked across the whole run at every position.
+* Remove `dart:mirrors` usage in `tool/stats_lib.dart`.
 
 ## 7.4.0
 
