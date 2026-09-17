@@ -816,6 +816,25 @@ analyzer:
         expect(doc.toString(), equals('{a: 1, b: 2, c: 3,}'));
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
       });
+
+      test('updating explicit key without colon succeeds', () {
+        final doc = YamlEditor('{? key}');
+        doc.update(['key'], 'value');
+        expect(doc.toString(), equals('{? key: value}'));
+        expectYamlBuilderValue(doc, {'key': 'value'});
+
+        final doc2 = YamlEditor('{? key, foo: bar}');
+        doc2.update(['key'], 'value');
+        expect(doc2.toString(), equals('{? key: value, foo: bar}'));
+        expectYamlBuilderValue(doc2, {'key': 'value', 'foo': 'bar'});
+      });
+
+      test('updating explicit key with colon succeeds', () {
+        final doc = YamlEditor('{? key: old}');
+        doc.update(['key'], 'new');
+        expect(doc.toString(), equals('{? key: new}'));
+        expectYamlBuilderValue(doc, {'key': 'new'});
+      });
     });
 
     group('block map', () {
@@ -1104,6 +1123,47 @@ d: 4
         );
         expectYamlBuilderValue(doc, []);
       });
+    });
+  });
+
+  group('flow collections with comments or empty values', () {
+    test('update flow list with comment containing comma and bracket', () {
+      final doc = YamlEditor('[1 # comment with , and ]\n, 2]');
+      doc.update([0], 'updated');
+      expect(doc.parseAt([0]).value, equals('updated'));
+      expect(doc.parseAt([1]).value, equals(2));
+    });
+
+    test('flow map update with comment containing comma and braces', () {
+      final doc = YamlEditor('{a: 1 # comment with , and { and }\n, b: 2}');
+      doc.update(['a'], 99);
+      expect(doc.parseAt(['a']).value, equals(99));
+      expect(doc.parseAt(['b']).value, equals(2));
+
+      doc.update(['b'], 88);
+      expect(doc.parseAt(['b']).value, equals(88));
+    });
+
+    test('flow map insert with comment containing delimiters', () {
+      final doc = YamlEditor('{a: 1 # comment with , and }\n, b: 2}');
+      doc.update(['c'], 3);
+      expect(doc.parseAt(['a']).value, equals(1));
+      expect(doc.parseAt(['b']).value, equals(2));
+      expect(doc.parseAt(['c']).value, equals(3));
+    });
+
+    test('flow map update empty value without space after colon', () {
+      final doc = YamlEditor('{a:}');
+      doc.update(['a'], 'hello');
+      expect(doc.toString(), equals('{a: hello}'));
+      expect(doc.parseAt(['a']).value, equals('hello'));
+    });
+
+    test('flow map update empty value with comment', () {
+      final doc = YamlEditor('{a: # comment\n, b: 1}');
+      doc.update(['a'], 'hello');
+      expect(doc.parseAt(['a']).value, equals('hello'));
+      expect(doc.parseAt(['b']).value, equals(1));
     });
   });
 }
