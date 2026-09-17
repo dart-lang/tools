@@ -2,19 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// Turns a requested change into a [SourceEdit] against a [CstDocument].
+/// Computes [SourceEdit]s for mutating a [CstDocument].
 ///
-/// Every offset that appears in an edit produced here is a slot boundary taken
-/// from the CST. Nothing in this library searches the source for a `-`, a `:`
-/// or a `,`, because the CST already knows where they are. That is the whole
-/// point of having it: the question "which characters does this entry occupy?"
-/// is answered once, by the builder, under an invariant that is checked, rather
-/// than separately at each call site by a heuristic that is not.
-///
-/// What remains here is genuinely a matter of taste rather than of fact — how
-/// far to indent new content, whether to put a value on its own line, which
-/// scalar style to prefer. Those are style decisions, and a heuristic is a fine
-/// way to make them: getting one wrong produces ugly output, not wrong output.
+/// Mutations operate directly on CST node and entry slot boundaries (such as
+/// key, colon, and value offsets in mappings, or dash, comma, and delimiter
+/// offsets in collections) while preserving surrounding comments and layout.
 library;
 
 import 'package:yaml/yaml.dart';

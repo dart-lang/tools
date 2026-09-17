@@ -4,36 +4,15 @@
 
 /// A concrete syntax tree (CST) for a single YAML document.
 ///
-/// # Why
+/// Built from the `YamlNode` value tree and `Token` stream produced by
+/// `package:yaml` (`loadYamlDocument(..., retainTokens: true)`). Every node,
+/// indicator, comment, and whitespace span is recorded with exact character
+/// offsets (`[start, end)`).
 ///
-/// `package:yaml` produces a *value* tree: it tells us what a document means,
-/// but not how it is written. Comments, blank lines, indentation, delimiter
-/// positions and collection styles are all absent. Editing a document while
-/// preserving its layout therefore requires recovering that information, and
-/// recovering it by scanning the source with ad-hoc heuristics is what makes
-/// layout-preserving editors fragile.
-///
-/// The CST recovers it once, structurally, and records the result as offsets.
-///
-/// # The tiling invariant
-///
-/// The central invariant is that a [CstDocument] is a **tiling** of its source:
-/// every character belongs to exactly one slot, slots are contiguous, and the
-/// slots appear in source order. Concatenating all slots reproduces the source
-/// byte for byte.
-///
-/// This is checked by [CstDocument.parse] on every document it builds, so it is
-/// an enforced invariant rather than an aspiration. Two consequences follow:
-///
-/// * *Losslessness is structural.* There is no separate "printer" that might
-///   disagree with the parser, so there is no round-trip property left to get
-///   wrong.
-/// * *Edits have an exact frame.* Any edit expressed as "replace the source
-///   range of slot X" is guaranteed to leave every other character of the
-///   document untouched, because the slots are disjoint.
-///
-/// Together these mean the editing code never has to search the source for a
-/// delimiter: every offset it needs is already a slot boundary.
+/// A [CstDocument] forms a complete tiling of its source text: slots are
+/// contiguous, non-overlapping, and ordered by source offset. Concatenating all
+/// slots reproduces the original document byte for byte. [CstDocument.parse]
+/// enforces this invariant on every document it constructs.
 library;
 
 import 'package:yaml/tokens.dart';
@@ -489,13 +468,7 @@ final class CstDocument {
     return lineStart;
   }
 
-  /// The column [offset] sits at, counting from zero.
-  ///
-  /// New content has to be indented to line up with the content around it, and
-  /// that means knowing what column something is written at. Scanning back to
-  /// the start of the line answers that exactly, and unlike searching for a
-  /// delimiter it cannot be wrong: where a line begins is not a question about
-  /// YAML.
+  /// Zero-based column index of [offset] relative to the start of its line.
   int columnOf(int offset) => offset - lineStartOf(offset);
 
   /// Parses [source] into a CST.
@@ -549,26 +522,14 @@ Set<YamlNode> _collectAliasedValues(YamlNode root) {
 
 /// Verifies that [document]'s slots tile its source exactly.
 ///
-/// Walks the tree in source order and checks three things:
+/// Walks the tree in source order and checks that:
+/// 1. Slot boundaries are monotonically non-decreasing (disjoint and ordered).
+/// 2. Every structural indicator (`-`, `?`, `:`, `,`, `[`, `]`, `{`, `}`)
+///    matches its expected character in the source.
+/// 3. Every region between structural indicators and node contents contains
+///    only whitespace and comments.
 ///
-/// 1. Boundaries never run backwards, so the slots are disjoint and ordered.
-/// 2. Every named indicator really is the character the model claims — the `-`
-///    of a sequence entry really is a `-`, and so on.
-/// 3. Every region the model treats as whitespace or comments contains nothing
-///    but blank space and comments.
-///
-/// The third check is the one that matters. Losslessness alone is easy to
-/// satisfy — taking substrings between boundaries reproduces the source no
-/// matter where the boundaries are — so it would not catch a boundary in the
-/// wrong place. Requiring that the spaces between the structure really are
-/// empty of content is what rules out misattribution, and misattribution is
-/// what makes an edit delete the wrong text.
-///
-/// This runs on every document rather than behind an assertion: it is the
-/// invariant the rest of the design relies on, and a document the builder
-/// cannot model must be rejected rather than silently mangled.
-///
-/// Throws a [CstException] if any of the three fails.
+/// Throws a [CstException] if any check fails.
 void _checkTiling(CstDocument document) {
   final src = document.source;
   var cursor = 0;
