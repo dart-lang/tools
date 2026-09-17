@@ -18,10 +18,10 @@ containing a `pubspec.yaml` file.
 
 ### Installing Globally
 
-Activate the package using `dart pub global`:
+Install the executable using `dart install`:
 
 ```bash
-dart pub global activate api_summary
+dart install api_summary
 ```
 
 Then run the tool:
@@ -62,7 +62,7 @@ Add `api_summary` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  api_summary: ^0.1.0-wip
+  api_summary: ^1.0.0
 ```
 
 ### Basic Example
@@ -160,15 +160,3 @@ void main() {
   });
 }
 ```
-
-## Status: experimental
-
-**NOTE**: This package is currently experimental and published under the
-[tools.dart.dev](https://dart.dev/dart-team-packages) pub publisher in order to
-solicit feedback.
-
-These packages have a much higher expected rate of API and breaking changes.
-
-Your feedback is valuable and will help us evolve this package. For general
-feedback, suggestions, and comments, please file an issue in the
-[bug tracker](https://github.com/dart-lang/tools/issues).
