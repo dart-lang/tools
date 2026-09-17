@@ -1,0 +1,7 @@
+# Tests valid flow mapping colon indentation
+foo:
+  {
+    a
+    :
+    b
+  }

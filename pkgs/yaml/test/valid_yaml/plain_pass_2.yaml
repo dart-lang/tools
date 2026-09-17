@@ -1,0 +1,6 @@
+# Integer spanning lines (parses as string, valid) > block indent (3 > 2)
+block:
+  key: [
+   123
+   456
+  ]

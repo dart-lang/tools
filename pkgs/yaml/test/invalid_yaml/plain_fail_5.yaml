@@ -1,0 +1,6 @@
+# Flow mapping value plain scalar at same indent as block key (2 <= 2) (invalid)
+block:
+  key: {
+   a:
+  plain
+  }

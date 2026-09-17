@@ -1,0 +1,8 @@
+# Tests valid nested flow mapping
+foo:
+  {
+    a:
+      {
+        b: c
+      }
+  }

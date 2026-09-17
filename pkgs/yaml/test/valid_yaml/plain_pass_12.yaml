@@ -1,0 +1,7 @@
+# Nested flow collections, inner integer > block indent (3 > 2)
+block:
+  key: [
+   [
+    1
+   ]
+  ]

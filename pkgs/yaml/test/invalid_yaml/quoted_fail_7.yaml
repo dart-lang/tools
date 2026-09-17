@@ -1,0 +1,4 @@
+# Invalid double quoted explicit key
+key:
+  ? "line1
+ line2"
