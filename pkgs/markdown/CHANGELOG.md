@@ -4,6 +4,9 @@
   example a single very long word). The plain-text accelerator regex required
   a trailing whitespace, so a run reaching the end of a line without one
   backtracked across the whole run at every position.
+* Fix a bug where adjacent `Text` nodes were not combined if they were the
+  children of the last node in a list, which could split plain text into
+  multiple `Text` nodes when a custom inline syntax was registered.
 
 ## 7.4.0
 
