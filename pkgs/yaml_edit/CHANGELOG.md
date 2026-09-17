@@ -1,6 +1,9 @@
 ## 2.2.5-wip
 
+- Rewrite internal modification logic to use a lossless Concrete Syntax Tree
+  (CST) and slot-directed mutations.
 - Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
+- Require Dart 3.4.
 
 ## 2.2.4
 

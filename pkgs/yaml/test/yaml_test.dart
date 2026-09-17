@@ -8,6 +8,7 @@
 // ignore_for_file: avoid_dynamic_calls
 
 import 'package:test/test.dart';
+import 'package:yaml/tokens.dart';
 import 'package:yaml/yaml.dart';
 
 import 'utils.dart';
@@ -1946,6 +1947,40 @@ void main() {
     final expectedPermutationCount =
         List.generate(keys.length, (i) => i + 1).reduce((n, i) => n * i);
     expect(sanityCheckCount, expectedPermutationCount);
+  });
+
+  group('retainTokens', () {
+    test('returns null tokens by default', () {
+      final doc = loadYamlDocument('a: 1 # comment');
+      expect(doc.tokens, isNull);
+    });
+
+    test(
+        'emits comments and indicators in source order without 0-length tokens',
+        () {
+      const source = '# header\na: [1, 2] # inline\n# footer\n';
+      final doc = loadYamlDocument(source, retainTokens: true);
+      final tokens = doc.tokens!;
+      expect(tokens.every((t) => t.span.length > 0), isTrue);
+      for (var i = 1; i < tokens.length; i++) {
+        expect(
+          tokens[i].span.start.offset,
+          greaterThanOrEqualTo(tokens[i - 1].span.end.offset),
+        );
+      }
+      final comments = tokens.whereType<CommentToken>().map((c) => c.span.text);
+      expect(comments, ['# header', '# inline', '# footer']);
+    });
+
+    test('includes trailing empty lines in keep-chomped block scalar span', () {
+      const source = 'a: |+\n  hello\n\n\nb: 2\n';
+      final doc = loadYamlDocument(source, retainTokens: true);
+      final map = doc.contents as YamlMap;
+      final scalar = map.nodes['a'] as YamlScalar;
+      expect(scalar.value, 'hello\n\n\n');
+      // Span should cover through the last kept empty line before b: 2
+      expect(source.substring(scalar.span.end.offset), '\nb: 2\n');
+    });
   });
 }
 
