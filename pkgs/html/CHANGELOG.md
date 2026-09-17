@@ -1,7 +1,5 @@
 ## 0.15.8-wip
 
-- Remove `dart:mirrors` usage in tests.
-
 ## 0.15.7
 
 - `writeTextNodeAsHtml`: Escape text inside `<script>` and `<style>`-like tags in foreign namespaces.
