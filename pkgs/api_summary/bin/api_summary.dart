@@ -39,43 +39,53 @@ void _usageError(String message) {
 }
 
 Future<void> _run(ArgResults results) async {
-  final write = results.flag('write');
-  final check = results.flag('check');
-  if (write && check) {
-    throw const FormatException('Cannot specify both --write and --check.');
+  if (results.rest.isNotEmpty) {
+    throw FormatException(
+      'Unexpected positional arguments: "${results.rest.join(' ')}". '
+      'Use --package-path (-p) to specify a package directory.',
+    );
   }
 
   final packagePath = results.option('package-path') ?? Directory.current.path;
   final absolutePath = p.normalize(p.absolute(packagePath));
   final formatName = results.option('format')!;
   final format = ApiSummaryFormat.values.byName(formatName);
-  final outputOption = results.option('output');
 
-  if (check) {
-    await expectApiSummaryClean(
-      packagePath: absolutePath,
-      goldenFilePath: outputOption,
-      format: format,
-    );
-    return;
+  switch ((
+    write: results.flag('write'),
+    check: results.flag('check'),
+    output: results.option('output'),
+  )) {
+    case (write: true, check: true, output: _):
+      throw const FormatException('Cannot specify both --write and --check.');
+    case (write: true, check: false, output: _?):
+      throw const FormatException('Cannot specify both --write and --output.');
+    case (write: false, check: true, output: _?):
+      throw const FormatException('Cannot specify both --check and --output.');
+    case (write: false, check: true, output: null):
+      await expectApiSummaryClean(packagePath: absolutePath, format: format);
+    case (write: false, check: false, output: null):
+      final package = await apiSummary(absolutePath);
+      stdout.write(format.format(package));
+    case (write: true, check: false, output: null):
+      final package = await apiSummary(absolutePath);
+      _writeOutputFile(
+        p.join(absolutePath, format.defaultFileName),
+        format.format(package),
+      );
+    case (write: false, check: false, output: final outputPath?):
+      final package = await apiSummary(absolutePath);
+      final targetPath = p.isAbsolute(outputPath)
+          ? p.normalize(outputPath)
+          : p.normalize(p.join(absolutePath, outputPath));
+      _writeOutputFile(targetPath, format.format(package));
   }
+}
 
-  final package = await apiSummary(absolutePath);
-  final formatted = format.format(package);
-
-  if (!write && outputOption == null) {
-    stdout.write(formatted);
-    return;
-  }
-
-  final targetPath = switch (outputOption) {
-    null => p.join(absolutePath, format.defaultFileName),
-    final path when p.isAbsolute(path) => p.normalize(path),
-    final path => p.normalize(p.join(absolutePath, path)),
-  };
+void _writeOutputFile(String targetPath, String content) {
   final outFile = File(targetPath);
   outFile.parent.createSync(recursive: true);
-  outFile.writeAsStringSync(formatted);
+  outFile.writeAsStringSync(content);
 }
 
 final _parser = ArgParser()

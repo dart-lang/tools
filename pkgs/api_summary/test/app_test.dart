@@ -150,7 +150,7 @@ void main() {
     final checkClean = await runCli(['-p', samplePkgDir, '--check']);
     expect(checkClean.exitCode, equals(0), reason: '${checkClean.stderr}');
 
-    // 4. Relative -o with -p resolves relative to packagePath for write & check
+    // 4. Relative -o with -p resolves relative to packagePath for writing
     final writeCustom = await runCli([
       '-p',
       samplePkgDir,
@@ -160,22 +160,29 @@ void main() {
     expect(writeCustom.exitCode, equals(0), reason: '${writeCustom.stderr}');
     expect(File(p.join(samplePkgDir, 'custom_api.txt')).existsSync(), isTrue);
 
-    final checkCustom = await runCli([
-      '-p',
-      samplePkgDir,
-      '-o',
-      'custom_api.txt',
-      '--check',
-    ]);
-    expect(checkCustom.exitCode, equals(0), reason: '${checkCustom.stderr}');
-
-    // 5. --write and --check together exits with code 64
-    final conflict = await runCli(['-p', samplePkgDir, '--write', '--check']);
-    expect(conflict.exitCode, equals(64));
-    expect(
-      conflict.stderr,
-      contains('Cannot specify both --write and --check.'),
-    );
+    // 5. Mutually exclusive flag combinations exit with code 64
+    for (final (args, expectedMessage) in [
+      (
+        ['-p', samplePkgDir, '--write', '--check'],
+        'Cannot specify both --write and --check.',
+      ),
+      (
+        ['-p', samplePkgDir, '--write', '-o', 'custom_api.txt'],
+        'Cannot specify both --write and --output.',
+      ),
+      (
+        ['-p', samplePkgDir, '--check', '-o', 'custom_api.txt'],
+        'Cannot specify both --check and --output.',
+      ),
+      (
+        ['some_positional_arg'],
+        'Unexpected positional arguments: "some_positional_arg".',
+      ),
+    ]) {
+      final res = await runCli(args);
+      expect(res.exitCode, equals(64), reason: 'Args: $args');
+      expect(res.stderr, contains(expectedMessage), reason: 'Args: $args');
+    }
   });
 
   test('throws ArgumentError on missing pubspec.yaml', () async {
