@@ -4,6 +4,10 @@
   example a single very long word). The plain-text accelerator regex required
   a trailing whitespace, so a run reaching the end of a line without one
   backtracked across the whole run at every position.
+* Fix a bug where nested lists inside a GitHub alert block (`> [!NOTE]`, etc.)
+  were flattened. `AlertBlockSyntax` stripped all whitespace following the
+  `>` marker instead of at most one space, discarding the indentation that
+  marks a list item as nested.
 
 ## 7.4.0
 

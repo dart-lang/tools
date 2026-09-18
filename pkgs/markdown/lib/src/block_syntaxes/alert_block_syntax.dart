@@ -39,7 +39,15 @@ class AlertBlockSyntax extends BlockSyntax {
 
     while (!parser.isDone) {
       final lineContent = parser.current.content.trimLeft();
-      final strippedContent = lineContent.replaceFirst(RegExp(r'^>?\s*'), '');
+      // A block quote marker consists of a `>` together with an optional
+      // following space of indentation, see
+      // https://spec.commonmark.org/0.30/#block-quote-marker. Only that
+      // single space should be stripped so that further indentation (e.g.
+      // for a nested list) is preserved.
+      final strippedContent = lineContent.replaceFirst(
+        RegExp(r'^>?[ \t]?'),
+        '',
+      );
       final match = strippedContent.isEmpty && !lineContent.startsWith('>')
           ? null
           : _contentLineRegExp.firstMatch(strippedContent);
