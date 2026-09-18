@@ -2165,6 +2165,92 @@ libraries:
                   name: ApiSummaryContext
                   libraryUri: package:api_summary/src/api_summary_customizer.dart
                 isRequired: true
+      - name: ApiSummaryVerificationException
+        locationUri: package:api_summary/src/verify.dart
+        supertype:
+          kind: interface
+          name: Object
+          libraryUri: dart:core
+        interfaces:
+          - kind: interface
+            name: Exception
+            libraryUri: dart:core
+        modifiers:
+          - final
+        constructors:
+          - name: new
+            locationUri: package:api_summary/src/verify.dart
+            kind: constructor
+            returnType:
+              kind: interface
+              name: ApiSummaryVerificationException
+              libraryUri: package:api_summary/src/verify.dart
+            parameters:
+              - name: actual
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+              - name: expected
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                  isNullable: true
+                isNamed: true
+              - name: goldenFilePath
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+              - name: message
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+        methods:
+          - name: actual
+            locationUri: package:api_summary/src/verify.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+          - name: expected
+            locationUri: package:api_summary/src/verify.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+              isNullable: true
+          - name: goldenFilePath
+            locationUri: package:api_summary/src/verify.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+          - name: message
+            locationUri: package:api_summary/src/verify.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+          - name: toString
+            locationUri: package:api_summary/src/verify.dart
+            kind: method
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
       - name: ApiType
         locationUri: package:api_summary/src/api_type.dart
         supertype:
@@ -3106,6 +3192,73 @@ libraries:
                   libraryUri: package:api_summary/src/api_declaration.dart
             isConst: true
             isStatic: true
+      - name: ApiSummaryFormat
+        locationUri: package:api_summary/src/verify.dart
+        methods:
+          - name: defaultFileName
+            locationUri: package:api_summary/src/verify.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+          - name: format
+            locationUri: package:api_summary/src/verify.dart
+            kind: method
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+            parameters:
+              - name: summary
+                type:
+                  kind: interface
+                  name: ApiSummary
+                  libraryUri: package:api_summary/src/api_declaration.dart
+                isRequired: true
+          - name: json
+            locationUri: package:api_summary/src/verify.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: ApiSummaryFormat
+              libraryUri: package:api_summary/src/verify.dart
+            isConst: true
+            isEnumConstant: true
+            isStatic: true
+          - name: text
+            locationUri: package:api_summary/src/verify.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: ApiSummaryFormat
+              libraryUri: package:api_summary/src/verify.dart
+            isConst: true
+            isEnumConstant: true
+            isStatic: true
+          - name: values
+            locationUri: package:api_summary/src/verify.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: List
+              libraryUri: dart:core
+              typeArguments:
+                - kind: interface
+                  name: ApiSummaryFormat
+                  libraryUri: package:api_summary/src/verify.dart
+            isConst: true
+            isStatic: true
+          - name: yaml
+            locationUri: package:api_summary/src/verify.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: ApiSummaryFormat
+              libraryUri: package:api_summary/src/verify.dart
+            isConst: true
+            isEnumConstant: true
+            isStatic: true
       - name: MetaContract
         locationUri: package:api_summary/src/meta_facet.dart
         interfaces:
@@ -3278,6 +3431,51 @@ libraries:
               isNullable: true
             isNamed: true
           - name: packageName
+            type:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+              isNullable: true
+            isNamed: true
+        isStatic: true
+      - name: expectApiSummaryClean
+        locationUri: package:api_summary/src/verify.dart
+        kind: function
+        returnType:
+          kind: interface
+          name: Future
+          libraryUri: dart:async
+          typeArguments:
+            - kind: void
+        parameters:
+          - name: customizer
+            type:
+              kind: interface
+              name: ApiSummaryCustomizer
+              libraryUri: package:api_summary/src/api_summary_customizer.dart
+              isNullable: true
+            isNamed: true
+          - name: format
+            type:
+              kind: interface
+              name: ApiSummaryFormat
+              libraryUri: package:api_summary/src/verify.dart
+            isNamed: true
+          - name: goldenFilePath
+            type:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+              isNullable: true
+            isNamed: true
+          - name: packageName
+            type:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+              isNullable: true
+            isNamed: true
+          - name: packagePath
             type:
               kind: interface
               name: String
