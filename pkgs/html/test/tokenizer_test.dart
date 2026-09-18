@@ -60,7 +60,7 @@ class TokenizerTestParser {
         HtmlTokenizer(bytes, encoding: 'utf-8', generateSpans: _generateSpans);
     outputTokens = [];
 
-    tokenizer.state = switch (_state!) {
+    tokenizer.state = switch (_state) {
       'dataState' => tokenizer.dataState,
       'plaintextState' => tokenizer.plaintextState,
       'rcdataState' => tokenizer.rcdataState,
