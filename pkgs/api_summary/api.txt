@@ -4,6 +4,7 @@ executables:
   api_summary
 package:api_summary/api_summary.dart:
   apiSummary (function: Future<ApiSummary> Function(String, {ApiSummaryCustomizer? customizer, String? packageName}))
+  expectApiSummaryClean (function: Future<void> Function({ApiSummaryCustomizer? customizer, ApiSummaryFormat format, String? goldenFilePath, String? packageName, String? packagePath}))
   ApiClass (class extends ApiDeclaration, final):
     new (constructor: ApiClass Function({required List<ApiExecutable> constructors, Iterable<ApiFacet> facets, required List<String> immediateSubtypes, required List<ApiType> interfaces, bool isDeprecated, String? locationUri, required List<ApiExecutable> methods, required List<ApiType> mixins, required List<ApiClassModifier> modifiers, required String name, ApiDeclarationStatus status, List<ApiType> superclassConstraints, ApiType? supertype, required Map<String, ApiType?> typeParameters}))
     fromJson (constructor: ApiClass Function(Map<String, dynamic>))
@@ -156,6 +157,20 @@ package:api_summary/api_summary.dart:
     initialScanComplete (method: Future<void> Function(ApiSummaryContext))
     setupComplete (method: Future<void> Function(ApiSummaryContext))
     shouldShowDetails (method: bool Function(Element, ApiSummaryContext))
+  ApiSummaryFormat (enum):
+    json (enum constant: ApiSummaryFormat)
+    text (enum constant: ApiSummaryFormat)
+    values (static const getter: List<ApiSummaryFormat>)
+    yaml (enum constant: ApiSummaryFormat)
+    defaultFileName (getter: String)
+    format (method: String Function(ApiSummary))
+  ApiSummaryVerificationException (class extends Object implements Exception, final):
+    new (constructor: ApiSummaryVerificationException Function({required String actual, String? expected, required String goldenFilePath, required String message}))
+    actual (getter: String)
+    expected (getter: String?)
+    goldenFilePath (getter: String)
+    message (getter: String)
+    toString (method: String Function())
   ApiType (class extends Object, sealed (immediate subtypes: ApiDynamicType, ApiFunctionType, ApiInterfaceType, ApiRecordType, ApiTypeParameterType, ApiVoidType)):
     fromJson (constructor: ApiType Function(Map<String, dynamic>))
     toJson (method: Map<String, dynamic> Function())
@@ -226,6 +241,7 @@ dart:async:
   Future (referenced)
 dart:core:
   Comparable (referenced)
+  Exception (referenced)
   Iterable (referenced)
   List (referenced)
   Map (referenced)

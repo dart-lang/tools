@@ -51,6 +51,11 @@ dart run api_summary
   (defaults to the current working directory).
 * `-f, --format`: The output format for the summary (`text`, `json`, or
   `yaml`). Defaults to `text`.
+* `-o, --output`: Write the summary to a file path instead of `stdout`.
+* `-w, --write`: Write the summary to the default golden file (`api.txt`,
+  `api.json`, or `api.yaml`, based on `--format`) in the package directory.
+* `-c, --check`: Verify that the golden file (`api.txt`, `api.json`, or
+  `api.yaml`) matches the current public API, exiting with code `1` on mismatch.
 * `-h, --help`: Prints usage instructions.
 
 ## Programmatic Usage
@@ -61,8 +66,8 @@ as in automated testing or continuous integration scripts.
 Add `api_summary` to your `pubspec.yaml`:
 
 ```yaml
-dependencies:
-  api_summary: ^1.0.0
+dev_dependencies:
+  api_summary: ^1.1.0
 ```
 
 ### Basic Example
@@ -71,7 +76,6 @@ Call the `apiSummary` function to generate a package's public API
 representation:
 
 ```dart
-import 'dart:io';
 import 'package:api_summary/api_summary.dart';
 
 void main() async {
@@ -125,38 +129,28 @@ base class MyCustomizer extends ApiSummaryCustomizer {
 ```
 
 
-## Golden File / Diff Testing
+## Golden File / Diff Testing (`expectApiSummaryClean`)
 
-A common best practice with `api_summary` is to verify in a unit test that the
-generated summary matches a checked-in golden file (e.g. `api.txt`). If a
-developer introduces an accidental breaking change or adds a new public API
-element, the test will fail on the `diff`, prompting them to audit and
-intentionally update the golden file.
+A recommended practice is to verify in a unit test that your package's public
+API matches a checked-in `api.txt` golden file.
 
-Below is an example of such a test (available in the
-[test/app_test.dart](test/app_test.dart) file):
+First, generate `api.txt` in your package root:
+
+```bash
+dart run api_summary --write
+```
+
+Then wire up `expectApiSummaryClean` as a one-liner in `test/api_test.dart`:
 
 ```dart
-import 'dart:io';
-import 'package:path/path.dart' as p;
-import 'package:test/test.dart';
 import 'package:api_summary/api_summary.dart';
+import 'package:test/scaffolding.dart';
 
 void main() {
-  test('public API has not changed unexpectedly', () async {
-    final packageDir = Directory.current.path;
-    final goldenFile = File(p.join(packageDir, 'api.txt'));
-
-    final actualOutput = await apiSummary(packageDir);
-
-    if (!goldenFile.existsSync()) {
-      // In a new setup or after updates, generate the golden file first
-      goldenFile.writeAsStringSync(actualOutput.toString());
-      fail('Golden file api.txt did not exist and has been generated. Please review and commit it.');
-    }
-
-    final expectedOutput = goldenFile.readAsStringSync();
-    expect(actualOutput.toString(), equals(expectedOutput));
-  });
+  test('api_summary', expectApiSummaryClean);
 }
 ```
+
+If a developer introduces a breaking change or adds a new public API element,
+`expectApiSummaryClean` fails the test with a compact line diff and instructs
+them to run `dart run api_summary --write` to update `api.txt`.
