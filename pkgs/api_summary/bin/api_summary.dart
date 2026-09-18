@@ -71,7 +71,7 @@ Future<void> _run(ArgResults results) async {
   final targetPath = switch (outputOption) {
     null => p.join(absolutePath, format.defaultFileName),
     final path when p.isAbsolute(path) => p.normalize(path),
-    final path => p.normalize(p.join(Directory.current.path, path)),
+    final path => p.normalize(p.join(absolutePath, path)),
   };
   final outFile = File(targetPath);
   outFile.parent.createSync(recursive: true);

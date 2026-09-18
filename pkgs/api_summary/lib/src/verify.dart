@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
 import 'package:yaml_edit/yaml_edit.dart';
@@ -97,7 +98,7 @@ Future<void> expectApiSummaryClean({
 }) async {
   final resolvedPackagePath = packagePath != null
       ? p.normalize(p.absolute(packagePath))
-      : resolveCallerPackageDirectory(StackTrace.current);
+      : await resolveCallerPackageDirectory(StackTrace.current);
 
   final effectiveGoldenPath = goldenFilePath == null
       ? p.join(resolvedPackagePath, format.defaultFileName)
@@ -221,19 +222,21 @@ String _buildLineDiff(List<String> expected, List<String> actual) {
   return buffer.toString().trimRight();
 }
 
+final _frameLocationSuffix = RegExp(r'^(file:///.*?)(?::\d+(?::\d+)?)?\)?$');
+
 /// Resolves the enclosing package directory for the caller in [stackTrace],
 /// falling back to [Directory.current].
-String resolveCallerPackageDirectory(StackTrace stackTrace) {
-  final fileUriPattern = RegExp(r'(file:///[^\s:)]+\.dart)');
-  for (final match in fileUriPattern.allMatches(stackTrace.toString())) {
-    final uriString = match.group(1);
-    if (uriString == null) continue;
-    final uri = Uri.tryParse(uriString);
-    if (uri == null || !uri.isScheme('file')) continue;
-    final filePath = p.normalize(uri.toFilePath());
+Future<String> resolveCallerPackageDirectory(StackTrace stackTrace) async {
+  final resolvedOwnUri = await Isolate.resolvePackageUri(
+    Uri.parse('package:api_summary/api_summary.dart'),
+  );
+  final ownLibDir = resolvedOwnUri != null
+      ? p.dirname(p.fromUri(resolvedOwnUri))
+      : null;
 
-    // Skip frames from within package:api_summary's own lib/ implementation.
-    if (filePath.contains(p.join('api_summary', 'lib', ''))) {
+  for (final line in LineSplitter.split(stackTrace.toString())) {
+    final filePath = _extractFrameFilePath(line);
+    if (filePath == null || _isApiSummaryLibPath(filePath, ownLibDir)) {
       continue;
     }
 
@@ -245,6 +248,33 @@ String resolveCallerPackageDirectory(StackTrace stackTrace) {
 
   final currentDir = p.normalize(p.absolute(Directory.current.path));
   return _findEnclosingPackageDir(currentDir) ?? currentDir;
+}
+
+String? _extractFrameFilePath(String line) {
+  final idx = line.indexOf('file:///');
+  if (idx == -1) return null;
+  final candidate = line.substring(idx).trim();
+  final match = _frameLocationSuffix.firstMatch(candidate);
+  final uriString = match?.group(1);
+  if (uriString == null) return null;
+  final uri = Uri.tryParse(uriString);
+  if (uri == null || !uri.isScheme('file')) return null;
+  return p.normalize(p.fromUri(uri));
+}
+
+bool _isApiSummaryLibPath(String filePath, String? ownLibDir) {
+  if (ownLibDir != null && p.isWithin(ownLibDir, filePath)) {
+    return true;
+  }
+  final segments = p.split(filePath);
+  for (var i = 0; i < segments.length - 1; i++) {
+    final seg = segments[i];
+    if ((seg == 'api_summary' || seg.startsWith('api_summary-')) &&
+        segments[i + 1] == 'lib') {
+      return true;
+    }
+  }
+  return false;
 }
 
 String? _findEnclosingPackageDir(String startDir) {

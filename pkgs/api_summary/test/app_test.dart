@@ -8,6 +8,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 import 'package:api_summary/api_summary.dart';
+import 'package:api_summary/src/verify.dart' show resolveCallerPackageDirectory;
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -149,7 +150,26 @@ void main() {
     final checkClean = await runCli(['-p', samplePkgDir, '--check']);
     expect(checkClean.exitCode, equals(0), reason: '${checkClean.stderr}');
 
-    // 4. --write and --check together exits with code 64
+    // 4. Relative -o with -p resolves relative to packagePath for write & check
+    final writeCustom = await runCli([
+      '-p',
+      samplePkgDir,
+      '-o',
+      'custom_api.txt',
+    ]);
+    expect(writeCustom.exitCode, equals(0), reason: '${writeCustom.stderr}');
+    expect(File(p.join(samplePkgDir, 'custom_api.txt')).existsSync(), isTrue);
+
+    final checkCustom = await runCli([
+      '-p',
+      samplePkgDir,
+      '-o',
+      'custom_api.txt',
+      '--check',
+    ]);
+    expect(checkCustom.exitCode, equals(0), reason: '${checkCustom.stderr}');
+
+    // 5. --write and --check together exits with code 64
     final conflict = await runCli(['-p', samplePkgDir, '--write', '--check']);
     expect(conflict.exitCode, equals(64));
     expect(
@@ -157,6 +177,46 @@ void main() {
       contains('Cannot specify both --write and --check.'),
     );
   });
+
+  test(
+    'resolveCallerPackageDirectory skips .pub-cache dir and handles parens',
+    () async {
+      await d.dir('dir (work)', [
+        d.dir('my.dart.pkg', [
+          d.file('pubspec.yaml', 'name: my_pkg\n'),
+          d.dir('lib', [d.file('my_pkg.dart', '')]),
+          d.dir('test', [d.file('api_test.dart', '')]),
+        ]),
+      ]).create();
+
+      final callerPkgDir = p.normalize(
+        p.join(d.sandbox, 'dir (work)', 'my.dart.pkg'),
+      );
+      final callerTestUri = p.toUri(
+        p.join(callerPkgDir, 'test', 'api_test.dart'),
+      );
+      final fakePubCacheUri = p.toUri(
+        p.join(
+          d.sandbox,
+          '.pub-cache',
+          'hosted',
+          'pub.dev',
+          'api_summary-1.1.0',
+          'lib',
+          'src',
+          'verify.dart',
+        ),
+      );
+
+      final fakeTrace = StackTrace.fromString(
+        '#0      expectApiSummaryClean ($fakePubCacheUri:100:28)\n'
+        '#1      main.<anonymous closure> ($callerTestUri:12:5)\n',
+      );
+
+      final resolved = await resolveCallerPackageDirectory(fakeTrace);
+      expect(resolved, equals(callerPkgDir));
+    },
+  );
 
   test('throws ArgumentError on missing pubspec.yaml', () async {
     await expectLater(
