@@ -2,29 +2,71 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-const int initialMagicNumbersMaxLength = 12;
+const int initialMagicNumbersMaxLength = 79;
 
 class MagicNumber {
   final String mimeType;
+  /// String containing code points in the 0..255 range to match.
+  ///
+  /// If a string contains a value above 255 (0xff), it's treated as
+  /// a size-limited lookahead wildcard.
+  /// A value of `0x110` will look for the following bytes starting
+  /// in the next 17 (0x11, value - 0xFF) characters.
+  /// If a mask is provided, it must have the same value at that position.
   final String numbers;
+  /// Optional string containing code points in the 0..255 range to mask with.
   final String? masks;
 
-  const MagicNumber(this.mimeType, this.numbers, [this.masks]);
+  const MagicNumber(this.mimeType, this.numbers, [this.masks])
+      : assert(numbers.length > 0),
+        assert(masks == null || masks.length == numbers.length);
 
   bool matches(List<int> header) {
-    if (header.length < numbers.length) return false;
+    bool recursiveMatch(int byteCursor, int patternCursor) {
+      final masks = this.masks;
+      var mask = 0xFF;
+      while (patternCursor < numbers.length) {
+        if (byteCursor == header.length) return false;
+        var number = numbers.codeUnitAt(patternCursor);
+        if (masks != null) mask = masks.codeUnitAt(patternCursor);
+        if (number <= 0xFF) {
+          if ((number ^ header[byteCursor]) & mask != 0) {
+            return false;
+          }
+          patternCursor++;
+          byteCursor++;
+        } else {
+          // Wildcard spacer.
+          var lookaheadLength = 0;
+          do {
+            // Make sure masks has same value at that position.
+            if (masks != null && mask != number) return false;
+            lookaheadLength += number - 0xFF;
+            patternCursor++;
+            if (patternCursor == numbers.length) return true;
+            number = numbers.codeUnitAt(patternCursor);
+            if (masks != null) mask = masks.codeUnitAt(patternCursor);
+            // It's unnecessary to have multiple wildcards in a row,
+            // or having them at the end, but it'll work.
+          } while (number > 0xFF);
 
-    for (var i = 0; i < numbers.length; i++) {
-      final number = numbers.codeUnitAt(i);
-      if (masks != null) {
-        final mask = masks!.codeUnitAt(i);
-        if ((mask & number) != (mask & header[i])) return false;
-      } else {
-        if (number != header[i]) return false;
+          if (header.length < byteCursor + lookaheadLength) {
+            lookaheadLength = header.length - byteCursor;
+          }
+          for (var i = 0; i < lookaheadLength; i++) {
+            // Quick scan for first byte to match, before recursing.
+            if ((number ^ header[byteCursor + i]) & mask == 0 &&
+                recursiveMatch(byteCursor + i + 1, patternCursor + 1)) {
+              return true;
+            }
+          }
+          return false;
+        }
       }
+      return true;
     }
 
-    return true;
+    return recursiveMatch(0, 0);
   }
 }
 
@@ -65,7 +107,6 @@ const List<MagicNumber> initialMagicNumbers = [
   MagicNumber('image/tiff', '\x4D\x4D\x00\x2A'),
   MagicNumber('audio/aac', '\xFF\xF1'),
   MagicNumber('audio/aac', '\xFF\xF9'),
-  MagicNumber('audio/weba', '\x1A\x45\xDF\xA3'),
   MagicNumber('audio/mpeg', '\x49\x44\x33'),
   MagicNumber('audio/mpeg', '\xFF\xFB'),
   MagicNumber('audio/ogg', '\x4F\x70\x75'),
@@ -99,6 +140,10 @@ const List<MagicNumber> initialMagicNumbers = [
     '\x00\x00\x00\x00\x66\x74\x79\x70\x6D\x70\x34\x32',
     '\x00\x00\x00\x00\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF',
   ),
+  // Look for EBMF DocType header within the next 64 bytes.
+  MagicNumber('video/webm', '\x1A\x45\xDF\xA3\u013f\x42\x82\x84webm'),
+  MagicNumber('video/x-matroska', '\x1A\x45\xDF\xA3\u013f\x42\x82\x88matroska'),
+
   MagicNumber('model/gltf-binary', '\x46\x54\x6C\x67'),
 
   /// The WebP file format is based on the RIFF document format.
@@ -143,3 +188,18 @@ const List<MagicNumber> initialMagicNumbers = [
     '\x00\x00\x00\x00\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF',
   ),
 ];
+
+
+/// The maximum number of bytes matched by a numbers string.
+///
+/// Accounts for wildcard matches.
+///
+/// Do not export from public libraries.
+int matchLength(String numbers) {
+  var length = numbers.length;
+  for (var i = 0; i < numbers.length; i++) {
+    final number = numbers.codeUnitAt(i);
+    if (number > 0xFF) length += number - 0x100;
+  }
+  return length;
+}
