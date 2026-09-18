@@ -51,12 +51,15 @@ dart run api_summary
   (defaults to the current working directory).
 * `-f, --format`: The output format for the summary (`text`, `json`, or
   `yaml`). Defaults to `text`.
-* `-o, --output`: Write the summary to a file path instead of `stdout`.
+* `-o, --output`: Write the summary to a file path instead of `stdout`
+  (relative paths resolve relative to `--package-path`).
 * `-w, --write`: Write the summary to the default golden file (`api.txt`,
   `api.json`, or `api.yaml`, based on `--format`) in the package directory.
 * `-c, --check`: Verify that the golden file (`api.txt`, `api.json`, or
   `api.yaml`) matches the current public API, exiting with code `1` on mismatch.
 * `-h, --help`: Prints usage instructions.
+
+Note: `--output`, `--write`, and `--check` are mutually exclusive.
 
 ## Programmatic Usage
 
