@@ -1186,17 +1186,28 @@ void main() {
         Uri.parse('package:unified_analytics/src/event.dart'),
       )!,
     );
-    final constructorCount = RegExp(
-      r'^\s*Event\.(?!_)[a-zA-Z0-9_]+\(',
+    final sourceWithoutComments = eventFile.readAsStringSync().replaceAll(
+      RegExp(r'//.*|/\*[\s\S]*?\*/'),
+      '',
+    );
+    final constructorNames = RegExp(
+      r'^\s*(?:factory\s+)?Event\.(?!_|fromJson\b)([a-zA-Z0-9_]+)\(',
       multiLine: true,
-    ).allMatches(eventFile.readAsStringSync()).length;
+    ).allMatches(sourceWithoutComments).map((m) => m.group(1)!).toList();
+
+    expect(
+      constructorNames,
+      unorderedEquals(
+        DashEvent.values.map((e) => e.name).where((name) => name != 'ideEvent'),
+      ),
+    );
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
     final eventsAccountedForInTests = 35;
     expect(
       eventsAccountedForInTests,
-      constructorCount,
+      constructorNames.length,
       reason:
           'If you added or removed an event constructor, '
           'ensure you have updated '
