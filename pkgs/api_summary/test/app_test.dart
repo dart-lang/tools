@@ -8,7 +8,6 @@ library;
 import 'dart:convert';
 import 'dart:io';
 import 'package:api_summary/api_summary.dart';
-import 'package:api_summary/src/verify.dart' show resolveCallerPackageDirectory;
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -18,11 +17,12 @@ void main() {
   late String compiledCliDill;
 
   setUpAll(() async {
+    final packageDir = _pkgDir();
+    Directory.current = packageDir;
     tempKernelDir = Directory.systemTemp.createTempSync(
       'api_summary_cli_test_',
     );
     compiledCliDill = p.join(tempKernelDir.path, 'api_summary.dill');
-    final packageDir = _pkgDir();
     final compileRes = await Process.run(Platform.resolvedExecutable, [
       'compile',
       'kernel',
@@ -177,46 +177,6 @@ void main() {
       contains('Cannot specify both --write and --check.'),
     );
   });
-
-  test(
-    'resolveCallerPackageDirectory skips .pub-cache dir and handles parens',
-    () async {
-      await d.dir('dir (work)', [
-        d.dir('my.dart.pkg', [
-          d.file('pubspec.yaml', 'name: my_pkg\n'),
-          d.dir('lib', [d.file('my_pkg.dart', '')]),
-          d.dir('test', [d.file('api_test.dart', '')]),
-        ]),
-      ]).create();
-
-      final callerPkgDir = p.normalize(
-        p.join(d.sandbox, 'dir (work)', 'my.dart.pkg'),
-      );
-      final callerTestUri = p.toUri(
-        p.join(callerPkgDir, 'test', 'api_test.dart'),
-      );
-      final fakePubCacheUri = p.toUri(
-        p.join(
-          d.sandbox,
-          '.pub-cache',
-          'hosted',
-          'pub.dev',
-          'api_summary-1.1.0',
-          'lib',
-          'src',
-          'verify.dart',
-        ),
-      );
-
-      final fakeTrace = StackTrace.fromString(
-        '#0      expectApiSummaryClean ($fakePubCacheUri:100:28)\n'
-        '#1      main.<anonymous closure> ($callerTestUri:12:5)\n',
-      );
-
-      final resolved = await resolveCallerPackageDirectory(fakeTrace);
-      expect(resolved, equals(callerPkgDir));
-    },
-  );
 
   test('throws ArgumentError on missing pubspec.yaml', () async {
     await expectLater(

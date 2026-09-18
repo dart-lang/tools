@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
 import 'package:yaml_edit/yaml_edit.dart';
@@ -72,9 +71,7 @@ final class ApiSummaryVerificationException implements Exception {
 /// at [goldenFilePath] (defaults to [ApiSummaryFormat.defaultFileName] inside
 /// [packagePath]).
 ///
-/// If [packagePath] is omitted, locates the enclosing package directory of the
-/// calling test file via [StackTrace.current], falling back to
-/// [Directory.current].
+/// If [packagePath] is omitted, defaults to [Directory.current].
 ///
 /// Throws an [ApiSummaryVerificationException] if the golden file does not
 /// exist or if its contents differ from the generated summary.
@@ -96,9 +93,9 @@ Future<void> expectApiSummaryClean({
   ApiSummaryCustomizer? customizer,
   ApiSummaryFormat format = ApiSummaryFormat.text,
 }) async {
-  final resolvedPackagePath = packagePath != null
-      ? p.normalize(p.absolute(packagePath))
-      : await resolveCallerPackageDirectory(StackTrace.current);
+  final resolvedPackagePath = p.normalize(
+    p.absolute(packagePath ?? Directory.current.path),
+  );
 
   final effectiveGoldenPath = goldenFilePath == null
       ? p.join(resolvedPackagePath, format.defaultFileName)
@@ -220,75 +217,4 @@ String _buildLineDiff(List<String> expected, List<String> actual) {
   }
 
   return buffer.toString().trimRight();
-}
-
-final _frameLocationSuffix = RegExp(r'^(file:///.*?)(?::\d+(?::\d+)?)?\)?$');
-
-/// Resolves the enclosing package directory for the caller in [stackTrace],
-/// falling back to [Directory.current].
-Future<String> resolveCallerPackageDirectory(StackTrace stackTrace) async {
-  final resolvedOwnUri = await Isolate.resolvePackageUri(
-    Uri.parse('package:api_summary/api_summary.dart'),
-  );
-  final ownLibDir = resolvedOwnUri != null
-      ? p.dirname(p.fromUri(resolvedOwnUri))
-      : null;
-
-  for (final line in LineSplitter.split(stackTrace.toString())) {
-    final filePath = _extractFrameFilePath(line);
-    if (filePath == null || _isApiSummaryLibPath(filePath, ownLibDir)) {
-      continue;
-    }
-
-    final pkgDir = _findEnclosingPackageDir(p.dirname(filePath));
-    if (pkgDir != null) {
-      return pkgDir;
-    }
-  }
-
-  final currentDir = p.normalize(p.absolute(Directory.current.path));
-  return _findEnclosingPackageDir(currentDir) ?? currentDir;
-}
-
-String? _extractFrameFilePath(String line) {
-  final idx = line.indexOf('file:///');
-  if (idx == -1) return null;
-  final candidate = line.substring(idx).trim();
-  final match = _frameLocationSuffix.firstMatch(candidate);
-  final uriString = match?.group(1);
-  if (uriString == null) return null;
-  final uri = Uri.tryParse(uriString);
-  if (uri == null || !uri.isScheme('file')) return null;
-  return p.normalize(p.fromUri(uri));
-}
-
-bool _isApiSummaryLibPath(String filePath, String? ownLibDir) {
-  if (ownLibDir != null && p.isWithin(ownLibDir, filePath)) {
-    return true;
-  }
-  final segments = p.split(filePath);
-  for (var i = 0; i < segments.length - 1; i++) {
-    final seg = segments[i];
-    if ((seg == 'api_summary' || seg.startsWith('api_summary-')) &&
-        segments[i + 1] == 'lib') {
-      return true;
-    }
-  }
-  return false;
-}
-
-String? _findEnclosingPackageDir(String startDir) {
-  var dir = startDir;
-  while (true) {
-    final pubspec = File(p.join(dir, 'pubspec.yaml'));
-    final libDir = Directory(p.join(dir, 'lib'));
-    if (pubspec.existsSync() && libDir.existsSync()) {
-      return dir;
-    }
-    final parent = p.dirname(dir);
-    if (parent == dir) {
-      return null;
-    }
-    dir = parent;
-  }
 }
