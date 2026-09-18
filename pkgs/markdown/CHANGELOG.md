@@ -17,6 +17,10 @@
   match `canParse` on the same line and retreat without advancing.
 * Fix `TypeError` in `Document` when appending footnote backreferences to a
   footnote definition that ends with a list block (`<ul>` or `<ol>`).
+* Fix a bug where nested lists inside a GitHub alert block (`> [!NOTE]`, etc.)
+  were flattened. `AlertBlockSyntax` stripped all whitespace following the
+  `>` marker instead of at most one space, discarding the indentation that
+  marks a list item as nested.
 
 ## 7.4.0
 
