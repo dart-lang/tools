@@ -65,7 +65,7 @@ const List<MagicNumber> initialMagicNumbers = [
   MagicNumber('image/tiff', '\x4D\x4D\x00\x2A'),
   MagicNumber('audio/aac', '\xFF\xF1'),
   MagicNumber('audio/aac', '\xFF\xF9'),
-  MagicNumber('audio/weba', '\x1A\x45\xDF\xA3'),
+  MagicNumber('video/x-matroska', '\x1A\x45\xDF\xA3'),
   MagicNumber('audio/mpeg', '\x49\x44\x33'),
   MagicNumber('audio/mpeg', '\xFF\xFB'),
   MagicNumber('audio/ogg', '\x4F\x70\x75'),
