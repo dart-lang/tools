@@ -581,4 +581,320 @@ void main() {
       '''),
     );
   });
+
+  test('should create a class with a concise unnamed constructor', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(Constructor((b) => b..concise = true)),
+      ),
+      equalsDart(r'''
+        class Foo {
+          new();
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise named constructor', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..name = 'named',
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          new named();
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise const unnamed constructor', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..constant = true,
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          const new();
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise const named constructor', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..constant = true
+                ..name = 'named',
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          const new named();
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise unnamed constructor with an '
+      'initializer', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..initializers.add(const Code('this.other()')),
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          new() : this.other();
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise named constructor with an '
+      'initializer', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..name = 'named'
+                ..initializers.add(const Code('this()')),
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          new named() : this();
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise const unnamed constructor with an '
+      'initializer', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..constant = true
+                ..initializers.add(const Code('this.other()')),
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          const new() : this.other();
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise const named constructor with an '
+      'initializer', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..constant = true
+                ..name = 'named'
+                ..initializers.add(const Code('this()')),
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          const new named() : this();
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise unnamed factory constructor', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..factory = true
+                ..body = const Code('return _Foo();'),
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          factory() {
+            return _Foo();
+          }
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise named factory constructor', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..factory = true
+                ..name = 'named'
+                ..body = const Code('return _Foo();'),
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          factory named() {
+            return _Foo();
+          }
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise unnamed redirecting factory '
+      'constructor', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..factory = true
+                ..redirect = refer('_Foo'),
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          factory() = _Foo;
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise named redirecting factory '
+      'constructor', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..factory = true
+                ..name = 'named'
+                ..redirect = refer('_Foo'),
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          factory named() = _Foo;
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise const unnamed redirecting factory '
+      'constructor', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..constant = true
+                ..factory = true
+                ..redirect = refer('_Foo'),
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          const factory() = _Foo;
+        }
+      '''),
+    );
+  });
+
+  test('should create a class with a concise const named redirecting factory '
+      'constructor', () {
+    expect(
+      Class(
+        (b) => b
+          ..name = 'Foo'
+          ..constructors.add(
+            Constructor(
+              (b) => b
+                ..concise = true
+                ..constant = true
+                ..factory = true
+                ..name = 'named'
+                ..redirect = refer('_Foo'),
+            ),
+          ),
+      ),
+      equalsDart(r'''
+        class Foo {
+          const factory named() = _Foo;
+        }
+      '''),
+    );
+  });
 }

@@ -1,3 +1,8 @@
+## 4.13.0
+
+- Add `ConstructorBuilder.concise` to support concise constructor syntax
+  (`new()`/`factory()` in place of the class name), added in Dart 3.13.
+
 ## 4.12.0
 
 - Add `MixinBuilder.onTypes` to support a mixin `on` clause with multiple
