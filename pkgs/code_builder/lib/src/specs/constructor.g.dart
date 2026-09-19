@@ -26,6 +26,8 @@ class _$Constructor extends Constructor {
   @override
   final bool factory;
   @override
+  final bool concise;
+  @override
   final bool? lambda;
   @override
   final String? name;
@@ -45,6 +47,7 @@ class _$Constructor extends Constructor {
     required this.external,
     required this.constant,
     required this.factory,
+    required this.concise,
     this.lambda,
     this.name,
     this.redirect,
@@ -69,6 +72,7 @@ class _$Constructor extends Constructor {
         external == other.external &&
         constant == other.constant &&
         factory == other.factory &&
+        concise == other.concise &&
         lambda == other.lambda &&
         name == other.name &&
         redirect == other.redirect;
@@ -86,6 +90,7 @@ class _$Constructor extends Constructor {
     _$hash = $jc(_$hash, external.hashCode);
     _$hash = $jc(_$hash, constant.hashCode);
     _$hash = $jc(_$hash, factory.hashCode);
+    _$hash = $jc(_$hash, concise.hashCode);
     _$hash = $jc(_$hash, lambda.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, redirect.hashCode);
@@ -105,6 +110,7 @@ class _$Constructor extends Constructor {
           ..add('external', external)
           ..add('constant', constant)
           ..add('factory', factory)
+          ..add('concise', concise)
           ..add('lambda', lambda)
           ..add('name', name)
           ..add('redirect', redirect))
@@ -224,6 +230,18 @@ class _$ConstructorBuilder extends ConstructorBuilder {
   }
 
   @override
+  bool get concise {
+    _$this;
+    return super.concise;
+  }
+
+  @override
+  set concise(bool concise) {
+    _$this;
+    super.concise = concise;
+  }
+
+  @override
   bool? get lambda {
     _$this;
     return super.lambda;
@@ -273,6 +291,7 @@ class _$ConstructorBuilder extends ConstructorBuilder {
       super.external = $v.external;
       super.constant = $v.constant;
       super.factory = $v.factory;
+      super.concise = $v.concise;
       super.lambda = $v.lambda;
       super.name = $v.name;
       super.redirect = $v.redirect;
@@ -320,6 +339,11 @@ class _$ConstructorBuilder extends ConstructorBuilder {
               factory,
               r'Constructor',
               'factory',
+            ),
+            concise: BuiltValueNullFieldError.checkNotNull(
+              concise,
+              r'Constructor',
+              'concise',
             ),
             lambda: lambda,
             name: name,

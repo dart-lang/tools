@@ -235,11 +235,20 @@ class DartEmitter extends Object
     if (spec.factory) {
       output.write('factory ');
     }
-    output.write(clazz);
-    if (spec.name != null) {
-      output
-        ..write('.')
-        ..write(spec.name);
+    if (spec.concise) {
+      if (!spec.factory) {
+        output.write('new');
+      }
+      if (spec.name != null) {
+        output.write(spec.factory ? spec.name! : ' ${spec.name}');
+      }
+    } else {
+      output.write(clazz);
+      if (spec.name != null) {
+        output
+          ..write('.')
+          ..write(spec.name);
+      }
     }
     output.write('(');
     final hasMultipleParameters =

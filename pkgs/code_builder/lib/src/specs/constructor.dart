@@ -51,6 +51,10 @@ abstract class Constructor extends Object
   /// Whether this constructor should be prefixed with `factory`.
   bool get factory;
 
+  /// Whether this constructor uses concise constructor syntax (`new`/`factory`
+  /// in place of the class name).
+  bool get concise;
+
   /// Whether this constructor is a simple lambda expression.
   bool? get lambda;
 
@@ -94,6 +98,10 @@ abstract class ConstructorBuilder extends Object
 
   /// Whether this constructor should be prefixed with `factory`.
   bool factory = false;
+
+  /// Whether this constructor uses concise constructor syntax (`new`/`factory`
+  /// in place of the class name).
+  bool concise = false;
 
   /// Whether this constructor is a simple lambda expression.
   bool? lambda;
