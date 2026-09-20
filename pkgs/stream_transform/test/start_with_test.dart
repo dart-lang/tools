@@ -27,7 +27,7 @@ void main() {
         transformed.listen(emittedValues.add, onDone: () => isDone = true);
   }
 
-  for (var streamType in streamTypes) {
+  for (var streamType in streamTypesWithSync) {
     group('startWith then [$streamType]', () {
       setUp(() => setupForStreamType(streamType, (s) => s.startWith(1)));
 
@@ -50,7 +50,7 @@ void main() {
         expect(isDone, true);
       });
 
-      if (streamType == 'broadcast') {
+      if (streamType != 'single subscription') {
         test('can cancel and relisten', () async {
           values.add(2);
           await Future(() {});
@@ -90,7 +90,7 @@ void main() {
         expect(isDone, true);
       });
 
-      if (streamType == 'broadcast') {
+      if (streamType != 'single subscription') {
         test('can cancel and relisten', () async {
           values.add(3);
           await Future(() {});
@@ -132,7 +132,7 @@ void main() {
           expect(isDone, true);
         });
 
-        if (streamType == 'broadcast') {
+        if (streamType != 'single subscription') {
           test('can cancel and relisten during starting', () async {
             starting.add(1);
             await Future(() {});
@@ -163,5 +163,148 @@ void main() {
         }
       });
     }
+  }
+
+  for (var streamType in ['broadcast', 'sync broadcast']) {
+    final operators = {
+      'startWith': (
+        apply: (Stream<int> s) => s.startWith(1),
+        initial: [1],
+      ),
+      'startWithMany': (
+        apply: (Stream<int> s) => s.startWithMany([1, 2]),
+        initial: [1, 2],
+      ),
+    };
+    for (var MapEntry(key: name, value: operator) in operators.entries) {
+      final initial = operator.initial;
+      group('$name listens to the source immediately [$streamType]', () {
+        late StreamController<int> source;
+        late Stream<int> transformed;
+        late List<int> emitted;
+
+        setUp(() {
+          source = createController(streamType);
+          transformed = operator.apply(source.stream);
+          emitted = [];
+        });
+
+        test('does not drop an event added right after listen', () async {
+          transformed.listen(emitted.add);
+          source.add(10);
+          await Future(() {});
+          expect(emitted, [...initial, 10]);
+        });
+
+        test('does not drop events on either side of the first microtask',
+            () async {
+          transformed.listen(emitted.add);
+          source.add(10);
+          await null;
+          source.add(20);
+          await Future(() {});
+          expect(emitted, [...initial, 10, 20]);
+        });
+
+        test(
+            'emits initial before an event from an already scheduled microtask',
+            () async {
+          scheduleMicrotask(() => source.add(20));
+          transformed.listen(emitted.add);
+          await Future(() {});
+          expect(emitted, [...initial, 20]);
+        });
+
+        test('keeps an error and done added right after listen behind initial',
+            () async {
+          final log = <String>[];
+          transformed.listen((v) => log.add('$v'),
+              onError: (Object e) => log.add('error $e'),
+              onDone: () => log.add('done'));
+          source.addError('x');
+          unawaited(source.close());
+          await Future(() {});
+          expect(log, [...initial.map((v) => '$v'), 'error x', 'done']);
+        });
+
+        test('holds initial and buffered events while paused', () async {
+          final subscription = transformed.listen(emitted.add)..pause();
+          source.add(10);
+          await Future(() {});
+          expect(emitted, isEmpty);
+          subscription.resume();
+          await Future(() {});
+          expect(emitted, [...initial, 10]);
+        });
+
+        test('cancelling before initial is delivered cancels the source',
+            () async {
+          final subscription = transformed.listen(emitted.add);
+          await subscription.cancel();
+          await Future(() {});
+          expect(source.hasListener, false);
+          expect(emitted, isEmpty);
+        });
+
+        test('orders an event added while emitting initial after all of it',
+            () async {
+          transformed.listen((v) {
+            emitted.add(v);
+            if (v == initial.first) source.add(10);
+          });
+          await Future(() {});
+          expect(emitted, [...initial, 10]);
+        });
+
+        test(
+            'keeps order when an event is added while draining buffered events',
+            () async {
+          transformed.listen((v) {
+            emitted.add(v);
+            if (v == 10) source.add(20);
+          });
+          source.add(10);
+          await Future(() {});
+          expect(emitted, [...initial, 10, 20]);
+        });
+
+        test('delivers initial to every listener from the same tick', () async {
+          final other = <int>[];
+          transformed
+            ..listen(emitted.add)
+            ..listen(other.add);
+          source.add(10);
+          await Future(() {});
+          expect(emitted, [...initial, 10]);
+          expect(other, [...initial, 10]);
+        });
+
+        test('does not deliver initial or earlier events to a later listener',
+            () async {
+          transformed.listen(emitted.add);
+          await Future(() {});
+          final later = <int>[];
+          transformed.listen(later.add);
+          source.add(10);
+          await Future(() {});
+          expect(later, [10]);
+          expect(emitted, [...initial, 10]);
+        });
+      });
+    }
+
+    test('startWithMany pulls initial values lazily [$streamType]', () async {
+      Iterable<int> naturals() sync* {
+        var i = 0;
+        while (true) {
+          if (i == 100) throw StateError('pulled more values than needed');
+          yield ++i;
+        }
+      }
+
+      final source = createController<int>(streamType);
+      expect(await source.stream.startWithMany(naturals()).take(3).toList(),
+          [1, 2, 3]);
+    });
   }
 }
