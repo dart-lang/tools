@@ -72,10 +72,8 @@ class Parameters {
         return _MissingParameter(method, this, key);
       }
     } else {
-      throw ArgumentError(
-        'Parameters[] only takes an int or a string, was '
-        '"$key".',
-      );
+      throw ArgumentError('Parameters[] only takes an int or a string, was '
+          '"$key".');
     }
   }
 
@@ -94,19 +92,15 @@ class Parameters {
   /// Asserts that [value] is a positional argument list.
   void _assertPositional() {
     if (value is List) return;
-    throw RpcException.invalidParams(
-      'Parameters for method "$method" '
-      'must be passed by position.',
-    );
+    throw RpcException.invalidParams('Parameters for method "$method" '
+        'must be passed by position.');
   }
 
   /// Asserts that [value] is a named argument map.
   void _assertNamed() {
     if (value is Map) return;
-    throw RpcException.invalidParams(
-      'Parameters for method "$method" '
-      'must be passed by name.',
-    );
+    throw RpcException.invalidParams('Parameters for method "$method" '
+        'must be passed by name.');
   }
 }
 
@@ -175,7 +169,7 @@ class Parameter extends Parameters {
   bool get exists => true;
 
   Parameter._(super.method, super.value, this._parent, this._key)
-    : super(id: _parent.id, isNotification: _parent.isNotification);
+      : super(id: _parent.id, isNotification: _parent.isNotification);
 
   /// Returns [value], or [defaultValue] if this parameter wasn't passed.
   dynamic valueOr(Object? defaultValue) => value;
@@ -288,10 +282,8 @@ class Parameter extends Parameters {
   /// article.
   dynamic _getTyped(String type, bool Function(dynamic) test) {
     if (test(value)) return value;
-    throw RpcException.invalidParams(
-      'Parameter $_path for method '
-      '"$method" must be $type, but was ${jsonEncode(value)}.',
-    );
+    throw RpcException.invalidParams('Parameter $_path for method '
+        '"$method" must be $type, but was ${jsonEncode(value)}.');
   }
 
   dynamic _getParsed(String description, void Function(String) parse) {
@@ -309,11 +301,9 @@ class Parameter extends Parameters {
         message = '\n$message';
       }
 
-      throw RpcException.invalidParams(
-        'Parameter $_path for method '
-        '"$method" must be a valid $description, but was '
-        '${jsonEncode(string)}.$message',
-      );
+      throw RpcException.invalidParams('Parameter $_path for method '
+          '"$method" must be a valid $description, but was '
+          '${jsonEncode(string)}.$message');
     }
   }
 
@@ -334,17 +324,15 @@ class Parameter extends Parameters {
 class _MissingParameter extends Parameter {
   @override
   dynamic get value {
-    throw RpcException.invalidParams(
-      'Request for method "$method" is '
-      'missing required parameter $_path.',
-    );
+    throw RpcException.invalidParams('Request for method "$method" is '
+        'missing required parameter $_path.');
   }
 
   @override
   bool get exists => false;
 
   _MissingParameter(String method, Parameters parent, Object key)
-    : super._(method, null, parent, key);
+      : super._(method, null, parent, key);
 
   @override
   dynamic valueOr(Object? defaultValue) => defaultValue;
