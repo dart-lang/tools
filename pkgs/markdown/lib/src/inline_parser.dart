@@ -67,11 +67,18 @@ class InlineParser {
     // Markdown is plain text, so it's faster to match one RegExp per 'word'
     // rather than fail to match all the following RegExps at each non-syntax
     // character position.
+    // The `(?=\s|$)` lookahead lets the run stop before whitespace or at the
+    // end of a line. Without the `$` alternative a run that reaches the end of
+    // a line without a trailing whitespace (for example a single long word)
+    // fails the lookahead only after the greedy `*`/`+` has consumed the rest
+    // of the line, then backtracks one character at a time, and the parser
+    // retries from the next position, giving quadratic behavior on long
+    // unbroken runs. Allowing the run to end at `$` makes it match in one step.
     if (document.hasCustomInlineSyntaxes) {
       // We should be less aggressive in blowing past "words".
-      syntaxes.add(TextSyntax(r'[A-Za-z0-9]+(?=\s)'));
+      syntaxes.add(TextSyntax(r'[A-Za-z0-9]+(?=\s|$)'));
     } else {
-      syntaxes.add(TextSyntax(r'[ \tA-Za-z0-9]*[A-Za-z0-9](?=\s)'));
+      syntaxes.add(TextSyntax(r'[ \tA-Za-z0-9]*[A-Za-z0-9](?=\s|$)'));
     }
 
     if (document.withDefaultInlineSyntaxes) {

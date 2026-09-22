@@ -1,3 +1,9 @@
+## 8.0.19-wip
+
+- Added optional `isExternal` parameter to `Analytics.fake` to allow overriding
+  the build configuration during testing.
+- Dropped dependency on `package:platform` in favor of `dart:io`.
+
 ## 8.0.18
 
 - Added optional `hostArch` parameter to `Event.flutterCommandResult`.

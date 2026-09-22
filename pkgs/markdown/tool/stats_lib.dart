@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'dart:mirrors';
+import 'dart:isolate';
 
 import 'package:html/dom.dart' show Element;
 import 'package:html/parser.dart' show parseFragment;
@@ -20,17 +20,13 @@ import 'package:path/path.dart' as p;
 
 import '../test/util.dart';
 
-// Locate the "tool" directory. Use mirrors so that this works with the test
-// package, which loads this suite into an isolate.
-String get toolDir {
-  final path = (reflect(loadCommonMarkSections) as ClosureMirror)
-      .function
-      .location!
-      .sourceUri
-      .path;
-
-  return p.dirname(path);
-}
+// Locate the "tool" directory. Use `Isolate.resolvePackageUriSync` so that this
+// works with the test package, which loads this suite into an isolate.
+final String toolDir = p.fromUri(
+  Isolate.resolvePackageUriSync(
+    Uri.parse('package:markdown/'),
+  )!.resolve('../tool'),
+);
 
 File getStatsFile(String prefix) =>
     File(p.join(toolDir, '${prefix}_stats.json'));
