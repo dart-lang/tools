@@ -1,8 +1,11 @@
-## 4.12.0
+## 4.13.0-wip
 
 - Add `Expression.nullSafeCascade`, `cascadeIndex`, and `nullSafeCascadeIndex`
   for building null-aware cascades (`?..`) and cascaded index accesses
   (`..[]`, `?..[]`).
+
+## 4.12.0
+
 - Add `MixinBuilder.onTypes` to support a mixin `on` clause with multiple
   superclass constraints (e.g. `mixin Foo on A, B {}`). Takes precedence over
   the existing single-type `on` field when non-empty.
