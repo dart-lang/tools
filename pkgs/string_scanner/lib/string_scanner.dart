@@ -5,7 +5,7 @@
 /// A library for parsing strings using a sequence of patterns.
 library;
 
-export 'src/exception.dart';
-export 'src/line_scanner.dart';
-export 'src/span_scanner.dart';
-export 'src/string_scanner.dart';
+export 'src/exception.dart' show StringScannerException;
+export 'src/line_scanner.dart' show LineScanner, LineScannerState;
+export 'src/span_scanner.dart' show SpanScanner;
+export 'src/string_scanner.dart' show StringScanner;

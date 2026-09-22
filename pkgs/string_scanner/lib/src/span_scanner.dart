@@ -4,7 +4,6 @@
 
 import 'package:source_span/source_span.dart';
 
-import 'eager_span_scanner.dart';
 import 'exception.dart';
 import 'line_scanner.dart';
 import 'relative_span_scanner.dart';
