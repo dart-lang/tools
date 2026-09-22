@@ -8,7 +8,7 @@ environment:
   sdk: ^3.1.0
 
 dependencies:
-  meta: ^1.19.0
+  meta: ^1.16.0
   source_span: ^1.8.0
 
 dev_dependencies:
