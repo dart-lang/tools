@@ -82,6 +82,22 @@
                   "isNamed": true
                 },
                 {
+                  "name": "facets",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Iterable",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "ApiFacet",
+                        "libraryUri": "package:api_summary/src/api_facet.dart"
+                      }
+                    ]
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "immediateSubtypes",
                   "type": {
                     "kind": "interface",
@@ -117,42 +133,6 @@
                 },
                 {
                   "name": "isDeprecated",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isExperimental",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isImmutable",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isInternal",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isVisibleForTesting",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -345,16 +325,6 @@
               }
             },
             {
-              "name": "isImmutable",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
               "name": "methods",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -498,37 +468,24 @@
           ],
           "methods": [
             {
+              "name": "facets",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "Set",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "ApiFacet",
+                    "libraryUri": "package:api_summary/src/api_facet.dart"
+                  }
+                ]
+              }
+            },
+            {
               "name": "isDeprecated",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isExperimental",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isInternal",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isVisibleForTesting",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
@@ -709,6 +666,22 @@
               },
               "parameters": [
                 {
+                  "name": "facets",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Iterable",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "ApiFacet",
+                        "libraryUri": "package:api_summary/src/api_facet.dart"
+                      }
+                    ]
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "isConst",
                   "type": {
                     "kind": "interface",
@@ -736,60 +709,6 @@
                   "isNamed": true
                 },
                 {
-                  "name": "isExperimental",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isInternal",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isMustBeOverridden",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isMustCallSuper",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isNonVirtual",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isProtected",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
                   "name": "isStatic",
                   "type": {
                     "kind": "interface",
@@ -797,33 +716,6 @@
                     "libraryUri": "dart:core"
                   },
                   "isRequired": true,
-                  "isNamed": true
-                },
-                {
-                  "name": "isUseResult",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isVisibleForOverriding",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isVisibleForTesting",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
                   "isNamed": true
                 },
                 {
@@ -940,67 +832,7 @@
               }
             },
             {
-              "name": "isMustBeOverridden",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isMustCallSuper",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isNonVirtual",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isProtected",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
               "name": "isStatic",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isUseResult",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "isVisibleForOverriding",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
@@ -1155,34 +987,23 @@
                   "isNamed": true
                 },
                 {
+                  "name": "facets",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Iterable",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "ApiFacet",
+                        "libraryUri": "package:api_summary/src/api_facet.dart"
+                      }
+                    ]
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "isDeprecated",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isExperimental",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isInternal",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isVisibleForTesting",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -1406,6 +1227,22 @@
                   "isNamed": true
                 },
                 {
+                  "name": "facets",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Iterable",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "ApiFacet",
+                        "libraryUri": "package:api_summary/src/api_facet.dart"
+                      }
+                    ]
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "interfaces",
                   "type": {
                     "kind": "interface",
@@ -1424,33 +1261,6 @@
                 },
                 {
                   "name": "isDeprecated",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isExperimental",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isInternal",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isVisibleForTesting",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -1641,6 +1451,114 @@
                     "name": "ApiType",
                     "libraryUri": "package:api_summary/src/api_type.dart",
                     "isNullable": true
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "ApiFacet",
+          "locationUri": "package:api_summary/src/api_facet.dart",
+          "supertype": {
+            "kind": "interface",
+            "name": "Object",
+            "libraryUri": "dart:core"
+          },
+          "interfaces": [
+            {
+              "kind": "interface",
+              "name": "Comparable",
+              "libraryUri": "dart:core",
+              "typeArguments": [
+                {
+                  "kind": "interface",
+                  "name": "ApiFacet",
+                  "libraryUri": "package:api_summary/src/api_facet.dart"
+                }
+              ]
+            }
+          ],
+          "modifiers": [
+            "abstract",
+            "interface"
+          ],
+          "methods": [
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiFacet",
+                "libraryUri": "package:api_summary/src/api_facet.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ],
+              "isStatic": true
+            },
+            {
+              "name": "namespace",
+              "locationUri": "package:api_summary/src/api_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "parentheticalSegments",
+              "locationUri": "package:api_summary/src/api_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "List",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/api_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
                   }
                 ]
               }
@@ -2156,6 +2074,22 @@
                   "isNamed": true
                 },
                 {
+                  "name": "facets",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Iterable",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "ApiFacet",
+                        "libraryUri": "package:api_summary/src/api_facet.dart"
+                      }
+                    ]
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "functions",
                   "type": {
                     "kind": "interface",
@@ -2294,6 +2228,23 @@
                     "kind": "interface",
                     "name": "ApiExtension",
                     "libraryUri": "package:api_summary/src/api_declaration.dart"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "facets",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "Set",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "ApiFacet",
+                    "libraryUri": "package:api_summary/src/api_facet.dart"
                   }
                 ]
               }
@@ -3520,34 +3471,23 @@
                   "isNamed": true
                 },
                 {
+                  "name": "facets",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Iterable",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "ApiFacet",
+                        "libraryUri": "package:api_summary/src/api_facet.dart"
+                      }
+                    ]
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "isDeprecated",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isExperimental",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isInternal",
-                  "type": {
-                    "kind": "interface",
-                    "name": "bool",
-                    "libraryUri": "dart:core"
-                  },
-                  "isNamed": true
-                },
-                {
-                  "name": "isVisibleForTesting",
                   "type": {
                     "kind": "interface",
                     "name": "bool",
@@ -3876,6 +3816,647 @@
               }
             }
           ]
+        },
+        {
+          "name": "JsBindingFacet",
+          "locationUri": "package:api_summary/src/js_facet.dart",
+          "supertype": {
+            "kind": "interface",
+            "name": "Object",
+            "libraryUri": "dart:core"
+          },
+          "interfaces": [
+            {
+              "kind": "interface",
+              "name": "ApiFacet",
+              "libraryUri": "package:api_summary/src/api_facet.dart"
+            }
+          ],
+          "modifiers": [
+            "final"
+          ],
+          "constructors": [
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "JsBindingFacet",
+                "libraryUri": "package:api_summary/src/js_facet.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "new",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "JsBindingFacet",
+                "libraryUri": "package:api_summary/src/js_facet.dart"
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core",
+                    "isNullable": true
+                  },
+                  "isOptionalPositional": true
+                }
+              ],
+              "isConst": true
+            }
+          ],
+          "methods": [
+            {
+              "name": "==",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Object",
+                    "libraryUri": "dart:core"
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "compareTo",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "int",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "ApiFacet",
+                    "libraryUri": "package:api_summary/src/api_facet.dart"
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "fromElement",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "JsBindingFacet",
+                "libraryUri": "package:api_summary/src/js_facet.dart",
+                "isNullable": true
+              },
+              "parameters": [
+                {
+                  "name": "element",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Element",
+                    "libraryUri": "package:analyzer/dart/element/element.dart"
+                  },
+                  "isRequired": true
+                }
+              ],
+              "isStatic": true
+            },
+            {
+              "name": "hashCode",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "int",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "name",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core",
+                "isNullable": true
+              }
+            },
+            {
+              "name": "namespace",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "parentheticalSegments",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "List",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "JsExportFacet",
+          "locationUri": "package:api_summary/src/js_facet.dart",
+          "supertype": {
+            "kind": "interface",
+            "name": "Object",
+            "libraryUri": "dart:core"
+          },
+          "interfaces": [
+            {
+              "kind": "interface",
+              "name": "ApiFacet",
+              "libraryUri": "package:api_summary/src/api_facet.dart"
+            }
+          ],
+          "modifiers": [
+            "final"
+          ],
+          "constructors": [
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "JsExportFacet",
+                "libraryUri": "package:api_summary/src/js_facet.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "new",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "JsExportFacet",
+                "libraryUri": "package:api_summary/src/js_facet.dart"
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core",
+                    "isNullable": true
+                  },
+                  "isOptionalPositional": true
+                }
+              ],
+              "isConst": true
+            }
+          ],
+          "methods": [
+            {
+              "name": "==",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Object",
+                    "libraryUri": "dart:core"
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "compareTo",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "int",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "ApiFacet",
+                    "libraryUri": "package:api_summary/src/api_facet.dart"
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "fromElement",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "JsExportFacet",
+                "libraryUri": "package:api_summary/src/js_facet.dart",
+                "isNullable": true
+              },
+              "parameters": [
+                {
+                  "name": "element",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Element",
+                    "libraryUri": "package:analyzer/dart/element/element.dart"
+                  },
+                  "isRequired": true
+                }
+              ],
+              "isStatic": true
+            },
+            {
+              "name": "hashCode",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "int",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "name",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core",
+                "isNullable": true
+              }
+            },
+            {
+              "name": "namespace",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "parentheticalSegments",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "List",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "MetaContractFacet",
+          "locationUri": "package:api_summary/src/meta_facet.dart",
+          "supertype": {
+            "kind": "interface",
+            "name": "Object",
+            "libraryUri": "dart:core"
+          },
+          "interfaces": [
+            {
+              "kind": "interface",
+              "name": "ApiFacet",
+              "libraryUri": "package:api_summary/src/api_facet.dart"
+            }
+          ],
+          "modifiers": [
+            "final"
+          ],
+          "constructors": [
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContractFacet",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "new",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContractFacet",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "parameters": [
+                {
+                  "name": "contracts",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Iterable",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "MetaContract",
+                        "libraryUri": "package:api_summary/src/meta_facet.dart"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
+            }
+          ],
+          "methods": [
+            {
+              "name": "==",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Object",
+                    "libraryUri": "dart:core"
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "compareTo",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "int",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "ApiFacet",
+                    "libraryUri": "package:api_summary/src/api_facet.dart"
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "contracts",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "Set",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "MetaContract",
+                    "libraryUri": "package:api_summary/src/meta_facet.dart"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "fromElement",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContractFacet",
+                "libraryUri": "package:api_summary/src/meta_facet.dart",
+                "isNullable": true
+              },
+              "parameters": [
+                {
+                  "name": "element",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Element",
+                    "libraryUri": "package:analyzer/dart/element/element.dart"
+                  },
+                  "isRequired": true
+                }
+              ],
+              "isStatic": true
+            },
+            {
+              "name": "hashCode",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "int",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "namespace",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "parentheticalSegments",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "List",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
+                  }
+                ]
+              }
+            }
+          ]
         }
       ],
       "enums": [
@@ -4164,6 +4745,206 @@
                 ]
               },
               "isConst": true,
+              "isStatic": true
+            }
+          ]
+        },
+        {
+          "name": "MetaContract",
+          "locationUri": "package:api_summary/src/meta_facet.dart",
+          "interfaces": [
+            {
+              "kind": "interface",
+              "name": "Comparable",
+              "libraryUri": "dart:core",
+              "typeArguments": [
+                {
+                  "kind": "interface",
+                  "name": "MetaContract",
+                  "libraryUri": "package:api_summary/src/meta_facet.dart"
+                }
+              ]
+            }
+          ],
+          "methods": [
+            {
+              "name": "compareTo",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "int",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "MetaContract",
+                    "libraryUri": "package:api_summary/src/meta_facet.dart"
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "experimental",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContract",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "isConst": true,
+              "isEnumConstant": true,
+              "isStatic": true
+            },
+            {
+              "name": "immutable",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContract",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "isConst": true,
+              "isEnumConstant": true,
+              "isStatic": true
+            },
+            {
+              "name": "internal",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContract",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "isConst": true,
+              "isEnumConstant": true,
+              "isStatic": true
+            },
+            {
+              "name": "mustBeOverridden",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContract",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "isConst": true,
+              "isEnumConstant": true,
+              "isStatic": true
+            },
+            {
+              "name": "mustCallSuper",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContract",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "isConst": true,
+              "isEnumConstant": true,
+              "isStatic": true
+            },
+            {
+              "name": "nonVirtual",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContract",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "isConst": true,
+              "isEnumConstant": true,
+              "isStatic": true
+            },
+            {
+              "name": "protected",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContract",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "isConst": true,
+              "isEnumConstant": true,
+              "isStatic": true
+            },
+            {
+              "name": "textLabel",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "useResult",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContract",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "isConst": true,
+              "isEnumConstant": true,
+              "isStatic": true
+            },
+            {
+              "name": "values",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "List",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "MetaContract",
+                    "libraryUri": "package:api_summary/src/meta_facet.dart"
+                  }
+                ]
+              },
+              "isConst": true,
+              "isStatic": true
+            },
+            {
+              "name": "visibleForOverriding",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContract",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "isConst": true,
+              "isEnumConstant": true,
+              "isStatic": true
+            },
+            {
+              "name": "visibleForTesting",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContract",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "isConst": true,
+              "isEnumConstant": true,
               "isStatic": true
             }
           ]

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:cli_util/cli_util.dart';
 import 'package:coverage/src/coverage_options.dart';
 
 import 'package:coverage/src/hitmap.dart';
@@ -19,6 +20,8 @@ import 'collect_coverage.dart' as collect_coverage;
 import 'format_coverage.dart' as format_coverage;
 
 final _allProcesses = <Process>[];
+String get _dartExecutable =>
+    dartExecutable ?? (throw StateError('Could not locate a Dart executable.'));
 
 const _supportedPlatforms = ['vm', 'chrome'];
 
@@ -286,7 +289,7 @@ Future<Uri> _waitForVmServiceUri(Process process, List<String> testArgs) async {
       if (!serviceUriCompleter.isCompleted) {
         serviceUriCompleter.completeError(
           ProcessException(
-            Platform.executable,
+            _dartExecutable,
             testArgs,
             'Test process exited before the VM service was ready',
             code,
@@ -315,7 +318,7 @@ Future<int> _runVmTestsAndCollectCoverage(Flags flags, String outJson) async {
     ...flags.rest,
   ];
   final process = await Process.start(
-    Platform.executable,
+    _dartExecutable,
     testArgs,
     workingDirectory: flags.packageDir,
   );
@@ -434,7 +437,7 @@ Future<int> _runWebTestsAndCollectCoverage(Flags flags, String outJson) async {
     ];
 
     final process = await Process.start(
-      Platform.executable,
+      _dartExecutable,
       testArgs,
       workingDirectory: flags.packageDir,
       mode: ProcessStartMode.inheritStdio,

@@ -1,5 +1,6 @@
 ## 1.16.0-wip
 
+- Migrate Dart subprocess spawning to `package:cli_util` (`dartExecutable`) to support AOT-compiled executables (`dart compile exe` / `dart install`).
 - Require Dart 3.9.
 - Support collecting and formatting web (V8 / Chrome) coverage reports in
   `test_with_coverage` via the new `-p` / `--platform` flag. Web runs delegate
