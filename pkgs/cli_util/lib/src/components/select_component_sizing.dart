@@ -12,8 +12,6 @@ import 'dart:math' as math;
 ///
 /// This class is final so that it can be more easily evolved in the future.
 abstract final class SelectComponentSizing {
-  const SelectComponentSizing();
-
   /// Creates a fixed-size configuration with a constant [totalHeight] and
   /// [maxDescriptionHeight].
   const factory SelectComponentSizing.fixed({
@@ -37,7 +35,7 @@ abstract final class SelectComponentSizing {
   int get maxDescriptionHeight;
 }
 
-final class _FixedSizing extends SelectComponentSizing {
+final class _FixedSizing implements SelectComponentSizing {
   @override
   final int totalHeight;
 
@@ -52,7 +50,7 @@ final class _FixedSizing extends SelectComponentSizing {
       );
 }
 
-final class _FitSizing extends SelectComponentSizing {
+final class _FitSizing implements SelectComponentSizing {
   final int? _maxDescriptionHeight;
 
   const _FitSizing({int? maxDescriptionHeight})
