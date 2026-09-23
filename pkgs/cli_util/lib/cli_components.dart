@@ -5,7 +5,6 @@
 /// Library for simple, self-contained interactive CLI components.
 library;
 
-export 'src/components/select_component_sizing.dart'
-    show SelectComponentSizing;
+export 'src/components/select_component_sizing.dart' show SelectComponentSizing;
 export 'src/components/select_dialog.dart'
     show SelectOption, showMultiSelectDialog, showSingleSelectDialog;

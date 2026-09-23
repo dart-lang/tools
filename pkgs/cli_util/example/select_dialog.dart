@@ -27,10 +27,7 @@ Future<void> main() async {
   try {
     print('How many items do you want in the multiselect dialog?');
     final counts = List.generate(9, (i) => '${(i + 1) * 5}');
-    final countResult = await showSingleSelectDialog(
-      counts,
-      inputStream,
-    );
+    final countResult = await showSingleSelectDialog(counts, inputStream);
     if (countResult == null) {
       print('No count selected, exiting.');
       io.exitCode = 1;

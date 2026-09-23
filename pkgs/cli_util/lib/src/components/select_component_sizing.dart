@@ -7,11 +7,11 @@ import 'dart:math' as math;
 
 /// Controls the vertical sizing of a selection dialog.
 ///
-/// Custom implementations can extend or implement [SelectComponentSizing] to
-/// dynamically configure [totalHeight] and [maxDescriptionHeight].
+/// Use the [SelectComponentSizing.fixed] and [SelectComponentSizing.fit]
+/// constructors to create instances.
 ///
 /// This class is final so that it can be more easily evolved in the future.
-sealed class SelectComponentSizing {
+abstract final class SelectComponentSizing {
   const SelectComponentSizing();
 
   /// Creates a fixed-size configuration with a constant [totalHeight] and
