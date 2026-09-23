@@ -1,5 +1,16 @@
 ## 0.6.1-wip
 
+- Add `SelectOption` and `SelectComponentSizing`
+  (`SelectComponentSizing.fixed` and `SelectComponentSizing.fit`) to
+  `package:cli_util/cli_components.dart`.
+- Update `showSingleSelectDialog` and `showMultiSelectDialog` to accept
+  `List<Object /* String|SelectOption */>` along with a `sizing` parameter, and
+  deprecate `maxVisibleItems`.
+- By default, the dialogs will now use the entire screen instead of a fixed
+  size of 5 items (using `SelectComponentSizing.fit`).
+- Allow ANSI SGR styling sequences (`\x1b[...m`) in option labels and
+  descriptions.
+
 ## 0.6.0
 
 - **Breaking Change**: `sdkPath` now returns `String?` (returning `null` if no
