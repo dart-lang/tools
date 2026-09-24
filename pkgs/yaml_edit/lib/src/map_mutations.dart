@@ -4,6 +4,7 @@
 
 import 'package:yaml/yaml.dart';
 
+import 'char_codes.dart';
 import 'editor.dart';
 import 'equality.dart';
 import 'source_edit.dart';
@@ -192,9 +193,30 @@ SourceEdit _replaceInBlockMap(
 SourceEdit _replaceInFlowMap(
     YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
   final valueSpan = map.nodes[key]!.span;
-  final valueString = yamlEncodeFlow(newValue);
+  var valueString = yamlEncodeFlow(newValue);
 
-  return SourceEdit(valueSpan.start.offset, valueSpan.length, valueString);
+  final yaml = yamlEdit.toString();
+  final keyNode = getKeyNode(map, key);
+  final colonIndex = findNextFlowDelimiter(
+    yaml,
+    keyNode.span.end.offset,
+    delimiters: {YamlChar.colon, YamlChar.comma, YamlChar.rightCurly},
+  );
+  if (colonIndex == -1 || yaml.codeUnitAt(colonIndex) != YamlChar.colon) {
+    return SourceEdit(keyNode.span.end.offset, 0, ': $valueString');
+  }
+
+  var start = valueSpan.start.offset;
+  if (valueSpan.length == 0) {
+    if (start < colonIndex + 1) {
+      start = colonIndex + 1;
+    }
+    if (start <= colonIndex + 1) {
+      valueString = ' $valueString';
+    }
+  }
+
+  return SourceEdit(start, valueSpan.length, valueString);
 }
 
 /// Performs the string operation on [yamlEdit] to achieve the effect of
@@ -246,15 +268,33 @@ SourceEdit _removeFromFlowMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   final yaml = yamlEdit.toString();
 
   if (deepEquals(keyNode, map.keys.first)) {
-    start = yaml.lastIndexOf('{', start - 1) + 1;
+    start = findPreviousFlowDelimiter(
+          yaml,
+          start - 1,
+          delimiters: {YamlChar.leftCurly},
+        ) +
+        1;
 
     if (deepEquals(keyNode, map.keys.last)) {
-      end = yaml.indexOf('}', end);
+      end = findNextFlowDelimiter(
+        yaml,
+        end,
+        delimiters: {YamlChar.rightCurly},
+      );
     } else {
-      end = yaml.indexOf(',', end) + 1;
+      end = findNextFlowDelimiter(
+            yaml,
+            end,
+            delimiters: {YamlChar.comma},
+          ) +
+          1;
     }
   } else {
-    start = yaml.lastIndexOf(',', start - 1);
+    start = findPreviousFlowDelimiter(
+      yaml,
+      start - 1,
+      delimiters: {YamlChar.comma},
+    );
   }
 
   return SourceEdit(start, end - start, '');

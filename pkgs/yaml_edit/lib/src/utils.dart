@@ -7,6 +7,7 @@ import 'dart:math';
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
+import 'char_codes.dart';
 import 'editor.dart';
 import 'source_edit.dart';
 import 'wrap.dart';
@@ -585,6 +586,168 @@ extension YamlNodeExtension on YamlNode {
     if (me is YamlList) return me.style;
     return null;
   }
+}
+
+int _findCommentStartOnLine(String yaml, int lineStart, int lineEnd) {
+  var inSingleQuote = false;
+  var inDoubleQuote = false;
+  for (var i = lineStart; i < lineEnd; i++) {
+    final c = yaml.codeUnitAt(i);
+    final prev = i > lineStart ? yaml.codeUnitAt(i - 1) : YamlChar.space;
+
+    if (inSingleQuote) {
+      if (c == YamlChar.singleQuote) {
+        if (i + 1 < lineEnd && yaml.codeUnitAt(i + 1) == YamlChar.singleQuote) {
+          i++;
+        } else {
+          inSingleQuote = false;
+        }
+      }
+    } else if (inDoubleQuote) {
+      if (c == YamlChar.backslash) {
+        i++;
+      } else if (c == YamlChar.doubleQuote) {
+        inDoubleQuote = false;
+      }
+    } else {
+      final isQuoteStart = i == lineStart ||
+          YamlChar.isWhitespace(prev) ||
+          YamlChar.isFlowIndicator(prev) ||
+          prev == YamlChar.colon;
+
+      if (c == YamlChar.singleQuote && isQuoteStart) {
+        inSingleQuote = true;
+      } else if (c == YamlChar.doubleQuote && isQuoteStart) {
+        inDoubleQuote = true;
+      } else if (c == YamlChar.hash) {
+        if (i == lineStart ||
+            YamlChar.isWhitespace(prev) ||
+            YamlChar.isLineBreak(prev)) {
+          return i;
+        }
+      }
+    }
+  }
+  return -1;
+}
+
+/// Searches forward from [offset] in [yaml] to find the index of the next
+/// character matching any of the specified [delimiters], skipping `# ...`
+/// comments.
+///
+/// Returns `-1` if no matching delimiter is found, or if [yaml] is empty or
+/// [offset] is greater than or equal to `yaml.length`.
+///
+/// Runs in O(N) where N is the length of [yaml] from [offset].
+int findNextFlowDelimiter(
+  String yaml,
+  int offset, {
+  required Set<int> delimiters,
+}) {
+  if (yaml.isEmpty || offset >= yaml.length) return -1;
+  var inSingleQuote = false;
+  var inDoubleQuote = false;
+  var i = max(0, offset);
+  while (i < yaml.length) {
+    final code = yaml.codeUnitAt(i);
+    final prev = i > 0 ? yaml.codeUnitAt(i - 1) : YamlChar.space;
+
+    if (inSingleQuote) {
+      if (code == YamlChar.singleQuote) {
+        if (i + 1 < yaml.length &&
+            yaml.codeUnitAt(i + 1) == YamlChar.singleQuote) {
+          i++;
+        } else {
+          inSingleQuote = false;
+        }
+      }
+      i++;
+    } else if (inDoubleQuote) {
+      if (code == YamlChar.backslash) {
+        i += 2;
+        continue;
+      } else if (code == YamlChar.doubleQuote) {
+        inDoubleQuote = false;
+      }
+      i++;
+    } else {
+      final isQuoteStart = i == 0 ||
+          YamlChar.isWhitespace(prev) ||
+          YamlChar.isFlowIndicator(prev) ||
+          prev == YamlChar.colon;
+
+      if (code == YamlChar.hash) {
+        final isComment =
+            i == 0 || YamlChar.isWhitespace(prev) || YamlChar.isLineBreak(prev);
+        if (isComment) {
+          while (i < yaml.length && !YamlChar.isLineBreak(yaml.codeUnitAt(i))) {
+            i++;
+          }
+        } else {
+          i++;
+        }
+      } else if (code == YamlChar.singleQuote && isQuoteStart) {
+        inSingleQuote = true;
+        i++;
+      } else if (code == YamlChar.doubleQuote && isQuoteStart) {
+        inDoubleQuote = true;
+        i++;
+      } else if (delimiters.contains(code)) {
+        return i;
+      } else {
+        i++;
+      }
+    }
+  }
+  return -1;
+}
+
+/// Searches backward from [offset] in [yaml] to find the index of the previous
+/// character matching any of the specified [delimiters], skipping `# ...`
+/// comments.
+///
+/// Returns `-1` if no matching delimiter is found, or if [yaml] is empty or
+/// [offset] is less than `0`.
+///
+/// Runs in O(N) where N is the length of [yaml] up to [offset].
+int findPreviousFlowDelimiter(
+  String yaml,
+  int offset, {
+  required Set<int> delimiters,
+}) {
+  if (yaml.isEmpty || offset < 0) return -1;
+  var i = min(offset, yaml.length - 1);
+  while (i >= 0) {
+    final prevLf = i > 0 ? yaml.lastIndexOf('\n', i - 1) : -1;
+    final prevCr = i > 0 ? yaml.lastIndexOf('\r', i - 1) : -1;
+    final lineStart = max(prevLf, prevCr) + 1;
+
+    final nextLf = yaml.indexOf('\n', lineStart);
+    final nextCr = yaml.indexOf('\r', lineStart);
+    final int lineEnd;
+    if (nextLf == -1 && nextCr == -1) {
+      lineEnd = yaml.length;
+    } else if (nextLf == -1) {
+      lineEnd = nextCr;
+    } else if (nextCr == -1) {
+      lineEnd = nextLf;
+    } else {
+      lineEnd = min(nextLf, nextCr);
+    }
+
+    final commentStart = _findCommentStartOnLine(yaml, lineStart, lineEnd);
+    if (commentStart != -1 && i >= commentStart) {
+      i = commentStart - 1;
+    }
+
+    while (i >= lineStart) {
+      if (delimiters.contains(yaml.codeUnitAt(i))) {
+        return i;
+      }
+      i--;
+    }
+  }
+  return -1;
 }
 
 /// Checks if [between] contains a comma that is not part of a comment.
