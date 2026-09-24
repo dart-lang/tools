@@ -746,82 +746,102 @@ List<String> _wordWrapDescription(String description, int limit, int maxLines) {
   // next line keeps multi-line ANSI spans styled after the reset.
   var activeStyle = '';
 
-  for (var p = 0; p < paragraphs.length; p++) {
+  for (var p = 0; p < paragraphs.length && wrapped.length < maxLines; p++) {
     final paragraph = paragraphs[p];
     final hasMoreParagraphs = p < paragraphs.length - 1;
-    final plain = paragraph.replaceAll(_ansiSgrRegex, '');
     var rawIndex = 0;
 
-    // Consumes `count` visible characters from `paragraph` starting at
-    // `rawIndex`, along with any preceding or interleaved ANSI SGR sequences.
-    String consumeVisible(int count, {String suffix = ''}) {
-      final buffer = StringBuffer(activeStyle);
-      var remaining = count;
-      while (rawIndex < paragraph.length) {
-        final match = _ansiSgrRegex.matchAsPrefix(paragraph, rawIndex);
-        if (match != null) {
-          final seq = match.group(0)!;
-          buffer.write(seq);
-          activeStyle =
-              (seq == _ansiReset || seq == _ansiResetShort)
-                  ? ''
-                  : activeStyle + seq;
-          rawIndex = match.end;
-        } else if (remaining > 0) {
-          buffer.write(paragraph[rawIndex++]);
-          remaining--;
-        } else {
-          break;
-        }
-      }
-      buffer.write(suffix);
-      if (activeStyle.isNotEmpty && (count > 0 || suffix.isNotEmpty)) {
-        buffer.write(_ansiReset);
-      }
-      return buffer.toString();
-    }
+    do {
+      final isLastLine = wrapped.length == maxLines - 1;
+      final (:line, :nextIndex, activeStyle: nextStyle) = _consumeLine(
+        paragraph,
+        rawIndex,
+        isLastLine ? math.max(0, limit - 3) : limit,
+        activeStyle: activeStyle,
+      );
+      final ellipsis =
+          isLastLine && (hasMoreParagraphs || nextIndex < paragraph.length)
+              ? '...'
+              : '';
+      final reset = line.isNotEmpty && nextStyle.isNotEmpty ? _ansiReset : '';
+      wrapped.add('$line$reset$ellipsis');
+      rawIndex = nextIndex;
+      activeStyle = nextStyle;
+    } while (rawIndex < paragraph.length && wrapped.length < maxLines);
+  }
+  return wrapped;
+}
 
-    if (plain.isEmpty) {
-      consumeVisible(0);
-      if (wrapped.length == maxLines - 1 && hasMoreParagraphs) {
-        wrapped.add('...');
-        return wrapped;
-      }
-      wrapped.add('');
-      if (wrapped.length >= maxLines) return wrapped;
+/// Consumes up to [maxVisibleChars] visible characters from [paragraph]
+/// starting at [startIndex], breaking at the last space if the paragraph
+/// overflows [maxVisibleChars], and preserving ANSI SGR styling sequences.
+({String line, int nextIndex, String activeStyle}) _consumeLine(
+  String paragraph,
+  int startIndex,
+  int maxVisibleChars, {
+  String activeStyle = '',
+}) {
+  final buffer = StringBuffer(activeStyle);
+  var rawIndex = startIndex;
+  var visibleCount = 0;
+  var lastSpaceBufferLen = -1;
+  var lastSpaceRawIndex = -1;
+  var lastSpaceStyle = '';
+
+  while (rawIndex < paragraph.length) {
+    final match = _ansiSgrRegex.matchAsPrefix(paragraph, rawIndex);
+    if (match != null) {
+      final seq = match.group(0)!;
+      buffer.write(seq);
+      activeStyle =
+          (seq == _ansiReset || seq == _ansiResetShort)
+              ? ''
+              : activeStyle + seq;
+      rawIndex = match.end;
       continue;
     }
 
-    var start = 0;
-    while (start < plain.length) {
-      final isLastLine = wrapped.length == maxLines - 1;
-      final willOverflow =
-          isLastLine && (plain.length - start > limit || hasMoreParagraphs);
-      final lineLimit = willOverflow ? math.max(0, limit - 3) : limit;
-
-      final int end;
-      if (plain.length - start <= lineLimit) {
-        end = plain.length;
-      } else {
-        final space = plain.lastIndexOf(' ', start + lineLimit);
-        end = space > start ? space : start + lineLimit;
+    if (visibleCount == maxVisibleChars) {
+      // Exceeded `maxVisibleChars`; rewind to the last space if one was
+      // seen on this line, otherwise hard-break here.
+      var line = buffer.toString();
+      if (lastSpaceBufferLen != -1) {
+        line = line.substring(0, lastSpaceBufferLen);
+        activeStyle = lastSpaceStyle;
+        rawIndex = lastSpaceRawIndex;
+        // Skip any additional spaces at the wrap point while preserving
+        // ANSI SGR sequences.
+        while (rawIndex < paragraph.length) {
+          final ansi = _ansiSgrRegex.matchAsPrefix(paragraph, rawIndex);
+          if (ansi != null) {
+            final seq = ansi.group(0)!;
+            activeStyle =
+                (seq == _ansiReset || seq == _ansiResetShort)
+                    ? ''
+                    : activeStyle + seq;
+            rawIndex = ansi.end;
+          } else if (paragraph[rawIndex] == ' ') {
+            rawIndex++;
+          } else {
+            break;
+          }
+        }
       }
-
-      wrapped.add(
-        consumeVisible(end - start, suffix: willOverflow ? '...' : ''),
-      );
-      if (willOverflow || wrapped.length >= maxLines) return wrapped;
-
-      var nextStart = end;
-      while (nextStart < plain.length && plain[nextStart] == ' ') {
-        nextStart++;
-      }
-      // Advance `rawIndex` past any skipped spaces (preserving ANSI styles).
-      consumeVisible(nextStart - end);
-      start = nextStart;
+      return (line: line, nextIndex: rawIndex, activeStyle: activeStyle);
     }
+
+    final char = paragraph[rawIndex++];
+    if (char == ' ' && visibleCount > 0) {
+      lastSpaceBufferLen = buffer.length;
+      lastSpaceRawIndex = rawIndex;
+      lastSpaceStyle = activeStyle;
+    }
+    buffer.write(char);
+    visibleCount++;
   }
-  return wrapped;
+
+  final line = visibleCount == 0 ? '' : buffer.toString();
+  return (line: line, nextIndex: rawIndex, activeStyle: activeStyle);
 }
 
 /// Truncates [line] so its visible length (excluding ANSI SGR sequences) is at
