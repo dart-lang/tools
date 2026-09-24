@@ -1,6 +1,7 @@
 ## 3.2.0-wip
 
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
+* Improve error messages when mixing list and key-value syntax.
 
 ## 3.1.4
 
