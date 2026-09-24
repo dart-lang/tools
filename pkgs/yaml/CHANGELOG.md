@@ -4,6 +4,7 @@
 
 ## 3.1.4
 
+* Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
 * Improve recovery for list entries without `-` prefix. When recovering, provide
   a more helpful error message suggesting the missing prefix.
 * Fix a bug where block strings terminated by `EOF` were not given an implicit
