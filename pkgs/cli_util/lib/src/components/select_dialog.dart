@@ -12,11 +12,30 @@ import 'dart:math' as math;
 import 'package:meta/meta.dart';
 
 import 'keys.dart';
+import 'select_component_sizing.dart';
+
+/// An option in a selection dialog, with a primary [label] and an optional
+/// [description] shown when the option is hovered.
+final class SelectOption {
+  /// The main text displayed for this option.
+  final String label;
+
+  /// Additional description text displayed below [label] when this option
+  /// is hovered.
+  ///
+  /// May contain newlines (`\n` or `\r\n`) and ANSI SGR styling sequences
+  /// (e.g. `\x1b[...m`).
+  final String? description;
+
+  const SelectOption(this.label, {this.description});
+}
 
 /// Shows a scrollable terminal selection dialog and returns the set of
 /// selected indices.
 ///
-/// Only standard ASCII characters should be used in the [options], as other
+/// Each element in [options] must be either a [String] or a [SelectOption].
+/// Only standard ASCII characters and ANSI SGR styling sequences (`\x1b[...m`)
+/// should be used in the [options] (plus newlines in descriptions), as other
 /// characters may break the width calculations.
 ///
 /// Temporarily disables stdin line and echo modes, and restores them before
@@ -30,28 +49,37 @@ import 'keys.dart';
 /// [stdin] or [Win32AnsiStdin]). See the `example/select_dialog.dart` for
 /// recommended patterns.
 ///
-/// The [maxVisibleItems] parameter controls how many items are visible in the
-/// dialog at once.
+/// The [sizing] parameter controls the maximum total height of the dialog and
+/// the maximum number of lines displayed for a hovered option's description.
+/// Defaults to [SelectComponentSizing.fit].
+///
+/// The deprecated [maxVisibleItems] parameter is not respected strictly as an
+/// item count; if provided, it computes the maximum total height by adding the
+/// maximum description height (`maxVisibleItems + maxDescriptionHeight`).
 ///
 /// Returns `null` if the user aborts the dialog (e.g. by pressing Ctrl+C or
 /// escape), there is no terminal attached to stdout, or the terminal is too
 /// small to display the dialog.
 Future<Set<int>?> showMultiSelectDialog(
-  List<String> options,
+  List<Object /* String|SelectOption */> options,
   Stream<List<int>> inputStream, {
-  int maxVisibleItems = 5,
+  @Deprecated('Use sizing instead.') int? maxVisibleItems,
+  SelectComponentSizing sizing = const SelectComponentSizing.fit(),
   Set<int> initialSelected = const {},
 }) => _runDialog(
   options,
-  maxVisibleItems,
   inputStream,
   multiSelect: true,
+  maxVisibleItems: maxVisibleItems,
+  sizing: sizing,
   initialSelected: initialSelected,
 );
 
 /// Shows a scrollable terminal selection dialog and returns the selected index.
 ///
-/// Only standard ASCII characters should be used in the [options], as other
+/// Each element in [options] must be either a [String] or a [SelectOption].
+/// Only standard ASCII characters and ANSI SGR styling sequences (`\x1b[...m`)
+/// should be used in the [options] (plus newlines in descriptions), as other
 /// characters may break the width calculations.
 ///
 /// Temporarily disables stdin line and echo modes, and restores them before
@@ -65,22 +93,30 @@ Future<Set<int>?> showMultiSelectDialog(
 /// [stdin] or [Win32AnsiStdin]). See the `example/select_dialog.dart` for
 /// recommended patterns.
 ///
-/// The [maxVisibleItems] parameter controls how many items are visible in the
-/// dialog at once.
+/// The [sizing] parameter controls the maximum total height of the dialog and
+/// the maximum number of lines displayed for a hovered option's description.
+/// Defaults to [SelectComponentSizing.fit].
+///
+/// The deprecated [maxVisibleItems] parameter is not respected strictly as an
+/// item count; if provided, it computes the maximum total height by adding the
+/// maximum description height (`maxVisibleItems + maxDescriptionHeight`).
 ///
 /// Returns `null` if the user aborts the dialog (e.g. by pressing Ctrl+C or
 /// escape), there is no terminal attached to stdout, or the terminal is too
 /// small to display the dialog.
 Future<int?> showSingleSelectDialog(
-  List<String> options,
+  List<Object /* String|SelectOption */> options,
   Stream<List<int>> inputStream, {
-  int maxVisibleItems = 5,
+  @Deprecated('Use sizing instead.') int? maxVisibleItems,
+  SelectComponentSizing sizing = const SelectComponentSizing.fit(),
 }) async {
   final selectedIndices = await _runDialog(
     options,
-    maxVisibleItems,
     inputStream,
     multiSelect: false,
+    maxVisibleItems: maxVisibleItems,
+    sizing: sizing,
+    initialSelected: const {},
   );
   if (selectedIndices == null || selectedIndices.isEmpty) {
     return null;
@@ -91,14 +127,29 @@ Future<int?> showSingleSelectDialog(
 /// Internal utility to render a single or multi select dialog and return the
 /// indices of the selected items.
 Future<Set<int>?> _runDialog(
-  List<String> options,
-  int maxVisibleItems,
+  List<Object /* String|SelectOption */> options,
   Stream<List<int>> inputStream, {
   required bool multiSelect,
-  Set<int> initialSelected = const {},
+  required int? maxVisibleItems,
+  required SelectComponentSizing sizing,
+  required Set<int> initialSelected,
 }) async {
+  final List<SelectOption> parsedOptions;
+  final int sizingTotalHeight;
+  final int sizingMaxDescriptionHeight;
   try {
-    _assertValidOptions(options);
+    sizingTotalHeight = sizing.totalHeight;
+    sizingMaxDescriptionHeight = sizing.maxDescriptionHeight;
+    assert(sizingTotalHeight >= 1, 'sizing.totalHeight must be at least 1.');
+    assert(
+      sizingMaxDescriptionHeight >= 0,
+      'sizing.maxDescriptionHeight must be non-negative.',
+    );
+    assert(
+      maxVisibleItems == null || maxVisibleItems >= 1,
+      'maxVisibleItems must be at least 1.',
+    );
+    parsedOptions = _parseAndValidateOptions(options);
     assert(
       initialSelected.every((index) => index >= 0 && index < options.length),
       'All initialSelected indices must be within the range '
@@ -110,47 +161,156 @@ Future<Set<int>?> _runDialog(
     rethrow;
   }
 
-  final isScrollable = options.length > maxVisibleItems;
+  final legendLines = multiSelect ? 1 : 0;
+  final maxRenderableLines = _terminalHeight - 1 - legendLines;
   final width = _terminalWidth;
 
   // Note that we just assume all terminals support ansii escapes because it
   // very rare nowadays not to, and the built in detection has a lot of false
   // negative cases (https://github.com/dart-lang/sdk/issues/31606).
-  if (options.isEmpty ||
-      !stdout.hasTerminal ||
-      width < _minimumTerminalWidth(multiSelect, isScrollable)) {
+  if (parsedOptions.isEmpty || !stdout.hasTerminal || maxRenderableLines < 1) {
     // We do need to actually listen to this stream and immediately cancel, or
     // else it will never close in some cases.
     await inputStream.listen((_) {}).cancel();
     return null;
   }
 
-  final displayOptions = _truncateOptions(
-    options,
-    width,
-    multiSelect,
-    isScrollable,
+  final requestedItemAndDescHeight = math.max(
+    1,
+    sizingTotalHeight - legendLines,
+  );
+  final cappedMaxTotalHeight =
+      maxVisibleItems == null
+          ? math.min(requestedItemAndDescHeight, maxRenderableLines)
+          : null;
+  var effectiveMaxDescriptionLines =
+      cappedMaxTotalHeight != null
+          ? math.min(
+            sizingMaxDescriptionHeight,
+            requestedItemAndDescHeight > maxRenderableLines
+                ? maxRenderableLines ~/ 2
+                : cappedMaxTotalHeight - 1,
+          )
+          : math.min(sizingMaxDescriptionHeight, maxRenderableLines - 1);
+
+  // First pass: wrap assuming non-scrollable or scrollable based on an initial
+  // estimate to determine maxDescriptionHeight.
+  var isScrollable =
+      parsedOptions.length > (cappedMaxTotalHeight ?? maxVisibleItems!);
+  if (width < _minimumTerminalWidth(multiSelect, isScrollable)) {
+    await inputStream.listen((_) {}).cancel();
+    return null;
+  }
+
+  var limit = _maxLineLength(width, multiSelect, isScrollable);
+  var displayDescriptions = [
+    for (final option in parsedOptions)
+      if (option.description == null ||
+          option.description!.isEmpty ||
+          effectiveMaxDescriptionLines <= 0)
+        const <String>[]
+      else
+        _wordWrapDescription(
+          option.description!,
+          limit,
+          effectiveMaxDescriptionLines,
+        ),
+  ];
+
+  var maxDescriptionHeight = displayDescriptions.fold(
+    0,
+    (max, lines) => math.max(max, lines.length),
   );
 
-  final maxItemLength = displayOptions.fold(
-    0,
-    (max, e) => math.max(max, e.length),
+  var effectiveMaxTotalHeight =
+      cappedMaxTotalHeight ?? (maxVisibleItems! + maxDescriptionHeight);
+  if (effectiveMaxTotalHeight > maxRenderableLines) {
+    effectiveMaxDescriptionLines = math.min(
+      maxDescriptionHeight,
+      maxRenderableLines ~/ 2,
+    );
+    final clampedBaseItems = math.min(
+      maxVisibleItems!,
+      maxRenderableLines - effectiveMaxDescriptionLines,
+    );
+    effectiveMaxDescriptionLines = math.min(
+      maxDescriptionHeight,
+      maxRenderableLines - clampedBaseItems,
+    );
+    effectiveMaxTotalHeight = clampedBaseItems + effectiveMaxDescriptionLines;
+  }
+
+  final minVisibleItems = math.max(
+    1,
+    effectiveMaxTotalHeight -
+        math.min(maxDescriptionHeight, effectiveMaxDescriptionLines),
   );
+  final newIsScrollable = parsedOptions.length > minVisibleItems;
+  if (newIsScrollable != isScrollable ||
+      effectiveMaxDescriptionLines < maxDescriptionHeight) {
+    isScrollable = newIsScrollable;
+    if (width < _minimumTerminalWidth(multiSelect, isScrollable)) {
+      await inputStream.listen((_) {}).cancel();
+      return null;
+    }
+    limit = _maxLineLength(width, multiSelect, isScrollable);
+    displayDescriptions = [
+      for (final option in parsedOptions)
+        if (option.description == null ||
+            option.description!.isEmpty ||
+            effectiveMaxDescriptionLines <= 0)
+          const <String>[]
+        else
+          _wordWrapDescription(
+            option.description!,
+            limit,
+            effectiveMaxDescriptionLines,
+          ),
+    ];
+    maxDescriptionHeight = displayDescriptions.fold(
+      0,
+      (max, lines) => math.max(max, lines.length),
+    );
+  }
+
+  final displayOptions = [
+    for (final option in parsedOptions) _truncateLine(option.label, limit),
+  ];
+
+  var maxItemLength = displayOptions.fold(
+    0,
+    (max, e) => math.max(max, _visibleLength(e)),
+  );
+  for (final descLines in displayDescriptions) {
+    for (final line in descLines) {
+      maxItemLength = math.max(maxItemLength, _visibleLength(line));
+    }
+  }
+
   final selectedIndices = {
     if (initialSelected.isEmpty && !multiSelect) 0,
     ...initialSelected,
   };
   var cursorIndex = 0;
+  var lastRenderedLines = 0;
   final cleanupTasks = <FutureOr<void> Function()>[
     () {
-      // Try to clear the dialog from the terminal
-      var linesToClear = math.min(options.length, maxVisibleItems);
-      if (multiSelect) linesToClear++;
-      stdout.write('\x1b[${linesToClear}A'); // Move cursor to top
-      for (var i = 0; i < linesToClear; i++) {
-        stdout.write('\x1b[2K\n'); // Clear each line
+      if (lastRenderedLines > 0) {
+        // Try to clear the dialog from the terminal
+        if (lastRenderedLines > 1) {
+          stdout.write(_ansiMoveCursorUp(lastRenderedLines - 1));
+        }
+        stdout.write('\r');
+        for (var i = 0; i < lastRenderedLines; i++) {
+          stdout.write(
+            '$_ansiClearLine${i == lastRenderedLines - 1 ? '' : '\n'}',
+          );
+        }
+        if (lastRenderedLines > 1) {
+          stdout.write(_ansiMoveCursorUp(lastRenderedLines - 1));
+        }
+        stdout.write('\r');
       }
-      stdout.write('\x1b[${linesToClear}A'); // Move back
     },
   ];
   try {
@@ -170,8 +330,8 @@ Future<Set<int>?> _runDialog(
       stdin.lineMode = false;
     }
     // Hide the cursor
-    stdout.write('\x1b[?25l');
-    cleanupTasks.add(() => stdout.write('\x1b[?25h\x1b[0m'));
+    stdout.write(_ansiHideCursor);
+    cleanupTasks.add(() => stdout.write('$_ansiShowCursor$_ansiReset'));
 
     // Completes with the final result or null if aborted.
     final doneCompleter = Completer<Set<int>?>();
@@ -185,37 +345,43 @@ Future<Set<int>?> _runDialog(
     cleanupTasks.add(sigintSub.cancel);
 
     // Initial render
-    _render(
+    lastRenderedLines = _render(
       items: displayOptions,
+      descriptions: displayDescriptions,
       cursor: cursorIndex,
       selected: selectedIndices,
-      height: maxVisibleItems,
-      isFirstRender: true,
+      maxTotalHeight: effectiveMaxTotalHeight,
+      isScrollable: isScrollable,
+      previousRenderedLines: lastRenderedLines,
       multiSelect: multiSelect,
       maxItemLength: maxItemLength,
     );
 
     final inputSub = inputStream.keys.listen((key) {
       final oldIndex = cursorIndex;
+      final pageItems = math.max(
+        1,
+        effectiveMaxTotalHeight - displayDescriptions[cursorIndex].length,
+      );
       switch (key) {
         case Key.up:
-          cursorIndex = (cursorIndex - 1).clamp(0, options.length - 1);
+          cursorIndex = (cursorIndex - 1).clamp(0, parsedOptions.length - 1);
         case Key.down:
-          cursorIndex = (cursorIndex + 1).clamp(0, options.length - 1);
+          cursorIndex = (cursorIndex + 1).clamp(0, parsedOptions.length - 1);
         case Key.pageUp:
-          cursorIndex = (cursorIndex - maxVisibleItems).clamp(
+          cursorIndex = (cursorIndex - pageItems).clamp(
             0,
-            options.length - 1,
+            parsedOptions.length - 1,
           );
         case Key.pageDown:
-          cursorIndex = (cursorIndex + maxVisibleItems).clamp(
+          cursorIndex = (cursorIndex + pageItems).clamp(
             0,
-            options.length - 1,
+            parsedOptions.length - 1,
           );
         case Key.home:
           cursorIndex = 0;
         case Key.end:
-          cursorIndex = options.length - 1;
+          cursorIndex = parsedOptions.length - 1;
         case Key.space:
           if (multiSelect) {
             if (selectedIndices.contains(cursorIndex)) {
@@ -226,10 +392,12 @@ Future<Set<int>?> _runDialog(
           }
         case Key.selectAll:
           if (multiSelect) {
-            if (selectedIndices.length == options.length) {
+            if (selectedIndices.length == parsedOptions.length) {
               selectedIndices.clear();
             } else {
-              selectedIndices.addAll(Iterable<int>.generate(options.length));
+              selectedIndices.addAll(
+                Iterable<int>.generate(parsedOptions.length),
+              );
             }
           }
         case Key.enter:
@@ -245,11 +413,14 @@ Future<Set<int>?> _runDialog(
         selectedIndices.add(cursorIndex);
       }
 
-      _render(
+      lastRenderedLines = _render(
         items: displayOptions,
+        descriptions: displayDescriptions,
         cursor: cursorIndex,
         selected: selectedIndices,
-        height: maxVisibleItems,
+        maxTotalHeight: effectiveMaxTotalHeight,
+        isScrollable: isScrollable,
+        previousRenderedLines: lastRenderedLines,
         multiSelect: multiSelect,
         maxItemLength: maxItemLength,
       );
@@ -268,93 +439,182 @@ Future<Set<int>?> _runDialog(
   }
 }
 
-/// Validates that the given options are suitable for use in a select dialog.
-void _assertValidOptions(List<String> options) {
-  assert(
-    options.every((opt) => opt.codeUnits.every((c) => c >= 0x20 && c <= 0x7e)),
-    'All options must contain only standard ASCII.',
-  );
+final _ansiSgrRegex = RegExp(r'\x1b\[[0-9;]*m');
+final _newlineRegex = RegExp(r'\r?\n');
+
+/// Parses [options] into [SelectOption]s and validates their characters.
+List<SelectOption> _parseAndValidateOptions(
+  List<Object /* String|SelectOption */> options,
+) {
+  final parsed = <SelectOption>[];
+  for (final option in options) {
+    final selectOption = switch (option) {
+      String() => SelectOption(option),
+      SelectOption() => option,
+      _ =>
+        throw ArgumentError.value(
+          option,
+          'options',
+          'All options must be either a String or a SelectOption.',
+        ),
+    };
+    assert(
+      _isValidAsciiLine(selectOption.label),
+      'All options must contain only standard ASCII and ANSI SGR escape '
+      'sequences.',
+    );
+    final description = selectOption.description;
+    if (description != null) {
+      assert(
+        description.split(_newlineRegex).every(_isValidAsciiLine),
+        'All option descriptions must contain only standard ASCII, newlines, '
+        'and ANSI SGR escape sequences.',
+      );
+    }
+    parsed.add(selectOption);
+  }
+  return parsed;
 }
 
-/// Renders the selection menu to the terminal.
+bool _isValidAsciiLine(String line) {
+  final stripped = line.replaceAll(_ansiSgrRegex, '');
+  return stripped.codeUnits.every((c) => c >= 0x20 && c <= 0x7e);
+}
+
+int _visibleLength(String text) => text.replaceAll(_ansiSgrRegex, '').length;
+
+/// Renders the selection menu to the terminal and returns the total number of
+/// lines rendered.
 ///
 /// This function handles:
 ///
-/// - **Pagination**: It displays a window of [height] items, attempting to
-///   keep the [cursor] centered.
-/// - **Scrollbar Rendering**: If the total number of items exceeds the visible
-///   height, a scrollbar is drawn on the right. The scrollbar physics ensure
-///   that the thumb only reaches the top/bottom extremes when the list is
-///   actually at the extremes, while moving consistently in between.
+/// - **Pagination**: It displays a window of items and the hovered item's
+///   description within [maxTotalHeight] lines, attempting to keep the [cursor]
+///   centered.
+/// - **Descriptions**: Renders any description lines for the hovered item
+///   directly below it, aligned with the item label.
+/// - **Scrollbar Rendering**: If [isScrollable] is true, a scrollbar is drawn
+///   on the right. The scrollbar physics ensure that the thumb only reaches the
+///   top/bottom extremes when the list is actually at the extremes, while
+///   moving consistently in between.
 /// - **Selection Markers**: Renders checkboxes for multi-select mode, and bolds
 ///   the hovered option, as well as marking it with a pointer (`>`).
 ///
 /// Parameters:
 /// - [items]: The list of strings to display as options.
+/// - [descriptions]: The formatted description lines for each option.
 /// - [cursor]: The current hovered index in the list.
 /// - [selected]: The set of indices that are currently selected.
-/// - [height]: The max number of visible items (window size).
-/// - [isFirstRender]: Whether this is the initial render. If true, the cursor
-///   will not be moved up before rendering.
+/// - [maxTotalHeight]: The maximum total number of visible lines (items plus
+///   the hovered item's description).
+/// - [isScrollable]: Whether a scrollbar should be rendered.
+/// - [previousRenderedLines]: The number of lines rendered in the previous
+///   frame (`0` on the initial render).
 /// - [multiSelect]: If true, renders checkboxes.
-/// - [maxItemLength]: The length of the longest item, used for consistent
-///   spacing between the option text and the scrollbar.
-void _render({
+/// - [maxItemLength]: The length of the longest item or description line, used
+///   for consistent spacing between the text and the scrollbar.
+int _render({
   required List<String> items,
+  required List<List<String>> descriptions,
   required int cursor,
   required Set<int> selected,
-  required int height,
-  bool isFirstRender = false,
+  required int maxTotalHeight,
+  required bool isScrollable,
+  required int previousRenderedLines,
   required bool multiSelect,
   required int maxItemLength,
 }) {
-  // Calculate the window of items to display.
-  final isScrollable = items.length > height;
+  // Calculate the window of items to display given the hovered item's
+  // description height.
+  final hoveredDescriptions = descriptions[cursor];
+  final itemWindowHeight = math.max(
+    1,
+    maxTotalHeight - hoveredDescriptions.length,
+  );
+  final windowScrollable = items.length > itemWindowHeight;
   final start =
-      isScrollable
-          ? (cursor - (height ~/ 2)).clamp(0, items.length - height)
+      windowScrollable
+          ? (cursor - (itemWindowHeight ~/ 2)).clamp(
+            0,
+            items.length - itemWindowHeight,
+          )
           : 0;
   final end =
-      isScrollable ? math.min(start + height, items.length) : items.length;
+      windowScrollable
+          ? math.min(start + itemWindowHeight, items.length)
+          : items.length;
   final visibleCount = end - start;
+  final itemAndDescLines = visibleCount + hoveredDescriptions.length;
+  final totalLines = itemAndDescLines + (multiSelect ? 1 : 0);
 
   // Move the cursor to the top of the dialog if we're not on the first render.
+  final isFirstRender = previousRenderedLines == 0;
   if (!isFirstRender) {
-    final linesToMoveUp = multiSelect ? visibleCount + 1 : visibleCount;
-    stdout.write('\x1b[${linesToMoveUp}A');
+    if (previousRenderedLines > 1) {
+      stdout.write(_ansiMoveCursorUp(previousRenderedLines - 1));
+    }
+    stdout.write('\r');
   }
 
   var thumbHeight = 0;
   var thumbStart = 0;
   // Calculate scrollbar thumb position and height if enabled.
   if (isScrollable) {
-    // Calculate thumb height proportional to visible area.
-    thumbHeight = (visibleCount * visibleCount / items.length).round().clamp(
-      1,
-      math.max(1, visibleCount - 1),
-    );
-    // The max valid start index for the list window.
-    final maxStart = items.length - visibleCount;
-    // The max valid start index for the thumb based on its size.
-    final maxThumbStart = visibleCount - thumbHeight;
-
-    // We want to ensure that the thumb reaches the absolute extremes (top/bottom)
-    // ONLY when the list is actually scrolled to the extremes.
-    // For intermediate values, we distribute them as equally as possible
-    // among the remaining positions to ensure smooth, consistent movement.
-    if (start == 0) {
-      // Actual top of scroll range.
+    if (!windowScrollable) {
+      thumbHeight = itemAndDescLines;
       thumbStart = 0;
-    } else if (start == maxStart) {
-      // Actual bottom of scroll range.
-      thumbStart = maxThumbStart;
-    } else if (maxThumbStart <= 1) {
-      // Very small lists, only one of two positions available.
-      thumbStart = cursor > items.length / 2 ? maxThumbStart : 0;
     } else {
-      // Map from 1..maxThumbStart-1 linearly
-      thumbStart = 1 + ((start - 1) * (maxThumbStart - 1)) ~/ (maxStart - 1);
+      // Calculate thumb height proportional to visible area.
+      thumbHeight = (visibleCount * itemAndDescLines / items.length)
+          .round()
+          .clamp(1, math.max(1, itemAndDescLines - 1));
+      // The max valid start index for the list window.
+      final maxStart = items.length - visibleCount;
+      // The max valid start index for the thumb based on its size.
+      final maxThumbStart = itemAndDescLines - thumbHeight;
+
+      // We want to ensure that the thumb reaches the absolute extremes
+      // (top/bottom) ONLY when the list is actually scrolled to the extremes.
+      // For intermediate values, we distribute them as equally as possible
+      // among the remaining positions to ensure smooth, consistent movement.
+      if (start == 0) {
+        // Actual top of scroll range.
+        thumbStart = 0;
+      } else if (start == maxStart) {
+        // Actual bottom of scroll range.
+        thumbStart = maxThumbStart;
+      } else if (maxThumbStart <= 1) {
+        // Very small lists, only one of two positions available.
+        thumbStart = cursor > items.length / 2 ? maxThumbStart : 0;
+      } else {
+        // Map from 1..maxThumbStart-1 linearly
+        thumbStart = 1 + ((start - 1) * (maxThumbStart - 1)) ~/ (maxStart - 1);
+      }
     }
+  }
+
+  final selectionMarkerLength = multiSelect ? 4 : 0;
+  final scrollbarXPosition =
+      _pointerWidth +
+      selectionMarkerLength +
+      maxItemLength +
+      _scrollbarLeftMargin;
+  final clearPrefix = isFirstRender ? '' : _ansiClearLine;
+
+  String addScrollbar(String line, int rowIndex) {
+    if (!isScrollable) return line;
+    final isThumb =
+        rowIndex >= thumbStart && rowIndex < thumbStart + thumbHeight;
+    final padding = math.max(0, scrollbarXPosition - _visibleLength(line));
+    return '$line${' ' * padding}${isThumb ? '█' : '│'}';
+  }
+
+  var currentLineIndex = 0;
+  final descriptionIndent = ' ' * (_pointerWidth + selectionMarkerLength);
+
+  void writeRenderedLine(String text) {
+    final isLastLine = currentLineIndex == totalLines;
+    stdout.write('$clearPrefix$text${isLastLine ? '' : '\n'}');
   }
 
   // Render each visible line.
@@ -367,30 +627,41 @@ void _render({
     // Show checkbox only for multiselect.
     final selectionMarker = multiSelect ? (isChecked ? '[x] ' : '[ ] ') : '';
 
-    var line = '$pointer$selectionMarker${items[i]}';
-    if (isScrollable) {
-      // Scrollbar on the right
-      final relativeI = i - start;
-      final isThumb =
-          relativeI >= thumbStart && relativeI < thumbStart + thumbHeight;
-      final scrollbarXPosition =
-          _pointerWidth +
-          selectionMarker.length +
-          maxItemLength +
-          _scrollbarLeftMargin;
-      line = '${line.padRight(scrollbarXPosition)}${isThumb ? '█' : '│'}';
-    }
+    final line = addScrollbar(
+      '$pointer$selectionMarker${items[i]}',
+      currentLineIndex++,
+    );
 
     if (isHovered) {
-      stdout.write('\x1b[1m$line\x1b[0m\n'); // bold  the selected item
+      final boldLine = line.replaceAll(_ansiReset, '$_ansiReset$_ansiBold');
+      writeRenderedLine('$_ansiBold$boldLine$_ansiReset');
+      for (final descLine in hoveredDescriptions) {
+        final indented = descLine.isEmpty ? '' : '$descriptionIndent$descLine';
+        final fullDescLine = addScrollbar(indented, currentLineIndex++);
+        writeRenderedLine(fullDescLine);
+      }
     } else {
-      stdout.write('$line\n');
+      writeRenderedLine(line);
     }
   }
 
   if (multiSelect) {
-    stdout.write('\x1b[2m$multiSelectLegend\x1b[0m\n');
+    currentLineIndex++;
+    writeRenderedLine('$_ansiDim$multiSelectLegend$_ansiReset');
   }
+
+  // If the previous render had more lines than this render, clear the extra
+  // lines below and move the cursor back up to the bottom of the current
+  // render.
+  if (!isFirstRender && previousRenderedLines > totalLines) {
+    final extraLines = previousRenderedLines - totalLines;
+    for (var i = 0; i < extraLines; i++) {
+      stdout.write('\n$_ansiClearLine');
+    }
+    stdout.write(_ansiMoveCursorUp(extraLines));
+  }
+
+  return totalLines;
 }
 
 /// The legend text displayed at the bottom of multi-select dialogs, trimmed
@@ -433,40 +704,209 @@ int get _terminalWidth {
   return 80;
 }
 
-/// Truncates the options to fit within the terminal width, down to a minimum
-/// of 3 characters.
-///
-/// If the options are truncated, the ellipsis '...' is added to the end of
-/// the option.
-///
-/// Accounts for the space that the scrollbar and checkboxes take up.
-List<String> _truncateOptions(
-  List<String> options,
-  int terminalWidth,
-  bool multiSelect,
-  bool isScrollable,
-) {
+/// Returns the height of the terminal or 10 if it cannot be determined.
+int get _terminalHeight {
+  try {
+    if (stdout.hasTerminal) {
+      return stdout.terminalLines;
+    }
+  } catch (_) {}
+  // The default height if we fail to compute it.
+  return 10;
+}
+
+/// Returns the maximum visible character length for an option or description
+/// line given the terminal configuration, down to a minimum of
+/// [_minimumOptionLength].
+int _maxLineLength(int terminalWidth, bool multiSelect, bool isScrollable) {
   final selectionMarkerLength = multiSelect ? 4 /* ' [ ]' */ : 0;
   final scrollbarWidth = isScrollable ? 1 : 0;
   var maxOptionLength = terminalWidth - _pointerWidth - selectionMarkerLength;
   if (isScrollable) {
     maxOptionLength -= _scrollbarLeftMargin + scrollbarWidth;
   }
-
-  // We don't want to truncate to less than 3 characters.
-  final limit = math.max(_minimumOptionLength, maxOptionLength);
-  if (options.every((option) => option.length <= limit)) {
-    return options;
-  }
-
-  // We are truncating, account for the space that the '...' will take up,
-  // while still showing at least the minimum number of characters.
-  return [
-    for (final option in options)
-      option.length > limit ? '${option.substring(0, limit - 3)}...' : option,
-  ];
+  return math.max(_minimumOptionLength, maxOptionLength);
 }
 
-const _pointerWidth = 2; // '  ' or '>
+/// Word-wraps [description] so each line has at most [limit] visible
+/// characters, while preserving explicit newlines (`\n` or `\r\n`) and ANSI
+/// SGR styling sequences across wrapped lines.
+///
+/// Returns at most [maxLines] lines. If the description exceeds [maxLines],
+/// the last line is wrapped to `limit - 3` visible characters and suffixed
+/// with `'...'`.
+List<String> _wordWrapDescription(String description, int limit, int maxLines) {
+  if (maxLines <= 0) return const <String>[];
+  final paragraphs = description.split(_newlineRegex);
+  final wrapped = <String>[];
+  // Tracks active ANSI SGR styling sequences (e.g. `\x1b[32m`) across wrapped
+  // lines and paragraphs. Resetting with `$_ansiReset` at the end of each line
+  // prevents open styles from bleeding into the scrollbar (`█`/`│`) or the next
+  // line's indentation, while re-applying `activeStyle` at the start of the
+  // next line keeps multi-line ANSI spans styled after the reset.
+  var activeStyle = '';
+
+  for (var p = 0; p < paragraphs.length && wrapped.length < maxLines; p++) {
+    final paragraph = paragraphs[p];
+    final hasMoreParagraphs = p < paragraphs.length - 1;
+    var rawIndex = 0;
+
+    do {
+      final isLastLine = wrapped.length == maxLines - 1;
+      final (:line, :nextIndex, activeStyle: nextStyle) = _consumeLine(
+        paragraph,
+        rawIndex,
+        isLastLine ? math.max(0, limit - 3) : limit,
+        activeStyle: activeStyle,
+      );
+      final ellipsis =
+          isLastLine && (hasMoreParagraphs || nextIndex < paragraph.length)
+              ? '...'
+              : '';
+      final reset = line.isNotEmpty && nextStyle.isNotEmpty ? _ansiReset : '';
+      wrapped.add('$line$reset$ellipsis');
+      rawIndex = nextIndex;
+      activeStyle = nextStyle;
+    } while (rawIndex < paragraph.length && wrapped.length < maxLines);
+  }
+  return wrapped;
+}
+
+/// Consumes up to [maxVisibleChars] visible characters from [paragraph]
+/// starting at [startIndex], breaking at the last space if the paragraph
+/// overflows [maxVisibleChars], and preserving ANSI SGR styling sequences.
+({String line, int nextIndex, String activeStyle}) _consumeLine(
+  String paragraph,
+  int startIndex,
+  int maxVisibleChars, {
+  String activeStyle = '',
+}) {
+  final buffer = StringBuffer(activeStyle);
+  var rawIndex = startIndex;
+  var visibleCount = 0;
+  var lastSpaceBufferLen = -1;
+  var lastSpaceRawIndex = -1;
+  var lastSpaceStyle = '';
+
+  while (rawIndex < paragraph.length) {
+    final match = _ansiSgrRegex.matchAsPrefix(paragraph, rawIndex);
+    if (match != null) {
+      final seq = match.group(0)!;
+      buffer.write(seq);
+      activeStyle =
+          (seq == _ansiReset || seq == _ansiResetShort)
+              ? ''
+              : activeStyle + seq;
+      rawIndex = match.end;
+      continue;
+    }
+
+    if (visibleCount == maxVisibleChars) {
+      // Exceeded `maxVisibleChars`; rewind to the last space if one was
+      // seen on this line, otherwise hard-break here.
+      var line = buffer.toString();
+      if (lastSpaceBufferLen != -1) {
+        line = line.substring(0, lastSpaceBufferLen);
+        activeStyle = lastSpaceStyle;
+        rawIndex = lastSpaceRawIndex;
+        // Skip any additional spaces at the wrap point while preserving
+        // ANSI SGR sequences.
+        while (rawIndex < paragraph.length) {
+          final ansi = _ansiSgrRegex.matchAsPrefix(paragraph, rawIndex);
+          if (ansi != null) {
+            final seq = ansi.group(0)!;
+            activeStyle =
+                (seq == _ansiReset || seq == _ansiResetShort)
+                    ? ''
+                    : activeStyle + seq;
+            rawIndex = ansi.end;
+          } else if (paragraph[rawIndex] == ' ') {
+            rawIndex++;
+          } else {
+            break;
+          }
+        }
+      }
+      return (line: line, nextIndex: rawIndex, activeStyle: activeStyle);
+    }
+
+    final char = paragraph[rawIndex++];
+    if (char == ' ' && visibleCount > 0) {
+      lastSpaceBufferLen = buffer.length;
+      lastSpaceRawIndex = rawIndex;
+      lastSpaceStyle = activeStyle;
+    }
+    buffer.write(char);
+    visibleCount++;
+  }
+
+  final line = visibleCount == 0 ? '' : buffer.toString();
+  return (line: line, nextIndex: rawIndex, activeStyle: activeStyle);
+}
+
+/// Truncates [line] so its visible length (excluding ANSI SGR sequences) is at
+/// most [limit].
+///
+/// If [line] exceeds [limit] visible characters, or if [forceEllipsis] is
+/// `true`, the returned string ends with `'...'` (and [_ansiReset] if [line]
+/// contained ANSI escape codes) while remaining within [limit] visible
+/// characters.
+String _truncateLine(String line, int limit, {bool forceEllipsis = false}) {
+  final hasAnsi = _ansiSgrRegex.hasMatch(line);
+  final visibleLen = _visibleLength(line);
+  if (!forceEllipsis && visibleLen <= limit) {
+    if (hasAnsi && !line.endsWith(_ansiReset)) {
+      return '$line$_ansiReset';
+    }
+    return line;
+  }
+
+  final maxPrefixChars = math.max(0, limit - 3);
+  if (!hasAnsi) {
+    final prefix =
+        line.length > maxPrefixChars ? line.substring(0, maxPrefixChars) : line;
+    return '$prefix...';
+  }
+
+  // Walk through the string, preserving ANSI SGR sequences and up to
+  // maxPrefixChars visible characters.
+  final buffer = StringBuffer();
+  var visibleCount = 0;
+  var lastIndex = 0;
+  for (final match in _ansiSgrRegex.allMatches(line)) {
+    final segment = line.substring(lastIndex, match.start);
+    final remaining = maxPrefixChars - visibleCount;
+    if (segment.length >= remaining) {
+      buffer.write(segment.substring(0, remaining));
+      visibleCount += remaining;
+      break;
+    }
+    buffer.write(segment);
+    visibleCount += segment.length;
+    buffer.write(match.group(0));
+    lastIndex = match.end;
+  }
+  if (visibleCount < maxPrefixChars && lastIndex < line.length) {
+    final segment = line.substring(lastIndex);
+    final remaining = maxPrefixChars - visibleCount;
+    buffer.write(
+      segment.length > remaining ? segment.substring(0, remaining) : segment,
+    );
+  }
+  buffer.write('...$_ansiReset');
+  return buffer.toString();
+}
+
+const _pointerWidth = 2; // '  ' or '> '
 const _scrollbarLeftMargin = 6;
 const _minimumOptionLength = 3;
+
+const _ansiReset = '\x1b[0m';
+const _ansiResetShort = '\x1b[m';
+const _ansiBold = '\x1b[1m';
+const _ansiDim = '\x1b[2m';
+const _ansiClearLine = '\x1b[2K';
+const _ansiHideCursor = '\x1b[?25l';
+const _ansiShowCursor = '\x1b[?25h';
+
+String _ansiMoveCursorUp(int lines) => '\x1b[${lines}A';
