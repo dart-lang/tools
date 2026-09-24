@@ -69,6 +69,8 @@ class ListTree {
       : _canOverlap = _computeCanOverlap(_trees);
 
   factory ListTree(AstNode glob, FileSystem fileSystem) {
+    // Glob is known to use same context style as `fileSystem.path`.
+
     // The first step in constructing a tree from the glob is to simplify the
     // problem by eliminating options. [glob.flattenOptions] bubbles all options
     // (and certain ranges) up to the top level of the glob so we can deal with
@@ -79,7 +81,7 @@ class ListTree {
     for (var option in options.options) {
       // Since each option doesn't include its own options, we can safely split
       // it into path components.
-      var components = option.split(p.context);
+      var components = option.split(fileSystem.path);
       var firstNode = components.first.nodes.first;
       var root = '.';
 
@@ -87,8 +89,8 @@ class ListTree {
       // root's just ".".
       if (firstNode is LiteralNode) {
         var text = firstNode.text;
-        // Platform agnostic way of checking for Windows without `dart:io`.
-        if (p.context == p.windows) text.replaceAll('/', '\\');
+        if (fileSystem.path.style == p.windows.style)
+          text.replaceAll('/', r'\');
         if (p.isAbsolute(text)) {
           // If the path is absolute, the root should be the only thing in the
           // first component.
