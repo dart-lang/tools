@@ -1,6 +1,7 @@
 ## 2.2.5-wip
 
 - Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
+- Harden `getListIndentation` to gracefully fall back to `list.span.start.column` when no list-internal hyphen is found.
 
 ## 2.2.4
 
