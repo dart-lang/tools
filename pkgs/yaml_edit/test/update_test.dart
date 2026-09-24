@@ -816,6 +816,25 @@ analyzer:
         expect(doc.toString(), equals('{a: 1, b: 2, c: 3,}'));
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3});
       });
+
+      test('updating explicit key without colon succeeds', () {
+        final doc = YamlEditor('{? key}');
+        doc.update(['key'], 'value');
+        expect(doc.toString(), equals('{? key: value}'));
+        expectYamlBuilderValue(doc, {'key': 'value'});
+
+        final doc2 = YamlEditor('{? key, foo: bar}');
+        doc2.update(['key'], 'value');
+        expect(doc2.toString(), equals('{? key: value, foo: bar}'));
+        expectYamlBuilderValue(doc2, {'key': 'value', 'foo': 'bar'});
+      });
+
+      test('updating explicit key with colon succeeds', () {
+        final doc = YamlEditor('{? key: old}');
+        doc.update(['key'], 'new');
+        expect(doc.toString(), equals('{? key: new}'));
+        expectYamlBuilderValue(doc, {'key': 'new'});
+      });
     });
 
     group('block map', () {
@@ -961,6 +980,71 @@ Mark McGwire: null
             doc, {'Sammy Sosa': null, 'Ken Griff': null, 'Mark McGwire': null});
       });
 
+      test('updating explicit key without colon succeeds', () {
+        final doc1 = YamlEditor('? key\n');
+        doc1.update(['key'], 123);
+        expect(doc1.toString(), equals('? key\n: 123\n'));
+        expectYamlBuilderValue(doc1, {'key': 123});
+
+        final doc2 = YamlEditor('? key');
+        doc2.update(['key'], 123);
+        expect(doc2.toString(), equals('? key\n: 123\n'));
+        expectYamlBuilderValue(doc2, {'key': 123});
+
+        final doc3 = YamlEditor('''
+? key
+foo: bar
+''');
+        doc3.update(['key'], 123);
+        expect(doc3.toString(), equals('''
+? key
+: 123
+foo: bar
+'''));
+        expectYamlBuilderValue(doc3, {'key': 123, 'foo': 'bar'});
+
+        final doc4 = YamlEditor('''
+? key # comment with : here
+foo: bar
+''');
+        doc4.update(['key'], 123);
+        expect(doc4.toString(), equals('''
+? key # comment with : here
+: 123
+foo: bar
+'''));
+        expectYamlBuilderValue(doc4, {'key': 123, 'foo': 'bar'});
+
+        final doc5 = YamlEditor('''
+parent:
+  ? key
+  foo: bar
+''');
+        doc5.update(['parent', 'key'], 123);
+        expect(doc5.toString(), equals('''
+parent:
+  ? key
+  : 123
+  foo: bar
+'''));
+        expectYamlBuilderValue(doc5, {
+          'parent': {'key': 123, 'foo': 'bar'}
+        });
+      });
+
+      test('updating explicit key with colon succeeds', () {
+        final doc = YamlEditor('''
+? key
+: old
+''');
+        doc.update(['key'], 'new');
+        expect(doc.toString(), equals('''
+? key
+: new
+'''));
+        expectYamlBuilderValue(doc, {'key': 'new'});
+      });
+
       test('with trailing newline', () {
         final doc = YamlEditor('''
 a: 1
@@ -1104,6 +1188,86 @@ d: 4
         );
         expectYamlBuilderValue(doc, []);
       });
+    });
+  });
+
+  group('quoted map keys with spaces before colon', () {
+    test('preserves colon when updating double-quoted key with space', () {
+      final doc = YamlEditor('''
+"key" : 123
+other: 456
+''');
+      doc.update(['key'], 789);
+      expect(doc.toString(), equals('''
+"key" : 789
+other: 456
+'''));
+      expect(doc.parseAt(['key']).value, equals(789));
+    });
+
+    test('preserves colon when updating single-quoted key with space', () {
+      final doc = YamlEditor('''
+'my quoted key'   : 100
+''');
+      doc.update(['my quoted key'], 200);
+      expect(doc.toString(), equals('''
+'my quoted key'   : 200
+'''));
+      expect(doc.parseAt(['my quoted key']).value, equals(200));
+    });
+
+    test('preserves colon when replacing with block collection', () {
+      final doc = YamlEditor('''
+"key"  : 123
+''');
+      doc.update(['key'], ['a', 'b']);
+      expect(doc.toString(), equals('''
+"key"  :
+  - a
+  - b
+'''));
+      expect(doc.parseAt(['key', 0]).value, equals('a'));
+    });
+  });
+
+  group('flow collections with comments or empty values', () {
+    test('update flow list with comment containing comma and bracket', () {
+      final doc = YamlEditor('[1 # comment with , and ]\n, 2]');
+      doc.update([0], 'updated');
+      expect(doc.parseAt([0]).value, equals('updated'));
+      expect(doc.parseAt([1]).value, equals(2));
+    });
+
+    test('flow map update with comment containing comma and braces', () {
+      final doc = YamlEditor('{a: 1 # comment with , and { and }\n, b: 2}');
+      doc.update(['a'], 99);
+      expect(doc.parseAt(['a']).value, equals(99));
+      expect(doc.parseAt(['b']).value, equals(2));
+
+      doc.update(['b'], 88);
+      expect(doc.parseAt(['b']).value, equals(88));
+    });
+
+    test('flow map insert with comment containing delimiters', () {
+      final doc = YamlEditor('{a: 1 # comment with , and }\n, b: 2}');
+      doc.update(['c'], 3);
+      expect(doc.parseAt(['a']).value, equals(1));
+      expect(doc.parseAt(['b']).value, equals(2));
+      expect(doc.parseAt(['c']).value, equals(3));
+    });
+
+    test('flow map update empty value without space after colon', () {
+      final doc = YamlEditor('{a:}');
+      doc.update(['a'], 'hello');
+      expect(doc.toString(), equals('{a: hello}'));
+      expect(doc.parseAt(['a']).value, equals('hello'));
+    });
+
+    test('flow map update empty value with comment', () {
+      final doc = YamlEditor('{a: # comment\n, b: 1}');
+      doc.update(['a'], 'hello');
+      expect(doc.parseAt(['a']).value, equals('hello'));
+      expect(doc.parseAt(['b']).value, equals(1));
     });
   });
 }

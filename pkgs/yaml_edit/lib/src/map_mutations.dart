@@ -4,6 +4,7 @@
 
 import 'package:yaml/yaml.dart';
 
+import 'char_codes.dart';
 import 'editor.dart';
 import 'equality.dart';
 import 'source_edit.dart';
@@ -173,9 +174,27 @@ SourceEdit _replaceInBlockMap(
     valueAsString = ' $valueAsString';
   }
 
-  /// +1 accounts for the colon
-  // TODO: What if here is a whitespace following the key, before the colon?
-  final start = keyNode.span.end.offset + 1;
+  /// Find the association colon after the key, skipping whitespace and
+  /// comments. If no colon exists for this key (e.g. an explicit key without
+  /// a value), insert a new association line with the colon and value.
+  final colonIndex = _findAssociationColon(yaml, keyNode.span.end.offset);
+  if (colonIndex == -1) {
+    final mapIndent = getMapIndentation(yaml, map);
+    final nextNewLine = yaml.indexOf('\n', keyNode.span.end.offset);
+    if (nextNewLine == -1) {
+      return SourceEdit(
+        yaml.length,
+        0,
+        '$lineEnding${' ' * mapIndent}:$valueAsString$lineEnding',
+      );
+    }
+    return SourceEdit(
+      nextNewLine + 1,
+      0,
+      '${' ' * mapIndent}:$valueAsString$lineEnding',
+    );
+  }
+  final start = colonIndex + 1;
   var end = getContentSensitiveEnd(map.nodes[key]!);
 
   /// `package:yaml` parses empty nodes in a way where the start/end of the
@@ -186,15 +205,61 @@ SourceEdit _replaceInBlockMap(
   return SourceEdit(start, end - start, valueAsString);
 }
 
+/// Finds the index of the association colon (`:`) belonging to a key in
+/// [yaml], starting from [startOffset].
+///
+/// Skips whitespace and comments. Returns `-1` if no colon is found before
+/// encountering another token or reaching the end of the input.
+int _findAssociationColon(String yaml, int startOffset) {
+  var i = startOffset;
+  while (i < yaml.length) {
+    final c = yaml.codeUnitAt(i);
+    if (YamlChar.isWhitespace(c) || YamlChar.isLineBreak(c)) {
+      i++;
+    } else if (c == YamlChar.hash) {
+      i++;
+      while (i < yaml.length && !YamlChar.isLineBreak(yaml.codeUnitAt(i))) {
+        i++;
+      }
+    } else if (c == YamlChar.colon) {
+      return i;
+    } else {
+      return -1;
+    }
+  }
+  return -1;
+}
+
 /// Performs the string operation on [yamlEdit] to achieve the effect of
 /// replacing the value at [key] with [newValue] when reparsed, bearing in mind
 /// that this is a flow map.
 SourceEdit _replaceInFlowMap(
     YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
   final valueSpan = map.nodes[key]!.span;
-  final valueString = yamlEncodeFlow(newValue);
+  var valueString = yamlEncodeFlow(newValue);
 
-  return SourceEdit(valueSpan.start.offset, valueSpan.length, valueString);
+  final yaml = yamlEdit.toString();
+  final keyNode = getKeyNode(map, key);
+  final colonIndex = findNextFlowDelimiter(
+    yaml,
+    keyNode.span.end.offset,
+    delimiters: {YamlChar.colon, YamlChar.comma, YamlChar.rightCurly},
+  );
+  if (colonIndex == -1 || yaml.codeUnitAt(colonIndex) != YamlChar.colon) {
+    return SourceEdit(keyNode.span.end.offset, 0, ': $valueString');
+  }
+
+  var start = valueSpan.start.offset;
+  if (valueSpan.length == 0) {
+    if (start < colonIndex + 1) {
+      start = colonIndex + 1;
+    }
+    if (start <= colonIndex + 1) {
+      valueString = ' $valueString';
+    }
+  }
+
+  return SourceEdit(start, valueSpan.length, valueString);
 }
 
 /// Performs the string operation on [yamlEdit] to achieve the effect of
@@ -246,15 +311,33 @@ SourceEdit _removeFromFlowMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   final yaml = yamlEdit.toString();
 
   if (deepEquals(keyNode, map.keys.first)) {
-    start = yaml.lastIndexOf('{', start - 1) + 1;
+    start = findPreviousFlowDelimiter(
+          yaml,
+          start - 1,
+          delimiters: {YamlChar.leftCurly},
+        ) +
+        1;
 
     if (deepEquals(keyNode, map.keys.last)) {
-      end = yaml.indexOf('}', end);
+      end = findNextFlowDelimiter(
+        yaml,
+        end,
+        delimiters: {YamlChar.rightCurly},
+      );
     } else {
-      end = yaml.indexOf(',', end) + 1;
+      end = findNextFlowDelimiter(
+            yaml,
+            end,
+            delimiters: {YamlChar.comma},
+          ) +
+          1;
     }
   } else {
-    start = yaml.lastIndexOf(',', start - 1);
+    start = findPreviousFlowDelimiter(
+      yaml,
+      start - 1,
+      delimiters: {YamlChar.comma},
+    );
   }
 
   return SourceEdit(start, end - start, '');
