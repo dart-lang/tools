@@ -1079,10 +1079,7 @@ $descIndent${'D2...'}      █
                 ], inputController.stream);
                 await pumpEventQueue();
 
-                expect(
-                  customStdout.terminal.content.split('\n'),
-                  hasLength(5),
-                );
+                expect(customStdout.terminal.content.split('\n'), hasLength(5));
                 if (multiSelect) {
                   // totalHeight (5) includes the legend: 4 item/desc lines +
                   // 1 legend line = 5 total lines.
