@@ -33,7 +33,7 @@ void main() {
       });
     });
 
-    test('forScript variaents ignore `ansiOutputEnabled`', () {
+    test('forScript variants ignore `ansiOutputEnabled`', () {
       const expected =
           '$_ansiEscapeForScript[34m$sampleInput$_ansiEscapeForScript[0m';
 
@@ -72,12 +72,14 @@ void main() {
       expect(style.type, AnsiCodeType.style);
       expect(style.name.toLowerCase(), style.name,
           reason: 'All names should be lower case');
+      expect(style.reset, isNotNull);
+      final reset = style.reset!;
       if (style == styleBold) {
-        expect(style.reset, resetBold);
+        expect(reset, resetBold);
       } else {
-        expect(style.reset!.code, equals(style.code + 20));
+        expect(reset.code, equals(style.code + 20));
       }
-      expect(style.name, equals(style.reset!.name));
+      expect(style.name, equals(reset.name));
     }
   });
 
@@ -129,14 +131,15 @@ void main() {
         });
 
         _test('style', () {
-          final expected = '$escapeLiteral[1m$sampleInput$escapeLiteral[0m';
+          final expected = '$escapeLiteral[1m$sampleInput$escapeLiteral[22m';
 
           expect(wrapWith(sampleInput, [styleBold], forScript: forScript),
               expected);
         });
 
         _test('2 styles', () {
-          final expected = '$escapeLiteral[1;3m$sampleInput$escapeLiteral[0m';
+          final expected =
+              '$escapeLiteral[1;3m$sampleInput$escapeLiteral[23;22m';
 
           expect(
               wrapWith(sampleInput, [styleBold, styleItalic],
