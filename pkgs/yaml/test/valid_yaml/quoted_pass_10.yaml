@@ -1,0 +1,5 @@
+# Valid double quotes with empty lines folded
+key:
+  "line1
+
+  line2"

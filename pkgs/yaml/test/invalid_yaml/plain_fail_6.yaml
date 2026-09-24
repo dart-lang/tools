@@ -1,0 +1,6 @@
+# Multi-line plain scalar with second line at same indent as block key (2 <= 2) (invalid)
+block:
+  key: [
+   plain
+  scalar
+  ]

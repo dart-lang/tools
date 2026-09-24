@@ -1,0 +1,7 @@
+# Empty plain lines separating integers in flow block > block indent (3 > 2)
+block:
+  key: [
+   1,
+
+   2
+  ]

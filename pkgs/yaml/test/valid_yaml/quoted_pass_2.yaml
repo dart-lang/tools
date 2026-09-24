@@ -1,0 +1,4 @@
+# Valid single quoted in mapping
+key:
+  'line1
+  line2'

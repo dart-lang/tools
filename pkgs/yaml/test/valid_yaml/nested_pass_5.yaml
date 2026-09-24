@@ -1,0 +1,6 @@
+# Tests valid flow mapping value indentation
+foo:
+  {
+    a:
+      b
+  }

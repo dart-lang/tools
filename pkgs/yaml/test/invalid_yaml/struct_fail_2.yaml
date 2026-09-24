@@ -1,0 +1,4 @@
+# Closing bracket of flow list is at the same indentation as the block mapping key
+key: [
+ a
+]

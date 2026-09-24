@@ -1,0 +1,6 @@
+# Integer spanning lines with second line <= indent (2 <= 2) (invalid)
+block:
+  key: [
+   123
+  456
+  ]

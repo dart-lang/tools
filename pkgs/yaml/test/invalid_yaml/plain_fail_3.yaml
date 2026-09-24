@@ -1,0 +1,5 @@
+# Integer inside flow block at same indent as block key (2 <= 2) (invalid)
+block:
+  key: [
+  1
+  ]
