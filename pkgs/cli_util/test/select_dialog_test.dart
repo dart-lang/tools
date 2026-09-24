@@ -55,7 +55,9 @@ void main() {
           for (var multiSelect in [false, true]) {
             final dialogType = multiSelect ? 'MultiSelect' : 'SingleSelect';
             test('$dialogType - ${inputCombo.join(', ')}', () async {
-              const sizing = SelectComponentSizing.fixed(totalHeight: 5);
+              final sizing = SelectComponentSizing.fixed(
+                totalHeight: 5 + (multiSelect ? 1 : 0),
+              );
               final future =
                   multiSelect
                       ? showMultiSelectDialog(
@@ -260,6 +262,9 @@ void main() {
           final sBox = multiSelect ? ' [x]' : '';
           final renderer =
               multiSelect ? showMultiSelectDialog : showSingleSelectDialog;
+          final fiveItemSizing = SelectComponentSizing.fixed(
+            totalHeight: 5 + (multiSelect ? 1 : 0),
+          );
           String maybeLegend() => multiSelect ? '\n$multiSelectLegend' : '';
 
           test('renders UI state correctly', () async {
@@ -296,7 +301,7 @@ void main() {
             final future = renderer(
               ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
               inputController.stream,
-              sizing: const SelectComponentSizing.fixed(totalHeight: 5),
+              sizing: fiveItemSizing,
             );
             await pumpEventQueue();
 
@@ -336,7 +341,7 @@ void main() {
             final future = renderer(
               options,
               inputController.stream,
-              sizing: const SelectComponentSizing.fixed(totalHeight: 5),
+              sizing: fiveItemSizing,
             );
             await pumpEventQueue();
 
@@ -437,7 +442,7 @@ void main() {
             final future = renderer(
               options,
               inputController.stream,
-              sizing: const SelectComponentSizing.fixed(totalHeight: 5),
+              sizing: fiveItemSizing,
             );
             await pumpEventQueue();
 
@@ -522,7 +527,7 @@ void main() {
                 'f',
               ],
               inputController.stream,
-              sizing: const SelectComponentSizing.fixed(totalHeight: 5),
+              sizing: fiveItemSizing,
             );
             await pumpEventQueue();
 
@@ -886,14 +891,16 @@ $descIndent${'line is...'}${maybeLegend()}''');
                   'f',
                 ],
                 inputController.stream,
-                sizing: const SelectComponentSizing.fixed(totalHeight: 5),
+                sizing: SelectComponentSizing.fixed(
+                  totalHeight: 5 + (multiSelect ? 1 : 0),
+                ),
               );
               await pumpEventQueue();
 
               // maxItemLength is 'desc line 1'.length (11).
-              // With maxTotalHeight: 5 and 2 description lines on 'a',
+              // With 5 item/desc lines and 2 description lines on 'a',
               // visibleCount = 3, hoveredDescriptions.length = 2 ->
-              // totalLines = 5.
+              // itemAndDescLines = 5.
               // thumbHeight = (3 * 5 / 6).round().clamp(1, 4) = 3.
               expect(mockStdout.terminal.content, '''
 >$uBox a                █
@@ -906,7 +913,8 @@ $descIndent${'desc 2'}           █
               inputController.addKey(KeyVariants.space);
               await pumpEventQueue();
 
-              // On 'f' (no description), visibleCount = 5, totalLines = 5,
+              // On 'f' (no description), visibleCount = 5,
+              // itemAndDescLines = 5,
               // thumbHeight = (5 * 5 / 6).round().clamp(1, 4) = 4.
               expect(mockStdout.terminal.content, '''
  $uBox b                │
@@ -948,7 +956,7 @@ $descIndent${'desc 2'}           █
 
             // maxVisibleItems: 3 + maxDescriptionHeight (2) = maxTotalHeight
             // of 5. On 'a' (2 description lines), 3 items + 2 description
-            // lines are rendered (5 total lines).
+            // lines are rendered (5 item/desc lines).
             expect(mockStdout.terminal.content, '''
 >$uBox a                █
 $descIndent${'desc line 1'}      █
@@ -999,9 +1007,10 @@ $descIndent${'there'}${maybeLegend()}''');
           test(
             'clamps visible items and descriptions to fit terminalLines',
             () async {
-              // 6 terminal lines means at most 5 rendered lines fit without
-              // scrolling the top item off the viewport even when Sizing.fixed
-              // requests a larger totalHeight.
+              // 6 terminal lines means at most 5 rendered lines fit (including
+              // the legend in multi-select) without scrolling the top item off
+              // the viewport even when Sizing.fixed requests a larger
+              // totalHeight.
               mockStdout.terminalLines = 6;
               final future = renderer(
                 [
@@ -1019,13 +1028,26 @@ $descIndent${'there'}${maybeLegend()}''');
               );
               await pumpEventQueue();
 
-              // 5 renderable lines -> 3 visible items + 2 description lines.
-              expect(mockStdout.terminal.content, '''
+              expect(mockStdout.terminal.content.split('\n'), hasLength(5));
+              if (multiSelect) {
+                // 4 item/desc lines (2 items + 2 description lines) + 1 legend
+                // line = 5 total lines.
+                expect(mockStdout.terminal.content, '''
+>$uBox item0      █
+$descIndent${'D1'}         █
+$descIndent${'D2...'}      │
+ $uBox item1      │
+$multiSelectLegend''');
+              } else {
+                // 5 item/desc lines (3 items + 2 description lines) = 5 total
+                // lines.
+                expect(mockStdout.terminal.content, '''
 >$uBox item0      █
 $descIndent${'D1'}         █
 $descIndent${'D2...'}      █
  $uBox item1      │
- $uBox item2      │${maybeLegend()}''');
+ $uBox item2      │''');
+              }
 
               inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
               expect(await future, multiSelect ? {0} : 0);
@@ -1035,12 +1057,12 @@ $descIndent${'D2...'}      █
           test('SelectComponentSizing.fit sizes dialog from stdout', () async {
             final customStdout =
                 MockStdout()
-                  ..terminalLines = 8
+                  ..terminalLines = 7
                   ..terminalColumns = 80;
             await IOOverrides.runZoned(
               () async {
                 const fit = SelectComponentSizing.fit();
-                // terminalLines (8) - 3 = 5 totalHeight, 5 ~/ 2 = 2
+                // terminalLines (7) - 2 = 5 totalHeight, 5 ~/ 2 = 2
                 // maxDescriptionHeight.
                 expect(fit.totalHeight, 5);
                 expect(fit.maxDescriptionHeight, 2);
@@ -1057,12 +1079,27 @@ $descIndent${'D2...'}      █
                 ], inputController.stream);
                 await pumpEventQueue();
 
-                expect(customStdout.terminal.content, '''
+                expect(
+                  customStdout.terminal.content.split('\n'),
+                  hasLength(5),
+                );
+                if (multiSelect) {
+                  // totalHeight (5) includes the legend: 4 item/desc lines +
+                  // 1 legend line = 5 total lines.
+                  expect(customStdout.terminal.content, '''
+>$uBox item0      █
+$descIndent${'D1'}         █
+$descIndent${'D2...'}      │
+ $uBox item1      │
+$multiSelectLegend''');
+                } else {
+                  expect(customStdout.terminal.content, '''
 >$uBox item0      █
 $descIndent${'D1'}         █
 $descIndent${'D2...'}      █
  $uBox item1      │
- $uBox item2      │${maybeLegend()}''');
+ $uBox item2      │''');
+                }
 
                 inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
                 expect(await future, multiSelect ? {0} : 0);

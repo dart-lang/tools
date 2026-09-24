@@ -161,7 +161,8 @@ Future<Set<int>?> _runDialog(
     rethrow;
   }
 
-  final maxRenderableLines = _terminalHeight - 1;
+  final legendLines = multiSelect ? 1 : 0;
+  final maxRenderableLines = _terminalHeight - 1 - legendLines;
   final width = _terminalWidth;
 
   // Note that we just assume all terminals support ansii escapes because it
@@ -174,15 +175,19 @@ Future<Set<int>?> _runDialog(
     return null;
   }
 
+  final requestedItemAndDescHeight = math.max(
+    1,
+    sizingTotalHeight - legendLines,
+  );
   final cappedMaxTotalHeight =
       maxVisibleItems == null
-          ? math.min(sizingTotalHeight, maxRenderableLines)
+          ? math.min(requestedItemAndDescHeight, maxRenderableLines)
           : null;
   var effectiveMaxDescriptionLines =
       cappedMaxTotalHeight != null
           ? math.min(
             sizingMaxDescriptionHeight,
-            sizingTotalHeight > maxRenderableLines
+            requestedItemAndDescHeight > maxRenderableLines
                 ? maxRenderableLines ~/ 2
                 : cappedMaxTotalHeight - 1,
           )
@@ -293,14 +298,16 @@ Future<Set<int>?> _runDialog(
       if (lastRenderedLines > 0) {
         // Try to clear the dialog from the terminal
         if (lastRenderedLines > 1) {
-          stdout.write('\x1b[${lastRenderedLines - 1}A'); // Move cursor to top
+          stdout.write(_ansiMoveCursorUp(lastRenderedLines - 1));
         }
         stdout.write('\r');
         for (var i = 0; i < lastRenderedLines; i++) {
-          stdout.write('\x1b[2K${i == lastRenderedLines - 1 ? '' : '\n'}');
+          stdout.write(
+            '$_ansiClearLine${i == lastRenderedLines - 1 ? '' : '\n'}',
+          );
         }
         if (lastRenderedLines > 1) {
-          stdout.write('\x1b[${lastRenderedLines - 1}A'); // Move back
+          stdout.write(_ansiMoveCursorUp(lastRenderedLines - 1));
         }
         stdout.write('\r');
       }
@@ -323,8 +330,8 @@ Future<Set<int>?> _runDialog(
       stdin.lineMode = false;
     }
     // Hide the cursor
-    stdout.write('\x1b[?25l');
-    cleanupTasks.add(() => stdout.write('\x1b[?25h\x1b[0m'));
+    stdout.write(_ansiHideCursor);
+    cleanupTasks.add(() => stdout.write('$_ansiShowCursor$_ansiReset'));
 
     // Completes with the final result or null if aborted.
     final doneCompleter = Completer<Set<int>?>();
@@ -544,7 +551,7 @@ int _render({
   final isFirstRender = previousRenderedLines == 0;
   if (!isFirstRender) {
     if (previousRenderedLines > 1) {
-      stdout.write('\x1b[${previousRenderedLines - 1}A');
+      stdout.write(_ansiMoveCursorUp(previousRenderedLines - 1));
     }
     stdout.write('\r');
   }
@@ -592,7 +599,7 @@ int _render({
       selectionMarkerLength +
       maxItemLength +
       _scrollbarLeftMargin;
-  final clearPrefix = isFirstRender ? '' : '\x1b[2K';
+  final clearPrefix = isFirstRender ? '' : _ansiClearLine;
 
   String addScrollbar(String line, int rowIndex) {
     if (!isScrollable) return line;
@@ -626,8 +633,8 @@ int _render({
     );
 
     if (isHovered) {
-      final boldLine = line.replaceAll('\x1b[0m', '\x1b[0m\x1b[1m');
-      writeRenderedLine('\x1b[1m$boldLine\x1b[0m');
+      final boldLine = line.replaceAll(_ansiReset, '$_ansiReset$_ansiBold');
+      writeRenderedLine('$_ansiBold$boldLine$_ansiReset');
       for (final descLine in hoveredDescriptions) {
         final indented = descLine.isEmpty ? '' : '$descriptionIndent$descLine';
         final fullDescLine = addScrollbar(indented, currentLineIndex++);
@@ -640,7 +647,7 @@ int _render({
 
   if (multiSelect) {
     currentLineIndex++;
-    writeRenderedLine('\x1b[2m$multiSelectLegend\x1b[0m');
+    writeRenderedLine('$_ansiDim$multiSelectLegend$_ansiReset');
   }
 
   // If the previous render had more lines than this render, clear the extra
@@ -649,9 +656,9 @@ int _render({
   if (!isFirstRender && previousRenderedLines > totalLines) {
     final extraLines = previousRenderedLines - totalLines;
     for (var i = 0; i < extraLines; i++) {
-      stdout.write('\n\x1b[2K');
+      stdout.write('\n$_ansiClearLine');
     }
-    stdout.write('\x1b[${extraLines}A');
+    stdout.write(_ansiMoveCursorUp(extraLines));
   }
 
   return totalLines;
@@ -697,7 +704,7 @@ int get _terminalWidth {
   return 80;
 }
 
-/// Returns the height of the terminal or 24 if it cannot be determined.
+/// Returns the height of the terminal or 10 if it cannot be determined.
 int get _terminalHeight {
   try {
     if (stdout.hasTerminal) {
@@ -705,7 +712,7 @@ int get _terminalHeight {
     }
   } catch (_) {}
   // The default height if we fail to compute it.
-  return 24;
+  return 10;
 }
 
 /// Returns the maximum visible character length for an option or description
@@ -732,17 +739,50 @@ List<String> _wordWrapDescription(String description, int limit, int maxLines) {
   if (maxLines <= 0) return const <String>[];
   final paragraphs = description.split(_newlineRegex);
   final wrapped = <String>[];
+  // Tracks active ANSI SGR styling sequences (e.g. `\x1b[32m`) across wrapped
+  // lines and paragraphs. Resetting with `$_ansiReset` at the end of each line
+  // prevents open styles from bleeding into the scrollbar (`█`/`│`) or the next
+  // line's indentation, while re-applying `activeStyle` at the start of the
+  // next line keeps multi-line ANSI spans styled after the reset.
   var activeStyle = '';
 
-  for (var pIndex = 0; pIndex < paragraphs.length; pIndex++) {
-    final hasMoreParagraphs = pIndex < paragraphs.length - 1;
-    final (:chars, :endStyle) = _parseStyledChars(
-      paragraphs[pIndex],
-      initialStyle: activeStyle,
-    );
-    activeStyle = endStyle;
+  for (var p = 0; p < paragraphs.length; p++) {
+    final paragraph = paragraphs[p];
+    final hasMoreParagraphs = p < paragraphs.length - 1;
+    final plain = paragraph.replaceAll(_ansiSgrRegex, '');
+    var rawIndex = 0;
 
-    if (chars.isEmpty) {
+    // Consumes `count` visible characters from `paragraph` starting at
+    // `rawIndex`, along with any preceding or interleaved ANSI SGR sequences.
+    String consumeVisible(int count, {String suffix = ''}) {
+      final buffer = StringBuffer(activeStyle);
+      var remaining = count;
+      while (rawIndex < paragraph.length) {
+        final match = _ansiSgrRegex.matchAsPrefix(paragraph, rawIndex);
+        if (match != null) {
+          final seq = match.group(0)!;
+          buffer.write(seq);
+          activeStyle =
+              (seq == _ansiReset || seq == _ansiResetShort)
+                  ? ''
+                  : activeStyle + seq;
+          rawIndex = match.end;
+        } else if (remaining > 0) {
+          buffer.write(paragraph[rawIndex++]);
+          remaining--;
+        } else {
+          break;
+        }
+      }
+      buffer.write(suffix);
+      if (activeStyle.isNotEmpty && (count > 0 || suffix.isNotEmpty)) {
+        buffer.write(_ansiReset);
+      }
+      return buffer.toString();
+    }
+
+    if (plain.isEmpty) {
+      consumeVisible(0);
       if (wrapped.length == maxLines - 1 && hasMoreParagraphs) {
         wrapped.add('...');
         return wrapped;
@@ -753,123 +793,50 @@ List<String> _wordWrapDescription(String description, int limit, int maxLines) {
     }
 
     var start = 0;
-    while (start < chars.length) {
-      final isLastAllowedLine = wrapped.length == maxLines - 1;
-      final remainingChars = chars.length - start;
-      final willOverflowLines =
-          isLastAllowedLine && (remainingChars > limit || hasMoreParagraphs);
+    while (start < plain.length) {
+      final isLastLine = wrapped.length == maxLines - 1;
+      final willOverflow =
+          isLastLine && (plain.length - start > limit || hasMoreParagraphs);
+      final lineLimit = willOverflow ? math.max(0, limit - 3) : limit;
 
-      final lineLimit = willOverflowLines ? math.max(0, limit - 3) : limit;
-
-      if (!willOverflowLines && remainingChars <= lineLimit) {
-        wrapped.add(_renderStyledChars(chars.sublist(start)));
-        break;
-      }
-
-      if (willOverflowLines && remainingChars <= lineLimit) {
-        wrapped.add(_renderStyledChars(chars.sublist(start), suffix: '...'));
-        return wrapped;
-      }
-
-      // Find the last space within [start, start + lineLimit].
-      var breakIndex = -1;
-      for (var i = start + lineLimit; i > start; i--) {
-        if (chars[i].char == ' ') {
-          breakIndex = i;
-          break;
-        }
-      }
-
-      if (breakIndex > start) {
-        wrapped.add(
-          _renderStyledChars(
-            chars.sublist(start, breakIndex),
-            suffix: willOverflowLines ? '...' : '',
-          ),
-        );
-        if (willOverflowLines) return wrapped;
-        start = breakIndex + 1;
-        // Skip any additional spaces at the wrap point.
-        while (start < chars.length && chars[start].char == ' ') {
-          start++;
-        }
+      final int end;
+      if (plain.length - start <= lineLimit) {
+        end = plain.length;
       } else {
-        // Single word exceeds lineLimit; break at lineLimit.
-        wrapped.add(
-          _renderStyledChars(
-            chars.sublist(start, start + lineLimit),
-            suffix: willOverflowLines ? '...' : '',
-          ),
-        );
-        if (willOverflowLines) return wrapped;
-        start += lineLimit;
+        final space = plain.lastIndexOf(' ', start + lineLimit);
+        end = space > start ? space : start + lineLimit;
       }
+
+      wrapped.add(
+        consumeVisible(end - start, suffix: willOverflow ? '...' : ''),
+      );
+      if (willOverflow || wrapped.length >= maxLines) return wrapped;
+
+      var nextStart = end;
+      while (nextStart < plain.length && plain[nextStart] == ' ') {
+        nextStart++;
+      }
+      // Advance `rawIndex` past any skipped spaces (preserving ANSI styles).
+      consumeVisible(nextStart - end);
+      start = nextStart;
     }
   }
   return wrapped;
-}
-
-typedef _StyledChar = ({String char, String style});
-
-({List<_StyledChar> chars, String endStyle}) _parseStyledChars(
-  String text, {
-  String initialStyle = '',
-}) {
-  final chars = <_StyledChar>[];
-  var currentStyle = initialStyle;
-  var lastIndex = 0;
-  for (final match in _ansiSgrRegex.allMatches(text)) {
-    for (var i = lastIndex; i < match.start; i++) {
-      chars.add((char: text[i], style: currentStyle));
-    }
-    final seq = match.group(0)!;
-    if (seq == '\x1b[0m' || seq == '\x1b[m') {
-      currentStyle = '';
-    } else {
-      currentStyle += seq;
-    }
-    lastIndex = match.end;
-  }
-  for (var i = lastIndex; i < text.length; i++) {
-    chars.add((char: text[i], style: currentStyle));
-  }
-  return (chars: chars, endStyle: currentStyle);
-}
-
-String _renderStyledChars(List<_StyledChar> slice, {String suffix = ''}) {
-  if (slice.isEmpty) return suffix;
-  final buffer = StringBuffer();
-  var activeStyle = '';
-  for (final item in slice) {
-    if (item.style != activeStyle) {
-      if (activeStyle.isNotEmpty) {
-        buffer.write('\x1b[0m');
-      }
-      buffer.write(item.style);
-      activeStyle = item.style;
-    }
-    buffer.write(item.char);
-  }
-  buffer.write(suffix);
-  if (activeStyle.isNotEmpty) {
-    buffer.write('\x1b[0m');
-  }
-  return buffer.toString();
 }
 
 /// Truncates [line] so its visible length (excluding ANSI SGR sequences) is at
 /// most [limit].
 ///
 /// If [line] exceeds [limit] visible characters, or if [forceEllipsis] is
-/// `true`, the returned string ends with `'...'` (and `\x1b[0m` if [line]
+/// `true`, the returned string ends with `'...'` (and [_ansiReset] if [line]
 /// contained ANSI escape codes) while remaining within [limit] visible
 /// characters.
 String _truncateLine(String line, int limit, {bool forceEllipsis = false}) {
   final hasAnsi = _ansiSgrRegex.hasMatch(line);
   final visibleLen = _visibleLength(line);
   if (!forceEllipsis && visibleLen <= limit) {
-    if (hasAnsi && !line.endsWith('\x1b[0m')) {
-      return '$line\x1b[0m';
+    if (hasAnsi && !line.endsWith(_ansiReset)) {
+      return '$line$_ansiReset';
     }
     return line;
   }
@@ -906,10 +873,20 @@ String _truncateLine(String line, int limit, {bool forceEllipsis = false}) {
       segment.length > remaining ? segment.substring(0, remaining) : segment,
     );
   }
-  buffer.write('...\x1b[0m');
+  buffer.write('...$_ansiReset');
   return buffer.toString();
 }
 
-const _pointerWidth = 2; // '  ' or '>
+const _pointerWidth = 2; // '  ' or '> '
 const _scrollbarLeftMargin = 6;
 const _minimumOptionLength = 3;
+
+const _ansiReset = '\x1b[0m';
+const _ansiResetShort = '\x1b[m';
+const _ansiBold = '\x1b[1m';
+const _ansiDim = '\x1b[2m';
+const _ansiClearLine = '\x1b[2K';
+const _ansiHideCursor = '\x1b[?25l';
+const _ansiShowCursor = '\x1b[?25h';
+
+String _ansiMoveCursorUp(int lines) => '\x1b[${lines}A';

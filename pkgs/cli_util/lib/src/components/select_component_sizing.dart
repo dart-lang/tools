@@ -20,14 +20,15 @@ abstract final class SelectComponentSizing {
   }) = _FixedSizing;
 
   /// Creates a configuration that fits the current terminal height
-  /// (`stdout.terminalLines - 3`, or `10` if unavailable).
+  /// (`stdout.terminalLines - 2`, or `10` if unavailable).
   ///
   /// If [maxDescriptionHeight] is omitted, it defaults to `totalHeight ~/ 2`.
   const factory SelectComponentSizing.fit({int? maxDescriptionHeight}) =
       _FitSizing;
 
-  /// The maximum total number of lines (items plus the hovered item's
-  /// description lines) visible in the dialog at once.
+  /// The maximum total number of lines (items, the hovered item's description
+  /// lines, and the bottom legend in multi-select mode) visible in the dialog
+  /// at once.
   int get totalHeight;
 
   /// The maximum number of lines displayed for a hovered option's description
@@ -64,9 +65,9 @@ final class _FitSizing implements SelectComponentSizing {
   int get totalHeight {
     try {
       if (stdout.hasTerminal) {
-        // We want one line for the title, one for the legend, and one for
-        // terminals which render the previous command as a sticky header.
-        return math.max(1, stdout.terminalLines - 3);
+        // We want one line for the title and one for terminals which render
+        // the previous command as a sticky header.
+        return math.max(1, stdout.terminalLines - 2);
       }
     } catch (_) {}
     return 10;
