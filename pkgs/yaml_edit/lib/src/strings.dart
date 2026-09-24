@@ -137,7 +137,7 @@ String? _tryYamlEncodeFolded(String string, int indentSize, String lineEnding) {
     return previous + lineEnding + updated;
   });
 
-  return '>-\n'
+  return '>-$lineEnding'
       '$indent$trimmed'
       '${stripped.replaceAll('\n', lineEnding + indent)}';
 }
@@ -176,7 +176,7 @@ String? _tryYamlEncodeLiteral(
 
   /// Simplest block style.
   /// * https://yaml.org/spec/1.2.2/#812-literal-style
-  return '|-\n$indent${string.replaceAll('\n', lineEnding + indent)}';
+  return '|-$lineEnding$indent${string.replaceAll('\n', lineEnding + indent)}';
 }
 
 /// Encodes a flow [YamlScalar] based on the provided [YamlScalar.style].
