@@ -30,6 +30,36 @@ void main() {
           \tbar"
           error'''), throwsA(isNot(tabError)));
     });
+
+    var mixedSyntaxError = predicate((e) => e.toString().contains(
+        'You cannot mix list and key-value syntax in the same collection'));
+
+    test('a list entry in a block mapping', () {
+      expect(
+          () => loadYaml('linter:\n'
+              '  rules:\n'
+              '    close_sinks: false\n'
+              '    - empty_statements\n'),
+          throwsA(mixedSyntaxError));
+    });
+
+    test('a mapping entry in a block sequence', () {
+      expect(
+          () => loadYaml('linter:\n'
+              '  rules:\n'
+              '    - empty_statements\n'
+              '    close_sinks: false\n'),
+          throwsA(mixedSyntaxError));
+    });
+
+    test('a block scalar where a mapping key is expected', () {
+      expect(
+          () => loadYaml('a: 1\n|\n  b\n'), throwsA(isNot(mixedSyntaxError)));
+    });
+
+    test('a block scalar where a list entry is expected', () {
+      expect(() => loadYaml('- a\n|\n  b\n'), throwsA(isNot(mixedSyntaxError)));
+    });
   });
 
   group('refuses', () {
