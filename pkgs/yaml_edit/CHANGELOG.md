@@ -1,6 +1,8 @@
 ## 2.2.5-wip
 
 - Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
+- Fix updating block map entries when keys have whitespace before the colon.
+- Support updating the value of explicit keys that have no colon.
 
 ## 2.2.4
 

@@ -961,6 +961,71 @@ Mark McGwire: null
             doc, {'Sammy Sosa': null, 'Ken Griff': null, 'Mark McGwire': null});
       });
 
+      test('updating explicit key without colon succeeds', () {
+        final doc1 = YamlEditor('? key\n');
+        doc1.update(['key'], 123);
+        expect(doc1.toString(), equals('? key\n: 123\n'));
+        expectYamlBuilderValue(doc1, {'key': 123});
+
+        final doc2 = YamlEditor('? key');
+        doc2.update(['key'], 123);
+        expect(doc2.toString(), equals('? key\n: 123\n'));
+        expectYamlBuilderValue(doc2, {'key': 123});
+
+        final doc3 = YamlEditor('''
+? key
+foo: bar
+''');
+        doc3.update(['key'], 123);
+        expect(doc3.toString(), equals('''
+? key
+: 123
+foo: bar
+'''));
+        expectYamlBuilderValue(doc3, {'key': 123, 'foo': 'bar'});
+
+        final doc4 = YamlEditor('''
+? key # comment with : here
+foo: bar
+''');
+        doc4.update(['key'], 123);
+        expect(doc4.toString(), equals('''
+? key # comment with : here
+: 123
+foo: bar
+'''));
+        expectYamlBuilderValue(doc4, {'key': 123, 'foo': 'bar'});
+
+        final doc5 = YamlEditor('''
+parent:
+  ? key
+  foo: bar
+''');
+        doc5.update(['parent', 'key'], 123);
+        expect(doc5.toString(), equals('''
+parent:
+  ? key
+  : 123
+  foo: bar
+'''));
+        expectYamlBuilderValue(doc5, {
+          'parent': {'key': 123, 'foo': 'bar'}
+        });
+      });
+
+      test('updating explicit key with colon succeeds', () {
+        final doc = YamlEditor('''
+? key
+: old
+''');
+        doc.update(['key'], 'new');
+        expect(doc.toString(), equals('''
+? key
+: new
+'''));
+        expectYamlBuilderValue(doc, {'key': 'new'});
+      });
+
       test('with trailing newline', () {
         final doc = YamlEditor('''
 a: 1
@@ -1104,6 +1169,45 @@ d: 4
         );
         expectYamlBuilderValue(doc, []);
       });
+    });
+  });
+
+  group('quoted map keys with spaces before colon', () {
+    test('preserves colon when updating double-quoted key with space', () {
+      final doc = YamlEditor('''
+"key" : 123
+other: 456
+''');
+      doc.update(['key'], 789);
+      expect(doc.toString(), equals('''
+"key" : 789
+other: 456
+'''));
+      expect(doc.parseAt(['key']).value, equals(789));
+    });
+
+    test('preserves colon when updating single-quoted key with space', () {
+      final doc = YamlEditor('''
+'my quoted key'   : 100
+''');
+      doc.update(['my quoted key'], 200);
+      expect(doc.toString(), equals('''
+'my quoted key'   : 200
+'''));
+      expect(doc.parseAt(['my quoted key']).value, equals(200));
+    });
+
+    test('preserves colon when replacing with block collection', () {
+      final doc = YamlEditor('''
+"key"  : 123
+''');
+      doc.update(['key'], ['a', 'b']);
+      expect(doc.toString(), equals('''
+"key"  :
+  - a
+  - b
+'''));
+      expect(doc.parseAt(['key', 0]).value, equals('a'));
     });
   });
 }
