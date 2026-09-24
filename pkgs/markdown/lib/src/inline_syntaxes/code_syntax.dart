@@ -61,7 +61,19 @@ class CodeSyntax extends InlineSyntax {
       code = escapeHtml(code, escapeApos: false);
     }
 
-    parser.addNode(Element.text('code', code));
+    final element = Element.text('code', code);
+    final offsetMapper = parser.offsetMapper;
+    if (offsetMapper != null) {
+      final matchStart = parser.pos;
+      final matchEnd = matchStart + match.match.length;
+      final start = offsetMapper.map(matchStart);
+      final end = offsetMapper.map(matchEnd);
+      if (start != null && end != null) {
+        element.offset = start;
+        element.length = end - start;
+      }
+    }
+    parser.addNode(element);
     return true;
   }
 
