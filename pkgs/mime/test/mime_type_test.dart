@@ -279,6 +279,19 @@ void main() {
         0x31,
         0x00
       ]);
+      _expectMimeType('file', 'video/webm', headerBytes: [
+        0x1A, 0x45, 0xDF, 0xA3, // EBMF header
+        0xAF, 0x00, 0x00, 0x42, 0x00, // Anything
+        0x42, 0x82, 0x84, ..."webm".codeUnits, // WebM DocID
+        0x42, // Anything
+      ]);
+      _expectMimeType('file', 'video/x-matroska', headerBytes: [
+        0x1A, 0x45, 0xDF, 0xA3, // EBMF header
+        0xAF, 0x00, 0x00, 0x42, 0x00, // Anything, up to 63 chars
+        0x42, 0x82, 0x88, ..."matroska".codeUnits, // Matroska DocID
+        0x42, // Anything
+      ]);
+
     });
   });
 
@@ -311,7 +324,7 @@ void main() {
   test('default magic number', () {
     final actualMaxBytes = initialMagicNumbers.fold<int>(
       0,
-      (previous, magic) => math.max(previous, magic.numbers.length),
+      (previous, magic) => math.max(previous, matchLength(magic.numbers)),
     );
 
     expect(initialMagicNumbersMaxLength, actualMaxBytes);
