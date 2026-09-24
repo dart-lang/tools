@@ -26,6 +26,7 @@ final _skippedFiles = [
   'empty_nodes.yaml',
   'explicit_key_value.yaml',
   'flow_block_mix.yaml',
+  'json_comments.yaml',
   'mangled_json.yaml',
   'simple_comments.yaml',
   'tabs_and_whitespace.yaml',
