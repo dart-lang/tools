@@ -31,8 +31,12 @@ void main() {
           error'''), throwsA(isNot(tabError)));
     });
 
-    var mixedSyntaxError = predicate((e) => e.toString().contains(
-        'You cannot mix list and key-value syntax in the same collection'));
+    Matcher yamlError(String message, int line, int column) =>
+        isA<YamlException>()
+            .having((e) => e.message, 'message', message)
+            .having((e) => e.span!.start.line, 'line', line)
+            .having((e) => e.span!.start.column, 'column', column)
+            .having((e) => e.span!.length, 'span length', 0);
 
     test('a list entry in a block mapping', () {
       expect(
@@ -40,7 +44,12 @@ void main() {
               '  rules:\n'
               '    close_sinks: false\n'
               '    - empty_statements\n'),
-          throwsA(mixedSyntaxError));
+          throwsA(yamlError(
+              'Expected a key while parsing a block mapping. '
+              'You cannot mix list and key-value syntax in the same '
+              'collection.',
+              3,
+              4)));
     });
 
     test('a mapping entry in a block sequence', () {
@@ -49,16 +58,26 @@ void main() {
               '  rules:\n'
               '    - empty_statements\n'
               '    close_sinks: false\n'),
-          throwsA(mixedSyntaxError));
+          throwsA(yamlError(
+              "While parsing a block collection, expected '-'. "
+              'You cannot mix list and key-value syntax in the same '
+              'collection.',
+              3,
+              15)));
     });
 
     test('a block scalar where a mapping key is expected', () {
       expect(
-          () => loadYaml('a: 1\n|\n  b\n'), throwsA(isNot(mixedSyntaxError)));
+          () => loadYaml('a: 1\n|\n  b\n'),
+          throwsA(yamlError(
+              'Expected a key while parsing a block mapping.', 1, 0)));
     });
 
     test('a block scalar where a list entry is expected', () {
-      expect(() => loadYaml('- a\n|\n  b\n'), throwsA(isNot(mixedSyntaxError)));
+      expect(
+          () => loadYaml('- a\n|\n  b\n'),
+          throwsA(yamlError(
+              "While parsing a block collection, expected '-'.", 1, 0)));
     });
   });
 
