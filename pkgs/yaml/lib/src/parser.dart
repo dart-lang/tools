@@ -37,6 +37,9 @@ class Parser {
   /// The custom tag directives, by tag handle.
   final _tagDirectives = <String, TagDirective>{};
 
+  /// All tokens emitted by the underlying scanner, if `retainTokens` was true.
+  List<Token> get tokens => _scanner.allTokens;
+
   /// Whether the parser has finished parsing.
   bool get isDone => _state == _State.END;
 
@@ -47,11 +50,15 @@ class Parser {
   /// its onError method will be called for each error recovered from. It is not
   /// valid to provide [errorListener] if [recover] is false.
   Parser(String source,
-      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener})
+      {Uri? sourceUrl,
+      bool recover = false,
+      bool retainTokens = false,
+      ErrorListener? errorListener})
       : assert(recover || errorListener == null),
         _scanner = Scanner(source,
             sourceUrl: sourceUrl,
             recover: recover,
+            retainTokens: retainTokens,
             errorListener: errorListener);
 
   /// Consumes and returns the next event.

@@ -98,6 +98,12 @@ class Scanner {
   /// Whether this scanner should attempt to recover when parsing invalid YAML.
   final bool _recover;
 
+  /// Whether this scanner should retain all emitted tokens in [allTokens].
+  final bool _retainTokens;
+
+  /// All tokens emitted by this scanner if `retainTokens` was set to `true`.
+  final List<Token> allTokens = [];
+
   /// A listener to report YAML errors to.
   final ErrorListener? _errorListener;
 
@@ -286,8 +292,12 @@ class Scanner {
 
   /// Creates a scanner that scans [source].
   Scanner(String source,
-      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener})
+      {Uri? sourceUrl,
+      bool recover = false,
+      bool retainTokens = false,
+      ErrorListener? errorListener})
       : _recover = recover,
+        _retainTokens = retainTokens,
         _errorListener = errorListener,
         _scanner = SpanScanner.eager(source, sourceUrl: sourceUrl);
 
@@ -297,9 +307,14 @@ class Scanner {
     if (!_tokenAvailable) _fetchMoreTokens();
 
     var token = _tokens.removeFirst();
+    if (_retainTokens && token.span.length > 0) allTokens.add(token);
     _tokenAvailable = false;
     _tokensParsed++;
     _streamEndProduced = token.type == TokenType.streamEnd;
+    if (_streamEndProduced && _retainTokens) {
+      allTokens
+          .sort((a, b) => a.span.start.offset.compareTo(b.span.start.offset));
+    }
     return token;
   }
 
@@ -733,7 +748,7 @@ class Scanner {
       // If we're here, we've found the ':' indicator with an empty key. This
       // behavior differs from libyaml, which disallows empty implicit keys.
       _simpleKeyAllowed = false;
-      _addCharToken(TokenType.key);
+      _tokens.add(Token(TokenType.key, _scanner.emptySpan));
     }
 
     _addCharToken(TokenType.value);
@@ -1209,14 +1224,19 @@ class Scanner {
       }
 
       // Eat the following indentation and spaces.
-      var pair = _scanBlockScalarBreaks(indent);
+      pair = _scanBlockScalarBreaks(indent);
       indent = pair.indent;
       trailingBreaks = pair.trailingBreaks;
     }
 
     // Chomp the tail.
     if (chomping != _Chomping.strip) buffer.write(leadingBreak);
-    if (chomping == _Chomping.keep) buffer.write(trailingBreaks);
+    if (chomping == _Chomping.keep) {
+      buffer.write(trailingBreaks);
+      if (pair.lastBreakStart != null) {
+        end = pair.lastBreakStart!;
+      }
+    }
 
     return ScalarToken(_scanner.spanFrom(start, end), buffer.toString(),
         literal ? ScalarStyle.LITERAL : ScalarStyle.FOLDED);
@@ -1225,10 +1245,13 @@ class Scanner {
   /// Scans indentation spaces and line breaks for a block scalar.
   ///
   /// Determines the intendation level if needed. Returns the new indentation
-  /// level and the text of the line breaks.
-  ({int indent, String trailingBreaks}) _scanBlockScalarBreaks(int indent) {
+  /// level, the text of the line breaks, and the state just before the last
+  /// scanned line break.
+  ({int indent, String trailingBreaks, LineScannerState? lastBreakStart})
+      _scanBlockScalarBreaks(int indent) {
     var maxIndent = 0;
     var breaks = StringBuffer();
+    LineScannerState? lastBreakStart;
 
     while (true) {
       while ((indent == 0 || _scanner.column < indent) &&
@@ -1243,6 +1266,7 @@ class Scanner {
       // http://yaml.org/spec/1.2/spec.html#id2794311.
 
       if (!_isBreak) break;
+      lastBreakStart = _scanner.state;
       breaks.write(_readLine());
     }
 
@@ -1254,7 +1278,11 @@ class Scanner {
       // be supported by the spec.
     }
 
-    return (indent: indent, trailingBreaks: breaks.toString());
+    return (
+      indent: indent,
+      trailingBreaks: breaks.toString(),
+      lastBreakStart: lastBreakStart,
+    );
   }
 
   // Scans a quoted scalar.
@@ -1643,8 +1671,12 @@ class Scanner {
   /// Moves the scanner past a comment, if one starts at the current position.
   void _skipComment() {
     if (_scanner.peekChar() != HASH) return;
+    var start = _scanner.state;
     while (!_isBreakOrEnd) {
       _scanner.readChar();
+    }
+    if (_retainTokens) {
+      allTokens.add(CommentToken(_scanner.spanFrom(start)));
     }
   }
 
