@@ -64,7 +64,7 @@ const _expectedFailures = <String>[
   'P76L-0',
   '9JBA-0',
   'S98Z-0',
-  '2JQS-0',
+  '2JQS-0', // Intentionally failing (strict parsing duplicate keys in maps)
   'MUS6-0',
   'MUS6-1',
   'BS4K-0',
