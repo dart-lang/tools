@@ -55,10 +55,10 @@ class Peer implements Client, Server {
   /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
   /// If this is not provided, unhandled exceptions will be swallowed.
   ///
-  /// If [strictProtocolChecks] is false, the underlying [Server] will accept
-  /// some requests which are not conformant with the JSON-RPC 2.0
-  /// specification. In particular, requests missing the `jsonrpc` parameter
-  /// will be accepted.
+  /// If [strictProtocolChecks] is false, the underlying [Server] and [Client]
+  /// will accept some requests and responses which are not conformant with
+  /// the JSON-RPC 2.0 specification. In particular, requests and responses
+  /// missing the `jsonrpc` parameter will be accepted.
   ///
   /// If [idGenerator] is passed, it will be called to generate an ID for each
   /// request. Defaults to an auto-incrementing `int`.  The value returned must
@@ -85,10 +85,10 @@ class Peer implements Client, Server {
   /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
   /// If this is not provided, unhandled exceptions will be swallowed.
   ///
-  /// If [strictProtocolChecks] is false, the underlying [Server] will accept
-  /// some requests which are not conformant with the JSON-RPC 2.0
-  /// specification. In particular, requests missing the `jsonrpc` parameter
-  /// will be accepted.
+  /// If [strictProtocolChecks] is false, the underlying [Server] and [Client]
+  /// will accept some requests and responses which are not conformant with
+  /// the JSON-RPC 2.0 specification. In particular, requests and responses
+  /// missing the `jsonrpc` parameter will be accepted.
   ///
   /// If [idGenerator] is passed, it will be called to generate an ID for each
   /// request. Defaults to an auto-incrementing `int`. The value returned must
@@ -106,7 +106,8 @@ class Peer implements Client, Server {
           _clientIncomingForwarder.stream,
           _channel.sink,
         ),
-        idGenerator: idGenerator);
+        idGenerator: idGenerator,
+        strictProtocolChecks: strictProtocolChecks);
   }
 
   // Client methods.
