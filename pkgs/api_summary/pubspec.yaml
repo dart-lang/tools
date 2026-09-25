@@ -1,6 +1,8 @@
 name: api_summary
-version: 0.1.0-wip
+version: 1.0.0
 description: Creates an API summary for a package.
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/api_summary
+issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aapi_summary
 
 environment:
   sdk: ^3.12.0
@@ -8,6 +10,7 @@ environment:
 dependencies:
   analyzer: '>=13.0.0 <15.0.0'
   args: ^2.6.0
+  cli_util: ^0.6.0
   collection: ^1.19.0
   path: ^1.9.0
   yaml: ^3.1.2

@@ -1,8 +1,6 @@
 ## 3.2.0-wip
 
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
-* Mark internal constructors in `YamlDocument`, `YamlMap`, `YamlList`, and
-  `YamlScalar` with `@internal`.
 
 ## 3.1.4
 

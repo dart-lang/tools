@@ -13,9 +13,12 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
 import 'api_declaration.dart';
+import 'api_facet.dart';
 import 'api_summary_customizer.dart';
 import 'api_type.dart';
 import 'extensions.dart';
+import 'js_facet.dart';
+import 'meta_facet.dart';
 
 /// Traverses the public libraries of [packageName] within [context] to build
 /// a canonical [ApiSummary] representation.
@@ -149,6 +152,7 @@ final class _ApiBuilder {
           () => _ApiLibraryBuilder(
             library.uri.toString(),
             isPublicEntryPoint: library.uri.isInPublicLibOf(_pkgName),
+            facets: _extractFacets(library),
           ),
         );
         switch (apiElement) {
@@ -211,6 +215,7 @@ final class _ApiBuilder {
           () => _ApiLibraryBuilder(
             library.uri.toString(),
             isPublicEntryPoint: true,
+            facets: _extractFacets(library),
           ),
         );
       }
@@ -423,10 +428,7 @@ final class _ApiBuilder {
       constructors: constructors,
       methods: methods,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
-      isImmutable: element.nonSynthetic.metadata.hasImmutable,
-      isInternal: element.nonSynthetic.metadata.hasInternal,
-      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+      facets: _extractFacets(element),
     );
   }
 
@@ -453,9 +455,7 @@ final class _ApiBuilder {
       typeParameters: _extractTypeParameters(element.typeParameters),
       methods: methods,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
-      isInternal: element.nonSynthetic.metadata.hasInternal,
-      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+      facets: _extractFacets(element),
     );
   }
 
@@ -487,19 +487,20 @@ final class _ApiBuilder {
       constructors: constructors,
       methods: methods,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
-      isInternal: element.nonSynthetic.metadata.hasInternal,
-      isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+      facets: _extractFacets(element),
     );
   }
 
-  bool _hasAnnotation(
-    ExecutableElement element,
-    bool Function(Metadata metadata) predicate,
-  ) =>
-      predicate(element.nonSynthetic.metadata) ||
+  bool _isDeprecated(Element element) =>
+      element.nonSynthetic.metadata.hasDeprecated ||
       (element is PropertyAccessorElement &&
-          predicate(element.variable.nonSynthetic.metadata));
+          element.variable.nonSynthetic.metadata.hasDeprecated);
+
+  List<ApiFacet> _extractFacets(Element element) => [
+    ?MetaContractFacet.fromElement(element),
+    ?JsBindingFacet.fromElement(element),
+    ?JsExportFacet.fromElement(element),
+  ];
 
   ApiExecutable _buildExecutable(
     ExecutableElement element, {
@@ -547,23 +548,9 @@ final class _ApiBuilder {
           .toList(),
       isStatic: element.isStatic,
       isConst: isConst,
-      isDeprecated: _hasAnnotation(element, (m) => m.hasDeprecated),
+      isDeprecated: _isDeprecated(element),
       isEnumConstant: isEnumConstant,
-      isExperimental: _hasAnnotation(element, (m) => m.hasExperimental),
-      isInternal: _hasAnnotation(element, (m) => m.hasInternal),
-      isMustBeOverridden: _hasAnnotation(element, (m) => m.hasMustBeOverridden),
-      isMustCallSuper: _hasAnnotation(element, (m) => m.hasMustCallSuper),
-      isNonVirtual: _hasAnnotation(element, (m) => m.hasNonVirtual),
-      isProtected: _hasAnnotation(element, (m) => m.hasProtected),
-      isUseResult: _hasAnnotation(element, (m) => m.hasUseResult),
-      isVisibleForOverriding: _hasAnnotation(
-        element,
-        (m) => m.hasVisibleForOverriding,
-      ),
-      isVisibleForTesting: _hasAnnotation(
-        element,
-        (m) => m.hasVisibleForTesting,
-      ),
+      facets: _extractFacets(element),
     );
   }
 
@@ -577,9 +564,7 @@ final class _ApiBuilder {
     typeParameters: _extractTypeParameters(element.typeParameters),
     aliasedType: _describeType(element.aliasedType),
     isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-    isExperimental: element.nonSynthetic.metadata.hasExperimental,
-    isInternal: element.nonSynthetic.metadata.hasInternal,
-    isVisibleForTesting: element.nonSynthetic.metadata.hasVisibleForTesting,
+    facets: _extractFacets(element),
   );
 }
 
@@ -587,6 +572,7 @@ final class _ApiBuilder {
 final class _ApiLibraryBuilder {
   final String uri;
   final bool isPublicEntryPoint;
+  final List<ApiFacet> facets;
   final classes = <ApiClass>[];
   final enums = <ApiClass>[];
   final mixins = <ApiClass>[];
@@ -595,7 +581,11 @@ final class _ApiLibraryBuilder {
   final functions = <ApiExecutable>[];
   final typeAliases = <ApiTypeAlias>[];
 
-  _ApiLibraryBuilder(this.uri, {required this.isPublicEntryPoint});
+  _ApiLibraryBuilder(
+    this.uri, {
+    required this.isPublicEntryPoint,
+    this.facets = const [],
+  });
 
   ApiLibrary build() {
     classes.sortBy((e) => e.name);
@@ -615,6 +605,7 @@ final class _ApiLibraryBuilder {
       extensionTypes: extensionTypes,
       functions: functions,
       typeAliases: typeAliases,
+      facets: facets,
     );
   }
 }
