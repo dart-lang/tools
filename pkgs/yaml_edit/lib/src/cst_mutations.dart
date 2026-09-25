@@ -55,7 +55,7 @@ final class LayoutStyle {
     }
     return LayoutStyle(
       indentStep: indentStep,
-      lineEnding: getLineEnding(document.source),
+      lineEnding: document.lineEnding,
     );
   }
 }
@@ -217,7 +217,55 @@ SourceEdit buildUpdate(
   YamlNode value,
 ) {
   final edit = _buildUpdate(document, path, value);
-  return _preventBlockScalarSwallowingComments(document, edit);
+  final bodyIndent = _blockBodyIndent(document, path, value);
+  if (bodyIndent != null) {
+    return document.preventBlockScalarSwallowing(edit, bodyIndent);
+  }
+  return edit;
+}
+
+int? _blockBodyIndent(
+  CstDocument document,
+  List<Object?> path,
+  YamlNode value,
+) {
+  if (value is YamlScalar) {
+    if (value.style != ScalarStyle.LITERAL &&
+        value.style != ScalarStyle.FOLDED) {
+      return null;
+    }
+  } else if (!isBlockNode(value)) {
+    return null;
+  }
+  const additionalIndentation = 2;
+  if (path.isEmpty) return additionalIndentation;
+
+  final parentPath = path.take(path.length - 1).toList();
+  final step = path.last;
+  final parent = findNode(document, parentPath);
+  if (parent == null) return null;
+
+  switch (parent) {
+    case CstBlockSeq():
+      if (step is int && step >= 0 && step < parent.entries.length) {
+        return document.columnOf(parent.entries[step].dashStart) +
+            additionalIndentation;
+      }
+      return additionalIndentation;
+    case CstBlockMap():
+      final index = findEntryIndex(parent, step);
+      if (index != null) {
+        return document.columnOf(parent.entries[index].keyStart) +
+            additionalIndentation;
+      }
+      return document.columnOf(parent.entries.first.keyStart) +
+          additionalIndentation;
+    case CstFlowPair():
+    case CstFlowCollection():
+      return null;
+    default:
+      return additionalIndentation;
+  }
 }
 
 SourceEdit _buildUpdate(
@@ -288,57 +336,46 @@ SourceEdit _buildUpdate(
   CstNode oldNode, {
   required bool newIsBlockScalar,
 }) {
-  var lineEnd = oldNode.contentEnd;
-  final atLineBoundary = oldNode.contentEnd > 0 &&
-      (document.source[oldNode.contentEnd - 1] == '\n' ||
-          document.source[oldNode.contentEnd - 1] == '\r');
-  while (!atLineBoundary &&
-      lineEnd < document.source.length &&
-      document.source[lineEnd] != '\n' &&
-      document.source[lineEnd] != '\r') {
-    lineEnd++;
-  }
-  final trailingLine = document.source.substring(oldNode.contentEnd, lineEnd);
-  if (trailingLine.contains('#')) {
-    if (newIsBlockScalar) {
-      return (commentToAttach: trailingLine, replaceEnd: lineEnd);
+  // If oldNode is a block scalar with a header comment inside its span:
+  if (oldNode is CstScalar) {
+    if (oldNode.headerComment case final headerComment?) {
+      final commentText = headerComment.span.text.trimRight();
+      return (
+        commentToAttach: ' $commentText',
+        replaceEnd: oldNode.contentEnd,
+      );
     }
-    // Leave trailingLine in place after oldNode.contentEnd.
-    return (commentToAttach: null, replaceEnd: oldNode.contentEnd);
   }
 
-  // If oldNode is a block scalar with a header comment inside its span,
-  // replacing oldNode.contentEnd will delete that comment unless we extract it.
-  if (oldNode is CstScalar &&
-      (oldNode.style == ScalarStyle.LITERAL ||
-          oldNode.style == ScalarStyle.FOLDED)) {
-    final text = document.source.substring(oldNode.contentStart, oldNode.end);
-    final firstNl = text.indexOf('\n');
-    if (firstNl != -1) {
-      var headerLine = text.substring(0, firstNl);
-      if (headerLine.endsWith('\r')) {
-        headerLine = headerLine.substring(0, headerLine.length - 1);
+  // If oldNode is followed by an inline comment on the same line:
+  if (!document.hasLineBreakBefore(oldNode.contentEnd)) {
+    final lineBreakEnd = document.lineBreakEndOf(oldNode.contentEnd);
+    final trailingComment =
+        document.commentInRange(oldNode.contentEnd, lineBreakEnd);
+    if (trailingComment != null) {
+      if (newIsBlockScalar) {
+        final commentText = trailingComment.span.text.trimRight();
+        return (
+          commentToAttach: ' $commentText',
+          replaceEnd: trailingComment.span.end.offset,
+        );
       }
-      final hashIdx = headerLine.indexOf('#');
-      if (hashIdx != -1) {
-        var commentStart = hashIdx;
-        while (commentStart > 0 &&
-            (headerLine[commentStart - 1] == ' ' ||
-                headerLine[commentStart - 1] == '\t')) {
-          commentStart--;
-        }
-        var comment = headerLine.substring(commentStart);
-        if (!comment.startsWith(' ') && !comment.startsWith('\t')) {
-          comment = ' $comment';
-        }
-        return (commentToAttach: comment, replaceEnd: oldNode.contentEnd);
-      }
+      return (commentToAttach: null, replaceEnd: oldNode.contentEnd);
+    }
+  }
+
+  var replaceEnd = oldNode.contentEnd;
+  if (newIsBlockScalar &&
+      oldNode.contentEnd > document.lineStartOf(oldNode.contentEnd)) {
+    final lineContentEnd = document.lineContentEndOf(oldNode.contentEnd);
+    if (lineContentEnd > replaceEnd) {
+      replaceEnd = lineContentEnd;
     }
   }
 
   return (
     commentToAttach: null,
-    replaceEnd: newIsBlockScalar ? lineEnd : oldNode.contentEnd,
+    replaceEnd: replaceEnd,
   );
 }
 
@@ -352,12 +389,7 @@ String _attachCommentToReplacement(
 }) {
   if (comment == null) return replacement;
   if (isBlockScalar) {
-    final firstBreak = replacement.indexOf(lineEnding);
-    if (firstBreak != -1) {
-      return '${replacement.substring(0, firstBreak)}'
-          '$comment'
-          '${replacement.substring(firstBreak)}';
-    }
+    return CstDocument.attachHeaderComment(replacement, comment, lineEnding);
   }
   return '$replacement$comment';
 }
@@ -371,8 +403,8 @@ SourceEdit _replaceRoot(
     // root of such a document replaces the document.
     return SourceEdit(0, document.source.length, text);
   }
-  final isBlockScalar = (text.startsWith('|') || text.startsWith('>')) &&
-      text.contains(style.lineEnding);
+  final isBlockScalar = value is YamlScalar &&
+      (value.style == ScalarStyle.LITERAL || value.style == ScalarStyle.FOLDED);
   final (:commentToAttach, :replaceEnd) = _extractNodeComment(
     document,
     root,
@@ -401,11 +433,16 @@ SourceEdit _replaceBlockSeqValue(
   CstBlockSeqEntry entry,
   YamlNode value,
 ) {
+  if (entry.value is CstEmpty && value.value == null) {
+    return SourceEdit(entry.value.start, 0, '');
+  }
+  if (entry.value.hasProperties && deepEquals(entry.value.value, value)) {
+    return _replaceInPlace(document, style, entry.value, value);
+  }
   final dashColumn = document.columnOf(entry.dashStart);
-  final separator =
-      document.source.substring(entry.dashStart + 1, entry.value.start);
+  final hasSeparatorWhitespace = entry.value.start - entry.dashStart - 1 > 1;
 
-  if (separator.contains('#') || separator.length > 1) {
+  if (entry.hasSeparatorComment || hasSeparatorWhitespace) {
     // Leave the comment or extra spaces, and write the value where the old one
     // was.
     return _replaceInPlace(document, style, entry.value, value);
@@ -417,8 +454,8 @@ SourceEdit _replaceBlockSeqValue(
     }
   }
 
-  final isBlockScalar = (encoded.startsWith('|') || encoded.startsWith('>')) &&
-      encoded.contains(style.lineEnding);
+  final isBlockScalar = value is YamlScalar &&
+      (value.style == ScalarStyle.LITERAL || value.style == ScalarStyle.FOLDED);
   final (:commentToAttach, :replaceEnd) = _extractNodeComment(
     document,
     entry.value,
@@ -446,11 +483,16 @@ SourceEdit _replaceBlockMapValue(
   CstBlockMapEntry entry,
   YamlNode value,
 ) {
+  if (entry.value is CstEmpty && value.value == null) {
+    return SourceEdit(entry.value.start, 0, '');
+  }
+  if (entry.value.hasProperties && deepEquals(entry.value.value, value)) {
+    return _replaceInPlace(document, style, entry.value, value);
+  }
   final keyColumn = document.columnOf(entry.keyStart);
   final encoded = encodeValue(value, style, indicatorColumn: keyColumn);
-  final isBlockScalar =
-      (encoded.text.startsWith('|') || encoded.text.startsWith('>')) &&
-          encoded.text.contains(style.lineEnding);
+  final isBlockScalar = value is YamlScalar &&
+      (value.style == ScalarStyle.LITERAL || value.style == ScalarStyle.FOLDED);
 
   final colon = entry.colon;
   if (colon == null) {
@@ -461,8 +503,7 @@ SourceEdit _replaceBlockMapValue(
       newIsBlockScalar: isBlockScalar,
     );
     final atLineStart = entry.value.start == 0 ||
-        document.source[entry.value.start - 1] == '\n' ||
-        document.source[entry.value.start - 1] == '\r';
+        document.hasLineBreakBefore(entry.value.start);
     final linePrefix = atLineStart ? '' : style.lineEnding;
 
     var fullText = encoded.ownLine
@@ -476,8 +517,7 @@ SourceEdit _replaceBlockMapValue(
     );
 
     final followedByBreakOrContent = replaceEnd < document.source.length &&
-        (document.source[replaceEnd] != '\n' &&
-            document.source[replaceEnd] != '\r');
+        !document.hasLineBreakAt(replaceEnd);
     if (atLineStart &&
         followedByBreakOrContent &&
         !fullText.endsWith(style.lineEnding)) {
@@ -488,8 +528,7 @@ SourceEdit _replaceBlockMapValue(
         entry.value.start, replaceEnd - entry.value.start, fullText);
   }
 
-  final separator = document.source.substring(colon + 1, entry.value.start);
-  if (separator.contains('#')) {
+  if (entry.hasSeparatorComment) {
     return _replaceInPlace(document, style, entry.value, value);
   }
 
@@ -501,11 +540,35 @@ SourceEdit _replaceBlockMapValue(
   var textToInsert = encoded.text;
 
   if (!encoded.ownLine &&
-      document.source.substring(colon + 1, entry.value.start).contains('\n')) {
-    final endsWithBreak = replaceEnd > 0 &&
-        (document.source[replaceEnd - 1] == '\n' ||
-            document.source[replaceEnd - 1] == '\r');
+      document.hasLineBreakInRange(colon + 1, entry.value.start)) {
+    final endsWithBreak =
+        replaceEnd > 0 && document.hasLineBreakBefore(replaceEnd);
     if (endsWithBreak && !textToInsert.endsWith(style.lineEnding)) {
+      textToInsert = '$textToInsert${style.lineEnding}';
+    }
+  }
+
+  // Preserve trailing line break when replacing a block scalar with an inline
+  // scalar (K858_0).
+  if (entry.value is CstScalar) {
+    final oldScalar = entry.value as CstScalar;
+    if ((oldScalar.style == ScalarStyle.LITERAL ||
+            oldScalar.style == ScalarStyle.FOLDED) &&
+        !encoded.ownLine &&
+        !isBlockScalar) {
+      if (!textToInsert.endsWith(style.lineEnding) &&
+          document.hasLineBreakBefore(entry.end) &&
+          replaceEnd <= entry.value.end) {
+        textToInsert = '$textToInsert${style.lineEnding}';
+      }
+    }
+  }
+
+  if (entry.value is CstBlockSeq || entry.value is CstBlockMap) {
+    if (replaceEnd < document.source.length &&
+        document.hasLineBreakBefore(replaceEnd) &&
+        !document.hasLineBreakAt(replaceEnd) &&
+        !textToInsert.endsWith(style.lineEnding)) {
       textToInsert = '$textToInsert${style.lineEnding}';
     }
   }
@@ -534,14 +597,27 @@ SourceEdit _replaceInPlace(
   CstNode old,
   YamlNode value,
 ) {
+  if (old is CstEmpty && value.value == null) {
+    return SourceEdit(old.start, 0, '');
+  }
+  final isCollection = value is YamlList || value is YamlMap;
   final column = switch (old) {
     CstBlockSeq() => document.columnOf(old.entries.first.dashStart),
     CstBlockMap() => document.columnOf(old.entries.first.keyStart),
-    _ => document.columnOf(old.contentStart),
+    _ => document.columnOf(old.start),
   };
-  final startsOwnLine = document.columnOf(old.start) == 0;
+  var onlyWhitespaceBefore = true;
+  final lineStart = document.lineStartOf(old.start);
+  for (var i = lineStart; i < old.start; i++) {
+    final char = document.source[i];
+    if (char != ' ' && char != '\t') {
+      onlyWhitespaceBefore = false;
+      break;
+    }
+  }
+  final startsOwnLine = onlyWhitespaceBefore;
   var text = yamlEncodeBlock(value, column, style.lineEnding);
-  if (value is YamlList || value is YamlMap) {
+  if (isCollection) {
     if (!startsOwnLine && _spansOwnLines(value)) {
       text = text.substring(column);
     }
@@ -551,10 +627,8 @@ SourceEdit _replaceInPlace(
     }
   }
 
-  final trimmedText = text.trimLeft();
-  final isBlockScalar =
-      (trimmedText.startsWith('|') || trimmedText.startsWith('>')) &&
-          text.contains(style.lineEnding);
+  final isBlockScalar = value is YamlScalar &&
+      (value.style == ScalarStyle.LITERAL || value.style == ScalarStyle.FOLDED);
   final (:commentToAttach, :replaceEnd) = _extractNodeComment(
     document,
     old,
@@ -567,14 +641,21 @@ SourceEdit _replaceInPlace(
     isBlockScalar: isBlockScalar,
   );
 
-  return SourceEdit(old.start, replaceEnd - old.start, text);
+  final startOffset =
+      startsOwnLine ? lineStart : (isCollection ? old.start : old.contentStart);
+  return SourceEdit(startOffset, replaceEnd - startOffset, text);
 }
 
 /// Replaces a value inside a flow collection, where everything stays on one
 /// line and only flow syntax is allowed.
 SourceEdit _replaceFlowValue(CstNode old, YamlNode value) {
-  final length = old.value.span.length;
-  return SourceEdit(old.value.span.start.offset, length, yamlEncodeFlow(value));
+  if (old is CstEmpty && value.value == null) {
+    return SourceEdit(old.start, 0, '');
+  }
+  final startOffset = (old.hasProperties && deepEquals(old.value, value))
+      ? old.contentStart
+      : old.start;
+  return SourceEdit(startOffset, old.end - startOffset, yamlEncodeFlow(value));
 }
 
 /// Replaces the value of a flow mapping entry, writing a `:` if the entry was
@@ -585,6 +666,9 @@ SourceEdit _replaceFlowMapValue(
   Object? key,
   YamlNode value,
 ) {
+  if (entry.value is CstEmpty && value.value == null) {
+    return SourceEdit(entry.value.start, 0, '');
+  }
   final text = yamlEncodeFlow(value);
   if (entry.colon == null) {
     return SourceEdit(
@@ -632,7 +716,7 @@ SourceEdit _appendBlockMapEntry(
     return SourceEdit(lineStart, 0, '$entryText${style.lineEnding}');
   }
   return _appendLineToBlockCollection(
-      document, style, map.entries.last.end, entryText, map.entries.last);
+      document, style, map.entries.last.end, entryText);
 }
 
 /// Appends [text] as a new line of a block collection whose last entry ends at
@@ -647,10 +731,8 @@ SourceEdit _appendLineToBlockCollection(
   LayoutStyle style,
   int end,
   String text,
-  Object lastEntry,
 ) {
-  final endsWithBreak = end > 0 &&
-      (document.source[end - 1] == '\n' || document.source[end - 1] == '\r');
+  final endsWithBreak = end > 0 && document.hasLineBreakBefore(end);
   if (endsWithBreak) {
     return SourceEdit(end, 0, '$text${style.lineEnding}');
   }
@@ -683,7 +765,31 @@ SourceEdit buildInsert(
   YamlNode value,
 ) {
   final edit = _buildInsert(document, path, index, value);
-  return _preventBlockScalarSwallowingComments(document, edit);
+  final bodyIndent = _blockScalarInsertBodyIndent(document, path, index, value);
+  if (bodyIndent != null) {
+    return document.preventBlockScalarSwallowing(edit, bodyIndent);
+  }
+  return edit;
+}
+
+int? _blockScalarInsertBodyIndent(
+  CstDocument document,
+  List<Object?> path,
+  int index,
+  YamlNode value,
+) {
+  if (value is! YamlScalar ||
+      (value.style != ScalarStyle.LITERAL &&
+          value.style != ScalarStyle.FOLDED)) {
+    return null;
+  }
+  const additionalIndentation = 2;
+  final node = findNode(document, path);
+  if (node is CstBlockSeq && node.entries.isNotEmpty) {
+    return document.columnOf(node.entries.first.dashStart) +
+        additionalIndentation;
+  }
+  return null;
 }
 
 SourceEdit _buildInsert(
@@ -709,16 +815,16 @@ SourceEdit _buildInsert(
 SourceEdit _insertIntoBlockSeq(
   CstDocument document,
   LayoutStyle style,
-  CstBlockSeq seq,
+  CstBlockSeq sequence,
   int index,
   YamlNode value,
 ) {
-  final column = document.columnOf(seq.entries.first.dashStart);
+  final column = document.columnOf(sequence.entries.first.dashStart);
   final text =
       '${' ' * column}- ${encodeAfterDash(value, style, dashColumn: column)}';
 
-  if (index < seq.entries.length) {
-    final before = seq.entries[index];
+  if (index < sequence.entries.length) {
+    final before = sequence.entries[index];
     // Insert at the start of the line the entry it precedes is written on, so
     // that a comment written above that entry stays above it.
     //
@@ -739,7 +845,7 @@ SourceEdit _insertIntoBlockSeq(
   }
 
   return _appendLineToBlockCollection(
-      document, style, seq.entries.last.end, text, seq.entries.last);
+      document, style, sequence.entries.last.end, text);
 }
 
 /// Inserts [text] as the entry at [index] of a flow collection.
@@ -769,15 +875,13 @@ SourceEdit _insertIntoFlowCollection(
   // just after the last entry, so that anything written between the two — a
   // comment, or the line break of a multi-line collection — stays where it is.
   final last = entries.last;
-  final gap = document.source.substring(last.value.end, collection.closeStart);
-
   if (last.comma == null) {
     return SourceEdit(collection.closeStart, 0, ', $text');
   }
 
   // The collection is written in trailing-comma form, so match it rather than
   // adding a separator of our own.
-  if (gap.contains('\n')) {
+  if (collection.isMultiline) {
     // The closing bracket sits on a line of its own. Line the new entry up
     // with the entry above it and leave the bracket where it was.
     final entryColumn = document.columnOf(last.contentStart);
@@ -786,13 +890,13 @@ SourceEdit _insertIntoFlowCollection(
     return SourceEdit(
         collection.closeStart,
         0,
-        '$extraIndent$text,${getLineEnding(document.source)}'
+        '$extraIndent$text,${document.lineEnding}'
         '${' ' * closeColumn}');
   }
 
   // Everything is on one line. Separate the new entry from the comma before it
   // unless the source already does.
-  final spacer = gap.endsWith(' ') || gap.endsWith('\t') ? '' : ' ';
+  final spacer = document.hasWhitespaceBefore(collection.closeStart) ? '' : ' ';
   return SourceEdit(collection.closeStart, 0, '$spacer$text,');
 }
 
@@ -902,41 +1006,21 @@ SourceEdit _removeBlockEntry(
   required int? nextEntryContentStart,
 }) {
   if (entryCount == 1) {
-    final hasBreak = end > 0 &&
-        (document.source[end - 1] == '\n' || document.source[end - 1] == '\r');
-    final breakLen = hasBreak
-        ? (end > 1 &&
-                document.source[end - 2] == '\r' &&
-                document.source[end - 1] == '\n'
-            ? 2
-            : 1)
-        : 0;
-    final col = document.columnOf(contentStart);
-    final text = (col == 0 &&
-            contentStart > 0 &&
-            (document.source[contentStart - 1] == '\n' ||
-                document.source[contentStart - 1] == '\r'))
+    final breakLength = document.lineBreakLengthBefore(end);
+    final column = document.columnOf(contentStart);
+    final text = (column == 0 && document.hasLineBreakBefore(contentStart))
         ? '  $emptyText'
         : emptyText;
-    return SourceEdit(contentStart, end - breakLen - contentStart, text);
+    return SourceEdit(contentStart, end - breakLength - contentStart, text);
   }
-
-  final src = document.source;
-  final len = src.length;
 
   int startOffset;
   int endOffset;
 
   if (isCompact && nextEntryContentStart != null) {
-    // When removing the first entry of a compact collection that has
-    // subsequent entries, we want the next entry to become compact only if it
-    // immediately follows on the next line.
     final nextLineStart = document.lineStartOf(nextEntryContentStart);
     final nextIndentLength = nextEntryContentStart - nextLineStart;
-    final trueEndOffset = end - 1;
-    final nearestLineEndingBeforeNext =
-        src.lastIndexOf('\n', nextEntryContentStart);
-    final isImmediatelyNextLine = nearestLineEndingBeforeNext == trueEndOffset;
+    final isImmediatelyNextLine = nextLineStart == end;
     startOffset = contentStart;
     endOffset = isImmediatelyNextLine ? end + nextIndentLength : end;
   } else {
@@ -951,53 +1035,8 @@ SourceEdit _removeBlockEntry(
       _ => 0,
     };
 
-    var probe = endOffset;
-    while (probe < len) {
-      var lineScan = probe;
-      while (
-          lineScan < len && (src[lineScan] == ' ' || src[lineScan] == '\t')) {
-        lineScan++;
-      }
-      if (lineScan >= len) {
-        endOffset = len;
-        break;
-      }
-      final ch = src[lineScan];
-      if (ch == '\n' || ch == '\r') {
-        // Completely blank line!
-        if (ch == '\r' && lineScan + 1 < len && src[lineScan + 1] == '\n') {
-          probe = lineScan + 2;
-        } else {
-          probe = lineScan + 1;
-        }
-        endOffset = probe;
-        continue;
-      }
-      if (ch == '#') {
-        final lineIndent = lineScan - probe;
-        if (lineIndent > collectionIndent) {
-          // Indented comment, consume whole line
-          while (lineScan < len &&
-              src[lineScan] != '\n' &&
-              src[lineScan] != '\r') {
-            lineScan++;
-          }
-          if (lineScan < len &&
-              src[lineScan] == '\r' &&
-              lineScan + 1 < len &&
-              src[lineScan + 1] == '\n') {
-            probe = lineScan + 2;
-          } else if (lineScan < len) {
-            probe = lineScan + 1;
-          } else {
-            probe = lineScan;
-          }
-          endOffset = probe;
-          continue;
-        }
-      }
-      break;
-    }
+    endOffset = document.extendPastIndentedCommentsAndBlankLines(
+        endOffset, collectionIndent);
   }
 
   return SourceEdit(startOffset, endOffset - startOffset, '');
@@ -1011,7 +1050,6 @@ SourceEdit _removeFlowEntry(
   CstFlowCollection collection,
   int index,
 ) {
-  final src = document.source;
   final entries = collection.entries;
   final entry = entries[index];
 
@@ -1023,28 +1061,51 @@ SourceEdit _removeFlowEntry(
   if (index == 0) {
     final comma = entry.comma;
     if (comma != null) {
-      final beforeEntry = src.substring(collection.openEnd, entry.contentStart);
+      if (collection is CstFlowSeq) {
+        final commentsInEntry =
+            document.commentsInRange(entry.value.end, comma);
+        final ownLineComments = commentsInEntry
+            .where((c) =>
+                document.lineStartOf(c.span.start.offset) >
+                document.lineStartOf(entry.contentStart))
+            .toList();
+        if (ownLineComments.isNotEmpty) {
+          final preserved = document.source.substring(entry.value.end, comma);
+          return SourceEdit(
+            entry.contentStart,
+            (comma + 1) - entry.contentStart,
+            preserved,
+          );
+        }
+      }
+
+      final commentsBefore =
+          document.commentsInRange(collection.openEnd, entry.contentStart);
       final nextContent = entries[1].contentStart;
-      final afterComma = src.substring(comma + 1, nextContent);
-      if (beforeEntry.contains('#') &&
-          !src.substring(entry.contentStart, comma).contains('\n')) {
-        if (!afterComma.contains('\n')) {
+      final commentsAfterComma =
+          document.commentsInRange(comma + 1, nextContent);
+
+      if (commentsBefore.isNotEmpty &&
+          !document.hasLineBreakInRange(entry.contentStart, comma)) {
+        if (!document.hasLineBreakInRange(comma + 1, nextContent)) {
           return SourceEdit(
               entry.contentStart, nextContent - entry.contentStart, '');
         }
-        final lastNl = beforeEntry.lastIndexOf('\n');
         final start =
-            lastNl != -1 ? collection.openEnd + lastNl + 1 : entry.contentStart;
-        final nl = afterComma.indexOf('\n');
-        final end = comma + 1 + nl + 1;
+            document.lineBreakEndOf(commentsBefore.last.span.end.offset);
+        final end = commentsAfterComma.isNotEmpty
+            ? document.lineBreakEndOf(commentsAfterComma.first.span.end.offset)
+            : document.lineBreakEndOf(comma);
         return SourceEdit(start, end - start, '');
       }
+
       var end = comma + 1;
-      final nl = afterComma.indexOf('\n');
-      final sameLineAfterComma =
-          nl != -1 ? afterComma.substring(0, nl) : afterComma;
-      if (sameLineAfterComma.contains('#')) {
-        end += nl != -1 ? nl : afterComma.length;
+      if (commentsAfterComma.isNotEmpty) {
+        final comment = commentsAfterComma.first;
+        if (document.lineStartOf(comment.span.start.offset) ==
+            document.lineStartOf(comma)) {
+          end = document.lineBreakEndOf(comment.span.end.offset);
+        }
       }
       return SourceEdit(collection.openEnd, end - collection.openEnd, '');
     }
@@ -1056,17 +1117,19 @@ SourceEdit _removeFlowEntry(
   if (index < entries.length - 1) {
     final next = entries[index + 1];
     final entryEnd = entry.comma != null ? entry.comma! + 1 : entry.end;
-    final afterEntry = src.substring(entryEnd, next.contentStart);
-    if (afterEntry.contains('#')) {
-      final nl = afterEntry.indexOf('\n');
-      if (nl != -1) {
-        final prev = entries[index - 1];
-        final prevEnd = prev.comma != null ? prev.comma! + 1 : prev.end;
-        final beforeEntry = src.substring(prevEnd, entry.contentStart);
-        final lastNl = beforeEntry.lastIndexOf('\n');
-        final start = lastNl != -1 ? prevEnd + lastNl + 1 : entry.contentStart;
-        return SourceEdit(start, (entryEnd + nl + 1) - start, '');
-      }
+    final commentsAfter = document.commentsInRange(entryEnd, next.contentStart);
+    if (commentsAfter.isNotEmpty) {
+      final comment = commentsAfter.first;
+      final lineBreakEnd = document.lineBreakEndOf(comment.span.end.offset);
+      final previous = entries[index - 1];
+      final previousEnd =
+          previous.comma != null ? previous.comma! + 1 : previous.end;
+      final commentsBefore =
+          document.commentsInRange(previousEnd, entry.contentStart);
+      final start = commentsBefore.isNotEmpty
+          ? document.lineBreakEndOf(commentsBefore.last.span.end.offset)
+          : entry.contentStart;
+      return SourceEdit(start, lineBreakEnd - start, '');
     }
     return SourceEdit(
         entry.contentStart, next.contentStart - entry.contentStart, '');
@@ -1074,108 +1137,26 @@ SourceEdit _removeFlowEntry(
 
   final previous = entries[index - 1];
   final from = previous.comma ?? previous.end;
-  final prevEnd = previous.comma != null ? previous.comma! + 1 : previous.end;
-  final beforeEntry = src.substring(prevEnd, entry.contentStart);
-  final lastNl = beforeEntry.lastIndexOf('\n');
-  if (beforeEntry.contains('#') && lastNl != -1) {
-    return SourceEdit(from, collection.closeStart - from,
-        beforeEntry.substring(0, lastNl + 1));
+  final previousEnd =
+      previous.comma != null ? previous.comma! + 1 : previous.end;
+  final commentsBefore =
+      document.commentsInRange(previousEnd, entry.contentStart);
+  if (commentsBefore.isNotEmpty) {
+    final deleteStart =
+        document.lineBreakEndOf(commentsBefore.last.span.end.offset);
+    return SourceEdit(deleteStart, collection.closeStart - deleteStart, '');
   }
+
+  final commentsAfter =
+      document.commentsInRange(entry.value.end, collection.closeStart);
+  if (commentsAfter.isNotEmpty) {
+    final firstComment = commentsAfter.first;
+    if (document.lineStartOf(firstComment.span.start.offset) >
+        document.lineStartOf(entry.contentStart)) {
+      final deleteEnd = document.lineBreakEndOf(entry.value.end);
+      return SourceEdit(from, deleteEnd - from, '');
+    }
+  }
+
   return SourceEdit(from, collection.closeStart - from, '');
-}
-
-/// Prevents an inserted or updated block scalar from swallowing subsequent
-/// comment lines that happen to be indented at or beyond the scalar's
-/// indentation level.
-///
-/// In YAML, a block scalar continues until indentation drops below its body
-/// indentation, and `#` characters on lines indented at or beyond that level
-/// are parsed as literal text rather than comments. When comments following
-/// the edit have indentation greater than or equal to the scalar's body, they
-/// are re-indented to column 0 so they remain comments.
-SourceEdit _preventBlockScalarSwallowingComments(
-  CstDocument document,
-  SourceEdit edit,
-) {
-  final text = edit.replacement;
-  final lines = text.split('\n');
-  int? headerLineIndex;
-  final headerPattern = RegExp(r'(?:^|[\s:-])([|>][+-]?)(?:\s+#.*)?$');
-  for (var i = lines.length - 1; i >= 0; i--) {
-    final line = lines[i];
-    if (headerPattern.hasMatch(line)) {
-      headerLineIndex = i;
-      break;
-    }
-  }
-
-  if (headerLineIndex == null) return edit;
-
-  int? bodyIndent;
-  for (var i = headerLineIndex + 1; i < lines.length; i++) {
-    final line = lines[i];
-    if (line.trim().isNotEmpty) {
-      bodyIndent = line.length - line.trimLeft().length;
-      break;
-    }
-  }
-
-  if (bodyIndent == null || bodyIndent == 0) return edit;
-
-  final endOffset = edit.offset + edit.length;
-  var pos = endOffset;
-  if (pos < document.source.length &&
-      (document.source[pos] == '\n' || document.source[pos] == '\r')) {
-    if (pos + 1 < document.source.length &&
-        document.source[pos] == '\r' &&
-        document.source[pos + 1] == '\n') {
-      pos += 2;
-    } else {
-      pos += 1;
-    }
-  }
-  var extraLength = pos - endOffset;
-  final buffer = StringBuffer();
-
-  while (pos < document.source.length) {
-    var lineEnd = pos;
-    while (lineEnd < document.source.length &&
-        document.source[lineEnd] != '\n' &&
-        document.source[lineEnd] != '\r') {
-      lineEnd++;
-    }
-    final nextBreak = lineEnd < document.source.length
-        ? (lineEnd + 1 < document.source.length &&
-                document.source[lineEnd] == '\r' &&
-                document.source[lineEnd + 1] == '\n'
-            ? lineEnd + 2
-            : lineEnd + 1)
-        : lineEnd;
-
-    final line = document.source.substring(pos, lineEnd);
-    final trimmed = line.trimLeft();
-    if (trimmed.startsWith('#')) {
-      final col = line.length - trimmed.length;
-      if (col >= bodyIndent) {
-        final breakChars = document.source.substring(lineEnd, nextBreak);
-        buffer.write('$trimmed$breakChars');
-        extraLength += nextBreak - pos;
-        pos = nextBreak;
-        continue;
-      }
-    }
-    break;
-  }
-
-  if (buffer.isEmpty) return edit;
-
-  final rep = edit.replacement.endsWith('\n') || edit.replacement.endsWith('\r')
-      ? edit.replacement
-      : '${edit.replacement}\n';
-
-  return SourceEdit(
-    edit.offset,
-    edit.length + extraLength,
-    '$rep$buffer',
-  );
 }

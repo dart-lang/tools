@@ -37,8 +37,9 @@ class Parser {
   /// The custom tag directives, by tag handle.
   final _tagDirectives = <String, TagDirective>{};
 
-  /// All tokens emitted by the underlying scanner, if `retainTokens` was true.
-  List<Token> get tokens => _scanner.allTokens;
+  /// All non-empty tokens emitted by the underlying scanner if `retainTokens`
+  /// was `true`, or `null` otherwise.
+  List<Token>? get tokens => _scanner.retainedTokens;
 
   /// Whether the parser has finished parsing.
   bool get isDone => _state == _State.END;

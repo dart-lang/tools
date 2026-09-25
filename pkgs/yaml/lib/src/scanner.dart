@@ -98,11 +98,13 @@ class Scanner {
   /// Whether this scanner should attempt to recover when parsing invalid YAML.
   final bool _recover;
 
-  /// Whether this scanner should retain all emitted tokens in [allTokens].
-  final bool _retainTokens;
+  /// All non-empty tokens emitted by this scanner if `retainTokens` was set to
+  /// `true`, or `null` otherwise.
+  final List<Token>? _retainedTokens;
 
-  /// All tokens emitted by this scanner if `retainTokens` was set to `true`.
-  final List<Token> allTokens = [];
+  /// All non-empty tokens emitted by this scanner if `retainTokens` was set to
+  /// `true`, or `null` otherwise.
+  List<Token>? get retainedTokens => _retainedTokens;
 
   /// A listener to report YAML errors to.
   final ErrorListener? _errorListener;
@@ -297,7 +299,7 @@ class Scanner {
       bool retainTokens = false,
       ErrorListener? errorListener})
       : _recover = recover,
-        _retainTokens = retainTokens,
+        _retainedTokens = retainTokens ? [] : null,
         _errorListener = errorListener,
         _scanner = SpanScanner.eager(source, sourceUrl: sourceUrl);
 
@@ -307,13 +309,15 @@ class Scanner {
     if (!_tokenAvailable) _fetchMoreTokens();
 
     var token = _tokens.removeFirst();
-    if (_retainTokens && token.span.length > 0) allTokens.add(token);
     _tokenAvailable = false;
     _tokensParsed++;
     _streamEndProduced = token.type == TokenType.streamEnd;
-    if (_streamEndProduced && _retainTokens) {
-      allTokens
-          .sort((a, b) => a.span.start.offset.compareTo(b.span.start.offset));
+    if (_retainedTokens case final retainedTokens?) {
+      if (token.span.length > 0) retainedTokens.add(token);
+      if (_streamEndProduced) {
+        retainedTokens
+            .sort((a, b) => a.span.start.offset.compareTo(b.span.start.offset));
+      }
     }
     return token;
   }
@@ -818,8 +822,27 @@ class Scanner {
       }
 
       if (_scanner.peekChar() == TAB) {
-        _scanner.error('Tab characters are not allowed as indentation.',
-            length: 1);
+        var offset = 0;
+        var isBlankOrCommentLine = false;
+        while (true) {
+          final char = _scanner.peekChar(offset);
+          if (char == null || char == LF || char == CR || char == HASH) {
+            isBlankOrCommentLine = true;
+            break;
+          }
+          if (char != SP && char != TAB) {
+            break;
+          }
+          offset++;
+        }
+        if (isBlankOrCommentLine) {
+          while (_scanner.peekChar() == SP || _scanner.peekChar() == TAB) {
+            _scanner.readChar();
+          }
+        } else {
+          _scanner.error('Tab characters are not allowed as indentation.',
+              length: 1);
+        }
       }
 
       // Eat a comment until a line break.
@@ -1156,6 +1179,7 @@ class Scanner {
           'Expected comment or line break.', _scanner.emptySpan);
     }
 
+    var end = _scanner.state;
     _skipLine();
 
     // If the block scalar has an explicit indentation indicator, add that to
@@ -1168,7 +1192,8 @@ class Scanner {
 
     // Scan the leading line breaks to determine the indentation level if
     // needed.
-    var pair = _scanBlockScalarBreaks(indent);
+    var pair = _scanBlockScalarBreaks(indent,
+        recordLastBreakStart: chomping == _Chomping.keep);
     indent = pair.indent;
     var trailingBreaks = pair.trailingBreaks;
 
@@ -1177,7 +1202,6 @@ class Scanner {
     var leadingBreak = '';
     var leadingBlank = false;
     var trailingBlank = false;
-    var end = _scanner.state;
     while (_scanner.column == indent && !_scanner.isDone) {
       // Check for a document indicator. libyaml doesn't do this, but the spec
       // mandates it. See example 9.5:
@@ -1224,7 +1248,8 @@ class Scanner {
       }
 
       // Eat the following indentation and spaces.
-      pair = _scanBlockScalarBreaks(indent);
+      pair = _scanBlockScalarBreaks(indent,
+          recordLastBreakStart: chomping == _Chomping.keep);
       indent = pair.indent;
       trailingBreaks = pair.trailingBreaks;
     }
@@ -1244,11 +1269,11 @@ class Scanner {
 
   /// Scans indentation spaces and line breaks for a block scalar.
   ///
-  /// Determines the intendation level if needed. Returns the new indentation
-  /// level, the text of the line breaks, and the state just before the last
-  /// scanned line break.
+  /// Determines the indentation level if needed. Returns the new indentation
+  /// level, the text of the line breaks, and (when [recordLastBreakStart] is
+  /// `true`) the state just before the last scanned line break.
   ({int indent, String trailingBreaks, LineScannerState? lastBreakStart})
-      _scanBlockScalarBreaks(int indent) {
+      _scanBlockScalarBreaks(int indent, {bool recordLastBreakStart = false}) {
     var maxIndent = 0;
     var breaks = StringBuffer();
     LineScannerState? lastBreakStart;
@@ -1266,7 +1291,7 @@ class Scanner {
       // http://yaml.org/spec/1.2/spec.html#id2794311.
 
       if (!_isBreak) break;
-      lastBreakStart = _scanner.state;
+      if (recordLastBreakStart) lastBreakStart = _scanner.state;
       breaks.write(_readLine());
     }
 
@@ -1520,7 +1545,22 @@ class Scanner {
           if (leadingBreak.isNotEmpty &&
               _scanner.column < indent &&
               _scanner.peekChar() == TAB) {
-            _scanner.error('Expected a space but found a tab.', length: 1);
+            var offset = 0;
+            var isBlankOrCommentLine = false;
+            while (true) {
+              final char = _scanner.peekChar(offset);
+              if (char == null || char == LF || char == CR || char == HASH) {
+                isBlankOrCommentLine = true;
+                break;
+              }
+              if (char != SP && char != TAB) {
+                break;
+              }
+              offset++;
+            }
+            if (!isBlankOrCommentLine) {
+              _scanner.error('Expected a space but found a tab.', length: 1);
+            }
           }
 
           if (leadingBreak.isEmpty) {
@@ -1671,12 +1711,16 @@ class Scanner {
   /// Moves the scanner past a comment, if one starts at the current position.
   void _skipComment() {
     if (_scanner.peekChar() != HASH) return;
-    var start = _scanner.state;
-    while (!_isBreakOrEnd) {
-      _scanner.readChar();
-    }
-    if (_retainTokens) {
-      allTokens.add(CommentToken(_scanner.spanFrom(start)));
+    if (_retainedTokens case final retainedTokens?) {
+      var start = _scanner.state;
+      while (!_isBreakOrEnd) {
+        _scanner.readChar();
+      }
+      retainedTokens.add(CommentToken(_scanner.spanFrom(start)));
+    } else {
+      while (!_isBreakOrEnd) {
+        _scanner.readChar();
+      }
     }
   }
 

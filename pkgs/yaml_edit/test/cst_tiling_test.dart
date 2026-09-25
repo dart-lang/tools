@@ -17,6 +17,7 @@ import 'dart:isolate';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/src/cst.dart';
+import 'package:yaml_edit/src/utils.dart' show withYamlWarningCallback;
 
 /// Parses [source] and asserts the CST reproduces it exactly.
 void checkTiles(String source) {
@@ -93,6 +94,17 @@ String render(CstDocument document) {
   upTo(source.length);
   return buffer.toString();
 }
+
+/// Replaces special characters used by yaml-test-suite to visualize invisible
+/// characters.
+/// See: https://github.com/yaml/yaml-test-suite/blob/main/ReadMe.md#special-characters
+String _replaceSpecialCharacters(String input) => input
+    .replaceAll('␣', ' ')
+    .replaceAll(RegExp(r'—*»'), '\t')
+    .replaceAll('↵', '')
+    .replaceAll('←', '\r')
+    .replaceAll('⇔', '\uFEFF')
+    .replaceFirst(RegExp(r'∎\n?$'), '');
 
 void main() {
   group('tiles hand-written documents', () {
@@ -198,19 +210,20 @@ void main() {
           if (testCase.containsKey('error') || testCase.containsKey('fail')) {
             continue;
           }
-          final source = testCase['yaml'];
-          if (source is! String) continue;
+          final rawSource = testCase['yaml'];
+          if (rawSource is! String) continue;
+          final source = _replaceSpecialCharacters(rawSource);
 
           // Only documents our own parser accepts are in scope.
           try {
-            loadYamlNode(source);
+            withYamlWarningCallback(() => loadYamlNode(source));
           } catch (_) {
             continue;
           }
 
           accepted++;
           try {
-            checkTiles(source);
+            withYamlWarningCallback(() => checkTiles(source));
           } catch (error) {
             failures['${basename}_$index'] = error;
           }

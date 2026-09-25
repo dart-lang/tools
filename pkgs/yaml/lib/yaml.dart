@@ -103,18 +103,6 @@ YamlDocument loadYamlDocument(String yaml,
     throw YamlException('Only expected one document.', nextDocument.span);
   }
 
-  if (retainTokens) {
-    return YamlDocument.internal(
-      document.contents,
-      document.span,
-      document.versionDirective,
-      document.tagDirectives,
-      startImplicit: document.startImplicit,
-      endImplicit: document.endImplicit,
-      tokens: loader.tokens,
-    );
-  }
-
   return document;
 }
 

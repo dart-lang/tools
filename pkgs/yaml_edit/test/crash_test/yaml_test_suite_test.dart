@@ -17,6 +17,17 @@ import 'fuzzer.dart';
 
 final _skippedCases = <String>[];
 
+/// Replaces special characters used by yaml-test-suite to visualize invisible
+/// characters.
+/// See: https://github.com/yaml/yaml-test-suite/blob/main/ReadMe.md#special-characters
+String _replaceSpecialCharacters(String input) => input
+    .replaceAll('␣', ' ')
+    .replaceAll(RegExp(r'—*»'), '\t')
+    .replaceAll('↵', '')
+    .replaceAll('←', '\r')
+    .replaceAll('⇔', '\uFEFF')
+    .replaceFirst(RegExp(r'∎\n?$'), '');
+
 Future<void> main() async {
   final packageUri = await Isolate.resolvePackageUri(
       Uri.parse('package:yaml_edit/yaml_edit.dart'));
@@ -45,8 +56,9 @@ Future<void> main() async {
         continue;
       }
 
-      final yamlStr = testCase['yaml'];
-      if (yamlStr is String) {
+      final rawYaml = testCase['yaml'];
+      if (rawYaml is String) {
+        final yamlStr = _replaceSpecialCharacters(rawYaml);
         final basename = file.uri.pathSegments.last.replaceAll('.yaml', '');
         final caseName = '${basename}_$i';
 

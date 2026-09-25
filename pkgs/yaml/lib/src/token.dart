@@ -10,7 +10,7 @@ import 'package:source_span/source_span.dart';
 import 'style.dart';
 
 /// A lexical token emitted by the YAML scanner.
-class Token {
+final class Token {
   /// The syntactic category of this token.
   final TokenType type;
 
