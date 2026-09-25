@@ -1,4 +1,4 @@
-## 2.2.5-wip
+## 2.3.0-wip
 
 - Rewrite internal modification logic to use a lossless Concrete Syntax Tree
   (CST) and slot-directed mutations.

@@ -266,73 +266,74 @@ foo: 123
     });
 
     test('PathError thrown for invalid or out-of-bounds paths', () {
-      final blockSeqDoc = CstDocument.parse('- 1\n');
+      final blockSequenceDocument = CstDocument.parse('- 1\n');
       expect(
-        () => buildUpdate(blockSeqDoc, [5], wrapAsYamlNode(2)),
+        () => buildUpdate(blockSequenceDocument, [5], wrapAsYamlNode(2)),
         throwsA(isA<PathError>()),
       );
       expect(
-        () => buildUpdate(blockSeqDoc, [-1], wrapAsYamlNode(2)),
+        () => buildUpdate(blockSequenceDocument, [-1], wrapAsYamlNode(2)),
         throwsA(isA<PathError>()),
       );
       expect(
-        () => buildUpdate(blockSeqDoc, ['not-int'], wrapAsYamlNode(2)),
+        () =>
+            buildUpdate(blockSequenceDocument, ['not-int'], wrapAsYamlNode(2)),
         throwsA(isA<PathError>()),
       );
       expect(
-        () => buildRemove(blockSeqDoc, [5]),
+        () => buildRemove(blockSequenceDocument, [5]),
         throwsA(isA<PathError>()),
       );
       expect(
-        () => buildRemove(blockSeqDoc, [-1]),
+        () => buildRemove(blockSequenceDocument, [-1]),
         throwsA(isA<PathError>()),
       );
       expect(
-        () => buildRemove(blockSeqDoc, ['not-int']),
-        throwsA(isA<PathError>()),
-      );
-
-      final flowSeqDoc = CstDocument.parse('[1, 2]');
-      expect(
-        () => buildUpdate(flowSeqDoc, [5], wrapAsYamlNode(3)),
-        throwsA(isA<PathError>()),
-      );
-      expect(
-        () => buildUpdate(flowSeqDoc, [-1], wrapAsYamlNode(3)),
-        throwsA(isA<PathError>()),
-      );
-      expect(
-        () => buildUpdate(flowSeqDoc, ['not-int'], wrapAsYamlNode(3)),
-        throwsA(isA<PathError>()),
-      );
-      expect(
-        () => buildRemove(flowSeqDoc, [5]),
-        throwsA(isA<PathError>()),
-      );
-      expect(
-        () => buildRemove(flowSeqDoc, [-1]),
-        throwsA(isA<PathError>()),
-      );
-      expect(
-        () => buildRemove(flowSeqDoc, ['not-int']),
+        () => buildRemove(blockSequenceDocument, ['not-int']),
         throwsA(isA<PathError>()),
       );
 
-      final blockMapDoc = CstDocument.parse('a: 1\n');
+      final flowSequenceDocument = CstDocument.parse('[1, 2]');
       expect(
-        () => buildRemove(blockMapDoc, ['nonexistent']),
+        () => buildUpdate(flowSequenceDocument, [5], wrapAsYamlNode(3)),
+        throwsA(isA<PathError>()),
+      );
+      expect(
+        () => buildUpdate(flowSequenceDocument, [-1], wrapAsYamlNode(3)),
+        throwsA(isA<PathError>()),
+      );
+      expect(
+        () => buildUpdate(flowSequenceDocument, ['not-int'], wrapAsYamlNode(3)),
+        throwsA(isA<PathError>()),
+      );
+      expect(
+        () => buildRemove(flowSequenceDocument, [5]),
+        throwsA(isA<PathError>()),
+      );
+      expect(
+        () => buildRemove(flowSequenceDocument, [-1]),
+        throwsA(isA<PathError>()),
+      );
+      expect(
+        () => buildRemove(flowSequenceDocument, ['not-int']),
         throwsA(isA<PathError>()),
       );
 
-      final flowMapDoc = CstDocument.parse('{a: 1}');
+      final blockMappingDocument = CstDocument.parse('a: 1\n');
       expect(
-        () => buildRemove(flowMapDoc, ['nonexistent']),
+        () => buildRemove(blockMappingDocument, ['nonexistent']),
         throwsA(isA<PathError>()),
       );
 
-      final flowPairDoc = CstDocument.parse('[a: 1]');
+      final flowMappingDocument = CstDocument.parse('{a: 1}');
       expect(
-        () => buildRemove(flowPairDoc, [0, 'nonexistent']),
+        () => buildRemove(flowMappingDocument, ['nonexistent']),
+        throwsA(isA<PathError>()),
+      );
+
+      final flowPairDocument = CstDocument.parse('[a: 1]');
+      expect(
+        () => buildRemove(flowPairDocument, [0, 'nonexistent']),
         throwsA(isA<PathError>()),
       );
     });
@@ -345,24 +346,26 @@ foo: 123
     });
 
     test('CST helper branch exercises', () {
-      final emptyDoc = CstDocument.parse('');
-      expect(findNode(emptyDoc, ['a', 'b']), isNull);
+      final emptyDocument = CstDocument.parse('');
+      expect(findNode(emptyDocument, ['a', 'b']), isNull);
 
-      final scalarDoc = CstDocument.parse('42');
-      expect(findNode(scalarDoc, ['a']), isNull);
-      expect(findEntryIndex(scalarDoc.root!, 'key'), isNull);
-      expect(mappingPairs(scalarDoc.root!), isNull);
+      final scalarDocument = CstDocument.parse('42');
+      expect(findNode(scalarDocument, ['a']), isNull);
+      expect(findEntryIndex(scalarDocument.root!, 'key'), isNull);
+      expect(mappingPairs(scalarDocument.root!), isNull);
 
-      final seqDoc = CstDocument.parse('[1, 2]');
-      expect(findNode(seqDoc, [5]), isNull);
-      expect(findNode(seqDoc, [-1]), isNull);
-      expect(findNode(seqDoc, ['not-int']), isNull);
+      final sequenceDocument = CstDocument.parse('[1, 2]');
+      expect(findNode(sequenceDocument, [5]), isNull);
+      expect(findNode(sequenceDocument, [-1]), isNull);
+      expect(findNode(sequenceDocument, ['not-int']), isNull);
 
-      final crDoc = CstDocument.parse('a: 1\rb: 2');
-      expect(crDoc.lineBreakLengthBefore(5), equals(1));
-      expect(crDoc.hasWhitespaceBefore(0), isFalse);
-      expect(crDoc.hasWhitespaceBefore(-1), isFalse);
-      expect(crDoc.extendPastIndentedCommentsAndBlankLines(1, 0), equals(1));
+      final carriageReturnDocument = CstDocument.parse('a: 1\rb: 2');
+      expect(carriageReturnDocument.lineBreakLengthBefore(5), equals(1));
+      expect(carriageReturnDocument.hasWhitespaceBefore(0), isFalse);
+      expect(carriageReturnDocument.hasWhitespaceBefore(-1), isFalse);
+      expect(
+          carriageReturnDocument.extendPastIndentedCommentsAndBlankLines(1, 0),
+          equals(1));
 
       expect(
         CstDocument.attachHeaderComment('|\r  val', ' # comment', '\r'),

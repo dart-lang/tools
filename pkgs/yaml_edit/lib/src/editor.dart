@@ -750,10 +750,10 @@ class YamlEditor {
               final parentMap = collectionNode.value as YamlMap;
               for (final key in parentMap.keys) {
                 if (!expectedNode.containsKey(key)) {
-                  final idx = entries.indexWhere(
+                  final entryIndex = entries.indexWhere(
                       (e) => e.key != null && deepEquals(e.key!.value, key));
-                  if (idx != -1) {
-                    removedIndex = idx;
+                  if (entryIndex != -1) {
+                    removedIndex = entryIndex;
                     break;
                   }
                 }

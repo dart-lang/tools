@@ -58,7 +58,7 @@ Future<void> main() async {
 
       final rawYaml = testCase['yaml'];
       if (rawYaml is String) {
-        final yamlStr = _replaceSpecialCharacters(rawYaml);
+        final yamlString = _replaceSpecialCharacters(rawYaml);
         final basename = file.uri.pathSegments.last.replaceAll('.yaml', '');
         final caseName = '${basename}_$i';
 
@@ -71,15 +71,15 @@ Future<void> main() async {
         // Try parsing to verify it's valid yaml according to our parser
         try {
           withYamlWarningCallback(() {
-            loadYamlNode(yamlStr);
+            loadYamlNode(yamlString);
           });
         } catch (_) {
           continue; // skip invalid YAML cases
         }
-        final root = withYamlWarningCallback(() => YamlEditor(yamlStr));
+        final root = withYamlWarningCallback(() => YamlEditor(yamlString));
 
         for (final (path, node) in allJsonPaths(root.parseAt([]))) {
-          testJsonPath(caseName, yamlStr, path, node);
+          testJsonPath(caseName, yamlString, path, node);
         }
       }
     }
