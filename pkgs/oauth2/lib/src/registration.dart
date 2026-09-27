@@ -1,0 +1,221 @@
+// Copyright (c) 2025, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+
+import 'authorization_exception.dart';
+import 'discovery.dart';
+
+/// OAuth 2.0 Client Metadata ([RFC 7591]).
+///
+/// [RFC 7591]: https://datatracker.ietf.org/doc/html/rfc7591
+final class OAuthClientMetadata {
+  /// Array of redirection URI strings for use in redirect-based flows.
+  ///
+  /// After the user authorizes the client, the authorization server will
+  /// redirect the user back to one of these URIs.
+  final List<String> redirectUris;
+
+  /// String indicator of the requested authentication method for the token
+  /// endpoint.
+  ///
+  /// This informs the authorization server how the client intends to
+  /// authenticate itself (e.g., "client_secret_basic", "none").
+  final String? tokenEndpointAuthMethod;
+
+  /// Array of OAuth 2.0 grant type strings that the client can use at the
+  /// token endpoint.
+  ///
+  /// This restricts the client to using only the specified grant types
+  /// (e.g., "authorization_code", "refresh_token").
+  final List<String>? grantTypes;
+
+  /// Array of the OAuth 2.0 response type strings that the client can use at
+  /// the authorization endpoint.
+  ///
+  /// This restricts the client to initiating only specific authorization flows
+  /// (e.g., "code").
+  final List<String>? responseTypes;
+
+  /// Human-readable string name of the client to be presented to the end-user.
+  ///
+  /// This is typically displayed on the authorization consent screen so the
+  /// user knows which application is requesting access.
+  final String? clientName;
+
+  /// URL string of a web page providing information about the client.
+  ///
+  /// This provides a link on the authorization consent screen where the user
+  /// can learn more about the client.
+  final String? clientUri;
+
+  /// String containing a space-separated list of scope values that the client
+  /// can use when requesting access tokens.
+  ///
+  /// This defines the default or maximum set of permissions the client
+  /// is allowed to request.
+  final String? scope;
+
+  /// A unique identifier string assigned by the client developer or
+  /// software publisher used by registration endpoints.
+  ///
+  /// This helps the authorization server categorize or identify the specific
+  /// software application being registered.
+  final String? softwareId;
+
+  /// A version identifier string for the client software identified by
+  /// [softwareId].
+  ///
+  /// This allows the authorization server to track the specific version of
+  /// the software being registered.
+  final String? softwareVersion;
+
+  const OAuthClientMetadata({
+    required this.redirectUris,
+    this.tokenEndpointAuthMethod,
+    this.grantTypes,
+    this.responseTypes,
+    this.clientName,
+    this.clientUri,
+    this.scope,
+    this.softwareId,
+    this.softwareVersion,
+  });
+
+  Map<String, Object?> toJson() {
+    return {
+      'redirect_uris': redirectUris,
+      if (tokenEndpointAuthMethod != null)
+        'token_endpoint_auth_method': tokenEndpointAuthMethod,
+      if (grantTypes != null) 'grant_types': grantTypes,
+      if (responseTypes != null) 'response_types': responseTypes,
+      if (clientName != null) 'client_name': clientName,
+      if (clientUri != null) 'client_uri': clientUri,
+      if (scope != null) 'scope': scope,
+      if (softwareId != null) 'software_id': softwareId,
+      if (softwareVersion != null) 'software_version': softwareVersion,
+    };
+  }
+}
+
+/// OAuth 2.0 Client Information ([RFC 7591]).
+///
+/// [RFC 7591]: https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.1
+final class OAuthClientInformation {
+  /// Opaque value used by the client to identify itself to the authorization
+  /// server.
+  ///
+  /// This is required for all requests to the token endpoint to identify
+  /// the client.
+  final String clientId;
+
+  /// String value specifying the client secret.
+  ///
+  /// This acts as a password for the client to authenticate itself with
+  /// the authorization server. It must be kept confidential.
+  final String? clientSecret;
+
+  /// Time at which the client identifier was issued.
+  ///
+  /// Given as seconds since epoch. This helps determine the age of the
+  /// registration.
+  final int? clientIdIssuedAt;
+
+  /// Time at which the client secret will expire or `0` if it will not expire.
+  ///
+  /// Given as seconds since epoch. This allows the client to know when it
+  /// needs to register a new secret.
+  final int? clientSecretExpiresAt;
+
+  /// String indicator of the authentication method that the authorization
+  /// server will accept from the client when using the token endpoint.
+  ///
+  /// This confirms the authentication method the client must use, which may
+  /// or may not be what it requested.
+  final String? tokenEndpointAuthMethod;
+
+  const OAuthClientInformation({
+    required this.clientId,
+    this.clientSecret,
+    this.clientIdIssuedAt,
+    this.clientSecretExpiresAt,
+    this.tokenEndpointAuthMethod,
+  });
+
+  factory OAuthClientInformation.fromJson(Map<String, dynamic> json) {
+    return OAuthClientInformation(
+      clientId: json['client_id'] as String,
+      clientSecret: json['client_secret'] as String?,
+      clientIdIssuedAt: json['client_id_issued_at'] as int?,
+      clientSecretExpiresAt: json['client_secret_expires_at'] as int?,
+      tokenEndpointAuthMethod: json['token_endpoint_auth_method'] as String?,
+    );
+  }
+}
+
+/// Performs RFC 7591 Dynamic Client Registration.
+///
+/// Dynamic Client Registration allows OAuth 2.0 clients to register with an
+/// authorization server dynamically and obtain client credentials (such as
+/// a client ID and client secret) required to interact with the server.
+///
+/// The returned [Future] completes with the client information. It will
+/// complete with an [AuthorizationException] if the request is rejected by the
+/// server.
+Future<OAuthClientInformation> registerClient(
+  Uri authorizationServerUrl,
+  OAuthClientMetadata clientMetadata, {
+  OAuthServerMetadata? metadata,
+  http.Client? httpClient,
+}) async {
+  if (!authorizationServerUrl.isScheme('https')) {
+    throw ArgumentError.value(authorizationServerUrl, 'authorizationServerUrl',
+        'Must be an HTTPS URL per RFC 7591.');
+  }
+
+  final client = httpClient ?? http.Client();
+  try {
+    final endpoint = metadata?.registrationEndpoint;
+    Uri registrationUrl;
+    if (endpoint != null) {
+      registrationUrl = Uri.parse(endpoint);
+    } else {
+      registrationUrl = authorizationServerUrl.replace(path: '/register');
+    }
+
+    if (!registrationUrl.isScheme('https')) {
+      throw ArgumentError.value(registrationUrl, 'registrationEndpoint',
+          'Must be an HTTPS URL per RFC 7591.');
+    }
+
+    final response = await client.post(
+      registrationUrl,
+      headers: {'content-type': 'application/json'},
+      body: jsonEncode(clientMetadata.toJson()),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (response.headers['content-type']?.contains('application/json') ==
+          true) {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        var description = body['error_description'] as String?;
+        var uriString = body['error_uri'] as String?;
+        var uri = uriString == null ? null : Uri.parse(uriString);
+        throw AuthorizationException(body['error'] as String, description, uri);
+      }
+      throw AuthorizationException(
+        'server_error',
+        'HTTP ${response.statusCode} registering client at $registrationUrl',
+        null,
+      );
+    }
+    return OAuthClientInformation.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  } finally {
+    if (httpClient == null) client.close();
+  }
+}
