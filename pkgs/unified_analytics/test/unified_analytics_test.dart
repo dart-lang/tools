@@ -1341,7 +1341,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     }
 
     expect(
-      logFile.readAsLinesSync().length,
+      analytics.logFileStats()!.recordCount,
       kLogFileLength,
       reason: 'The number of events should be capped at $kLogFileLength',
     );
