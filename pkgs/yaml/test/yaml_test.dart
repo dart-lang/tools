@@ -8,6 +8,7 @@
 // ignore_for_file: avoid_dynamic_calls
 
 import 'package:test/test.dart';
+import 'package:yaml/tokens.dart';
 import 'package:yaml/yaml.dart';
 
 import 'utils.dart';
@@ -1946,6 +1947,155 @@ void main() {
     final expectedPermutationCount =
         List.generate(keys.length, (i) => i + 1).reduce((n, i) => n * i);
     expect(sanityCheckCount, expectedPermutationCount);
+  });
+
+  group('retainTokens', () {
+    test('returns null tokens by default', () {
+      final document = loadYamlDocument('a: 1 # comment');
+      expect(document.tokens, isNull);
+    });
+
+    test(
+        'emits comments and indicators in source order without 0-length tokens',
+        () {
+      const source = '# header\na: [1, 2] # inline\n# footer\n';
+      final document = loadYamlDocument(source, retainTokens: true);
+      final tokens = document.tokens!;
+      expect(tokens.every((t) => t.span.length > 0), isTrue);
+      for (var i = 1; i < tokens.length; i++) {
+        expect(
+          tokens[i].span.start.offset,
+          greaterThanOrEqualTo(tokens[i - 1].span.end.offset),
+        );
+      }
+      final comments = tokens.whereType<CommentToken>().map((c) => c.span.text);
+      expect(comments, ['# header', '# inline', '# footer']);
+    });
+
+    test('retains comments in empty or comment-only documents', () {
+      const source = '# first\n# second\n';
+      final document = loadYamlDocument(source, retainTokens: true);
+      expect(document.contents.value, isNull);
+      final tokens = document.tokens!;
+      expect(tokens, hasLength(2));
+      expect(
+        tokens.map((t) => (t.type, t.toString())).toList(),
+        [
+          (TokenType.comment, 'COMMENT "# first"'),
+          (TokenType.comment, 'COMMENT "# second"'),
+        ],
+      );
+    });
+
+    test('includes trailing empty lines in keep-chomped block scalar span', () {
+      const source = 'a: |+\n  hello\n\n\nb: 2\n';
+      final document = loadYamlDocument(source, retainTokens: true);
+      final map = document.contents as YamlMap;
+      final scalar = map.nodes['a'] as YamlScalar;
+      expect(scalar.value, 'hello\n\n\n');
+      // Span should cover through the last kept empty line before b: 2
+      expect(source.substring(scalar.span.end.offset), '\nb: 2\n');
+    });
+
+    test('bounds empty strip and clip block scalar spans at the header line',
+        () {
+      const source = 'strip: >-\n\nclip: >\n\nkeep: |+\n\n';
+      final document = loadYamlDocument(source, retainTokens: true);
+      final map = document.contents as YamlMap;
+      final stripScalar = map.nodes['strip'] as YamlScalar;
+      final clipScalar = map.nodes['clip'] as YamlScalar;
+      final keepScalar = map.nodes['keep'] as YamlScalar;
+
+      expect(stripScalar.value, '');
+      expect(stripScalar.span.text, '>-');
+      expect(clipScalar.value, '');
+      expect(clipScalar.span.text, '>');
+      expect(keepScalar.value, '\n');
+      expect(keepScalar.span.text, '|+\n');
+    });
+
+    test('exposes Token subclasses, types, and toString representations', () {
+      const source = '%YAML 1.2\n'
+          '%TAG !e! tag:yaml.org,2002:\n'
+          '---\n'
+          '# comment\n'
+          'a: &anc !e!str "val"\n'
+          'b: *anc\n'
+          '...\n';
+      final document = loadYamlDocument(source, retainTokens: true);
+      expect(document.toString(), '{a: val, b: val}');
+      expect(document.versionDirective.toString(), '%YAML 1.2');
+      expect(
+        document.tagDirectives.map((d) => d.toString()).toList(),
+        ['%TAG !e! tag:yaml.org,2002:'],
+      );
+
+      final tokens = document.tokens!;
+      final versionToken = tokens.whereType<VersionDirectiveToken>().single;
+      expect(versionToken.type, TokenType.versionDirective);
+      expect(versionToken.major, 1);
+      expect(versionToken.minor, 2);
+      expect(versionToken.toString(), 'VERSION_DIRECTIVE 1.2');
+
+      final tagDirectiveToken = tokens.whereType<TagDirectiveToken>().single;
+      expect(tagDirectiveToken.type, TokenType.tagDirective);
+      expect(tagDirectiveToken.handle, '!e!');
+      expect(tagDirectiveToken.prefix, 'tag:yaml.org,2002:');
+      expect(
+        tagDirectiveToken.toString(),
+        'TAG_DIRECTIVE !e! tag:yaml.org,2002:',
+      );
+
+      final commentToken = tokens.whereType<CommentToken>().single;
+      expect(commentToken.type, TokenType.comment);
+      expect(commentToken.toString(), 'COMMENT "# comment"');
+
+      final anchorToken = tokens.whereType<AnchorToken>().single;
+      expect(anchorToken.type, TokenType.anchor);
+      expect(anchorToken.name, 'anc');
+      expect(anchorToken.toString(), 'ANCHOR anc');
+
+      final tagToken = tokens.whereType<TagToken>().single;
+      expect(tagToken.type, TokenType.tag);
+      expect(tagToken.handle, '!e!');
+      expect(tagToken.suffix, 'str');
+      expect(tagToken.toString(), 'TAG !e! str');
+
+      final aliasToken = tokens.whereType<AliasToken>().single;
+      expect(aliasToken.type, TokenType.alias);
+      expect(aliasToken.name, 'anc');
+      expect(aliasToken.toString(), 'ALIAS anc');
+
+      final scalarTokens = tokens.whereType<ScalarToken>().toList();
+      expect(
+        scalarTokens.map((t) => (t.type, t.toString())).toList(),
+        [
+          (TokenType.scalar, 'SCALAR PLAIN "a"'),
+          (TokenType.scalar, 'SCALAR DOUBLE_QUOTED "val"'),
+          (TokenType.scalar, 'SCALAR PLAIN "b"'),
+        ],
+      );
+
+      final plainIndicator =
+          tokens.firstWhere((t) => t.type == TokenType.documentStart);
+      expect(plainIndicator.toString(), 'TokenType.documentStart');
+    });
+  });
+
+  group('loadYamlDocuments', () {
+    test('loads multiple documents with metadata', () {
+      const source = '%YAML 1.2\n---\na: 1\n...\n---\nb: 2\n';
+      final documents =
+          loadYamlDocuments(source, sourceUrl: Uri.parse('test.yaml'));
+      expect(documents, hasLength(2));
+      expect(documents[0].contents, {'a': 1});
+      expect(documents[0].versionDirective.toString(), '%YAML 1.2');
+      expect(documents[1].contents, {'b': 2});
+    });
+
+    test('returns an empty list for an empty stream', () {
+      expect(loadYamlDocuments(''), isEmpty);
+    });
   });
 }
 
