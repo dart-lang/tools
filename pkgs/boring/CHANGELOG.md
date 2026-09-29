@@ -5,6 +5,7 @@
   [dart-lang/tools](https://github.com/dart-lang/tools) repository.
 - The package is now licensed under the BSD 3-Clause license used by other
   Dart packages.
+- Refactored build and link hooks to use `package:prebuilt_code_assets`.
 
 ## 0.4.1
 
