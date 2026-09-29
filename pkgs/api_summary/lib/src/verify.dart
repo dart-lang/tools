@@ -28,10 +28,10 @@ enum ApiSummaryFormat {
 
   /// Formats [summary] according to this format.
   String format(ApiSummary summary) => switch (this) {
-    ApiSummaryFormat.text => summary.toString(),
-    ApiSummaryFormat.json =>
+    .text => summary.toString(),
+    .json =>
       '${const JsonEncoder.withIndent('  ').convert(summary.toJson())}\n',
-    ApiSummaryFormat.yaml => () {
+    .yaml => () {
       final editor = YamlEditor('');
       editor.update([], summary.toJson());
       return '$editor\n';
@@ -151,25 +151,26 @@ Future<void> expectApiSummaryClean({
   }
 }
 
+/// Builds the CLI command shown in failure messages to regenerate or update
+/// the golden file at [displayGoldenPath].
+///
+/// Uses `--write` when [displayGoldenPath] matches [format]'s
+/// [ApiSummaryFormat.defaultFileName], and `--output=<path>` otherwise.
 String _buildRemediationCommand({
   required ApiSummaryFormat format,
   required String displayGoldenPath,
-}) {
-  final args = <String>['dart run api_summary'];
-  if (displayGoldenPath == format.defaultFileName) {
-    args.add('--write');
-    if (format != ApiSummaryFormat.text) {
-      args.add('--format=${format.name}');
-    }
-  } else {
-    if (format != ApiSummaryFormat.text) {
-      args.add('--format=${format.name}');
-    }
-    args.add('--output=$displayGoldenPath');
-  }
-  return args.join(' ');
-}
+}) => [
+  'dart run api_summary',
+  if (displayGoldenPath == format.defaultFileName) ...[
+    '--write',
+    if (format != .text) '--format=${format.name}',
+  ] else ...[
+    if (format != .text) '--format=${format.name}',
+    '--output=$displayGoldenPath',
+  ],
+].join(' ');
 
+/// Whether [a] and [b] contain identical lines in the same order.
 bool _linesEqual(List<String> a, List<String> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
@@ -178,6 +179,13 @@ bool _linesEqual(List<String> a, List<String> b) {
   return true;
 }
 
+/// Formats a compact unified-style diff of the first differing span between
+/// [expected] and [actual].
+///
+/// Strips matching leading and trailing lines, emits a 1-based
+/// `@@ line <N> @@` header at the start of the divergence, and lists up to
+/// 20 removed (`-`) and 20 added (`+`) lines before summarizing any
+/// remaining lines.
 String _buildLineDiff(List<String> expected, List<String> actual) {
   var prefix = 0;
   final minLen = expected.length < actual.length
