@@ -24,6 +24,13 @@ Raw `ffigen` bindings to Google's
 > feedback, suggestions, and comments, please file an issue in the
 > [bug tracker](https://github.com/dart-lang/tools/issues).
 
+## Building
+
+`hook/build.dart` compiles the bundled BoringSSL sources with CMake and Ninja
+when the package is first built, for example by `dart run` or `dart test`. This
+requires CMake, Ninja, and a C toolchain (Clang or GCC, Xcode, MSVC, or the
+Android NDK), plus NASM on Windows.
+
 ## License
 
 See [LICENSE](LICENSE) for details. BoringSSL is licensed under Apache 2.0 and
