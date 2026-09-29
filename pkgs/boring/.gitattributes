@@ -1,0 +1,3 @@
+# Vendored by tool/bump-boringssl-revision.sh. Collapsed in diffs and
+# excluded from language statistics.
+third_party/boringssl/** linguist-vendored linguist-generated

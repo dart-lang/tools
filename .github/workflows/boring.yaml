@@ -1,0 +1,41 @@
+name: package:boring
+permissions:
+  contents: read
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/boring.yaml'
+      - 'pkgs/boring/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/boring.yaml'
+      - 'pkgs/boring/**'
+  schedule:
+    - cron: "0 0 * * 0"
+
+defaults:
+  run:
+    working-directory: pkgs/boring/
+
+jobs:
+  # Re-run the vendoring script at the pinned revision and fail if that changes
+  # anything, so the checked-in sources always match tool/REVISION.
+  generated:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Regenerate at tool/REVISION
+        run: ./tool/bump-boringssl-revision.sh "$(cat tool/REVISION)"
+      - name: Check for changes
+        run: |
+          if [ -n "$(git status --porcelain -- .)" ]; then
+            git status --short -- .
+            echo "::error::Generated files are out of date. Run ./tool/bump-boringssl-revision.sh \"\$(cat tool/REVISION)\" in pkgs/boring and commit the result."
+            exit 1
+          fi
