@@ -1,5 +1,7 @@
-## 1.6.1
+## 1.7.0-wip
 
+- Added `tagPattern` and `version` fields to `GitDependency`, to support the
+  `tag_pattern` key for git dependencies introduced in Dart 3.9.
 - Added a usage example.
 
 ## 1.6.0
