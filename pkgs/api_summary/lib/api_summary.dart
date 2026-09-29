@@ -20,6 +20,11 @@ export 'src/api_summary_customizer.dart'
 export 'src/api_type.dart';
 export 'src/js_facet.dart';
 export 'src/meta_facet.dart';
+export 'src/verify.dart'
+    show
+        ApiSummaryFormat,
+        ApiSummaryVerificationException,
+        expectApiSummaryClean;
 
 /// Creates a canonical [ApiSummary] model of the public API of a package.
 ///
