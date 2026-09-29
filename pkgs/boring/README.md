@@ -1,0 +1,31 @@
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/boring.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/boring.yaml)
+[![pub package](https://img.shields.io/pub/v/boring.svg)](https://pub.dev/packages/boring)
+[![package publisher](https://img.shields.io/pub/publisher/boring.svg)](https://pub.dev/packages/boring/publisher)
+
+Raw `ffigen` bindings to Google's
+[BoringSSL](https://boringssl.googlesource.com/boringssl/) (`bssl_dart`).
+
+> [!WARNING]
+> `package:boring` is not meant to be used directly by application developers.
+> It is meant to facilitate code reuse for developers building higher-level
+> cryptography packages on top of BoringSSL.
+
+> [!NOTE]
+> This package is currently experimental and published under the
+> [labs.dart.dev](https://dart.dev/dart-team-packages) pub publisher in order
+> to solicit feedback.
+>
+> For packages in the labs.dart.dev publisher we generally plan to either
+> graduate the package into a supported publisher (dart.dev, tools.dart.dev)
+> after a period of feedback and iteration, or discontinue the package.
+> These packages have a much higher expected rate of API and breaking changes.
+>
+> Your feedback is valuable and will help us evolve this package. For general
+> feedback, suggestions, and comments, please file an issue in the
+> [bug tracker](https://github.com/dart-lang/tools/issues).
+
+## License
+
+See [LICENSE](LICENSE) for details. BoringSSL is licensed under Apache 2.0 and
+BSD-style licenses; see
+[`third_party/boringssl/LICENSE`](third_party/boringssl/LICENSE).

@@ -425,6 +425,7 @@ main() {
     fi
 
     check_command git "git is not installed or not in PATH"
+    check_command dart "dart is required to regenerate bindings"
     check_command jq "jq is required to parse generated BoringSSL source metadata"
     PYTHON_BIN=$(resolve_python)
 
@@ -435,6 +436,15 @@ main() {
     update_boringssl_sources "$TARGET_REVISION"
 
     update_revision "$TARGET_REVISION"
+
+    section "Getting Dart dependencies"
+    log_info "Running 'dart pub get'..."
+    cd "$ROOT"
+    dart pub get
+
+    section "Updating FFI bindings"
+    log_info "Running tool/ffigen.dart..."
+    dart run "$DIR/ffigen.dart"
 
     if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
         echo "revision=$TARGET_REVISION" >> "$GITHUB_OUTPUT"

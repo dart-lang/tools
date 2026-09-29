@@ -16,6 +16,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/boolean_selector/**'
 
+'package:boring':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/boring/**'
+
 'package:browser_launcher':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/browser_launcher/**'

@@ -22,14 +22,45 @@ defaults:
     working-directory: pkgs/boring/
 
 jobs:
-  # Re-run the vendoring script at the pinned revision and fail if that changes
-  # anything, so the checked-in sources always match tool/REVISION.
-  generated:
+  # Check code formatting and static analysis on a single OS (linux)
+  # against Dart dev.
+  analyze:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [dev]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+        if: always() && steps.install.outcome == 'success'
+      - name: Analyze code
+        run: dart analyze --fatal-infos
+        if: always() && steps.install.outcome == 'success'
+
+  # Re-run the vendoring script at the pinned revision, which also regenerates
+  # the bindings, and fail if that changes anything. This keeps the checked-in
+  # sources and bindings in sync with tool/REVISION.
+  generated:
+    # The bindings include struct layouts from the glibc headers, so they are
+    # generated on a fixed image. Keep in sync with the refresh job.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: dev
       - name: Regenerate at tool/REVISION
         run: ./tool/bump-boringssl-revision.sh "$(cat tool/REVISION)"
       - name: Check for changes
