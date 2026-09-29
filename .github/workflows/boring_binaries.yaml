@@ -1,0 +1,106 @@
+# Builds the prebuilt libraries that hook/build.dart downloads in the `fetch`
+# build mode, and attaches them to the `boring-binaries-v<version>` GitHub
+# pre-release.
+#
+# Push a `boring-binaries-v<version>` tag before publishing a new version of
+# package:boring, then pin the SHA-256 hashes of the release assets in
+# lib/src/hook_helpers/hashes.dart with
+# `dart run tool/regenerate_hashes.dart <version>`.
+name: package:boring binaries
+permissions:
+  contents: read
+
+on:
+  push:
+    tags:
+      - 'boring-binaries-v[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+
+jobs:
+  precompile:
+    name: Precompile (${{ matrix.target-os }}-${{ matrix.target-arch }})
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: pkgs/boring/
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The oldest available Ubuntu, so the libraries only require glibc
+          # 2.35.
+          - os: ubuntu-22.04
+            target-os: linux
+            target-arch: x64
+          - os: ubuntu-22.04-arm
+            target-os: linux
+            target-arch: arm64
+          - os: macos-14
+            target-os: macos
+            target-arch: arm64
+          - os: macos-14
+            target-os: macos
+            target-arch: x64
+          - os: windows-latest
+            target-os: windows
+            target-arch: x64
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: stable
+      - name: Setup NASM
+        if: matrix.target-os == 'windows'
+        uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b
+      - name: Install dependencies
+        run: dart pub get
+      # Builds the dynamic library, which is bundled when linking is disabled,
+      # and the static library, which hook/link.dart links into a dynamic
+      # library with only the functions an application uses.
+      - name: Precompile the libraries
+        env:
+          TARGET_OS: ${{ matrix.target-os }}
+          TARGET_ARCH: ${{ matrix.target-arch }}
+        run: dart run tool/precompile_binaries.dart --target-os="$TARGET_OS" --target-arch="$TARGET_ARCH"
+      - name: List the libraries
+        run: ls -l bin
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: binaries-${{ matrix.target-os }}-${{ matrix.target-arch }}
+          path: pkgs/boring/bin/*
+          if-no-files-found: error
+
+  release:
+    name: Attach the binaries to the GitHub release
+    needs: precompile
+    if: startsWith(github.ref, 'refs/tags/boring-binaries-v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Upload to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#boring-binaries-v}"
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            gh release create "$TAG" --prerelease --verify-tag \
+              --title "package:boring binaries v$version" \
+              --notes "The prebuilt BoringSSL libraries for package:boring $version, built by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID."
+          fi
+          # lib/src/hook_helpers/hashes.dart pins the hashes of the assets, so
+          # never replace them.
+          if [ "$(gh release view "$TAG" --json assets --jq '.assets | length')" -ne 0 ]; then
+            echo "::error::Release $TAG already has assets. Delete them to upload new ones."
+            exit 1
+          fi
+          gh release upload "$TAG" release-assets/*

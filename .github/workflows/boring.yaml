@@ -50,7 +50,8 @@ jobs:
         if: always() && steps.install.outcome == 'success'
 
   # Build BoringSSL from source with the build hook and run the tests on each
-  # desktop OS.
+  # desktop OS. The tree-shaking tests run hook/link.dart natively and when
+  # cross-compiling to Linux, whose linker invocation differs per OS.
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
@@ -69,6 +70,32 @@ jobs:
       - name: Setup NASM
         if: runner.os == 'Windows'
         uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b
+      - name: Install Linux cross toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+      - name: Install Linux cross toolchain (macOS)
+        if: runner.os == 'macOS'
+        run: brew install messense/macos-cross-toolchains/aarch64-unknown-linux-gnu
+      - name: Install Linux cross toolchain (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          TOOLCHAIN_URL: https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-mingw-w64-x86_64-aarch64-none-linux-gnu.zip
+          # From the .sha256asc file published next to the zip.
+          TOOLCHAIN_SHA256: 9428b2039923916418ec7037025be8cec3202926d65db9452519977834ad2a89
+        run: |
+          curl -fSL -o "$RUNNER_TEMP/arm-gnu-toolchain.zip" "$TOOLCHAIN_URL"
+          actual="$(sha256sum < "$RUNNER_TEMP/arm-gnu-toolchain.zip" | cut -d' ' -f1)"
+          if [ "$actual" != "$TOOLCHAIN_SHA256" ]; then
+            echo "::error::Expected SHA-256 $TOOLCHAIN_SHA256 for $TOOLCHAIN_URL, got $actual."
+            exit 1
+          fi
+          7z x "$RUNNER_TEMP/arm-gnu-toolchain.zip" -o"$RUNNER_TEMP/arm-gnu-toolchain" -y >/dev/null
+          BIN_DIR="$RUNNER_TEMP/arm-gnu-toolchain/bin"
+          for f in "$BIN_DIR"/aarch64-none-linux-gnu-*.exe; do
+            cp "$f" "${f/aarch64-none-linux-gnu-/aarch64-linux-gnu-}"
+          done
+          cygpath -w "$BIN_DIR" >> "$GITHUB_PATH"
       - id: install
         name: Install dependencies
         run: dart pub get
