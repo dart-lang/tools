@@ -222,6 +222,13 @@ void main() {
               'path': 'packages/shared_preferences/shared_preferences',
             },
           },
+          'kittens': {
+            'git': {
+              'url': 'https://github.com/munificent/kittens.git',
+              'tag_pattern': 'v{{version}}',
+            },
+            'version': '^2.0.1',
+          },
           'local_utils': {'path': '../local_utils'},
         },
       }, skipTryPub: true);
@@ -230,7 +237,7 @@ void main() {
 
       final newValue = await parse(jsonValue, skipTryPub: true);
 
-      expect(value.dependencies, hasLength(8));
+      expect(value.dependencies, hasLength(9));
       expect(value.dependencies, {
         'flutter': isA<SdkDependency>(),
         'http': isA<HostedDependency>(),
@@ -239,6 +246,7 @@ void main() {
         'google_fonts': isA<SdkDependency>(),
         'flutter_bloc': isA<GitDependency>(),
         'shared_preferences': isA<GitDependency>(),
+        'kittens': isA<GitDependency>(),
         'local_utils': isA<PathDependency>(),
       });
 
@@ -269,6 +277,17 @@ void main() {
       expect(
         value.dependencies['shared_preferences']?.toJson(),
         newValue.dependencies['shared_preferences']?.toJson(),
+      );
+      expect(value.dependencies['kittens']?.toJson(), {
+        'git': {
+          'url': 'https://github.com/munificent/kittens.git',
+          'tag_pattern': 'v{{version}}',
+        },
+        'version': '^2.0.1',
+      });
+      expect(
+        value.dependencies['kittens']?.toJson(),
+        newValue.dependencies['kittens']?.toJson(),
       );
       expect(
         value.dependencies['local_utils']?.toJson(),
