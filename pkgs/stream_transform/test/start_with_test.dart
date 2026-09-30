@@ -246,6 +246,17 @@ void main() {
           expect(emitted, isEmpty);
         });
 
+        test(
+            'does not deliver initial to a listener that starts after an '
+            'earlier listener canceled before delivery', () async {
+          final subscription = transformed.listen(emitted.add);
+          await subscription.cancel();
+          final later = <int>[];
+          transformed.listen(later.add);
+          await Future(() {});
+          expect(later, isEmpty);
+        });
+
         test('orders an event added while emitting initial after all of it',
             () async {
           transformed.listen((v) {
@@ -290,6 +301,29 @@ void main() {
           expect(later, [10]);
           expect(emitted, [...initial, 10]);
         });
+      });
+    }
+
+    if (streamType == 'sync broadcast') {
+      test(
+          'keeps initial ordered before events a source emits synchronously '
+          'from its own onListen', () async {
+        late StreamController<int> source;
+        source = StreamController<int>.broadcast(
+            sync: true,
+            onListen: () {
+              source
+                ..add(99)
+                ..close();
+            });
+        final emitted = <int>[];
+        var isDone = false;
+        source.stream
+            .startWith(1)
+            .listen(emitted.add, onDone: () => isDone = true);
+        await Future(() {});
+        expect(emitted, [1, 99]);
+        expect(isDone, true);
       });
     }
 
