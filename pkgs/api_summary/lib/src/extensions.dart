@@ -4,6 +4,17 @@
 
 import 'package:analyzer/dart/element/element.dart';
 
+import 'api_declaration.dart';
+import 'meta_facet.dart';
+
+extension ApiLibraryExtension on ApiLibrary {
+  bool get isExperimental => facets.any(
+    (f) =>
+        f is MetaContractFacet &&
+        f.contracts.contains(MetaContract.experimental),
+  );
+}
+
 extension ElementExtension on Element {
   /// Returns the appropriate name for describing the element in `api.txt`.
   ///
@@ -61,4 +72,10 @@ extension UriExtension on Uri {
       pathSegments.length > 1 &&
       pathSegments[0] == packageName &&
       pathSegments[1] != 'src';
+
+  bool isPrimaryPublicLibOf(String packageName) =>
+      scheme == 'package' &&
+      pathSegments.length == 2 &&
+      pathSegments[0] == packageName &&
+      pathSegments[1] == '$packageName.dart';
 }

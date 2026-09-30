@@ -699,6 +699,53 @@ package:test/file3.dart:
 ''');
   }
 
+  Future<void> test_topLevel_sortsPrimaryAndExperimentalLibraries() async {
+    // Even though `a_experimental.dart` and `a_sub.dart` sort alphabetically
+    // before `test.dart`, `package:test/test.dart` is the primary package
+    // entry point and sorts first, followed by stable `a_sub.dart` and
+    // `z_sub.dart`, then `@experimental` `a_experimental.dart`, then
+    // `src/private.dart`. Shared declarations expand in
+    // `package:test/test.dart` and emit `(see above)` in subsequent libraries.
+    final summary = await _build({
+      '$testPackageLibPath/src/private.dart': '''
+class Shared {}
+class NonPublic {}
+''',
+      '$testPackageLibPath/a_experimental.dart': '''
+@experimental
+library;
+
+import 'package:meta/meta.dart';
+export 'src/private.dart' show Shared;
+''',
+      '$testPackageLibPath/a_sub.dart': '''
+export 'src/private.dart' show Shared;
+''',
+      '$testPackageLibPath/z_sub.dart': '''
+import 'src/private.dart';
+void useNonPublic(NonPublic x) {}
+''',
+      '$testPackageLibPath/test.dart': '''
+export 'src/private.dart' show Shared;
+''',
+    });
+    expect(summary, '''
+package:test/test.dart:
+  Shared (class extends Object):
+    new (constructor: Shared Function())
+package:test/a_sub.dart:
+  Shared (see above)
+package:test/z_sub.dart:
+  useNonPublic (function: void Function(NonPublic))
+package:test/a_experimental.dart (experimental):
+  Shared (see above)
+package:test/src/private.dart:
+  NonPublic (non-public)
+dart:core:
+  Object (referenced)
+''');
+  }
+
   Future<void> test_topLevel_typedef() async {
     final summary = await _build({
       '$testPackageLibPath/file.dart': '''

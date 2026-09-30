@@ -19,6 +19,7 @@ import 'api_type.dart';
 import 'extensions.dart';
 import 'js_facet.dart';
 import 'meta_facet.dart';
+import 'uri_sorting.dart';
 
 /// Traverses the public libraries of [packageName] within [context] to build
 /// a canonical [ApiSummary] representation.
@@ -177,7 +178,15 @@ final class _ApiBuilder {
       }
     }
 
-    final libraries = _libraryBuilders.values.map((e) => e.build()).toList();
+    final libraries = _libraryBuilders.values
+        .map((e) => e.build())
+        .sortedBy(
+          (e) => UriSortKey(
+            Uri.parse(e.uri),
+            _pkgName,
+            isExperimental: e.isExperimental,
+          ),
+        );
 
     return ApiSummary(
       name: _pkgName,

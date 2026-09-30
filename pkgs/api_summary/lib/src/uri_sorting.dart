@@ -5,21 +5,50 @@
 import 'extensions.dart';
 
 /// URI categorization used by [UriSortKey].
-enum UriCategory { inPackage, notInPackage }
+enum UriCategory {
+  primaryPublicEntryPoint,
+  stablePublicEntryPoint,
+  experimentalPublicEntryPoint,
+  nonPublicInPackage,
+  notInPackage,
+}
 
 /// Sort key used to sort libraries in the output.
 ///
-/// Libraries in the specified package will be output first (sorted by URI),
-/// followed by libraries not in the package.
+/// Libraries in the specified package will be output first:
+/// 1. The primary public entry point (`package:<pkg>/<pkg>.dart`, when not
+///    `@experimental`)
+/// 2. Other stable public entry points (`package:<pkg>/...` outside `src/`)
+/// 3. Experimental public entry points (`@experimental`)
+/// 4. Non-public libraries in the package (`package:<pkg>/src/...`)
+/// 5. Libraries not in the package (`dart:*` and external `package:*`)
 final class UriSortKey implements Comparable<UriSortKey> {
   final UriCategory _category;
   final String _uriString;
 
-  UriSortKey(Uri uri, String pkgName)
-    : _category = uri.isIn(pkgName)
-          ? UriCategory.inPackage
-          : UriCategory.notInPackage,
+  UriSortKey(Uri uri, String pkgName, {bool isExperimental = false})
+    : _category = _categorize(uri, pkgName, isExperimental: isExperimental),
       _uriString = uri.toString();
+
+  static UriCategory _categorize(
+    Uri uri,
+    String pkgName, {
+    required bool isExperimental,
+  }) {
+    if (!uri.isIn(pkgName)) {
+      return UriCategory.notInPackage;
+    }
+    if (!uri.isInPublicLibOf(pkgName)) {
+      return UriCategory.nonPublicInPackage;
+    }
+    if (isExperimental) {
+      return UriCategory.experimentalPublicEntryPoint;
+    }
+    if (uri.isPrimaryPublicLibOf(pkgName)) {
+      return UriCategory.primaryPublicEntryPoint;
+    }
+    return UriCategory.stablePublicEntryPoint;
+  }
 
   @override
   int compareTo(UriSortKey other) {
