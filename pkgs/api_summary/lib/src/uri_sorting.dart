@@ -2,7 +2,20 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:collection/collection.dart';
+
+import 'api_declaration.dart';
 import 'extensions.dart';
+
+extension ApiLibraryIterableExtension on Iterable<ApiLibrary> {
+  List<ApiLibrary> sortedByUri(String packageName) => sortedBy(
+    (library) => UriSortKey(
+      Uri.parse(library.uri),
+      packageName,
+      isExperimental: library.isExperimental,
+    ),
+  );
+}
 
 /// URI categorization used by [UriSortKey].
 enum UriCategory {

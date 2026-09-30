@@ -180,13 +180,7 @@ final class _ApiBuilder {
 
     final libraries = _libraryBuilders.values
         .map((e) => e.build())
-        .sortedBy(
-          (e) => UriSortKey(
-            Uri.parse(e.uri),
-            _pkgName,
-            isExperimental: e.isExperimental,
-          ),
-        );
+        .sortedByUri(_pkgName);
 
     return ApiSummary(
       name: _pkgName,
