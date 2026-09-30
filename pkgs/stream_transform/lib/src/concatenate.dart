@@ -111,26 +111,54 @@ extension Concatenate<T> on Stream<T> {
     StreamSubscription<T>? subscription;
     var initialPending = true;
     var deliveryScheduled = false;
+    // Whether `subscription` has been paused yet. The source is listened to
+    // and paused back-to-back, but if the source's own `onListen` emits or
+    // closes synchronously it does so before `pause` has had a chance to run
+    // and take effect, so those events need to be held back separately.
+    var sourcePaused = false;
+    final beforePause = <void Function()>[];
 
     void deliverInitial() {
       deliveryScheduled = false;
-      if (!controller.hasListener) return;
+      // Mark the initial values as delivered as soon as delivery is due,
+      // even if there's no listener to receive them. Otherwise a listener
+      // added later could incorrectly receive them.
       initialPending = false;
+      if (!controller.hasListener) return;
       for (var value in initial) {
         if (!controller.hasListener) break;
         controller.add(value);
       }
-      subscription?.resume();
+      final held = beforePause.toList();
+      beforePause.clear();
+      for (var deliver in held) {
+        if (!controller.hasListener) break;
+        deliver();
+      }
+      if (sourcePaused) subscription?.resume();
+    }
+
+    void forward(void Function() deliver) {
+      if (initialPending && !sourcePaused) {
+        beforePause.add(deliver);
+      } else {
+        deliver();
+      }
     }
 
     controller.onListen = () {
-      final sub = subscription =
-          listen(controller.add, onError: controller.addError, onDone: () {
-        subscription = null;
-        controller.close();
-      });
+      sourcePaused = false;
+      final sub = subscription = listen(
+          (value) => forward(() => controller.add(value)),
+          onError: (Object error, StackTrace stackTrace) =>
+              forward(() => controller.addError(error, stackTrace)),
+          onDone: () {
+            subscription = null;
+            forward(controller.close);
+          });
       if (initialPending) {
         sub.pause();
+        sourcePaused = true;
         if (!deliveryScheduled) {
           deliveryScheduled = true;
           scheduleMicrotask(deliverInitial);
