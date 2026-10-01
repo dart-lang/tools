@@ -7,7 +7,6 @@ import 'dart:io';
 
 import 'package:package_config/package_config.dart';
 
-import 'chrome.dart';
 import 'resolver.dart';
 import 'util.dart';
 
@@ -176,52 +175,6 @@ class HitMap {
           throw FormatException(
             'Unrecognized coverage JSON in "${file.path}". Expected a '
             '{"coverage": [...]} report, but got ${decoded.runtimeType}.',
-          );
-      }
-    }
-    return globalHitmap;
-  }
-
-  /// Generates a merged hitmap from a set of Chrome/web coverage JSON files.
-  ///
-  /// Supports both standard `{"coverage": [...]}` JSON reports and raw V8
-  /// precise coverage JSON lists.
-  static Future<Map<String, HitMap>> parseChromeFiles(
-    Iterable<File> files, {
-    bool checkIgnoredLines = false,
-    String? packagePath,
-    Future<String?> Function(String scriptId)? sourceProvider,
-    Future<String?> Function(String scriptId)? sourceMapProvider,
-  }) async {
-    final globalHitmap = <String, HitMap>{};
-    Future<Map<String, HitMap>> parse(List jsonResult) => HitMap.parseJson(
-      jsonResult.whereType<Map<String, dynamic>>().toList(),
-      checkIgnoredLines: checkIgnoredLines,
-      packagePath: packagePath,
-    );
-    for (var file in files) {
-      final contents = file.readAsStringSync();
-      switch (json.decode(contents)) {
-        // VM-service-style {"coverage": [...]} report (emitted by dart test
-        // --coverage).
-        case {'coverage': final List jsonResult}:
-          globalHitmap.merge(await parse(jsonResult));
-        // Raw Chrome V8 precise coverage JSON list.
-        case final List v8Entries:
-          final chromeReport = await parseChromeCoverage(
-            v8Entries.whereType<Map<String, dynamic>>().toList(),
-            sourceProvider ?? ((scriptId) async => null),
-            sourceMapProvider ?? ((scriptId) async => null),
-            (sourceUrl, scriptId) async => Uri.tryParse(sourceUrl),
-          );
-          if (chromeReport case {'coverage': final List jsonResult}) {
-            globalHitmap.merge(await parse(jsonResult));
-          }
-        case final decoded:
-          throw FormatException(
-            'Unrecognized coverage JSON in "${file.path}". Expected a '
-            '{"coverage": [...]} report or a raw V8 coverage list, but got '
-            '${decoded.runtimeType}.',
           );
       }
     }
@@ -429,34 +382,35 @@ List _sortHits(List hits) {
       .toList();
 }
 
-/// Filters [hitmap] to scripts matching [scopes], converting `file:` URIs
-/// inside package libraries to `package:` URIs via [pkgConfig], and returns
-/// a legacy JSON coverage list suitable for writing to `coverage.json`.
-List<Map<String, dynamic>> filterHitmapByScope(
-  Map<String, HitMap> hitmap, {
-  required Set<String> scopes,
-  PackageConfig? pkgConfig,
-  bool includeTestFiles = false,
-}) {
-  final allCoverage = <Map<String, dynamic>>[];
-  for (final MapEntry(key: uriStr, value: map) in hitmap.entries) {
-    var uri = Uri.tryParse(uriStr);
-    if (uri == null) continue;
-    if (uri.scheme == 'file' && pkgConfig != null) {
-      final packageUri = pkgConfig.toPackageUri(uri);
-      if (packageUri != null) uri = packageUri;
-    }
+extension HitMapScopeFilter on Map<String, HitMap> {
+  /// Filters this hitmap to scripts matching [scopes], converting `file:` URIs
+  /// inside package libraries to `package:` URIs via [pkgConfig], and returns
+  /// a legacy JSON coverage list suitable for writing to `coverage.json`.
+  List<Map<String, dynamic>> filterByScope({
+    required Set<String> scopes,
+    PackageConfig? pkgConfig,
+    bool includeTestFiles = false,
+  }) {
+    final allCoverage = <Map<String, dynamic>>[];
+    for (final MapEntry(key: uriStr, value: map) in entries) {
+      var uri = Uri.tryParse(uriStr);
+      if (uri == null) continue;
+      if (uri.scheme == 'file' && pkgConfig != null) {
+        final packageUri = pkgConfig.toPackageUri(uri);
+        if (packageUri != null) uri = packageUri;
+      }
 
-    // Library code resolves to a package: URI above; anything still on
-    // the file: scheme (test files, tools, ...) is only included when
-    // explicitly requested, matching the VM flow's lib-only reporting.
-    if (scopes.includesUri(
-      uri,
-      pkgConfig: pkgConfig,
-      includeTestFiles: includeTestFiles,
-    )) {
-      allCoverage.add(hitmapToJson(map, uri));
+      // Library code resolves to a package: URI above; anything still on
+      // the file: scheme (test files, tools, ...) is only included when
+      // explicitly requested, matching the VM flow's lib-only reporting.
+      if (scopes.includesUri(
+        uri,
+        pkgConfig: pkgConfig,
+        includeTestFiles: includeTestFiles,
+      )) {
+        allCoverage.add(hitmapToJson(map, uri));
+      }
     }
+    return allCoverage;
   }
-  return allCoverage;
 }

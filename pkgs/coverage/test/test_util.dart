@@ -77,7 +77,7 @@ Map<String, Map<String, int>> functionInfoFromSources(
 Map<String, Map<int, int>> lineHitsFromSources(
   Map<String, List<Map<dynamic, dynamic>>> sources,
 ) {
-  Map<int, int> getHits(List list) {
+  Map<int, int> parseHits(List list) {
     return {
       for (var i = 0; i < list.length; i += 2)
         list[i] as int: list[i + 1] as int,
@@ -87,7 +87,7 @@ Map<String, Map<int, int>> lineHitsFromSources(
   return {
     for (var entry in sources.entries)
       entry.key: entry.value.fold(<int, int>{}, (previousValue, element) {
-        final hits = getHits(element['hits'] as List);
+        final hits = parseHits(element['hits'] as List);
         for (var pair in hits.entries) {
           previousValue[pair.key] = (previousValue[pair.key] ?? 0) + pair.value;
         }

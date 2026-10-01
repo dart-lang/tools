@@ -74,23 +74,6 @@ dependency_overrides:
     await localPub.shouldExit(0);
   });
 
-  tearDownAll(() async {
-    if (Platform.isWindows) {
-      final sandboxDir = Directory(d.sandbox);
-      for (var i = 0; i < 5; i++) {
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-        try {
-          if (sandboxDir.existsSync()) {
-            for (final entity in sandboxDir.listSync()) {
-              entity.deleteSync(recursive: true);
-            }
-          }
-          break;
-        } catch (_) {}
-      }
-    }
-  });
-
   test('dart run bin/test_with_coverage.dart -f', () async {
     final list = await _runTest(['run', _testWithCoveragePath, '-f']);
 

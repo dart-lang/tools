@@ -389,7 +389,7 @@ Future<void> _writeWebCoverageJson(
     return;
   }
 
-  final hitmap = await HitMap.parseChromeFiles(
+  final hitmap = await HitMap.parseFiles(
     coverageFiles,
     packagePath: flags.packageDir,
   );
@@ -400,8 +400,7 @@ Future<void> _writeWebCoverageJson(
               : flags.scopeOutput)
           .toSet();
 
-  final allCoverage = filterHitmapByScope(
-    hitmap,
+  final allCoverage = hitmap.filterByScope(
     scopes: scopes,
     pkgConfig: pkgConfig,
     includeTestFiles: flags.includeTestFiles,

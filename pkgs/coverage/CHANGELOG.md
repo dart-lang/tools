@@ -17,9 +17,6 @@
   instead of waiting forever, and exits with the test process's exit code.
 - `HitMap.parseFiles` now throws a `FormatException` when a file is not a valid
   `{"coverage": [...]}` report, instead of silently ignoring it.
-- Add `HitMap.parseChromeFiles` to parse Chrome/V8 coverage JSON files
-  (supporting both `{"coverage": [...]}` and raw V8 lists with source and
-  source-map providers).
 - Add an `--include-test-files` flag to `test_with_coverage` (web platform
   only) that includes coverage for test files and other non-library package
   sources; by default only library code is reported, matching the VM flow.

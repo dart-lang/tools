@@ -116,35 +116,6 @@ void main() {
     }
   });
 
-  test('HitMap.parseChromeFiles handles raw V8 list with providers', () async {
-    final preciseCoverage =
-        json.decode(
-              await File(
-                'test/test_files/chrome_precise_report.txt',
-              ).readAsString(),
-            )
-            as List;
-    final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_raw_test_');
-    final tempFile = File('${tempDir.path}/raw_v8.json');
-    tempFile.writeAsStringSync(jsonEncode(preciseCoverage));
-    try {
-      final hitmap = await HitMap.parseChromeFiles(
-        [tempFile],
-        sourceProvider: (scriptId) async => sourceProvider(scriptId),
-        sourceMapProvider: (scriptId) async => sourceMapProvider(scriptId),
-      );
-      expect(hitmap.keys, anyElement(contains('main_test.dart')));
-      final key = hitmap.keys.firstWhere((k) => k.contains('main_test.dart'));
-      final fileHitMap = hitmap[key]!;
-      expect(fileHitMap.lineHits[7], equals(1));
-      expect(fileHitMap.lineHits[11], equals(1));
-    } finally {
-      tempDir.deleteSync(recursive: true);
-    }
-  });
-
-  // Regression tests for the `scriptId` validation added alongside the
-  // pattern-matching dispatch in `HitMap.parseChromeFiles`.
   test('parseChromeCoverage rejects an entry with a missing scriptId', () {
     expect(
       parseChromeCoverage(
@@ -211,58 +182,6 @@ void main() {
     }
   });
 
-  test(
-    'HitMap.parseChromeFiles skips non-map entries in a raw V8 list',
-    () async {
-      final preciseCoverage =
-          json.decode(
-                await File(
-                  'test/test_files/chrome_precise_report.txt',
-                ).readAsString(),
-              )
-              as List;
-      final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_mixed_');
-      final tempFile = File('${tempDir.path}/raw_v8.json');
-      tempFile.writeAsStringSync(
-        jsonEncode(<dynamic>['not-a-map', 42, ...preciseCoverage]),
-      );
-      try {
-        final hitmap = await HitMap.parseChromeFiles(
-          [tempFile],
-          sourceProvider: (scriptId) async => sourceProvider(scriptId),
-          sourceMapProvider: (scriptId) async => sourceMapProvider(scriptId),
-        );
-        expect(hitmap.keys, anyElement(contains('main_test.dart')));
-      } finally {
-        tempDir.deleteSync(recursive: true);
-      }
-    },
-  );
-
-  test(
-    'HitMap.parseChromeFiles returns an empty hitmap for a raw V8 list when no '
-    'providers are supplied',
-    () async {
-      final preciseCoverage =
-          json.decode(
-                await File(
-                  'test/test_files/chrome_precise_report.txt',
-                ).readAsString(),
-              )
-              as List;
-      final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_noprov_');
-      final tempFile = File('${tempDir.path}/raw_v8.json');
-      tempFile.writeAsStringSync(jsonEncode(preciseCoverage));
-      try {
-        // The default providers must resolve to null (not throw), so a raw V8
-        // report without source/source-map access degrades to an empty hitmap.
-        expect(await HitMap.parseChromeFiles([tempFile]), isEmpty);
-      } finally {
-        tempDir.deleteSync(recursive: true);
-      }
-    },
-  );
-
   test('HitMap.parseFiles rejects a raw V8 list', () async {
     final preciseCoverage =
         json.decode(
@@ -318,7 +237,7 @@ void main() {
     }
   });
 
-  group('filterHitmapByScope and ScopedOutput', () {
+  group('filterByScope and ScopedOutput', () {
     final pkgConfig = PackageConfig([
       Package(
         'my_pkg',
@@ -344,8 +263,7 @@ void main() {
 
     test('normalizes lib file: URIs to package: URIs and filters to matching '
         'scope', () {
-      final result = filterHitmapByScope(
-        sampleHitmap,
+      final result = sampleHitmap.filterByScope(
         scopes: {'my_pkg'},
         pkgConfig: pkgConfig,
       );
@@ -360,8 +278,7 @@ void main() {
     });
 
     test('includes non-lib file: URIs only when includeTestFiles is true', () {
-      final result = filterHitmapByScope(
-        sampleHitmap,
+      final result = sampleHitmap.filterByScope(
         scopes: {'my_pkg'},
         pkgConfig: pkgConfig,
         includeTestFiles: true,
@@ -378,8 +295,7 @@ void main() {
     });
 
     test('matches fallback /<scope>/ path when pkgConfig is null', () {
-      final result = filterHitmapByScope(
-        sampleHitmap,
+      final result = sampleHitmap.filterByScope(
         scopes: {'my_pkg'},
         includeTestFiles: true,
       );
@@ -395,8 +311,7 @@ void main() {
     });
 
     test('includes all entries when scopes is empty', () {
-      final result = filterHitmapByScope(
-        sampleHitmap,
+      final result = sampleHitmap.filterByScope(
         scopes: <String>{},
         pkgConfig: pkgConfig,
       );

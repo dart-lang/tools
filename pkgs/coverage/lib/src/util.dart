@@ -213,12 +213,12 @@ YamlMap _loadPubspec(String packageRoot) {
 }
 
 extension ScopedOutput on Set<String> {
-  /// Returns whether [targetUri] falls within the package scopes in `this`.
+  /// Whether [targetUri] falls within the package scopes in this set.
   ///
-  /// If `this` is empty, all scripts are included.
-  /// Otherwise, `package:` URIs match when their package name is in `this`.
+  /// If this set is empty, all scripts are included.
+  /// Otherwise, `package:` URIs match when their package name is in this set.
   /// When [includeTestFiles] is true, `file:` URIs match when they reside
-  /// under a package root in [pkgConfig] matching `this` (or contain
+  /// under a package root in [pkgConfig] matching this set (or contain
   /// `/<scope>/`).
   bool includesUri(
     Uri targetUri, {
@@ -243,8 +243,7 @@ extension ScopedOutput on Set<String> {
     return false;
   }
 
-  /// Returns whether [scriptUriString] falls within the package scopes in
-  /// `this`.
+  /// Whether [scriptUriString] falls within the package scopes in this set.
   bool includesScript(String? scriptUriString) {
     if (scriptUriString == null) return false;
     final uri = Uri.tryParse(scriptUriString);
