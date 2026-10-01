@@ -190,4 +190,72 @@ void main() {
       expect(constraint.allows(Version.parse('2.0.0-0')), isFalse);
     });
   });
+
+  group('intersection()', () {
+    test('of no constraints allows any version', () {
+      var constraint = VersionConstraint.intersection([]);
+
+      expect(constraint, equals(VersionConstraint.any));
+    });
+
+    test('of overlapping ranges is their overlap', () {
+      var constraint = VersionConstraint.intersection([
+        VersionRange(min: v123, max: v200),
+        VersionRange(min: v114, max: v140),
+      ]);
+
+      expect(constraint, equals(VersionRange(min: v123, max: v140)));
+    });
+
+    // https://github.com/dart-lang/tools/issues/2608
+    test('of disjoint ranges is empty', () {
+      var constraint = VersionConstraint.intersection([
+        VersionRange(min: v123, max: v140),
+        VersionRange(min: v200, max: v234),
+      ]);
+
+      expect(constraint.isEmpty, isTrue);
+    });
+
+    test('of a range and a version it allows is that version', () {
+      var constraint =
+          VersionConstraint.intersection([VersionRange(max: v200), v123]);
+
+      expect(constraint, equals(v123));
+    });
+
+    test('of a range and a version it does not allow is empty', () {
+      var constraint =
+          VersionConstraint.intersection([VersionRange(max: v140), v200]);
+
+      expect(constraint.isEmpty, isTrue);
+    });
+
+    test('stays empty once a disjoint constraint is seen', () {
+      var constraint = VersionConstraint.intersection([
+        VersionRange(min: v123, max: v140),
+        VersionRange(min: v200, max: v234),
+        VersionConstraint.any,
+      ]);
+
+      expect(constraint.isEmpty, isTrue);
+    });
+
+    test('of a range and a union can be a union', () {
+      var constraint = VersionConstraint.intersection([
+        VersionRange(min: v010, max: v300),
+        VersionUnion.fromRanges([
+          VersionRange(min: v072, max: v123),
+          VersionRange(min: v200, max: v250),
+        ]),
+      ]);
+
+      expect(
+          constraint,
+          equals(VersionUnion.fromRanges([
+            VersionRange(min: v072, max: v123),
+            VersionRange(min: v200, max: v250),
+          ])));
+    });
+  });
 }

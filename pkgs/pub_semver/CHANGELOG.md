@@ -1,3 +1,8 @@
+## 2.2.2-wip
+
+- Fix `VersionConstraint.intersection` throwing a `TypeError` when the
+  intersection of the constraints is empty (e.g. for disjoint ranges).
+
 ## 2.2.1
 
 - Fix parsing of pre-release and build identifiers to only treat pure-digit
