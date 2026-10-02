@@ -368,11 +368,11 @@ foo: 123
           equals(1));
 
       expect(
-        CstDocument.attachHeaderComment('|\r  val', ' # comment', '\r'),
+        attachHeaderComment('|\r  val', ' # comment', '\r'),
         equals('| # comment\r  val'),
       );
       expect(
-        CstDocument.attachHeaderComment('single', ' # comment', '\n'),
+        attachHeaderComment('single', ' # comment', '\n'),
         equals('single # comment'),
       );
     });

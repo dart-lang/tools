@@ -18,8 +18,6 @@ library;
 import 'package:yaml/tokens.dart';
 import 'package:yaml/yaml.dart';
 
-import 'source_edit.dart';
-
 /// Thrown when the CST builder cannot produce an exact tiling of the source.
 ///
 /// This indicates a document shape the builder does not model. It is a bug in
@@ -43,7 +41,13 @@ final class CstException implements Exception {
 /// Every node occupies the source range `[start, end)`. The range is split into
 /// the *properties* `[start, contentStart)` — a verbatim anchor and/or tag,
 /// including the whitespace separating it from the content — and the *content*
-/// `[contentStart, end)`.
+/// `[contentStart, end)`:
+///
+/// ```text
+/// &anchor !tag scalar_or_collection
+/// ^            ^                   ^
+/// start        contentStart        contentEnd / end
+/// ```
 sealed class CstNode {
   /// Offset of the first character of this node, including node properties.
   int get start;
@@ -186,7 +190,18 @@ final class CstBlockSeq extends CstNode {
 /// The entry tiles as `[start, lineStart)` leading comment and blank lines,
 /// `[lineStart, dashStart)` the indentation of the `-`, the `-` itself,
 /// `[dashStart + 1, value.start)` separating whitespace and comments, the
-/// value, and `[value.end, end)` the trailing part of the value's line.
+/// value, and `[value.end, end)` the trailing part of the value's line:
+///
+/// ```text
+///   # leading comment\n   <-- start
+///   - &a value # trailing\n
+/// ^ ^ ^        ^           ^
+/// | | |        |           +-- end (past line break)
+/// | | |        +-- value.end
+/// | | +-- value.start
+/// | +-- dashStart
+/// +-- lineStart
+/// ```
 final class CstBlockSeqEntry {
   /// Start of this entry's leading comment and blank lines, immediately after
   /// the previous entry.
@@ -260,6 +275,19 @@ final class CstBlockMap extends CstNode {
 }
 
 /// One `key: value` entry of a [CstBlockMap].
+///
+/// ```text
+///   # leading comment\n   <-- start
+///   ? key : value # comment\n
+/// ^ ^ ^   ^ ^     ^          ^
+/// | | |   | |     |          +-- end (past line break)
+/// | | |   | |     +-- value.end
+/// | | |   | +-- value.start
+/// | | |   +-- colon
+/// | | +-- key.start
+/// | +-- questionMark (optional; keyStart == questionMark ?? key.start)
+/// +-- lineStart
+/// ```
 final class CstBlockMapEntry {
   /// Start of this entry's leading comment and blank lines, immediately after
   /// the previous entry.
@@ -308,6 +336,16 @@ final class CstBlockMapEntry {
 }
 
 /// A collection written in flow style, as `[...]` or `{...}`.
+///
+/// ```text
+/// &anchor [  entry0,  entry1  ]
+/// ^       ^^                  ^^
+/// |       ||                  |+-- end
+/// |       ||                  +-- closeStart (trailing trivia ends here)
+/// |       |+-- openEnd (== entries.first.start when non-empty)
+/// |       +-- contentStart
+/// +-- start
+/// ```
 sealed class CstFlowCollection extends CstNode {
   @override
   final int start;
@@ -375,7 +413,19 @@ final class CstFlowMap extends CstFlowCollection {
 ///
 /// The entry tiles as leading whitespace and comments, an optional `?`, the key
 /// and `:` if this is a mapping entry, the value, then trailing whitespace and
-/// comments and an optional `,`.
+/// comments and an optional `,`:
+///
+/// ```text
+///   ? key : value ,
+/// ^ ^ ^   ^ ^     ^^
+/// | | |   | |     |+-- end (comma + 1, or value.end when comma == null)
+/// | | |   | |     +-- comma (optional)
+/// | | |   | +-- value.start
+/// | | |   +-- colon (optional)
+/// | | +-- key.start (optional)
+/// | +-- contentStart (questionMark ?? key?.start ?? value.start)
+/// +-- start (leading trivia after `[` / `{` or previous `,`)
+/// ```
 final class CstFlowEntry {
   /// Start of this entry's leading whitespace and comments, immediately after
   /// the opening delimiter or the previous entry.
@@ -683,6 +733,23 @@ final class CstDocument {
     return result;
   }
 
+  /// Whether every character in `[start, end)` is a space or tab.
+  bool isWhitespaceRange(int start, int end) {
+    for (var i = start; i < end; i++) {
+      final char = source[i];
+      if (char != ' ' && char != '\t') return false;
+    }
+    return true;
+  }
+
+  /// Whether `[start, end)` contains a tab character (`\t`).
+  bool hasTabInRange(int start, int end) {
+    for (var i = start; i < end; i++) {
+      if (source[i] == '\t') return true;
+    }
+    return false;
+  }
+
   /// Extends [offset] past blank lines and full-line comments whose column is
   /// greater than [minIndent], returning the end of the last such line.
   int extendPastIndentedCommentsAndBlankLines(int offset, int minIndent) {
@@ -696,31 +763,16 @@ final class CstDocument {
 
       final comment = commentInRange(lineStart, lineContentEnd);
       if (comment != null) {
-        var onlyWhitespaceBefore = true;
-        for (var i = lineStart; i < comment.span.start.offset; i++) {
-          final char = source[i];
-          if (char != ' ' && char != '\t') {
-            onlyWhitespaceBefore = false;
-            break;
-          }
-        }
-        final column = comment.span.start.offset - lineStart;
-        if (onlyWhitespaceBefore && column > minIndent) {
+        final commentStart = comment.span.start.offset;
+        final column = commentStart - lineStart;
+        if (isWhitespaceRange(lineStart, commentStart) && column > minIndent) {
           probe = lineBreakEnd;
           continue;
         }
         break;
       }
 
-      var isBlank = true;
-      for (var i = lineStart; i < lineContentEnd; i++) {
-        final char = source[i];
-        if (char != ' ' && char != '\t') {
-          isBlank = false;
-          break;
-        }
-      }
-      if (isBlank) {
+      if (isWhitespaceRange(lineStart, lineContentEnd)) {
         probe = lineBreakEnd;
         continue;
       }
@@ -728,112 +780,6 @@ final class CstDocument {
       break;
     }
     return probe;
-  }
-
-  /// Adjusts [edit] to prevent an inserted or updated block scalar with
-  /// [bodyIndent] from swallowing subsequent over-indented comments or blank
-  /// lines (addressing Bug H2RW_0).
-  SourceEdit preventBlockScalarSwallowing(SourceEdit edit, int bodyIndent) {
-    final endOffset = edit.offset + edit.length;
-    var probe = endOffset;
-
-    final breakLength = lineBreakLengthAt(probe);
-    if (breakLength > 0) {
-      probe += breakLength;
-    }
-
-    var extraLength = probe - endOffset;
-    final buffer = StringBuffer();
-
-    while (probe < source.length) {
-      final lineStart = lineStartOf(probe);
-      if (probe != lineStart) break;
-
-      final lineContentEnd = lineContentEndOf(probe);
-      final lineBreakEnd = lineBreakEndOf(probe);
-      final lineBreak = source.substring(lineContentEnd, lineBreakEnd);
-
-      final comment = commentInRange(lineStart, lineContentEnd);
-      if (comment != null) {
-        var onlyWhitespaceBefore = true;
-        for (var i = lineStart; i < comment.span.start.offset; i++) {
-          final char = source[i];
-          if (char != ' ' && char != '\t') {
-            onlyWhitespaceBefore = false;
-            break;
-          }
-        }
-        final column = comment.span.start.offset - lineStart;
-        if (onlyWhitespaceBefore && column >= bodyIndent) {
-          final commentText =
-              source.substring(comment.span.start.offset, lineContentEnd);
-          buffer.write('$commentText$lineBreak');
-          extraLength += lineBreakEnd - probe;
-          probe = lineBreakEnd;
-          continue;
-        }
-        break;
-      }
-
-      var isBlank = true;
-      var hasTab = false;
-      for (var i = lineStart; i < lineContentEnd; i++) {
-        final char = source[i];
-        if (char == '\t') hasTab = true;
-        if (char != ' ' && char != '\t') {
-          isBlank = false;
-          break;
-        }
-      }
-      if (isBlank) {
-        final spacesCount = lineContentEnd - lineStart;
-        if (hasTab || spacesCount >= bodyIndent) {
-          buffer.write(lineBreak);
-          extraLength += lineBreakEnd - probe;
-          probe = lineBreakEnd;
-          continue;
-        }
-      }
-
-      break;
-    }
-
-    if (extraLength == 0) return edit;
-
-    final replacementEnding =
-        edit.replacement.endsWith('\n') || edit.replacement.endsWith('\r')
-            ? edit.replacement
-            : '${edit.replacement}$lineEnding';
-
-    return SourceEdit(
-      edit.offset,
-      edit.length + extraLength,
-      '$replacementEnding$buffer',
-    );
-  }
-
-  /// Attaches [comment] to the header line of a block scalar [replacement].
-  static String attachHeaderComment(
-    String replacement,
-    String comment,
-    String lineEnding,
-  ) {
-    final newline = replacement.indexOf('\n');
-    final carriageReturn = replacement.indexOf('\r');
-    final int breakIndex;
-    if (newline == -1) {
-      breakIndex = carriageReturn;
-    } else if (carriageReturn == -1) {
-      breakIndex = newline;
-    } else {
-      breakIndex = newline < carriageReturn ? newline : carriageReturn;
-    }
-    if (breakIndex != -1) {
-      return '${replacement.substring(0, breakIndex)}'
-          '$comment'
-          '${replacement.substring(breakIndex)}';
-    }
-    return '$replacement$comment';
   }
 
   /// Parses [source] into a CST.

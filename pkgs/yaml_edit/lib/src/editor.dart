@@ -584,71 +584,18 @@ class YamlEditor {
     final initialYaml = _yaml;
     final updatedYaml = edit.apply(_yaml);
 
-    assert(() {
-      // 1. Assert byte-exactness outside
-      //    [edit.offset, edit.offset + edit.length):
-      if (edit.offset < 0 ||
-          edit.length < 0 ||
-          edit.offset + edit.length > initialYaml.length) {
-        throw createAssertionError(
-          'Frame condition violation: edit range is out of bounds.',
-          initialYaml,
-          updatedYaml,
-        );
-      }
-      final expectedLength =
-          initialYaml.length - edit.length + edit.replacement.length;
-      if (updatedYaml.length != expectedLength) {
-        throw createAssertionError(
-          'Frame condition violation: updated YAML length does not match '
-          'expected.',
-          initialYaml,
-          updatedYaml,
-        );
-      }
-      if (!updatedYaml.startsWith(initialYaml.substring(0, edit.offset))) {
-        throw createAssertionError(
-          'Frame condition violation: prefix before edit was modified.',
-          initialYaml,
-          updatedYaml,
-        );
-      }
-      if (updatedYaml.substring(edit.offset + edit.replacement.length) !=
-          initialYaml.substring(edit.offset + edit.length)) {
-        throw createAssertionError(
-          'Frame condition violation: suffix after edit was modified.',
-          initialYaml,
-          updatedYaml,
-        );
-      }
-
-      // 2. Assert exact CST tiling
-      final CstDocument updatedCst;
-      try {
-        updatedCst = CstDocument.parse(updatedYaml);
-      } on YamlException catch (e) {
-        throw createAssertionError(
-          'Failed to parse updated YAML: $e',
-          initialYaml,
-          updatedYaml,
-        );
-      }
-
-      // 3. Assert comment conservation
-      _assertCommentConservation(
+    assert(
+      _assertFrameCondition(
         initialDocument: _document,
-        updatedDocument: updatedCst,
         edit: edit,
+        initialYaml: initialYaml,
+        updatedYaml: updatedYaml,
         isRemove: isRemove,
         oldNode: oldNode,
         collectionNode: collectionNode,
         expectedNode: expectedNode,
-        initialYaml: initialYaml,
-        updatedYaml: updatedYaml,
-      );
-
-      return true;
-    }());
+      ),
+    );
 
     // Check that the edit does actually parse, and that the result is a
     // document we can go on to model. Rebuilding the CST re-checks its tiling
@@ -684,6 +631,81 @@ class YamlEditor {
     // semantically correct!
     _document = updated;
     _edits.add(edit);
+  }
+
+  bool _assertFrameCondition({
+    required CstDocument initialDocument,
+    required SourceEdit edit,
+    required String initialYaml,
+    required String updatedYaml,
+    required bool isRemove,
+    required CstNode? oldNode,
+    required CstNode? collectionNode,
+    required YamlNode expectedNode,
+  }) {
+    // 1. Assert byte-exactness outside
+    //    [edit.offset, edit.offset + edit.length):
+    if (edit.offset < 0 ||
+        edit.length < 0 ||
+        edit.offset + edit.length > initialYaml.length) {
+      throw createAssertionError(
+        'Frame condition violation: edit range is out of bounds.',
+        initialYaml,
+        updatedYaml,
+      );
+    }
+    final expectedLength =
+        initialYaml.length - edit.length + edit.replacement.length;
+    if (updatedYaml.length != expectedLength) {
+      throw createAssertionError(
+        'Frame condition violation: updated YAML length does not match '
+        'expected.',
+        initialYaml,
+        updatedYaml,
+      );
+    }
+    if (!updatedYaml.startsWith(initialYaml.substring(0, edit.offset))) {
+      throw createAssertionError(
+        'Frame condition violation: prefix before edit was modified.',
+        initialYaml,
+        updatedYaml,
+      );
+    }
+    if (updatedYaml.substring(edit.offset + edit.replacement.length) !=
+        initialYaml.substring(edit.offset + edit.length)) {
+      throw createAssertionError(
+        'Frame condition violation: suffix after edit was modified.',
+        initialYaml,
+        updatedYaml,
+      );
+    }
+
+    // 2. Assert exact CST tiling
+    final CstDocument updatedCst;
+    try {
+      updatedCst = CstDocument.parse(updatedYaml);
+    } on YamlException catch (e) {
+      throw createAssertionError(
+        'Failed to parse updated YAML: $e',
+        initialYaml,
+        updatedYaml,
+      );
+    }
+
+    // 3. Assert comment conservation
+    _assertCommentConservation(
+      initialDocument: initialDocument,
+      updatedDocument: updatedCst,
+      edit: edit,
+      isRemove: isRemove,
+      oldNode: oldNode,
+      collectionNode: collectionNode,
+      expectedNode: expectedNode,
+      initialYaml: initialYaml,
+      updatedYaml: updatedYaml,
+    );
+
+    return true;
   }
 
   void _assertCommentConservation({

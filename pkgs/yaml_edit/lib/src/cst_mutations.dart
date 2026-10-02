@@ -219,9 +219,95 @@ SourceEdit buildUpdate(
   final edit = _buildUpdate(document, path, value);
   final bodyIndent = _blockBodyIndent(document, path, value);
   if (bodyIndent != null) {
-    return document.preventBlockScalarSwallowing(edit, bodyIndent);
+    return _preventBlockScalarSwallowing(document, edit, bodyIndent);
   }
   return edit;
+}
+
+/// Adjusts [edit] to prevent an inserted or updated block scalar with
+/// [bodyIndent] from swallowing subsequent over-indented comments or blank
+/// lines (addressing Bug H2RW_0).
+SourceEdit _preventBlockScalarSwallowing(
+  CstDocument document,
+  SourceEdit edit,
+  int bodyIndent,
+) {
+  final endOffset = edit.offset + edit.length;
+  var probe = endOffset;
+
+  final breakLength = document.lineBreakLengthAt(probe);
+  if (breakLength > 0) {
+    probe += breakLength;
+  }
+
+  var extraLength = probe - endOffset;
+  final buffer = StringBuffer();
+  final source = document.source;
+
+  while (probe < source.length) {
+    final lineStart = document.lineStartOf(probe);
+    if (probe != lineStart) break;
+
+    final lineContentEnd = document.lineContentEndOf(probe);
+    final lineBreakEnd = document.lineBreakEndOf(probe);
+    final lineBreak = source.substring(lineContentEnd, lineBreakEnd);
+
+    final comment = document.commentInRange(lineStart, lineContentEnd);
+    if (comment != null) {
+      final column = comment.span.start.offset - lineStart;
+      if (document.isWhitespaceRange(lineStart, comment.span.start.offset) &&
+          column >= bodyIndent) {
+        final commentText =
+            source.substring(comment.span.start.offset, lineContentEnd);
+        buffer.write('$commentText$lineBreak');
+        extraLength += lineBreakEnd - probe;
+        probe = lineBreakEnd;
+        continue;
+      }
+      break;
+    }
+
+    if (document.isWhitespaceRange(lineStart, lineContentEnd)) {
+      final spacesCount = lineContentEnd - lineStart;
+      if (document.hasTabInRange(lineStart, lineContentEnd) ||
+          spacesCount >= bodyIndent) {
+        buffer.write(lineBreak);
+        extraLength += lineBreakEnd - probe;
+        probe = lineBreakEnd;
+        continue;
+      }
+    }
+
+    break;
+  }
+
+  if (extraLength == 0) return edit;
+
+  final lineEnding = document.lineEnding;
+  final replacementEnding = edit.replacement.endsWith(lineEnding)
+      ? edit.replacement
+      : '${edit.replacement}$lineEnding';
+
+  return SourceEdit(
+    edit.offset,
+    edit.length + extraLength,
+    '$replacementEnding$buffer',
+  );
+}
+
+/// Attaches [comment] to the header line of a block scalar [replacement].
+String attachHeaderComment(
+  String replacement,
+  String comment,
+  String lineEnding,
+) {
+  final breakIndex = replacement.indexOf(lineEnding);
+  if (breakIndex != -1) {
+    return '${replacement.substring(0, breakIndex)}'
+        '$comment'
+        '${replacement.substring(breakIndex)}';
+  }
+  return '$replacement$comment';
 }
 
 int? _blockBodyIndent(
@@ -389,7 +475,7 @@ String _attachCommentToReplacement(
 }) {
   if (comment == null) return replacement;
   if (isBlockScalar) {
-    return CstDocument.attachHeaderComment(replacement, comment, lineEnding);
+    return attachHeaderComment(replacement, comment, lineEnding);
   }
   return '$replacement$comment';
 }
@@ -606,16 +692,8 @@ SourceEdit _replaceInPlace(
     CstBlockMap() => document.columnOf(old.entries.first.keyStart),
     _ => document.columnOf(old.start),
   };
-  var onlyWhitespaceBefore = true;
   final lineStart = document.lineStartOf(old.start);
-  for (var i = lineStart; i < old.start; i++) {
-    final char = document.source[i];
-    if (char != ' ' && char != '\t') {
-      onlyWhitespaceBefore = false;
-      break;
-    }
-  }
-  final startsOwnLine = onlyWhitespaceBefore;
+  final startsOwnLine = document.isWhitespaceRange(lineStart, old.start);
   var text = yamlEncodeBlock(value, column, style.lineEnding);
   if (isCollection) {
     if (!startsOwnLine && _spansOwnLines(value)) {
@@ -767,7 +845,7 @@ SourceEdit buildInsert(
   final edit = _buildInsert(document, path, index, value);
   final bodyIndent = _blockScalarInsertBodyIndent(document, path, index, value);
   if (bodyIndent != null) {
-    return document.preventBlockScalarSwallowing(edit, bodyIndent);
+    return _preventBlockScalarSwallowing(document, edit, bodyIndent);
   }
   return edit;
 }

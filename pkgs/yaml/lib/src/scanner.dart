@@ -822,20 +822,7 @@ class Scanner {
       }
 
       if (_scanner.peekChar() == TAB) {
-        var offset = 0;
-        var isBlankOrCommentLine = false;
-        while (true) {
-          final char = _scanner.peekChar(offset);
-          if (char == null || char == LF || char == CR || char == HASH) {
-            isBlankOrCommentLine = true;
-            break;
-          }
-          if (char != SP && char != TAB) {
-            break;
-          }
-          offset++;
-        }
-        if (isBlankOrCommentLine) {
+        if (_isAtBlankOrCommentLine) {
           while (_scanner.peekChar() == SP || _scanner.peekChar() == TAB) {
             _scanner.readChar();
           }
@@ -1544,23 +1531,9 @@ class Scanner {
           // Check for a tab character messing up the intendation.
           if (leadingBreak.isNotEmpty &&
               _scanner.column < indent &&
-              _scanner.peekChar() == TAB) {
-            var offset = 0;
-            var isBlankOrCommentLine = false;
-            while (true) {
-              final char = _scanner.peekChar(offset);
-              if (char == null || char == LF || char == CR || char == HASH) {
-                isBlankOrCommentLine = true;
-                break;
-              }
-              if (char != SP && char != TAB) {
-                break;
-              }
-              offset++;
-            }
-            if (!isBlankOrCommentLine) {
-              _scanner.error('Expected a space but found a tab.', length: 1);
-            }
+              _scanner.peekChar() == TAB &&
+              !_isAtBlankOrCommentLine) {
+            _scanner.error('Expected a space but found a tab.', length: 1);
           }
 
           if (leadingBreak.isEmpty) {
@@ -1637,6 +1610,22 @@ class Scanner {
         char == TAB ||
         char == CR ||
         char == LF;
+  }
+
+  /// Whether the remainder of the current line consists solely of whitespace
+  /// (spaces or tabs) optionally followed by a `#` comment or line break.
+  bool get _isAtBlankOrCommentLine {
+    var offset = 0;
+    while (true) {
+      final char = _scanner.peekChar(offset);
+      if (char == null || char == LF || char == CR || char == HASH) {
+        return true;
+      }
+      if (char != SP && char != TAB) {
+        return false;
+      }
+      offset++;
+    }
   }
 
   /// Returns whether the character at [offset] is a plain character.
