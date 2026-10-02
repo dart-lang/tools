@@ -5,6 +5,8 @@
 import 'dart:convert' show json;
 import 'dart:io';
 
+import 'package:package_config/package_config.dart';
+
 import 'resolver.dart';
 import 'util.dart';
 
@@ -157,20 +159,23 @@ class HitMap {
     String? packagePath,
   }) async {
     final globalHitmap = <String, HitMap>{};
+    Future<Map<String, HitMap>> parse(List jsonResult) => HitMap.parseJson(
+      jsonResult.whereType<Map<String, dynamic>>().toList(),
+      checkIgnoredLines: checkIgnoredLines,
+      // ignore: deprecated_member_use_from_same_package
+      packagesPath: packagesPath,
+      packagePath: packagePath,
+    );
     for (var file in files) {
       final contents = file.readAsStringSync();
-      final jsonMap = json.decode(contents) as Map<String, dynamic>;
-      if (jsonMap.containsKey('coverage')) {
-        final jsonResult = jsonMap['coverage'] as List;
-        globalHitmap.merge(
-          await HitMap.parseJson(
-            jsonResult.cast<Map<String, dynamic>>(),
-            checkIgnoredLines: checkIgnoredLines,
-            // ignore: deprecated_member_use_from_same_package
-            packagesPath: packagesPath,
-            packagePath: packagePath,
-          ),
-        );
+      switch (json.decode(contents)) {
+        case {'coverage': final List jsonResult}:
+          globalHitmap.merge(await parse(jsonResult));
+        case final decoded:
+          throw FormatException(
+            'Unrecognized coverage JSON in "${file.path}". Expected a '
+            '{"coverage": [...]} report, but got ${decoded.runtimeType}.',
+          );
       }
     }
     return globalHitmap;
@@ -375,4 +380,37 @@ List _sortHits(List hits) {
       .map((item) => [item.hitRange, item.hitCount])
       .expand((item) => item)
       .toList();
+}
+
+extension HitMapScopeFilter on Map<String, HitMap> {
+  /// Filters this hitmap to scripts matching [scopes], converting `file:` URIs
+  /// inside package libraries to `package:` URIs via [pkgConfig], and returns
+  /// a legacy JSON coverage list suitable for writing to `coverage.json`.
+  List<Map<String, dynamic>> filterByScope({
+    required Set<String> scopes,
+    PackageConfig? pkgConfig,
+    bool includeTestFiles = false,
+  }) {
+    final allCoverage = <Map<String, dynamic>>[];
+    for (final MapEntry(key: uriStr, value: map) in entries) {
+      var uri = Uri.tryParse(uriStr);
+      if (uri == null) continue;
+      if (uri.scheme == 'file' && pkgConfig != null) {
+        final packageUri = pkgConfig.toPackageUri(uri);
+        if (packageUri != null) uri = packageUri;
+      }
+
+      // Library code resolves to a package: URI above; anything still on
+      // the file: scheme (test files, tools, ...) is only included when
+      // explicitly requested, matching the VM flow's lib-only reporting.
+      if (scopes.includesUri(
+        uri,
+        pkgConfig: pkgConfig,
+        includeTestFiles: includeTestFiles,
+      )) {
+        allCoverage.add(hitmapToJson(map, uri));
+      }
+    }
+    return allCoverage;
+  }
 }
