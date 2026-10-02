@@ -1,7 +1,8 @@
 ## 2.2.2-wip
 
 - Fix `VersionConstraint.intersection` throwing a `TypeError` when the
-  intersection of the constraints is empty (e.g. for disjoint ranges).
+  intersection of the constraints is empty (e.g. for disjoint ranges) or a
+  `VersionUnion`.
 
 ## 2.2.1
 
