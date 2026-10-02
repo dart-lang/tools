@@ -118,6 +118,9 @@ class LinkParser extends TextParser {
       final char = charAt(pos);
       if (char == $backslash) {
         advance();
+        if (isDone) {
+          return false;
+        }
       } else if (char == $lbracket) {
         return false;
       } else if (char == $rbracket) {
@@ -163,12 +166,18 @@ class LinkParser extends TextParser {
   bool _parseBracketedDestination() {
     // Walk past the opening `<`.
     advance();
+    if (isDone) {
+      return false;
+    }
 
     final start = pos;
     while (true) {
       final char = charAt();
       if (char == $backslash) {
         advance();
+        if (isDone) {
+          return false;
+        }
       } else if (char == $lf || char == $cr || char == $ff) {
         return false;
       } else if (char == $gt) {
@@ -200,6 +209,9 @@ class LinkParser extends TextParser {
       final char = charAt();
       if (char == $backslash) {
         advance();
+        if (isDone) {
+          break;
+        }
       } else if (char == $space || char == $lf || char == $cr || char == $ff) {
         break;
       } else if (char == $lparen) {
@@ -248,6 +260,9 @@ class LinkParser extends TextParser {
       final char = charAt();
       if (char == $backslash) {
         advance();
+        if (isDone) {
+          return false;
+        }
       } else if (char == closeDelimiter) {
         break;
       }

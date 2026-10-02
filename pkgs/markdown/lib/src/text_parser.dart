@@ -14,7 +14,7 @@ class TextParser {
   int get pos => _position;
 
   /// Whether the read position has reached the end of [source].
-  bool get isDone => _position == length;
+  bool get isDone => _position >= length;
 
   /// The length of [source].
   int get length => source.length;
