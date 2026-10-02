@@ -9,8 +9,7 @@ import 'version.dart';
 
 const version = releaseVersion;
 
-/// Mapping from release asset name (see `releaseAssetName`) to
-/// SHA-256 hash.
+/// Mapping from release asset name to SHA-256 hash.
 const fileHashes = <String, String>{
   'boring-linux-arm64-libbssl_dart.so':
       '7a43ec9d900beac0117fb587f52fd18a08aeaadf78338ee7f5dbda06e0f0cefe',
