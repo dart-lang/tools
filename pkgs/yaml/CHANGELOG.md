@@ -1,6 +1,10 @@
 ## 3.2.0-wip
 
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
+* Add `retainTokens` parameter to `loadYamlDocument` to retain lexical tokens
+  (including comments and structural indicators) on `YamlDocument.tokens`.
+* Add `package:yaml/tokens.dart` exporting the lexical token hierarchy (`Token`,
+  `CommentToken`, `ScalarToken`, `AnchorToken`, `TagToken`, `AliasToken`, etc.).
 * Fix `ScalarToken.span` for keep-chomped block scalars (`|+`, `>+`) to cover
   trailing empty lines, and bound empty `strip` and `clip` block scalar spans
   at the header line.

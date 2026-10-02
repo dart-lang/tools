@@ -12,6 +12,7 @@ import 'equality.dart';
 import 'error_listener.dart';
 import 'event.dart';
 import 'parser.dart';
+import 'token.dart';
 import 'yaml_document.dart';
 import 'yaml_exception.dart';
 import 'yaml_node.dart';
@@ -38,9 +39,15 @@ class Loader {
 
   /// Creates a loader that loads [source].
   factory Loader(String source,
-      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener}) {
+      {Uri? sourceUrl,
+      bool recover = false,
+      bool retainTokens = false,
+      ErrorListener? errorListener}) {
     var parser = Parser(source,
-        sourceUrl: sourceUrl, recover: recover, errorListener: errorListener);
+        sourceUrl: sourceUrl,
+        recover: recover,
+        retainTokens: retainTokens,
+        errorListener: errorListener);
     var event = parser.parse();
     assert(event.type == EventType.streamStart);
     return Loader._(parser, event.span);
@@ -66,6 +73,10 @@ class Loader {
     return document;
   }
 
+  /// All non-empty tokens emitted by the underlying scanner if `retainTokens`
+  /// was `true`, or `null` otherwise.
+  List<Token>? get tokens => _parser.tokens;
+
   /// Composes a document object.
   YamlDocument _loadDocument(DocumentStartEvent firstEvent) {
     var contents = _loadNode(_parser.parse());
@@ -79,7 +90,8 @@ class Loader {
         firstEvent.versionDirective,
         firstEvent.tagDirectives,
         startImplicit: firstEvent.isImplicit,
-        endImplicit: lastEvent.isImplicit);
+        endImplicit: lastEvent.isImplicit,
+        tokens: _parser.tokens);
   }
 
   /// Composes a node.
