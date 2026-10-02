@@ -113,6 +113,9 @@ class Document {
         i += inlineNodes.length - 1;
       } else if (node is Element && node.children != null) {
         _parseInlineContent(node.children!);
+        if (node.needsGeneratedId) {
+          node.generatedId = BlockSyntax.generateAnchorHash(node);
+        }
       }
     }
   }
