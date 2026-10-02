@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cli_util/cli_components.dart';
 import 'package:cli_util/src/components/select_dialog.dart';
 import 'package:meta/meta.dart';
 import 'package:test/test.dart';
@@ -54,10 +55,21 @@ void main() {
           for (var multiSelect in [false, true]) {
             final dialogType = multiSelect ? 'MultiSelect' : 'SingleSelect';
             test('$dialogType - ${inputCombo.join(', ')}', () async {
+              final sizing = SelectComponentSizing.fixed(
+                totalHeight: 5 + (multiSelect ? 1 : 0),
+              );
               final future =
                   multiSelect
-                      ? showMultiSelectDialog(options, inputController.stream)
-                      : showSingleSelectDialog(options, inputController.stream);
+                      ? showMultiSelectDialog(
+                        options,
+                        inputController.stream,
+                        sizing: sizing,
+                      )
+                      : showSingleSelectDialog(
+                        options,
+                        inputController.stream,
+                        sizing: sizing,
+                      );
               await pumpEventQueue();
               expect(mockStdin.lineMode, isFalse);
               expect(mockStdin.echoMode, isFalse);
@@ -250,10 +262,10 @@ void main() {
           final sBox = multiSelect ? ' [x]' : '';
           final renderer =
               multiSelect ? showMultiSelectDialog : showSingleSelectDialog;
-
-          // Always compute this on demand to account for the current terminal
-          // width.
-          String maybeLegend() => multiSelect ? '$multiSelectLegend\n' : '';
+          final fiveItemSizing = SelectComponentSizing.fixed(
+            totalHeight: 5 + (multiSelect ? 1 : 0),
+          );
+          String maybeLegend() => multiSelect ? '\n$multiSelectLegend' : '';
 
           test('renders UI state correctly', () async {
             final future = renderer([
@@ -265,24 +277,21 @@ void main() {
             expect(mockStdout.terminal.content, '''
 >$uBox apple
  $uBox banana
- $uBox cherry
-${maybeLegend()}''');
+ $uBox cherry${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox apple
 >$uBox banana
- $uBox cherry
-${maybeLegend()}''');
+ $uBox cherry${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.space);
             await pumpEventQueue();
             expect(mockStdout.terminal.content, '''
  $uBox apple
 >$sBox banana
- $uBox cherry
-${maybeLegend()}''');
+ $uBox cherry${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.enter);
             expect(await future, multiSelect ? {1} : 1);
@@ -292,7 +301,7 @@ ${maybeLegend()}''');
             final future = renderer(
               ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
               inputController.stream,
-              maxVisibleItems: 5, // ignore: avoid_redundant_argument_values
+              sizing: fiveItemSizing,
             );
             await pumpEventQueue();
 
@@ -301,8 +310,7 @@ ${maybeLegend()}''');
  $uBox b      █
  $uBox c      █
  $uBox d      █
- $uBox e      │
-${maybeLegend()}''');
+ $uBox e      │${maybeLegend()}''');
             inputController.addKeys(List.filled(2, KeyVariants.down));
             inputController.addKey(KeyVariants.space);
             await pumpEventQueue();
@@ -312,8 +320,7 @@ ${maybeLegend()}''');
  $uBox b      █
 >$sBox c      █
  $uBox d      █
- $uBox e      │
-${maybeLegend()}''');
+ $uBox e      │${maybeLegend()}''');
 
             inputController.addKeys(List.filled(4, KeyVariants.down));
             await pumpEventQueue();
@@ -323,8 +330,7 @@ ${maybeLegend()}''');
  $uBox d      █
  $uBox e      █
  $uBox f      █
->$uBox g      █
-${maybeLegend()}''');
+>$uBox g      █${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.enter);
             expect(await future, multiSelect ? {2} : 6);
@@ -335,7 +341,7 @@ ${maybeLegend()}''');
             final future = renderer(
               options,
               inputController.stream,
-              maxVisibleItems: 5, // ignore: avoid_redundant_argument_values
+              sizing: fiveItemSizing,
             );
             await pumpEventQueue();
 
@@ -344,8 +350,7 @@ ${maybeLegend()}''');
  $uBox 1       │
  $uBox 2       │
  $uBox 3       │
- $uBox 4       │
-${maybeLegend()}''');
+ $uBox 4       │${maybeLegend()}''');
 
             inputController.addKeys(List.filled(2, KeyVariants.down));
             await pumpEventQueue();
@@ -354,8 +359,7 @@ ${maybeLegend()}''');
  $uBox 1       │
 >$uBox 2       │
  $uBox 3       │
- $uBox 4       │
-${maybeLegend()}''');
+ $uBox 4       │${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
@@ -364,8 +368,7 @@ ${maybeLegend()}''');
  $uBox 2       █
 >$uBox 3       │
  $uBox 4       │
- $uBox 5       │
-${maybeLegend()}''');
+ $uBox 5       │${maybeLegend()}''');
 
             inputController.addKeys(List.filled(6, KeyVariants.down));
             await pumpEventQueue();
@@ -374,8 +377,7 @@ ${maybeLegend()}''');
  $uBox 8       █
 >$uBox 9       │
  $uBox 10      │
- $uBox 11      │
-${maybeLegend()}''');
+ $uBox 11      │${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
@@ -384,8 +386,7 @@ ${maybeLegend()}''');
  $uBox 9       │
 >$uBox 10      █
  $uBox 11      │
- $uBox 12      │
-${maybeLegend()}''');
+ $uBox 12      │${maybeLegend()}''');
 
             inputController.addKeys(List.filled(5, KeyVariants.down));
             await pumpEventQueue();
@@ -394,8 +395,7 @@ ${maybeLegend()}''');
  $uBox 14      │
 >$uBox 15      █
  $uBox 16      │
- $uBox 17      │
-${maybeLegend()}''');
+ $uBox 17      │${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
@@ -404,8 +404,7 @@ ${maybeLegend()}''');
  $uBox 15      │
 >$uBox 16      │
  $uBox 17      █
- $uBox 18      │
-${maybeLegend()}''');
+ $uBox 18      │${maybeLegend()}''');
 
             inputController.addKeys(List.filled(5, KeyVariants.down));
             await pumpEventQueue();
@@ -414,8 +413,7 @@ ${maybeLegend()}''');
  $uBox 20      │
 >$uBox 21      │
  $uBox 22      █
- $uBox 23      │
-${maybeLegend()}''');
+ $uBox 23      │${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.down);
             await pumpEventQueue();
@@ -424,8 +422,7 @@ ${maybeLegend()}''');
  $uBox 21      │
 >$uBox 22      │
  $uBox 23      │
- $uBox 24      █
-${maybeLegend()}''');
+ $uBox 24      █${maybeLegend()}''');
 
             inputController.addKeys(List.filled(2, KeyVariants.down));
             await pumpEventQueue();
@@ -434,8 +431,7 @@ ${maybeLegend()}''');
  $uBox 21      │
  $uBox 22      │
  $uBox 23      │
->$uBox 24      █
-${maybeLegend()}''');
+>$uBox 24      █${maybeLegend()}''');
 
             inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(await future, multiSelect ? {24} : 24);
@@ -446,7 +442,7 @@ ${maybeLegend()}''');
             final future = renderer(
               options,
               inputController.stream,
-              maxVisibleItems: 5,
+              sizing: fiveItemSizing,
             );
             await pumpEventQueue();
 
@@ -455,8 +451,7 @@ ${maybeLegend()}''');
  $uBox 1      █
  $uBox 2      █
  $uBox 3      █
- $uBox 4      │
-${maybeLegend()}''');
+ $uBox 4      │${maybeLegend()}''');
 
             inputController.addKeys(List.filled(4, KeyVariants.down));
             await pumpEventQueue();
@@ -466,8 +461,7 @@ ${maybeLegend()}''');
  $uBox 2      █
  $uBox 3      █
 >$uBox 4      █
- $uBox 5      █
-${maybeLegend()}''');
+ $uBox 5      █${maybeLegend()}''');
 
             inputController.addKey(KeyVariants.enter);
             expect(await future, multiSelect ? <int>{} : 4);
@@ -483,8 +477,7 @@ ${maybeLegend()}''');
 
             expect(mockStdout.terminal.content, '''
 >$uBox abcdefg
- $uBox hijklmn
-${maybeLegend()}''');
+ $uBox hijklmn${maybeLegend()}''');
 
             inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(await future, multiSelect ? <int>{0} : 0);
@@ -500,8 +493,7 @@ ${maybeLegend()}''');
 
             expect(mockStdout.terminal.content, '''
 >$uBox abcdefg
- $uBox hijk...
-${maybeLegend()}''');
+ $uBox hijk...${maybeLegend()}''');
 
             inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(await future, multiSelect ? <int>{0} : 0);
@@ -517,8 +509,7 @@ ${maybeLegend()}''');
 
             expect(mockStdout.terminal.content, '''
 >$uBox a very long opt...
- $uBox short
-${maybeLegend()}''');
+ $uBox short${maybeLegend()}''');
 
             inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(await future, multiSelect ? {0} : 0);
@@ -526,14 +517,18 @@ ${maybeLegend()}''');
 
           test('truncates long items when scrollable', () async {
             mockStdout.terminalColumns = 20 + uBox.length;
-            final future = renderer([
-              'a very long option that should be truncated',
-              'b',
-              'c',
-              'd',
-              'e',
-              'f',
-            ], inputController.stream);
+            final future = renderer(
+              [
+                'a very long option that should be truncated',
+                'b',
+                'c',
+                'd',
+                'e',
+                'f',
+              ],
+              inputController.stream,
+              sizing: fiveItemSizing,
+            );
             await pumpEventQueue();
 
             expect(mockStdout.terminal.content, '''
@@ -541,8 +536,7 @@ ${maybeLegend()}''');
  $uBox b                █
  $uBox c                █
  $uBox d                █
- $uBox e                │
-${maybeLegend()}''');
+ $uBox e                │${maybeLegend()}''');
 
             if (multiSelect) {
               inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
@@ -565,8 +559,7 @@ ${maybeLegend()}''');
 > [ ] apple
   [x] banana
   [x] cherry
-$multiSelectLegend
-''');
+$multiSelectLegend''');
           inputController.addKey(KeyVariants.enter);
           expect(await future, {1, 2});
         });
@@ -582,8 +575,7 @@ $multiSelectLegend
 > [ ] apple
   [ ] banana
   [ ] cherry
-$multiSelectLegend
-''');
+$multiSelectLegend''');
 
           inputController.addKey(KeyVariants.selectAll);
           await pumpEventQueue();
@@ -591,8 +583,7 @@ $multiSelectLegend
 > [x] apple
   [x] banana
   [x] cherry
-$multiSelectLegend
-''');
+$multiSelectLegend''');
 
           inputController.addKey(KeyVariants.selectAll);
           await pumpEventQueue();
@@ -600,8 +591,7 @@ $multiSelectLegend
 > [ ] apple
   [ ] banana
   [ ] cherry
-$multiSelectLegend
-''');
+$multiSelectLegend''');
 
           inputController.addKey(KeyVariants.enter);
           expect(await future, <int>{});
@@ -698,6 +688,42 @@ $multiSelectLegend
               );
             },
           );
+
+          test('throws AssertionError for non-ASCII description', () async {
+            expect(
+              () => renderer([
+                const SelectOption('abc', description: 'line1\n\u00FF'),
+              ], inputController.stream),
+              throwsA(isA<AssertionError>()),
+            );
+          });
+
+          test('throws ArgumentError for invalid option type', () async {
+            expect(
+              () => renderer([123], inputController.stream),
+              throwsA(isA<ArgumentError>()),
+            );
+          });
+
+          test('throws AssertionError for invalid sizing values', () async {
+            expect(
+              () => SelectComponentSizing.fixed(maxDescriptionHeight: -1),
+              throwsA(isA<AssertionError>()),
+            );
+            expect(
+              () => SelectComponentSizing.fit(maxDescriptionHeight: -1),
+              throwsA(isA<AssertionError>()),
+            );
+            expect(
+              () => renderer(
+                ['a'],
+                inputController.stream,
+                // ignore: deprecated_member_use_from_same_package
+                maxVisibleItems: 0,
+              ),
+              throwsA(isA<AssertionError>()),
+            );
+          });
         });
 
         test('multiselect throws AssertionError for invalid initialSelected '
@@ -710,6 +736,379 @@ $multiSelectLegend
             ),
             throwsA(isA<AssertionError>()),
           );
+        });
+      }
+    });
+
+    group('descriptions and ANSI sequences', () {
+      for (final multiSelect in [true, false]) {
+        group(multiSelect ? 'multi-select' : 'single-select', () {
+          final uBox = multiSelect ? ' [ ]' : '';
+          final sBox = multiSelect ? ' [x]' : '';
+          final descIndent = multiSelect ? '      ' : '  ';
+          final renderer =
+              multiSelect ? showMultiSelectDialog : showSingleSelectDialog;
+          String maybeLegend() => multiSelect ? '\n$multiSelectLegend' : '';
+
+          test(
+            'renders hovered descriptions dynamically without dead space',
+            () async {
+              final future = renderer([
+                const SelectOption('apple', description: 'A crisp red fruit'),
+                const SelectOption(
+                  'banana',
+                  description: 'Line 1\nLine 2\r\nLine 3',
+                ),
+                'cherry',
+              ], inputController.stream);
+              await pumpEventQueue();
+
+              expect(mockStdout.terminal.content, '''
+>$uBox apple
+$descIndent${'A crisp red fruit'}
+ $uBox banana
+ $uBox cherry${maybeLegend()}''');
+
+              inputController.addKey(KeyVariants.down);
+              await pumpEventQueue();
+              expect(mockStdout.terminal.content, '''
+ $uBox apple
+>$uBox banana
+$descIndent${'Line 1'}
+$descIndent${'Line 2'}
+$descIndent${'Line 3'}
+ $uBox cherry${maybeLegend()}''');
+
+              inputController.addKey(KeyVariants.down);
+              await pumpEventQueue();
+              expect(mockStdout.terminal.content, '''
+ $uBox apple
+ $uBox banana
+>$uBox cherry${maybeLegend()}''');
+
+              inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+              expect(await future, multiSelect ? {2} : 2);
+            },
+          );
+
+          test('truncates descriptions exceeding maxDescriptionHeight with '
+              'ellipsis', () async {
+            final future = renderer(
+              [
+                const SelectOption(
+                  'item1',
+                  description: 'L1\nL2\nL3\nL4\nL5\nL6\nL7',
+                ),
+                const SelectOption('item2', description: 'Short'),
+              ],
+              inputController.stream,
+              sizing: const SelectComponentSizing.fixed(),
+            );
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+>$uBox item1
+$descIndent${'L1'}
+$descIndent${'L2'}
+$descIndent${'L3'}
+$descIndent${'L4'}
+$descIndent${'L5...'}
+ $uBox item2${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
+          test('respects custom SelectComponentSizing.fixed', () async {
+            final future = renderer(
+              [
+                const SelectOption(
+                  'item1',
+                  description: 'First\nSecond\nThird',
+                ),
+              ],
+              inputController.stream,
+              sizing: const SelectComponentSizing.fixed(
+                totalHeight: 8,
+                maxDescriptionHeight: 2,
+              ),
+            );
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+>$uBox item1
+$descIndent${'First'}
+$descIndent${'Second...'}${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
+          test('word-wraps long description lines, respects newlines, and adds '
+              'ellipsis when exceeding maxDescriptionHeight', () async {
+            mockStdout.terminalColumns = 15 + uBox.length;
+            final future = renderer(
+              [
+                const SelectOption(
+                  'short',
+                  description:
+                      'this description line is too long\n'
+                      'short line',
+                ),
+              ],
+              inputController.stream,
+              sizing: const SelectComponentSizing.fixed(
+                maxDescriptionHeight: 3,
+              ),
+            );
+            await pumpEventQueue();
+
+            // Available width is 15 - 2 ('> ') = 13 chars.
+            // 'this description line is too long' wraps to:
+            //   'this'
+            //   'description'
+            //   'line is...'
+            expect(mockStdout.terminal.content, '''
+>$uBox short
+$descIndent${'this'}
+$descIndent${'description'}
+$descIndent${'line is...'}${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
+          test(
+            'renders scrollbar spanning items and description lines',
+            () async {
+              final future = renderer(
+                [
+                  const SelectOption('a', description: 'desc line 1\ndesc 2'),
+                  'b',
+                  'c',
+                  'd',
+                  'e',
+                  'f',
+                ],
+                inputController.stream,
+                sizing: SelectComponentSizing.fixed(
+                  totalHeight: 5 + (multiSelect ? 1 : 0),
+                ),
+              );
+              await pumpEventQueue();
+
+              // maxItemLength is 'desc line 1'.length (11).
+              // With 5 item/desc lines and 2 description lines on 'a',
+              // visibleCount = 3, hoveredDescriptions.length = 2 ->
+              // itemAndDescLines = 5.
+              // thumbHeight = (3 * 5 / 6).round().clamp(1, 4) = 3.
+              expect(mockStdout.terminal.content, '''
+>$uBox a                █
+$descIndent${'desc line 1'}      █
+$descIndent${'desc 2'}           █
+ $uBox b                │
+ $uBox c                │${maybeLegend()}''');
+
+              inputController.addKeys(List.filled(5, KeyVariants.down));
+              inputController.addKey(KeyVariants.space);
+              await pumpEventQueue();
+
+              // On 'f' (no description), visibleCount = 5,
+              // itemAndDescLines = 5,
+              // thumbHeight = (5 * 5 / 6).round().clamp(1, 4) = 4.
+              expect(mockStdout.terminal.content, '''
+ $uBox b                │
+ $uBox c                █
+ $uBox d                █
+ $uBox e                █
+>$sBox f                █${maybeLegend()}''');
+
+              inputController.addKey(KeyVariants.enter);
+              expect(await future, multiSelect ? {5} : 5);
+            },
+          );
+
+          test('deprecated maxVisibleItems computes maxTotalHeight by adding '
+              'max description height', () async {
+            final options = [
+              const SelectOption('a', description: 'desc line 1\ndesc 2'),
+              'b',
+              'c',
+              'd',
+              'e',
+              'f',
+            ];
+            final future =
+                multiSelect
+                    ? showMultiSelectDialog(
+                      options,
+                      inputController.stream,
+                      // ignore: deprecated_member_use_from_same_package
+                      maxVisibleItems: 3,
+                    )
+                    : showSingleSelectDialog(
+                      options,
+                      inputController.stream,
+                      // ignore: deprecated_member_use_from_same_package
+                      maxVisibleItems: 3,
+                    );
+            await pumpEventQueue();
+
+            // maxVisibleItems: 3 + maxDescriptionHeight (2) = maxTotalHeight
+            // of 5. On 'a' (2 description lines), 3 items + 2 description
+            // lines are rendered (5 item/desc lines).
+            expect(mockStdout.terminal.content, '''
+>$uBox a                █
+$descIndent${'desc line 1'}      █
+$descIndent${'desc 2'}           █
+ $uBox b                │
+ $uBox c                │${maybeLegend()}''');
+
+            inputController.addKey(KeyVariants.down);
+            await pumpEventQueue();
+
+            // On 'b' (0 description lines), maxTotalHeight is still 5 so 5
+            // items ('a' through 'e') are rendered rather than strictly 3.
+            expect(mockStdout.terminal.content, '''
+ $uBox a                █
+>$uBox b                █
+ $uBox c                █
+ $uBox d                █
+ $uBox e                │${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {1} : 1);
+          });
+
+          test('allows ANSI SGR escape sequences and ignores them for '
+              'width/wrapping', () async {
+            mockStdout.terminalColumns = '> abcdefg'.length + uBox.length;
+            final future = renderer([
+              const SelectOption(
+                '\x1b[31mabcdefg\x1b[0m',
+                description: '\x1b[2m1234567\x1b[0m\n\x1b[32mhi there\x1b[0m',
+              ),
+            ], inputController.stream);
+            await pumpEventQueue();
+
+            // 'abcdefg' and '1234567' are 7 visible chars (exact fit),
+            // while 'hi there' (8 visible chars) word-wraps to 'hi' and
+            // 'there'.
+            expect(mockStdout.terminal.content, '''
+>$uBox abcdefg
+$descIndent${'1234567'}
+$descIndent${'hi'}
+$descIndent${'there'}${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
+          test(
+            'clamps visible items and descriptions to fit terminalLines',
+            () async {
+              // 6 terminal lines means at most 5 rendered lines fit (including
+              // the legend in multi-select) without scrolling the top item off
+              // the viewport even when Sizing.fixed requests a larger
+              // totalHeight.
+              mockStdout.terminalLines = 6;
+              final future = renderer(
+                [
+                  const SelectOption(
+                    'item0',
+                    description: 'D1\nD2\nD3\nD4\nD5',
+                  ),
+                  'item1',
+                  'item2',
+                  'item3',
+                  'item4',
+                ],
+                inputController.stream,
+                sizing: const SelectComponentSizing.fixed(),
+              );
+              await pumpEventQueue();
+
+              expect(mockStdout.terminal.content.split('\n'), hasLength(5));
+              if (multiSelect) {
+                // 4 item/desc lines (2 items + 2 description lines) + 1 legend
+                // line = 5 total lines.
+                expect(mockStdout.terminal.content, '''
+>$uBox item0      █
+$descIndent${'D1'}         █
+$descIndent${'D2...'}      │
+ $uBox item1      │
+$multiSelectLegend''');
+              } else {
+                // 5 item/desc lines (3 items + 2 description lines) = 5 total
+                // lines.
+                expect(mockStdout.terminal.content, '''
+>$uBox item0      █
+$descIndent${'D1'}         █
+$descIndent${'D2...'}      █
+ $uBox item1      │
+ $uBox item2      │''');
+              }
+
+              inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+              expect(await future, multiSelect ? {0} : 0);
+            },
+          );
+
+          test('SelectComponentSizing.fit sizes dialog from stdout', () async {
+            final customStdout =
+                MockStdout()
+                  ..terminalLines = 7
+                  ..terminalColumns = 80;
+            await IOOverrides.runZoned(
+              () async {
+                const fit = SelectComponentSizing.fit();
+                // terminalLines (7) - 2 = 5 totalHeight, 5 ~/ 2 = 2
+                // maxDescriptionHeight.
+                expect(fit.totalHeight, 5);
+                expect(fit.maxDescriptionHeight, 2);
+
+                final future = renderer([
+                  const SelectOption(
+                    'item0',
+                    description: 'D1\nD2\nD3\nD4\nD5',
+                  ),
+                  'item1',
+                  'item2',
+                  'item3',
+                  'item4',
+                ], inputController.stream);
+                await pumpEventQueue();
+
+                expect(customStdout.terminal.content.split('\n'), hasLength(5));
+                if (multiSelect) {
+                  // totalHeight (5) includes the legend: 4 item/desc lines +
+                  // 1 legend line = 5 total lines.
+                  expect(customStdout.terminal.content, '''
+>$uBox item0      █
+$descIndent${'D1'}         █
+$descIndent${'D2...'}      │
+ $uBox item1      │
+$multiSelectLegend''');
+                } else {
+                  expect(customStdout.terminal.content, '''
+>$uBox item0      █
+$descIndent${'D1'}         █
+$descIndent${'D2...'}      █
+ $uBox item1      │
+ $uBox item2      │''');
+                }
+
+                inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+                expect(await future, multiSelect ? {0} : 0);
+
+                customStdout.hasTerminal = false;
+                expect(fit.totalHeight, 10);
+                expect(fit.maxDescriptionHeight, 5);
+              },
+              stdout: () => customStdout,
+              stdin: () => mockStdin,
+            );
+          });
         });
       }
     });
@@ -750,6 +1149,9 @@ class MockStdout implements Stdout {
 
   @override
   int terminalColumns = 80;
+
+  @override
+  int terminalLines = 24;
 
   @override
   void write(Object? object) {
