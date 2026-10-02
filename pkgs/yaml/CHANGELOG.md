@@ -2,6 +2,8 @@
 
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
 * Improve error messages when mixing list and key-value syntax.
+* Preserve scanned local tag names and throw `YamlException` on malformed or
+  non-UTF-8 percent-encoded tag URIs.
 
 ## 3.1.4
 
