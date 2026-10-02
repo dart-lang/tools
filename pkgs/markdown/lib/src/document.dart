@@ -101,13 +101,17 @@ class Document {
   }
 
   /// Parses the given inline Markdown [text] to a series of AST nodes.
-  List<Node> parseInline(String text) => InlineParser(text, this).parse();
+  List<Node> parseInline(String text, {ContentOffsetMapper? offsetMapper}) =>
+      InlineParser(text, this, offsetMapper: offsetMapper).parse();
 
   void _parseInlineContent(List<Node> nodes) {
     for (var i = 0; i < nodes.length; i++) {
       final node = nodes[i];
       if (node is UnparsedContent) {
-        final inlineNodes = parseInline(node.textContent);
+        final inlineNodes = parseInline(
+          node.textContent,
+          offsetMapper: node.offsetMapper,
+        );
         nodes.removeAt(i);
         nodes.insertAll(i, inlineNodes);
         i += inlineNodes.length - 1;
