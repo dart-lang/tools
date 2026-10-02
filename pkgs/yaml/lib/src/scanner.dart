@@ -98,6 +98,14 @@ class Scanner {
   /// Whether this scanner should attempt to recover when parsing invalid YAML.
   final bool _recover;
 
+  /// All non-empty tokens emitted by this scanner if `retainTokens` was set to
+  /// `true`, or `null` otherwise.
+  final List<Token>? _retainedTokens;
+
+  /// All non-empty tokens emitted by this scanner if `retainTokens` was set to
+  /// `true`, or `null` otherwise.
+  List<Token>? get retainedTokens => _retainedTokens;
+
   /// A listener to report YAML errors to.
   final ErrorListener? _errorListener;
 
@@ -286,8 +294,12 @@ class Scanner {
 
   /// Creates a scanner that scans [source].
   Scanner(String source,
-      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener})
+      {Uri? sourceUrl,
+      bool recover = false,
+      bool retainTokens = false,
+      ErrorListener? errorListener})
       : _recover = recover,
+        _retainedTokens = retainTokens ? [] : null,
         _errorListener = errorListener,
         _scanner = SpanScanner.eager(source, sourceUrl: sourceUrl);
 
@@ -300,6 +312,13 @@ class Scanner {
     _tokenAvailable = false;
     _tokensParsed++;
     _streamEndProduced = token.type == TokenType.streamEnd;
+    if (_retainedTokens case final retainedTokens?) {
+      if (token.span.length > 0) retainedTokens.add(token);
+      if (_streamEndProduced) {
+        retainedTokens
+            .sort((a, b) => a.span.start.offset.compareTo(b.span.start.offset));
+      }
+    }
     return token;
   }
 
@@ -1681,8 +1700,16 @@ class Scanner {
   /// Moves the scanner past a comment, if one starts at the current position.
   void _skipComment() {
     if (_scanner.peekChar() != HASH) return;
-    while (!_isBreakOrEnd) {
-      _scanner.readChar();
+    if (_retainedTokens case final retainedTokens?) {
+      var start = _scanner.state;
+      while (!_isBreakOrEnd) {
+        _scanner.readChar();
+      }
+      retainedTokens.add(CommentToken(_scanner.spanFrom(start)));
+    } else {
+      while (!_isBreakOrEnd) {
+        _scanner.readChar();
+      }
     }
   }
 
