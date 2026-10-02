@@ -1103,7 +1103,7 @@ class Scanner {
         if (i + 2 >= uri.length ||
             !_isHexChar(uri.codeUnitAt(i + 1)) ||
             !_isHexChar(uri.codeUnitAt(i + 2))) {
-          throw YamlException('Expected 2-digit hexidecimal number.', span);
+          throw YamlException('Expected 2-digit hexadecimal number.', span);
         }
         i += 2;
       }

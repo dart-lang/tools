@@ -1189,6 +1189,14 @@ void main() {
         expect(() => loadYaml(input), throwsYamlException);
         expect(() => loadYamlNode(input), throwsYamlException);
       }
+
+      // When %TAG ! is mapped to the standard YAML tag prefix, shorthand !str
+      // and !int tags resolve through the primary handle.
+      expectYamlLoads(['12', 12], '''
+        %TAG ! tag:yaml.org,2002:
+        ---
+        - !str 12
+        - !int "12"''');
     });
 
     test('handles block sequence, simple key, and CRLF edge cases cleanly', () {
