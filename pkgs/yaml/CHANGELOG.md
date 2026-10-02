@@ -1,6 +1,13 @@
 ## 3.2.0-wip
 
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
+* Fix `ScalarToken.span` for keep-chomped block scalars (`|+`, `>+`) to cover
+  trailing empty lines, and bound empty `strip` and `clip` block scalar spans
+  at the header line.
+* Fix synthetic `TokenType.key` token span for empty implicit keys in flow
+  collections.
+* Allow tab characters on empty or comment-only lines between block mapping
+  entries per YAML 1.2 §6.1.
 
 ## 3.1.4
 
