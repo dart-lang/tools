@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:mime/mime.dart';
@@ -461,6 +462,66 @@ Body 1\r
 Body2\r
 --xxx\r\n''';
   _testParse(message, 'xxx', null, [null, null], true);
+
+  group('mid-stream parse errors and invalid UTF-8 headers', () {
+    Future<void> expectStreamMultipartError(List<int> bytes) async {
+      for (final chunks in [
+        [bytes],
+        bytes.map((b) => [b]).toList(),
+      ]) {
+        Object? zoneError;
+        await runZonedGuarded(() async {
+          final out = Stream<List<int>>.fromIterable(chunks).transform(
+            MimeMultipartTransformer('bnd'),
+          );
+          await expectLater(
+            out.toList(),
+            throwsA(isA<MimeMultipartException>()),
+          );
+        }, (error, _) {
+          zoneError = error;
+        });
+        expect(zoneError, isNull);
+      }
+    }
+
+    test('invalid header field routes MimeMultipartException to stream',
+        () async {
+      await expectStreamMultipartError(
+        ascii.encode('--bnd\r\ninvalid header\r\n\r\n'),
+      );
+    });
+
+    test('malformed boundary and CRLF route MimeMultipartException to stream',
+        () async {
+      for (final input in [
+        '--bndX\r\n',
+        '--bnd\rX',
+        '--bnd\r\nheader: value\rX\r\n\r\n',
+        '--bnd\r\nheader: value\r\n\rX',
+        '--bnd-X\r\n',
+        '--bnd--X\r\n',
+        '--bnd--\rX',
+      ]) {
+        await expectStreamMultipartError(ascii.encode(input));
+      }
+    });
+
+    test(
+        'non-UTF-8 bytes in header value or field throw MimeMultipartException',
+        () async {
+      await expectStreamMultipartError([
+        ...ascii.encode('--bnd\r\ncontent-disposition: '),
+        0xFF,
+        ...ascii.encode('\r\n\r\nbody\r\n--bnd--\r\n'),
+      ]);
+      await expectStreamMultipartError([
+        ...ascii.encode('--bnd\r\n'),
+        0xFF,
+        ...ascii.encode(': value\r\n\r\nbody\r\n--bnd--\r\n'),
+      ]);
+    });
+  });
 }
 
 void main() {

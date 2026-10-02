@@ -1,3 +1,9 @@
+## 2.1.1-wip
+
+* Forward mid-stream multipart parse errors and invalid UTF-8 header bytes to
+  the output stream as `MimeMultipartException` instead of throwing uncaught
+  synchronous errors or raw `FormatException`s.
+
 ## 2.1.0
 
 * Switched to using the Apache httpd mime.conf table as the source of truth for
