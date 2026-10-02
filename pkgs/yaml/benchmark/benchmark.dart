@@ -11,20 +11,14 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 
-const numTrials = 50;
-const runsPerTrial = 500;
+const numTrials = 100;
+const runsPerTrial = 1000;
 
 final source = _loadFile('input.yaml');
-final commentedSource = source
-    .split('\n')
-    .map((line) => line.contains(':') && !line.endsWith('"So does this')
-        ? '$line # comment'
-        : line)
-    .join('\n');
 final expected = _loadFile('output.json');
 
 void main(List<String> args) {
-  var bestLoadYaml = double.infinity;
+  var best = double.infinity;
 
   // Run the benchmark several times. This ensures the VM is warmed up and lets
   // us see how much variance there is.
@@ -38,11 +32,11 @@ void main(List<String> args) {
     }
 
     var elapsed =
-        DateTime.now().difference(start).inMicroseconds / runsPerTrial / 1000;
+        DateTime.now().difference(start).inMilliseconds / runsPerTrial;
 
     // Keep track of the best run so far.
-    if (elapsed >= bestLoadYaml) continue;
-    bestLoadYaml = elapsed;
+    if (elapsed >= best) continue;
+    best = elapsed;
 
     // Sanity check to make sure the output is what we expect and to make sure
     // the VM doesn't optimize "dead" code away.
@@ -57,39 +51,7 @@ void main(List<String> args) {
     _printResult("Run ${'#$i'.padLeft(3, '')}", elapsed);
   }
 
-  _printResult('Best (loadYaml)                       ', bestLoadYaml);
-
-  final bestRetainFalse = _benchmarkDocument(
-    commentedSource,
-    retainTokens: false,
-  );
-  final bestRetainTrue = _benchmarkDocument(
-    commentedSource,
-    retainTokens: true,
-  );
-
-  _printResult('Best (loadYamlDocument, retain: false)', bestRetainFalse);
-  _printResult('Best (loadYamlDocument, retain: true) ', bestRetainTrue);
-}
-
-double _benchmarkDocument(String input, {required bool retainTokens}) {
-  var best = double.infinity;
-  for (var i = 0; i <= numTrials; i++) {
-    final stopwatch = Stopwatch()..start();
-    YamlDocument? document;
-    for (var j = 0; j < runsPerTrial; j++) {
-      document = loadYamlDocument(input, retainTokens: retainTokens);
-    }
-    stopwatch.stop();
-    if (document == null || (retainTokens && document.tokens == null)) {
-      stderr.writeln('Unexpected document result.');
-      exit(1);
-    }
-    if (i == 0) continue;
-    final elapsed = stopwatch.elapsedMicroseconds / runsPerTrial / 1000;
-    if (elapsed < best) best = elapsed;
-  }
-  return best;
+  _printResult('Best   ', best);
 }
 
 String _loadFile(String name) {
