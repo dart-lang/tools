@@ -1,3 +1,11 @@
+## 1.2.0
+
+- Sort the primary package entry point (`package:<pkg>/<pkg>.dart`) first and
+  `@experimental` public entry points after stable public entry points so shared
+  declarations expand in the primary library first and emit `(see above)` in
+  secondary or experimental libraries.
+- Support relative `packagePath` arguments (such as `'.'`) in `apiSummary`.
+
 ## 1.1.0
 
 - Added `expectApiSummaryClean`, `ApiSummaryFormat`, and
