@@ -48,15 +48,14 @@ abstract class ListSyntax extends BlockSyntax {
     //   4. four
     // 5. five
     // ```
-    if (parser.parentSyntax is! ListSyntax &&
-        match[1] != null &&
-        match[1] != '1') {
+    final digits = match.listDigits;
+    if (parser.parentSyntax is! ListSyntax && digits != null && digits != '1') {
       return false;
     }
 
     // An empty list item cannot interrupt a paragraph. See
     // https://spec.commonmark.org/0.30/#example-285
-    return match[2]?.isNotEmpty ?? false;
+    return match.listContent?.isNotEmpty ?? false;
   }
 
   const ListSyntax();
@@ -73,7 +72,7 @@ abstract class ListSyntax extends BlockSyntax {
   @override
   Node parse(BlockParser parser) {
     final match = pattern.firstMatch(parser.current.content);
-    final ordered = match![1] != null;
+    final ordered = match!.listDigits != null;
 
     final taskListParserEnabled =
         this is UnorderedListWithCheckboxSyntax ||
@@ -106,7 +105,7 @@ abstract class ListSyntax extends BlockSyntax {
       }
     }
 
-    late Match? possibleMatch;
+    late RegExpMatch? possibleMatch;
     bool tryMatch(RegExp pattern) {
       possibleMatch = pattern.firstMatch(parser.current.content);
       return possibleMatch != null;
@@ -157,7 +156,7 @@ abstract class ListSyntax extends BlockSyntax {
         final textParser = TextParser(parser.current.content);
         var precedingWhitespaces = textParser.moveThroughWhitespace();
         final markerStart = textParser.pos;
-        final digits = match[1] ?? '';
+        final digits = match.namedGroup('digits') ?? '';
         if (digits.isNotEmpty) {
           startNumber ??= int.parse(digits);
           textParser.advanceBy(digits.length);
@@ -348,4 +347,13 @@ abstract class ListSyntax extends BlockSyntax {
     }
     return anyEmpty;
   }
+}
+
+extension on RegExpMatch {
+  // Custom ListSyntax patterns may still use positional capture groups.
+  String? get listDigits =>
+      identical(pattern, listPattern) ? namedGroup('digits') : this[1];
+
+  String? get listContent =>
+      identical(pattern, listPattern) ? namedGroup('content') : this[2];
 }
