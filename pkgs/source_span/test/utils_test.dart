@@ -54,5 +54,17 @@ void main() {
       final index = findLineStart(context, '0', 1);
       expect(index, isNull);
     });
+
+    test('handles bare CR line endings', () {
+      const context = '0_bb\r1_bbb\r2b____\r3bbb\r';
+      expect(findLineStart(context, 'b', 1), equals(11));
+      expect(findLineStart('ab\r', '', 2), equals(0));
+      expect(findLineStart('a\rbcd', '', 2), equals(2));
+    });
+
+    test('handles CRLF line endings for empty text', () {
+      expect(findLineStart('a\r\nbcd', '', 2), equals(3));
+      expect(findLineStart('ab\r\nc', '', 3), equals(0));
+    });
   });
 }

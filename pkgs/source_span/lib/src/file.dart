@@ -5,15 +5,12 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'charcode.dart';
 import 'location.dart';
 import 'location_mixin.dart';
 import 'span.dart';
 import 'span_mixin.dart';
 import 'span_with_context.dart';
-
-// Constants to determine end-of-lines.
-const int _lf = 10;
-const int _cr = 13;
 
 /// A class representing a source file.
 ///
@@ -86,12 +83,12 @@ class SourceFile {
         _decodedChars = Uint32List(decodedChars.length) {
     for (var i = 0; i < _decodedChars.length; i++) {
       var c = _decodedChars[i] = decodedChars[i];
-      if (c == _cr) {
+      if (c == $cr) {
         // Return not followed by newline is treated as a newline
         final j = i + 1;
-        if (j >= decodedChars.length || decodedChars[j] != _lf) c = _lf;
+        if (j >= decodedChars.length || decodedChars[j] != $lf) c = $lf;
       }
-      if (c == _lf) _lineStarts.add(i + 1);
+      if (c == $lf) _lineStarts.add(i + 1);
     }
   }
 
@@ -115,7 +112,6 @@ class SourceFile {
           'of characters in the file, $length.');
     }
 
-    if (offset < _lineStarts.first) return -1;
     if (offset >= _lineStarts.last) return _lineStarts.length - 1;
 
     if (_isNearCachedLine(offset)) return _cachedLine!;
@@ -330,21 +326,11 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
     final endLine = file.getLine(_end);
     final endColumn = file.getColumn(_end);
 
-    int? endOffset;
-    if (endColumn == 0 && endLine != 0) {
+    int endOffset;
+    if (length > 0 && endColumn == 0 && endLine != 0) {
       // If [end] is at the very beginning of the line, the span covers the
       // previous newline, so we only want to include the previous line in the
-      // context...
-
-      if (length == 0) {
-        // ...unless this is a point span, in which case we want to include the
-        // next line (or the empty string if this is the end of the file).
-        return endLine == file.lines - 1
-            ? ''
-            : file.getText(
-                file.getOffset(endLine), file.getOffset(endLine + 1));
-      }
-
+      // context.
       endOffset = _end;
     } else if (endLine == file.lines - 1) {
       // If the span covers the last line of the file, the context should go all
@@ -399,14 +385,17 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
 
   @override
   bool operator ==(Object other) {
-    if (other is! FileSpan) return super == other;
-    if (other is! _FileSpan) {
-      return super == other && sourceUrl == other.sourceUrl;
+    if (other is _FileSpan) {
+      return _start == other._start &&
+          _end == other._end &&
+          sourceUrl == other.sourceUrl;
     }
-
-    return _start == other._start &&
-        _end == other._end &&
-        sourceUrl == other.sourceUrl;
+    if (other is SourceSpan) {
+      return _start == other.start.offset &&
+          _end == other.end.offset &&
+          sourceUrl == other.sourceUrl;
+    }
+    return false;
   }
 
   @override
@@ -433,13 +422,6 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
       return _FileSpan(file, start, end);
     }
   }
-
-  /// See `SourceSpanExtension.subspan`.
-  FileSpan subspan(int start, [int? end]) {
-    RangeError.checkValidRange(start, end, length);
-    if (start == 0 && (end == null || end == length)) return this;
-    return file.span(_start + start, end == null ? _end : _start + end);
-  }
 }
 
 // TODO(#52): Move these to instance methods in the next breaking release.
@@ -450,8 +432,9 @@ extension FileSpanExtension on FileSpan {
     RangeError.checkValidRange(start, end, length);
     if (start == 0 && (end == null || end == length)) return this;
 
-    final startOffset = this.start.offset;
-    return file.span(
-        startOffset + start, end == null ? this.end.offset : startOffset + end);
+    final startOffset =
+        this is _FileSpan ? (this as _FileSpan)._start : this.start.offset;
+    return file.span(startOffset + start,
+        end == null ? startOffset + length : startOffset + end);
   }
 }
