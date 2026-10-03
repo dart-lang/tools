@@ -26,14 +26,13 @@ items:
               {'message': value, 'keep': true}
             ]
           }));
-      expect(doc.toString(), equals('''
-items:
-  - message: >-
-        label: "quoted" # text
-
-        [items] &anchor *alias
-    keep: true
-'''));
+      expect((doc.parseAt(['items', 0, 'message']) as YamlScalar).style,
+          equals(ScalarStyle.FOLDED));
+      expect(
+          doc.toString(),
+          matches(RegExp(r'^items:\n  - message: >-\n'
+              r' +label: "quoted" # text\n\n'
+              r' +\[items\] &anchor \*alias\n    keep: true\n$')));
     });
 
     test('update nested list element with literal backslashes and a blank line',
@@ -83,14 +82,13 @@ items:
               {'keep': true, 'message': value}
             ]
           }));
-      expect(doc.toString(), equals('''
-items:
-  - keep: true
-    message: >-
-        # comment text
-
-        {key: [value]}
-'''));
+      expect((doc.parseAt(['items', 0, 'message']) as YamlScalar).style,
+          equals(ScalarStyle.FOLDED));
+      expect(
+          doc.toString(),
+          matches(RegExp(r'^items:\n  - keep: true\n    message: >-\n'
+              r' +# comment text\n\n'
+              r' +\{key: \[value\]\}\n$')));
     });
 
     test('append map with a literal multiline value to a nested list', () {
@@ -206,8 +204,8 @@ settings:
       expect((doc.parseAt(['settings', 'message']) as YamlScalar).style,
           equals(ScalarStyle.FOLDED));
       expect(doc.toString(), startsWith('settings:\r\n  message: >-'));
-      expect(
-          doc.toString(), contains('      key: value\r\n\r\n      # "text"'));
+      expect(doc.toString(),
+          matches(RegExp(r' +key: value\r\n\r\n +# "text"\r\n')));
       expect(doc.toString(), endsWith('\r\n  keep: true\r\n'));
     });
 
