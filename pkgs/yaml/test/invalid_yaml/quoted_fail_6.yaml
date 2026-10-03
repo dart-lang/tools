@@ -1,0 +1,6 @@
+# Invalid single quoted inside flow at col 0
+key:
+  {
+    k: 'line1
+line2'
+  }
