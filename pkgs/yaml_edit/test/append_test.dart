@@ -242,6 +242,31 @@ a:
               }),
           returnsNormally);
     });
+
+    test('preserves trailing newlines of |+ when appending', () {
+      final doc = YamlEditor('list:\n  - |+\n    hello\n');
+      doc.appendToList(['list'], 'next');
+      final result = doc.toString();
+      expect(result, equals('list:\n  - |+\n    hello\n  - next\n'));
+      expect(doc.parseAt(['list', 0]).value, equals('hello\n'));
+      expect(doc.parseAt(['list', 1]).value, equals('next'));
+    });
+
+    test('preserves multiple trailing newlines of |+ when appending', () {
+      final doc = YamlEditor('list:\n  - |+\n    hello\n\n\n');
+      doc.appendToList(['list'], 'next');
+      final result = doc.toString();
+      expect(result, equals('list:\n  - |+\n    hello\n\n\n  - next\n'));
+      expect(doc.parseAt(['list', 0]).value, equals('hello\n\n\n'));
+      expect(doc.parseAt(['list', 1]).value, equals('next'));
+    });
+
+    test('appends to list ending with single-line scalar without newlines', () {
+      final doc = YamlEditor('list:\n  - item');
+      doc.appendToList(['list'], 'item2');
+      expect(doc.parseAt(['list', 0]).value, equals('item'));
+      expect(doc.parseAt(['list', 1]).value, equals('item2'));
+    });
   });
 
   group('flow list', () {

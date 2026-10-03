@@ -203,5 +203,13 @@ a:
       expect(doc.toString(), equals('["[],", test, "[],"]'));
       expectYamlBuilderValue(doc, ['[],', 'test', '[],']);
     });
+
+    test('insert with comment containing comma and brackets', () {
+      final doc = YamlEditor('[1, # comment with , and [ and ]\n 2]');
+      doc.insertIntoList([], 1, 'inserted');
+      expect(doc.parseAt([0]).value, equals(1));
+      expect(doc.parseAt([1]).value, equals('inserted'));
+      expect(doc.parseAt([2]).value, equals(2));
+    });
   });
 }

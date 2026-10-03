@@ -311,6 +311,25 @@ next: value
       ]);
       expect(doc.toString(), equals('{a: { b: 2}}'));
     });
+
+    test('remove first entry with comment containing comma and brace', () {
+      final doc1 = YamlEditor('{a: 1 # comment with , and }\n, b: 2}');
+      doc1.remove(['a']);
+      expect(doc1.parseAt(['b']).value, equals(2));
+    });
+
+    test('remove non-first entry with comment preceding it', () {
+      final doc2 = YamlEditor('{b: 2, # comment with , and }\n a: 1}');
+      doc2.remove(['a']);
+      expect(doc2.parseAt(['b']).value, equals(2));
+    });
+
+    test('remove single entry with comment', () {
+      final doc3 = YamlEditor('{a: 1 # comment with }\n}');
+      doc3.remove(['a']);
+      expect(doc3.toString(), equals('{}'));
+      expect(doc3.parseAt([]).value, equals({}));
+    });
   });
 
   group('block list', () {
@@ -675,6 +694,25 @@ b:
       final doc = YamlEditor('["{}[],", [test, "{}[],", "{}[],"], "{}[],"]');
       doc.remove([1, 0]);
       expect(doc.toString(), equals('["{}[],", [ "{}[],", "{}[],"], "{}[],"]'));
+    });
+
+    test('remove first element with comment containing comma and bracket', () {
+      final doc1 = YamlEditor('[1 # comment with , and ]\n, 2]');
+      doc1.remove([0]);
+      expect(doc1.parseAt([0]).value, equals(2));
+    });
+
+    test('remove last element with comment containing comma and bracket', () {
+      final doc2 = YamlEditor('[1, # comment with , and ]\n 2]');
+      doc2.remove([1]);
+      expect(doc2.parseAt([0]).value, equals(1));
+    });
+
+    test('remove single element with comment', () {
+      final doc3 = YamlEditor('[ 1 # comment with ]\n]');
+      doc3.remove([0]);
+      expect(doc3.toString(), equals('[]'));
+      expect(doc3.parseAt([]).value, equals([]));
     });
   });
 }
