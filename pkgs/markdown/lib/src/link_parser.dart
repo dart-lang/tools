@@ -118,6 +118,9 @@ class LinkParser extends TextParser {
       final char = charAt(pos);
       if (char == $backslash) {
         advance();
+        if (isDone) {
+          return false;
+        }
       } else if (char == $lbracket) {
         return false;
       } else if (char == $rbracket) {
@@ -163,12 +166,18 @@ class LinkParser extends TextParser {
   bool _parseBracketedDestination() {
     // Walk past the opening `<`.
     advance();
+    if (isDone) {
+      return false;
+    }
 
     final start = pos;
     while (true) {
       final char = charAt();
       if (char == $backslash) {
         advance();
+        if (isDone) {
+          return false;
+        }
       } else if (char == $lf || char == $cr || char == $ff) {
         return false;
       } else if (char == $gt) {
@@ -200,15 +209,17 @@ class LinkParser extends TextParser {
       final char = charAt();
       if (char == $backslash) {
         advance();
+        if (isDone) {
+          break;
+        }
       } else if (char == $space || char == $lf || char == $cr || char == $ff) {
         break;
       } else if (char == $lparen) {
         parenCount++;
       } else if (char == $rparen) {
         parenCount--;
-        if (parenCount == 0) {
-          advance();
-          break;
+        if (parenCount < 0) {
+          return false;
         }
       }
       advance();
@@ -218,6 +229,10 @@ class LinkParser extends TextParser {
       if (isDone) {
         break;
       }
+    }
+
+    if (parenCount != 0) {
+      return false;
     }
 
     _destination = substring(start, pos);
@@ -248,6 +263,9 @@ class LinkParser extends TextParser {
       final char = charAt();
       if (char == $backslash) {
         advance();
+        if (isDone) {
+          return false;
+        }
       } else if (char == closeDelimiter) {
         break;
       }
@@ -255,10 +273,6 @@ class LinkParser extends TextParser {
       if (isDone) {
         return false;
       }
-    }
-
-    if (isDone) {
-      return false;
     }
 
     _title = substring(start, pos);
