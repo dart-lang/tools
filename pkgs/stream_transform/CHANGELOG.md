@@ -1,3 +1,10 @@
+## 2.1.3-wip
+
+- Document that canceling `combineLatest`, `combineLatestAll`, `switchMap`, or
+  `switchLatest` can hang indefinitely if the source or a sub stream can never
+  reach a safe point to be canceled, such as an `async`/`async*` function
+  suspended on an unrelated `await`.
+
 ## 2.1.2
 
 - Fix an exception when a subscription to a `combineLatest` stream is canceled
