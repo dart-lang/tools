@@ -374,6 +374,12 @@ class Scanner {
       }
     }
 
+    if (!_inBlockContext && _scanner.column <= _indent) {
+      _scanner.error(
+          "Flow nodes cannot be less indented than their block context.",
+          length: 1);
+    }
+
     switch (_scanner.peekChar()) {
       case LEFT_SQUARE:
         _fetchFlowCollectionStart(TokenType.flowSequenceStart);
@@ -1423,6 +1429,11 @@ class Scanner {
 
       // Join the whitespace or fold line breaks.
       if (leadingBlanks) {
+        if (_scanner.column <= _indent) {
+          _scanner.error(
+              "Multi-line flow-style scalars cannot be less indented than their block context.",
+              length: _scanner.isDone ? 0 : 1);
+        }
         if (leadingBreak.isNotEmpty && trailingBreaks.isEmpty) {
           buffer.writeCharCode(SP);
         } else {
@@ -1450,6 +1461,11 @@ class Scanner {
     var trailingBreaks = '';
     var whitespace = StringBuffer();
     var indent = _indent + 1;
+    if (!_inBlockContext && _scanner.column <= _indent) {
+      _scanner.error(
+          "Flow nodes cannot be less indented than their block context.",
+          length: 1);
+    }
 
     while (true) {
       // Check for a document indicator.
@@ -1512,7 +1528,7 @@ class Scanner {
       }
 
       // Check the indentation level.
-      if (_inBlockContext && _scanner.column < indent) break;
+      if (_inBlockContext ? _scanner.column < indent : _scanner.column <= _indent) break;
     }
 
     // Allow a simple key after a plain scalar with leading blanks.
