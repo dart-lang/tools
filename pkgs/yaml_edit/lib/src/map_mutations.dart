@@ -173,9 +173,27 @@ SourceEdit _replaceInBlockMap(
     valueAsString = ' $valueAsString';
   }
 
-  /// +1 accounts for the colon
-  // TODO: What if here is a whitespace following the key, before the colon?
-  final start = keyNode.span.end.offset + 1;
+  /// Find the association colon after the key, skipping whitespace and
+  /// comments. If no colon exists for this key (e.g. an explicit key without
+  /// a value), insert a new association line with the colon and value.
+  final colonIndex = _findAssociationColon(yaml, keyNode.span.end.offset);
+  if (colonIndex == -1) {
+    final mapIndent = getMapIndentation(yaml, map);
+    final nextNewLine = yaml.indexOf('\n', keyNode.span.end.offset);
+    if (nextNewLine == -1) {
+      return SourceEdit(
+        yaml.length,
+        0,
+        '$lineEnding${' ' * mapIndent}:$valueAsString$lineEnding',
+      );
+    }
+    return SourceEdit(
+      nextNewLine + 1,
+      0,
+      '${' ' * mapIndent}:$valueAsString$lineEnding',
+    );
+  }
+  final start = colonIndex + 1;
   var end = getContentSensitiveEnd(map.nodes[key]!);
 
   /// `package:yaml` parses empty nodes in a way where the start/end of the
@@ -184,6 +202,36 @@ SourceEdit _replaceInBlockMap(
   if (end < start) end = start;
 
   return SourceEdit(start, end - start, valueAsString);
+}
+
+/// Finds the index of the association colon (`:`) belonging to a key in
+/// [yaml], starting from [startOffset].
+///
+/// Skips whitespace and comments. Returns `-1` if no colon is found before
+/// encountering another token or reaching the end of the input.
+int _findAssociationColon(String yaml, int startOffset) {
+  var i = startOffset;
+  while (i < yaml.length) {
+    final c = yaml.codeUnitAt(i);
+    if (c == 0x20 /* space */ ||
+        c == 0x09 /* tab */ ||
+        c == 0x0A /* LF */ ||
+        c == 0x0D /* CR */) {
+      i++;
+    } else if (c == 0x23 /* # */) {
+      i++;
+      while (i < yaml.length &&
+          yaml.codeUnitAt(i) != 0x0A &&
+          yaml.codeUnitAt(i) != 0x0D) {
+        i++;
+      }
+    } else if (c == 0x3A /* : */) {
+      return i;
+    } else {
+      return -1;
+    }
+  }
+  return -1;
 }
 
 /// Performs the string operation on [yamlEdit] to achieve the effect of
