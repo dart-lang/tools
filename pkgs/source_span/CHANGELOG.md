@@ -1,3 +1,12 @@
+## 1.10.3-wip
+
+* Fix `RangeError` and assertion failures when highlighting or slicing spans
+  containing bare `\r` or `\r\n` line endings.
+* Fix `FileSpan.context` returning an empty string for point spans at the start
+  of the last line in a multi-line file without a trailing newline.
+* Fix `SourceSpan.highlight()` off-by-one column calculation for plain spans
+  ending with `\n\n` and spans ending at column 0 after a non-zero start column.
+
 ## 1.10.2
 
 * Speedup of the `SourceFile.fromString` constructor.

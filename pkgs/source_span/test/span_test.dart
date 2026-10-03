@@ -305,6 +305,32 @@ void main() {
         expect(result.end.line, equals(3));
         expect(result.end.column, equals(0));
       });
+
+      test('at end of span ending with CR of CRLF', () {
+        final crSpan = SourceSpanWithContext(
+            SourceLocation(0, line: 0, column: 0),
+            SourceLocation(2, line: 0, column: 2),
+            'a\r',
+            'a\r\n');
+        final result = crSpan.subspan(2);
+        expect(result.text, isEmpty);
+        expect(result.start, equals(crSpan.end));
+        expect(result.end, equals(crSpan.end));
+      });
+
+      test('across bare CR line endings in SourceSpanWithContext', () {
+        final crSpan = SourceSpanWithContext(
+            SourceLocation(0, line: 0, column: 0),
+            SourceLocation(5, line: 1, column: 2),
+            'ab\rcd',
+            'ab\rcd');
+        final result = crSpan.subspan(3, 5);
+        expect(result.text, equals('cd'));
+        expect(result.start.line, equals(1));
+        expect(result.start.column, equals(0));
+        expect(result.end.line, equals(1));
+        expect(result.end.column, equals(2));
+      });
     });
   });
 
