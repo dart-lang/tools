@@ -156,7 +156,7 @@ abstract class ListSyntax extends BlockSyntax {
         final textParser = TextParser(parser.current.content);
         var precedingWhitespaces = textParser.moveThroughWhitespace();
         final markerStart = textParser.pos;
-        final digits = match.namedGroup('digits') ?? '';
+        final digits = match.listDigits ?? '';
         if (digits.isNotEmpty) {
           startNumber ??= int.parse(digits);
           textParser.advanceBy(digits.length);
