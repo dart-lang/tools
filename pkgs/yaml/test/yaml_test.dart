@@ -2006,7 +2006,24 @@ void main() {
         positive: !!float 2.3e4
         infinity: !!float .inf
         not a number: !!float .nan''');
-    }, skip: 'Fails for single digit float');
+    });
+
+    test('rejects empty and invalid 1-character !!int and !!float scalars', () {
+      for (var input in [
+        '!!int',
+        '!!int ""',
+        '- !!int\n',
+        '!!float',
+        '!!float ""',
+        '- !!float\n',
+        '!!float a',
+        '!!float .',
+        '!!float -',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
 
     test('[Example 10.8]', () {
       expectYamlStreamLoads([

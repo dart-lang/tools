@@ -78,10 +78,6 @@ class Parser {
         return _parseDocumentEnd();
       case _State.BLOCK_NODE:
         return _parseNode(block: true);
-      case _State.BLOCK_NODE_OR_INDENTLESS_SEQUENCE:
-        return _parseNode(block: true, indentlessSequence: true);
-      case _State.FLOW_NODE:
-        return _parseNode();
       case _State.BLOCK_SEQUENCE_FIRST_ENTRY:
         // Scan past the `BLOCK-SEQUENCE-FIRST-ENTRY` token to the
         // `BLOCK-SEQUENCE-ENTRY` token.
@@ -299,7 +295,7 @@ class Parser {
           throw YamlException('Undefined tag handle.', tagToken!.span);
         }
 
-        tag = tagDirective.prefix + (tagToken?.suffix ?? '');
+        tag = tagDirective.prefix + tagToken!.suffix;
       }
     }
 
@@ -756,13 +752,6 @@ class _State {
 
   /// Expect a block node.
   static const BLOCK_NODE = _State('BLOCK_NODE');
-
-  /// Expect a block node or indentless sequence.
-  static const BLOCK_NODE_OR_INDENTLESS_SEQUENCE =
-      _State('BLOCK_NODE_OR_INDENTLESS_SEQUENCE');
-
-  /// Expect a flow node.
-  static const FLOW_NODE = _State('FLOW_NODE');
 
   /// Expect the first entry of a block sequence.
   static const BLOCK_SEQUENCE_FIRST_ENTRY =

@@ -486,10 +486,8 @@ class Scanner {
       if (key.line == _scanner.line) continue;
 
       if (key.required) {
-        final keyIndentIdx = _indentLevels
-            .lastIndexWhere((indent) => indent.column == key.column);
-        final inBlockSequence = keyIndentIdx >= 0 &&
-            _indentLevels[keyIndentIdx].type == TokenType.blockSequenceStart;
+        final inBlockSequence =
+            _indentLevels.last.type == TokenType.blockSequenceStart;
         final message = StringBuffer("Expected ':'.");
         if (inBlockSequence) {
           message.write(" If this is a list entry, it must start with '- '.");
@@ -966,14 +964,9 @@ class Scanner {
     var next = _scanner.peekChar();
     if (name.isEmpty ||
         (!_isBlankOrEnd &&
-            next != QUESTION &&
-            next != COLON &&
             next != COMMA &&
             next != RIGHT_SQUARE &&
-            next != RIGHT_CURLY &&
-            next != PERCENT &&
-            next != AT &&
-            next != GRAVE_ACCENT)) {
+            next != RIGHT_CURLY)) {
       throw YamlException(
           'Expected alphanumeric character.', _scanner.emptySpan);
     }
@@ -1634,8 +1627,7 @@ class Scanner {
   }
 
   bool _isStandardCharacterAt(int offset) {
-    var first = _scanner.peekChar(offset);
-    if (first == null) return false;
+    var first = _scanner.peekChar(offset)!;
 
     if (isHighSurrogate(first)) {
       var next = _scanner.peekChar(offset + 1);
