@@ -272,10 +272,6 @@ class LinkParser extends TextParser {
       }
     }
 
-    if (isDone) {
-      return false;
-    }
-
     _title = substring(start, pos);
 
     // Advance past the closing delimiter.
