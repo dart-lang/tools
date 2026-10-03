@@ -218,9 +218,8 @@ class LinkParser extends TextParser {
         parenCount++;
       } else if (char == $rparen) {
         parenCount--;
-        if (parenCount == 0) {
-          advance();
-          break;
+        if (parenCount < 0) {
+          return false;
         }
       }
       advance();
@@ -230,6 +229,10 @@ class LinkParser extends TextParser {
       if (isDone) {
         break;
       }
+    }
+
+    if (parenCount != 0) {
+      return false;
     }
 
     _destination = substring(start, pos);

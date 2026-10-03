@@ -103,6 +103,21 @@ a <!--
       expect(markdownToHtml('[a]: <'), '<p>[a]: &lt;</p>\n');
       expect(markdownToHtml('[*#]:<'), '<p>[*#]:&lt;</p>\n');
     });
+
+    test('unbalanced parentheses in bare destination are rejected', () {
+      expect(
+        markdownToHtml('[a]: /url)\n\n[a]'),
+        '<p>[a]: /url)</p>\n<p>[a]</p>\n',
+      );
+      expect(
+        markdownToHtml('[a]: /url(bar\n\n[a]'),
+        '<p>[a]: /url(bar</p>\n<p>[a]</p>\n',
+      );
+      expect(
+        markdownToHtml('[a]: /url(a)b\n\n[a]'),
+        '<p><a href="/url(a)b">a</a></p>\n',
+      );
+    });
   });
 
   test('multiple non-advancing block syntaxes on the same line do not throw '
