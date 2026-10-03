@@ -1,5 +1,17 @@
 ## 1.4.2-wip
 
+* Fix `SpanScanner.within()`'s `state.line` and `state.column` to return
+  span-relative coordinates rather than file-relative offsets.
+* Fix `SpanScanner.within()`'s `error()` to default `length` to `0` rather than
+  `1` when there is no `lastMatch`, preventing a `RangeError` at the end of a
+  file.
+* Fix `SpanScanner.within()`'s `lastSpan` to be reset when the scanner's
+  position changes without producing a new match.
+* Fix `SpanScanner.within()`'s `spanFromPosition()` to validate ranges against
+  the span's length rather than the underlying file's end.
+* Fix `LineScanner.position=` and `SpanScanner.eager().position=` to clear
+  `lastMatch` and `lastSpan` when assigned the current `position`.
+
 ## 1.4.1
 
 * Move to `dart-lang/tools` monorepo.

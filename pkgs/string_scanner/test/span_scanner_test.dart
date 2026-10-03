@@ -37,14 +37,20 @@ void main() {
     test('line and column are span-relative', () {
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(0));
+      expect(scanner.state.line, equals(0));
+      expect(scanner.state.column, equals(0));
 
       scanner.scan('foo');
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(3));
+      expect(scanner.state.line, equals(0));
+      expect(scanner.state.column, equals(3));
 
       scanner.scan('\n');
       expect(scanner.line, equals(1));
       expect(scanner.column, equals(0));
+      expect(scanner.state.line, equals(1));
+      expect(scanner.state.column, equals(0));
     });
 
     test('tracks the span for the last match', () {
@@ -65,6 +71,22 @@ void main() {
       expect(span.text, equals('o\nba'));
     });
 
+    test('clears lastSpan when the position changes without a match', () {
+      scanner.scan('foo');
+      expect(scanner.lastSpan, isNotNull);
+
+      scanner.readChar();
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.lastSpan, isNull);
+
+      scanner.scan('bar');
+      expect(scanner.lastSpan, isNotNull);
+
+      scanner.position = scanner.position;
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.lastSpan, isNull);
+    });
+
     test('.spanFrom() returns a span from a previous state', () {
       scanner.scan('fo');
       final state = scanner.state;
@@ -83,6 +105,16 @@ void main() {
 
       final span = scanner.spanFromPosition(start + 2, start + 5);
       expect(span.text, equals('bar'));
+    });
+
+    test('.spanFromPosition() throws a RangeError outside the span', () {
+      expect(() => scanner.spanFromPosition(-1, 2), throwsRangeError);
+      expect(
+        () => scanner.spanFromPosition(0, scanner.string.length + 1),
+        throwsRangeError,
+      );
+      scanner.scan('fo');
+      expect(() => scanner.spanFromPosition(3), throwsRangeError);
     });
 
     test('.emptySpan returns an empty span at the current location', () {
@@ -106,6 +138,19 @@ void main() {
       scanner.expect('foo');
       expect(
           () => scanner.error('oh no!'), throwsStringScannerException('foo'));
+    });
+
+    test('.error() defaults to length 0 when there is no lastMatch', () {
+      expect(() => scanner.error('oh no!'), throwsStringScannerException(''));
+
+      // Also verify when the subspan reaches the end of the underlying file.
+      final file = SourceFile.fromString('before: foo', url: 'source');
+      final eofScanner = SpanScanner.within(file.span(8));
+      eofScanner.position = eofScanner.string.length;
+      expect(eofScanner.isDone, isTrue);
+      expect(
+          () => eofScanner.error('oh no!'), throwsStringScannerException(''));
+      expect(eofScanner.readChar, throwsFormatException);
     });
 
     test('.isDone returns true at the end of the span', () {
