@@ -624,4 +624,75 @@ a:
       );
     });
   });
+
+  group('getContentSensitiveEnd', () {
+    test('getContentSensitiveEnd with empty list and empty map', () {
+      final emptyList =
+          YamlList.internal([], shellSpan(null), CollectionStyle.BLOCK);
+      expect(getContentSensitiveEnd(emptyList), equals(0));
+      final emptyMap =
+          YamlMap.internal({}, shellSpan(null), CollectionStyle.BLOCK);
+      expect(getContentSensitiveEnd(emptyMap), equals(0));
+    });
+  });
+
+  group('getListIndentation', () {
+    test('block list with only aliases falls back to list.span.start.column',
+        () {
+      final yaml = '''
+anchors:
+  a: &item1 10
+  b: &item2 20
+list:
+  - *item1
+  - *item2
+''';
+      final doc = YamlEditor(yaml);
+      final list = doc.parseAt(['list']) as YamlList;
+      final indent = getListIndentation(yaml, list);
+      expect(indent, equals(2));
+    });
+
+    test('nested block list with only aliases preserves indent column', () {
+      final yaml = '''
+anchors:
+  val: &v 1
+data:
+  nested:
+    - *v
+''';
+      final doc = YamlEditor(yaml);
+      final list = doc.parseAt(['data', 'nested']) as YamlList;
+      final indent = getListIndentation(yaml, list);
+      expect(indent, equals(4));
+    });
+
+    test('nested block list preserves indent column', () {
+      final yaml = '''
+data:
+  nested:
+    - a
+''';
+      final doc = YamlEditor(yaml);
+      final list = doc.parseAt(['data', 'nested']) as YamlList;
+      final indent = getListIndentation(yaml, list);
+      expect(indent, equals(4));
+    });
+
+    test('flow list returns 0', () {
+      final yaml = '[1, 2, 3]';
+      final doc = YamlEditor(yaml);
+      final list = doc.parseAt([]) as YamlList;
+      expect(getListIndentation(yaml, list), equals(0));
+    });
+
+    test('empty block list throws UnsupportedError', () {
+      final emptyBlockList =
+          YamlList.internal([], shellSpan(null), CollectionStyle.BLOCK);
+      expect(
+        () => getListIndentation('', emptyBlockList),
+        throwsUnsupportedError,
+      );
+    });
+  });
 }

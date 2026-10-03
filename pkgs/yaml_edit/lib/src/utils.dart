@@ -95,13 +95,13 @@ bool isBlockNode(YamlNode node) {
 /// last meaningful content happens)
 int getContentSensitiveEnd(YamlNode yamlNode) {
   if (yamlNode is YamlList) {
-    if (yamlNode.style == CollectionStyle.FLOW) {
+    if (yamlNode.style == CollectionStyle.FLOW || yamlNode.isEmpty) {
       return yamlNode.span.end.offset;
     } else {
       return getContentSensitiveEnd(yamlNode.nodes.last);
     }
   } else if (yamlNode is YamlMap) {
-    if (yamlNode.style == CollectionStyle.FLOW) {
+    if (yamlNode.style == CollectionStyle.FLOW || yamlNode.isEmpty) {
       return yamlNode.span.end.offset;
     } else {
       return getContentSensitiveEnd(yamlNode.nodes.values.last);
@@ -203,24 +203,39 @@ int getIndentation(YamlEditor editor) {
 /// but returns the number of spaces before the hyphen of elements for
 /// block lists.
 ///
-/// Throws [UnsupportedError] if an empty block map is passed in.
+/// It is an error if [list] is an empty block list.
+///
+/// Throws [UnsupportedError] if [list] is an empty block list.
 int getListIndentation(String yaml, YamlList list) {
   if (list.style == CollectionStyle.FLOW) return 0;
 
-  /// An empty block map doesn't really exist.
+  /// An empty block list doesn't really exist.
   if (list.isEmpty) {
     throw UnsupportedError('Unable to get indentation for empty block list');
   }
 
-  final lastSpanOffset = list.nodes.last.span.start.offset;
-  final lastHyphen = yaml.lastIndexOf('-', lastSpanOffset - 1);
+  // Iterate backwards to find a node with a valid hyphen in the source text.
+  // We cannot rely solely on the last node because if it has an invalid or
+  // external span, its offsets will fall outside list.span.
+  final listStart = list.span.start.offset;
+  final listEnd = list.span.end.offset;
 
-  if (lastHyphen == 0) return lastHyphen;
+  for (final node in list.nodes.reversed) {
+    final nodeStart = node.span.start.offset;
+    final nodeEnd = node.span.end.offset;
+    if (nodeStart < listStart || nodeEnd > listEnd) continue;
+    if (nodeStart <= 0) continue;
 
-  // Look for '\n' that's before hyphen
-  final lastNewLine = yaml.lastIndexOf('\n', lastHyphen - 1);
+    final hyphen = yaml.lastIndexOf('-', nodeStart - 1);
+    if (hyphen < listStart) continue;
+    if (hyphen == 0) return 0;
 
-  return lastHyphen - lastNewLine - 1;
+    final newLine = yaml.lastIndexOf('\n', hyphen - 1);
+    if (newLine < 0) return hyphen;
+    return hyphen - newLine - 1;
+  }
+
+  return list.span.start.column;
 }
 
 /// Gets the indentation level of [map]. This is 0 if it is a flow map,
