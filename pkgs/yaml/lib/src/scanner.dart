@@ -504,16 +504,12 @@ class Scanner {
   /// Checks if a simple key may start at the current position and saves it if
   /// so.
   void _saveSimpleKey() {
+    if (!_simpleKeyAllowed) return;
+
     // A simple key is required at the current position if the scanner is in the
     // block context and the current column coincides with the indentation
     // level.
     var required = _inBlockContext && _indent == _scanner.column;
-
-    // A simple key is required only when it is the first token in the current
-    // line. Therefore it is always allowed. But we add a check anyway.
-    assert(_simpleKeyAllowed || !required);
-
-    if (!_simpleKeyAllowed) return;
 
     // If the current position may start a simple key, save it.
     _removeSimpleKey();

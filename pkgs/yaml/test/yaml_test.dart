@@ -2019,6 +2019,8 @@ void main() {
         '!!float a',
         '!!float .',
         '!!float -',
+        ' a: "\n"b',
+        " a: '\n'b",
       ]) {
         expect(() => loadYaml(input), throwsYamlException);
         expect(() => loadYamlNode(input), throwsYamlException);
