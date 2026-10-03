@@ -1154,6 +1154,71 @@ void main() {
         First occurrence: &anchor Value
         Second occurrence: *anchor''');
     });
+
+    test('rejects malformed percent-encoding in tag URIs with YamlException',
+        () {
+      for (var input in [
+        '!<%> foo',
+        '!a!% foo',
+        '%TAG ! tag:%\n---\n!foo bar',
+        '!% foo',
+        '!<%GG> foo',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
+
+    test(
+        'rejects invalid UTF-8 percent-encoding in tag URIs with YamlException',
+        () {
+      for (var input in [
+        '!<%C3%28> foo',
+        '!%C3%28 foo',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
+
+    test('rejects undefined local tags with YamlException', () {
+      for (var input in [
+        '!custom 123',
+        '!<custom> 123',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+
+      // When %TAG ! is mapped to the standard YAML tag prefix, shorthand !str
+      // and !int tags resolve through the primary handle.
+      expectYamlLoads(['12', 12], '''
+        %TAG ! tag:yaml.org,2002:
+        ---
+        - !str 12
+        - !int "12"''');
+    });
+
+    test('handles block sequence, simple key, and CRLF edge cases cleanly', () {
+      for (var input in [
+        '- :?\t-\r:',
+        'a: "\r\n:',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+
+      expect(
+          loadYaml('?\r-'),
+          deepEquals(deepEqualsMap({
+            [null]: null
+          })));
+      expect(loadYamlNode('?\r-'), isA<YamlMap>());
+      expect(loadYaml('-\n...'), equals([null]));
+      expect(loadYamlNode('-\n...'), isA<YamlList>());
+      expect(loadYaml(':?\t'), equals(':?'));
+      expect(loadYamlNode(':?\t'), isA<YamlScalar>());
+    });
   });
 
   // Chapter 7: Flow Styles
@@ -1941,7 +2006,26 @@ void main() {
         positive: !!float 2.3e4
         infinity: !!float .inf
         not a number: !!float .nan''');
-    }, skip: 'Fails for single digit float');
+    });
+
+    test('rejects empty and invalid 1-character !!int and !!float scalars', () {
+      for (var input in [
+        '!!int',
+        '!!int ""',
+        '- !!int\n',
+        '!!float',
+        '!!float ""',
+        '- !!float\n',
+        '!!float a',
+        '!!float .',
+        '!!float -',
+        ' a: "\n"b',
+        " a: '\n'b",
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
 
     test('[Example 10.8]', () {
       expectYamlStreamLoads([
