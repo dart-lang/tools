@@ -4,6 +4,7 @@
 
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
+import 'package:yaml_edit/src/char_codes.dart';
 import 'package:yaml_edit/src/utils.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
@@ -622,6 +623,224 @@ a:
           ),
         ),
       );
+    });
+  });
+
+  group('YamlChar constants and predicates', () {
+    test('constants have correct ASCII code units', () {
+      expect(YamlChar.tab, equals(0x09));
+      expect(YamlChar.lineFeed, equals(0x0A));
+      expect(YamlChar.carriageReturn, equals(0x0D));
+      expect(YamlChar.space, equals(0x20));
+      expect(YamlChar.hash, equals(0x23));
+      expect(YamlChar.asterisk, equals(0x2A));
+      expect(YamlChar.comma, equals(0x2C));
+      expect(YamlChar.hyphen, equals(0x2D));
+      expect(YamlChar.colon, equals(0x3A));
+      expect(YamlChar.question, equals(0x3F));
+      expect(YamlChar.leftSquare, equals(0x5B));
+      expect(YamlChar.rightSquare, equals(0x5D));
+      expect(YamlChar.leftCurly, equals(0x7B));
+      expect(YamlChar.rightCurly, equals(0x7D));
+    });
+
+    test('isWhitespace', () {
+      expect(YamlChar.isWhitespace(0x20), isTrue);
+      expect(YamlChar.isWhitespace(0x09), isTrue);
+      expect(YamlChar.isWhitespace(0x0A), isFalse);
+      expect(YamlChar.isWhitespace(0x0D), isFalse);
+      expect(YamlChar.isWhitespace(0x61), isFalse); // 'a'
+      expect(YamlChar.isWhitespace(-1), isFalse);
+    });
+
+    test('isLineBreak', () {
+      expect(YamlChar.isLineBreak(0x0A), isTrue);
+      expect(YamlChar.isLineBreak(0x0D), isTrue);
+      expect(YamlChar.isLineBreak(0x20), isFalse);
+      expect(YamlChar.isLineBreak(0x09), isFalse);
+      expect(YamlChar.isLineBreak(0x61), isFalse);
+      expect(YamlChar.isLineBreak(-1), isFalse);
+    });
+
+    test('isFlowIndicator', () {
+      expect(YamlChar.isFlowIndicator(0x2C), isTrue); // ','
+      expect(YamlChar.isFlowIndicator(0x5B), isTrue); // '['
+      expect(YamlChar.isFlowIndicator(0x5D), isTrue); // ']'
+      expect(YamlChar.isFlowIndicator(0x7B), isTrue); // '{'
+      expect(YamlChar.isFlowIndicator(0x7D), isTrue); // '}'
+      expect(YamlChar.isFlowIndicator(0x20), isFalse);
+      expect(YamlChar.isFlowIndicator(0x3A), isFalse); // ':'
+      expect(YamlChar.isFlowIndicator(0x2D), isFalse); // '-'
+      expect(YamlChar.isFlowIndicator(-1), isFalse);
+    });
+
+    test('isAnchorChar', () {
+      // Valid anchor chars
+      expect(YamlChar.isAnchorChar(0x61), isTrue); // 'a'
+      expect(YamlChar.isAnchorChar(0x30), isTrue); // '0'
+      expect(YamlChar.isAnchorChar(0x2E), isTrue); // '.'
+      expect(YamlChar.isAnchorChar(0x2F), isTrue); // '/'
+      expect(YamlChar.isAnchorChar(0x40), isTrue); // '@'
+      expect(YamlChar.isAnchorChar(0x2B), isTrue); // '+'
+      expect(YamlChar.isAnchorChar(0x5F), isTrue); // '_'
+      expect(YamlChar.isAnchorChar(0x2D), isTrue); // '-'
+
+      // Invalid anchor chars: whitespace, line breaks, flow indicators
+      expect(YamlChar.isAnchorChar(0x20), isFalse); // space
+      expect(YamlChar.isAnchorChar(0x09), isFalse); // tab
+      expect(YamlChar.isAnchorChar(0x0A), isFalse); // LF
+      expect(YamlChar.isAnchorChar(0x0D), isFalse); // CR
+      expect(YamlChar.isAnchorChar(0x2C), isFalse); // ','
+      expect(YamlChar.isAnchorChar(0x5B), isFalse); // '['
+      expect(YamlChar.isAnchorChar(0x5D), isFalse); // ']'
+      expect(YamlChar.isAnchorChar(0x7B), isFalse); // '{'
+      expect(YamlChar.isAnchorChar(0x7D), isFalse); // '}'
+    });
+  });
+
+  group('findNextFlowDelimiter and findPreviousFlowDelimiter', () {
+    test('returns -1 on empty yaml or out-of-bounds offsets', () {
+      expect(
+        findNextFlowDelimiter('', 0, delimiters: {YamlChar.comma}),
+        equals(-1),
+      );
+      expect(
+        findNextFlowDelimiter('abc', 5, delimiters: {YamlChar.comma}),
+        equals(-1),
+      );
+      expect(
+        findNextFlowDelimiter('abc', -2, delimiters: {YamlChar.comma}),
+        equals(-1),
+      );
+
+      expect(
+        findPreviousFlowDelimiter('', 0, delimiters: {YamlChar.comma}),
+        equals(-1),
+      );
+      expect(
+        findPreviousFlowDelimiter('abc', -1, delimiters: {YamlChar.comma}),
+        equals(-1),
+      );
+      expect(
+        findPreviousFlowDelimiter('a,b', 10, delimiters: {YamlChar.comma}),
+        equals(1),
+      );
+    });
+
+    test('findNextFlowDelimiter finds delimiter without comments', () {
+      final yaml = '[1, 2, 3]';
+      expect(
+        findNextFlowDelimiter(yaml, 0, delimiters: {YamlChar.comma}),
+        equals(2),
+      );
+      expect(
+        findNextFlowDelimiter(yaml, 3, delimiters: {YamlChar.comma}),
+        equals(5),
+      );
+      expect(
+        findNextFlowDelimiter(yaml, 6, delimiters: {YamlChar.rightSquare}),
+        equals(8),
+      );
+      expect(
+        findNextFlowDelimiter(yaml, 6, delimiters: {YamlChar.colon}),
+        equals(-1),
+      );
+    });
+
+    test('findNextFlowDelimiter skips comments containing delimiters', () {
+      final yaml = '[1, # comment with , and ] and }\n 2]';
+      expect(
+        findNextFlowDelimiter(yaml, 3, delimiters: {YamlChar.comma}),
+        equals(-1),
+      );
+      expect(
+        findNextFlowDelimiter(yaml, 3, delimiters: {YamlChar.rightSquare}),
+        equals(35),
+      );
+    });
+
+    test('findPreviousFlowDelimiter finds delimiter without comments', () {
+      final yaml = '{a: 1, b: 2}';
+      expect(
+        findPreviousFlowDelimiter(yaml, 10, delimiters: {YamlChar.comma}),
+        equals(5),
+      );
+      expect(
+        findPreviousFlowDelimiter(yaml, 4, delimiters: {YamlChar.leftCurly}),
+        equals(0),
+      );
+      expect(
+        findPreviousFlowDelimiter(yaml, 4, delimiters: {YamlChar.rightCurly}),
+        equals(-1),
+      );
+    });
+
+    test('findPreviousFlowDelimiter skips comments containing delimiters', () {
+      final yaml = '{\n  a: 1, # comment with , and { and }\n  b: 2\n}';
+      final bOffset = yaml.indexOf('b:');
+      final found = findPreviousFlowDelimiter(
+        yaml,
+        bOffset,
+        delimiters: {YamlChar.comma},
+      );
+      expect(found, equals(yaml.indexOf(',')));
+    });
+
+    test('findPreviousFlowDelimiter with multiple comment lines', () {
+      final yaml = '[\n'
+          '  1,\n'
+          '  # comment line 1 with ,\n'
+          '  # comment line 2 with ,\n'
+          '  2\n'
+          ']';
+      final twoOffset = yaml.indexOf('2');
+      final found = findPreviousFlowDelimiter(
+        yaml,
+        twoOffset,
+        delimiters: {YamlChar.comma},
+      );
+      expect(found, equals(yaml.indexOf(',')));
+    });
+
+    test('findPreviousFlowDelimiter with CR and CRLF line endings', () {
+      final yamlCr = '[\r  1,\r  # comment with ,\r  2\r]';
+      final twoCr = yamlCr.indexOf('2');
+      expect(
+        findPreviousFlowDelimiter(yamlCr, twoCr, delimiters: {YamlChar.comma}),
+        equals(yamlCr.indexOf(',')),
+      );
+
+      final yamlCrlf = '[\r\n  1,\r\n  # comment with ,\r\n  2\r\n]';
+      final twoCrlf = yamlCrlf.indexOf('2');
+      expect(
+        findPreviousFlowDelimiter(
+          yamlCrlf,
+          twoCrlf,
+          delimiters: {YamlChar.comma},
+        ),
+        equals(yamlCrlf.indexOf(',')),
+      );
+    });
+
+    test('findPreviousFlowDelimiter when search starts inside comment', () {
+      final yaml = '[ 1, # inside comment with , here ]';
+      final insideComment = yaml.indexOf('here');
+      final found = findPreviousFlowDelimiter(
+        yaml,
+        insideComment,
+        delimiters: {YamlChar.comma},
+      );
+      expect(found, equals(yaml.indexOf(',')));
+    });
+
+    test('findPreviousFlowDelimiter when comment is at start of line', () {
+      final yaml = '1,\n# comment with ,\n2';
+      final found = findPreviousFlowDelimiter(
+        yaml,
+        yaml.indexOf('2'),
+        delimiters: {YamlChar.comma},
+      );
+      expect(found, equals(yaml.indexOf(',')));
     });
   });
 }

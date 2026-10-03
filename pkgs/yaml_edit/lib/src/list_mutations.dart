@@ -4,6 +4,7 @@
 
 import 'package:yaml/yaml.dart';
 
+import 'char_codes.dart';
 import 'editor.dart';
 import 'source_edit.dart';
 import 'strings.dart';
@@ -327,8 +328,13 @@ SourceEdit _insertInFlowList(
   final yaml = yamlEdit.toString();
   final currNode = list.nodes[index];
   final currNodeStart = currNode.span.start.offset;
-  var start = yaml.lastIndexOf(RegExp(r',|\['), currNodeStart - 1) + 1;
-  if (yaml[start] == ' ') start++;
+  var start = findPreviousFlowDelimiter(
+        yaml,
+        currNodeStart - 1,
+        delimiters: {YamlChar.comma, YamlChar.leftSquare},
+      ) +
+      1;
+  if (start < yaml.length && yaml[start] == ' ') start++;
 
   return SourceEdit(start, 0, formattedValue);
 }
@@ -399,14 +405,32 @@ SourceEdit _removeFromFlowList(
   var end = span.end.offset;
 
   if (index == 0) {
-    start = yaml.lastIndexOf('[', start - 1) + 1;
+    start = findPreviousFlowDelimiter(
+          yaml,
+          start - 1,
+          delimiters: {YamlChar.leftSquare},
+        ) +
+        1;
     if (index == list.length - 1) {
-      end = yaml.indexOf(']', end);
+      end = findNextFlowDelimiter(
+        yaml,
+        end,
+        delimiters: {YamlChar.rightSquare},
+      );
     } else {
-      end = yaml.indexOf(',', end) + 1;
+      end = findNextFlowDelimiter(
+            yaml,
+            end,
+            delimiters: {YamlChar.comma},
+          ) +
+          1;
     }
   } else {
-    start = yaml.lastIndexOf(',', start - 1);
+    start = findPreviousFlowDelimiter(
+      yaml,
+      start - 1,
+      delimiters: {YamlChar.comma},
+    );
   }
 
   return SourceEdit(start, end - start, '');
