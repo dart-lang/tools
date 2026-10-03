@@ -1,0 +1,257 @@
+// Copyright (c) 2026, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'package:test/test.dart';
+import 'package:yaml/yaml.dart';
+import 'package:yaml_edit/yaml_edit.dart';
+
+void main() {
+  group('nested strings', () {
+    test('update map value in a list with folded punctuation and line breaks',
+        () {
+      const value = 'label: "quoted" # text\n[items] &anchor *alias';
+      final doc = YamlEditor('''
+items:
+  - message: old
+    keep: true
+''');
+      doc.update(['items', 0, 'message'],
+          wrapAsYamlNode(value, scalarStyle: ScalarStyle.FOLDED));
+
+      expect(
+          loadYaml(doc.toString()),
+          equals({
+            'items': [
+              {'message': value, 'keep': true}
+            ]
+          }));
+      expect(doc.toString(), equals('''
+items:
+  - message: >-
+        label: "quoted" # text
+
+        [items] &anchor *alias
+    keep: true
+'''));
+    });
+
+    test('update nested list element with literal backslashes and a blank line',
+        () {
+      const value = 'path: C:\\temp\n\n# "quoted"';
+      final doc = YamlEditor('''
+settings:
+  messages:
+    - old
+    - keep
+''');
+      doc.update(['settings', 'messages', 0],
+          wrapAsYamlNode(value, scalarStyle: ScalarStyle.LITERAL));
+
+      expect(
+          loadYaml(doc.toString()),
+          equals({
+            'settings': {
+              'messages': [value, 'keep']
+            }
+          }));
+      expect(doc.toString(), equals('''
+settings:
+  messages:
+    - |-
+        path: C:\\temp
+        
+        # "quoted"
+    - keep
+'''));
+    });
+
+    test('add folded map value in a list with comment and collection markers',
+        () {
+      const value = '# comment text\n{key: [value]}';
+      final doc = YamlEditor('''
+items:
+  - keep: true
+''');
+      doc.update(['items', 0, 'message'],
+          wrapAsYamlNode(value, scalarStyle: ScalarStyle.FOLDED));
+
+      expect(
+          loadYaml(doc.toString()),
+          equals({
+            'items': [
+              {'keep': true, 'message': value}
+            ]
+          }));
+      expect(doc.toString(), equals('''
+items:
+  - keep: true
+    message: >-
+        # comment text
+
+        {key: [value]}
+'''));
+    });
+
+    test('append map with a literal multiline value to a nested list', () {
+      const value = '&anchor: "text"\n*alias # text';
+      final doc = YamlEditor('''
+settings:
+  messages:
+    - keep
+''');
+      doc.appendToList(['settings', 'messages'],
+          {'message': wrapAsYamlNode(value, scalarStyle: ScalarStyle.LITERAL)});
+
+      expect(
+          loadYaml(doc.toString()),
+          equals({
+            'settings': {
+              'messages': [
+                'keep',
+                {'message': value}
+              ]
+            }
+          }));
+      expect(doc.toString(), equals('''
+settings:
+  messages:
+    - keep
+    - message: |-
+          &anchor: "text"
+          *alias # text
+'''));
+    });
+
+    test('insert folded document markers between nested list elements', () {
+      const value = '---\n# text\n...';
+      final doc = YamlEditor('''
+settings:
+  messages:
+    - before
+    - after
+''');
+      doc.insertIntoList(['settings', 'messages'], 1,
+          wrapAsYamlNode(value, scalarStyle: ScalarStyle.FOLDED));
+
+      expect(
+          loadYaml(doc.toString()),
+          equals({
+            'settings': {
+              'messages': ['before', value, 'after']
+            }
+          }));
+      expect(doc.toString(), equals('''
+settings:
+  messages:
+    - before
+    - >-
+        ---
+
+        # text
+
+        ...
+    - after
+'''));
+    });
+
+    test('update nested flow map uses quotes for folded multiline punctuation',
+        () {
+      const value = 'key: [value]\n# text';
+      final doc = YamlEditor('settings: {message: old, keep: true}\n');
+      doc.update(['settings', 'message'],
+          wrapAsYamlNode(value, scalarStyle: ScalarStyle.FOLDED));
+
+      expect(
+          loadYaml(doc.toString()),
+          equals({
+            'settings': {'message': value, 'keep': true}
+          }));
+      expect(doc.toString(),
+          equals('settings: {message: "key: [value]\\n# text", keep: true}\n'));
+    });
+
+    test('insert into nested flow list quotes literal newlines and quotes', () {
+      const value = '"quoted"\n{key: value}';
+      final doc = YamlEditor('settings:\n  messages: [before, after]\n');
+      doc.insertIntoList(['settings', 'messages'], 1,
+          wrapAsYamlNode(value, scalarStyle: ScalarStyle.LITERAL));
+
+      expect(
+          loadYaml(doc.toString()),
+          equals({
+            'settings': {
+              'messages': ['before', value, 'after']
+            }
+          }));
+      expect(
+          doc.toString(),
+          equals('settings:\n'
+              '  messages: [before, "\\"quoted\\"\\n{key: value}", after]\n'));
+    });
+  });
+
+  group('nested strings in CRLF documents', () {
+    test('update folded map value preserves LF value and CRLF siblings', () {
+      const value = 'key: value\n# "text"';
+      final doc = YamlEditor('settings:\r\n  message: old\r\n  keep: true\r\n');
+      doc.update(['settings', 'message'],
+          wrapAsYamlNode(value, scalarStyle: ScalarStyle.FOLDED));
+
+      expect(
+          loadYaml(doc.toString()),
+          equals({
+            'settings': {'message': value, 'keep': true}
+          }));
+      expect((doc.parseAt(['settings', 'message']) as YamlScalar).style,
+          equals(ScalarStyle.FOLDED));
+      expect(doc.toString(), startsWith('settings:\r\n  message: >-'));
+      expect(
+          doc.toString(), contains('      key: value\r\n\r\n      # "text"'));
+      expect(doc.toString(), endsWith('\r\n  keep: true\r\n'));
+    });
+
+    test(
+        'append literal CRLF value to nested list falls back to escaped quotes',
+        () {
+      const value = 'key: value\r\n# text';
+      final doc = YamlEditor('settings:\r\n  messages:\r\n    - keep\r\n');
+      doc.appendToList(['settings', 'messages'],
+          wrapAsYamlNode(value, scalarStyle: ScalarStyle.LITERAL));
+
+      expect(
+          loadYaml(doc.toString()),
+          equals({
+            'settings': {
+              'messages': ['keep', value]
+            }
+          }));
+      expect(
+          doc.toString(),
+          equals('settings:\r\n  messages:\r\n'
+              '    - keep\r\n    - "key: value\\r\\n# text"\r\n'));
+    });
+
+    test('insert folded whitespace and multiline punctuation into CRLF list',
+        () {
+      const value = ' # text\n\t[key: value]';
+      final doc = YamlEditor(
+          'settings:\r\n  messages:\r\n    - before\r\n    - after\r\n');
+      doc.insertIntoList(['settings', 'messages'], 1,
+          wrapAsYamlNode(value, scalarStyle: ScalarStyle.FOLDED));
+
+      expect(
+          loadYaml(doc.toString()),
+          equals({
+            'settings': {
+              'messages': ['before', value, 'after']
+            }
+          }));
+      expect(
+          doc.toString(),
+          equals('settings:\r\n  messages:\r\n'
+              '    - before\r\n    - " # text\\n\\t[key: value]"\r\n'
+              '    - after\r\n'));
+    });
+  });
+}
