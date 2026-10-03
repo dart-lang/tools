@@ -155,11 +155,42 @@ SourceEdit _appendToBlockList(
   // Adjusts offset to after the trailing newline of the last entry, if it
   // exists
   if (list.isNotEmpty) {
-    final lastValueSpanEnd = list.nodes.last.span.end.offset;
-    final nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd - 1);
+    final lastNode = list.nodes.last;
+    final lastValueSpanEnd = getContentSensitiveEnd(lastNode);
+    var nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd);
     if (nextNewLineIndex == -1) {
       formattedValue = getLineEnding(yaml) + formattedValue;
     } else {
+      var deepestNode = lastNode;
+      while (true) {
+        if (deepestNode is YamlList &&
+            deepestNode.style == CollectionStyle.BLOCK &&
+            deepestNode.isNotEmpty) {
+          deepestNode = deepestNode.nodes.last;
+        } else if (deepestNode is YamlMap &&
+            deepestNode.style == CollectionStyle.BLOCK &&
+            deepestNode.isNotEmpty) {
+          deepestNode = deepestNode.nodes.values.last;
+        } else {
+          break;
+        }
+      }
+
+      if (deepestNode is YamlScalar &&
+          (deepestNode.style == ScalarStyle.LITERAL ||
+              deepestNode.style == ScalarStyle.FOLDED)) {
+        while (nextNewLineIndex + 1 < yaml.length) {
+          final nextLineEnd = yaml.indexOf('\n', nextNewLineIndex + 1);
+          final lineSlice = nextLineEnd == -1
+              ? yaml.substring(nextNewLineIndex + 1)
+              : yaml.substring(nextNewLineIndex + 1, nextLineEnd);
+          if (lineSlice.trim().isEmpty && nextLineEnd != -1) {
+            nextNewLineIndex = nextLineEnd;
+          } else {
+            break;
+          }
+        }
+      }
       offset = nextNewLineIndex + 1;
     }
   }
