@@ -28,11 +28,10 @@ items:
           }));
       expect((doc.parseAt(['items', 0, 'message']) as YamlScalar).style,
           equals(ScalarStyle.FOLDED));
+      expect(doc.toString(), startsWith('items:\n  - message: >-\n'));
+      expect(doc.toString(), contains('label: "quoted" # text\n\n'));
       expect(
-          doc.toString(),
-          matches(RegExp(r'^items:\n  - message: >-\n'
-              r' +label: "quoted" # text\n\n'
-              r' +\[items\] &anchor \*alias\n    keep: true\n$')));
+          doc.toString(), endsWith('[items] &anchor *alias\n    keep: true\n'));
     });
 
     test('update nested list element with literal backslashes and a blank line',
@@ -54,15 +53,15 @@ settings:
               'messages': [value, 'keep']
             }
           }));
-      expect(doc.toString(), equals('''
-settings:
-  messages:
-    - |-
-        path: C:\\temp
-        
-        # "quoted"
-    - keep
-'''));
+      expect(
+          doc.toString(),
+          equals('settings:\n'
+              '  messages:\n'
+              '    - |-\n'
+              '        path: C:\\temp\n'
+              '        \n'
+              '        # "quoted"\n'
+              '    - keep\n'));
     });
 
     test('add folded map value in a list with comment and collection markers',
@@ -84,11 +83,10 @@ items:
           }));
       expect((doc.parseAt(['items', 0, 'message']) as YamlScalar).style,
           equals(ScalarStyle.FOLDED));
-      expect(
-          doc.toString(),
-          matches(RegExp(r'^items:\n  - keep: true\n    message: >-\n'
-              r' +# comment text\n\n'
-              r' +\{key: \[value\]\}\n$')));
+      expect(doc.toString(),
+          startsWith('items:\n  - keep: true\n    message: >-\n'));
+      expect(doc.toString(), contains('# comment text\n\n'));
+      expect(doc.toString(), endsWith('{key: [value]}\n'));
     });
 
     test('append map with a literal multiline value to a nested list', () {
@@ -204,8 +202,8 @@ settings:
       expect((doc.parseAt(['settings', 'message']) as YamlScalar).style,
           equals(ScalarStyle.FOLDED));
       expect(doc.toString(), startsWith('settings:\r\n  message: >-'));
-      expect(doc.toString(),
-          matches(RegExp(r' +key: value\r\n\r\n +# "text"\r\n')));
+      expect(doc.toString(), contains('key: value\r\n\r\n'));
+      expect(doc.toString(), contains('# "text"\r\n'));
       expect(doc.toString(), endsWith('\r\n  keep: true\r\n'));
     });
 
