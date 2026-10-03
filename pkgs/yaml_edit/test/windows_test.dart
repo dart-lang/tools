@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:test/test.dart';
+import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/src/utils.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
@@ -219,6 +220,32 @@ a: 1\r
 '''));
 
       expectDeepEquals(nodes.toList(), [0, 0]);
+    });
+
+    test('literal block scalar encodes with CRLF header', () {
+      final doc = YamlEditor('key: initial\r\nother: 1\r\n');
+      doc.update(
+        ['key'],
+        wrapAsYamlNode('line1\nline2', scalarStyle: ScalarStyle.LITERAL),
+      );
+      expect(
+        doc.toString(),
+        equals('key: |-\r\n    line1\r\n    line2\r\nother: 1\r\n'),
+      );
+      expect(doc.parseAt(['key']).value, equals('line1\nline2'));
+    });
+
+    test('folded block scalar encodes with CRLF header', () {
+      final doc = YamlEditor('key: initial\r\nother: 1\r\n');
+      doc.update(
+        ['key'],
+        wrapAsYamlNode('line1\nline2', scalarStyle: ScalarStyle.FOLDED),
+      );
+      expect(
+        doc.toString(),
+        equals('key: >-\r\n    line1\r\n\r\n    line2\r\nother: 1\r\n'),
+      );
+      expect(doc.parseAt(['key']).value, equals('line1\nline2'));
     });
   });
 }

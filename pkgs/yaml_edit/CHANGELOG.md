@@ -1,6 +1,7 @@
 ## 2.2.5-wip
 
 - Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
+- Fix literal and folded block scalar encoding with CRLF line endings.
 
 ## 2.2.4
 
