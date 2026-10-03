@@ -35,6 +35,13 @@ extension CombineLatest<T> on Stream<T> {
   /// If the source stream is a broadcast stream, the result stream will be as
   /// well, regardless of [other]'s type. If a single subscription stream is
   /// combined with a broadcast stream it may never be canceled.
+  ///
+  /// Canceling a subscription to the result stream cancels the subscriptions
+  /// to the source stream and [other]. If either of those can't reach a safe
+  /// point to be canceled - for instance an `async`/`async*` function
+  /// suspended on an unrelated `await` rather than paused at a `yield` - that
+  /// cancellation will never complete, and neither will anything that waits
+  /// for it, such as [Stream.first], [Stream.toList], or [Stream.drain].
   Stream<S> combineLatest<T2, S>(
       Stream<T2> other, FutureOr<S> Function(T, T2) combine) {
     final controller = isBroadcast
@@ -177,6 +184,13 @@ extension CombineLatest<T> on Stream<T> {
   /// If the source stream is a broadcast stream, the result stream will be as
   /// well, regardless of the types of [others]. If a single subscription stream
   /// is combined with a broadcast source stream, it may never be canceled.
+  ///
+  /// Canceling a subscription to the result stream cancels the subscriptions
+  /// to the source stream and [others]. If any of those can't reach a safe
+  /// point to be canceled - for instance an `async`/`async*` function
+  /// suspended on an unrelated `await` rather than paused at a `yield` - that
+  /// cancellation will never complete, and neither will anything that waits
+  /// for it, such as [Stream.first], [Stream.toList], or [Stream.drain].
   Stream<List<T>> combineLatestAll(Iterable<Stream<T>> others) {
     final controller = isBroadcast
         ? StreamController<List<T>>.broadcast(sync: true)
