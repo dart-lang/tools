@@ -446,6 +446,28 @@ Body 1\r
 Body2\r
 --xxx--\r\n''';
   _testParse(message, 'xxx', null, ['\r\nBody 1', '\r\nBody2']);
+
+  // With trailing epilogue bytes after the close-delimiter.
+  message = '''
+--xxx\r
+Content-Type: text/plain\r
+\r
+Body 1\r
+--xxx--\r
+Trailing epilogue line 1\r
+Trailing epilogue line 2\r\n''';
+  _testParse(
+    message,
+    'xxx',
+    [
+      {'content-type': 'text/plain'},
+    ],
+    ['Body 1'],
+  );
+
+  // Empty multipart message with trailing epilogue bytes.
+  message = '--xxx--\r\nTrailing epilogue\r\n';
+  _testParse(message, 'xxx', [], []);
 }
 
 void _testParseInvalid() {
@@ -490,6 +512,16 @@ Body2\r
       await expectStreamMultipartError(
         ascii.encode('--bnd\r\ninvalid header\r\n\r\n'),
       );
+      for (final invalidFirstChar in [
+        '--bnd\r\n: value\r\n\r\n--bnd--\r\n',
+        '--bnd\r\n@: value\r\n\r\n--bnd--\r\n',
+        '--bnd\r\n : value\r\n\r\n--bnd--\r\n',
+        '--bnd\r\n\x02Fold: value\r\n\r\n--bnd--\r\n',
+        '--bnd\r\nx-ok: 1\r\n: empty-second\r\n\r\n--bnd--\r\n',
+        '--bnd\r\nx-ok: 1\r\n\x00bad: 2\r\n\r\n--bnd--\r\n',
+      ]) {
+        await expectStreamMultipartError(ascii.encode(invalidFirstChar));
+      }
     });
 
     test('malformed boundary and CRLF route MimeMultipartException to stream',
