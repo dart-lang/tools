@@ -38,11 +38,10 @@ extension Switch<T> on Stream<T> {
   ///
   /// Canceling a subscription to the result stream cancels the subscription
   /// to the source stream and to the current sub stream. If either can't
-  /// reach a safe point to be canceled - for instance an `async`/`async*`
-  /// function suspended on an unrelated `await` rather than paused at a
-  /// `yield` - that cancellation will never complete, and neither will
-  /// anything that waits for it, such as [Stream.first], [Stream.toList], or
-  /// [Stream.drain].
+  /// reach a safe point to be canceled (for instance, an `async*` function
+  /// suspended on an unrelated `await` rather than paused at a `yield`), that
+  /// cancellation will never complete, and neither will anything that waits
+  /// for it, such as [Stream.first], [Stream.toList], or [Stream.drain].
   ///
   /// See also:
   /// - [concurrentAsyncExpand], which emits events from all sub streams
@@ -66,11 +65,10 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
   ///
   /// Canceling a subscription to the result stream cancels the subscription
   /// to the source stream and to the current sub stream. If either can't
-  /// reach a safe point to be canceled - for instance an `async`/`async*`
-  /// function suspended on an unrelated `await` rather than paused at a
-  /// `yield` - that cancellation will never complete, and neither will
-  /// anything that waits for it, such as [Stream.first], [Stream.toList], or
-  /// [Stream.drain].
+  /// reach a safe point to be canceled (for instance, an `async*` function
+  /// suspended on an unrelated `await` rather than paused at a `yield`), that
+  /// cancellation will never complete, and neither will anything that waits
+  /// for it, such as [Stream.first], [Stream.toList], or [Stream.drain].
   Stream<T> switchLatest() {
     var controller = isBroadcast
         ? StreamController<T>.broadcast(sync: true)
