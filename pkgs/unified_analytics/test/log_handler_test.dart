@@ -453,6 +453,33 @@ void main() {
     );
   });
 
+  test('logFileStats returns null without reading the file when it '
+      "doesn't exist", () async {
+    var readAsLinesSyncCalled = false;
+    final logFile = _FakeFile('log.txt')
+      // A nonexistent file reports a size of -1.
+      .._statSyncImpl = (() => _FakeFileStat(-1))
+      .._readAsLinesSyncImpl = (() {
+        readAsLinesSyncCalled = true;
+        return <String>[];
+      });
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      readAsLinesSyncCalled,
+      isFalse,
+      reason:
+          'A missing log file is an expected state (e.g. before any events '
+          'have been logged) and should not be treated as an error',
+    );
+    expect(
+      logHandler.errorSet,
+      isEmpty,
+      reason: 'A missing log file should not be reported as an exception',
+    );
+  });
+
   test('logFileStats returns null and records an analyticsException when '
       'reading the log file throws a FileSystemException', () async {
     final logFile = _FakeFile('log.txt')
@@ -472,9 +499,7 @@ void main() {
         Event.analyticsException(
           workflow: 'LogHandler.logFileStats',
           error: 'FileSystemException',
-          description:
-              "message: Failed to decode data using encoding 'utf-8'\n"
-              'path: log.txt',
+          description: "message: Failed to decode data using encoding 'utf-8'",
         ),
       ),
     );
