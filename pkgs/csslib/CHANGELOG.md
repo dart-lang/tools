@@ -1,5 +1,10 @@
 ## 1.0.3-wip
 
+- Fix unhandled exceptions (`RangeError`, `FormatException`, `TypeError`,
+  `StackOverflowError`, and `AssertionError`) and infinite loops across the
+  tokenizer, parser, analyzer, polyfill pass, and printers when processing
+  malformed or deeply nested CSS, SCSS, and Less inputs.
+
 ## 1.0.2
 
 - Require Dart 3.1

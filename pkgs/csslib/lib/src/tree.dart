@@ -216,13 +216,14 @@ class NamespaceSelector extends SimpleSelector {
   SimpleSelector? get nameAsSimpleSelector => _name as SimpleSelector?;
 
   @override
-  NamespaceSelector clone() => NamespaceSelector(_namespace, '', span);
+  NamespaceSelector clone() =>
+      NamespaceSelector(_namespace, nameAsSimpleSelector?.clone() ?? '', span);
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitNamespaceSelector(this);
 
   @override
-  String toString() => '$namespace|${nameAsSimpleSelector!.name}';
+  String toString() => '$namespace|${nameAsSimpleSelector?.name ?? ''}';
 }
 
 // [attr op value]
@@ -418,7 +419,10 @@ class StyleSheet extends TreeNode {
 
   StyleSheet(this.topLevels, SourceSpan? span) : super(span) {
     for (final node in topLevels) {
-      assert(node is TopLevelProduction || node is Directive);
+      assert(node is TopLevelProduction ||
+          node is Directive ||
+          node is Selector ||
+          node is NoOp);
     }
   }
 
@@ -457,7 +461,7 @@ class RuleSet extends TopLevelProduction {
 
   @override
   RuleSet clone() {
-    var cloneSelectorGroup = selectorGroup!.clone();
+    var cloneSelectorGroup = selectorGroup?.clone();
     var cloneDeclarationGroup = declarationGroup.clone();
     return RuleSet(cloneSelectorGroup, cloneDeclarationGroup, span);
   }
@@ -514,7 +518,7 @@ class SupportsDirective extends Directive {
 
   @override
   SupportsDirective clone() {
-    var clonedCondition = condition!.clone() as SupportsCondition;
+    var clonedCondition = condition?.clone() as SupportsCondition?;
     var clonedGroupRuleBody = <TreeNode>[];
     for (var rule in groupRuleBody) {
       clonedGroupRuleBody.add(rule.clone());
@@ -544,7 +548,7 @@ class SupportsConditionInParens extends SupportsCondition {
 
   @override
   SupportsConditionInParens clone() =>
-      SupportsConditionInParens(condition!.clone() as Declaration, span);
+      SupportsConditionInParens.nested(condition?.clone(), span);
 
   @override
   dynamic visit(VisitorBase visitor) =>
@@ -810,7 +814,7 @@ class KeyFrameDirective extends Directive {
 
   @override
   KeyFrameDirective clone() {
-    var directive = KeyFrameDirective(_keyframeName, name!.clone(), span);
+    var directive = KeyFrameDirective(_keyframeName, name?.clone(), span);
     for (var block in _blocks) {
       directive.add(block.clone());
     }
@@ -934,9 +938,9 @@ class MixinRulesetDirective extends MixinDefinition {
 
   @override
   MixinRulesetDirective clone() {
-    var clonedArgs = <VarDefinition>[];
+    var clonedArgs = <TreeNode>[];
     for (var arg in definedArgs) {
-      clonedArgs.add(arg.clone() as VarDefinition);
+      clonedArgs.add(arg.clone());
     }
     var clonedRulesets = <TreeNode>[];
     for (var ruleset in rulesets) {
@@ -1023,7 +1027,8 @@ class Declaration extends TreeNode {
       : isIE7 = ie7,
         super(span);
 
-  String get property => isIE7 ? '*${_property!.name}' : _property!.name;
+  String get property =>
+      isIE7 ? '*${_property?.name ?? ''}' : (_property?.name ?? '');
 
   bool get hasDartStyle => dartStyle != null;
 
@@ -1032,7 +1037,7 @@ class Declaration extends TreeNode {
 
   @override
   Declaration clone() =>
-      Declaration(_property!.clone(), expression!.clone(), dartStyle, span,
+      Declaration(_property?.clone(), expression?.clone(), dartStyle, span,
           important: important);
 
   @override
@@ -1051,11 +1056,11 @@ class VarDefinition extends Declaration {
   VarDefinition(Identifier? definedName, Expression? expr, SourceSpan? span)
       : super(definedName, expr, null, span);
 
-  String get definedName => _property!.name;
+  String get definedName => _property?.name ?? '';
 
   @override
   VarDefinition clone() =>
-      VarDefinition(_property!.clone(), expression?.clone(), span);
+      VarDefinition(_property?.clone(), expression?.clone(), span);
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitVarDefinition(this);
