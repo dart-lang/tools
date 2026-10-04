@@ -78,6 +78,8 @@ const Map<String, String> errorMessages = {
       'Unexpected character after attribute name.',
   'unexpected-character-after-attribute-value':
       'Unexpected character after attribute value.',
+  'unexpected-EOF-after-attribute-value':
+      'Unexpected end of file after attribute value.',
   'eof-in-attribute-value-double-quote':
       'Unexpected end of file in attribute value (".',
   'eof-in-attribute-value-single-quote':
@@ -366,7 +368,6 @@ const specialElements = {
 };
 
 const htmlIntegrationPointElements = {
-  (Namespaces.mathml, 'annotaion-xml'),
   (Namespaces.svg, 'foreignObject'),
   (Namespaces.svg, 'desc'),
   (Namespaces.svg, 'title')

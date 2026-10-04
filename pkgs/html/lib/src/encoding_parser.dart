@@ -31,7 +31,7 @@ class EncodingBytes {
     var p = __position;
     if (p >= _length) {
       throw _EncodingRangeException('No more elements');
-    } else if (p < 0) {
+    } else if (p <= 0) {
       throw RangeError(p);
     }
     __position = p = p - 1;
@@ -261,7 +261,6 @@ class EncodingParser {
       } else if (isWhitespace(c)) {
         // Step 6!
         c = _data._skipChars();
-        c = _data._next();
         break;
       } else if (c == '/' || c == '>') {
         return [attrName.join(), ''];
@@ -275,6 +274,9 @@ class EncodingParser {
     }
     // Step 7
     if (c != '=') {
+      if (c == null) {
+        return null;
+      }
       _data._previous();
       return [attrName.join(), ''];
     }
@@ -347,21 +349,13 @@ class ContentAttrParser {
         final quoteMark = data._currentByte;
         data._position += 1;
         final oldPosition = data._position;
-        if (data._jumpTo(quoteMark)) {
-          return data._slice(oldPosition, data._position);
-        } else {
-          return null;
-        }
+        data._jumpTo(quoteMark);
+        return data._slice(oldPosition, data._position);
       } else {
         // Unquoted value
         final oldPosition = data._position;
-        try {
-          data._skipUntil(isWhitespace);
-          return data._slice(oldPosition, data._position);
-        } on _EncodingRangeException catch (_) {
-          //Return the whole remaining value
-          return data._slice(oldPosition);
-        }
+        data._skipUntil(isWhitespace);
+        return data._slice(oldPosition, data._position);
       }
     } on _EncodingRangeException catch (_) {
       return null;

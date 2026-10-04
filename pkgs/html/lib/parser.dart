@@ -3974,7 +3974,8 @@ class ParseError implements SourceSpanException {
   /// Use [SourceSpan.message] or the [toString] from the [span] field to get a
   /// message including span information
   @override
-  String get message => formatStr(errorMessages[errorCode]!, data);
+  String get message => formatStr(
+      errorMessages[errorCode] ?? errorMessages['undefined-error']!, data);
 
   @override
   String toString({dynamic color}) {

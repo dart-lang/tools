@@ -27,58 +27,6 @@ class ActiveFormattingElements extends ListProxy<Element?> {
   /// Prevents O(N^2) parse time on maliciously crafted nested formatting
   /// elements with unique attributes.
   static const int noahArkScanLimit = 256;
-
-  /// Push an element into the active formatting elements.
-  ///
-  /// Prevents equivalent elements from appearing more than 3 times following
-  /// the last `null` marker. If adding [node] would cause there to be more than
-  /// 3 equivalent elements the earliest identical element is removed.
-  // TODO - Earliest equivalent following a marker, as opposed to earliest
-  // identical regardless of marker position, should be removed.
-  @override
-  void add(Element? node) {
-    var equalCount = 0;
-    if (node != null) {
-      var scanned = 0;
-      for (var element in reversed) {
-        if (element == null || scanned++ == noahArkScanLimit) {
-          break;
-        }
-        if (_nodesEqual(element, node)) {
-          equalCount += 1;
-        }
-        if (equalCount == 3) {
-          // TODO - https://github.com/dart-lang/html/issues/135
-          remove(element);
-          break;
-        }
-      }
-    }
-    super.add(node);
-  }
-}
-
-// TODO(jmesserly): this should exist in corelib...
-bool _mapEquals(Map<Object, String> a, Map<Object, String> b) {
-  if (a.length != b.length) return false;
-  if (a.isEmpty) return true;
-
-  for (var keyA in a.keys) {
-    final valB = b[keyA];
-    if (valB == null && !b.containsKey(keyA)) {
-      return false;
-    }
-
-    if (a[keyA] != valB) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool _nodesEqual(Element node1, Element node2) {
-  return getElementNameTuple(node1) == getElementNameTuple(node2) &&
-      _mapEquals(node1.attributes, node2.attributes);
 }
 
 /// Basic treebuilder implementation.
@@ -283,35 +231,29 @@ class TreeBuilder {
   }
 
   Element insertElementNormal(StartTagToken token) {
-    final name = token.name;
-    final namespace = token.namespace ?? defaultNamespace;
-    final element = document.createElementNS(namespace, name)
-      ..attributes = token.data
-      ..sourceSpan = token.span;
+    final element = createElement(token);
     openElements.last.nodes.add(element);
     openElements.add(element);
     return element;
   }
 
   Element insertElementTable(StartTagToken token) {
-    /// Create an element and insert it into the tree
-    final element = createElement(token);
     if (!tableInsertModeElements.contains(openElements.last.localName)) {
       return insertElementNormal(token);
-    } else {
-      // We should be in the InTable mode. This means we want to do
-      // special magic element rearranging
-      final nodePos = getTableMisnestedNodePosition();
-      if (nodePos[1] == null) {
-        // TODO(jmesserly): I don't think this is reachable. If insertFromTable
-        // is true, there will be a <table> element open, and it always has a
-        // parent pointer.
-        nodePos[0]!.nodes.add(element);
-      } else {
-        nodePos[0]!.insertBefore(element, nodePos[1]);
-      }
-      openElements.add(element);
     }
+    final element = createElement(token);
+    // We should be in the InTable mode. This means we want to do
+    // special magic element rearranging
+    final nodePos = getTableMisnestedNodePosition();
+    if (nodePos[1] == null) {
+      // TODO(jmesserly): I don't think this is reachable. If insertFromTable
+      // is true, there will be a <table> element open, and it always has a
+      // parent pointer.
+      nodePos[0]!.nodes.add(element);
+    } else {
+      nodePos[0]!.insertBefore(element, nodePos[1]);
+    }
+    openElements.add(element);
     return element;
   }
 
@@ -353,6 +295,11 @@ class TreeBuilder {
       if (index > 0 && nodes[index - 1] is Text) {
         final last = nodes[index - 1] as Text;
         last.appendData(data);
+
+        if (span != null) {
+          last.sourceSpan =
+              span.file.span(last.sourceSpan!.start.offset, span.end.offset);
+        }
       } else {
         nodes.insert(index, Text(data)..sourceSpan = span);
       }
