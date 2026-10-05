@@ -213,11 +213,15 @@ class NamespaceSelector extends SimpleSelector {
 
   bool get isNamespaceWildcard => _namespace is Wildcard;
 
-  SimpleSelector? get nameAsSimpleSelector => _name as SimpleSelector?;
+  SimpleSelector? get nameAsSimpleSelector =>
+      _name is SimpleSelector ? _name as SimpleSelector : null;
 
   @override
-  NamespaceSelector clone() =>
-      NamespaceSelector(_namespace, nameAsSimpleSelector?.clone() ?? '', span);
+  NamespaceSelector clone() => NamespaceSelector(
+      _namespace,
+      nameAsSimpleSelector?.clone() ??
+          ElementSelector(Identifier('', span), span),
+      span);
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitNamespaceSelector(this);

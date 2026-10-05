@@ -457,6 +457,9 @@ void main() {
     test('malformed selectors, namespace selectors, and selector expressions',
         () {
       _exerciseAllEntryPoints('ns| { color: red; } | { color: blue; }');
+      _exerciseAllEntryPoints(
+          ':not(ns|a) { color: red; } :not(ns|) { color: blue; }');
+      expect(NamespaceSelector(null, '', null).clone().toString(), '|');
       _exerciseAllEntryPoints(':not() { color: red; }');
       _exerciseAllEntryPoints(':nth-child(99999999999999999999999) { }');
       _exerciseAllEntryPoints(':nth-child(n%) { }');
