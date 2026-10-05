@@ -308,6 +308,14 @@ class _Parser {
     _error(message, tok.span);
   }
 
+  String _safeTokenString(Token tok) {
+    try {
+      return tok.toString();
+    } catch (_) {
+      return tok.text;
+    }
+  }
+
   void _error(String message, SourceSpan? location) {
     location ??= _peekToken.span;
     messages.error(message, location);
@@ -806,8 +814,11 @@ class _Parser {
           if (include is IncludeDirective) {
             newDecls.add(IncludeMixinAtDeclaration(include, include.span));
           } else {
-            _warning('Error mixing of top-level vs declarations mixins',
-                _makeSpan(include.span as FileSpan));
+            _warning(
+                'Error mixing of top-level vs declarations mixins',
+                include.span is FileSpan
+                    ? _makeSpan(include.span as FileSpan)
+                    : include.span);
           }
         }
         declGroup.declarations.insertAll(0, newDecls);
@@ -890,7 +901,8 @@ class _Parser {
           var span = _makeSpan(start);
           return VarDefinitionDirective(VarDefinition(name, exprs, span), span);
         } else if (isChecked) {
-          _error('unexpected directive @$_peekToken', _peekToken.span);
+          _error('unexpected directive @${_safeTokenString(_peekToken)}',
+              _peekToken.span);
         }
       }
     } else if (mixinParameter && _peekToken.kind == TokenKind.VAR_DEFINITION) {
@@ -1470,7 +1482,9 @@ class _Parser {
           element = identifier();
           break;
         default:
-          _error('expected element name or universal(*), but found $_peekToken',
+          _error(
+              'expected element name or universal(*), '
+              'but found ${_safeTokenString(_peekToken)}',
               _peekToken.span);
           element = Identifier('', _makeSpan(start));
           break;
@@ -2716,7 +2730,8 @@ class _Parser {
     if (!TokenKind.isIdentifier(tok.kind) &&
         !TokenKind.isKindIdentifier(tok.kind)) {
       if (isChecked) {
-        _warning('expected identifier, but found $tok', tok.span);
+        _warning('expected identifier, but found ${_safeTokenString(tok)}',
+            tok.span);
       }
       return Identifier('', _makeSpan(tok.span));
     }

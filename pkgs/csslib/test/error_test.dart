@@ -431,12 +431,21 @@ void main() {
       _exerciseAllEntryPoints('@: 1px; a { var-: 2px; }');
       _exerciseAllEntryPoints(
           '@mixin m(@a) { color: @a; } @include ; a { @include m(); }');
+      _exerciseAllEntryPoints(
+          '@mixin m { @media screen { } color: red; } @include m;');
+      _exerciseAllEntryPoints(
+          '@mixin a { color: red; } @mixin a { @include a; } '
+          '@include a; div { @include a; }');
+      _exerciseAllEntryPoints(
+          '@mixin b { color: red; } @mixin a { @include b; } '
+          '@mixin b { @include a; } div { @include b; }');
     });
 
     test('malformed @-moz-document and @supports directives', () {
       _exerciseAllEntryPoints(
           '@-moz-document regexp(".*"), foo(1), url-prefix() '
           '{ a { top: 0; } }');
+      _exerciseAllEntryPoints('@-moz-document\uFFFDfoo(1) { a { top: 0; } }');
       _exerciseAllEntryPoints('@-moz-document { }');
       _exerciseAllEntryPoints('@supports () { } @supports not () { }');
       _exerciseAllEntryPoints('@supports (a: 1) and () { }');
@@ -457,6 +466,7 @@ void main() {
     test('malformed selectors, namespace selectors, and selector expressions',
         () {
       _exerciseAllEntryPoints('ns| { color: red; } | { color: blue; }');
+      _exerciseAllEntryPoints('ns|\uFFFD { color: red; }');
       _exerciseAllEntryPoints(
           ':not(ns|a) { color: red; } :not(ns|) { color: blue; }');
       expect(NamespaceSelector(null, '', null).clone().toString(), '|');
@@ -478,6 +488,18 @@ void main() {
       _exerciseAllEntryPoints(
           'a { color: #@foo; width: (@foo); height: [@foo]; top: @; }');
       _exerciseAllEntryPoints('a { color: var(); background: var(123); }');
+      final errors = <Message>[];
+      parse(
+        '@\uFFFD { }',
+        errors: errors,
+        options: const PreprocessorOptions(
+          useColors: false,
+          checked: true,
+          lessSupport: false,
+          inputFile: 'memory',
+        ),
+      );
+      expect(errors, isNotEmpty);
     });
 
     test('nested selectors inside directives and cyclic @extend / var()', () {
@@ -489,6 +511,7 @@ void main() {
       _exerciseAllEntryPoints(
           '@media screen { @media print { a { b { color: red; } } } }');
       _exerciseAllEntryPoints('a { @extend .b; } .b { @extend a; }');
+      _exerciseAllEntryPoints('@namespefix; @name @name;');
       _exerciseAllEntryPoints('var-a: var(a); var-b: var(c); var-c: var(b); '
           'a { color: var(a); width: var(b, var(c)); '
           'height: var(u, 1px var(a)); }');

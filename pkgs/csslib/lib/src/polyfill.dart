@@ -47,7 +47,7 @@ class PolyFill {
     // Resolve all definitions to a non-VarUsage (terminal expression).
     mainStyleSheetVarDefs.forEach((key, value) {
       if (value.expression is Expressions) {
-        for (var _ in (value.expression as Expressions).expressions) {
+        for (var _ in (value.expression as Expressions).expressions.toList()) {
           mainStyleSheetVarDefs[key] =
               _findTerminalVarDefinition(_allVarDefinitions, value);
         }

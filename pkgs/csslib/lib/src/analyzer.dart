@@ -482,7 +482,9 @@ class TopLevelIncludes extends Visitor {
   @override
   void visitIncludeDirective(IncludeDirective node) {
     final currDef = this.currDef;
-    if (map.containsKey(node.name)) {
+    if (currDef is MixinRulesetDirective && node.name == currDef.name) {
+      currDef.rulesets.removeWhere((entry) => entry == node);
+    } else if (map.containsKey(node.name)) {
       var mixinDef = map[node.name];
       if (mixinDef is MixinRulesetDirective) {
         _TopLevelIncludeReplacer.replace(_styleSheet!, node, mixinDef.rulesets);
@@ -536,6 +538,7 @@ class TopLevelIncludes extends Visitor {
 
 /// @include as a top-level with ruleset(s).
 class _TopLevelIncludeReplacer extends Visitor {
+  static const int _maxExpansions = 256;
   final IncludeDirective _include;
   final List<TreeNode> _newRules;
 
@@ -553,7 +556,9 @@ class _TopLevelIncludeReplacer extends Visitor {
   void visitStyleSheet(StyleSheet node) {
     var index = node.topLevels.indexOf(_include);
     if (index != -1) {
-      node.topLevels.insertAll(index + 1, _newRules);
+      if (node.topLevels.length < _maxExpansions) {
+        node.topLevels.insertAll(index + 1, _newRules);
+      }
       node.topLevels.replaceRange(index, index + 1, [NoOp()]);
     }
     super.visitStyleSheet(node);
@@ -563,7 +568,9 @@ class _TopLevelIncludeReplacer extends Visitor {
   void visitMixinRulesetDirective(MixinRulesetDirective node) {
     var index = node.rulesets.indexOf(_include);
     if (index != -1) {
-      node.rulesets.insertAll(index + 1, _newRules);
+      if (node.rulesets.length < _maxExpansions) {
+        node.rulesets.insertAll(index + 1, _newRules);
+      }
       // Only the resolve the @include once.
       node.rulesets.replaceRange(index, index + 1, [NoOp()]);
     }
@@ -882,6 +889,7 @@ class DeclarationIncludes extends Visitor {
 
 /// @include as a top-level with ruleset(s).
 class _IncludeReplacer extends Visitor {
+  static const int _maxExpansions = 256;
   final TreeNode _include;
   final List<TreeNode> _newDeclarations;
 
@@ -899,7 +907,9 @@ class _IncludeReplacer extends Visitor {
   void visitDeclarationGroup(DeclarationGroup node) {
     var index = _findInclude(node.declarations, _include);
     if (index != -1) {
-      node.declarations.insertAll(index + 1, _newDeclarations);
+      if (node.declarations.length < _maxExpansions) {
+        node.declarations.insertAll(index + 1, _newDeclarations);
+      }
       // Change @include to NoOp so it's processed only once.
       node.declarations.replaceRange(index, index + 1, [NoOp()]);
     }
