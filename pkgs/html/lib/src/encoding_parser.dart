@@ -354,7 +354,9 @@ class ContentAttrParser {
       } else {
         // Unquoted value
         final oldPosition = data._position;
-        data._skipUntil(isWhitespace);
+        if (data._skipUntil(isWhitespace) == null) {
+          return data._slice(oldPosition);
+        }
         return data._slice(oldPosition, data._position);
       }
     } on _EncodingRangeException catch (_) {

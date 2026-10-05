@@ -246,6 +246,12 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
         expect(error.toString(), isNotEmpty);
       }
     }
+    final eofAfterValue = HtmlParser('<div a="1"', generateSpans: true)
+      ..parse();
+    expect(
+      eofAfterValue.errors.map((e) => e.message),
+      contains('Unexpected end of file after attribute value.'),
+    );
   });
 
   test('void element innerHTML', () {
@@ -451,7 +457,15 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
       expect(
           getEncoding(
               '<meta http-equiv="content-type" content="text/html; charset=UTF-8">'),
-          null);
+          'utf-8');
+      expect(
+          getEncoding(
+              '<meta http-equiv="content-type" content="text/html; charset=UTF-8 ">'),
+          'utf-8');
+      expect(
+          getEncoding(
+              '<meta http-equiv="content-type" content="text/html; charset=\'UTF-8">'),
+          isNull);
     });
   });
 }

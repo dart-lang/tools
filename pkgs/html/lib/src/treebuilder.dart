@@ -278,31 +278,17 @@ class TreeBuilder {
   static void _insertText(Node parent, String data, FileSpan? span,
       [Element? refNode]) {
     final nodes = parent.nodes;
-    if (refNode == null) {
-      if (nodes.isNotEmpty && nodes.last is Text) {
-        final last = nodes.last as Text;
-        last.appendData(data);
+    final index = refNode == null ? nodes.length : nodes.indexOf(refNode);
+    if (index > 0 && nodes[index - 1] is Text) {
+      final last = nodes[index - 1] as Text;
+      last.appendData(data);
 
-        if (span != null) {
-          last.sourceSpan =
-              span.file.span(last.sourceSpan!.start.offset, span.end.offset);
-        }
-      } else {
-        nodes.add(Text(data)..sourceSpan = span);
+      if (span != null) {
+        last.sourceSpan =
+            span.file.span(last.sourceSpan!.start.offset, span.end.offset);
       }
     } else {
-      final index = nodes.indexOf(refNode);
-      if (index > 0 && nodes[index - 1] is Text) {
-        final last = nodes[index - 1] as Text;
-        last.appendData(data);
-
-        if (span != null) {
-          last.sourceSpan =
-              span.file.span(last.sourceSpan!.start.offset, span.end.offset);
-        }
-      } else {
-        nodes.insert(index, Text(data)..sourceSpan = span);
-      }
+      nodes.insert(index, Text(data)..sourceSpan = span);
     }
   }
 
