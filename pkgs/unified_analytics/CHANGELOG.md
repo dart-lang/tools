@@ -1,4 +1,4 @@
-## 8.0.19-wip
+## 8.1.0-wip
 
 - Added optional `isExternal` parameter to `Analytics.fake` to allow overriding
   the build configuration during testing.
@@ -7,6 +7,10 @@
   once full, rewriting it; the log is now trimmed only when it passes 4 MiB.
   This cuts the synchronous cost of `send` with a full log from about 16 ms
   to under 1 ms.
+- `Analytics` instances no longer send any events, including from
+  `setTelemetry`, when `DASH__SUPPRESS_ANALYTICS` is `true`.
+- Added optional `environment` parameter to `Analytics.fake`; it defaults to
+  empty, so tests ignore `DASH__SUPPRESS_ANALYTICS` in the real environment.
 
 ## 8.0.18
 
