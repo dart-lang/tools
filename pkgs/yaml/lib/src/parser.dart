@@ -389,8 +389,13 @@ class Parser {
       return _parseNode(block: true);
     }
 
-    throw YamlException("While parsing a block collection, expected '-'.",
-        token.span.start.pointSpan());
+    final message =
+        StringBuffer("While parsing a block collection, expected '-'.");
+    if (token.type == TokenType.value) {
+      message.write(
+          ' You cannot mix list and key-value syntax in the same collection.');
+    }
+    throw YamlException(message.toString(), token.span.start.pointSpan());
   }
 
   /// Parses the productions:
@@ -461,8 +466,13 @@ class Parser {
       return Event(EventType.mappingEnd, token.span);
     }
 
-    throw YamlException('Expected a key while parsing a block mapping.',
-        token.span.start.pointSpan());
+    final message =
+        StringBuffer('Expected a key while parsing a block mapping.');
+    if (token.type == TokenType.blockEntry) {
+      message.write(
+          ' You cannot mix list and key-value syntax in the same collection.');
+    }
+    throw YamlException(message.toString(), token.span.start.pointSpan());
   }
 
   /// Parses the productions:

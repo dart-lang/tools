@@ -76,7 +76,19 @@ const String kGoogleAnalyticsApiSecret = 'Ka1jc8tZSzWc_GXMWHfPHA';
 const String kGoogleAnalyticsMeasurementId = 'G-04BXPVBCWJ';
 
 /// How many data records to store in the log file.
+///
+/// The file holds more between trims, see [kLogFileTrimSize]; readers use
+/// the newest [kLogFileLength] records.
 const int kLogFileLength = 2500;
+
+/// The log file size that triggers trimming it to the newest
+/// [kLogFileLength] records.
+///
+/// Between trims, saving a record only appends to the file, so the
+/// cost of trimming is amortized over many records.
+///
+/// 4 MiB.
+const int kLogFileTrimSize = 4 * (1 << 20);
 
 /// The maximum allowed size of the telemetry log file.
 ///
@@ -87,7 +99,7 @@ const int kMaxLogFileSize = 25 * (1 << 20);
 const String kLogFileName = 'dart-flutter-telemetry.log';
 
 /// The current version of the package, should be in line with pubspec version.
-const String kPackageVersion = '8.0.18';
+const String kPackageVersion = '8.0.19-wip';
 
 /// The minimum length for a session.
 const int kSessionDurationMinutes = 30;

@@ -1,3 +1,13 @@
+## 8.0.19-wip
+
+- Added optional `isExternal` parameter to `Analytics.fake` to allow overriding
+  the build configuration during testing.
+- Dropped dependency on `package:platform` in favor of `dart:io`.
+- Made sending an event append to the log file instead of reading it and,
+  once full, rewriting it; the log is now trimmed only when it passes 4 MiB.
+  This cuts the synchronous cost of `send` with a full log from about 16 ms
+  to under 1 ms.
+
 ## 8.0.18
 
 - Added optional `hostArch` parameter to `Event.flutterCommandResult`.

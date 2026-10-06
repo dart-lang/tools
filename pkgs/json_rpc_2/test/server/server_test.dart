@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:json_rpc_2/error_code.dart' as error_code;
@@ -34,6 +35,62 @@ void main() {
           },
           'id': 1234
         })));
+  });
+
+  test('passes the ID of the request being answered', () {
+    controller.server.registerMethod(
+        'foo',
+        (json_rpc.Parameters params) =>
+            {'id': params.id, 'nested': params['param'].id});
+
+    expect(
+        controller.handleRequest({
+          'jsonrpc': '2.0',
+          'method': 'foo',
+          'params': {'param': 'value'},
+          'id': 1234
+        }),
+        completion(equals({
+          'jsonrpc': '2.0',
+          'result': {'id': 1234, 'nested': 1234},
+          'id': 1234
+        })));
+  });
+
+  test('a null ID is not a notification', () {
+    controller.server.registerMethod(
+        'foo',
+        (json_rpc.Parameters params) =>
+            {'id': params.id, 'notification': params.isNotification});
+
+    expect(
+        controller
+            .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': null}),
+        completion(equals({
+          'jsonrpc': '2.0',
+          'result': {'id': null, 'notification': false},
+          'id': null
+        })));
+  });
+
+  test('a request with no ID is a notification', () async {
+    json_rpc.Parameters? received;
+    final handled = Completer<void>();
+    controller.server.registerMethod('foo', (json_rpc.Parameters params) {
+      received = params;
+      handled.complete();
+    });
+
+    unawaited(controller.handleRequest({
+      'jsonrpc': '2.0',
+      'method': 'foo',
+      'params': {'param': 'value'}
+    }));
+
+    await handled.future;
+    expect(received!.id, isNull);
+    expect(received!.isNotification, isTrue);
+    expect(received!['param'].isNotification, isTrue);
   });
 
   test('calls a method that takes no parameters', () {

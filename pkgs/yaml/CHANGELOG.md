@@ -1,6 +1,7 @@
 ## 3.2.0-wip
 
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
+* Improve error messages when mixing list and key-value syntax.
 * Fix `ScalarToken.span` for keep-chomped block scalars (`|+`, `>+`) to cover
   trailing empty lines, and bound empty `strip` and `clip` block scalar spans
   at the header line.
