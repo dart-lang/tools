@@ -2,7 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:mirrors';
+import 'dart:io';
+import 'dart:isolate';
 
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/enums.dart';
@@ -1180,21 +1181,33 @@ void main() {
   });
 
   test('Confirm all constructors were checked', () {
-    var constructorCount = 0;
-    for (final declaration in reflectClass(Event).declarations.keys) {
-      // Count public constructors but omit private constructors
-      if (declaration.toString().contains('Event.') &&
-          !declaration.toString().contains('Event._')) {
-        constructorCount++;
-      }
-    }
+    final eventFile = File.fromUri(
+      Isolate.resolvePackageUriSync(
+        Uri.parse('package:unified_analytics/src/event.dart'),
+      )!,
+    );
+    final sourceWithoutComments = eventFile.readAsStringSync().replaceAll(
+      RegExp(r'//.*|/\*[\s\S]*?\*/'),
+      '',
+    );
+    final constructorNames = RegExp(
+      r'^\s*(?:factory\s+)?Event\.(?!_|fromJson\b)([a-zA-Z0-9_]+)\(',
+      multiLine: true,
+    ).allMatches(sourceWithoutComments).map((m) => m.group(1)!).toList();
+
+    expect(
+      constructorNames,
+      unorderedEquals(
+        DashEvent.values.map((e) => e.name).where((name) => name != 'ideEvent'),
+      ),
+    );
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
     final eventsAccountedForInTests = 35;
     expect(
       eventsAccountedForInTests,
-      constructorCount,
+      constructorNames.length,
       reason:
           'If you added or removed an event constructor, '
           'ensure you have updated '
