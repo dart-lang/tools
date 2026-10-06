@@ -23,7 +23,7 @@ class UserProperty {
   final String locale;
   final String? clientIde;
   final String? aiAgent;
-  final bool isExternal = ie.isExternal;
+  final bool isExternal;
 
   final File sessionFile;
 
@@ -47,6 +47,7 @@ class UserProperty {
     required this.clientIde,
     required this.aiAgent,
     required this.sessionFile,
+    this.isExternal = ie.isExternal,
   });
 
   /// This will use the data parsed from the

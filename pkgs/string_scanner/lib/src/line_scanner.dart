@@ -2,14 +2,14 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:meta/meta.dart';
+
 import 'charcode.dart';
+import 'span_scanner.dart';
 import 'string_scanner.dart';
 import 'utils.dart';
 
-// Note that much of this code is duplicated in eager_span_scanner.dart.
-
-/// A subclass of [StringScanner] that tracks line and column information.
-class LineScanner extends StringScanner {
+mixin _LineScanner on StringScanner {
   /// The scanner's current (zero-based) line number.
   int get line => _line;
   int _line = 0;
@@ -119,8 +119,6 @@ class LineScanner extends StringScanner {
     }
   }
 
-  LineScanner(super.string, {super.sourceUrl, super.position});
-
   @override
   bool scanChar(int character) {
     if (!super.scanChar(character)) return false;
@@ -191,10 +189,21 @@ class LineScanner extends StringScanner {
   }
 }
 
+/// A [StringScanner] that tracks line and column information.
+class LineScanner extends StringScanner with _LineScanner {
+  LineScanner(super.string, {super.sourceUrl, super.position});
+}
+
+/// A [SpanScanner] that tracks the line and column eagerly, like [LineScanner].
+@internal
+class EagerSpanScanner extends SpanScanner with _LineScanner {
+  EagerSpanScanner(super.string, {super.sourceUrl, super.position});
+}
+
 /// A class representing the state of a [LineScanner].
 class LineScannerState {
-  /// The [LineScanner] that created this.
-  final LineScanner _scanner;
+  /// The [StringScanner] that created this.
+  final StringScanner _scanner;
 
   /// The position of the scanner in this state.
   final int position;

@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
+import 'package:cli_util/cli_util.dart' show sdkPath;
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 
@@ -19,6 +20,11 @@ export 'src/api_summary_customizer.dart'
 export 'src/api_type.dart';
 export 'src/js_facet.dart';
 export 'src/meta_facet.dart';
+export 'src/verify.dart'
+    show
+        ApiSummaryFormat,
+        ApiSummaryVerificationException,
+        expectApiSummaryClean;
 
 /// Creates a canonical [ApiSummary] model of the public API of a package.
 ///
@@ -45,6 +51,7 @@ Future<ApiSummary> apiSummary(
   final collection = AnalysisContextCollection(
     resourceProvider: provider,
     includedPaths: [libPath],
+    sdkPath: sdkPath,
   );
   final context = collection.contextFor(libPath);
   return buildApiPackage(
