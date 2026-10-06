@@ -10,9 +10,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:coverage/coverage.dart';
-import 'package:coverage/src/hitmap.dart';
 import 'package:coverage/src/util.dart';
-import 'package:package_config/package_config.dart';
 import 'package:test/test.dart';
 
 // The scriptId for the main_test.js in the sample report.
@@ -237,39 +235,82 @@ void main() {
     }
   });
 
-  group('filterByScope and ScopedOutput', () {
-    final pkgConfig = PackageConfig([
-      Package(
-        'my_pkg',
-        Uri.parse('file:///workspace/my_pkg/'),
-        packageUriRoot: Uri.parse('file:///workspace/my_pkg/lib/'),
-        languageVersion: LanguageVersion(3, 0),
-      ),
-      Package(
-        'other_pkg',
-        Uri.parse('file:///workspace/other_pkg/'),
-        packageUriRoot: Uri.parse('file:///workspace/other_pkg/lib/'),
-        languageVersion: LanguageVersion(3, 0),
-      ),
-    ]);
+  group('HitMap scopeOutput and ScopedOutput', () {
+    late Directory tempDir;
+    late String packagesPath;
 
-    final sampleHitmap = <String, HitMap>{
-      'package:my_pkg/src/foo.dart': HitMap({1: 2, 2: 0}),
-      'package:other_pkg/src/bar.dart': HitMap({10: 1}),
-      'file:///workspace/my_pkg/lib/src/in_lib.dart': HitMap({5: 3}),
-      'file:///workspace/my_pkg/test/foo_test.dart': HitMap({20: 1}),
-      'file:///workspace/other_pkg/test/bar_test.dart': HitMap({30: 1}),
-    };
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('hitmap_scope_test_');
+      final myPkgLib = Directory('${tempDir.path}/my_pkg/lib')
+        ..createSync(recursive: true);
+      final otherPkgLib = Directory('${tempDir.path}/other_pkg/lib')
+        ..createSync(recursive: true);
+      final configFile = File('${tempDir.path}/package_config.json')
+        ..writeAsStringSync(
+          jsonEncode({
+            'configVersion': 2,
+            'packages': [
+              {
+                'name': 'my_pkg',
+                'rootUri': Uri.directory('${tempDir.path}/my_pkg').toString(),
+                'packageUri': myPkgLib.uri.toString(),
+              },
+              {
+                'name': 'other_pkg',
+                'rootUri': Uri.directory(
+                  '${tempDir.path}/other_pkg',
+                ).toString(),
+                'packageUri': otherPkgLib.uri.toString(),
+              },
+            ],
+          }),
+        );
+      packagesPath = configFile.path;
+    });
+
+    tearDown(() {
+      tempDir.deleteSync(recursive: true);
+    });
+
+    List<Map<String, dynamic>> sampleJson() {
+      final myPkgRoot = Uri.directory('${tempDir.path}/my_pkg');
+      final otherPkgRoot = Uri.directory('${tempDir.path}/other_pkg');
+      return [
+        {
+          'source': 'package:my_pkg/src/foo.dart',
+          'hits': [1, 2, 2, 0],
+        },
+        {
+          'source': 'package:other_pkg/src/bar.dart',
+          'hits': [10, 1],
+        },
+        {
+          'source': myPkgRoot.resolve('lib/src/in_lib.dart').toString(),
+          'hits': [5, 3],
+        },
+        {
+          'source': myPkgRoot.resolve('test/foo_test.dart').toString(),
+          'hits': [20, 1],
+        },
+        {
+          'source': otherPkgRoot.resolve('test/bar_test.dart').toString(),
+          'hits': [30, 1],
+        },
+      ];
+    }
 
     test('normalizes lib file: URIs to package: URIs and filters to matching '
-        'scope', () {
-      final result = sampleHitmap.filterByScope(
-        scopes: {'my_pkg'},
-        pkgConfig: pkgConfig,
+        'scopeOutput', () async {
+      final resolver = await Resolver.create(packagesPath: packagesPath);
+      final result = HitMap.parseJsonSync(
+        sampleJson(),
+        checkIgnoredLines: false,
+        ignoredLinesInFilesCache: {},
+        resolver: resolver,
+        scopeOutput: {'my_pkg'},
       );
-      final uris = result.map((e) => e['source'] as String).toList();
       expect(
-        uris,
+        result.keys,
         unorderedEquals([
           'package:my_pkg/src/foo.dart',
           'package:my_pkg/src/in_lib.dart',
@@ -277,45 +318,15 @@ void main() {
       );
     });
 
-    test('includes non-lib file: URIs only when includeTestFiles is true', () {
-      final result = sampleHitmap.filterByScope(
-        scopes: {'my_pkg'},
-        pkgConfig: pkgConfig,
-        includeTestFiles: true,
+    test('includes all entries when scopeOutput is empty', () async {
+      final resolver = await Resolver.create(packagesPath: packagesPath);
+      final result = HitMap.parseJsonSync(
+        sampleJson(),
+        checkIgnoredLines: false,
+        ignoredLinesInFilesCache: {},
+        resolver: resolver,
       );
-      final uris = result.map((e) => e['source'] as String).toList();
-      expect(
-        uris,
-        unorderedEquals([
-          'package:my_pkg/src/foo.dart',
-          'package:my_pkg/src/in_lib.dart',
-          'file:///workspace/my_pkg/test/foo_test.dart',
-        ]),
-      );
-    });
-
-    test('matches fallback /<scope>/ path when pkgConfig is null', () {
-      final result = sampleHitmap.filterByScope(
-        scopes: {'my_pkg'},
-        includeTestFiles: true,
-      );
-      final uris = result.map((e) => e['source'] as String).toList();
-      expect(
-        uris,
-        unorderedEquals([
-          'package:my_pkg/src/foo.dart',
-          'file:///workspace/my_pkg/lib/src/in_lib.dart',
-          'file:///workspace/my_pkg/test/foo_test.dart',
-        ]),
-      );
-    });
-
-    test('includes all entries when scopes is empty', () {
-      final result = sampleHitmap.filterByScope(
-        scopes: <String>{},
-        pkgConfig: pkgConfig,
-      );
-      expect(result, hasLength(sampleHitmap.length));
+      expect(result, hasLength(5));
     });
 
     test('ScopedOutput.includesScript handles null and package: URIs', () {

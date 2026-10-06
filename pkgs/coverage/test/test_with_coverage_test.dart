@@ -198,30 +198,7 @@ dependency_overrides:
       expect(
         lineHits.keys.where((source) => source.endsWith('_test.dart')),
         isEmpty,
-        reason: 'test files are excluded without --include-test-files',
-      );
-    },
-  );
-
-  test(
-    'dart run bin/test_with_coverage.dart -p chrome --include-test-files',
-    onPlatform: const {'windows': Skip('Chrome tests skipped on Windows')},
-    timeout: const Timeout(Duration(minutes: 5)),
-    () async {
-      final list = await _runTest([
-        'run',
-        _testWithCoveragePath,
-        '-p',
-        'chrome',
-        '--include-test-files',
-      ]);
-      final sources = list.sources();
-      final lineHits = lineHitsFromSources(sources);
-
-      expect(
-        lineHits.keys.where((source) => source.endsWith('_test.dart')),
-        isNotEmpty,
-        reason: '--include-test-files should include test sources',
+        reason: 'test files are excluded from scoped package output',
       );
     },
   );

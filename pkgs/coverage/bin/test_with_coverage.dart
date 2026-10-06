@@ -25,6 +25,40 @@ String get _dartExecutable =>
 
 const _supportedPlatforms = ['vm', 'chrome'];
 
+Future<void> _dartRun(
+  List<String> args, {
+  void Function(String)? onStdout,
+  void Function(String)? onStderr,
+  String? workingDirectory,
+}) async {
+  final process = await Process.start(
+    _dartExecutable,
+    args,
+    workingDirectory: workingDirectory,
+  );
+  _allProcesses.add(process);
+
+  void listen(
+    Stream<List<int>> stream,
+    IOSink sink,
+    void Function(String)? onLine,
+  ) {
+    final broadStream = stream.asBroadcastStream();
+    broadStream.listen(sink.add);
+    if (onLine != null) {
+      broadStream.lines().listen(onLine);
+    }
+  }
+
+  listen(process.stdout, stdout, onStdout);
+  listen(process.stderr, stderr, onStderr);
+
+  final result = await process.exitCode;
+  if (result != 0) {
+    throw ProcessException(_dartExecutable, args, '', result);
+  }
+}
+
 void _killSubprocessesAndExit(ProcessSignal signal) {
   for (final process in _allProcesses) {
     process.kill(signal);
@@ -105,14 +139,6 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
         'and percentages are not comparable to vm: code the compiler drops '
         'cannot be reported as uncovered. Re-tune --fail-under per platform.',
   )
-  ..addFlag(
-    'include-test-files',
-    defaultsTo: false,
-    help:
-        'Include coverage for test files and other non-library package '
-        'sources. Only applies to web platform runs; VM runs always report '
-        'library coverage only.',
-  )
   ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
 
 class Flags {
@@ -125,8 +151,7 @@ class Flags {
     this.branchCoverage,
     this.scopeOutput,
     this.failUnder,
-    this.platform,
-    this.includeTestFiles, {
+    this.platform, {
     required this.rest,
   });
 
@@ -139,7 +164,6 @@ class Flags {
   final List<String> scopeOutput;
   final String? failUnder;
   final String? platform;
-  final bool includeTestFiles;
   final List<String> rest;
 }
 
@@ -229,19 +253,18 @@ ${parser.usage}
     args.multiOption('scope-output'),
     args.option('fail-under'),
     platform,
-    args.flag('include-test-files'),
     rest: args.rest,
   );
 }
 
-Future<PackageConfig?> _loadAndValidatePackageConfig(String packageDir) async {
+Future<void> _validatePackageConfig(String packageDir) async {
   final pkgConfig = await findPackageConfig(Directory(packageDir));
   if (pkgConfig == null) {
     stderr.writeln(
       'warning: package_config.json was not found for $packageDir. '
       'Make sure to run "dart pub get" in the package directory.',
     );
-    return null;
+    return;
   }
   final testPkg = pkgConfig['test'] ?? pkgConfig['test_core'];
   if (testPkg == null) {
@@ -251,63 +274,10 @@ Future<PackageConfig?> _loadAndValidatePackageConfig(String packageDir) async {
       'directory.',
     );
   }
-  return pkgConfig;
-}
-
-void _attachStreamListener(
-  Stream<List<int>> stream,
-  IOSink sink,
-  void Function(String) onLine,
-) {
-  final broadStream = stream.asBroadcastStream();
-  broadStream.listen(sink.add);
-  broadStream.lines().listen(onLine);
-}
-
-Future<Uri> _waitForVmServiceUri(Process process, List<String> testArgs) async {
-  final serviceUriCompleter = Completer<Uri>();
-
-  _attachStreamListener(process.stdout, stdout, (line) {
-    if (!serviceUriCompleter.isCompleted) {
-      final uri = extractVMServiceUri(line);
-      if (uri != null) {
-        serviceUriCompleter.complete(uri);
-      }
-    }
-  });
-  _attachStreamListener(process.stderr, stderr, (line) {
-    if (!serviceUriCompleter.isCompleted &&
-        line.contains('Could not start the VM service')) {
-      _killSubprocessesAndExit(ProcessSignal.sigkill);
-    }
-  });
-
-  // If the test process exits before reporting a VM service URI there is
-  // nothing to collect from, and waiting for the URI would hang forever.
-  unawaited(
-    process.exitCode.then((code) {
-      if (!serviceUriCompleter.isCompleted) {
-        serviceUriCompleter.completeError(
-          ProcessException(
-            _dartExecutable,
-            testArgs,
-            'Test process exited before the VM service was ready',
-            code,
-          ),
-        );
-      }
-    }),
-  );
-
-  try {
-    return await serviceUriCompleter.future;
-  } on ProcessException catch (e) {
-    stderr.writeln('${e.message} (exit code ${e.errorCode}).');
-    exit(e.errorCode == 0 ? 1 : e.errorCode);
-  }
 }
 
 Future<int> _runVmTestsAndCollectCoverage(Flags flags, String outJson) async {
+  final serviceUriCompleter = Completer<Uri>();
   final testArgs = [
     if (flags.branchCoverage) '--branch-coverage',
     'run',
@@ -317,14 +287,48 @@ Future<int> _runVmTestsAndCollectCoverage(Flags flags, String outJson) async {
     flags.testScript,
     ...flags.rest,
   ];
-  final process = await Process.start(
-    _dartExecutable,
+  final testProcess = _dartRun(
     testArgs,
     workingDirectory: flags.packageDir,
+    onStdout: (line) {
+      if (!serviceUriCompleter.isCompleted) {
+        final uri = extractVMServiceUri(line);
+        if (uri != null) {
+          serviceUriCompleter.complete(uri);
+        }
+      }
+    },
+    onStderr: (line) {
+      if (!serviceUriCompleter.isCompleted &&
+          line.contains('Could not start the VM service')) {
+        _killSubprocessesAndExit(ProcessSignal.sigkill);
+      }
+    },
   );
-  _allProcesses.add(process);
 
-  final serviceUri = await _waitForVmServiceUri(process, testArgs);
+  var testExitCode = 0;
+  final testProcessDone = testProcess
+      .then((_) => 0)
+      .catchError(
+        (Object error) => testExitCode = (error as ProcessException).errorCode,
+        test: (error) => error is ProcessException,
+      );
+
+  // If the test process exits before reporting a VM service URI there is
+  // nothing to collect from, and waiting for the URI would hang forever.
+  unawaited(
+    testProcessDone.then((code) {
+      if (!serviceUriCompleter.isCompleted) {
+        stderr.writeln(
+          'Test process exited before the VM service was ready '
+          '(exit code $code).',
+        );
+        exit(code == 0 ? 1 : code);
+      }
+    }),
+  );
+
+  final serviceUri = await serviceUriCompleter.future;
 
   final scopes = flags.scopeOutput.isEmpty
       ? getAllWorkspaceNames(flags.packageDir)
@@ -347,7 +351,7 @@ Future<int> _runVmTestsAndCollectCoverage(Flags flags, String outJson) async {
   // check above is not enough on its own.
   final collected = await Future.any<Object?>([
     collection.then((_) => null),
-    process.exitCode,
+    testProcessDone,
   ]);
   if (collected is int && collected != 0) {
     stderr.writeln(
@@ -357,11 +361,13 @@ Future<int> _runVmTestsAndCollectCoverage(Flags flags, String outJson) async {
     exit(collected);
   }
   await collection;
-  return process.exitCode.timeout(
+  return testProcessDone.timeout(
     const Duration(seconds: 3),
     onTimeout: () {
-      process.kill();
-      return 0;
+      for (final process in _allProcesses) {
+        process.kill();
+      }
+      return testExitCode;
     },
   );
 }
@@ -372,7 +378,6 @@ Future<int> _runVmTestsAndCollectCoverage(Flags flags, String outJson) async {
 Future<void> _writeWebCoverageJson(
   List<File> coverageFiles,
   Flags flags,
-  PackageConfig? pkgConfig,
   String outJson,
 ) async {
   if (coverageFiles.isEmpty) {
@@ -389,30 +394,29 @@ Future<void> _writeWebCoverageJson(
     return;
   }
 
-  final hitmap = await HitMap.parseFiles(
-    coverageFiles,
-    packagePath: flags.packageDir,
-  );
-
   final scopes =
       (flags.scopeOutput.isEmpty
               ? getAllWorkspaceNames(flags.packageDir)
               : flags.scopeOutput)
           .toSet();
 
-  final allCoverage = hitmap.filterByScope(
-    scopes: scopes,
-    pkgConfig: pkgConfig,
-    includeTestFiles: flags.includeTestFiles,
+  final hitmap = await HitMap.parseFiles(
+    coverageFiles,
+    packagePath: flags.packageDir,
+    scopeOutput: scopes,
   );
 
-  if (allCoverage.isEmpty) {
+  if (hitmap.isEmpty) {
     stderr.writeln(
       'warning: no coverage data matched ${scopes.join(', ')}. '
-      'Compiled web output may not map back to library sources; pass '
-      '--include-test-files to also report non-library sources.',
+      'Compiled web output may not map back to library sources.',
     );
   }
+
+  final allCoverage = [
+    for (final MapEntry(key: uriStr, value: map) in hitmap.entries)
+      hitmapToJson(map, Uri.parse(uriStr)),
+  ];
 
   final jsonOutput = jsonEncode({
     'type': 'CodeCoverage',
@@ -422,7 +426,7 @@ Future<void> _writeWebCoverageJson(
 }
 
 Future<int> _runWebTestsAndCollectCoverage(Flags flags, String outJson) async {
-  final pkgConfig = await _loadAndValidatePackageConfig(flags.packageDir);
+  await _validatePackageConfig(flags.packageDir);
   final tempDir = Directory.systemTemp.createTempSync('coverage_');
   try {
     final testArgs = [
@@ -435,15 +439,12 @@ Future<int> _runWebTestsAndCollectCoverage(Flags flags, String outJson) async {
       ...flags.rest,
     ];
 
-    final process = await Process.start(
-      _dartExecutable,
-      testArgs,
-      workingDirectory: flags.packageDir,
-      mode: ProcessStartMode.inheritStdio,
-    );
-    _allProcesses.add(process);
-
-    final exitCode = await process.exitCode;
+    var exitCode = 0;
+    try {
+      await _dartRun(testArgs, workingDirectory: flags.packageDir);
+    } on ProcessException catch (e) {
+      exitCode = e.errorCode;
+    }
 
     final coverageFiles = tempDir
         .listSync(recursive: true)
@@ -451,7 +452,7 @@ Future<int> _runWebTestsAndCollectCoverage(Flags flags, String outJson) async {
         .where((f) => f.path.endsWith('.json'))
         .toList();
 
-    await _writeWebCoverageJson(coverageFiles, flags, pkgConfig, outJson);
+    await _writeWebCoverageJson(coverageFiles, flags, outJson);
     return exitCode;
   } finally {
     try {

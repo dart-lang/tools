@@ -17,11 +17,9 @@
   instead of waiting forever, and exits with the test process's exit code.
 - `HitMap.parseFiles` now throws a `FormatException` when a file is not a valid
   `{"coverage": [...]}` report, instead of silently ignoring it.
-- Add an `--include-test-files` flag to `test_with_coverage` (web platform
-  only) that includes coverage for test files and other non-library package
-  sources; by default only library code is reported, matching the VM flow.
-- Pre-flight `package:test` verification and `file:` URI normalization using
-  `package:package_config`.
+- Support `scopeOutput` filtering in `HitMap.parseJsonSync`, `HitMap.parseJson`,
+  and `HitMap.parseFiles`, normalizing `file:` URIs inside known package library
+  roots to `package:` URIs via `Resolver.toPackageUri`.
 - Fixed a race condition in isolate teardown: ignore the benign errors
   produced when an isolate exits between its pause-on-exit callback
   completing and the resume request reaching the VM service.

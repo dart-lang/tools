@@ -5,8 +5,6 @@
 import 'dart:convert' show json;
 import 'dart:io';
 
-import 'package:package_config/package_config.dart';
-
 import 'resolver.dart';
 import 'util.dart';
 
@@ -61,15 +59,23 @@ class HitMap {
     required bool checkIgnoredLines,
     required Map<String, List<List<int>>?> ignoredLinesInFilesCache,
     required Resolver resolver,
+    Set<String> scopeOutput = const {},
   }) {
     // Map of source file to map of line to hit count for that line.
     final globalHitMap = <String, HitMap>{};
 
     for (var e in jsonResult) {
-      final source = e['source'] as String?;
+      var source = e['source'] as String?;
       if (source == null) {
         // Couldn't resolve import, so skip this entry.
         continue;
+      }
+
+      if (scopeOutput.isNotEmpty) {
+        source = resolver.toPackageUri(source);
+        if (!scopeOutput.includesScript(source)) {
+          continue;
+        }
       }
 
       void addToMap(Map<int, int> map, int line, int count) {
@@ -138,6 +144,7 @@ class HitMap {
     bool checkIgnoredLines = false,
     @Deprecated('Use packagePath') String? packagesPath,
     String? packagePath,
+    Set<String> scopeOutput = const {},
   }) async {
     final resolver = await Resolver.create(
       packagesPath: packagesPath,
@@ -148,6 +155,7 @@ class HitMap {
       checkIgnoredLines: checkIgnoredLines,
       ignoredLinesInFilesCache: {},
       resolver: resolver,
+      scopeOutput: scopeOutput,
     );
   }
 
@@ -157,20 +165,27 @@ class HitMap {
     bool checkIgnoredLines = false,
     @Deprecated('Use packagePath') String? packagesPath,
     String? packagePath,
+    Set<String> scopeOutput = const {},
   }) async {
     final globalHitmap = <String, HitMap>{};
-    Future<Map<String, HitMap>> parse(List jsonResult) => HitMap.parseJson(
-      jsonResult.whereType<Map<String, dynamic>>().toList(),
-      checkIgnoredLines: checkIgnoredLines,
-      // ignore: deprecated_member_use_from_same_package
-      packagesPath: packagesPath,
-      packagePath: packagePath,
-    );
+    Resolver? resolver;
+    final ignoredLinesInFilesCache = <String, List<List<int>>?>{};
     for (var file in files) {
       final contents = file.readAsStringSync();
       switch (json.decode(contents)) {
         case {'coverage': final List jsonResult}:
-          globalHitmap.merge(await parse(jsonResult));
+          globalHitmap.merge(
+            HitMap.parseJsonSync(
+              jsonResult.whereType<Map<String, dynamic>>().toList(),
+              checkIgnoredLines: checkIgnoredLines,
+              ignoredLinesInFilesCache: ignoredLinesInFilesCache,
+              resolver: resolver ??= await Resolver.create(
+                packagesPath: packagesPath,
+                packagePath: packagePath,
+              ),
+              scopeOutput: scopeOutput,
+            ),
+          );
         case final decoded:
           throw FormatException(
             'Unrecognized coverage JSON in "${file.path}". Expected a '
@@ -380,37 +395,4 @@ List _sortHits(List hits) {
       .map((item) => [item.hitRange, item.hitCount])
       .expand((item) => item)
       .toList();
-}
-
-extension HitMapScopeFilter on Map<String, HitMap> {
-  /// Filters this hitmap to scripts matching [scopes], converting `file:` URIs
-  /// inside package libraries to `package:` URIs via [pkgConfig], and returns
-  /// a legacy JSON coverage list suitable for writing to `coverage.json`.
-  List<Map<String, dynamic>> filterByScope({
-    required Set<String> scopes,
-    PackageConfig? pkgConfig,
-    bool includeTestFiles = false,
-  }) {
-    final allCoverage = <Map<String, dynamic>>[];
-    for (final MapEntry(key: uriStr, value: map) in entries) {
-      var uri = Uri.tryParse(uriStr);
-      if (uri == null) continue;
-      if (uri.scheme == 'file' && pkgConfig != null) {
-        final packageUri = pkgConfig.toPackageUri(uri);
-        if (packageUri != null) uri = packageUri;
-      }
-
-      // Library code resolves to a package: URI above; anything still on
-      // the file: scheme (test files, tools, ...) is only included when
-      // explicitly requested, matching the VM flow's lib-only reporting.
-      if (scopes.includesUri(
-        uri,
-        pkgConfig: pkgConfig,
-        includeTestFiles: includeTestFiles,
-      )) {
-        allCoverage.add(hitmapToJson(map, uri));
-      }
-    }
-    return allCoverage;
-  }
 }

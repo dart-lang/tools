@@ -151,6 +151,26 @@ class Resolver {
   }
 }
 
+extension ResolverPackageUri on Resolver {
+  /// Returns a `package:` URI string if [scriptUri] is a `file:` URI under a
+  /// known package's library root, or [scriptUri] unchanged.
+  String toPackageUri(String scriptUri) {
+    final packages = _packages;
+    if (packages == null) return scriptUri;
+    final uri = Uri.tryParse(scriptUri);
+    if (uri == null || uri.scheme != 'file') return scriptUri;
+    final uriStr = uri.toString();
+    for (final MapEntry(key: packageName, value: packageUri)
+        in packages.entries) {
+      final rootStr = packageUri.toString();
+      if (uriStr.startsWith(rootStr)) {
+        return 'package:$packageName/${uriStr.substring(rootStr.length)}';
+      }
+    }
+    return scriptUri;
+  }
+}
+
 /// Bazel URI resolver.
 class BazelResolver extends Resolver {
   /// Creates a Bazel resolver with the specified workspace path, if any.
