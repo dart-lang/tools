@@ -1531,8 +1531,13 @@ class Scanner {
           // Check for a tab character messing up the intendation.
           if (leadingBreak.isNotEmpty &&
               _scanner.column < indent &&
-              _scanner.peekChar() == TAB &&
-              !_isAtBlankOrCommentLine) {
+              _scanner.peekChar() == TAB) {
+            if (_isAtBlankOrCommentLine) {
+              while (_scanner.peekChar() == SP || _scanner.peekChar() == TAB) {
+                _scanner.readChar();
+              }
+              continue;
+            }
             _scanner.error('Expected a space but found a tab.', length: 1);
           }
 
