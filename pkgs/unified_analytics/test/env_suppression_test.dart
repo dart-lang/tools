@@ -69,12 +69,7 @@ void main() {
 
       // Complete the first run and show the consent message so that later
       // instances would normally be allowed to send.
-      Analytics.fake(
-        tool: DashTool.flutterTool,
-        homeDirectory: home,
-        dartVersion: 'dartVersion',
-        fs: fs,
-      ).clientShowedMessage();
+      createAnalytics({}).clientShowedMessage();
     });
 
     FakeAnalytics createAnalytics(
