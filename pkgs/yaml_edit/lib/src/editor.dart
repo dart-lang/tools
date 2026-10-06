@@ -796,8 +796,9 @@ class YamlEditor {
                 removedIndex >= 0 &&
                 removedIndex < entries.length) {
               final entry = entries[removedIndex];
-              final allowedStart =
-                  removedIndex == 0 ? collectionNode.openEnd : entry.start;
+              final allowedStart = entries.length == 1
+                  ? collectionNode.openEnd
+                  : entry.contentStart;
               final commaEnd =
                   entry.comma != null ? entry.comma! + 1 : entry.end;
               final lineAnchor = entry.comma ?? entry.end;

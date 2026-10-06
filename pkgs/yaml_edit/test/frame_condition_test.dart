@@ -375,6 +375,16 @@ foo: 123
         attachHeaderComment('single', ' # comment', '\n'),
         equals('single # comment'),
       );
+
+      final indentedRoot = CstDocument.parse('  a:\n    b: 1\n');
+      expect(LayoutStyle.of(indentedRoot).indentStep, equals(2));
+
+      final flowEditor =
+          YamlEditor('{\n  # lead a\n  a: 1\n  ,\n  # lead b\n  b: 2\n}\n');
+      flowEditor.remove(['a']);
+      expect(flowEditor.toString(), contains('# lead a'));
+      expect(flowEditor.toString(), contains('# lead b'));
+      expect(flowEditor.parseAt([]).value, equals({'b': 2}));
     });
   });
 }
