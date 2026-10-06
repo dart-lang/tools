@@ -59,19 +59,6 @@ void main() {
 
     final testEvent = Event.hotReloadTime(timeMs: 50);
 
-    setUp(() {
-      fs = MemoryFileSystem.test(
-        style: io.Platform.isWindows
-            ? FileSystemStyle.windows
-            : FileSystemStyle.posix,
-      );
-      home = fs.directory('home');
-
-      // Complete the first run and show the consent message so that later
-      // instances would normally be allowed to send.
-      createAnalytics({}).clientShowedMessage();
-    });
-
     FakeAnalytics createAnalytics(
       Map<String, String> environment, {
       SurveyHandler? surveyHandler,
@@ -87,6 +74,19 @@ void main() {
       gaClient: gaClient,
       isExternal: isExternal,
     );
+
+    setUp(() {
+      fs = MemoryFileSystem.test(
+        style: io.Platform.isWindows
+            ? FileSystemStyle.windows
+            : FileSystemStyle.posix,
+      );
+      home = fs.directory('home');
+
+      // Complete the first run and show the consent message so that later
+      // instances would normally be allowed to send.
+      createAnalytics({}).clientShowedMessage();
+    });
 
     final testSurvey = Survey(
       uniqueId: 'uniqueId',
