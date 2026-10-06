@@ -435,7 +435,7 @@ Future<int> _runWebTestsAndCollectCoverage(Flags flags, String outJson) async {
       if (flags.branchCoverage) '--branch-coverage',
       '-p',
       flags.platform!,
-      flags.testScript,
+      if (flags.testScript != 'test') flags.testScript,
       ...flags.rest,
     ];
 
