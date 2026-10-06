@@ -2,6 +2,24 @@
 
 - Migrate Dart subprocess spawning to `package:cli_util` (`dartExecutable`) to support AOT-compiled executables (`dart compile exe` / `dart install`).
 - Require Dart 3.9.
+- Support collecting and formatting web (V8 / Chrome) coverage reports in
+  `test_with_coverage` via the new `-p` / `--platform` flag. Web runs delegate
+  to `dart test --coverage`; VM runs continue to use the existing VM-service
+  collection flow. Platforms other than `vm` and `chrome` are rejected, as are
+  `--function-coverage` and `--branch-coverage` combined with a web platform,
+  and platform flags passed through to the test script.
+  Note that web coverage is measured on compiled JavaScript: code the compiler
+  drops cannot be reported as uncovered, so line counts and percentages are not
+  comparable to VM runs and `--fail-under` thresholds must be re-tuned per
+  platform.
+- `test_with_coverage` now fails immediately when the test process exits before
+  the VM service is ready (for example, when the test path does not exist)
+  instead of waiting forever, and exits with the test process's exit code.
+- `HitMap.parseFiles` now throws a `FormatException` when a file is not a valid
+  `{"coverage": [...]}` report, instead of silently ignoring it.
+- Support `scopeOutput` filtering in `HitMap.parseJsonSync`, `HitMap.parseJson`,
+  and `HitMap.parseFiles`, normalizing `file:` URIs inside known package library
+  roots to `package:` URIs via `Resolver.toPackageUri`.
 - Fixed a race condition in isolate teardown: ignore the benign errors
   produced when an isolate exits between its pause-on-exit callback
   completing and the resume request reaching the VM service.

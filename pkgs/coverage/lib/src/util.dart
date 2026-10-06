@@ -210,3 +210,21 @@ YamlMap _loadPubspec(String packageRoot) {
   final yaml = File(pubspecPath).readAsStringSync();
   return loadYaml(yaml, sourceUrl: Uri.file(pubspecPath)) as YamlMap;
 }
+
+extension ScopedOutput on Set<String> {
+  bool includesScript(String? scriptUriString) {
+    if (scriptUriString == null) return false;
+
+    // If the set is empty, it means the user didn't specify a --scope-output
+    // flag, so allow everything.
+    if (isEmpty) return true;
+
+    final scriptUri = Uri.parse(scriptUriString);
+    if (scriptUri.scheme != 'package' || scriptUri.pathSegments.isEmpty) {
+      return false;
+    }
+
+    final scope = scriptUri.pathSegments.first;
+    return contains(scope);
+  }
+}
