@@ -93,14 +93,6 @@ final class CstScalar extends CstNode {
   /// The comment on the header line of a block scalar, if present.
   final CommentToken? headerComment;
 
-  /// Offset where the whitespace preceding [headerComment] begins on the
-  /// header line of a block scalar.
-  final int? headerCommentPrefixStart;
-
-  /// Offset just past the content on the header line of a block scalar, before
-  /// any header comment whitespace or line break.
-  final int? headerLineContentEnd;
-
   /// The style the scalar is written in.
   ScalarStyle get style => value.style;
 
@@ -110,8 +102,6 @@ final class CstScalar extends CstNode {
     required this.end,
     required this.value,
     this.headerComment,
-    this.headerCommentPrefixStart,
-    this.headerLineContentEnd,
   });
 }
 
@@ -1278,8 +1268,6 @@ final class _CstBuilder {
   CstNode _buildScalar(int start, int contentStart, YamlScalar value) {
     var end = value.span.end.offset;
     CommentToken? headerComment;
-    int? headerCommentPrefixStart;
-    int? headerLineContentEnd;
 
     // Use token span for plain scalars to avoid character scanning.
     if (value.style == ScalarStyle.PLAIN) {
@@ -1292,14 +1280,6 @@ final class _CstBuilder {
       for (var offset = contentStart + 1; offset < headerLineBreak; offset++) {
         if (_tokensByOffset[offset] case final CommentToken comment) {
           headerComment = comment;
-          var prefixStart = comment.span.start.offset;
-          while (prefixStart > contentStart &&
-              (source[prefixStart - 1] == ' ' ||
-                  source[prefixStart - 1] == '\t')) {
-            prefixStart--;
-          }
-          headerCommentPrefixStart = prefixStart;
-          headerLineContentEnd = prefixStart;
           break;
         }
       }
@@ -1315,8 +1295,6 @@ final class _CstBuilder {
       end: end,
       value: value,
       headerComment: headerComment,
-      headerCommentPrefixStart: headerCommentPrefixStart,
-      headerLineContentEnd: headerLineContentEnd,
     );
   }
 

@@ -40,6 +40,11 @@ final class LayoutStyle {
   factory LayoutStyle.of(CstDocument document) {
     var indentStep = 2;
     final root = document.root;
+    final rootIndent = switch (root) {
+      CstBlockSeq() => document.columnOf(root.entries.first.dashStart),
+      CstBlockMap() => document.columnOf(root.entries.first.keyStart),
+      _ => 0,
+    };
     final children = switch (root) {
       CstBlockSeq() => [for (final entry in root.entries) entry.value],
       CstBlockMap() => [for (final entry in root.entries) entry.value],
@@ -51,7 +56,10 @@ final class LayoutStyle {
         CstBlockMap() => document.columnOf(child.entries.first.keyStart),
         _ => 0,
       };
-      if (childIndent != 0) indentStep = childIndent;
+      if (childIndent > rootIndent) {
+        indentStep = childIndent - rootIndent;
+        break;
+      }
     }
     return LayoutStyle(
       indentStep: indentStep,
@@ -1163,15 +1171,17 @@ SourceEdit _removeFlowEntry(
       final commentsAfterComma =
           document.commentsInRange(comma + 1, nextContent);
 
-      if (commentsBefore.isNotEmpty &&
-          !document.hasLineBreakInRange(entry.contentStart, comma)) {
+      if (commentsBefore.isNotEmpty) {
         if (!document.hasLineBreakInRange(comma + 1, nextContent)) {
           return SourceEdit(
               entry.contentStart, nextContent - entry.contentStart, '');
         }
         final start =
             document.lineBreakEndOf(commentsBefore.last.span.end.offset);
-        final end = commentsAfterComma.isNotEmpty
+        final end = commentsAfterComma.isNotEmpty &&
+                document.lineStartOf(
+                        commentsAfterComma.first.span.start.offset) ==
+                    document.lineStartOf(comma)
             ? document.lineBreakEndOf(commentsAfterComma.first.span.end.offset)
             : document.lineBreakEndOf(comma);
         return SourceEdit(start, end - start, '');
@@ -1187,9 +1197,13 @@ SourceEdit _removeFlowEntry(
       }
       return SourceEdit(collection.openEnd, end - collection.openEnd, '');
     }
+    final commentsBefore =
+        document.commentsInRange(collection.openEnd, entry.contentStart);
+    final start = commentsBefore.isNotEmpty
+        ? document.lineBreakEndOf(commentsBefore.last.span.end.offset)
+        : collection.openEnd;
     final next = entries[1];
-    return SourceEdit(
-        collection.openEnd, next.contentStart - collection.openEnd, '');
+    return SourceEdit(start, next.contentStart - start, '');
   }
 
   if (index < entries.length - 1) {
