@@ -5,8 +5,13 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cli_util/cli_util.dart';
+
 import 'collect.dart';
 import 'util.dart';
+
+String get _dartExecutable =>
+    dartExecutable ?? (throw StateError('Could not locate a Dart executable.'));
 
 Future<Map<String, dynamic>> runAndCollect(
   String scriptPath, {
@@ -23,7 +28,7 @@ Future<Map<String, dynamic>> runAndCollect(
     ...?scriptArgs,
   ];
 
-  final process = await Process.start(Platform.executable, dartArgs);
+  final process = await Process.start(_dartExecutable, dartArgs);
 
   final serviceUri = await serviceUriFromProcess(process.stdout.lines());
   Map<String, dynamic> coverage;
@@ -42,7 +47,7 @@ Future<Map<String, dynamic>> runAndCollect(
   final exitStatus = await process.exitCode;
   if (exitStatus != 0) {
     throw ProcessException(
-      Platform.executable,
+      _dartExecutable,
       dartArgs,
       'Process failed.',
       exitStatus,

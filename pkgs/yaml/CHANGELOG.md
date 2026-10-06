@@ -1,6 +1,7 @@
 ## 3.2.0-wip
 
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
+* Improve error messages when mixing list and key-value syntax.
 * Add `retainTokens` parameter to `loadYamlDocument` to retain lexical tokens
   (including comments and structural indicators) on `YamlDocument.tokens`.
 * Add `package:yaml/tokens.dart` exporting the lexical token hierarchy (`Token`,

@@ -6,7 +6,7 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 
 import 'constants.dart';
-import 'is_external.dart';
+import 'is_external.dart' as ie;
 import 'utils.dart';
 
 /// Creates the text file that will contain the client ID
@@ -73,7 +73,10 @@ DateTime createSessionFile({required File sessionFile}) {
 /// - Session JSON file
 /// - Log file
 /// - Dismissed survey JSON file
-bool runInitialization({required Directory homeDirectory}) {
+bool runInitialization({
+  required Directory homeDirectory,
+  bool isExternal = ie.isExternal,
+}) {
   var firstRun = false;
   final dartToolDirectory = homeDirectory.childDirectory(
     kDartToolDirectoryName,

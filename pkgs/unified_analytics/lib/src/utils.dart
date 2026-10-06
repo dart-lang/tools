@@ -9,7 +9,6 @@ import 'dart:math' show Random;
 import 'package:clock/clock.dart';
 import 'package:convert/convert.dart';
 import 'package:file/file.dart';
-import 'package:platform/platform.dart' as platform;
 
 import 'enums.dart';
 import 'event.dart';
@@ -30,8 +29,7 @@ String get dateStamp {
 /// If the environment variable is set and not "false", return the
 /// corresponding boolean value. Otherwise, return the [defaultValue].
 bool areAnalyticsSuppressed({bool defaultValue = false}) {
-  final value = const platform.LocalPlatform()
-      .environment[DashEnvVar.suppressAnalytics.name];
+  final value = io.Platform.environment[DashEnvVar.suppressAnalytics.name];
   if (value != null) {
     try {
       return bool.parse(value);
@@ -114,7 +112,7 @@ Map<String, String> getEnvironment({
   required DashTool currentTool,
   bool suppressAnalytics = false,
 }) => {
-  ...const platform.LocalPlatform().environment,
+  ...io.Platform.environment,
   DashEnvVar.suppressAnalytics.name: areAnalyticsSuppressed(
     defaultValue: suppressAnalytics,
   ).toString(),
@@ -303,8 +301,7 @@ bool surveySnoozedOrDismissed(
 /// If the environment variable is set and valid, return the corresponding
 /// [DashTool]. Otherwise, return the [current] tool.
 DashTool topLevelTool({required DashTool current}) {
-  final toolValue =
-      const platform.LocalPlatform().environment[DashEnvVar.tool.name];
+  final toolValue = io.Platform.environment[DashEnvVar.tool.name];
   if (toolValue != null) {
     try {
       return DashTool.fromLabel(toolValue);
