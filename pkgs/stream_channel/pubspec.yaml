@@ -1,5 +1,5 @@
 name: stream_channel
-version: 2.1.4
+version: 2.1.5-wip
 description: >-
   An abstraction for two-way communication channels based on the Dart Stream
   class.
@@ -10,7 +10,7 @@ environment:
   sdk: ^3.3.0
 
 dependencies:
-  async: ^2.5.0
+  async: ^2.6.0
 
 dev_dependencies:
   dart_flutter_team_lints: ^3.0.0
