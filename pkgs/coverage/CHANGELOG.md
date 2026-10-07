@@ -10,6 +10,9 @@
 - `Resolver.resolve` now rejects `file:` URIs that fall outside the known
   package/SDK roots or the current directory, instead of resolving them
   unconditionally.
+- `Resolver.resolve` now applies that same out-of-roots rejection to `package:`
+  and `dart:` URIs, and canonicalizes the known roots so paths reached through a
+  symlink still resolve.
 
 ## 1.15.1
 
