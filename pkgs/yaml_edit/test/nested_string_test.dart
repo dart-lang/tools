@@ -8,8 +8,7 @@ import 'package:yaml_edit/yaml_edit.dart';
 
 void main() {
   group('nested strings', () {
-    test('update map value in a list with folded punctuation and line breaks',
-        () {
+    test('folded value in a list map', () {
       const value = 'label: "quoted" # text\n[items] &anchor *alias';
       final doc = YamlEditor('''
 items:
@@ -34,8 +33,7 @@ items:
           doc.toString(), endsWith('[items] &anchor *alias\n    keep: true\n'));
     });
 
-    test('update nested list element with literal backslashes and a blank line',
-        () {
+    test('literal value with blank line in list', () {
       const value = 'path: C:\\temp\n\n# "quoted"';
       final doc = YamlEditor('''
 settings:
@@ -64,8 +62,7 @@ settings:
               '    - keep\n'));
     });
 
-    test('add folded map value in a list with comment and collection markers',
-        () {
+    test('adds folded marker value to list map', () {
       const value = '# comment text\n{key: [value]}';
       final doc = YamlEditor('''
 items:
@@ -89,7 +86,7 @@ items:
       expect(doc.toString(), endsWith('{key: [value]}\n'));
     });
 
-    test('append map with a literal multiline value to a nested list', () {
+    test('appends map with literal value', () {
       const value = '&anchor: "text"\n*alias # text';
       final doc = YamlEditor('''
 settings:
@@ -119,7 +116,7 @@ settings:
 '''));
     });
 
-    test('insert folded document markers between nested list elements', () {
+    test('inserts folded document markers', () {
       const value = '---\n# text\n...';
       final doc = YamlEditor('''
 settings:
@@ -151,8 +148,7 @@ settings:
 '''));
     });
 
-    test('update nested flow map uses quotes for folded multiline punctuation',
-        () {
+    test('quotes folded value in flow map', () {
       const value = 'key: [value]\n# text';
       final doc = YamlEditor('settings: {message: old, keep: true}\n');
       doc.update(['settings', 'message'],
@@ -167,7 +163,7 @@ settings:
           equals('settings: {message: "key: [value]\\n# text", keep: true}\n'));
     });
 
-    test('insert into nested flow list quotes literal newlines and quotes', () {
+    test('quotes literal value in flow list', () {
       const value = '"quoted"\n{key: value}';
       final doc = YamlEditor('settings:\n  messages: [before, after]\n');
       doc.insertIntoList(['settings', 'messages'], 1,
@@ -188,7 +184,7 @@ settings:
   });
 
   group('nested strings in CRLF documents', () {
-    test('update folded map value preserves LF value and CRLF siblings', () {
+    test('folded value keeps CRLF siblings', () {
       const value = 'key: value\n# "text"';
       final doc = YamlEditor('settings:\r\n  message: old\r\n  keep: true\r\n');
       doc.update(['settings', 'message'],
@@ -207,9 +203,7 @@ settings:
       expect(doc.toString(), endsWith('\r\n  keep: true\r\n'));
     });
 
-    test(
-        'append literal CRLF value to nested list falls back to escaped quotes',
-        () {
+    test('literal CRLF value falls back to quotes', () {
       const value = 'key: value\r\n# text';
       final doc = YamlEditor('settings:\r\n  messages:\r\n    - keep\r\n');
       doc.appendToList(['settings', 'messages'],
@@ -228,8 +222,7 @@ settings:
               '    - keep\r\n    - "key: value\\r\\n# text"\r\n'));
     });
 
-    test('insert folded whitespace and multiline punctuation into CRLF list',
-        () {
+    test('folded whitespace value in CRLF list', () {
       const value = ' # text\n\t[key: value]';
       final doc = YamlEditor(
           'settings:\r\n  messages:\r\n    - before\r\n    - after\r\n');
