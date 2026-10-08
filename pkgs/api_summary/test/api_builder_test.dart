@@ -517,6 +517,19 @@ class _Private {
   const _Private();
 }
 
+typedef PublicRecord = (int, {String label, bool flag});
+typedef SinglePosRecord = (int,);
+typedef PrivateRecord = (int, {_Private priv});
+typedef PublicCallback =
+    String Function<T extends num>(
+      T, [
+      int?,
+      // ignore: avoid_positional_boolean_parameters
+    ]);
+typedef NamedCallback =
+    void Function({required bool flag, String label});
+typedef PrivateCallback = void Function(_Private);
+
 void publicTopFunc() {}
 void _privateTopFunc() {}
 
@@ -541,6 +554,12 @@ const Symbol kPublicSymbol = #mySymbol;
 const Symbol kPrivateSymbol = #_secret;
 const Type kSimpleType = int;
 const Type kGenericType = Map<String, List<int?>>;
+const Type kRecordType = PublicRecord;
+const Type kSingleRecordType = SinglePosRecord;
+const Type kPrivateRecordType = PrivateRecord;
+const Type kFunctionType = PublicCallback;
+const Type kNamedFunctionType = NamedCallback;
+const Type kPrivateFunctionType = PrivateCallback;
 const Type kPrivateType = _Private;
 const Type kPrivateTypeArg = List<_Private>;
 const List<int> kList = [1, 2];
@@ -588,6 +607,12 @@ int get kComputedGetter => 1;
       'kPrivateSymbol': null,
       'kSimpleType': 'int',
       'kGenericType': 'Map<String, List<int?>>',
+      'kRecordType': '(int, {bool flag, String label})',
+      'kSingleRecordType': '(int,)',
+      'kPrivateRecordType': null,
+      'kFunctionType': 'String Function<T extends num>(T, [int?])',
+      'kNamedFunctionType': 'void Function({required bool flag, String label})',
+      'kPrivateFunctionType': null,
       'kPrivateType': null,
       'kPrivateTypeArg': null,
       'kList': '[1, 2]',

@@ -126,20 +126,111 @@ String? _formatTypeLiteral(DartType type) {
       return 'void';
     case NeverType():
       return 'Never$suffix';
-    case InterfaceType(:final element, :final typeArguments):
+    case TypeParameterType(:final element):
       final name = element.name;
-      if (name == null || name.startsWith('_')) return null;
-      if (typeArguments.isEmpty) return '$name$suffix';
-      final formattedArgs = <String>[];
-      for (final arg in typeArguments) {
-        final formatted = _formatTypeLiteral(arg);
-        if (formatted == null) return null;
-        formattedArgs.add(formatted);
-      }
-      return '$name<${formattedArgs.join(', ')}>$suffix';
+      return (name == null || name.startsWith('_')) ? null : '$name$suffix';
+    case InterfaceType():
+      return _formatInterfaceTypeLiteral(type, suffix);
+    case RecordType():
+      return _formatRecordTypeLiteral(type, suffix);
+    case FunctionType():
+      return _formatFunctionTypeLiteral(type, suffix);
     default:
       return null;
   }
+}
+
+String? _formatInterfaceTypeLiteral(InterfaceType type, String suffix) {
+  final name = type.element.name;
+  if (name == null || name.startsWith('_')) return null;
+  if (type.typeArguments.isEmpty) return '$name$suffix';
+  final formattedArgs = <String>[];
+  for (final arg in type.typeArguments) {
+    final formatted = _formatTypeLiteral(arg);
+    if (formatted == null) return null;
+    formattedArgs.add(formatted);
+  }
+  return '$name<${formattedArgs.join(', ')}>$suffix';
+}
+
+String? _formatRecordTypeLiteral(RecordType type, String suffix) {
+  final parts = <String>[];
+  for (final field in type.positionalFields) {
+    final formatted = _formatTypeLiteral(field.type);
+    if (formatted == null) return null;
+    parts.add(formatted);
+  }
+  final namedParts = <String>[];
+  for (final field in type.namedFields.sortedBy((f) => f.name)) {
+    if (field.name.startsWith('_')) return null;
+    final formatted = _formatTypeLiteral(field.type);
+    if (formatted == null) return null;
+    namedParts.add('$formatted ${field.name}');
+  }
+  if (namedParts.isNotEmpty) {
+    parts.add('{${namedParts.join(', ')}}');
+  }
+  if (type.positionalFields.length == 1 && type.namedFields.isEmpty) {
+    return '(${parts.single},)$suffix';
+  }
+  return '(${parts.join(', ')})$suffix';
+}
+
+String? _formatFunctionTypeLiteral(FunctionType type, String suffix) {
+  final returnTypeStr = _formatTypeLiteral(type.returnType);
+  if (returnTypeStr == null) return null;
+  final typeParamsStr = _formatTypeParameters(type.typeParameters);
+  if (typeParamsStr == null) return null;
+  final paramsStr = _formatFunctionParameters(type.formalParameters);
+  if (paramsStr == null) return null;
+  return '$returnTypeStr Function$typeParamsStr($paramsStr)$suffix';
+}
+
+String? _formatTypeParameters(List<TypeParameterElement> typeParameters) {
+  if (typeParameters.isEmpty) return '';
+  final parts = <String>[];
+  for (final param in typeParameters) {
+    final name = param.name;
+    if (name == null || name.startsWith('_')) return null;
+    final bound = param.bound;
+    if (bound == null) {
+      parts.add(name);
+    } else {
+      final formattedBound = _formatTypeLiteral(bound);
+      if (formattedBound == null) return null;
+      parts.add('$name extends $formattedBound');
+    }
+  }
+  return '<${parts.join(', ')}>';
+}
+
+String? _formatFunctionParameters(List<FormalParameterElement> parameters) {
+  final requiredPos = <String>[];
+  final optionalPos = <String>[];
+  final named = <MapEntry<String, String>>[];
+  for (final param in parameters) {
+    final formattedType = _formatTypeLiteral(param.type);
+    final name = param.name ?? '';
+    if (formattedType == null || (param.isNamed && name.startsWith('_'))) {
+      return null;
+    }
+    if (param.isRequiredPositional) {
+      requiredPos.add(formattedType);
+    } else if (param.isOptionalPositional) {
+      optionalPos.add(formattedType);
+    } else if (param.isRequiredNamed) {
+      named.add(MapEntry(name, 'required $formattedType $name'));
+    } else {
+      named.add(MapEntry(name, '$formattedType $name'));
+    }
+  }
+  final groups = <String>[
+    ...requiredPos,
+    if (optionalPos.isNotEmpty) '[${optionalPos.join(', ')}]',
+    if (named.isNotEmpty)
+      '{${named.sortedBy((e) => e.key).map((e) => e.value).join(', ')}}',
+  ];
+  return groups.join(', ');
 }
 
 bool _containsPrivateType(DartType? type) => switch (type) {
