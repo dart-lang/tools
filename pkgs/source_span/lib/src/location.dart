@@ -49,9 +49,9 @@ class SourceLocation implements Comparable<SourceLocation> {
         column = column ?? offset {
     if (offset < 0) {
       throw RangeError('Offset may not be negative, was $offset.');
-    } else if (line != null && line < 0) {
+    } else if (this.line < 0) {
       throw RangeError('Line may not be negative, was $line.');
-    } else if (column != null && column < 0) {
+    } else if (this.column < 0) {
       throw RangeError('Column may not be negative, was $column.');
     }
   }

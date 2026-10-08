@@ -275,6 +275,13 @@ zip zap zop''', url: 'bar.dart').span(10, 11);
         expect(span.context, equals('whiz bang boom\n'));
       });
 
+      test(
+          'contains the last line for a point span at the beginning of the '
+          'last line without a trailing newline', () {
+        final span = file.span(27, 27);
+        expect(span.context, equals('zip zap zop'));
+      });
+
       group('for a point span at the end of a file', () {
         test('without a newline, contains the last line', () {
           final span = file.span(file.length, file.length);
