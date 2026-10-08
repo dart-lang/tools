@@ -8,6 +8,7 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:cli_util/cli_util.dart' show sdkPath;
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
 import 'src/api_builder.dart';
@@ -121,6 +122,21 @@ _PubspecDetails _extractPubspecDetails(String packagePath) {
   );
 }
 
+String _normalizeVersionConstraint(String raw) {
+  try {
+    final constraint = VersionConstraint.parse(raw);
+    if (constraint case VersionRange(
+      :final min?,
+      includeMin: true,
+    ) when constraint == VersionConstraint.compatibleWith(min)) {
+      return '^$min';
+    }
+    return constraint.toString();
+  } on FormatException {
+    return raw.trim();
+  }
+}
+
 Map<String, String> _parseEnvironment(
   Object? raw,
   String pubspecPath,
@@ -130,7 +146,7 @@ Map<String, String> _parseEnvironment(
     for (final MapEntry(:key, :value) in envMap.entries)
       if (key is String && value != null)
         key: switch (value) {
-          final String s => s,
+          final String s => _normalizeVersionConstraint(s),
           final num n => n.toString(),
           final bool b => b.toString(),
           _ => throw FormatException(
@@ -174,7 +190,7 @@ String _formatDependencyValue(
   String content,
 ) => switch (value) {
   null => 'any',
-  final String s => s,
+  final String s => _normalizeVersionConstraint(s),
   final num n => n.toString(),
   final bool b => b.toString(),
   final Map<dynamic, dynamic> map => _formatYamlMap(
@@ -201,7 +217,7 @@ String _formatYamlMap(
     if (key is! String) continue;
     final formattedValue = switch (value) {
       null => 'null',
-      final String s => s,
+      final String s => key == 'version' ? _normalizeVersionConstraint(s) : s,
       final num n => n.toString(),
       final bool b => b.toString(),
       final Map<dynamic, dynamic> nested => _formatYamlMap(
