@@ -10,19 +10,20 @@ import 'bindings/boringssl.g.dart' as bssl;
 
 /// A scoped [ffi.Allocator] and resource tracker for calling BoringSSL.
 ///
-/// All memory is allocated with [opensslAllocator] (`OPENSSL_malloc`), so it
-/// is scrubbed with `OPENSSL_cleanse` when released, and it may be handed to
-/// BoringSSL functions that take ownership and later call `OPENSSL_free`.
+/// All memory is allocated with [opensslAllocator] ([bssl.OPENSSL_malloc]), so
+/// it is scrubbed with [bssl.OPENSSL_cleanse] when released, and it may be
+/// handed to BoringSSL functions that take ownership and later call
+/// [bssl.OPENSSL_free].
 ///
 /// Allocations, resources registered with [using], and callbacks registered
 /// with [onReleaseAll] are released in reverse order by [releaseAll]. Prefer
 /// [BoringArena.run] and [BoringArena.stream], which call [releaseAll] once the
 /// computation has completed.
 ///
-/// BoringSSL functions with `set0` semantics (for example `RSA_set0_key` or
-/// `EVP_PKEY_CTX_set0_rsa_oaep_label`) take ownership of their arguments on
-/// success. Call [move] after such a call, so the arena does not free the
-/// resource a second time:
+/// BoringSSL functions with `set0` semantics (for example [bssl.RSA_set0_key]
+/// or [bssl.EVP_PKEY_CTX_set0_rsa_oaep_label]) take ownership of their
+/// arguments on success. Call [move] after such a call, so the arena does not
+/// free the resource a second time:
 ///
 /// ```dart
 /// BoringArena.run((arena) {
@@ -148,7 +149,7 @@ final class BoringArena implements ffi.Allocator {
     return resource;
   }
 
-  /// Allocates a `CBS` reading a copy of [data] owned by this arena.
+  /// Allocates a [bssl.CBS] reading a copy of [data] owned by this arena.
   ffi.Pointer<bssl.CBS> cbs(List<int> data) {
     final result = this<bssl.CBS>();
     result.ref
@@ -157,8 +158,8 @@ final class BoringArena implements ffi.Allocator {
     return result;
   }
 
-  /// Allocates a growable `CBB` with [initialCapacity], which is cleaned up
-  /// with `CBB_cleanup` by [releaseAll].
+  /// Allocates a growable [bssl.CBB] with [initialCapacity], which is cleaned
+  /// up with [bssl.CBB_cleanup] by [releaseAll].
   ///
   /// Use [CbbToBytes.toBytes] to copy the contents into a [Uint8List].
   ffi.Pointer<bssl.CBB> cbb([int initialCapacity = 4096]) {
@@ -224,11 +225,11 @@ extension AllocatorCopyBytes on ffi.Allocator {
   }
 }
 
-/// Reads the contents of a `CBB`.
+/// Reads the contents of a [bssl.CBB].
 extension CbbToBytes on ffi.Pointer<bssl.CBB> {
-  /// Flushes this `CBB` and returns a Dart-owned copy of its contents.
+  /// Flushes this [bssl.CBB] and returns a Dart-owned copy of its contents.
   ///
-  /// Throws a [StateError] if `CBB_flush` fails.
+  /// Throws a [StateError] if [bssl.CBB_flush] fails.
   Uint8List toBytes() {
     if (bssl.CBB_flush(this) != 1) {
       final error = extractBoringSslError();

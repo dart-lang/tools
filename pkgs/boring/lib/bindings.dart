@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Raw `ffigen`-generated BoringSSL C bindings (`bssl_dart`),
-/// `OPENSSL_cleanse`-backed [opensslAllocator], scoped [BoringArena], and
+/// [bssl.OPENSSL_cleanse]-backed [opensslAllocator], scoped [BoringArena], and
 /// [NativeHandle] finalizer wrapper.
 library;
 
@@ -16,14 +16,15 @@ import 'src/bindings/boringssl.g.dart' as bssl;
 export 'src/arena.dart';
 export 'src/bindings/boringssl.g.dart';
 
-/// An [ffi.Allocator] backed by BoringSSL's `OPENSSL_malloc` and
-/// `OPENSSL_free`.
+/// An [ffi.Allocator] backed by BoringSSL's [bssl.OPENSSL_malloc] and
+/// [bssl.OPENSSL_free].
 ///
-/// BoringSSL's `OPENSSL_free` automatically scrubs every allocation with
-/// `OPENSSL_cleanse` before returning memory to the OS heap.
+/// BoringSSL's [bssl.OPENSSL_free] automatically scrubs every allocation with
+/// [bssl.OPENSSL_cleanse] before returning memory to the OS heap.
 const OpenSslAllocator opensslAllocator = OpenSslAllocator._();
 
-/// Implementation of [ffi.Allocator] using `OPENSSL_malloc` and `OPENSSL_free`.
+/// Implementation of [ffi.Allocator] using [bssl.OPENSSL_malloc] and
+/// [bssl.OPENSSL_free].
 final class OpenSslAllocator implements ffi.Allocator {
   const OpenSslAllocator._();
 
@@ -45,7 +46,7 @@ final class OpenSslAllocator implements ffi.Allocator {
     bssl.OPENSSL_free(pointer.cast());
   }
 
-  /// Pointer to `OPENSSL_free` suitable for [ffi.NativeFinalizer] or
+  /// Pointer to [bssl.OPENSSL_free] suitable for [ffi.NativeFinalizer] or
   /// `Pointer<Uint8>.asTypedList(len, finalizer: opensslAllocator.nativeFree)`.
   ffi.Pointer<ffi.NativeFinalizerFunction> get nativeFree =>
       bssl.addresses.OPENSSL_free;
@@ -115,6 +116,11 @@ final class NativeHandle<T extends ffi.NativeType> implements ffi.Finalizable {
 
 /// Convenience extension to invoke a 1-argument C function taking `Pointer<P>`
 /// with a [NativeHandle].
+///
+/// ```dart
+/// final pkey = NativeHandle(EVP_PKEY_new(), addresses.EVP_PKEY_free);
+/// final keyId = EVP_PKEY_id.invoke(pkey);
+/// ```
 extension NativeHandleInvoke1<R, P extends ffi.NativeType>
     on R Function(ffi.Pointer<P>) {
   /// Invokes `this` with the unwrapped pointer from [handle].
@@ -122,7 +128,8 @@ extension NativeHandleInvoke1<R, P extends ffi.NativeType>
 }
 
 /// Convenience extension to invoke a 2-argument C function
-/// `(Pointer<EVP_PKEY>, A1)` with a [NativeHandle].
+/// `(Pointer<EVP_PKEY>, A1)` with a [NativeHandle] (for example,
+/// `EVP_PKEY_CTX_new.invoke(pkey, nullptr)`).
 extension EvpPKeyInvoke2First<R, A1>
     on R Function(ffi.Pointer<bssl.EVP_PKEY>, A1) {
   /// Invokes `this` with the unwrapped pointer from [handle] and [arg1].
@@ -131,7 +138,8 @@ extension EvpPKeyInvoke2First<R, A1>
 }
 
 /// Convenience extension to invoke a 2-argument C function
-/// `(A1, Pointer<EVP_PKEY>)` with a [NativeHandle].
+/// `(A1, Pointer<EVP_PKEY>)` with a [NativeHandle] (for example,
+/// `EVP_marshal_public_key.invoke(cbb, pkey)`).
 extension EvpPKeyInvoke2Last<R, A1>
     on R Function(A1, ffi.Pointer<bssl.EVP_PKEY>) {
   /// Invokes `this` with [arg1] and the unwrapped pointer from [handle].
@@ -140,7 +148,8 @@ extension EvpPKeyInvoke2Last<R, A1>
 }
 
 /// Convenience extension to invoke a 5-argument C function
-/// `(A1, A2, A3, A4, Pointer<P>)` with a [NativeHandle].
+/// `(A1, A2, A3, A4, Pointer<P>)` with a [NativeHandle] (for example,
+/// `EVP_DigestVerifyInit.invoke(ctx, pctx, md, nullptr, pkey)`).
 extension NativeHandleInvoke5Last<R, A1, A2, A3, A4, P extends ffi.NativeType>
     on R Function(A1, A2, A3, A4, ffi.Pointer<P>) {
   /// Invokes `this` with [arg1]..[arg4] and the unwrapped pointer from
@@ -159,7 +168,7 @@ extension NativeHandleInvoke5Last<R, A1, A2, A3, A4, P extends ffi.NativeType>
 /// call, with no `await` in between, rather than from a `finally` that may run
 /// after one (such as the release of an `async` [BoringArena.run]).
 ///
-/// Use `ERR_clear_error()` to discard errors you ignore, for example when a
+/// Use [bssl.ERR_clear_error] to discard errors you ignore, for example when a
 /// failed signature verification just means `false`. The queue is shared by
 /// every package using `package:boring` on that thread, so leftover errors
 /// would be reported for the next, unrelated failure.
