@@ -4,6 +4,17 @@
 
 import 'package:analyzer/dart/element/element.dart';
 
+import 'api_declaration.dart';
+import 'meta_facet.dart';
+
+extension ApiLibraryExtension on ApiLibrary {
+  bool get isExperimental => facets.any(
+    (f) =>
+        f is MetaContractFacet &&
+        f.contracts.contains(MetaContract.experimental),
+  );
+}
+
 extension ElementExtension on Element {
   /// Returns the appropriate name for describing the element in `api.txt`.
   ///
@@ -51,14 +62,21 @@ extension IterableIterableExtension on Iterable<Iterable<Object?>> {
 }
 
 extension UriExtension on Uri {
-  bool isIn(String packageName) =>
-      scheme == 'package' &&
-      pathSegments.isNotEmpty &&
-      pathSegments[0] == packageName;
+  bool isIn(String packageName) => switch (this) {
+    Uri(scheme: 'package', pathSegments: [final pkg, ...]) =>
+      pkg == packageName,
+    _ => false,
+  };
 
-  bool isInPublicLibOf(String packageName) =>
-      scheme == 'package' &&
-      pathSegments.length > 1 &&
-      pathSegments[0] == packageName &&
-      pathSegments[1] != 'src';
+  bool isInPublicLibOf(String packageName) => switch (this) {
+    Uri(scheme: 'package', pathSegments: [final pkg, final topDir, ...]) =>
+      pkg == packageName && topDir != 'src',
+    _ => false,
+  };
+
+  bool isPrimaryPublicLibOf(String packageName) => switch (this) {
+    Uri(scheme: 'package', pathSegments: [final pkg, final file]) =>
+      pkg == packageName && file == '$packageName.dart',
+    _ => false,
+  };
 }
