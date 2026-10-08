@@ -17,6 +17,7 @@ const JsonKey packageUri = JsonKey('packageUri');
 const JsonKey lib = JsonKey('lib');
 const JsonKey languageVersion = JsonKey('languageVersion');
 const JsonKey languageVersionOverride = JsonKey('languageVersionOverride');
+const JsonKey experiments = JsonKey('experiments');
 
 // Update these values when changing version.
 const _minConfigVersion = 2;
