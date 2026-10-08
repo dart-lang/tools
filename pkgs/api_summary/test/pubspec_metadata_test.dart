@@ -383,5 +383,122 @@ executables:
         );
       },
     );
+
+    test(
+      'extracts dependencies and ignores dev_dependencies and overrides',
+      () async {
+        await withTempPkg(
+          '''
+name: sample_pkg
+environment:
+  sdk: ^3.12.0
+dependencies:
+  z_pkg: ^2.0.0
+  a_pkg: ">=1.0.0 <2.0.0"
+  any_pkg:
+  flutter:
+    sdk: flutter
+  local_pkg:
+    path: ../local_pkg
+  git_pkg:
+    git:
+      url: https://example.com/git_pkg.git
+      ref: main
+dev_dependencies:
+  test: ^1.28.0
+dependency_overrides:
+  a_pkg: ^1.5.0
+''',
+          (pkgPath) async {
+            final summary = await apiSummary(pkgPath);
+            expect(
+              summary.dependencies.keys.toList(),
+              equals([
+                'a_pkg',
+                'any_pkg',
+                'flutter',
+                'git_pkg',
+                'local_pkg',
+                'z_pkg',
+              ]),
+            );
+            expect(
+              summary.dependencies,
+              equals({
+                'a_pkg': '>=1.0.0 <2.0.0',
+                'any_pkg': 'any',
+                'flutter': '{sdk: flutter}',
+                'git_pkg':
+                    '{git: {ref: main, url: https://example.com/git_pkg.git}}',
+                'local_pkg': '{path: ../local_pkg}',
+                'z_pkg': '^2.0.0',
+              }),
+            );
+            expect(summary.dependencies.containsKey('test'), isFalse);
+
+            final json = summary.toJson();
+            expect(json['dependencies'], equals(summary.dependencies));
+            final rehydrated = ApiSummary.fromJson(json);
+            expect(rehydrated.dependencies, equals(summary.dependencies));
+            expect(
+              summary.toString(),
+              contains(
+                'dependencies:\n'
+                '  a_pkg: >=1.0.0 <2.0.0\n'
+                '  any_pkg: any\n'
+                '  flutter: {sdk: flutter}\n'
+                '  git_pkg: '
+                '{git: {ref: main, url: https://example.com/git_pkg.git}}\n'
+                '  local_pkg: {path: ../local_pkg}\n'
+                '  z_pkg: ^2.0.0\n',
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    test('throws FormatException when dependencies is not a map', () async {
+      await withTempPkg('name: foo\ndependencies: "^1.0.0"', (pkgPath) async {
+        await expectLater(
+          apiSummary(pkgPath),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains('Expected "dependencies" to be a YAML map'),
+            ),
+          ),
+        );
+      });
+    });
+
+    test(
+      'throws FormatException when dependency constraint is invalid',
+      () async {
+        await withTempPkg(
+          '''
+name: foo
+dependencies:
+  bar: [1, 2]
+''',
+          (pkgPath) async {
+            await expectLater(
+              apiSummary(pkgPath),
+              throwsA(
+                isA<FormatException>().having(
+                  (e) => e.message,
+                  'message',
+                  contains(
+                    'Expected dependency constraint for "bar" '
+                    'to be a string, null, or map',
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   });
 }

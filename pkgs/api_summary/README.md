@@ -120,17 +120,23 @@ void main() async {
 }
 ```
 
-You can also override `includeReferencedTypes` to transitively include skeleton declarations (containing type hierarchy but no members) of classes, enums, or mixins from other packages and the SDK that are referenced in your public API:
+You can also pass `includeReferencedTypes: true` or
+`includeImplicitNonPublicMembers: true` directly to `ApiSummaryCustomizer`:
 
 ```dart
 import 'package:api_summary/api_summary.dart';
 
-base class MyCustomizer extends ApiSummaryCustomizer {
-  @override
-  bool get includeReferencedTypes => true;
+void main() async {
+  final summary = await apiSummary(
+    '/path/to/package',
+    customizer: const ApiSummaryCustomizer(
+      includeReferencedTypes: true,
+      includeImplicitNonPublicMembers: true,
+    ),
+  );
+  print(summary);
 }
 ```
-
 
 ## Golden File / Diff Testing (`expectApiSummaryClean`)
 

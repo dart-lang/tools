@@ -1,3 +1,11 @@
+## 1.3.0-wip
+
+- Track `pubspec.yaml` normal `dependencies` constraints in `ApiSummary` and
+  render them in text, JSON, and YAML summaries
+  ([#2463](https://github.com/dart-lang/tools/issues/2463)).
+- Add `includeImplicitNonPublicMembers` and `includeReferencedTypes` optional
+  named constructor parameters to `ApiSummaryCustomizer`.
+
 ## 1.2.0
 
 - Sort the primary package entry point (`package:<pkg>/<pkg>.dart`) first and

@@ -380,6 +380,53 @@ enum MyEnum {
     expect(enumValues.isEnumConstant, isFalse);
   }
 
+  Future<void> test_customizerConstructorFlags() async {
+    final summary = await _build(
+      {
+        '$testPackageLibPath/file.dart': '''
+import 'src/private.dart';
+
+class PublicClass extends LeakedBase {}
+''',
+        '$testPackageLibPath/src/private.dart': '''
+class LeakedBase {
+  void leakedMethod(TransitiveLeak arg) {}
+}
+class TransitiveLeak {
+  int get count => 0;
+}
+''',
+      },
+      customizer: const ApiSummaryCustomizer(
+        includeImplicitNonPublicMembers: true,
+      ),
+    );
+
+    final decodedMap = jsonDecode(summary) as Map<String, dynamic>;
+    final rehydrated = ApiSummary.fromJson(decodedMap);
+
+    final privateLib = rehydrated.libraries.firstWhere(
+      (l) => l.uri == 'package:test/src/private.dart',
+    );
+    expect(privateLib.isPublicEntryPoint, isFalse);
+    expect(
+      privateLib.classes.map((c) => c.name),
+      containsAll(['LeakedBase', 'TransitiveLeak']),
+    );
+
+    final leakedBase = privateLib.classes.firstWhere(
+      (c) => c.name == 'LeakedBase',
+    );
+    expect(leakedBase.status, ApiDeclarationStatus.nonPublic);
+    expect(leakedBase.methods.map((m) => m.name), contains('leakedMethod'));
+
+    final transitiveLeak = privateLib.classes.firstWhere(
+      (c) => c.name == 'TransitiveLeak',
+    );
+    expect(transitiveLeak.status, ApiDeclarationStatus.nonPublic);
+    expect(transitiveLeak.methods.map((m) => m.name), contains('count'));
+  }
+
   Future<String> _build(
     Map<String, String> files, {
     ApiSummaryCustomizer? customizer,
