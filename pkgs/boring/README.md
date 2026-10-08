@@ -34,7 +34,7 @@ its queue, so:
 - Read errors with `extractBoringSslError()`, which also clears the queue,
   right after the failing call. Don't leave an `await` in between, and don't
   defer it to a `finally` that may run after one, such as the release of an
-  `async` `BoringArena.run`.
+  `async` `BoringArena.using`.
 - Discard errors you ignore with `ERR_clear_error()`, for example when a failed
   signature verification just means `false`. Otherwise they are reported for
   the next, unrelated failure.

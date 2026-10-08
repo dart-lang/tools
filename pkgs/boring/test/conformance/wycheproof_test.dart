@@ -333,7 +333,7 @@ Uint8List? _hkdf(
   List<int> salt,
   List<int> info,
   int length,
-) => ssl.BoringArena.run((arena) {
+) => ssl.BoringArena.using((arena) {
   final out = arena<ffi.Uint8>(length);
   if (ssl.HKDF(
         out,
@@ -357,7 +357,7 @@ Uint8List? _hmac(
   ffi.Pointer<ssl.EVP_MD> md,
   List<int> key,
   List<int> message,
-) => ssl.BoringArena.run((arena) {
+) => ssl.BoringArena.using((arena) {
   final out = arena<ffi.Uint8>(ssl.EVP_MD_size(md));
   final outLen = arena<ffi.UnsignedInt>();
   final result = ssl.HMAC(
@@ -380,7 +380,7 @@ Uint8List? _aeadOpen(
   List<int> nonce,
   List<int> sealed,
   List<int> aad,
-) => ssl.BoringArena.run((arena) {
+) => ssl.BoringArena.using((arena) {
   final ctx = ssl.EVP_AEAD_CTX_new(
     aead,
     arena.copyBytes(key),
@@ -388,7 +388,7 @@ Uint8List? _aeadOpen(
     ssl.EVP_AEAD_DEFAULT_TAG_LENGTH,
   );
   if (ctx == ffi.nullptr) return null;
-  arena.using(ctx, ssl.EVP_AEAD_CTX_free);
+  arena.register(ctx, ssl.EVP_AEAD_CTX_free);
   final out = arena<ffi.Uint8>(sealed.length);
   final outLen = arena<ffi.Size>();
   if (ssl.EVP_AEAD_CTX_open(
@@ -420,11 +420,11 @@ bool _verify(
   List<int> signature, {
   ffi.Pointer<ssl.EVP_MD>? md,
   int? pssSaltLength,
-}) => ssl.BoringArena.run((arena) {
+}) => ssl.BoringArena.using((arena) {
   final key = ssl.EVP_parse_public_key(arena.cbs(spki));
   if (key == ffi.nullptr) return false;
-  arena.using(key, ssl.EVP_PKEY_free);
-  final ctx = arena.using(ssl.EVP_MD_CTX_new(), ssl.EVP_MD_CTX_free);
+  arena.register(key, ssl.EVP_PKEY_free);
+  final ctx = arena.register(ssl.EVP_MD_CTX_new(), ssl.EVP_MD_CTX_free);
   final pctx = arena<ffi.Pointer<ssl.EVP_PKEY_CTX>>();
   if (ssl.EVP_DigestVerifyInit(
         ctx,
@@ -461,7 +461,7 @@ Uint8List? _aesCbcDecrypt(
   List<int> key,
   List<int> iv,
   List<int> ciphertext,
-) => ssl.BoringArena.run((arena) {
+) => ssl.BoringArena.using((arena) {
   final cipher = switch (key.length) {
     16 => ssl.EVP_aes_128_cbc(),
     24 => ssl.EVP_aes_192_cbc(),
@@ -472,7 +472,7 @@ Uint8List? _aesCbcDecrypt(
   if (cipher == null || iv.length != ssl.EVP_CIPHER_iv_length(cipher)) {
     return null;
   }
-  final ctx = arena.using(ssl.EVP_CIPHER_CTX_new(), ssl.EVP_CIPHER_CTX_free);
+  final ctx = arena.register(ssl.EVP_CIPHER_CTX_new(), ssl.EVP_CIPHER_CTX_free);
   if (ssl.EVP_DecryptInit_ex(
         ctx,
         cipher,
@@ -504,7 +504,7 @@ Uint8List? _aesCbcDecrypt(
 
 /// AES key unwrap (RFC 3394).
 Uint8List? _aesKeyUnwrap(List<int> key, List<int> wrapped) =>
-    ssl.BoringArena.run((arena) {
+    ssl.BoringArena.using((arena) {
       // AES_unwrap_key rejects these too, but the output is sized from them.
       if (wrapped.length < 24 || wrapped.length % 8 != 0) return null;
       final aesKey = arena<ssl.AES_KEY>();
@@ -535,7 +535,7 @@ Uint8List? _pbkdf2(
   List<int> salt,
   int iterations,
   int length,
-) => ssl.BoringArena.run((arena) {
+) => ssl.BoringArena.using((arena) {
   final out = arena<ffi.Uint8>(length);
   if (ssl.PKCS5_PBKDF2_HMAC(
         arena.copyBytes(password),
@@ -559,11 +559,11 @@ Uint8List? _rsaOaepDecrypt(
   List<int> pkcs8,
   List<int> ciphertext,
   List<int> label,
-) => ssl.BoringArena.run((arena) {
+) => ssl.BoringArena.using((arena) {
   final key = ssl.EVP_parse_private_key(arena.cbs(pkcs8));
   if (key == ffi.nullptr) return null;
-  arena.using(key, ssl.EVP_PKEY_free);
-  final ctx = arena.using(
+  arena.register(key, ssl.EVP_PKEY_free);
+  final ctx = arena.register(
     ssl.EVP_PKEY_CTX_new(key, ffi.nullptr),
     ssl.EVP_PKEY_CTX_free,
   );
@@ -601,7 +601,7 @@ Uint8List? _rsaOaepDecrypt(
 
 /// ECDH shared secret between the PEM-encoded private and public keys.
 Uint8List? _ecdh(String privatePem, String publicPem) =>
-    ssl.BoringArena.run((arena) {
+    ssl.BoringArena.using((arena) {
       final private = _readPem(
         arena,
         privatePem,
@@ -615,7 +615,7 @@ Uint8List? _ecdh(String privatePem, String publicPem) =>
         ssl.EVP_PKEY_free,
       );
       if (private == ffi.nullptr || public == ffi.nullptr) return null;
-      final ctx = arena.using(
+      final ctx = arena.register(
         ssl.EVP_PKEY_CTX_new(private, ffi.nullptr),
         ssl.EVP_PKEY_CTX_free,
       );
@@ -646,10 +646,10 @@ ffi.Pointer<T> _readPem<T extends ffi.NativeType>(
 ) {
   final bytes = utf8.encode(pem);
   // BIO_new_mem_buf does not copy, and the arena releases the BIO first.
-  final bio = arena.using(
+  final bio = arena.register(
     ssl.BIO_new_mem_buf(arena.copyBytes(bytes), bytes.length),
     ssl.BIO_free,
   );
   final result = read(bio, ffi.nullptr, ffi.nullptr, ffi.nullptr);
-  return result == ffi.nullptr ? result : arena.using(result, free);
+  return result == ffi.nullptr ? result : arena.register(result, free);
 }

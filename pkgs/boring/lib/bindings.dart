@@ -166,7 +166,7 @@ extension NativeHandleInvoke5Last<R, A1, A2, A3, A4, P extends ffi.NativeType>
 /// The error queue is thread-local, and an isolate may resume on a different
 /// OS thread after an `await`. Call this right after the failing BoringSSL
 /// call, with no `await` in between, rather than from a `finally` that may run
-/// after one (such as the release of an `async` [BoringArena.run]).
+/// after one (such as the release of an `async` [BoringArena.using]).
 ///
 /// Use [bssl.ERR_clear_error] to discard errors you ignore, for example when a
 /// failed signature verification just means `false`. The queue is shared by

@@ -15,10 +15,10 @@ import 'bindings/boringssl.g.dart' as bssl;
 /// handed to BoringSSL functions that take ownership and later call
 /// [bssl.OPENSSL_free].
 ///
-/// Allocations, resources registered with [using], and callbacks registered
+/// Allocations, resources registered with [register], and callbacks registered
 /// with [onReleaseAll] are released in reverse order by [releaseAll]. Prefer
-/// [BoringArena.run] and [BoringArena.stream], which call [releaseAll] once the
-/// computation has completed.
+/// [BoringArena.using] and [BoringArena.stream], which call [releaseAll] once
+/// the computation has completed.
 ///
 /// BoringSSL functions with `set0` semantics (for example [bssl.RSA_set0_key]
 /// or [bssl.EVP_PKEY_CTX_set0_rsa_oaep_label]) take ownership of their
@@ -26,8 +26,8 @@ import 'bindings/boringssl.g.dart' as bssl;
 /// free the resource a second time:
 ///
 /// ```dart
-/// BoringArena.run((arena) {
-///   final ctx = arena.using(
+/// BoringArena.using((arena) {
+///   final ctx = arena.register(
 ///     EVP_PKEY_CTX_new(pkey, nullptr),
 ///     EVP_PKEY_CTX_free,
 ///   );
@@ -49,7 +49,7 @@ final class BoringArena implements ffi.Allocator {
   /// `await`s. Returning a [Stream] is rejected, because the arena would be
   /// released before the stream is listened to; use [BoringArena.stream]
   /// instead.
-  static R run<R>(R Function(BoringArena arena) computation) {
+  static R using<R>(R Function(BoringArena arena) computation) {
     final arena = BoringArena();
     var releaseLater = false;
     try {
@@ -115,8 +115,8 @@ final class BoringArena implements ffi.Allocator {
   /// returns [resource].
   ///
   /// This is typically used with BoringSSL's `X_new` / `X_free` pairs:
-  /// `arena.using(EC_KEY_new(), EC_KEY_free)`.
-  T using<T extends Object>(T resource, void Function(T resource) release) {
+  /// `arena.register(EC_KEY_new(), EC_KEY_free)`.
+  T register<T extends Object>(T resource, void Function(T resource) release) {
     _ensureInUse();
     _registrations.add(_Registration(resource, () => release(resource)));
     return resource;
@@ -130,7 +130,7 @@ final class BoringArena implements ffi.Allocator {
 
   /// Transfers ownership of [resource] out of this arena, and returns it.
   ///
-  /// Removes every allocation or [using] registration for [resource], so
+  /// Removes every allocation or [register] registration for [resource], so
   /// [releaseAll] no longer frees it. Call this after passing [resource] to a
   /// BoringSSL function that takes ownership of it.
   ///
@@ -166,7 +166,7 @@ final class BoringArena implements ffi.Allocator {
     final result = this<bssl.CBB>();
     // CBB_zero makes CBB_cleanup safe, even if CBB_init fails.
     bssl.CBB_zero(result);
-    using(result, bssl.CBB_cleanup);
+    register(result, bssl.CBB_cleanup);
     if (bssl.CBB_init(result, initialCapacity) != 1) {
       bssl.ERR_clear_error();
       throw const OutOfMemoryError();

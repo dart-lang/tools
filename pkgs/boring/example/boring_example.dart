@@ -9,12 +9,12 @@ import 'dart:typed_data';
 import 'package:boring/bindings.dart' as ssl;
 
 void main() {
-  final digest = ssl.BoringArena.run((arena) {
+  final digest = ssl.BoringArena.using((arena) {
     final input = utf8.encode('hello world');
     final md = ssl.EVP_sha256();
     final out = arena<ffi.Uint8>(ssl.EVP_MD_size(md));
     final outLen = arena<ffi.UnsignedInt>();
-    final ctx = arena.using(ssl.EVP_MD_CTX_new(), ssl.EVP_MD_CTX_free);
+    final ctx = arena.register(ssl.EVP_MD_CTX_new(), ssl.EVP_MD_CTX_free);
 
     if (ssl.EVP_DigestInit(ctx, md) != 1 ||
         ssl.EVP_DigestUpdate(ctx, arena.copyBytes(input), input.length) != 1 ||

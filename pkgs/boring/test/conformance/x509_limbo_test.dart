@@ -190,8 +190,8 @@ final class _SetupException implements Exception {
 /// Returns null if the chain is valid, or why it is not. Throws a
 /// [_SetupException] if an input cannot be parsed or a verification parameter
 /// cannot be set.
-String? _verify(_Testcase testcase) => ssl.BoringArena.run((arena) {
-  final store = arena.using(ssl.X509_STORE_new(), ssl.X509_STORE_free);
+String? _verify(_Testcase testcase) => ssl.BoringArena.using((arena) {
+  final store = arena.register(ssl.X509_STORE_new(), ssl.X509_STORE_free);
   for (final pem in testcase.trustedCerts) {
     // Duplicates are silently ignored.
     if (ssl.X509_STORE_add_cert(store, _parseCertificate(arena, pem)) != 1) {
@@ -202,7 +202,10 @@ String? _verify(_Testcase testcase) => ssl.BoringArena.run((arena) {
   final leaf = _parseCertificate(arena, testcase.peerCertificate);
   ffi.Pointer<ssl.stack_st_X509> untrusted = ffi.nullptr;
   if (testcase.untrustedIntermediates.isNotEmpty) {
-    final stack = arena.using(ssl.OPENSSL_sk_new_null(), ssl.OPENSSL_sk_free);
+    final stack = arena.register(
+      ssl.OPENSSL_sk_new_null(),
+      ssl.OPENSSL_sk_free,
+    );
     for (final pem in testcase.untrustedIntermediates) {
       if (ssl.OPENSSL_sk_push(stack, _parseCertificate(arena, pem).cast()) ==
           0) {
@@ -213,7 +216,7 @@ String? _verify(_Testcase testcase) => ssl.BoringArena.run((arena) {
   }
 
   // Registered last, so it is freed before everything it references.
-  final ctx = arena.using(ssl.X509_STORE_CTX_new(), ssl.X509_STORE_CTX_free);
+  final ctx = arena.register(ssl.X509_STORE_CTX_new(), ssl.X509_STORE_CTX_free);
   if (ssl.X509_STORE_CTX_init(ctx, store, leaf, untrusted) != 1) {
     throw _SetupException('X509_STORE_CTX_init');
   }
@@ -258,7 +261,7 @@ String? _verify(_Testcase testcase) => ssl.BoringArena.run((arena) {
 ffi.Pointer<ssl.X509> _parseCertificate(ssl.BoringArena arena, String pem) {
   final bytes = utf8.encode(pem);
   // BIO_new_mem_buf does not copy, and the arena releases the BIO first.
-  final bio = arena.using(
+  final bio = arena.register(
     ssl.BIO_new_mem_buf(arena.copyBytes(bytes), bytes.length),
     ssl.BIO_free,
   );
@@ -269,7 +272,7 @@ ffi.Pointer<ssl.X509> _parseCertificate(ssl.BoringArena arena, String pem) {
     ffi.nullptr,
   );
   if (cert == ffi.nullptr) throw _SetupException('PEM_read_bio_X509');
-  return arena.using(cert, ssl.X509_free);
+  return arena.register(cert, ssl.X509_free);
 }
 
 /// Configures the names the leaf certificate must assert on [param].

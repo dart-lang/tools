@@ -126,12 +126,12 @@ void main() {
   });
 
   group('BoringArena', () {
-    test('run releases registrations in reverse order', () {
+    test('using releases registrations in reverse order', () {
       final log = <String>[];
-      final result = BoringArena.run((arena) {
-        arena.using('a', log.add);
+      final result = BoringArena.using((arena) {
+        arena.register('a', log.add);
         arena.onReleaseAll(() => log.add('b'));
-        arena.using('c', log.add);
+        arena.register('c', log.add);
         expect(log, isEmpty);
         return 42;
       });
@@ -139,9 +139,9 @@ void main() {
       expect(log, equals(['c', 'b', 'a']));
     });
 
-    test('run releases after the returned Future completes', () async {
+    test('using releases after the returned Future completes', () async {
       var released = false;
-      final future = BoringArena.run((arena) async {
+      final future = BoringArena.using((arena) async {
         arena.onReleaseAll(() => released = true);
         await Future<void>.delayed(Duration.zero);
         expect(released, isFalse);
@@ -152,17 +152,17 @@ void main() {
       expect(released, isTrue);
     });
 
-    test('run releases when the computation throws', () async {
+    test('using releases when the computation throws', () async {
       var released = 0;
       expect(
-        () => BoringArena.run<void>((arena) {
+        () => BoringArena.using<void>((arena) {
           arena.onReleaseAll(() => released++);
           throw StateError('sync failure');
         }),
         throwsStateError,
       );
       await expectLater(
-        BoringArena.run((arena) async {
+        BoringArena.using((arena) async {
           arena.onReleaseAll(() => released++);
           throw StateError('async failure');
         }),
@@ -171,10 +171,10 @@ void main() {
       expect(released, equals(2));
     });
 
-    test('run rejects Stream results', () {
+    test('using rejects Stream results', () {
       var released = false;
       expect(
-        () => BoringArena.run((arena) {
+        () => BoringArena.using((arena) {
           arena.onReleaseAll(() => released = true);
           return Stream.value(1);
         }),
@@ -200,16 +200,16 @@ void main() {
 
     test('move transfers ownership out of the arena', () {
       final log = <String>[];
-      BoringArena.run((arena) {
-        arena.using('kept', log.add);
-        final moved = arena.using('moved', log.add);
+      BoringArena.using((arena) {
+        arena.register('kept', log.add);
+        final moved = arena.register('moved', log.add);
         expect(arena.move(moved), equals('moved'));
         expect(() => arena.move('unknown'), throwsArgumentError);
       });
       expect(log, equals(['kept']));
 
       // Memory moved out of the arena is owned (and freed) by the caller.
-      final pointer = BoringArena.run(
+      final pointer = BoringArena.using(
         (arena) => arena.move(arena.copyBytes<ffi.Uint8>([1, 2, 3])),
       );
       expect(pointer.asTypedList(3), equals([1, 2, 3]));
@@ -219,7 +219,7 @@ void main() {
     test('cannot be used after release', () {
       final arena = BoringArena()..releaseAll();
       expect(() => arena.allocate<ffi.Uint8>(1), throwsStateError);
-      expect(() => arena.using(1, (_) {}), throwsStateError);
+      expect(() => arena.register(1, (_) {}), throwsStateError);
       expect(() => arena.onReleaseAll(() {}), throwsStateError);
       arena.releaseAll(); // Releasing again is a no-op.
     });
@@ -227,16 +227,16 @@ void main() {
     test('releaseAll releases everything even if a callback throws', () {
       final log = <String>[];
       final arena = BoringArena()
-        ..using('a', log.add)
+        ..register('a', log.add)
         ..onReleaseAll(() => throw StateError('released second'))
         ..onReleaseAll(() => throw ArgumentError('released first'))
-        ..using('d', log.add);
+        ..register('d', log.add);
       expect(arena.releaseAll, throwsArgumentError);
       expect(log, equals(['d', 'a']));
     });
 
     test('copyBytes, cbs, cbb, and toBytes round-trip bytes', () {
-      BoringArena.run((arena) {
+      BoringArena.using((arena) {
         final cbs = arena.cbs([0x2a, 0x01, 0x02]);
         final u8 = arena<ffi.Uint8>();
         expect(ssl.CBS_get_u8(cbs, u8), equals(1));
@@ -255,13 +255,13 @@ void main() {
     });
 
     test('cbb marshals and cbs parses an SPKI public key', () {
-      final spki = BoringArena.run((arena) {
-        final ec = arena.using(
+      final spki = BoringArena.using((arena) {
+        final ec = arena.register(
           ssl.EC_KEY_new_by_curve_name(ssl.NID_X9_62_prime256v1),
           ssl.EC_KEY_free,
         );
         expect(ssl.EC_KEY_generate_key(ec), equals(1));
-        final pkey = arena.using(ssl.EVP_PKEY_new(), ssl.EVP_PKEY_free);
+        final pkey = arena.register(ssl.EVP_PKEY_new(), ssl.EVP_PKEY_free);
         expect(ssl.EVP_PKEY_set1_EC_KEY(pkey, ec), equals(1));
 
         final cbb = arena.cbb();
@@ -270,9 +270,9 @@ void main() {
       });
       expect(spki, isNotEmpty);
 
-      BoringArena.run((arena) {
+      BoringArena.using((arena) {
         final cbs = arena.cbs(spki);
-        final pkey = arena.using(
+        final pkey = arena.register(
           ssl.EVP_parse_public_key(cbs),
           ssl.EVP_PKEY_free,
         );
