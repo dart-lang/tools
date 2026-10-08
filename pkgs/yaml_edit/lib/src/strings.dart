@@ -99,8 +99,6 @@ String? _tryYamlEncodeFolded(String string, int indentSize, String lineEnding) {
 
   if (_hasUnprintableCharacters(string)) return null;
 
-  // TODO: Are there other strings we can't encode in folded mode?
-
   final indent = ' ' * indentSize;
   final lines = string.split('\n');
   final buffer = StringBuffer('>-$lineEnding$indent${lines.first}');
