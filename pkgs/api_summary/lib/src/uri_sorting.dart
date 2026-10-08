@@ -48,19 +48,11 @@ final class UriSortKey implements Comparable<UriSortKey> {
     String pkgName, {
     required bool isExperimental,
   }) {
-    if (!uri.isIn(pkgName)) {
-      return UriCategory.notInPackage;
-    }
-    if (!uri.isInPublicLibOf(pkgName)) {
-      return UriCategory.nonPublicInPackage;
-    }
-    if (isExperimental) {
-      return UriCategory.experimentalPublicEntryPoint;
-    }
-    if (uri.isPrimaryPublicLibOf(pkgName)) {
-      return UriCategory.primaryPublicEntryPoint;
-    }
-    return UriCategory.stablePublicEntryPoint;
+    if (!uri.isIn(pkgName)) return .notInPackage;
+    if (!uri.isInPublicLibOf(pkgName)) return .nonPublicInPackage;
+    if (isExperimental) return .experimentalPublicEntryPoint;
+    if (uri.isPrimaryPublicLibOf(pkgName)) return .primaryPublicEntryPoint;
+    return .stablePublicEntryPoint;
   }
 
   @override
