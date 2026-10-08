@@ -16,6 +16,7 @@ import 'api_declaration.dart';
 import 'api_facet.dart';
 import 'api_summary_customizer.dart';
 import 'api_type.dart';
+import 'constant_renderer.dart';
 import 'extensions.dart';
 import 'js_facet.dart';
 import 'meta_facet.dart';
@@ -518,7 +519,7 @@ final class _ApiBuilder {
     ExecutableElement element, {
     required ApiDeclarationStatus status,
   }) {
-    final formalParameters = element.type.formalParameters;
+    final formalParameters = element.formalParameters;
 
     final kind = switch (element) {
       GetterElement() => ApiExecutableKind.getter,
@@ -555,11 +556,13 @@ final class _ApiBuilder {
               isNamed: e.isNamed,
               isOptionalPositional: e.isOptionalPositional,
               isDeprecated: e.isDeprecated,
+              defaultValue: extractParameterDefaultValue(e),
             ),
           )
           .toList(),
       isStatic: element.isStatic,
       isConst: isConst,
+      constantValue: extractGetterConstantValue(element),
       isDeprecated: _isDeprecated(element),
       isEnumConstant: isEnumConstant,
       facets: _extractFacets(element),

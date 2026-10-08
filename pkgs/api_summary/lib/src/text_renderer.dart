@@ -427,6 +427,8 @@ final class _ApiTextRenderer {
           parentheticals.add([
             '$maybeStatic${element.isConst ? 'const getter: ' : 'getter: '}',
             ..._describeType(element.returnType),
+            if (element.constantValue case final constantValue?)
+              ' = $constantValue',
           ]);
         }
       case ApiExecutableKind.setter:
@@ -511,11 +513,14 @@ final class _ApiTextRenderer {
           if (param.isDeprecated) 'deprecated ',
           if (param.isRequired) 'required ',
           ..._describeType(param.type),
+          ' ${param.name}',
+          if (param.defaultValue case final defaultValue?) ' = $defaultValue',
         ];
       } else if (param.isOptionalPositional) {
         optionalParams.add(<Object?>[
           if (param.isDeprecated) 'deprecated ',
           ..._describeType(param.type),
+          if (param.defaultValue case final defaultValue?) ' = $defaultValue',
         ]);
       } else {
         params.add(<Object?>[
@@ -532,7 +537,7 @@ final class _ApiTextRenderer {
       params.add(
         namedParams.entries
             .sortedBy((e) => e.key)
-            .map((e) => <Object?>[...e.value, ' ${e.key}'])
+            .map((e) => e.value)
             .separatedBy(prefix: '{', suffix: '}'),
       );
     }
