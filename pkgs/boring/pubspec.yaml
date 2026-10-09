@@ -28,6 +28,10 @@ dev_dependencies:
   ffigen: ^22.0.0
   test: ^1.32.0
 
+# User-defines only apply from the root package, so this makes the tests and
+# the example of this package build the vendored BoringSSL from source instead
+# of downloading the prebuilt libraries. It has no effect on packages that
+# depend on boring.
 hooks:
   user_defines:
     boring:
