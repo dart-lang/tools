@@ -52,13 +52,22 @@ hooks:
       buildMode: fetch # 'fetch', 'checkout', or 'local'
 ```
 
-- **`fetch`** *(default)*: Downloads prebuilt binaries from GitHub Releases
-  verified against pinned SHA-256 checksums, falling back to local compilation
-  if unavailable.
+- **`fetch`** *(default)*: Downloads the prebuilt library of the pinned
+  release from GitHub Releases and verifies it against the SHA-256 hash pinned
+  in the package. A hash mismatch is an error, not a fallback. Falls back to
+  compiling BoringSSL locally if the download fails or if there is no prebuilt
+  library for the target.
 - **`checkout`**: Always compiles BoringSSL locally from bundled sources via
   CMake and Ninja.
 - **`local`**: Uses a custom prebuilt dynamic library at `localPath`, which is
   bundled as is, without [tree-shaking](#tree-shaking).
+
+Any other `buildMode` value is an error, so a typo can't silently switch
+between downloading and compiling.
+
+Prebuilt libraries exist for Linux (x64 and arm64), macOS (arm64 and x64), and
+Windows (x64). Other targets, including Android and iOS, compile BoringSSL from
+source, which requires CMake, Ninja, and the Android NDK or Xcode.
 
 `fetch` and `checkout` provide a dynamic library with all of BoringSSL when
 linking is disabled (`dart run`, `dart test`, and Flutter debug builds), and a
