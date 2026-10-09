@@ -48,9 +48,41 @@ jobs:
       - name: Analyze code
         run: dart analyze --fatal-infos
         if: always() && steps.install.outcome == 'success'
+      # The `fetch` build mode downloads the libraries pinned in hashes.dart,
+      # which boring_binaries.yaml builds from the native sources on main. A
+      # release of package:boring mustn't ship libraries built from other
+      # sources than the ones it vendors, so this fails once the version is no
+      # longer a -wip one.
+      - name: Check that the prebuilt libraries match the native sources
+        if: always() && steps.install.outcome == 'success'
+        run: |
+          source_commit="$(sed -n "s/^const sourceCommit = '\([0-9a-f]*\)';$/\1/p" lib/src/hook_helpers/hashes.dart)"
+          stale=false
+          if [ -z "$source_commit" ]; then
+            stale=true
+            message="The prebuilt libraries pinned in lib/src/hook_helpers/hashes.dart weren't built from this repository."
+          else
+            git fetch --quiet --depth=1 origin "$source_commit"
+            if ! git diff --quiet "$source_commit" HEAD -- src third_party/boringssl tool/REVISION; then
+              stale=true
+              message="src/, third_party/boringssl/ or tool/REVISION changed since the prebuilt libraries pinned in lib/src/hook_helpers/hashes.dart were built at $source_commit."
+            fi
+          fi
+          if [ "$stale" = true ]; then
+            message="$message The 'package:boring binaries' workflow builds and pins new ones when such a change lands on main; merge its pull request before releasing."
+            if grep -Eq '^version: .*-wip$' pubspec.yaml; then
+              echo "::warning::$message"
+            else
+              echo "::error::$message"
+              exit 1
+            fi
+          else
+            echo "The prebuilt libraries were built from the current native sources ($source_commit)."
+          fi
 
   # Build BoringSSL from source with the build hook and run the tests on each
-  # desktop OS.
+  # desktop OS. The tree-shaking tests run hook/link.dart natively and when
+  # cross-compiling to Linux, whose linker invocation differs per OS.
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
@@ -69,6 +101,35 @@ jobs:
       - name: Setup NASM
         if: runner.os == 'Windows'
         uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b
+      - name: Install Linux cross toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+      # A third-party tap, which Homebrew can't pin, unlike the Windows download
+      # below. It only links the test's cross-compiled example, never anything
+      # that is released.
+      - name: Install Linux cross toolchain (macOS)
+        if: runner.os == 'macOS'
+        run: brew install messense/macos-cross-toolchains/aarch64-unknown-linux-gnu
+      - name: Install Linux cross toolchain (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          TOOLCHAIN_URL: https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-mingw-w64-x86_64-aarch64-none-linux-gnu.zip
+          # From the .sha256asc file published next to the zip.
+          TOOLCHAIN_SHA256: 9428b2039923916418ec7037025be8cec3202926d65db9452519977834ad2a89
+        run: |
+          curl -fSL -o "$RUNNER_TEMP/arm-gnu-toolchain.zip" "$TOOLCHAIN_URL"
+          actual="$(sha256sum < "$RUNNER_TEMP/arm-gnu-toolchain.zip" | cut -d' ' -f1)"
+          if [ "$actual" != "$TOOLCHAIN_SHA256" ]; then
+            echo "::error::Expected SHA-256 $TOOLCHAIN_SHA256 for $TOOLCHAIN_URL, got $actual."
+            exit 1
+          fi
+          7z x "$RUNNER_TEMP/arm-gnu-toolchain.zip" -o"$RUNNER_TEMP/arm-gnu-toolchain" -y >/dev/null
+          BIN_DIR="$RUNNER_TEMP/arm-gnu-toolchain/bin"
+          for f in "$BIN_DIR"/aarch64-none-linux-gnu-*.exe; do
+            cp "$f" "${f/aarch64-none-linux-gnu-/aarch64-linux-gnu-}"
+          done
+          cygpath -w "$BIN_DIR" >> "$GITHUB_PATH"
       - id: install
         name: Install dependencies
         run: dart pub get
@@ -130,11 +191,16 @@ jobs:
           sdk: dev
       - name: Regenerate at tool/REVISION
         run: ./tool/bump-boringssl-revision.sh "$(cat tool/REVISION)"
+      # Also checks that every prebuilt target's asset exists in the pinned
+      # release, since `fetch` silently compiles from source for a target
+      # without a hash.
+      - name: Regenerate the hashes of the pinned release
+        run: dart run tool/regenerate_hashes.dart
       - name: Check for changes
         run: |
           if [ -n "$(git status --porcelain -- .)" ]; then
             git status --short -- .
-            echo "::error::Generated files are out of date. Run ./tool/bump-boringssl-revision.sh \"\$(cat tool/REVISION)\" in pkgs/boring and commit the result."
+            echo "::error::Generated files are out of date. Run ./tool/bump-boringssl-revision.sh \"\$(cat tool/REVISION)\" and dart run tool/regenerate_hashes.dart in pkgs/boring and commit the result."
             exit 1
           fi
 
