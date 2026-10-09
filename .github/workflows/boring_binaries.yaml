@@ -1,23 +1,30 @@
 # Builds the prebuilt libraries that hook/build.dart downloads in the `fetch`
-# build mode, and attaches them to the `boring-binaries-v<version>` GitHub
-# pre-release.
+# build mode, attaches them to a `boring-binaries-<date>-<commit>` GitHub
+# pre-release, and opens a pull request that pins their SHA-256 hashes in
+# lib/src/hook_helpers/hashes.dart.
 #
-# Push a `boring-binaries-v<version>` tag before publishing a new version of
-# package:boring, then pin the SHA-256 hashes of the release assets in
-# lib/src/hook_helpers/hashes.dart with
-# `dart run tool/regenerate_hashes.dart <version>`.
+# Runs when a change to the native sources (src/, the vendored BoringSSL, or
+# this pipeline) lands on main, for example the weekly BoringSSL update, and on
+# `workflow_dispatch` on main. The `analyze` job of boring.yaml checks that the
+# pinned libraries were built from the current native sources, so a release of
+# package:boring can't ship stale ones: merge the pin pull request first.
 #
 # Pull requests that change the pipeline or the native build only run the
-# `precompile` job, as does `workflow_dispatch`, and upload workflow artifacts
-# without creating a release.
+# `precompile` job, as does `workflow_dispatch` on other branches, and upload
+# workflow artifacts without creating a release.
 name: package:boring binaries
 permissions:
   contents: read
 
 on:
   push:
-    tags:
-      - 'boring-binaries-v[0-9]+.[0-9]+.[0-9]+*'
+    branches: [ main ]
+    paths:
+      - '.github/workflows/boring_binaries.yaml'
+      - 'pkgs/boring/src/**'
+      - 'pkgs/boring/third_party/boringssl/**'
+      - 'pkgs/boring/tool/REVISION'
+      - 'pkgs/boring/tool/precompile_binaries.dart'
   pull_request:
     branches: [ main ]
     paths:
@@ -25,6 +32,12 @@ on:
       - 'pkgs/boring/src/**'
       - 'pkgs/boring/tool/precompile_binaries.dart'
   workflow_dispatch:
+
+# Releases are named after the commit, so builds of the same ref run one after
+# the other instead of racing for the release.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   precompile:
@@ -131,39 +144,114 @@ jobs:
           if-no-files-found: error
       # Verify with `gh attestation verify <file> --repo dart-lang/tools`.
       - name: Attest the provenance of the release libraries
-        if: startsWith(github.ref, 'refs/tags/boring-binaries-v')
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
         with:
           subject-path: pkgs/boring/bin/*
 
   release:
-    name: Attach the binaries to the GitHub release
+    name: Attach the binaries to a GitHub release
     needs: precompile
-    if: startsWith(github.ref, 'refs/tags/boring-binaries-v')
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write # To create the release and upload its assets.
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      id: ${{ steps.release.outputs.id }}
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           path: release-assets
           merge-multiple: true
-      - name: Upload to the GitHub release
+      - name: Create the GitHub release
+        id: release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          TAG: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
         run: |
-          version="${TAG#boring-binaries-v}"
-          if ! gh release view "$TAG" > /dev/null 2>&1; then
-            gh release create "$TAG" --prerelease --verify-tag \
-              --title "package:boring binaries v$version" \
-              --notes "The prebuilt BoringSSL libraries for package:boring $version, built by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Verify a library with \`gh attestation verify <file> --repo $GITHUB_REPOSITORY\`."
+          id="$(date -u +%Y%m%d)-${COMMIT::12}"
+          tag="boring-binaries-$id"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if ! gh release view "$tag" > /dev/null 2>&1; then
+            gh release create "$tag" --prerelease --target "$COMMIT" \
+              --title "package:boring binaries $tag" \
+              --notes "The prebuilt BoringSSL libraries for package:boring, built from $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$COMMIT by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Verify a library with \`gh attestation verify <file> --repo $GITHUB_REPOSITORY\`."
           fi
           # lib/src/hook_helpers/hashes.dart pins the hashes of the assets, so
-          # never replace them.
-          if [ "$(gh release view "$TAG" --json assets --jq '.assets | length')" -ne 0 ]; then
-            echo "::error::Release $TAG already has assets. Delete them to upload new ones."
+          # never replace them. Delete a failed release to rebuild a commit.
+          if [ "$(gh release view "$tag" --json assets --jq '.assets | length')" -ne 0 ]; then
+            echo "::error::Release $tag already has assets. Delete the release to upload new ones."
             exit 1
           fi
-          gh release upload "$TAG" release-assets/*
+          gh release upload "$tag" release-assets/*
+          echo "Created $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$tag"
+
+  # Pins the hashes of the release in hashes.dart, like the refresh job of
+  # boring.yaml updates BoringSSL. The Dart Bot token is needed so that the
+  # PR's CI runs: its `generated` job re-hashes the release assets, and the
+  # tree-shaking tests download them in the `fetch` build mode.
+  pin:
+    name: Open the pull request that pins the binaries
+    needs: release
+    if: github.repository_owner == 'dart-lang'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # To push the branch of the pull request.
+      pull-requests: write # To open the pull request.
+    steps:
+      - name: Generate Dart Bot token
+        id: generate-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        with:
+          client-id: ${{ vars.ECOSYSTEM_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.ECOSYSTEM_BOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          token: ${{ steps.generate-token.outputs.token }}
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: stable
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Install dependencies
+        working-directory: pkgs/boring/
+        run: dart pub get
+      - name: Pin the hashes
+        working-directory: pkgs/boring/
+        env:
+          TAG: ${{ needs.release.outputs.tag }}
+          COMMIT: ${{ github.sha }}
+          GH_REPO: ${{ github.repository }}
+        run: dart run tool/regenerate_hashes.dart --repository "$GH_REPO" --source-commit "$COMMIT" --assets "$GITHUB_WORKSPACE/release-assets" "$TAG"
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@653ba8b281fa5e1ee78ec20dda96cf9a79102c04
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          committer: dart-ecosystem-bot <dart-ecosystem-bot@google.com>
+          author: dart-ecosystem-bot <dart-ecosystem-bot@google.com>
+          base: main
+          add-paths: pkgs/boring/lib/src/hook_helpers/hashes.dart
+          commit-message: "[boring] Pin the prebuilt binaries of ${{ needs.release.outputs.tag }}"
+          branch: "boring-pin-binaries-${{ needs.release.outputs.id }}"
+          title: "[boring] Pin the prebuilt binaries of ${{ needs.release.outputs.tag }}"
+          body: >-
+            Pins the SHA-256 hashes of the prebuilt libraries of
+            [`${{ needs.release.outputs.tag }}`](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.release.outputs.tag }}),
+            built from ${{ github.sha }} by
+            [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            of `boring_binaries.yaml`.
+
+
+            The `generated` job re-hashes the release assets, and the
+            tree-shaking tests download them in the `fetch` build mode.
+          labels: skip-changelog-check
+          delete-branch: true

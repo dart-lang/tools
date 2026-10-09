@@ -69,6 +69,16 @@ Prebuilt libraries exist for Linux (x64 and arm64), macOS (arm64 and x64), and
 Windows (x64). Other targets, including Android and iOS, compile BoringSSL from
 source, which requires CMake, Ninja, and the Android NDK or Xcode.
 
+The [`package:boring binaries`](https://github.com/dart-lang/tools/blob/main/.github/workflows/boring_binaries.yaml)
+workflow builds the prebuilt libraries from the vendored BoringSSL whenever a
+change to the native sources lands on `main`, attaches them to a
+`boring-binaries-<date>-<commit>` pre-release with a provenance attestation
+(`gh attestation verify <file> --repo dart-lang/tools`), and opens a pull
+request that pins their SHA-256 hashes in
+[`lib/src/hook_helpers/hashes.dart`](lib/src/hook_helpers/hashes.dart). CI
+checks that a release of this package pins libraries built from the sources
+it vendors, so `fetch` and `checkout` produce the same BoringSSL.
+
 `fetch` and `checkout` provide a dynamic library with all of BoringSSL when
 linking is disabled (`dart run`, `dart test`, and Flutter debug builds), and a
 static library for [tree-shaking](#tree-shaking) when it is enabled. Every

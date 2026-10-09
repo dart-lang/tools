@@ -10,7 +10,7 @@ import 'package:code_assets/code_assets.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:hooks/hooks.dart';
 
-import 'hashes.dart' show fileHashes, version;
+import 'hashes.dart' show fileHashes, releaseRepository, releaseTag;
 import 'targets.dart' show libraryFileName, releaseAssetName, releaseAssetUrl;
 
 /// How long to wait for the connection and for each response.
@@ -20,7 +20,7 @@ const _connectionTimeout = Duration(seconds: 30);
 const _downloadTimeout = Duration(minutes: 5);
 
 /// Downloads and verifies the pre-built library for the target of [input] from
-/// the GitHub release [version], caching it in
+/// the GitHub release [releaseTag] of [releaseRepository], caching it in
 /// [HookInput.outputDirectoryShared].
 ///
 /// Returns `null` if no hash is registered in [fileHashes] or if downloading
@@ -52,7 +52,7 @@ Future<Uri?> fetchPrebuiltLibrary(
   final fileName = libraryFileName(targetOS, static: static);
   final cachedFile = File.fromUri(
     input.outputDirectoryShared
-        .resolve('boring-$version/$assetRemoteName/')
+        .resolve('$releaseTag/$assetRemoteName/')
         .resolve(fileName),
   );
   if (await cachedFile.exists()) {
@@ -67,7 +67,11 @@ Future<Uri?> fetchPrebuiltLibrary(
     }
   }
 
-  final binaryUrl = releaseAssetUrl(version, assetRemoteName);
+  final binaryUrl = releaseAssetUrl(
+    repository: releaseRepository,
+    tag: releaseTag,
+    assetName: assetRemoteName,
+  );
   stdout.writeln('boring: fetching prebuilt binary from $binaryUrl...');
 
   final bytes = await _download(binaryUrl);

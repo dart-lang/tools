@@ -13,6 +13,9 @@
   later, instead of only on the macOS version they were built on.
 - The Windows libraries link the C runtime statically, so they don't require
   the Visual C++ Redistributable.
+- The prebuilt libraries are built from the vendored BoringSSL by CI, which
+  pins them in an automated pull request, so the `fetch` and `checkout` build
+  modes use the same sources.
 
 ## 0.4.1
 
