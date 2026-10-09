@@ -2,7 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:csslib/parser.dart';
 import 'package:csslib/src/messages.dart';
+import 'package:csslib/visitor.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'package:test/test.dart';
 
@@ -348,6 +350,52 @@ div {
   expect(errorMessage.span!.text, '\n');
 }
 
+void _exerciseAllEntryPoints(String input) {
+  const checkedLessOptions = PreprocessorOptions(
+    useColors: false,
+    checked: true,
+    warningsAsErrors: false,
+    lessSupport: true,
+    inputFile: 'memory',
+  );
+  const uncheckedOptions = PreprocessorOptions(
+    useColors: false,
+    checked: false,
+    warningsAsErrors: false,
+    lessSupport: true,
+    inputFile: 'memory',
+  );
+
+  void exerciseTree(StyleSheet tree) {
+    final cloned = tree.clone();
+    Visitor().visitTree(tree);
+    Visitor().visitTree(cloned);
+    (CssPrinter()..visitTree(tree, pretty: true)).toString();
+    (CssPrinter()..visitTree(tree, pretty: false)).toString();
+    (CssPrinter()..visitTree(cloned, pretty: true)).toString();
+    treeToDebugString(tree);
+  }
+
+  final errors = <Message>[];
+  exerciseTree(
+      parse(input, errors: errors..clear(), options: uncheckedOptions));
+  exerciseTree(
+      parse(input, errors: errors..clear(), options: checkedLessOptions));
+  exerciseTree(compile(input,
+      errors: errors..clear(), options: uncheckedOptions, polyfill: false));
+  exerciseTree(compile(input,
+      errors: errors..clear(), options: checkedLessOptions, polyfill: true));
+  exerciseTree(selector(input, errors: errors..clear()));
+
+  final selGroup = parseSelectorGroup(input, errors: errors..clear());
+  if (selGroup != null) {
+    final clonedGroup = selGroup.clone();
+    Visitor().visitSelectorGroup(selGroup);
+    Visitor().visitSelectorGroup(clonedGroup);
+    (CssPrinter()..visitSelectorGroup(selGroup)).toString();
+  }
+}
+
 void main() {
   glyph.ascii = true;
   test('font-weight value errors', testUnsupportedFontWeights);
@@ -356,4 +404,117 @@ void main() {
   test('bad Hex values', testBadHexValues);
   test('bad unicode ranges', testBadUnicode);
   test('nested rules', testBadNesting);
+
+  group('malformed input resilience (fuzz regressions)', () {
+    test('out-of-range hex escapes in identifiers clamp without RangeError',
+        () {
+      _exerciseAllEntryPoints(r'.\110000 .\ffffff .\999999 { color: red; }');
+    });
+
+    test('malformed @import, @keyframes, @stylet, and @namespace directives',
+        () {
+      _exerciseAllEntryPoints('@import foo; @import ;');
+      _exerciseAllEntryPoints('@keyframes { 0% { top: 0; } }');
+      _exerciseAllEntryPoints('@keyframes k { @foo { top: 0; } }');
+      _exerciseAllEntryPoints(
+          '@keyframes k {\u00a00%, from { top: 0%; } 50% { top: 5px; } }');
+      _exerciseAllEntryPoints('@stylet foo { a { color: red; } } @stylet { }');
+      _exerciseAllEntryPoints('@namespace prefix; @namespace ;');
+    });
+
+    test('malformed @mixin, @include, and variable definitions do not hang',
+        () {
+      _exerciseAllEntryPoints('@mixin m(123) { color: red; }');
+      _exerciseAllEntryPoints(
+          '@mixin box-shadow(@shadows...) { box-shadow: @shadows; }');
+      _exerciseAllEntryPoints('@mixin m(@: 1px, var-: 2px) { color: red; }');
+      _exerciseAllEntryPoints('@: 1px; a { var-: 2px; }');
+      _exerciseAllEntryPoints(
+          '@mixin m(@a) { color: @a; } @include ; a { @include m(); }');
+      _exerciseAllEntryPoints(
+          '@mixin m { @media screen { } color: red; } @include m;');
+      _exerciseAllEntryPoints(
+          '@mixin a { color: red; } @mixin a { @include a; } '
+          '@include a; div { @include a; }');
+      _exerciseAllEntryPoints(
+          '@mixin b { color: red; } @mixin a { @include b; } '
+          '@mixin b { @include a; } div { @include b; }');
+    });
+
+    test('malformed @-moz-document and @supports directives', () {
+      _exerciseAllEntryPoints(
+          '@-moz-document regexp(".*"), foo(1), url-prefix() '
+          '{ a { top: 0; } }');
+      _exerciseAllEntryPoints('@-moz-document\uFFFDfoo(1) { a { top: 0; } }');
+      _exerciseAllEntryPoints('@-moz-document { }');
+      _exerciseAllEntryPoints('@supports () { } @supports not () { }');
+      _exerciseAllEntryPoints('@supports (a: 1) and () { }');
+      _exerciseAllEntryPoints('@supports (a: 1) or () { }');
+      final deepParens = '${'(' * 40}a: 1${')' * 40}';
+      _exerciseAllEntryPoints('@supports $deepParens { a { color: red; } }');
+    });
+
+    test('malformed @page and @media unary operators', () {
+      _exerciseAllEntryPoints('@page { 123 } @page :top { + color: red; }');
+      _exerciseAllEntryPoints(
+          '@page :first { @top-left { color: red; } width: 10px; }');
+      final errors = <Message>[];
+      parseCss('@media only screen { a { color: red; } }', errors: errors);
+      expect(errors, isEmpty);
+    });
+
+    test('malformed selectors, namespace selectors, and selector expressions',
+        () {
+      _exerciseAllEntryPoints('ns| { color: red; } | { color: blue; }');
+      _exerciseAllEntryPoints('ns|\uFFFD { color: red; }');
+      _exerciseAllEntryPoints(
+          ':not(ns|a) { color: red; } :not(ns|) { color: blue; }');
+      expect(NamespaceSelector(null, '', null).clone().toString(), '|');
+      _exerciseAllEntryPoints(':not() { color: red; }');
+      _exerciseAllEntryPoints(':nth-child(99999999999999999999999) { }');
+      _exerciseAllEntryPoints(':nth-child(n%) { }');
+    });
+
+    test('malformed declarations, expressions, and integer overflows', () {
+      _exerciseAllEntryPoints(
+          'a { font-weight: ; border-width: ; margin-left: ; '
+          'font-size: 10cm; }');
+      _exerciseAllEntryPoints(
+          'a { margin: [foo]; font-weight: [bar]; line-height: [baz]; }');
+      _exerciseAllEntryPoints(r'a { width: 99999999999999999999999px; '
+          r'top: 1px\99999999999999999999999; }');
+      _exerciseAllEntryPoints(
+          'a { unicode-range: U+99999999999999999999-999999999999999999999; }');
+      _exerciseAllEntryPoints(
+          'a { color: #@foo; width: (@foo); height: [@foo]; top: @; }');
+      _exerciseAllEntryPoints('a { color: var(); background: var(123); }');
+      final errors = <Message>[];
+      parse(
+        '@\uFFFD { }',
+        errors: errors,
+        options: const PreprocessorOptions(
+          useColors: false,
+          checked: true,
+          lessSupport: false,
+          inputFile: 'memory',
+        ),
+      );
+      expect(errors, isNotEmpty);
+    });
+
+    test('nested selectors inside directives and cyclic @extend / var()', () {
+      _exerciseAllEntryPoints('@host { a { b { color: red; } } }');
+      _exerciseAllEntryPoints('@supports (a: 1) { a { b { color: red; } } }');
+      _exerciseAllEntryPoints(
+          '@-moz-document url-prefix() { a { b { color: red; } } }');
+      _exerciseAllEntryPoints('@stylet s { a { b { color: red; } } }');
+      _exerciseAllEntryPoints(
+          '@media screen { @media print { a { b { color: red; } } } }');
+      _exerciseAllEntryPoints('a { @extend .b; } .b { @extend a; }');
+      _exerciseAllEntryPoints('@namespefix; @name @name;');
+      _exerciseAllEntryPoints('var-a: var(a); var-b: var(c); var-c: var(b); '
+          'a { color: var(a); width: var(b, var(c)); '
+          'height: var(u, 1px var(a)); }');
+    });
+  });
 }

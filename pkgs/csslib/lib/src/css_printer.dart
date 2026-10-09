@@ -140,10 +140,12 @@ class CssPrinter extends Visitor {
   @override
   void visitDocumentDirective(DocumentDirective node) {
     emit('@-moz-document ');
-    node.functions.first.visit(this);
-    for (var function in node.functions.skip(1)) {
-      emit(',$_sp');
-      function.visit(this);
+    if (node.functions.isNotEmpty) {
+      node.functions.first.visit(this);
+      for (var function in node.functions.skip(1)) {
+        emit(',$_sp');
+        function.visit(this);
+      }
     }
     emit(_sp);
     _emitLBrace();
@@ -156,7 +158,7 @@ class CssPrinter extends Visitor {
   @override
   void visitSupportsDirective(SupportsDirective node) {
     emit('@supports ');
-    node.condition!.visit(this);
+    node.condition?.visit(this);
     emit(_sp);
     _emitLBrace();
     for (var rule in node.groupRuleBody) {
@@ -168,7 +170,7 @@ class CssPrinter extends Visitor {
   @override
   void visitSupportsConditionInParens(SupportsConditionInParens node) {
     emit('(');
-    node.condition!.visit(this);
+    node.condition?.visit(this);
     emit(')');
   }
 
@@ -180,19 +182,23 @@ class CssPrinter extends Visitor {
 
   @override
   void visitSupportsConjunction(SupportsConjunction node) {
-    node.conditions.first.visit(this);
-    for (var condition in node.conditions.skip(1)) {
-      emit('${_sp}and$_sp');
-      condition.visit(this);
+    if (node.conditions.isNotEmpty) {
+      node.conditions.first.visit(this);
+      for (var condition in node.conditions.skip(1)) {
+        emit('${_sp}and$_sp');
+        condition.visit(this);
+      }
     }
   }
 
   @override
   void visitSupportsDisjunction(SupportsDisjunction node) {
-    node.conditions.first.visit(this);
-    for (var condition in node.conditions.skip(1)) {
-      emit('${_sp}or$_sp');
-      condition.visit(this);
+    if (node.conditions.isNotEmpty) {
+      node.conditions.first.visit(this);
+      for (var condition in node.conditions.skip(1)) {
+        emit('${_sp}or$_sp');
+        condition.visit(this);
+      }
     }
   }
 
@@ -257,7 +263,7 @@ class CssPrinter extends Visitor {
 
   @override
   void visitImportDirective(ImportDirective node) {
-    bool isStartingQuote(String ch) => '\'"'.contains(ch[0]);
+    bool isStartingQuote(String ch) => ch.isNotEmpty && '\'"'.contains(ch[0]);
 
     if (_isTesting) {
       // Emit assuming url() was parsed; most suite tests use url function.
@@ -276,7 +282,7 @@ class CssPrinter extends Visitor {
   @override
   void visitKeyFrameDirective(KeyFrameDirective node) {
     emit('${node.keyFrameName} ');
-    node.name!.visit(this);
+    node.name?.visit(this);
     emit(_sp);
     _emitLBrace();
     _isInKeyframes = true;
@@ -313,18 +319,19 @@ class CssPrinter extends Visitor {
 
   @override
   void visitNamespaceDirective(NamespaceDirective node) {
-    bool isStartingQuote(String ch) => '\'"'.contains(ch);
+    bool isStartingQuote(String ch) => ch.isNotEmpty && '\'"'.contains(ch[0]);
 
-    if (isStartingQuote(node._uri!)) {
-      emit('@namespace ${node.prefix}"${node._uri}"');
+    var uri = node._uri ?? '';
+    if (isStartingQuote(uri)) {
+      emit('@namespace ${node.prefix}"$uri"');
     } else {
       if (_isTesting) {
         // Emit exactly was we parsed.
-        emit('@namespace ${node.prefix}url(${node._uri})');
+        emit('@namespace ${node.prefix}url($uri)');
       } else {
         // url(...) isn't needed only a URI can follow a:
         //    @namespace prefix directive.
-        emit('@namespace ${node.prefix}${node._uri}');
+        emit('@namespace ${node.prefix}$uri');
       }
     }
     _emitSemicolon(forceLf: true);
@@ -370,7 +377,7 @@ class CssPrinter extends Visitor {
 
   @override
   void visitRuleSet(RuleSet node) {
-    node.selectorGroup!.visit(this);
+    node.selectorGroup?.visit(this);
     emit(_sp);
     _emitLBrace();
     node.declarationGroup.visit(this);
@@ -404,7 +411,7 @@ class CssPrinter extends Visitor {
   @override
   void visitDeclaration(Declaration node) {
     emit('${node.property}:$_sp');
-    node.expression!.visit(this);
+    node.expression?.visit(this);
     if (node.important) {
       emit('$_sp!important');
     }
@@ -413,7 +420,7 @@ class CssPrinter extends Visitor {
   @override
   void visitVarDefinition(VarDefinition node) {
     emit('var-${node.definedName}: ');
-    node.expression!.visit(this);
+    node.expression?.visit(this);
   }
 
   @override
@@ -503,7 +510,7 @@ class CssPrinter extends Visitor {
   @override
   void visitNegationSelector(NegationSelector node) {
     emit(':not(');
-    node.negationArg!.visit(this);
+    node.negationArg?.visit(this);
     emit(')');
   }
 
