@@ -39,11 +39,9 @@ Future<void> main(List<String> args) async {
       case BuildModeEnum.local:
         await _useLocalBinary(input, output, buildOptions.localPath);
     }
-    output.dependencies.addAll([
-      input.packageRoot.resolve('pubspec.yaml'),
-      input.packageRoot.resolve('hook/build.dart'),
-      input.packageRoot.resolve('lib/src/hook_helpers/hashes.dart'),
-    ]);
+    // The hooks runner reruns the hook when any of its Dart sources change,
+    // including hashes.dart, so only non-Dart inputs are listed.
+    output.dependencies.add(input.packageRoot.resolve('pubspec.yaml'));
   });
 }
 
