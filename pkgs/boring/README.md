@@ -65,9 +65,10 @@ hooks:
 Any other `buildMode` value is an error, so a typo can't silently switch
 between downloading and compiling.
 
-Prebuilt libraries exist for Linux (x64 and arm64), macOS (arm64 and x64), and
-Windows (x64). Other targets, including Android and iOS, compile BoringSSL from
-source, which requires CMake, Ninja, and the Android NDK or Xcode.
+Prebuilt libraries exist for Linux (x64 and arm64), macOS (arm64 and x64),
+Windows (x64), Android (arm, arm64 and x64; API 21 and later), and iOS (arm64,
+and the arm64 and x64 simulators; iOS 12 and later). Other targets compile
+BoringSSL from source, which requires CMake and Ninja.
 
 The [`package:boring binaries`](https://github.com/dart-lang/tools/blob/main/.github/workflows/boring_binaries.yaml)
 workflow builds the prebuilt libraries from the vendored BoringSSL whenever a

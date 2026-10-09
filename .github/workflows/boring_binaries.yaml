@@ -41,7 +41,7 @@ concurrency:
 
 jobs:
   precompile:
-    name: Precompile (${{ matrix.target-os }}-${{ matrix.target-arch }})
+    name: Precompile (${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }})
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -54,9 +54,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # `max-glibc` and `min-macos` are the ABI floors that the libraries are
-        # checked against below. Keep `min-macos` in sync with
-        # `macOSDeploymentTargets` in tool/precompile_binaries.dart.
+        # Keep in sync with `prebuiltTargets` in lib/src/hook_helpers/targets.dart.
+        # `max-glibc` and `min-os` are the ABI floors that the libraries are
+        # checked against below. Keep `min-os` in sync with
+        # `macOSDeploymentTargets` and `iOSDeploymentTarget` in
+        # tool/precompile_binaries.dart.
         include:
           # The oldest available Ubuntu, so the libraries only require glibc
           # 2.35.
@@ -71,13 +73,38 @@ jobs:
           - os: macos-14
             target-os: macos
             target-arch: arm64
-            min-macos: '11.0'
+            min-os: '11.0'
           - os: macos-14
             target-os: macos
             target-arch: x64
-            min-macos: '10.15'
+            min-os: '10.15'
           - os: windows-latest
             target-os: windows
+            target-arch: x64
+          - os: macos-14
+            target-os: ios
+            target-arch: arm64
+            ios-sdk: iphoneos
+            min-os: '12.0'
+          - os: macos-14
+            target-os: ios
+            target-arch: arm64
+            ios-sdk: iphonesimulator
+            min-os: '12.0'
+          - os: macos-14
+            target-os: ios
+            target-arch: x64
+            ios-sdk: iphonesimulator
+            min-os: '12.0'
+          # The Android libraries don't depend on the host, so any Ubuntu does.
+          - os: ubuntu-24.04
+            target-os: android
+            target-arch: arm
+          - os: ubuntu-24.04
+            target-os: android
+            target-arch: arm64
+          - os: ubuntu-24.04
+            target-os: android
             target-arch: x64
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -98,7 +125,11 @@ jobs:
         env:
           TARGET_OS: ${{ matrix.target-os }}
           TARGET_ARCH: ${{ matrix.target-arch }}
-        run: dart run tool/precompile_binaries.dart --target-os="$TARGET_OS" --target-arch="$TARGET_ARCH"
+          IOS_SDK: ${{ matrix.ios-sdk }}
+        run: |
+          dart run tool/precompile_binaries.dart --target-os="$TARGET_OS" --target-arch="$TARGET_ARCH" \
+            ${IOS_SDK:+--ios-sdk="$IOS_SDK"} \
+            ${ANDROID_NDK_LATEST_HOME:+--android-ndk="$ANDROID_NDK_LATEST_HOME"}
       - name: List the libraries
         run: ls -l bin
       # The dynamic library is bundled as is, so it must run on every OS version
@@ -114,17 +145,45 @@ jobs:
             echo "::error::The library requires glibc $glibc, newer than $MAX_GLIBC. Build on an older runner."
             exit 1
           fi
-      - name: Check the ABI floor of the dynamic library (macOS)
-        if: matrix.target-os == 'macos'
+      - name: Check the ABI floor of the dynamic library (macOS, iOS)
+        if: matrix.target-os == 'macos' || matrix.target-os == 'ios'
         env:
-          MIN_MACOS: ${{ matrix.min-macos }}
+          MIN_OS: ${{ matrix.min-os }}
+          TARGET_OS: ${{ matrix.target-os }}
         run: |
           minos="$(otool -l bin/*.dylib | awk '/minos/ {print $2}' | sort -u)"
-          echo "Minimum macOS version: $minos (expected: $MIN_MACOS)"
-          if [ "$minos" != "$MIN_MACOS" ]; then
-            echo "::error::The library requires macOS '$minos' instead of $MIN_MACOS. Check macOSDeploymentTargets in tool/precompile_binaries.dart."
+          echo "Minimum $TARGET_OS version: $minos (expected: $MIN_OS)"
+          if [ "$minos" != "$MIN_OS" ]; then
+            echo "::error::The library requires $TARGET_OS '$minos' instead of $MIN_OS. Check the deployment targets in tool/precompile_binaries.dart."
             exit 1
           fi
+      - name: Check the ABI of the dynamic library (Android)
+        if: matrix.target-os == 'android'
+        env:
+          TARGET_ARCH: ${{ matrix.target-arch }}
+        run: |
+          # Android 15+ requires 16 KB page alignment of 64-bit native
+          # libraries, and the libraries must only depend on the C library
+          # (see src/CMakeLists.txt), not on libc++_shared.so.
+          case "$TARGET_ARCH" in
+            arm|ia32) expected_alignment=0x1000 ;;
+            *) expected_alignment=0x4000 ;;
+          esac
+          alignments="$(readelf -lW bin/*.so | awk '$1 == "LOAD" {print $NF}' | sort -u)"
+          needed="$(readelf -d bin/*.so | awk '/NEEDED/ {print $NF}' | tr -d '[]' | sort -u | tr '\n' ' ')"
+          echo "LOAD segment alignment: $alignments (expected: $expected_alignment)"
+          echo "Needed libraries: $needed"
+          readelf -n bin/*.so | grep -A2 'Android' || true
+          if [ "$alignments" != "$expected_alignment" ]; then
+            echo "::error::The LOAD segments are aligned to $alignments instead of $expected_alignment. Use NDK r28 or newer, or ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES."
+            exit 1
+          fi
+          case " $needed" in
+            *" libc++"*|*" libstdc++"*)
+              echo "::error::The library depends on a C++ runtime: $needed. See the C++ runtime notes in src/CMakeLists.txt."
+              exit 1
+              ;;
+          esac
       - name: Check the ABI floor of the dynamic library (Windows)
         if: matrix.target-os == 'windows'
         run: |
@@ -139,7 +198,7 @@ jobs:
           echo "The DLL doesn't import the C runtime dynamically."
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: binaries-${{ matrix.target-os }}-${{ matrix.target-arch }}
+          name: binaries-${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }}
           path: pkgs/boring/bin/*
           if-no-files-found: error
       # Verify with `gh attestation verify <file> --repo dart-lang/tools`.

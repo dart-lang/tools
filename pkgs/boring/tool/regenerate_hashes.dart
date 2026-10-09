@@ -26,9 +26,11 @@ const _hashesFile = 'lib/src/hook_helpers/hashes.dart';
 /// of .github/workflows/boring_binaries.yaml passes the new release's tag,
 /// `--source-commit`, and `--assets` with the libraries it just built.
 ///
-/// Fails without writing anything if an asset of a prebuilt target is missing,
-/// so that a failed or partial release can't silently turn the `fetch` build
-/// mode into a source build for that target.
+/// Fails without writing anything if an asset of a prebuilt target is missing
+/// from a release built by that workflow, so that a failed or partial release
+/// can't silently turn the `fetch` build mode into a source build for that
+/// target. Releases built elsewhere (`sourceCommit` is empty) may predate some
+/// targets, which then compile from source.
 Future<void> main(List<String> args) async {
   final parser = ArgParser()
     ..addOption(
@@ -92,16 +94,22 @@ Future<void> main(List<String> args) async {
           iosSdk: iosSdk,
           static: static,
         );
-        final bytes = assetsDir != null
-            ? await _readLocal(Directory(assetsDir), assetName)
-            : await _fetch(
-                httpClient,
-                releaseAssetUrl(
-                  repository: repository,
-                  tag: tag,
-                  assetName: assetName,
-                ),
-              );
+        final List<int>? bytes;
+        try {
+          bytes = assetsDir != null
+              ? await _readLocal(Directory(assetsDir), assetName)
+              : await _fetch(
+                  httpClient,
+                  releaseAssetUrl(
+                    repository: repository,
+                    tag: tag,
+                    assetName: assetName,
+                  ),
+                );
+        } on _DownloadException catch (e) {
+          stderr.writeln('Not updating $_hashesFile: $e');
+          exit(1);
+        }
         if (bytes == null) {
           missing.add(assetName);
           continue;
@@ -116,12 +124,18 @@ Future<void> main(List<String> args) async {
   }
 
   if (missing.isNotEmpty) {
-    stderr.writeln(
-      'Not updating $_hashesFile: ${missing.length} of the '
-      '${fileHashes.length + missing.length} assets of the prebuilt targets '
-      'are missing:\n  ${missing.join('\n  ')}',
+    final summary =
+        '${missing.length} of the ${fileHashes.length + missing.length} '
+        'assets of the prebuilt targets are missing from release $tag of '
+        '$repository:\n  ${missing.join('\n  ')}';
+    if (sourceCommit.isNotEmpty) {
+      stderr.writeln('Not updating $_hashesFile: $summary');
+      exit(1);
+    }
+    stdout.writeln(
+      'Warning: $summary\nThe release wasn\'t built by this repository, so '
+      'those targets compile BoringSSL from source.',
     );
-    exit(1);
   }
 
   final buffer = StringBuffer()
@@ -245,20 +259,36 @@ Future<List<int>?> _readLocal(Directory directory, String assetName) async {
   return file.readAsBytes();
 }
 
+/// Downloads [url], or returns `null` if there is no such asset.
+///
+/// Throws a [_DownloadException] for any other failure, which must not be
+/// mistaken for a missing asset.
 Future<List<int>?> _fetch(HttpClient client, Uri url) async {
   try {
     final request = await client.getUrl(url);
     final response = await request.close();
-    if (response.statusCode != HttpStatus.ok) {
-      stdout.writeln('  Missing: $url (status ${response.statusCode})');
+    if (response.statusCode == HttpStatus.notFound) {
+      stdout.writeln('  Missing: $url');
       await response.drain<void>();
       return null;
+    }
+    if (response.statusCode != HttpStatus.ok) {
+      await response.drain<void>();
+      throw _DownloadException('$url returned status ${response.statusCode}.');
     }
     final builder = BytesBuilder(copy: false);
     await response.forEach(builder.add);
     return builder.takeBytes();
   } on IOException catch (e) {
-    stdout.writeln('  Error fetching $url: $e');
-    return null;
+    throw _DownloadException('Failed to download $url: $e');
   }
+}
+
+class _DownloadException implements Exception {
+  final String message;
+
+  _DownloadException(this.message);
+
+  @override
+  String toString() => message;
 }

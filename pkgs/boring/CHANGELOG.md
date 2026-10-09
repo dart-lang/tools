@@ -16,6 +16,11 @@
 - The prebuilt libraries are built from the vendored BoringSSL by CI, which
   pins them in an automated pull request, so the `fetch` and `checkout` build
   modes use the same sources.
+- Prebuilt libraries for Android (arm, arm64, x64) and iOS (arm64, and the
+  arm64 and x64 simulators), so Flutter apps no longer compile BoringSSL from
+  source.
+- The libraries no longer reference libc++ when built with it, which failed
+  to link on Android.
 
 ## 0.4.1
 

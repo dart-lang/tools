@@ -101,6 +101,14 @@ else()
   # Android) or -lstdc++ when linking CXX object files with LINKER_LANGUAGE C.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
   set(CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "")
+  # With exceptions disabled, libc++'s throw helpers, which for example
+  # std::string_view::substr uses, call std::__libcpp_verbose_abort, a function
+  # in libc++'s library. Abort directly instead, which libc++ lets users
+  # configure with this macro, so that the objects don't reference libc++: the
+  # C compiler driver doesn't link it, and Android's linker rejects the
+  # undefined reference. (A compile option rather than a compile definition,
+  # which can't be function-like.)
+  add_compile_options("-D_LIBCPP_VERBOSE_ABORT(...)=__builtin_abort()")
   if(NOT APPLE)
     # One section per function and variable, so the link hook can drop the
     # unused ones. Mach-O linkers already do this per symbol.

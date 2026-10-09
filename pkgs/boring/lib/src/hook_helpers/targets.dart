@@ -10,6 +10,12 @@ import 'package:code_assets/code_assets.dart';
 /// The `fetch` build mode compiles BoringSSL from source for all other
 /// targets. Keep in sync with the matrix of the `precompile` job.
 const prebuiltTargets = <(OS, Architecture, IOSSdk?)>[
+  (OS.android, Architecture.arm, null),
+  (OS.android, Architecture.arm64, null),
+  (OS.android, Architecture.x64, null),
+  (OS.iOS, Architecture.arm64, IOSSdk.iPhoneOS),
+  (OS.iOS, Architecture.arm64, IOSSdk.iPhoneSimulator),
+  (OS.iOS, Architecture.x64, IOSSdk.iPhoneSimulator),
   (OS.linux, Architecture.arm64, null),
   (OS.linux, Architecture.x64, null),
   (OS.macOS, Architecture.arm64, null),
