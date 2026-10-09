@@ -3,6 +3,8 @@
 - Added `tagPattern` and `version` fields to `GitDependency`, to support the
   `tag_pattern` key for git dependencies introduced in Dart 3.9.
 - Added a usage example.
+- Fix `Pubspec.fromJson` with `lenient: true` to preserve the input `Map`
+  (`YamlMap`) when `name` is invalid or missing.
 
 ## 1.6.0
 
