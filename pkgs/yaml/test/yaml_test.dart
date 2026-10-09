@@ -1996,6 +1996,51 @@ void main() {
         List.generate(keys.length, (i) => i + 1).reduce((n, i) => n * i);
     expect(sanityCheckCount, expectedPermutationCount);
   });
+
+  group('block scalar spans', () {
+    test('includes trailing empty lines in keep-chomped block scalar span', () {
+      const source = 'a: |+\n  hello\n\n\nb: 2\n';
+      final document = loadYamlDocument(source);
+      final map = document.contents as YamlMap;
+      final scalar = map.nodes['a'] as YamlScalar;
+      expect(scalar.value, 'hello\n\n\n');
+      // Span should cover through the last kept empty line before b: 2
+      expect(source.substring(scalar.span.end.offset), '\nb: 2\n');
+    });
+
+    test('bounds empty strip and clip block scalar spans at the header line',
+        () {
+      const source = 'strip: >-\n\nclip: >\n\nkeep: |+\n\n';
+      final document = loadYamlDocument(source);
+      final map = document.contents as YamlMap;
+      final stripScalar = map.nodes['strip'] as YamlScalar;
+      final clipScalar = map.nodes['clip'] as YamlScalar;
+      final keepScalar = map.nodes['keep'] as YamlScalar;
+
+      expect(stripScalar.value, '');
+      expect(stripScalar.span.text, '>-');
+      expect(clipScalar.value, '');
+      expect(clipScalar.span.text, '>');
+      expect(keepScalar.value, '\n');
+      expect(keepScalar.span.text, '|+\n');
+    });
+  });
+
+  group('loadYamlDocuments', () {
+    test('loads multiple documents with metadata', () {
+      const source = '%YAML 1.2\n---\na: 1\n...\n---\nb: 2\n';
+      final documents =
+          loadYamlDocuments(source, sourceUrl: Uri.parse('test.yaml'));
+      expect(documents, hasLength(2));
+      expect(documents[0].contents, {'a': 1});
+      expect(documents[0].versionDirective.toString(), '%YAML 1.2');
+      expect(documents[1].contents, {'b': 2});
+    });
+
+    test('returns an empty list for an empty stream', () {
+      expect(loadYamlDocuments(''), isEmpty);
+    });
+  });
 }
 
 Iterable<List<String>> _generatePermutations(List<String> keys) sync* {
