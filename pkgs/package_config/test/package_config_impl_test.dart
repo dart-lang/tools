@@ -163,6 +163,7 @@ void main() {
       expect(package.root, root);
       expect(package.packageUriRoot, root);
       expect(package.languageVersion, null);
+      expect(package.experiments, isEmpty);
       expect(package.extraData, same(unique));
     });
 
@@ -175,12 +176,15 @@ void main() {
         packageUriRoot: absolute,
         relativeRoot: false,
         languageVersion: version,
+        experiments: ['variance'],
         extraData: unique,
       );
       expect(package.name, 'name');
       expect(package.root, root);
       expect(package.packageUriRoot, absolute);
       expect(package.languageVersion, version);
+      expect(package.experiments, ['variance']);
+      expect(() => package.experiments.add('other'), throwsUnsupportedError);
       expect(package.extraData, same(unique));
       expect(package.relativeRoot, false);
     });
@@ -200,6 +204,7 @@ void main() {
       expect(package.packageUriRoot, absolute);
       expect(package.relativeRoot, true);
       expect(package.languageVersion, null);
+      expect(package.experiments, isEmpty);
       expect(package.extraData, same(unique));
     });
 
@@ -267,6 +272,7 @@ void main() {
           packageUriRoot: Uri.parse('file:///pkg/foo/lib/'),
           relativeRoot: false,
           languageVersion: LanguageVersion(2, 4),
+          experiments: ['variance'],
           extraData: {'foo': 'foo!'},
         ),
         Package(
@@ -291,6 +297,7 @@ void main() {
           'rootUri': 'file:///pkg/foo/',
           'packageUri': 'lib/',
           'languageVersion': '2.4',
+          'experiments': ['variance'],
           'foo': 'foo!',
         },
         {'name': 'bar', 'rootUri': 'bar/', 'packageUri': 'lib/', 'bar': 'bar!'},

@@ -252,6 +252,9 @@ abstract class Package {
   ///
   /// If [extraData] is supplied, it will be available as the
   /// [Package.extraData] of the created package.
+  ///
+  /// If [experiments] is supplied, it will be available as an unmodifiable list
+  /// on [Package.experiments].
   factory Package(
     String name,
     Uri root, {
@@ -259,6 +262,7 @@ abstract class Package {
     LanguageVersion? languageVersion,
     Object? extraData,
     bool relativeRoot = true,
+    List<String>? experiments,
   }) => SimplePackage.validate(
     name,
     root,
@@ -266,6 +270,7 @@ abstract class Package {
     languageVersion,
     extraData,
     relativeRoot,
+    experiments,
     throwError,
   )!;
 
@@ -318,6 +323,14 @@ abstract class Package {
   /// file, the [root] URI can be either relative to the file
   /// location or absolute, controller by this value.
   bool get relativeRoot;
+
+  /// Experimental features enabled or disabled for this package.
+  ///
+  /// An unmodifiable list of experiment flag strings (such as `'variance'`,
+  /// `'no-variance'`, or <i>package</i>`.`<i>experiment</i>).
+  ///
+  /// Empty if no experiments are specified for this package.
+  List<String> get experiments;
 }
 
 /// A language version.
@@ -602,6 +615,7 @@ class SimplePackageConfig implements PackageConfig {
           originalPackage.languageVersion,
           originalPackage.extraData,
           originalPackage.relativeRoot,
+          originalPackage.experiments,
           (error) {
             if (error is PackageConfigArgumentError) {
               onError(
@@ -749,6 +763,8 @@ class SimplePackage implements Package {
   final Object? extraData;
   @override
   final bool relativeRoot;
+  @override
+  final List<String> experiments;
 
   SimplePackage._(
     this.name,
@@ -757,6 +773,7 @@ class SimplePackage implements Package {
     this.languageVersion,
     this.extraData,
     this.relativeRoot,
+    this.experiments,
   );
 
   /// Creates a [SimplePackage] with the provided content.
@@ -781,6 +798,7 @@ class SimplePackage implements Package {
     LanguageVersion? languageVersion,
     Object? extraData,
     bool relativeRoot,
+    List<String>? experiments,
     void Function(Object error) onError,
   ) {
     var fatalError = false;
@@ -854,6 +872,9 @@ class SimplePackage implements Package {
       languageVersion,
       extraData,
       relativeRoot,
+      experiments != null && experiments.isNotEmpty
+          ? List<String>.unmodifiable(experiments)
+          : const <String>[],
     );
   }
 }
