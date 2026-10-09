@@ -2,7 +2,8 @@
 # for details. All rights reserved. Use of this source code is governed by a
 # BSD-style license that can be found in the LICENSE file.
 
-cmake_minimum_required(VERSION 3.14.0)
+# 3.15 for CMAKE_MSVC_RUNTIME_LIBRARY (policy CMP0091).
+cmake_minimum_required(VERSION 3.15.0)
 project(bssl_dart LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -86,6 +87,12 @@ if(MSVC)
   # hook can drop the unused ones. BoringSSL doesn't use RTTI (-GR-).
   set(CMAKE_C_FLAGS "-utf-8 -W4 -WX -Gy -Gw ${MSVC_DISABLED_WARNINGS_STR}")
   set(CMAKE_CXX_FLAGS "-utf-8 -W4 -WX -Gy -Gw -GR- ${MSVC_DISABLED_WARNINGS_STR}")
+  # Link the C runtime statically (-MT), like the Dart SDK does, so that the
+  # libraries don't need the Visual C++ Redistributable (vcruntime140.dll) on
+  # the machines that run them. The objects carry the choice as a default
+  # library directive, so hook/link.dart's DLL inherits it. BoringSSL frees
+  # its allocations itself (OPENSSL_free), so the library's own heap is fine.
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_BINARY_DIR}>)
 else()
   # BoringSSL doesn't need the C++ runtime (see BORINGSSL_ALLOW_CXX_RUNTIME

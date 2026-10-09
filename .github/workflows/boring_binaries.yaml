@@ -6,6 +6,10 @@
 # package:boring, then pin the SHA-256 hashes of the release assets in
 # lib/src/hook_helpers/hashes.dart with
 # `dart run tool/regenerate_hashes.dart <version>`.
+#
+# Pull requests that change the pipeline or the native build only run the
+# `precompile` job, as does `workflow_dispatch`, and upload workflow artifacts
+# without creating a release.
 name: package:boring binaries
 permissions:
   contents: read
@@ -14,12 +18,22 @@ on:
   push:
     tags:
       - 'boring-binaries-v[0-9]+.[0-9]+.[0-9]+*'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/boring_binaries.yaml'
+      - 'pkgs/boring/src/**'
+      - 'pkgs/boring/tool/precompile_binaries.dart'
   workflow_dispatch:
 
 jobs:
   precompile:
     name: Precompile (${{ matrix.target-os }}-${{ matrix.target-arch }})
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write # To sign the provenance attestations of the libraries.
+      attestations: write # To store the attestations with the repository.
     defaults:
       run:
         working-directory: pkgs/boring/
@@ -27,21 +41,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # `max-glibc` and `min-macos` are the ABI floors that the libraries are
+        # checked against below. Keep `min-macos` in sync with
+        # `macOSDeploymentTargets` in tool/precompile_binaries.dart.
         include:
           # The oldest available Ubuntu, so the libraries only require glibc
           # 2.35.
           - os: ubuntu-22.04
             target-os: linux
             target-arch: x64
+            max-glibc: '2.35'
           - os: ubuntu-22.04-arm
             target-os: linux
             target-arch: arm64
+            max-glibc: '2.35'
           - os: macos-14
             target-os: macos
             target-arch: arm64
+            min-macos: '11.0'
           - os: macos-14
             target-os: macos
             target-arch: x64
+            min-macos: '10.15'
           - os: windows-latest
             target-os: windows
             target-arch: x64
@@ -67,11 +88,53 @@ jobs:
         run: dart run tool/precompile_binaries.dart --target-os="$TARGET_OS" --target-arch="$TARGET_ARCH"
       - name: List the libraries
         run: ls -l bin
+      # The dynamic library is bundled as is, so it must run on every OS version
+      # that Dart and Flutter support, not only on the build machine's.
+      - name: Check the ABI floor of the dynamic library (Linux)
+        if: matrix.target-os == 'linux'
+        env:
+          MAX_GLIBC: ${{ matrix.max-glibc }}
+        run: |
+          glibc="$(objdump -T bin/*.so | grep -oE 'GLIBC_[0-9.]+' | sed 's/GLIBC_//' | sort -Vu | tail -1)"
+          echo "Newest glibc symbol version: $glibc (allowed: $MAX_GLIBC)"
+          if [ "$(printf '%s\n%s\n' "$glibc" "$MAX_GLIBC" | sort -V | tail -1)" != "$MAX_GLIBC" ]; then
+            echo "::error::The library requires glibc $glibc, newer than $MAX_GLIBC. Build on an older runner."
+            exit 1
+          fi
+      - name: Check the ABI floor of the dynamic library (macOS)
+        if: matrix.target-os == 'macos'
+        env:
+          MIN_MACOS: ${{ matrix.min-macos }}
+        run: |
+          minos="$(otool -l bin/*.dylib | awk '/minos/ {print $2}' | sort -u)"
+          echo "Minimum macOS version: $minos (expected: $MIN_MACOS)"
+          if [ "$minos" != "$MIN_MACOS" ]; then
+            echo "::error::The library requires macOS '$minos' instead of $MIN_MACOS. Check macOSDeploymentTargets in tool/precompile_binaries.dart."
+            exit 1
+          fi
+      - name: Check the ABI floor of the dynamic library (Windows)
+        if: matrix.target-os == 'windows'
+        run: |
+          # The C runtime is linked statically (see src/CMakeLists.txt), so the
+          # DLL must not import the Visual C++ Redistributable's DLLs.
+          imports="$(grep -a -o -i -E '(vcruntime|msvcp|msvcr)[0-9_]*\.dll|api-ms-win-crt-[a-z0-9-]*\.dll' bin/*.dll | sort -u || true)"
+          if [ -n "$imports" ]; then
+            echo "$imports"
+            echo "::error::The DLL imports the C runtime dynamically. Check CMAKE_MSVC_RUNTIME_LIBRARY in src/CMakeLists.txt."
+            exit 1
+          fi
+          echo "The DLL doesn't import the C runtime dynamically."
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: binaries-${{ matrix.target-os }}-${{ matrix.target-arch }}
           path: pkgs/boring/bin/*
           if-no-files-found: error
+      # Verify with `gh attestation verify <file> --repo dart-lang/tools`.
+      - name: Attest the provenance of the release libraries
+        if: startsWith(github.ref, 'refs/tags/boring-binaries-v')
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
+        with:
+          subject-path: pkgs/boring/bin/*
 
   release:
     name: Attach the binaries to the GitHub release
@@ -79,7 +142,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/boring-binaries-v')
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # To create the release and upload its assets.
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
@@ -95,7 +158,7 @@ jobs:
           if ! gh release view "$TAG" > /dev/null 2>&1; then
             gh release create "$TAG" --prerelease --verify-tag \
               --title "package:boring binaries v$version" \
-              --notes "The prebuilt BoringSSL libraries for package:boring $version, built by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID."
+              --notes "The prebuilt BoringSSL libraries for package:boring $version, built by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Verify a library with \`gh attestation verify <file> --repo $GITHUB_REPOSITORY\`."
           fi
           # lib/src/hook_helpers/hashes.dart pins the hashes of the assets, so
           # never replace them.

@@ -79,8 +79,12 @@ void main(List<String> args) async {
     // native_toolchain_cmake, which finds MSVC without a Developer Command
     // Prompt, and Makefiles elsewhere.
     if (targetOS == OS.windows) ...['-A', _visualStudioPlatforms[targetArch]!],
-    if (targetOS == OS.macOS)
+    if (targetOS == OS.macOS) ...[
       '-DCMAKE_OSX_ARCHITECTURES=${_macOSArchitectures[targetArch]!}',
+      // Without this, the libraries would only load on the macOS version of
+      // the build machine or newer.
+      '-DCMAKE_OSX_DEPLOYMENT_TARGET=${macOSDeploymentTargets[targetArch]!}',
+    ],
     '-DCMAKE_BUILD_TYPE=Release',
     '-DCMAKE_INSTALL_PREFIX=${installDir.path}',
   ]);
@@ -119,6 +123,17 @@ final _visualStudioPlatforms = {
 final _macOSArchitectures = {
   Architecture.arm64: 'arm64',
   Architecture.x64: 'x86_64',
+};
+
+/// The oldest macOS version the prebuilt libraries run on.
+///
+/// Dart supports macOS 12 and Flutter's macOS deployment target defaults to
+/// 10.15. Apple silicon Macs start at 11.0. The `precompile` job of
+/// .github/workflows/boring_binaries.yaml checks the built libraries against
+/// these, so keep them in sync with its `min-macos` matrix entries.
+final macOSDeploymentTargets = {
+  Architecture.arm64: '11.0',
+  Architecture.x64: '10.15',
 };
 
 Future<void> _run(String executable, List<String> arguments) async {
