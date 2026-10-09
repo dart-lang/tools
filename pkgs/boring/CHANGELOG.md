@@ -11,6 +11,10 @@
   excluded unused system-header declarations from the generated bindings, and
   changed `SymbolAddresses` to an extension type so `addresses` no longer leaks
   a private type.
+- The prebuilt macOS libraries run on macOS 10.15 (x64) and 11 (arm64) and
+  later, instead of only on the macOS version they were built on.
+- The Windows libraries link the C runtime statically, so they don't require
+  the Visual C++ Redistributable.
 
 ## 0.4.1
 
