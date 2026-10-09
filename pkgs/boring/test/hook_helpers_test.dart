@@ -21,7 +21,14 @@ void main() {
           for (final static in [false, true])
             releaseAssetName(os, arch, iosSdk: iosSdk, static: static),
       };
-      expect(fileHashes.keys, unorderedEquals(expected));
+      if (sourceCommit.isEmpty) {
+        // A release built elsewhere may predate some of the prebuilt targets,
+        // which then compile from source.
+        expect(fileHashes, isNotEmpty);
+        expect(expected, containsAll(fileHashes.keys));
+      } else {
+        expect(fileHashes.keys, unorderedEquals(expected));
+      }
     });
 
     test('has SHA-256 hashes', () {
