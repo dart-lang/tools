@@ -123,7 +123,7 @@ void main(List<String> args) async {
       '-DCMAKE_SYSTEM_NAME=iOS',
       '-DCMAKE_OSX_SYSROOT=${iosSdk!.type}',
       '-DCMAKE_OSX_ARCHITECTURES=${_appleArchitectures[targetArch]!}',
-      '-DCMAKE_OSX_DEPLOYMENT_TARGET=$iOSDeploymentTarget',
+      '-DCMAKE_OSX_DEPLOYMENT_TARGET=${iOSDeploymentTarget(targetArch, iosSdk)}',
       // CMake's compiler checks build an executable, which iOS can't link
       // without an app bundle. The libraries themselves link fine.
       '-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY',
@@ -204,12 +204,15 @@ final macOSDeploymentTargets = {
   Architecture.x64: '10.15',
 };
 
-/// The oldest iOS version the prebuilt libraries run on.
+/// The oldest iOS version the prebuilt libraries for [arch] and [sdk] run on.
 ///
-/// The same as native_toolchain_cmake's default for building from source,
-/// and below Flutter's minimum. Keep in sync with the `min-os` matrix entries
-/// of the `precompile` job.
-const iOSDeploymentTarget = '12.0';
+/// 12.0 is native_toolchain_cmake's default for building from source, below
+/// Flutter's minimum. The arm64 simulator only exists since iOS 14. Keep in
+/// sync with the `min-os` matrix entries of the `precompile` job.
+String iOSDeploymentTarget(Architecture arch, IOSSdk sdk) =>
+    arch == Architecture.arm64 && sdk == IOSSdk.iPhoneSimulator
+    ? '14.0'
+    : '12.0';
 
 /// The oldest Android API level the prebuilt libraries run on.
 ///
