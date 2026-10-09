@@ -123,7 +123,8 @@ void main(List<String> args) async {
       '-DCMAKE_SYSTEM_NAME=iOS',
       '-DCMAKE_OSX_SYSROOT=${iosSdk!.type}',
       '-DCMAKE_OSX_ARCHITECTURES=${_appleArchitectures[targetArch]!}',
-      '-DCMAKE_OSX_DEPLOYMENT_TARGET=${iOSDeploymentTarget(targetArch, iosSdk)}',
+      '-DCMAKE_OSX_DEPLOYMENT_TARGET='
+          '${iOSDeploymentTarget(targetArch, iosSdk)}',
       // CMake's compiler checks build an executable, which iOS can't link
       // without an app bundle. The libraries themselves link fine.
       '-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY',
