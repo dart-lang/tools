@@ -157,11 +157,16 @@ jobs:
           sdk: dev
       - name: Regenerate at tool/REVISION
         run: ./tool/bump-boringssl-revision.sh "$(cat tool/REVISION)"
+      # Also checks that every prebuilt target's asset exists in the pinned
+      # release, since `fetch` silently compiles from source for a target
+      # without a hash.
+      - name: Regenerate the hashes of the pinned release
+        run: dart run tool/regenerate_hashes.dart
       - name: Check for changes
         run: |
           if [ -n "$(git status --porcelain -- .)" ]; then
             git status --short -- .
-            echo "::error::Generated files are out of date. Run ./tool/bump-boringssl-revision.sh \"\$(cat tool/REVISION)\" in pkgs/boring and commit the result."
+            echo "::error::Generated files are out of date. Run ./tool/bump-boringssl-revision.sh \"\$(cat tool/REVISION)\" and dart run tool/regenerate_hashes.dart in pkgs/boring and commit the result."
             exit 1
           fi
 

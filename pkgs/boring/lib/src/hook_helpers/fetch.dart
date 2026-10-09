@@ -2,14 +2,22 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async' show TimeoutException;
 import 'dart:io';
+import 'dart:typed_data' show BytesBuilder;
 
 import 'package:code_assets/code_assets.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:hooks/hooks.dart';
 
 import 'hashes.dart' show fileHashes, version;
-import 'targets.dart' show libraryFileName, releaseAssetName;
+import 'targets.dart' show libraryFileName, releaseAssetName, releaseAssetUrl;
+
+/// How long to wait for the connection and for each response.
+const _connectionTimeout = Duration(seconds: 30);
+
+/// How long to wait for the whole library to download.
+const _downloadTimeout = Duration(minutes: 5);
 
 /// Downloads and verifies the pre-built library for the target of [input] from
 /// the GitHub release [version], caching it in
@@ -59,33 +67,12 @@ Future<Uri?> fetchPrebuiltLibrary(
     }
   }
 
-  final binaryUrl = Uri.parse(
-    'https://github.com/mosuem/boring/releases/download/v$version/$assetRemoteName',
-  );
-
+  final binaryUrl = releaseAssetUrl(version, assetRemoteName);
   stdout.writeln('boring: fetching prebuilt binary from $binaryUrl...');
 
-  final client = HttpClient();
-  final List<int> bytes;
-  try {
-    final request = await client.getUrl(binaryUrl);
-    final response = await request.close();
-    if (response.statusCode != 200) {
-      stdout.writeln(
-        'boring: failed to download from $binaryUrl '
-        '(status: ${response.statusCode}).',
-      );
-      await response.drain<void>();
-      return null;
-    }
-    bytes = await response.fold<List<int>>([], (a, b) => a..addAll(b));
-  } on IOException catch (e) {
-    stdout.writeln(
-      'boring: network error downloading prebuilt binary ($e).',
-    );
+  final bytes = await _download(binaryUrl);
+  if (bytes == null) {
     return null;
-  } finally {
-    client.close();
   }
 
   final actualHash = sha256.convert(bytes).toString();
@@ -107,4 +94,37 @@ Future<Uri?> fetchPrebuiltLibrary(
   await cachedFile.parent.create(recursive: true);
   await cachedFile.writeAsBytes(bytes);
   return cachedFile.uri;
+}
+
+/// Downloads [url], or returns `null` after logging why it couldn't.
+///
+/// Honors the `HTTPS_PROXY` family of environment variables, which the hooks
+/// runner passes through to hooks, and gives up on a connection that hangs.
+Future<List<int>?> _download(Uri url) async {
+  final client = HttpClient()
+    ..connectionTimeout = _connectionTimeout
+    ..findProxy = HttpClient.findProxyFromEnvironment;
+  try {
+    final request = await client.getUrl(url).timeout(_connectionTimeout);
+    final response = await request.close().timeout(_connectionTimeout);
+    if (response.statusCode != HttpStatus.ok) {
+      stdout.writeln(
+        'boring: failed to download from $url '
+        '(status: ${response.statusCode}).',
+      );
+      await response.drain<void>();
+      return null;
+    }
+    final builder = BytesBuilder(copy: false);
+    await response.forEach(builder.add).timeout(_downloadTimeout);
+    return builder.takeBytes();
+  } on IOException catch (e) {
+    stdout.writeln('boring: network error downloading prebuilt binary ($e).');
+    return null;
+  } on TimeoutException catch (e) {
+    stdout.writeln('boring: timed out downloading prebuilt binary ($e).');
+    return null;
+  } finally {
+    client.close(force: true);
+  }
 }

@@ -5,6 +5,10 @@
   [dart-lang/tools](https://github.com/dart-lang/tools) repository.
 - The package is now licensed under the BSD 3-Clause license used by other
   Dart packages.
+- An unknown `buildMode` under `hooks.user_defines.boring` is an error instead
+  of silently using `fetch`.
+- The `fetch` build mode honors the `HTTPS_PROXY` family of environment
+  variables and no longer hangs on a stalled download.
 - The prebuilt macOS libraries run on macOS 10.15 (x64) and 11 (arm64) and
   later, instead of only on the macOS version they were built on.
 - The Windows libraries link the C runtime statically, so they don't require

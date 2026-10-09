@@ -34,7 +34,6 @@ Future<void> main(List<String> args) async {
     switch (buildOptions.buildMode) {
       case BuildModeEnum.fetch:
         await _fetchPrebuiltBinary(input, output, static: static);
-      case BuildModeEnum.build:
       case BuildModeEnum.checkout:
         await _buildLocalCMake(input, output, static: static);
       case BuildModeEnum.local:

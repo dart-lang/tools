@@ -5,76 +5,77 @@
 // coverage:ignore-file
 
 import 'dart:io';
-import 'dart:typed_data';
+import 'dart:typed_data' show BytesBuilder;
 
+import 'package:boring/src/hook_helpers/hashes.dart' as current;
 import 'package:boring/src/hook_helpers/targets.dart';
-import 'package:boring/src/hook_helpers/version.dart';
 import 'package:crypto/crypto.dart' show sha256;
+
+const _hashesFile = 'lib/src/hook_helpers/hashes.dart';
 
 /// Writes the SHA-256 hashes of the release assets built by
 /// tool/precompile_binaries.dart to lib/src/hook_helpers/hashes.dart.
+///
+/// Usage: `dart run tool/regenerate_hashes.dart [version] [directory]`
+///
+/// Hashes the assets of the GitHub release `version` (see [releaseAssetUrl]),
+/// which defaults to the currently pinned one, or the files in `directory` if
+/// given. Fails without writing anything if an asset of a prebuilt target is
+/// missing, so that a failed or partial release can't silently turn the
+/// `fetch` build mode into a source build for that target.
 Future<void> main(List<String> args) async {
-  final version = args.isNotEmpty ? args[0] : releaseVersion;
+  if (args.length > 2 || args.contains('--help') || args.contains('-h')) {
+    stderr.writeln(
+      'Usage: dart run tool/regenerate_hashes.dart [version] [directory]',
+    );
+    exit(64);
+  }
+  final version = args.isNotEmpty ? args[0] : current.version;
   final localDir = args.length > 1 ? Directory(args[1]) : null;
-  final httpClient = localDir == null ? HttpClient() : null;
 
-  stdout.writeln('Checking hashes for version $version...');
+  stdout.writeln(
+    localDir == null
+        ? 'Hashing the assets of release $version...'
+        : 'Hashing the assets for release $version in ${localDir.path}...',
+  );
+
   final fileHashes = <String, String>{};
-
-  for (final (os, arch, iosSdk) in supportedTargets) {
-    for (final static in [false, true]) {
-      final assetName = releaseAssetName(
-        os,
-        arch,
-        iosSdk: iosSdk,
-        static: static,
-      );
-      if (localDir != null) {
-        final file = File('${localDir.path}/$assetName');
-        if (!await file.exists()) {
-          stdout.writeln('  Skipping missing local file: ${file.path}');
+  final missing = <String>[];
+  final httpClient = HttpClient()
+    ..findProxy = HttpClient.findProxyFromEnvironment;
+  try {
+    for (final (os, arch, iosSdk) in prebuiltTargets) {
+      for (final static in [false, true]) {
+        final assetName = releaseAssetName(
+          os,
+          arch,
+          iosSdk: iosSdk,
+          static: static,
+        );
+        final bytes = localDir != null
+            ? await _readLocal(localDir, assetName)
+            : await _fetch(httpClient, releaseAssetUrl(version, assetName));
+        if (bytes == null) {
+          missing.add(assetName);
           continue;
         }
-        final fileHash = sha256.convert(await file.readAsBytes()).toString();
-        fileHashes[assetName] = fileHash;
-        stdout.writeln('  $assetName: $fileHash');
-        continue;
-      }
-
-      final uri = Uri.parse(
-        'https://github.com/mosuem/boring/releases/download/v$version/$assetName',
-      );
-
-      stdout.writeln('Fetching from $uri...');
-      try {
-        final request = await httpClient!.getUrl(uri);
-        final response = await request.close();
-        if (response.statusCode != 200) {
-          stdout.writeln('  Skipping: status ${response.statusCode}');
-          await response.drain<void>();
-          continue;
-        }
-        final builder = BytesBuilder(copy: false);
-        await response.forEach(builder.add);
-        final fileHash = sha256.convert(builder.takeBytes()).toString();
-        fileHashes[assetName] = fileHash;
-        stdout.writeln('  $assetName: $fileHash');
-      } catch (e) {
-        stdout.writeln('  Error fetching $uri: $e');
+        final hash = sha256.convert(bytes).toString();
+        fileHashes[assetName] = hash;
+        stdout.writeln('  $assetName: $hash');
       }
     }
+  } finally {
+    httpClient.close(force: true);
   }
-  httpClient?.close(force: true);
 
-  await File('lib/src/hook_helpers/version.dart').writeAsString(
-    '// Copyright (c) 2026, the Dart project authors. Please see the AUTHORS '
-    'file\n'
-    '// for details. All rights reserved. Use of this source code is governed '
-    'by a\n'
-    '// BSD-style license that can be found in the LICENSE file.\n'
-    '\n'
-    "const releaseVersion = '$version';\n",
-  );
+  if (missing.isNotEmpty) {
+    stderr.writeln(
+      'Not updating $_hashesFile: ${missing.length} of the '
+      '${fileHashes.length + missing.length} assets of the prebuilt targets '
+      'are missing:\n  ${missing.join('\n  ')}',
+    );
+    exit(1);
+  }
 
   final buffer = StringBuffer()
     ..writeln(
@@ -90,29 +91,58 @@ Future<void> main(List<String> args) async {
     ..writeln('// coverage:ignore-file')
     ..writeln('// THIS FILE IS GENERATED BY `tool/regenerate_hashes.dart`.')
     ..writeln()
-    ..writeln("import 'version.dart';")
-    ..writeln()
-    ..writeln('const version = releaseVersion;')
+    ..writeln('/// The version of the release with the prebuilt libraries, see')
+    ..writeln('/// `releaseAssetUrl` in targets.dart.')
+    ..writeln("const version = '$version';")
     ..writeln()
     ..writeln('/// Mapping from release asset name (see `releaseAssetName`) to')
     ..writeln('/// SHA-256 hash.')
     ..writeln('const fileHashes = <String, String>{');
-
   for (final entry in fileHashes.entries) {
-    buffer.writeln("  '${entry.key}':");
-    buffer.writeln("      '${entry.value}',");
+    buffer
+      ..writeln("  '${entry.key}':")
+      ..writeln("      '${entry.value}',");
   }
   buffer.writeln('};');
 
-  await File(
-    'lib/src/hook_helpers/hashes.dart',
-  ).writeAsString(buffer.toString());
-  await Process.run(Platform.resolvedExecutable, [
+  await File(_hashesFile).writeAsString(buffer.toString());
+  final format = await Process.run(Platform.resolvedExecutable, [
     'format',
-    'lib/src/hook_helpers/version.dart',
-    'lib/src/hook_helpers/hashes.dart',
+    _hashesFile,
   ]);
+  if (format.exitCode != 0) {
+    stderr.writeln('dart format failed:\n${format.stdout}\n${format.stderr}');
+    exit(format.exitCode);
+  }
   stdout.writeln(
-    'Updated lib/src/hook_helpers/hashes.dart with ${fileHashes.length} hashes.',
+    'Updated $_hashesFile with the ${fileHashes.length} hashes of release '
+    '$version.',
   );
+}
+
+Future<List<int>?> _readLocal(Directory directory, String assetName) async {
+  final file = File.fromUri(directory.uri.resolve(assetName));
+  if (!await file.exists()) {
+    stdout.writeln('  Missing: ${file.path}');
+    return null;
+  }
+  return file.readAsBytes();
+}
+
+Future<List<int>?> _fetch(HttpClient client, Uri url) async {
+  try {
+    final request = await client.getUrl(url);
+    final response = await request.close();
+    if (response.statusCode != HttpStatus.ok) {
+      stdout.writeln('  Missing: $url (status ${response.statusCode})');
+      await response.drain<void>();
+      return null;
+    }
+    final builder = BytesBuilder(copy: false);
+    await response.forEach(builder.add);
+    return builder.takeBytes();
+  } on IOException catch (e) {
+    stdout.writeln('  Error fetching $url: $e');
+    return null;
+  }
 }

@@ -4,26 +4,31 @@
 
 import 'package:code_assets/code_assets.dart';
 
-const supportedTargets = [
-  (OS.android, Architecture.arm, null),
-  (OS.android, Architecture.arm64, null),
-  (OS.android, Architecture.ia32, null),
-  (OS.android, Architecture.riscv64, null),
-  (OS.android, Architecture.x64, null),
-  (OS.iOS, Architecture.arm64, IOSSdk.iPhoneOS),
-  (OS.iOS, Architecture.arm64, IOSSdk.iPhoneSimulator),
-  (OS.iOS, Architecture.x64, IOSSdk.iPhoneSimulator),
-  (OS.linux, Architecture.arm, null),
+/// The GitHub repository whose releases have the prebuilt libraries.
+const releaseRepository = 'mosuem/boring';
+
+/// The prefix of the tag of the release with the prebuilt libraries for a
+/// version, see [releaseAssetUrl].
+const releaseTagPrefix = 'v';
+
+/// The targets that `.github/workflows/boring_binaries.yaml` builds the
+/// prebuilt libraries for.
+///
+/// The `fetch` build mode compiles BoringSSL from source for all other
+/// targets. Keep in sync with the matrix of the `precompile` job.
+const prebuiltTargets = <(OS, Architecture, IOSSdk?)>[
   (OS.linux, Architecture.arm64, null),
-  (OS.linux, Architecture.ia32, null),
-  (OS.linux, Architecture.riscv64, null),
   (OS.linux, Architecture.x64, null),
   (OS.macOS, Architecture.arm64, null),
   (OS.macOS, Architecture.x64, null),
-  (OS.windows, Architecture.arm64, null),
-  (OS.windows, Architecture.ia32, null),
   (OS.windows, Architecture.x64, null),
 ];
+
+/// The URL of the release asset [assetName] of the release [version].
+Uri releaseAssetUrl(String version, String assetName) => Uri.parse(
+  'https://github.com/$releaseRepository/releases/download/'
+  '$releaseTagPrefix$version/$assetName',
+);
 
 /// Formats a canonical target identifier, including [iosSdk] when targeting iOS
 /// so device (`iphoneos`) and simulator (`iphonesimulator`) binaries do not
