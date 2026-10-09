@@ -9,7 +9,7 @@ import 'package:boring/src/bindings/record_use_mapping.g.dart';
 import 'package:boring/src/hook_helpers/build_options.dart'
     show BuildModeEnum, BuildOptions;
 import 'package:boring/src/hook_helpers/fetch.dart' show fetchPrebuiltLibrary;
-import 'package:boring/src/hook_helpers/hashes.dart' show version;
+import 'package:boring/src/hook_helpers/hashes.dart' show releaseTag;
 import 'package:code_assets/code_assets.dart';
 import 'package:hooks/hooks.dart';
 import 'package:logging/logging.dart';
@@ -130,8 +130,8 @@ Future<bool> _fallBackToPrebuiltLibrary(
   };
   stderr.writeln(
     'Warning: package:boring could not tree-shake its native library for '
-    '$target, so it bundles the pre-built dynamic library of the boring '
-    '$version release instead, which is not tree-shaken and therefore '
+    '$target, so it bundles the pre-built dynamic library of release '
+    '$releaseTag instead, which is not tree-shaken and therefore '
     'larger. To enable tree-shaking, install a C toolchain (compiler and '
     'linker) for $target. Linking failed with: $reason',
   );
