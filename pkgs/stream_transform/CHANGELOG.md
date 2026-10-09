@@ -1,3 +1,12 @@
+## 2.1.3-wip
+
+- Fix `startWith` and `startWithMany` dropping events emitted by a broadcast
+  stream between listening to the result and delivery of the initial values.
+  The broadcast stream is now listened to immediately, and its events are held
+  back until the initial values have been emitted. As a result its `onListen`
+  callback now runs synchronously when the result is listened to.
+  `startWithStream` and `followedBy` are unchanged.
+
 ## 2.1.2
 
 - Fix an exception when a subscription to a `combineLatest` stream is canceled
