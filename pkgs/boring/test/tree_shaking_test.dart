@@ -11,9 +11,9 @@ library;
 
 import 'dart:ffi';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:code_assets/code_assets.dart';
+import 'package:prebuilt_code_assets/testing.dart';
 import 'package:test/test.dart';
 
 const _usedFunctions = ['EVP_sha256', 'EVP_DigestFinal', 'OPENSSL_free'];
@@ -117,13 +117,12 @@ void main() {
       });
 
       test('builds a linux-arm64 executable and dynamic library', () {
-        // EM_AARCH64 = 183.
-        expect(_elfMachine(executable.readAsBytesSync()), 183);
-        expect(_elfMachine(library.readAsBytesSync()), 183);
+        expect(elfMachine(executable.readAsBytesSync()), elfMachineAarch64);
+        expect(elfMachine(library.readAsBytesSync()), elfMachineAarch64);
       });
 
       test('the library only exports the functions the example uses', () {
-        final symbols = _elfDefinedDynamicSymbols(library.readAsBytesSync());
+        final symbols = elfDefinedDynamicSymbols(library.readAsBytesSync());
         for (final used in _usedFunctions) {
           expect(symbols, contains('bssl_dart_$used'), reason: used);
         }
@@ -137,7 +136,7 @@ void main() {
         expect(library.lengthSync(), lessThan(1024 * 1024));
       });
     },
-    skip: Platform.environment['CI'] != 'true' && !_hasAarch64LinuxToolchain()
+    skip: Platform.environment['CI'] != 'true' && !hasAarch64LinuxToolchain()
         ? 'aarch64-linux-gnu-gcc is not installed'
         : null,
   );
@@ -148,8 +147,9 @@ void main() {
     // On Linux (`x64`), we target `linux-arm64` with a stub on PATH that masks
     // `aarch64-linux-gnu-gcc` if installed.
     final targetArch = Platform.isLinux ? 'arm64' : 'x64';
-    // EM_AARCH64 = 183, EM_X86_64 = 62.
-    final expectedElfMachine = Platform.isLinux ? 183 : 62;
+    final expectedElfMachine = Platform.isLinux
+        ? elfMachineAarch64
+        : elfMachineX86_64;
 
     late Uri bundle;
     late File executable;
@@ -202,15 +202,15 @@ void main() {
     });
 
     test('builds a linux-$targetArch executable and dynamic library', () {
-      expect(_elfMachine(executable.readAsBytesSync()), expectedElfMachine);
-      expect(_elfMachine(library.readAsBytesSync()), expectedElfMachine);
+      expect(elfMachine(executable.readAsBytesSync()), expectedElfMachine);
+      expect(elfMachine(library.readAsBytesSync()), expectedElfMachine);
     });
 
     test(
       'falls back to bundling the pre-built dynamic library without '
       'tree-shaking',
       () {
-        final symbols = _elfDefinedDynamicSymbols(library.readAsBytesSync());
+        final symbols = elfDefinedDynamicSymbols(library.readAsBytesSync());
         for (final used in _usedFunctions) {
           expect(symbols, contains('bssl_dart_$used'), reason: used);
         }
@@ -260,60 +260,4 @@ dependencies:
     reason: '${pubGet.stdout}\n${pubGet.stderr}',
   );
   return appDir;
-}
-
-bool _hasAarch64LinuxToolchain() {
-  final which = Platform.isWindows ? 'where' : 'which';
-  if (Process.runSync(which, ['aarch64-linux-gnu-gcc']).exitCode == 0) {
-    return true;
-  }
-  return Platform.isMacOS &&
-      (File('/opt/homebrew/bin/aarch64-linux-gnu-gcc').existsSync() ||
-          File('/usr/local/bin/aarch64-linux-gnu-gcc').existsSync());
-}
-
-/// Returns the ELF `e_machine` field of [bytes].
-int _elfMachine(Uint8List bytes) {
-  expect(bytes.length, greaterThanOrEqualTo(64));
-  // 0x7f 'E' 'L' 'F', 64-bit (2), little-endian (1).
-  expect(bytes.sublist(0, 6), [0x7f, 0x45, 0x4c, 0x46, 2, 1]);
-  return ByteData.sublistView(bytes).getUint16(18, Endian.little);
-}
-
-/// Returns the names of all defined symbols in the `.dynsym` section of a
-/// 64-bit little-endian ELF binary.
-Set<String> _elfDefinedDynamicSymbols(Uint8List bytes) {
-  final data = ByteData.sublistView(bytes);
-  final shoff = data.getUint64(40, Endian.little);
-  final shentsize = data.getUint16(58, Endian.little);
-  final shnum = data.getUint16(60, Endian.little);
-
-  const shtDynsym = 11;
-  for (var i = 0; i < shnum; i++) {
-    final shdr = shoff + i * shentsize;
-    final shType = data.getUint32(shdr + 4, Endian.little);
-    if (shType != shtDynsym) continue;
-
-    final symOffset = data.getUint64(shdr + 24, Endian.little);
-    final symSize = data.getUint64(shdr + 32, Endian.little);
-    final strTabIndex = data.getUint32(shdr + 40, Endian.little);
-    final symEntSize = data.getUint64(shdr + 56, Endian.little);
-
-    final strShdr = shoff + strTabIndex * shentsize;
-    final strOffset = data.getUint64(strShdr + 24, Endian.little);
-
-    final symbols = <String>{};
-    final count = symSize ~/ symEntSize;
-    for (var j = 0; j < count; j++) {
-      final sym = symOffset + j * symEntSize;
-      final stName = data.getUint32(sym, Endian.little);
-      final stShndx = data.getUint16(sym + 6, Endian.little);
-      if (stName == 0 || stShndx == 0) continue;
-      final start = strOffset + stName;
-      final end = bytes.indexOf(0, start);
-      symbols.add(String.fromCharCodes(bytes, start, end));
-    }
-    return symbols;
-  }
-  throw StateError('No .dynsym section found in ELF binary.');
 }
