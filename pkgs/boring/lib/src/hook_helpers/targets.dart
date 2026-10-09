@@ -4,13 +4,6 @@
 
 import 'package:code_assets/code_assets.dart';
 
-/// The GitHub repository whose releases have the prebuilt libraries.
-const releaseRepository = 'mosuem/boring';
-
-/// The prefix of the tag of the release with the prebuilt libraries for a
-/// version, see [releaseAssetUrl].
-const releaseTagPrefix = 'v';
-
 /// The targets that `.github/workflows/boring_binaries.yaml` builds the
 /// prebuilt libraries for.
 ///
@@ -24,10 +17,16 @@ const prebuiltTargets = <(OS, Architecture, IOSSdk?)>[
   (OS.windows, Architecture.x64, null),
 ];
 
-/// The URL of the release asset [assetName] of the release [version].
-Uri releaseAssetUrl(String version, String assetName) => Uri.parse(
-  'https://github.com/$releaseRepository/releases/download/'
-  '$releaseTagPrefix$version/$assetName',
+/// The URL of the release asset [assetName] of the GitHub release [tag] of
+/// [repository] (`owner/name`).
+///
+/// hashes.dart has the repository and the tag of the pinned release.
+Uri releaseAssetUrl({
+  required String repository,
+  required String tag,
+  required String assetName,
+}) => Uri.parse(
+  'https://github.com/$repository/releases/download/$tag/$assetName',
 );
 
 /// Formats a canonical target identifier, including [iosSdk] when targeting iOS

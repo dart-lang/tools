@@ -30,12 +30,18 @@ void main() {
       }
     });
 
-    test('pins a release version', () {
-      expect(version, isNotEmpty);
+    test('pins a release', () {
+      expect(releaseRepository, matches(RegExp(r'^[\w.-]+/[\w.-]+$')));
+      expect(releaseTag, isNotEmpty);
+      expect(sourceCommit, anyOf(isEmpty, matches(RegExp(r'^[0-9a-f]{40}$'))));
       expect(
-        releaseAssetUrl(version, 'boring-linux-x64-libbssl_dart.so').toString(),
-        'https://github.com/$releaseRepository/releases/download/'
-        '$releaseTagPrefix$version/boring-linux-x64-libbssl_dart.so',
+        releaseAssetUrl(
+          repository: releaseRepository,
+          tag: releaseTag,
+          assetName: 'boring-linux-x64-libbssl_dart.so',
+        ).toString(),
+        'https://github.com/$releaseRepository/releases/download/$releaseTag/'
+        'boring-linux-x64-libbssl_dart.so',
       );
     });
   });
