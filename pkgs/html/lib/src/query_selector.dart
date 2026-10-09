@@ -256,8 +256,10 @@ class SelectorEvaluator extends Visitor {
 
   @override
   bool visitNamespaceSelector(NamespaceSelector node) {
+    final nameSelector = node.nameAsSimpleSelector;
+    if (nameSelector == null) throw _unsupported(node);
     // Match element tag name
-    if (!(node.nameAsSimpleSelector!.visit(this) as bool)) return false;
+    if (!(nameSelector.visit(this) as bool)) return false;
 
     if (node.isNamespaceWildcard) return true;
 
@@ -281,8 +283,11 @@ class SelectorEvaluator extends Visitor {
   // not just simple selectors.
   // http://dev.w3.org/csswg/selectors-4/#negation
   @override
-  bool visitNegationSelector(NegationSelector node) =>
-      !(node.negationArg!.visit(this) as bool);
+  bool visitNegationSelector(NegationSelector node) {
+    final negationArg = node.negationArg;
+    if (negationArg == null) throw _unsupported(node);
+    return !(negationArg.visit(this) as bool);
+  }
 
   @override
   bool visitAttributeSelector(AttributeSelector node) {
