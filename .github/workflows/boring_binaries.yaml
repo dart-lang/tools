@@ -90,7 +90,8 @@ jobs:
             target-os: ios
             target-arch: arm64
             ios-sdk: iphonesimulator
-            min-os: '12.0'
+            # The arm64 simulator only exists since iOS 14.
+            min-os: '14.0'
           - os: macos-14
             target-os: ios
             target-arch: x64
