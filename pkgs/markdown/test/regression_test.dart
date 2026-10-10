@@ -131,4 +131,33 @@ a <!--
       '<p>[a]: /b (c\n| :--- | ---: |</p>\n',
     );
   });
+
+  test('footnote definition containing a list or horizontal rule does not '
+      'throw TypeError', () {
+    expect(
+      markdownToHtml(
+        '[^1]\n\n[^1]: - note',
+        extensionSet: ExtensionSet.gitHubWeb,
+      ),
+      '<p><sup class="footnote-ref"><a href="#fn-1" id="fnref-1">1</a></sup></p>\n'
+      '<section class="footnotes">\n'
+      '<ol>\n'
+      '<li id="fn-1">\n'
+      '<ul>\n'
+      '<li>note</li><a href="#fnref-1" class="footnote-backref">\u21a9</a></ul>\n'
+      '</li>\n'
+      '</ol>\n'
+      '</section>\n',
+    );
+    expect(
+      markdownToHtml('[^1]\n\n[^1]: ---', extensionSet: ExtensionSet.gitHubWeb),
+      '<p><sup class="footnote-ref"><a href="#fn-1" id="fnref-1">1</a></sup></p>\n'
+      '<section class="footnotes">\n'
+      '<ol>\n'
+      '<li id="fn-1">\n'
+      '<hr /> <a href="#fnref-1" class="footnote-backref">\u21a9</a></li>\n'
+      '</ol>\n'
+      '</section>\n',
+    );
+  });
 }

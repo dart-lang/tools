@@ -11,6 +11,8 @@
 * Fix `AssertionError('BlockParser.parseLines is not advancing')` when multiple
   `BlockSyntax` rules (such as `TableSyntax` and `LinkReferenceDefinitionSyntax`)
   match `canParse` on the same line and retreat without advancing.
+* Fix `TypeError` in `Document` when appending footnote backreferences to a
+  footnote definition that ends with a list block (`<ul>` or `<ol>`).
 
 ## 7.4.0
 
