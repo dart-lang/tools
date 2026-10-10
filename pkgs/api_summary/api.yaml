@@ -1,6 +1,15 @@
 name: api_summary
 environment:
   sdk: ^3.12.0
+dependencies:
+  analyzer: ">=13.0.0 <15.0.0"
+  args: ^2.6.0
+  cli_util: ^0.6.0
+  collection: ^1.19.0
+  path: ^1.9.0
+  pub_semver: ^2.1.4
+  yaml: ^3.1.2
+  yaml_edit: ^2.2.0
 executables:
   api_summary: null
 libraries:
@@ -1877,6 +1886,20 @@ libraries:
               name: ApiSummary
               libraryUri: package:api_summary/src/api_declaration.dart
             parameters:
+              - name: dependencies
+                type:
+                  kind: interface
+                  name: Map
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: String
+                      libraryUri: dart:core
+                    - kind: interface
+                      name: String
+                      libraryUri: dart:core
+                  isNullable: true
+                isNamed: true
               - name: environment
                 type:
                   kind: interface
@@ -1925,6 +1948,20 @@ libraries:
                 isRequired: true
                 isNamed: true
         methods:
+          - name: dependencies
+            locationUri: package:api_summary/src/api_declaration.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: Map
+              libraryUri: dart:core
+              typeArguments:
+                - kind: interface
+                  name: String
+                  libraryUri: dart:core
+                - kind: interface
+                  name: String
+                  libraryUri: dart:core
           - name: environment
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -2097,6 +2134,19 @@ libraries:
               kind: interface
               name: ApiSummaryCustomizer
               libraryUri: package:api_summary/src/api_summary_customizer.dart
+            parameters:
+              - name: includeImplicitNonPublicMembers
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
+              - name: includeReferencedTypes
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
             isConst: true
         methods:
           - name: includeImplicitNonPublicMembers

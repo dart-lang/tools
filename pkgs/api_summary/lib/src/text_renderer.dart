@@ -124,6 +124,13 @@ final class _ApiTextRenderer {
       }
     }
 
+    if (_package.dependencies.isNotEmpty) {
+      stringBuffer.writeln('dependencies:');
+      for (final entry in _package.dependencies.entries) {
+        stringBuffer.writeln('  ${entry.key}: ${entry.value}');
+      }
+    }
+
     if (_package.executables.isNotEmpty) {
       stringBuffer.writeln('executables:');
       for (final entry in _package.executables.entries) {

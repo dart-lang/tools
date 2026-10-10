@@ -383,5 +383,152 @@ executables:
         );
       },
     );
+
+    test(
+      'extracts dependencies and ignores dev_dependencies and overrides',
+      () async {
+        await withTempPkg(
+          '''
+name: sample_pkg
+environment:
+  sdk: ^3.12.0
+dependencies:
+  z_pkg: ^2.0.0
+  a_pkg: ">=1.0.0 <2.0.0"
+  range_pkg: ">= 13.0.0   < 15.0.0"
+  any_pkg:
+  flutter:
+    sdk: flutter
+  local_pkg:
+    path: ../local_pkg
+  hosted_pkg:
+    hosted: https://pub.example.org
+    version: ">=1.2.3 <2.0.0"
+  git_pkg:
+    git:
+      url: https://example.com/git_pkg.git
+      ref: main
+dev_dependencies:
+  test: ^1.28.0
+dependency_overrides:
+  a_pkg: ^1.5.0
+''',
+          (pkgPath) async {
+            final summary = await apiSummary(pkgPath);
+            expect(
+              summary.dependencies.keys.toList(),
+              equals([
+                'a_pkg',
+                'any_pkg',
+                'flutter',
+                'git_pkg',
+                'hosted_pkg',
+                'local_pkg',
+                'range_pkg',
+                'z_pkg',
+              ]),
+            );
+            expect(
+              summary.dependencies,
+              equals({
+                'a_pkg': '^1.0.0',
+                'any_pkg': 'any',
+                'flutter': '{sdk: flutter}',
+                'git_pkg':
+                    '{git: {ref: main, url: https://example.com/git_pkg.git}}',
+                'hosted_pkg':
+                    '{hosted: https://pub.example.org, version: ^1.2.3}',
+                'local_pkg': '{path: ../local_pkg}',
+                'range_pkg': '>=13.0.0 <15.0.0',
+                'z_pkg': '^2.0.0',
+              }),
+            );
+            expect(summary.dependencies.containsKey('test'), isFalse);
+
+            final json = summary.toJson();
+            expect(json['dependencies'], equals(summary.dependencies));
+            final rehydrated = ApiSummary.fromJson(json);
+            expect(rehydrated.dependencies, equals(summary.dependencies));
+            expect(
+              summary.toString(),
+              contains(
+                'dependencies:\n'
+                '  a_pkg: ^1.0.0\n'
+                '  any_pkg: any\n'
+                '  flutter: {sdk: flutter}\n'
+                '  git_pkg: '
+                '{git: {ref: main, url: https://example.com/git_pkg.git}}\n'
+                '  hosted_pkg: '
+                '{hosted: https://pub.example.org, version: ^1.2.3}\n'
+                '  local_pkg: {path: ../local_pkg}\n'
+                '  range_pkg: >=13.0.0 <15.0.0\n'
+                '  z_pkg: ^2.0.0\n',
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    test('normalizes equivalent version constraints in environment '
+        'and dependencies', () async {
+      await withTempPkg(
+        '''
+name: sample_pkg
+environment:
+  sdk: ">=3.12.0 <4.0.0"
+dependencies:
+  foo: ">= 1.2.3   < 2.0.0"
+''',
+        (pkgPath) async {
+          final summary = await apiSummary(pkgPath);
+          expect(summary.environment, equals({'sdk': '^3.12.0'}));
+          expect(summary.dependencies, equals({'foo': '^1.2.3'}));
+        },
+      );
+    });
+
+    test('throws FormatException when dependencies is not a map', () async {
+      await withTempPkg('name: foo\ndependencies: "^1.0.0"', (pkgPath) async {
+        await expectLater(
+          apiSummary(pkgPath),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains('Expected "dependencies" to be a YAML map'),
+            ),
+          ),
+        );
+      });
+    });
+
+    test(
+      'throws FormatException when dependency constraint is invalid',
+      () async {
+        await withTempPkg(
+          '''
+name: foo
+dependencies:
+  bar: [1, 2]
+''',
+          (pkgPath) async {
+            await expectLater(
+              apiSummary(pkgPath),
+              throwsA(
+                isA<FormatException>().having(
+                  (e) => e.message,
+                  'message',
+                  contains(
+                    'Expected dependency constraint for "bar" '
+                    'to be a string, null, or map',
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   });
 }
