@@ -4,6 +4,15 @@
   example a single very long word). The plain-text accelerator regex required
   a trailing whitespace, so a run reaching the end of a line without one
   backtracked across the whole run at every position.
+* Fix `RangeError` in `LinkParser` when a link reference definition ends with a
+  trailing backslash (`\`) or an unclosed `<` destination at EOF.
+* Reject unbalanced parentheses and allow characters after balanced parentheses
+  in bare link reference destinations (`LinkParser`).
+* Fix `AssertionError('BlockParser.parseLines is not advancing')` when multiple
+  `BlockSyntax` rules (such as `TableSyntax` and `LinkReferenceDefinitionSyntax`)
+  match `canParse` on the same line and retreat without advancing.
+* Fix `TypeError` in `Document` when appending footnote backreferences to a
+  footnote definition that ends with a list block (`<ul>` or `<ol>`).
 
 ## 7.4.0
 

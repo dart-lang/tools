@@ -80,4 +80,84 @@ a <!--
     expect(html, isNotNull); // To use the output.
     expect(time.elapsedMilliseconds, lessThan(10000));
   });
+
+  group('link reference definitions at EOF', () {
+    test('trailing backslash in label does not throw RangeError', () {
+      expect(markdownToHtml(r'[\'), '<p>[\\</p>\n');
+    });
+
+    test('trailing backslash in bracketed destination does not throw', () {
+      expect(markdownToHtml(r'[a]: <\'), '<p>[a]: &lt;\\</p>\n');
+    });
+
+    test('trailing backslash in bare destination does not throw', () {
+      expect(markdownToHtml(r'[a]: \'), '\n');
+      expect(markdownToHtml('[a]: \\\n\n[a]'), '<p><a href="%5C">a</a></p>\n');
+    });
+
+    test('trailing backslash in title does not throw RangeError', () {
+      expect(markdownToHtml(r'[a]: /url "\'), '<p>[a]: /url &quot;\\</p>\n');
+    });
+
+    test('unclosed bracketed destination at EOF does not throw RangeError', () {
+      expect(markdownToHtml('[a]: <'), '<p>[a]: &lt;</p>\n');
+      expect(markdownToHtml('[*#]:<'), '<p>[*#]:&lt;</p>\n');
+    });
+
+    test('unbalanced parentheses in bare destination are rejected', () {
+      expect(
+        markdownToHtml('[a]: /url)\n\n[a]'),
+        '<p>[a]: /url)</p>\n<p>[a]</p>\n',
+      );
+      expect(
+        markdownToHtml('[a]: /url(bar\n\n[a]'),
+        '<p>[a]: /url(bar</p>\n<p>[a]</p>\n',
+      );
+      expect(
+        markdownToHtml('[a]: /url(a)b\n\n[a]'),
+        '<p><a href="/url(a)b">a</a></p>\n',
+      );
+    });
+  });
+
+  test('multiple non-advancing block syntaxes on the same line do not throw '
+      'AssertionError', () {
+    // Line 1 matches both TableSyntax.canParse (because line 2 is a 2-column
+    // table delimiter row) and LinkReferenceDefinitionSyntax.canParse, and
+    // both retreat to line 1 during parse().
+    const input = '[a]: /b (c\n| :--- | ---: |\n';
+    expect(
+      markdownToHtml(input, extensionSet: ExtensionSet.gitHubFlavored),
+      '<p>[a]: /b (c\n| :--- | ---: |</p>\n',
+    );
+  });
+
+  test('footnote definition containing a list or horizontal rule does not '
+      'throw TypeError', () {
+    expect(
+      markdownToHtml(
+        '[^1]\n\n[^1]: - note',
+        extensionSet: ExtensionSet.gitHubWeb,
+      ),
+      '<p><sup class="footnote-ref"><a href="#fn-1" id="fnref-1">1</a></sup></p>\n'
+      '<section class="footnotes">\n'
+      '<ol>\n'
+      '<li id="fn-1">\n'
+      '<ul>\n'
+      '<li>note</li><a href="#fnref-1" class="footnote-backref">\u21a9</a></ul>\n'
+      '</li>\n'
+      '</ol>\n'
+      '</section>\n',
+    );
+    expect(
+      markdownToHtml('[^1]\n\n[^1]: ---', extensionSet: ExtensionSet.gitHubWeb),
+      '<p><sup class="footnote-ref"><a href="#fn-1" id="fnref-1">1</a></sup></p>\n'
+      '<section class="footnotes">\n'
+      '<ol>\n'
+      '<li id="fn-1">\n'
+      '<hr /> <a href="#fnref-1" class="footnote-backref">\u21a9</a></li>\n'
+      '</ol>\n'
+      '</section>\n',
+    );
+  });
 }
