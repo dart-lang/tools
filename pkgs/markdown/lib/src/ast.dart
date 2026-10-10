@@ -62,6 +62,14 @@ class Element implements Node {
   String? generatedId;
   String? footnoteLabel;
 
+  /// Whether this element still needs [generatedId] computed from its
+  /// fully inline-parsed [textContent].
+  ///
+  /// Set by header syntaxes that support generated ids; consumed by the
+  /// document once inline parsing of this element's children completes,
+  /// so that link targets and images don't leak into the generated id.
+  bool needsGeneratedId = false;
+
   /// Instantiates a [tag] Element with [children].
   Element(this.tag, this.children, [Map<String, String>? attributes])
     : attributes = {...?attributes};

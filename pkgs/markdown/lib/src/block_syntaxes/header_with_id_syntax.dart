@@ -4,7 +4,6 @@
 
 import '../ast.dart';
 import '../block_parser.dart';
-import 'block_syntax.dart';
 import 'header_syntax.dart';
 
 /// Parses atx-style headers, and adds generated IDs to the generated elements.
@@ -16,7 +15,7 @@ class HeaderWithIdSyntax extends HeaderSyntax {
     final element = super.parse(parser) as Element;
 
     if (element.children?.isNotEmpty ?? false) {
-      element.generatedId = BlockSyntax.generateAnchorHash(element);
+      element.needsGeneratedId = true;
     }
 
     return element;

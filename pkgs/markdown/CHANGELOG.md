@@ -4,6 +4,10 @@
   example a single very long word). The plain-text accelerator regex required
   a trailing whitespace, so a run reaching the end of a line without one
   backtracked across the whole run at every position.
+* Fixes header id generation (from `HeaderWithIdSyntax` and
+  `SetextHeaderWithIdSyntax`) to use each header's fully inline-parsed text,
+  so that a header containing a link uses the link's text instead of its
+  target, and a header containing an image omits it entirely.
 
 ## 7.4.0
 
