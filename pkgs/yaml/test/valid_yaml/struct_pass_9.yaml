@@ -1,0 +1,4 @@
+# Closing bracket of flow mapping on a new line with sufficient indentation
+- {
+   a: b
+  }

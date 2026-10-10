@@ -1,0 +1,5 @@
+# Deeply nested sequence where bracket falls back to lower indentation
+- -
+   [
+    a
+  ]

@@ -1,0 +1,4 @@
+# Closing bracket of flow map is at the same indentation as block sequence item
+- {
+ a: b
+}

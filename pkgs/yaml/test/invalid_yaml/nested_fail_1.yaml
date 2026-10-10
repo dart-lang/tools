@@ -1,0 +1,5 @@
+# Tests invalid flow sequence bracket at col 0 (parent indent=0)
+foo:
+[
+  a
+]

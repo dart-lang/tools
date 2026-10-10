@@ -1,0 +1,5 @@
+# Invalid double quoted line exactly equal to block indent
+key:
+  nested:
+    "line1
+  line2"

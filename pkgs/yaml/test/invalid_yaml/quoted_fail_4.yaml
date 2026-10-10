@@ -1,0 +1,4 @@
+# Invalid single quoted in sequence at col 0
+seq:
+  - 'line1
+line2'

@@ -1,0 +1,6 @@
+# Flow block spanning lines, integers > block indent (3 > 2)
+block:
+  key: [
+   1,
+   2
+  ]

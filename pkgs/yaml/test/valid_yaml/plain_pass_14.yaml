@@ -1,0 +1,4 @@
+# Plain scalar starting on opening line, continuation line <= indent (2 <= 2)
+block:
+  key: [ plain
+  scalar ]

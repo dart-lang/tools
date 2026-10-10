@@ -1,0 +1,6 @@
+# Tests invalid flow sequence bracket at same indent as parent block mapping key (col <= indent)
+a:
+  foo:
+  [
+    b
+  ]
