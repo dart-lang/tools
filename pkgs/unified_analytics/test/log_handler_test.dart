@@ -3,8 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io' as io;
 
 import 'package:file/file.dart';
+import 'package:file/local.dart';
 import 'package:file/memory.dart';
 import 'package:test/fake.dart';
 import 'package:test/test.dart';
@@ -484,6 +486,58 @@ void main() {
     final newString = runTruncateString();
     expect(newString.length, maxLength);
     expect(newString, testString);
+  });
+
+  test('save does not throw when the log file cannot be reset', () {
+    // A failed write followed by a failed reset must stay silent.
+    // https://github.com/dart-lang/tools/issues/2646
+    // A real read-only directory is the faithful fixture; memory file
+    // systems do not enforce POSIX permissions. Skip when the platform
+    // does not enforce them (for example running as root).
+    final localFs = const LocalFileSystem();
+    final dir = localFs.systemTempDirectory.createTempSync('ro_log_save');
+    addTearDown(() {
+      try {
+        io.Process.runSync('chmod', ['-R', 'u+w', dir.path]);
+      } on Object {
+        // Best effort; deletion may still fail on exotic platforms.
+      }
+      try {
+        dir.deleteSync(recursive: true);
+      } on Object {
+        // Best effort cleanup.
+      }
+    });
+
+    final log = dir.childFile('t.log')..writeAsStringSync('{"a":1}\n');
+    try {
+      io.Process.runSync('chmod', ['-R', 'a-w', dir.path]);
+    } on io.ProcessException {
+      markTestSkipped('chmod is unavailable on this platform');
+    }
+
+    var deniesWrites = false;
+    try {
+      dir.childFile('probe').writeAsStringSync('x');
+    } on io.FileSystemException {
+      deniesWrites = true;
+    }
+    if (!deniesWrites) {
+      markTestSkipped(
+        'read-only directories are not enforced on this platform',
+      );
+    }
+
+    expect(
+      () => LogHandler(logFile: log).save(data: {'b': 2}),
+      returnsNormally,
+      reason: 'save must swallow both the failed write and the failed reset',
+    );
+    expect(
+      log.readAsStringSync(),
+      '{"a":1}\n',
+      reason: 'a failed save must leave the existing content untouched',
+    );
   });
 }
 
