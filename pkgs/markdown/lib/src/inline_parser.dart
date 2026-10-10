@@ -43,6 +43,10 @@ class InlineParser {
   /// The Markdown document this parser is parsing.
   final Document document;
 
+  /// Maps offsets within [source] back to offsets in the original source
+  /// document, when available.
+  final ContentOffsetMapper? offsetMapper;
+
   final syntaxes = <InlineSyntax>[];
 
   /// The current read position.
@@ -58,7 +62,7 @@ class InlineParser {
   /// The tree of parsed HTML nodes.
   final _tree = <Node>[];
 
-  InlineParser(this.source, this.document) {
+  InlineParser(this.source, this.document, {this.offsetMapper}) {
     // User specified syntaxes are the first syntaxes to be evaluated.
     syntaxes.addAll(document.inlineSyntaxes);
 
