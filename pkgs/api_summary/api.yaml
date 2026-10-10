@@ -52,54 +52,12 @@ libraries:
               name: ApiClass
               libraryUri: package:api_summary/src/api_declaration.dart
             parameters:
-              - name: constructors
+              - name: name
                 type:
                   kind: interface
-                  name: List
+                  name: String
                   libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiExecutable
-                      libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
-                isNamed: true
-              - name: facets
-                type:
-                  kind: interface
-                  name: Iterable
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiFacet
-                      libraryUri: package:api_summary/src/api_facet.dart
-                isNamed: true
-              - name: immediateSubtypes
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: String
-                      libraryUri: dart:core
-                isRequired: true
-                isNamed: true
-              - name: interfaces
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiType
-                      libraryUri: package:api_summary/src/api_type.dart
-                isRequired: true
-                isNamed: true
-              - name: isDeprecated
-                type:
-                  kind: interface
-                  name: bool
-                  libraryUri: dart:core
                 isNamed: true
               - name: locationUri
                 type:
@@ -108,69 +66,13 @@ libraries:
                   libraryUri: dart:core
                   isNullable: true
                 isNamed: true
-              - name: methods
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiExecutable
-                      libraryUri: package:api_summary/src/api_declaration.dart
-                isRequired: true
-                isNamed: true
-              - name: mixins
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiType
-                      libraryUri: package:api_summary/src/api_type.dart
-                isRequired: true
-                isNamed: true
-              - name: modifiers
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiClassModifier
-                      libraryUri: package:api_summary/src/api_declaration.dart
-                isRequired: true
-                isNamed: true
-              - name: name
-                type:
-                  kind: interface
-                  name: String
-                  libraryUri: dart:core
-                isRequired: true
-                isNamed: true
               - name: status
                 type:
                   kind: interface
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
                 isNamed: true
-              - name: superclassConstraints
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiType
-                      libraryUri: package:api_summary/src/api_type.dart
-                isNamed: true
-              - name: supertype
-                type:
-                  kind: interface
-                  name: ApiType
-                  libraryUri: package:api_summary/src/api_type.dart
-                  isNullable: true
-                isNamed: true
+                defaultValue: ApiDeclarationStatus.public
               - name: typeParameters
                 type:
                   kind: interface
@@ -186,6 +88,108 @@ libraries:
                       isNullable: true
                 isRequired: true
                 isNamed: true
+              - name: supertype
+                type:
+                  kind: interface
+                  name: ApiType
+                  libraryUri: package:api_summary/src/api_type.dart
+                  isNullable: true
+                isNamed: true
+              - name: interfaces
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiType
+                      libraryUri: package:api_summary/src/api_type.dart
+                isRequired: true
+                isNamed: true
+              - name: mixins
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiType
+                      libraryUri: package:api_summary/src/api_type.dart
+                isRequired: true
+                isNamed: true
+              - name: superclassConstraints
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiType
+                      libraryUri: package:api_summary/src/api_type.dart
+                isNamed: true
+                defaultValue: "[]"
+              - name: modifiers
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiClassModifier
+                      libraryUri: package:api_summary/src/api_declaration.dart
+                isRequired: true
+                isNamed: true
+              - name: immediateSubtypes
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: String
+                      libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+              - name: constructors
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiExecutable
+                      libraryUri: package:api_summary/src/api_declaration.dart
+                isRequired: true
+                isNamed: true
+              - name: methods
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiExecutable
+                      libraryUri: package:api_summary/src/api_declaration.dart
+                isRequired: true
+                isNamed: true
+              - name: isDeprecated
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
+                defaultValue: "false"
+              - name: facets
+                type:
+                  kind: interface
+                  name: Iterable
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
+                isNamed: true
+                defaultValue: "[]"
         methods:
           - name: constructors
             locationUri: package:api_summary/src/api_declaration.dart
@@ -443,46 +447,11 @@ libraries:
               name: ApiExecutable
               libraryUri: package:api_summary/src/api_declaration.dart
             parameters:
-              - name: facets
+              - name: name
                 type:
                   kind: interface
-                  name: Iterable
+                  name: String
                   libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiFacet
-                      libraryUri: package:api_summary/src/api_facet.dart
-                isNamed: true
-              - name: isConst
-                type:
-                  kind: interface
-                  name: bool
-                  libraryUri: dart:core
-                isNamed: true
-              - name: isDeprecated
-                type:
-                  kind: interface
-                  name: bool
-                  libraryUri: dart:core
-                isNamed: true
-              - name: isEnumConstant
-                type:
-                  kind: interface
-                  name: bool
-                  libraryUri: dart:core
-                isNamed: true
-              - name: isStatic
-                type:
-                  kind: interface
-                  name: bool
-                  libraryUri: dart:core
-                isRequired: true
-                isNamed: true
-              - name: kind
-                type:
-                  kind: interface
-                  name: ApiExecutableKind
-                  libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
                 isNamed: true
               - name: locationUri
@@ -492,36 +461,19 @@ libraries:
                   libraryUri: dart:core
                   isNullable: true
                 isNamed: true
-              - name: name
-                type:
-                  kind: interface
-                  name: String
-                  libraryUri: dart:core
-                isRequired: true
-                isNamed: true
-              - name: parameters
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiParameter
-                      libraryUri: package:api_summary/src/api_type.dart
-                isRequired: true
-                isNamed: true
-              - name: returnType
-                type:
-                  kind: interface
-                  name: ApiType
-                  libraryUri: package:api_summary/src/api_type.dart
-                isRequired: true
-                isNamed: true
               - name: status
                 type:
                   kind: interface
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
+                isNamed: true
+                defaultValue: ApiDeclarationStatus.public
+              - name: kind
+                type:
+                  kind: interface
+                  name: ApiExecutableKind
+                  libraryUri: package:api_summary/src/api_declaration.dart
+                isRequired: true
                 isNamed: true
               - name: typeParameters
                 type:
@@ -538,7 +490,79 @@ libraries:
                       isNullable: true
                 isRequired: true
                 isNamed: true
+              - name: returnType
+                type:
+                  kind: interface
+                  name: ApiType
+                  libraryUri: package:api_summary/src/api_type.dart
+                isRequired: true
+                isNamed: true
+              - name: parameters
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiParameter
+                      libraryUri: package:api_summary/src/api_type.dart
+                isRequired: true
+                isNamed: true
+              - name: isStatic
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+              - name: isConst
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
+                defaultValue: "false"
+              - name: isEnumConstant
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
+                defaultValue: "false"
+              - name: constantValue
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                  isNullable: true
+                isNamed: true
+              - name: isDeprecated
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
+                defaultValue: "false"
+              - name: facets
+                type:
+                  kind: interface
+                  name: Iterable
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
+                isNamed: true
+                defaultValue: "[]"
         methods:
+          - name: constantValue
+            locationUri: package:api_summary/src/api_declaration.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+              isNullable: true
           - name: isConst
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -648,28 +672,12 @@ libraries:
               name: ApiExtension
               libraryUri: package:api_summary/src/api_declaration.dart
             parameters:
-              - name: extendedType
+              - name: name
                 type:
                   kind: interface
-                  name: ApiType
-                  libraryUri: package:api_summary/src/api_type.dart
+                  name: String
+                  libraryUri: dart:core
                 isRequired: true
-                isNamed: true
-              - name: facets
-                type:
-                  kind: interface
-                  name: Iterable
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiFacet
-                      libraryUri: package:api_summary/src/api_facet.dart
-                isNamed: true
-              - name: isDeprecated
-                type:
-                  kind: interface
-                  name: bool
-                  libraryUri: dart:core
                 isNamed: true
               - name: locationUri
                 type:
@@ -678,30 +686,13 @@ libraries:
                   libraryUri: dart:core
                   isNullable: true
                 isNamed: true
-              - name: methods
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiExecutable
-                      libraryUri: package:api_summary/src/api_declaration.dart
-                isRequired: true
-                isNamed: true
-              - name: name
-                type:
-                  kind: interface
-                  name: String
-                  libraryUri: dart:core
-                isRequired: true
-                isNamed: true
               - name: status
                 type:
                   kind: interface
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
                 isNamed: true
+                defaultValue: ApiDeclarationStatus.public
               - name: typeParameters
                 type:
                   kind: interface
@@ -717,6 +708,42 @@ libraries:
                       isNullable: true
                 isRequired: true
                 isNamed: true
+              - name: extendedType
+                type:
+                  kind: interface
+                  name: ApiType
+                  libraryUri: package:api_summary/src/api_type.dart
+                isRequired: true
+                isNamed: true
+              - name: methods
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiExecutable
+                      libraryUri: package:api_summary/src/api_declaration.dart
+                isRequired: true
+                isNamed: true
+              - name: isDeprecated
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
+                defaultValue: "false"
+              - name: facets
+                type:
+                  kind: interface
+                  name: Iterable
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
+                isNamed: true
+                defaultValue: "[]"
         methods:
           - name: extendedType
             locationUri: package:api_summary/src/api_declaration.dart
@@ -799,43 +826,12 @@ libraries:
               name: ApiExtensionType
               libraryUri: package:api_summary/src/api_declaration.dart
             parameters:
-              - name: constructors
+              - name: name
                 type:
                   kind: interface
-                  name: List
+                  name: String
                   libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiExecutable
-                      libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
-                isNamed: true
-              - name: facets
-                type:
-                  kind: interface
-                  name: Iterable
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiFacet
-                      libraryUri: package:api_summary/src/api_facet.dart
-                isNamed: true
-              - name: interfaces
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiType
-                      libraryUri: package:api_summary/src/api_type.dart
-                isRequired: true
-                isNamed: true
-              - name: isDeprecated
-                type:
-                  kind: interface
-                  name: bool
-                  libraryUri: dart:core
                 isNamed: true
               - name: locationUri
                 type:
@@ -844,37 +840,13 @@ libraries:
                   libraryUri: dart:core
                   isNullable: true
                 isNamed: true
-              - name: methods
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiExecutable
-                      libraryUri: package:api_summary/src/api_declaration.dart
-                isRequired: true
-                isNamed: true
-              - name: name
-                type:
-                  kind: interface
-                  name: String
-                  libraryUri: dart:core
-                isRequired: true
-                isNamed: true
-              - name: representationType
-                type:
-                  kind: interface
-                  name: ApiType
-                  libraryUri: package:api_summary/src/api_type.dart
-                isRequired: true
-                isNamed: true
               - name: status
                 type:
                   kind: interface
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
                 isNamed: true
+                defaultValue: ApiDeclarationStatus.public
               - name: typeParameters
                 type:
                   kind: interface
@@ -890,6 +862,64 @@ libraries:
                       isNullable: true
                 isRequired: true
                 isNamed: true
+              - name: representationType
+                type:
+                  kind: interface
+                  name: ApiType
+                  libraryUri: package:api_summary/src/api_type.dart
+                isRequired: true
+                isNamed: true
+              - name: interfaces
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiType
+                      libraryUri: package:api_summary/src/api_type.dart
+                isRequired: true
+                isNamed: true
+              - name: constructors
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiExecutable
+                      libraryUri: package:api_summary/src/api_declaration.dart
+                isRequired: true
+                isNamed: true
+              - name: methods
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiExecutable
+                      libraryUri: package:api_summary/src/api_declaration.dart
+                isRequired: true
+                isNamed: true
+              - name: isDeprecated
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
+                defaultValue: "false"
+              - name: facets
+                type:
+                  kind: interface
+                  name: Iterable
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
+                isNamed: true
+                defaultValue: "[]"
         methods:
           - name: constructors
             locationUri: package:api_summary/src/api_declaration.dart
@@ -1066,24 +1096,6 @@ libraries:
               name: ApiFunctionType
               libraryUri: package:api_summary/src/api_type.dart
             parameters:
-              - name: isNullable
-                type:
-                  kind: interface
-                  name: bool
-                  libraryUri: dart:core
-                isRequired: true
-                isNamed: true
-              - name: parameters
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiParameter
-                      libraryUri: package:api_summary/src/api_type.dart
-                isRequired: true
-                isNamed: true
               - name: returnType
                 type:
                   kind: interface
@@ -1104,6 +1116,24 @@ libraries:
                       name: ApiType
                       libraryUri: package:api_summary/src/api_type.dart
                       isNullable: true
+                isRequired: true
+                isNamed: true
+              - name: parameters
+                type:
+                  kind: interface
+                  name: List
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiParameter
+                      libraryUri: package:api_summary/src/api_type.dart
+                isRequired: true
+                isNamed: true
+              - name: isNullable
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
                 isRequired: true
                 isNamed: true
         methods:
@@ -1199,10 +1229,10 @@ libraries:
               name: ApiInterfaceType
               libraryUri: package:api_summary/src/api_type.dart
             parameters:
-              - name: isNullable
+              - name: name
                 type:
                   kind: interface
-                  name: bool
+                  name: String
                   libraryUri: dart:core
                 isRequired: true
                 isNamed: true
@@ -1213,13 +1243,6 @@ libraries:
                   libraryUri: dart:core
                   isNullable: true
                 isNamed: true
-              - name: name
-                type:
-                  kind: interface
-                  name: String
-                  libraryUri: dart:core
-                isRequired: true
-                isNamed: true
               - name: typeArguments
                 type:
                   kind: interface
@@ -1229,6 +1252,13 @@ libraries:
                     - kind: interface
                       name: ApiType
                       libraryUri: package:api_summary/src/api_type.dart
+                isRequired: true
+                isNamed: true
+              - name: isNullable
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
                 isRequired: true
                 isNamed: true
         methods:
@@ -1313,6 +1343,20 @@ libraries:
               name: ApiLibrary
               libraryUri: package:api_summary/src/api_declaration.dart
             parameters:
+              - name: uri
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+              - name: isPublicEntryPoint
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
               - name: classes
                 type:
                   kind: interface
@@ -1335,14 +1379,14 @@ libraries:
                       libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
                 isNamed: true
-              - name: extensionTypes
+              - name: mixins
                 type:
                   kind: interface
                   name: List
                   libraryUri: dart:core
                   typeArguments:
                     - kind: interface
-                      name: ApiExtensionType
+                      name: ApiClass
                       libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
                 isNamed: true
@@ -1357,15 +1401,16 @@ libraries:
                       libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
                 isNamed: true
-              - name: facets
+              - name: extensionTypes
                 type:
                   kind: interface
-                  name: Iterable
+                  name: List
                   libraryUri: dart:core
                   typeArguments:
                     - kind: interface
-                      name: ApiFacet
-                      libraryUri: package:api_summary/src/api_facet.dart
+                      name: ApiExtensionType
+                      libraryUri: package:api_summary/src/api_declaration.dart
+                isRequired: true
                 isNamed: true
               - name: functions
                 type:
@@ -1375,24 +1420,6 @@ libraries:
                   typeArguments:
                     - kind: interface
                       name: ApiExecutable
-                      libraryUri: package:api_summary/src/api_declaration.dart
-                isRequired: true
-                isNamed: true
-              - name: isPublicEntryPoint
-                type:
-                  kind: interface
-                  name: bool
-                  libraryUri: dart:core
-                isRequired: true
-                isNamed: true
-              - name: mixins
-                type:
-                  kind: interface
-                  name: List
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiClass
                       libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
                 isNamed: true
@@ -1407,13 +1434,17 @@ libraries:
                       libraryUri: package:api_summary/src/api_declaration.dart
                 isRequired: true
                 isNamed: true
-              - name: uri
+              - name: facets
                 type:
                   kind: interface
-                  name: String
+                  name: Iterable
                   libraryUri: dart:core
-                isRequired: true
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
                 isNamed: true
+                defaultValue: "[]"
         methods:
           - name: classes
             locationUri: package:api_summary/src/api_declaration.dart
@@ -1565,7 +1596,21 @@ libraries:
               name: ApiParameter
               libraryUri: package:api_summary/src/api_type.dart
             parameters:
-              - name: isDeprecated
+              - name: name
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+              - name: type
+                type:
+                  kind: interface
+                  name: ApiType
+                  libraryUri: package:api_summary/src/api_type.dart
+                isRequired: true
+                isNamed: true
+              - name: isRequired
                 type:
                   kind: interface
                   name: bool
@@ -1586,28 +1631,29 @@ libraries:
                   libraryUri: dart:core
                 isRequired: true
                 isNamed: true
-              - name: isRequired
+              - name: isDeprecated
                 type:
                   kind: interface
                   name: bool
                   libraryUri: dart:core
                 isRequired: true
                 isNamed: true
-              - name: name
+              - name: defaultValue
                 type:
                   kind: interface
                   name: String
                   libraryUri: dart:core
-                isRequired: true
-                isNamed: true
-              - name: type
-                type:
-                  kind: interface
-                  name: ApiType
-                  libraryUri: package:api_summary/src/api_type.dart
-                isRequired: true
+                  isNullable: true
                 isNamed: true
         methods:
+          - name: defaultValue
+            locationUri: package:api_summary/src/api_type.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+              isNullable: true
           - name: isDeprecated
             locationUri: package:api_summary/src/api_type.dart
             kind: getter
@@ -1779,11 +1825,15 @@ libraries:
               name: ApiRecordType
               libraryUri: package:api_summary/src/api_type.dart
             parameters:
-              - name: isNullable
+              - name: positionalFields
                 type:
                   kind: interface
-                  name: bool
+                  name: List
                   libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiType
+                      libraryUri: package:api_summary/src/api_type.dart
                 isRequired: true
                 isNamed: true
               - name: namedFields
@@ -1797,15 +1847,11 @@ libraries:
                       libraryUri: package:api_summary/src/api_type.dart
                 isRequired: true
                 isNamed: true
-              - name: positionalFields
+              - name: isNullable
                 type:
                   kind: interface
-                  name: List
+                  name: bool
                   libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiType
-                      libraryUri: package:api_summary/src/api_type.dart
                 isRequired: true
                 isNamed: true
         methods:
@@ -1886,7 +1932,14 @@ libraries:
               name: ApiSummary
               libraryUri: package:api_summary/src/api_declaration.dart
             parameters:
-              - name: dependencies
+              - name: name
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+              - name: environment
                 type:
                   kind: interface
                   name: Map
@@ -1900,7 +1953,7 @@ libraries:
                       libraryUri: dart:core
                   isNullable: true
                 isNamed: true
-              - name: environment
+              - name: dependencies
                 type:
                   kind: interface
                   name: Map
@@ -1938,13 +1991,6 @@ libraries:
                     - kind: interface
                       name: ApiLibrary
                       libraryUri: package:api_summary/src/api_declaration.dart
-                isRequired: true
-                isNamed: true
-              - name: name
-                type:
-                  kind: interface
-                  name: String
-                  libraryUri: dart:core
                 isRequired: true
                 isNamed: true
         methods:
@@ -2045,18 +2091,18 @@ libraries:
               name: ApiSummaryContext
               libraryUri: package:api_summary/src/api_summary_customizer.dart
             parameters:
-              - name: analysisContext
-                type:
-                  kind: interface
-                  name: AnalysisContext
-                  libraryUri: package:analyzer/dart/analysis/analysis_context.dart
-                isRequired: true
-                isNamed: true
               - name: packageName
                 type:
                   kind: interface
                   name: String
                   libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+              - name: analysisContext
+                type:
+                  kind: interface
+                  name: AnalysisContext
+                  libraryUri: package:analyzer/dart/analysis/analysis_context.dart
                 isRequired: true
                 isNamed: true
               - name: publicApiLibraries
@@ -2141,12 +2187,14 @@ libraries:
                   name: bool
                   libraryUri: dart:core
                 isNamed: true
+                defaultValue: "false"
               - name: includeReferencedTypes
                 type:
                   kind: interface
                   name: bool
                   libraryUri: dart:core
                 isNamed: true
+                defaultValue: "false"
             isConst: true
         methods:
           - name: includeImplicitNonPublicMembers
@@ -2236,6 +2284,20 @@ libraries:
               name: ApiSummaryVerificationException
               libraryUri: package:api_summary/src/verify.dart
             parameters:
+              - name: message
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+              - name: goldenFilePath
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
               - name: actual
                 type:
                   kind: interface
@@ -2249,20 +2311,6 @@ libraries:
                   name: String
                   libraryUri: dart:core
                   isNullable: true
-                isNamed: true
-              - name: goldenFilePath
-                type:
-                  kind: interface
-                  name: String
-                  libraryUri: dart:core
-                isRequired: true
-                isNamed: true
-              - name: message
-                type:
-                  kind: interface
-                  name: String
-                  libraryUri: dart:core
-                isRequired: true
                 isNamed: true
         methods:
           - name: actual
@@ -2385,28 +2433,12 @@ libraries:
               name: ApiTypeAlias
               libraryUri: package:api_summary/src/api_declaration.dart
             parameters:
-              - name: aliasedType
+              - name: name
                 type:
                   kind: interface
-                  name: ApiType
-                  libraryUri: package:api_summary/src/api_type.dart
+                  name: String
+                  libraryUri: dart:core
                 isRequired: true
-                isNamed: true
-              - name: facets
-                type:
-                  kind: interface
-                  name: Iterable
-                  libraryUri: dart:core
-                  typeArguments:
-                    - kind: interface
-                      name: ApiFacet
-                      libraryUri: package:api_summary/src/api_facet.dart
-                isNamed: true
-              - name: isDeprecated
-                type:
-                  kind: interface
-                  name: bool
-                  libraryUri: dart:core
                 isNamed: true
               - name: locationUri
                 type:
@@ -2415,19 +2447,13 @@ libraries:
                   libraryUri: dart:core
                   isNullable: true
                 isNamed: true
-              - name: name
-                type:
-                  kind: interface
-                  name: String
-                  libraryUri: dart:core
-                isRequired: true
-                isNamed: true
               - name: status
                 type:
                   kind: interface
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
                 isNamed: true
+                defaultValue: ApiDeclarationStatus.public
               - name: typeParameters
                 type:
                   kind: interface
@@ -2443,6 +2469,31 @@ libraries:
                       isNullable: true
                 isRequired: true
                 isNamed: true
+              - name: aliasedType
+                type:
+                  kind: interface
+                  name: ApiType
+                  libraryUri: package:api_summary/src/api_type.dart
+                isRequired: true
+                isNamed: true
+              - name: isDeprecated
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
+                defaultValue: "false"
+              - name: facets
+                type:
+                  kind: interface
+                  name: Iterable
+                  libraryUri: dart:core
+                  typeArguments:
+                    - kind: interface
+                      name: ApiFacet
+                      libraryUri: package:api_summary/src/api_facet.dart
+                isNamed: true
+                defaultValue: "[]"
         methods:
           - name: aliasedType
             locationUri: package:api_summary/src/api_declaration.dart
@@ -2518,17 +2569,17 @@ libraries:
               name: ApiTypeParameterType
               libraryUri: package:api_summary/src/api_type.dart
             parameters:
-              - name: isNullable
-                type:
-                  kind: interface
-                  name: bool
-                  libraryUri: dart:core
-                isRequired: true
-                isNamed: true
               - name: name
                 type:
                   kind: interface
                   name: String
+                  libraryUri: dart:core
+                isRequired: true
+                isNamed: true
+              - name: isNullable
+                type:
+                  kind: interface
+                  name: bool
                   libraryUri: dart:core
                 isRequired: true
                 isNamed: true
@@ -3473,18 +3524,18 @@ libraries:
               name: String
               libraryUri: dart:core
             isRequired: true
-          - name: customizer
-            type:
-              kind: interface
-              name: ApiSummaryCustomizer
-              libraryUri: package:api_summary/src/api_summary_customizer.dart
-              isNullable: true
-            isNamed: true
           - name: packageName
             type:
               kind: interface
               name: String
               libraryUri: dart:core
+              isNullable: true
+            isNamed: true
+          - name: customizer
+            type:
+              kind: interface
+              name: ApiSummaryCustomizer
+              libraryUri: package:api_summary/src/api_summary_customizer.dart
               isNullable: true
             isNamed: true
         isStatic: true
@@ -3498,27 +3549,7 @@ libraries:
           typeArguments:
             - kind: void
         parameters:
-          - name: customizer
-            type:
-              kind: interface
-              name: ApiSummaryCustomizer
-              libraryUri: package:api_summary/src/api_summary_customizer.dart
-              isNullable: true
-            isNamed: true
-          - name: format
-            type:
-              kind: interface
-              name: ApiSummaryFormat
-              libraryUri: package:api_summary/src/verify.dart
-            isNamed: true
           - name: goldenFilePath
-            type:
-              kind: interface
-              name: String
-              libraryUri: dart:core
-              isNullable: true
-            isNamed: true
-          - name: packageName
             type:
               kind: interface
               name: String
@@ -3532,4 +3563,25 @@ libraries:
               libraryUri: dart:core
               isNullable: true
             isNamed: true
+          - name: packageName
+            type:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+              isNullable: true
+            isNamed: true
+          - name: customizer
+            type:
+              kind: interface
+              name: ApiSummaryCustomizer
+              libraryUri: package:api_summary/src/api_summary_customizer.dart
+              isNullable: true
+            isNamed: true
+          - name: format
+            type:
+              kind: interface
+              name: ApiSummaryFormat
+              libraryUri: package:api_summary/src/verify.dart
+            isNamed: true
+            defaultValue: ApiSummaryFormat.text
         isStatic: true

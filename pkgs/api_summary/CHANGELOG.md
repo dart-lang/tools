@@ -1,5 +1,11 @@
 ## 1.3.0-wip
 
+- Track parameter `defaultValue` on `ApiParameter` (including inherited `super.`
+  defaults) and render non-null public default values in text, JSON, and YAML
+  summaries ([#2461](https://github.com/dart-lang/tools/issues/2461)).
+- Track `constantValue` on `isConst` `ApiExecutable` getters and render public
+  constant values in text, JSON, and YAML summaries
+  ([#2462](https://github.com/dart-lang/tools/issues/2462)).
 - Track `pubspec.yaml` normal `dependencies` constraints in `ApiSummary` and
   render them in text, JSON, and YAML summaries
   ([#2463](https://github.com/dart-lang/tools/issues/2463)).
