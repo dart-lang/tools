@@ -206,6 +206,33 @@ void main() {
     });
   });
 
+  group('strict protocol checks disabled', () {
+    setUp(() => controller = ClientController(strictProtocolChecks: false));
+
+    test('accepts a response with no jsonrpc key', () {
+      controller.expectRequest((request) {
+        return {'result': 'bar', 'id': request['id']};
+      });
+
+      expect(controller.client.sendRequest('foo'), completion(equals('bar')));
+    });
+
+    test('still rejects a response with the wrong jsonrpc version', () {
+      controller.expectRequest((request) {
+        controller.sendResponse({
+          'jsonrpc': 'wrong version',
+          'result': 'wrong',
+          'id': request['id']
+        });
+
+        return pumpEventQueue().then(
+            (_) => {'jsonrpc': '2.0', 'result': 'right', 'id': request['id']});
+      });
+
+      expect(controller.client.sendRequest('foo'), completion(equals('right')));
+    });
+  });
+
   test('with custom String ids', () {
     var id = 0;
     controller = ClientController(idGenerator: () => 'ID-${id++}');
