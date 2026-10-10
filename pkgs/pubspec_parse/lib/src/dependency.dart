@@ -16,7 +16,7 @@ Map<String, Dependency> parseDeps(Map? source) =>
       try {
         value = _fromJson(v, k);
       } on CheckedFromJsonException catch (e) {
-        if (e.map is! YamlMap) {
+        if (v is! Map || (source is YamlMap && e.map is! YamlMap)) {
           // This is likely a "synthetic" map created from a String value
           // Use `source` to throw this exception with an actual YamlMap and
           // extract the associated error information.
@@ -153,7 +153,11 @@ class GitDependency extends Dependency {
 
   factory GitDependency.fromData(Object? data, {VersionConstraint? version}) {
     if (data is String) {
-      data = {'url': data};
+      try {
+        return GitDependency(parseGitUri(data), version: version);
+      } on FormatException catch (e) {
+        throw ArgumentError.value(data, 'git', e.message);
+      }
     }
 
     if (data is Map) {
@@ -339,7 +343,7 @@ class HostedDetails {
 
   factory HostedDetails.fromJson(Object data) {
     if (data is String) {
-      data = {'url': data};
+      return HostedDetails(null, _parseUriOrNull(data));
     }
 
     if (data is Map) {

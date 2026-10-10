@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:test/test.dart';
@@ -63,6 +64,23 @@ line 5, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hos
 5 │    "bob": "a",
   │    ^^^^^
   ╵''',
+      );
+    });
+
+    test('plain Map in Pubspec.fromJson preserves nested key and map', () {
+      final gitMap = {'url': 42};
+      expect(
+        () => Pubspec.fromJson({
+          'name': 'sample',
+          'dependencies': {
+            'dep': {'git': gitMap},
+          },
+        }),
+        throwsA(
+          isA<CheckedFromJsonException>()
+              .having((e) => e.key, 'key', 'url')
+              .having((e) => e.map, 'map', same(gitMap)),
+        ),
       );
     });
   });
@@ -200,6 +218,18 @@ line 5, column 4: These keys had `null` values, which is not allowed: [hosted]
   ╷
 5 │    "hosted": null
   │    ^^^^^^^^
+  ╵''',
+    );
+  });
+
+  test('map w/ invalid hosted String should error on hosted key', () {
+    _expectThrows(
+      {'hosted': '://bad_uri'},
+      r'''
+line 5, column 14: Unsupported value for "hosted". Invalid empty scheme at offset 0.
+  ╷
+5 │    "hosted": "://bad_uri"
+  │              ^^^^^^^^^^^^
   ╵''',
     );
   });
@@ -464,6 +494,18 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
     _expectThrowsContaining({
       'git': {'url': 42},
     }, r"type 'int' is not a subtype of type 'String'");
+  });
+
+  test('git - invalid string url', () {
+    _expectThrows(
+      {'git': '://bad_uri'},
+      r'''
+line 5, column 11: Unsupported value for "git". Invalid empty scheme
+  ╷
+5 │    "git": "://bad_uri"
+  │           ^^^^^^^^^^^^
+  ╵''',
+    );
   });
 }
 
