@@ -1,5 +1,6 @@
 ## 3.2.0-wip
 
+* Enforce indentation for flow-style content inside block nodes.
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
 * Improve error messages when mixing list and key-value syntax.
 
