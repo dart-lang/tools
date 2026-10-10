@@ -82,6 +82,15 @@ Mime types where the default file extension changed:
 - `video/vnd.uvvu.mp4`, `uvvu` => `uvu`
 - `video/x-ms-asf`, `asx` => `asf`
 
+* Allow magic byte patterns to have variable width gaps.
+  This allows distinguishing, for example, `video/x-matroska` and `video/webm`
+  files which have the same first four bytes, and are distinguished by a
+  document ID entry that does not have a fixed position.
+  The pattern entry limits how far ahead it can look.
+
+* Recognize `video/webm` and `video/x-matroska` by magic numbers,
+  and no longer detects all EBMF files as `audio/weba`.
+
 ## 2.0.0
 
 * **[Breaking]** `extensionFromMime(String mimeType)` returns `null` instead of
@@ -105,7 +114,7 @@ Mime types where the default file extension changed:
 
 ## 1.0.4
 
-* Changed `.js` to `text/javascript` per 
+* Changed `.js` to `text/javascript` per
   https://datatracker.ietf.org/doc/html/rfc9239.
 * Added `.mjs` as `text/javascript`.
 * Add `application/dicom` mimeType lookup by extension.
