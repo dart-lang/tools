@@ -4,6 +4,8 @@
   example a single very long word). The plain-text accelerator regex required
   a trailing whitespace, so a run reaching the end of a line without one
   backtracked across the whole run at every position.
+* Use named capture groups when parsing list items. Custom list syntaxes that
+  override `pattern` with positional groups keep working.
 
 ## 7.4.0
 
