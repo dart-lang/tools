@@ -1,5 +1,10 @@
 ## 8.1.0-wip
 
+- Fixed unhandled `FileSystemException`s when the analytics files cannot be
+  written: the `LogHandler.save` reset path no longer throws when the log
+  file cannot be recreated, and `UserProperty.getSessionId` falls back to a
+  timestamp session id when the session file cannot be read, created, or
+  updated (for example a read-only home directory).
 - Added optional `isExternal` parameter to `Analytics.fake` to allow overriding
   the build configuration during testing.
 - Dropped dependency on `package:platform` in favor of `dart:io`.

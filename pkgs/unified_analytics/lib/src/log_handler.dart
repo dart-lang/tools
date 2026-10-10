@@ -301,11 +301,17 @@ class LogHandler {
     } on Object {
       // Logging isn't important enough to warrant raising an
       // exception or error that will surprise consumers of this package.
-      // Reset the log file on exception or error.
-      if (logFile.existsSync()) {
-        logFile.deleteSync();
+      // Reset the log file on exception or error. The reset itself is
+      // guarded: on a read-only filesystem the delete or recreate can
+      // also fail, and that failure must not escape either.
+      try {
+        if (logFile.existsSync()) {
+          logFile.deleteSync();
+        }
+        logFile.createSync();
+      } on Object {
+        // Nothing more to do; the next save tries again.
       }
-      logFile.createSync();
     }
   }
 
