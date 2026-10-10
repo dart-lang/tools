@@ -180,11 +180,41 @@ class LogHandler {
   /// Note that some developers may only be Dart
   /// developers and will not have any data for flutter
   /// related metrics.
+  ///
+  /// Returns `null` if there are no records to report, including when the
+  /// log file doesn't exist yet, is abnormally large, or couldn't be read.
   LogFileStats? logFileStats() {
+    List<String> lines;
+    try {
+      // Avoid reading abnormally large (or corrupted) log files into
+      // memory, which can exhaust the heap; see
+      // https://github.com/dart-lang/tools/issues/275.
+      //
+      // A negative size (e.g. -1) means the file doesn't exist, which is a
+      // common and expected state (for example, before any events have been
+      // logged); treat that the same as "nothing to report" instead of
+      // falling through to a FileSystemException.
+      final size = logFile.statSync().size;
+      if (size < 0 || size > kMaxLogFileSize) return null;
+
+      lines = logFile.readAsLinesSync();
+    } on FileSystemException catch (err) {
+      errorSet.add(
+        Event.analyticsException(
+          workflow: 'LogHandler.logFileStats',
+          error: err.runtimeType.toString(),
+          // Deliberately omit `err.path`: it can contain PII or proprietary
+          // information (e.g. parts of the user's file system layout).
+          description: 'message: ${err.message}',
+        ),
+      );
+
+      return null;
+    }
+
     // Parse each line of the log file through [LogItem],
     // some returned records may be null if malformed, they will be
     // removed later through `whereType<LogItem>`
-    final lines = logFile.readAsLinesSync();
     final records = lines
         .skip(max(0, lines.length - kLogFileLength))
         .map((String e) {
