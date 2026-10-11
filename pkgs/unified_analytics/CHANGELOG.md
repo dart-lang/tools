@@ -11,16 +11,16 @@
   `setTelemetry`, when `DASH__SUPPRESS_ANALYTICS` is `true`.
 - Added optional `environment` parameter to `Analytics.fake`; it defaults to
   empty, so tests ignore `DASH__SUPPRESS_ANALYTICS` in the real environment.
-
-## 8.0.18
-
-- Added optional `hostArch` parameter to `Event.flutterCommandResult`.
 - Added optional `pubspecHasFlutterSdk`, `pubspecEnvironmentSdk`, and
   `pubspecDependencies` parameters to the `Event.dartCliCommandExecuted`
   constructor.
 - Dependencies are deterministically sorted and chunked using a hash-based
   algorithm salted with the canonical dependency set to fit within Google
   Analytics 4 parameter limitations without alphabetical or global package bias.
+
+## 8.0.18
+
+- Added optional `hostArch` parameter to `Event.flutterCommandResult`.
 - Add optional `minSdkConstraints` and `languageVersionOverrides` parameters
   to the `Event.contextStructure` constructor.
 - Add `isExternal` to indicate if analytics are collected from an extenal build
