@@ -85,6 +85,7 @@ set(crypto_sources
   ${BORINGSSL_ROOT}src/crypto/cpu_arm_linux.cc
   ${BORINGSSL_ROOT}src/crypto/cpu_intel.cc
   ${BORINGSSL_ROOT}src/crypto/crypto.cc
+  ${BORINGSSL_ROOT}src/crypto/curve25519/cpace.cc
   ${BORINGSSL_ROOT}src/crypto/curve25519/curve25519.cc
   ${BORINGSSL_ROOT}src/crypto/curve25519/curve25519_64_adx.cc
   ${BORINGSSL_ROOT}src/crypto/curve25519/spake25519.cc

@@ -7341,6 +7341,106 @@ external void CONF_modules_unload(
   int all,
 );
 
+/// CPACE_CTX_free frees `ctx` and all the resources that it has allocated.
+@meta.RecordUse()
+@ffi.Native<ffi.Void Function(ffi.Pointer<CPACE_CTX>)>(
+  symbol: 'bssl_dart_CPACE_CTX_free',
+)
+external void CPACE_CTX_free(
+  ffi.Pointer<CPACE_CTX> ctx,
+);
+
+/// CPACE_CTX_new returns a newly-allocated `CPACE_CTX` object that implements
+/// one side of the CPace protocol, or nullptr on error. This function implements
+/// CPACE-X25519-SHA512 in initiator-responder mode, acting as `role` and with
+/// `password` as the password-related string (PRS).
+///
+/// `channel_id` and `session_id` are the channel identifier (CI) and session
+/// identifier (sid) values, respectively. Both values must match for the
+/// exchange to proceed. `assoc_data` is the cleartext associated data (ADa or
+/// ADb) to be sent to the peer. These values may be empty if not used. See
+/// Section 4.1 of draft-irtf-cfrg-cpace-21 for details.
+///
+/// The application-level identities of each party in the protocol should be
+/// incorporated into either `channel_id` or each party's respective `assoc_data`
+/// values. See Section 10.1 of draft-irtf-cfrg-cpace-21.
+///
+/// Once a `CPACE_CTX` is successfully created, the caller should call
+/// `CPACE_generate_msg` to generate the message to send to the peer.
+@meta.RecordUse()
+@ffi.Native<
+  ffi.Pointer<CPACE_CTX> Function(
+    ffi.UnsignedInt,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+  )
+>(symbol: 'bssl_dart_CPACE_CTX_new')
+external ffi.Pointer<CPACE_CTX> CPACE_CTX_new(
+  int role,
+  ffi.Pointer<ffi.Uint8> password,
+  int password_len,
+  ffi.Pointer<ffi.Uint8> channel_id,
+  int channel_id_len,
+  ffi.Pointer<ffi.Uint8> assoc_data,
+  int assoc_data_len,
+  ffi.Pointer<ffi.Uint8> session_id,
+  int session_id_len,
+);
+
+/// CPACE_generate_msg generates the message to be sent to the peer. On success,
+/// it writes the message to `out_msg` and returns one. Otherwise, it returns
+/// zero. `ctx` must have been allocated by `CPACE_CTX_new`, with no subsequent
+/// functions called on it.
+///
+/// `out_msg` only contains the Ya or Yb value. It does not include ADa or ADb.
+/// On success, the caller should separately send `out_msg` and their
+/// `assoc_data` value to the peer. It is the caller's responsibility to send
+/// `assoc_data` together with `out_msg`. After receiving the peer's reply, the
+/// caller should call `CPACE_process_msg` to complete the protocol.
+@meta.RecordUse()
+@ffi.Native<ffi.Int Function(ffi.Pointer<CPACE_CTX>, ffi.Pointer<ffi.Uint8>)>(
+  symbol: 'bssl_dart_CPACE_generate_msg',
+)
+external int CPACE_generate_msg(
+  ffi.Pointer<CPACE_CTX> ctx,
+  ffi.Pointer<ffi.Uint8> out_msg,
+);
+
+/// CPACE_process_msg processes `msg` and `peer_assoc_data` from the peer and
+/// computes the shared secret, or intermediate session key (ISK). On success, it
+/// writes the secret to `out_shared_secret` and returns one; it also writes a
+/// derived session ID if `out_sid` is not NULL. Otherwise, it returns zero.
+/// `ctx` must have successfully been passed to `CPACE_generate_msg`, with no
+/// subsequent functions called on it.
+///
+/// `msg` should contain the peer's Ya or Yb value, and `peer_assoc_data` the
+/// peer's ADa or ADb value.
+@meta.RecordUse()
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<CPACE_CTX>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Size,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.Pointer<ffi.Uint8>,
+  )
+>(symbol: 'bssl_dart_CPACE_process_msg')
+external int CPACE_process_msg(
+  ffi.Pointer<CPACE_CTX> ctx,
+  ffi.Pointer<ffi.Uint8> in_msg,
+  ffi.Pointer<ffi.Uint8> peer_assoc_data,
+  int peer_assoc_data_len,
+  ffi.Pointer<ffi.Uint8> shared_secret,
+  ffi.Pointer<ffi.Uint8> sid_out,
+);
+
 /// CRL_DIST_POINTS_free releases memory associated with `crldp`.
 @meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<CRL_DIST_POINTS>)>(
@@ -7357,6 +7457,17 @@ external void CRL_DIST_POINTS_free(
   symbol: 'bssl_dart_CRL_DIST_POINTS_new',
 )
 external ffi.Pointer<CRL_DIST_POINTS> CRL_DIST_POINTS_new();
+
+/// CRYPTO_BUFFER_POOL_dup_ref increments the reference count of `pool` and
+/// returns the same handle. It does not mutate `pool` for thread-safety purposes
+/// and may be used concurrently.
+@meta.RecordUse()
+@ffi.Native<
+  ffi.Pointer<CRYPTO_BUFFER_POOL> Function(ffi.Pointer<CRYPTO_BUFFER_POOL>)
+>(symbol: 'bssl_dart_CRYPTO_BUFFER_POOL_dup_ref')
+external ffi.Pointer<CRYPTO_BUFFER_POOL> CRYPTO_BUFFER_POOL_dup_ref(
+  ffi.Pointer<CRYPTO_BUFFER_POOL> pool,
+);
 
 /// CRYPTO_BUFFER_POOL_free decrements the reference count of `pool` and frees it
 /// if the reference count drops to zero.
@@ -8572,6 +8683,17 @@ external ffi.Pointer<DH> DSA_dup_DH(
   ffi.Pointer<DSA> dsa,
 );
 
+/// DSA_dup_ref increments the reference count of `dsa` and returns the same
+/// handle. It does not mutate `dsa` for thread-safety purposes and may be used
+/// concurrently.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<DSA> Function(ffi.Pointer<DSA>)>(
+  symbol: 'bssl_dart_DSA_dup_ref',
+)
+external ffi.Pointer<DSA> DSA_dup_ref(
+  ffi.Pointer<DSA> dsa,
+);
+
 /// DSA_free decrements the reference count of `dsa` and frees it if the
 /// reference count drops to zero.
 @meta.RecordUse()
@@ -9665,6 +9787,17 @@ external ffi.Pointer<EC_KEY> EC_KEY_derive_from_secret(
 )
 external ffi.Pointer<EC_KEY> EC_KEY_dup(
   ffi.Pointer<EC_KEY> src,
+);
+
+/// EC_KEY_dup_ref increases the reference count of `key` and returns the same
+/// handle. It does not mutate `key` for thread-safety purposes and may be used
+/// concurrently.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EC_KEY> Function(ffi.Pointer<EC_KEY>)>(
+  symbol: 'bssl_dart_EC_KEY_dup_ref',
+)
+external ffi.Pointer<EC_KEY> EC_KEY_dup_ref(
+  ffi.Pointer<EC_KEY> key,
 );
 
 /// EC_KEY_free frees all the data owned by `key` and `key` itself.
@@ -20536,6 +20669,17 @@ external int RSA_decrypt(
   int padding,
 );
 
+/// RSA_dup_ref increments the reference count of `rsa` and returns the same
+/// handle. It does not mutate `rsa` for thread-safety purposes and may be used
+/// concurrently.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<RSA> Function(ffi.Pointer<RSA>)>(
+  symbol: 'bssl_dart_RSA_dup_ref',
+)
+external ffi.Pointer<RSA> RSA_dup_ref(
+  ffi.Pointer<RSA> rsa,
+);
+
 /// RSA_encrypt encrypts `in_len` bytes from `in` to the public key from `rsa`
 /// and writes, at most, `max_out` bytes of encrypted data to `out`. The
 /// `max_out` argument must be, at least, `RSA_size` in order to ensure success.
@@ -25987,6 +26131,16 @@ external int X509_STORE_add_crl(
 external ffi.Pointer<X509_LOOKUP> X509_STORE_add_lookup(
   ffi.Pointer<X509_STORE> store,
   ffi.Pointer<X509_LOOKUP_METHOD> method,
+);
+
+/// X509_STORE_dup_ref adds one to the reference count of `store` and returns
+/// the same handle.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<X509_STORE> Function(ffi.Pointer<X509_STORE>)>(
+  symbol: 'bssl_dart_X509_STORE_dup_ref',
+)
+external ffi.Pointer<X509_STORE> X509_STORE_dup_ref(
+  ffi.Pointer<X509_STORE> store,
 );
 
 /// X509_STORE_free releases memory associated with `store`.
@@ -31830,6 +31984,9 @@ extension SymbolAddresses on _SymbolAddresses {
   ffi.Pointer<ffi.NativeFunction<ffi.Void Function()>> get CONF_modules_free =>
       ffi.Native.addressOf(self.CONF_modules_free);
   @meta.RecordUse()
+  ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<CPACE_CTX>)>>
+  get CPACE_CTX_free => ffi.Native.addressOf(self.CPACE_CTX_free);
+  @meta.RecordUse()
   ffi.Pointer<
     ffi.NativeFunction<ffi.Void Function(ffi.Pointer<CRL_DIST_POINTS>)>
   >
@@ -32312,6 +32469,8 @@ const int CBS_ASN1_PRINTABLESTRING = 19;
 
 const int CBS_ASN1_PRIVATE = 3221225472;
 
+const int CBS_ASN1_RELATIVE_OID = 13;
+
 const int CBS_ASN1_SEQUENCE = 536870928;
 
 const int CBS_ASN1_SET = 536870929;
@@ -32351,6 +32510,7 @@ final class CMS_SignerInfo_st extends ffi.Opaque {}
 
 typedef CONF = conf_st;
 typedef CONF_VALUE = conf_value_st;
+typedef CPACE_CTX = cpace_ctx_st;
 typedef CRL_DIST_POINTS = stack_st_DIST_POINT;
 typedef CRYPTO_BUFFER = crypto_buffer_st;
 typedef CRYPTO_BUFFER_POOL = crypto_buffer_pool_st;
@@ -32450,9 +32610,6 @@ final class DIST_POINT_NAME_st extends ffi.Struct {
   external int type;
 
   external UnnamedUnion$4 name;
-
-  /// If relativename then this contains the full distribution point name
-  external ffi.Pointer<X509_NAME> dpname;
 }
 
 /// A DIST_POINT_st, aka `DIST_POINT`, represents a DistributionPoint structure
@@ -35737,6 +35894,8 @@ const int V_ASN1_PRIVATE = 192;
 
 const int V_ASN1_REAL = 9;
 
+const int V_ASN1_RELATIVE_OID = 13;
+
 const int V_ASN1_SEQUENCE = 16;
 
 const int V_ASN1_SET = 17;
@@ -37139,6 +37298,17 @@ typedef cookie_write_function_t =
         ffi.Size __nbytes,
       )
     >;
+
+final class cpace_ctx_st extends ffi.Opaque {}
+
+/// The role that a party plays in the CPACE key agreement protocol.
+sealed class cpace_role_t {
+  /// This role corresponds to the party A in the specification.
+  static const cpace_role_initiator = 0;
+
+  /// This role corresponds to the party B in the specification.
+  static const cpace_role_responder = 1;
+}
 
 final class crypto_buffer_pool_st extends ffi.Opaque {}
 
