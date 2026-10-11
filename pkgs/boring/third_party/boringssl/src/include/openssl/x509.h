@@ -2311,8 +2311,6 @@ typedef struct DIST_POINT_NAME_st {
     GENERAL_NAMES *fullname;
     STACK_OF(X509_NAME_ENTRY) *relativename;
   } name;
-  // If relativename then this contains the full distribution point name
-  X509_NAME *dpname;
 } DIST_POINT_NAME;
 
 // DIST_POINT_NAME_new returns a newly-allocated, empty `DIST_POINT_NAME`
@@ -2801,6 +2799,10 @@ OPENSSL_EXPORT X509_STORE *X509_STORE_new(void);
 // X509_STORE_up_ref adds one to the reference count of `store` and returns one.
 // Although `store` is not const, this function's use of `store` is thread-safe.
 OPENSSL_EXPORT int X509_STORE_up_ref(X509_STORE *store);
+
+// X509_STORE_dup_ref adds one to the reference count of `store` and returns
+// the same handle.
+OPENSSL_EXPORT X509_STORE *X509_STORE_dup_ref(const X509_STORE *store);
 
 // X509_STORE_free releases memory associated with `store`.
 OPENSSL_EXPORT void X509_STORE_free(X509_STORE *store);
@@ -5316,8 +5318,10 @@ BORINGSSL_MAKE_DELETER(BASIC_CONSTRAINTS, BASIC_CONSTRAINTS_free)
 // TODO(davidben): Move this to conf.h and rename to CONF_VALUE_free.
 BORINGSSL_MAKE_DELETER(CONF_VALUE, X509V3_conf_free)
 BORINGSSL_MAKE_DELETER(DIST_POINT, DIST_POINT_free)
+BORINGSSL_MAKE_DELETER(DIST_POINT_NAME, DIST_POINT_NAME_free)
 BORINGSSL_MAKE_DELETER(GENERAL_NAME, GENERAL_NAME_free)
 BORINGSSL_MAKE_DELETER(GENERAL_SUBTREE, GENERAL_SUBTREE_free)
+BORINGSSL_MAKE_DELETER(ISSUING_DIST_POINT, ISSUING_DIST_POINT_free)
 BORINGSSL_MAKE_DELETER(NAME_CONSTRAINTS, NAME_CONSTRAINTS_free)
 BORINGSSL_MAKE_DELETER(NETSCAPE_SPKI, NETSCAPE_SPKI_free)
 BORINGSSL_MAKE_DELETER(NOTICEREF, NOTICEREF_free)
@@ -5350,7 +5354,7 @@ BORINGSSL_MAKE_DELETER(X509_VERIFY_PARAM, X509_VERIFY_PARAM_free)
 
 BSSL_NAMESPACE_END
 
-}       // extern C++
+}  // extern C++
 #endif  // !BORINGSSL_NO_CXX
 
 #define X509_R_AKID_MISMATCH 100

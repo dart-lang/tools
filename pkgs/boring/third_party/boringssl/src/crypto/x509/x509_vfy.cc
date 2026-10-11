@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ctype.h>
 #include <limits.h>
 #include <string.h>
 #include <time.h>
@@ -828,24 +827,28 @@ static int get_crl_sk(X509_STORE_CTX *ctx, X509_CRL **pcrl, X509 **pissuer,
 // the certificate issuer this is returned in *pissuer.
 static int get_crl_score(X509_STORE_CTX *ctx, X509 **pissuer, X509_CRL *crl,
                          X509 *x) {
-  int crl_score = 0;
-
-  // First see if we can reject CRL straight away
-
-  // Invalid IDP cannot be processed
-  if (crl->idp_flags & IDP_INVALID) {
-    return 0;
+  if (crl->idp) {
+    // Per RFC 5280, section 5.2.5, at most one of onlyContainsUserCerts,
+    // onlyContainsCACerts, and onlyContainsAttributeCerts may be true.
+    // TODO(crbug.com/42290307): Move this check to the `ISSUING_DIST_POINT`
+    // parser.
+    int num_only =
+        (!!crl->idp->onlyuser) + (!!crl->idp->onlyCA) + (!!crl->idp->onlyattr);
+    if (num_only > 1) {
+      return 0;
+    }
+    // Reason codes and indirect CRLs are not supported.
+    if (crl->idp->indirectCRL || crl->idp->onlysomereasons) {
+      return 0;
+    }
   }
-  // Reason codes and indirect CRLs are not supported.
-  if (crl->idp_flags & (IDP_INDIRECT | IDP_REASONS)) {
-    return 0;
-  }
+
   // We do not support indirect CRLs, so the issuer names must match.
   if (X509_NAME_cmp(X509_get_issuer_name(x), X509_CRL_get_issuer(crl))) {
     return 0;
   }
-  crl_score |= CRL_SCORE_ISSUER_NAME;
 
+  int crl_score = CRL_SCORE_ISSUER_NAME;
   if (!(crl->flags & EXFLAG_CRITICAL)) {
     crl_score |= CRL_SCORE_NOCRITICAL;
   }
@@ -902,93 +905,52 @@ static int crl_akid_check(X509_STORE_CTX *ctx, X509_CRL *crl, X509 **pissuer,
   return 0;
 }
 
-// Check for match between two dist point names: three separate cases. 1.
-// Both are relative names and compare X509_NAME types. 2. One full, one
-// relative. Compare X509_NAME to GENERAL_NAMES. 3. Both are full names and
-// compare two GENERAL_NAMES. 4. One is NULL: automatic match.
-static int idp_check_dp(DIST_POINT_NAME *a, DIST_POINT_NAME *b) {
-  X509_NAME *nm = nullptr;
-  GENERAL_NAMES *gens = nullptr;
-  GENERAL_NAME *gena, *genb;
-  size_t i, j;
-  if (!a || !b) {
+static int idp_check_dp(const DIST_POINT_NAME *dp_cert,
+                        const DIST_POINT_NAME *dp_crl) {
+  // If the CRL IDP does not have a distributionPoint field, the CRL is scoped
+  // to the entire CA and matches everything.
+  //
+  // TODO(crbug.com/42290219): This covers a null `dp_crl`, but not `dp_cert`.
+  // If `dp_cert` is null, that means the certificate's DistributionPoint lacks
+  // a distributionPoint. However, DistributionPoints are required to have
+  // either distributionPoint or cRLIssuer (indirect CRL) and we reject the
+  // latter. However, we don't seem to check this in the parser. Enforce this so
+  // that `dp_cert` cannot be null.
+  if (!dp_cert || !dp_crl) {
     return 1;
   }
-  if (a->type == 1) {
-    if (!a->dpname) {
-      return 0;
-    }
-    // Case 1: two X509_NAME
-    if (b->type == 1) {
-      if (!b->dpname) {
-        return 0;
-      }
-      if (!X509_NAME_cmp(a->dpname, b->dpname)) {
-        return 1;
-      } else {
-        return 0;
-      }
-    }
-    // Case 2: set name and GENERAL_NAMES appropriately
-    nm = a->dpname;
-    gens = b->name.fullname;
-  } else if (b->type == 1) {
-    if (!b->dpname) {
-      return 0;
-    }
-    // Case 2: set name and GENERAL_NAMES appropriately
-    gens = a->name.fullname;
-    nm = b->dpname;
-  }
-
-  // Handle case 2 with one GENERAL_NAMES and one X509_NAME
-  if (nm) {
-    for (i = 0; i < sk_GENERAL_NAME_num(gens); i++) {
-      gena = sk_GENERAL_NAME_value(gens, i);
-      if (gena->type != GEN_DIRNAME) {
-        continue;
-      }
-      if (!X509_NAME_cmp(nm, gena->d.directoryName)) {
-        return 1;
-      }
-    }
+  // We only support fullName, not nameRelativeToCRLIssuer.
+  if (dp_cert->type != 0 || dp_crl->type != 0) {
     return 0;
   }
-
-  // Else case 3: two GENERAL_NAMES
-
-  for (i = 0; i < sk_GENERAL_NAME_num(a->name.fullname); i++) {
-    gena = sk_GENERAL_NAME_value(a->name.fullname, i);
-    for (j = 0; j < sk_GENERAL_NAME_num(b->name.fullname); j++) {
-      genb = sk_GENERAL_NAME_value(b->name.fullname, j);
-      if (!GENERAL_NAME_cmp(gena, genb)) {
+  // Check that the CRL's distributionPoint has some name in common with the
+  // certificate's. A CA might shard across multiple CRLs. This check ensures we
+  // are looking at the right shard.
+  //
+  // TODO(crbug.com/565047760): This should not be an O(N^2) comparison.
+  for (const GENERAL_NAME *gen_cert : dp_cert->name.fullname) {
+    for (const GENERAL_NAME *gen_crl : dp_crl->name.fullname) {
+      if (GENERAL_NAME_cmp(gen_cert, gen_crl) == 0) {
         return 1;
       }
     }
   }
-
   return 0;
 }
 
 // Check CRLDP and IDP
 static int crl_crldp_check(X509 *x, X509_CRL *crl, int crl_score) {
   auto *impl = FromOpaque(x);
-  // TODO(bbe): crbug.com/409778435 Make tests for the corner cases we hit
-  // here so that we stay correct for RFC 5280 6.3.3 steps b.1 and b.2
-  if (crl->idp_flags & IDP_ONLYATTR) {
-    return 0;
-  }
   if (impl->ex_flags & EXFLAG_CA) {
-    if (crl->idp_flags & IDP_ONLYUSER) {
+    if (crl->idp && crl->idp->onlyuser) {
       return 0;
     }
   } else {
-    if (crl->idp_flags & IDP_ONLYCA) {
+    if (crl->idp && crl->idp->onlyCA) {
       return 0;
     }
   }
-  for (size_t i = 0; i < sk_DIST_POINT_num(impl->crldp.get()); i++) {
-    DIST_POINT *dp = sk_DIST_POINT_value(impl->crldp.get(), i);
+  for (const DIST_POINT *dp : impl->crldp.get()) {
     // Skip distribution points with a reasons field or a CRL issuer:
     //
     // We do not support CRLs partitioned by reason code. RFC 5280 requires CAs
@@ -1009,10 +971,10 @@ static int crl_crldp_check(X509 *x, X509_CRL *crl, int crl_score) {
   }
 
   // If the CRL does not specify an issuing distribution point, allow it to
-  // match anything.
-  //
-  // TODO(davidben): Does this match RFC 5280? It's hard to follow because RFC
-  // 5280 starts from distribution points, while this starts from CRLs.
+  // match anything. This partially implements RFC 5280. The final paragraph of
+  // RFC 5280, section 6.3.3, specifies a default CRL-DP. This default would
+  // match IDP-less CRLs and CRLs with an IDP of the default CRL-DP. We do not
+  // implement the second condition.
   return !crl->idp || !crl->idp->distpoint;
 }
 
@@ -1084,13 +1046,6 @@ static int check_crl(X509_STORE_CTX *ctx, X509_CRL *crl) {
 
     if (!(ctx->current_crl_score & CRL_SCORE_SCOPE)) {
       ctx->error = X509_V_ERR_DIFFERENT_CRL_SCOPE;
-      if (!call_verify_cb(0, ctx)) {
-        return 0;
-      }
-    }
-
-    if (crl->idp_flags & IDP_INVALID) {
-      ctx->error = X509_V_ERR_INVALID_EXTENSION;
       if (!call_verify_cb(0, ctx)) {
         return 0;
       }
