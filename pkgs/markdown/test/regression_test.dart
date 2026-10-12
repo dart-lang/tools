@@ -80,4 +80,31 @@ a <!--
     expect(html, isNotNull); // To use the output.
     expect(time.elapsedMilliseconds, lessThan(10000));
   });
+
+  test(
+    'many consecutive link reference definitions do not take quadratic time',
+    () {
+      // LinkReferenceDefinitionSyntax used to consume every remaining line in
+      // the block (because LinkReferenceDefinitionSyntax.canEndBlock is false),
+      // join them with '\n', parse a single definition, split the unconsumed
+      // remainder on '\n', and retreat BlockParser by that count. For N
+      // consecutive definitions (such as a large changelog's [#1]..[#N] block),
+      // that took O(N^2) time and allocations.
+      const count = 5000;
+      final buffer = StringBuffer();
+      for (var i = 1; i <= count; i++) {
+        buffer.writeln('[#$i]: https://example.com/pull/$i');
+      }
+      buffer.writeln('\nSee [#1] and [#$count].');
+
+      final time = Stopwatch()..start();
+      final html = markdownToHtml(buffer.toString());
+      expect(
+        html,
+        '<p>See <a href="https://example.com/pull/1">#1</a> and '
+        '<a href="https://example.com/pull/$count">#$count</a>.</p>\n',
+      );
+      expect(time.elapsedMilliseconds, lessThan(2000));
+    },
+  );
 }

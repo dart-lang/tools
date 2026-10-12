@@ -1,5 +1,9 @@
 ## 7.4.1-wip
 
+* Fix quadratic parsing time on blocks of consecutive link reference
+  definitions by only consuming lines from `BlockParser` as needed for a
+  single definition rather than joining and re-splitting the remainder of the
+  block on every definition.
 * Fix quadratic parsing time on a long unbroken run of word characters (for
   example a single very long word). The plain-text accelerator regex required
   a trailing whitespace, so a run reaching the end of a line without one
