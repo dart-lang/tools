@@ -878,6 +878,25 @@ $descIndent${'line is...'}${maybeLegend()}''');
             expect(await future, multiSelect ? {0} : 0);
           });
 
+          test('skips the space at a line break when a word exactly fills the '
+              'line', () async {
+            mockStdout.terminalColumns = '> abcdefg'.length + uBox.length;
+            final future = renderer([
+              const SelectOption('a', description: 'abcdefg hij'),
+            ], inputController.stream);
+            await pumpEventQueue();
+
+            // 'abcdefg' exactly fills the 7 available chars, so the line breaks
+            // at the following space, which should not start the next line.
+            expect(mockStdout.terminal.content, '''
+>$uBox a
+$descIndent${'abcdefg'}
+$descIndent${'hij'}${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
           test(
             'renders scrollbar spanning items and description lines',
             () async {
