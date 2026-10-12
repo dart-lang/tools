@@ -157,6 +157,13 @@ class Scanner {
   /// parser to tell that the key is intended to be a mapping key.
   final _simpleKeys = <_SimpleKey?>[null];
 
+  /// The first live key in [_simpleKeys], or `null` if there is none.
+  ///
+  /// Keys are saved in increasing token order by flow level, so this is the
+  /// live key with the smallest token number. Tracking it avoids walking every
+  /// open flow level for each token.
+  _SimpleKey? _earliestSimpleKey;
+
   /// The current indentation level.
   int get _indent => _indentLevels.last.column;
 
@@ -328,10 +335,7 @@ class Scanner {
         // If the current token could be a simple key, we need to scan more
         // tokens until we determine whether it is or not. Otherwise we might
         // not emit the `KEY` token before we emit the value of the key.
-        if (!_simpleKeys
-            .any((key) => key != null && key.tokenNumber == _tokensParsed)) {
-          break;
-        }
+        if (_earliestSimpleKey?.tokenNumber != _tokensParsed) break;
       }
 
       _fetchNextToken();
@@ -470,35 +474,34 @@ class Scanner {
   /// Checks the list of potential simple keys and remove the positions that
   /// cannot contain simple keys anymore.
   void _staleSimpleKeys() {
-    for (var i = 0; i < _simpleKeys.length; i++) {
-      var key = _simpleKeys[i];
-      if (key == null) continue;
+    // Simple keys are only staled in the block context, where there is a
+    // single level.
+    if (!_inBlockContext) return;
+    var key = _simpleKeys.single;
+    if (key == null) return;
 
-      // libyaml requires that all simple keys be a single line and no longer
-      // than 1024 characters. However, in section 7.4.2 of the spec
-      // (http://yaml.org/spec/1.2/spec.html#id2790832), these restrictions are
-      // only applied when the curly braces are omitted. It's difficult to
-      // retain enough context to know which keys need to have the restriction
-      // placed on them, so for now we go the other direction and allow
-      // everything but multiline simple keys in a block context.
-      if (!_inBlockContext) continue;
+    // libyaml requires that all simple keys be a single line and no longer
+    // than 1024 characters. However, in section 7.4.2 of the spec
+    // (http://yaml.org/spec/1.2/spec.html#id2790832), these restrictions are
+    // only applied when the curly braces are omitted. It's difficult to
+    // retain enough context to know which keys need to have the restriction
+    // placed on them, so for now we go the other direction and allow
+    // everything but multiline simple keys in a block context.
+    if (key.line == _scanner.line) return;
 
-      if (key.line == _scanner.line) continue;
-
-      if (key.required) {
-        final inBlockSequence =
-            _indentLevels.last.type == TokenType.blockSequenceStart;
-        final message = StringBuffer("Expected ':'.");
-        if (inBlockSequence) {
-          message.write(" If this is a list entry, it must start with '- '.");
-        }
-        _reportError(YamlException(message.toString(), _scanner.emptySpan));
-        _tokens.insert(key.tokenNumber - _tokensParsed,
-            Token(TokenType.key, key.location.pointSpan() as FileSpan));
+    if (key.required) {
+      final inBlockSequence =
+          _indentLevels.last.type == TokenType.blockSequenceStart;
+      final message = StringBuffer("Expected ':'.");
+      if (inBlockSequence) {
+        message.write(" If this is a list entry, it must start with '- '.");
       }
-
-      _simpleKeys[i] = null;
+      _reportError(YamlException(message.toString(), _scanner.emptySpan));
+      _tokens.insert(key.tokenNumber - _tokensParsed,
+          Token(TokenType.key, key.location.pointSpan() as FileSpan));
     }
+
+    _clearLastSimpleKey();
   }
 
   /// Checks if a simple key may start at the current position and saves it if
@@ -513,12 +516,11 @@ class Scanner {
 
     // If the current position may start a simple key, save it.
     _removeSimpleKey();
-    _simpleKeys[_simpleKeys.length - 1] = _SimpleKey(
-        _tokensParsed + _tokens.length,
-        _scanner.line,
-        _scanner.column,
-        _scanner.location,
+    final key = _SimpleKey(_tokensParsed + _tokens.length, _scanner.line,
+        _scanner.column, _scanner.location,
         required: required);
+    _simpleKeys[_simpleKeys.length - 1] = key;
+    _earliestSimpleKey ??= key;
   }
 
   /// Removes a potential simple key at the current flow level.
@@ -529,6 +531,14 @@ class Scanner {
           key.location.pointSpan());
     }
 
+    _clearLastSimpleKey();
+  }
+
+  /// Clears the key at the current flow level.
+  void _clearLastSimpleKey() {
+    if (identical(_simpleKeys.last, _earliestSimpleKey)) {
+      _earliestSimpleKey = null;
+    }
     _simpleKeys[_simpleKeys.length - 1] = null;
   }
 
@@ -540,6 +550,9 @@ class Scanner {
   /// Decreases the flow level.
   void _decreaseFlowLevel() {
     if (_inBlockContext) return;
+    if (identical(_simpleKeys.last, _earliestSimpleKey)) {
+      _earliestSimpleKey = null;
+    }
     _simpleKeys.removeLast();
   }
 
@@ -706,7 +719,7 @@ class Scanner {
           tokenNumber: simpleKey.tokenNumber);
 
       // Remove the simple key.
-      _simpleKeys[_simpleKeys.length - 1] = null;
+      _clearLastSimpleKey();
 
       // A simple key cannot follow another simple key.
       _simpleKeyAllowed = false;
