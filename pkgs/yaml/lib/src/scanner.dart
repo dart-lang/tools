@@ -328,10 +328,7 @@ class Scanner {
         // If the current token could be a simple key, we need to scan more
         // tokens until we determine whether it is or not. Otherwise we might
         // not emit the `KEY` token before we emit the value of the key.
-        if (!_simpleKeys
-            .any((key) => key != null && key.tokenNumber == _tokensParsed)) {
-          break;
-        }
+        if (!_firstSimpleKeyIsNext) break;
       }
 
       _fetchNextToken();
@@ -467,9 +464,24 @@ class Scanner {
   void _invalidScalarCharacter() =>
       _scanner.error('Unexpected character.', length: 1);
 
+  /// Whether the earliest pending simple key starts at the next token to be
+  /// returned.
+  ///
+  /// Keys are saved in increasing token order by flow level, so the first
+  /// live key has the smallest token number.
+  bool get _firstSimpleKeyIsNext {
+    for (final key in _simpleKeys) {
+      if (key != null) return key.tokenNumber == _tokensParsed;
+    }
+    return false;
+  }
+
   /// Checks the list of potential simple keys and remove the positions that
   /// cannot contain simple keys anymore.
   void _staleSimpleKeys() {
+    // Simple keys are only staled in the block context; in a flow context
+    // every iteration below would `continue`.
+    if (!_inBlockContext) return;
     for (var i = 0; i < _simpleKeys.length; i++) {
       var key = _simpleKeys[i];
       if (key == null) continue;

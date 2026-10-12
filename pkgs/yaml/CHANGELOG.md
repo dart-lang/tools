@@ -2,6 +2,8 @@
 
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
 * Improve error messages when mixing list and key-value syntax.
+* Speed up scanning deeply nested flow collections: the scanner no longer
+  walks every open flow level for each token.
 
 ## 3.1.4
 
