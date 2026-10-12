@@ -2019,6 +2019,14 @@ void main() {
         '!!float a',
         '!!float .',
         '!!float -',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
+
+    test('rejects invalid multiline flow scalars', () {
+      for (var input in [
         ' a: "\n"b',
         " a: '\n'b",
       ]) {
