@@ -263,22 +263,6 @@ DECLARE_ASN1_FUNCTIONS_const(X509_CRL_INFO)
 
 BSSL_NAMESPACE_END
 
-// Values in idp_flags field
-// IDP present
-#define IDP_PRESENT 0x1
-// IDP values inconsistent
-#define IDP_INVALID 0x2
-// onlyuser true
-#define IDP_ONLYUSER 0x4
-// onlyCA true
-#define IDP_ONLYCA 0x8
-// onlyattr true
-#define IDP_ONLYATTR 0x10
-// indirectCRL true
-#define IDP_INDIRECT 0x20
-// onlysomereasons present
-#define IDP_REASONS 0x40
-
 struct X509_crl_st {
   // actual signature
   bssl::X509_CRL_INFO *crl;
@@ -289,8 +273,6 @@ struct X509_crl_st {
   // Copies of various extensions
   AUTHORITY_KEYID *akid;
   ISSUING_DIST_POINT *idp;
-  // Convenient breakdown of IDP
-  int idp_flags;
   unsigned char crl_hash[SHA256_DIGEST_LENGTH];
 } /* X509_CRL */;
 
@@ -625,10 +607,7 @@ STACK_OF(CONF_VALUE) *X509V3_parse_list(const char *line);
 // GENERAL_NAME_cmp returns zero if `a` and `b` are equal and a non-zero
 // value otherwise. Note this function does not provide a comparison suitable
 // for sorting.
-//
-// This function is exported for testing.
-OPENSSL_EXPORT int GENERAL_NAME_cmp(const GENERAL_NAME *a,
-                                    const GENERAL_NAME *b);
+int GENERAL_NAME_cmp(const GENERAL_NAME *a, const GENERAL_NAME *b);
 
 // X509_VERIFY_PARAM_lookup returns a pre-defined `X509_VERIFY_PARAM` named by
 // `name`, or NULL if no such name is defined.
@@ -649,9 +628,6 @@ int X509_check_akid(const X509 *issuer, const AUTHORITY_KEYID *akid);
 int X509_is_valid_trust_id(int trust);
 
 int X509_PURPOSE_get_trust(const X509_PURPOSE *xp);
-
-// TODO(https://crbug.com/boringssl/695): Remove this.
-int DIST_POINT_set_dpname(DIST_POINT_NAME *dpn, X509_NAME *iname);
 
 // x509_parse_name parses a DER-encoded, X.509 Name from `cbs` and writes the
 // result to `*out`. It returns one on success and zero on error.
