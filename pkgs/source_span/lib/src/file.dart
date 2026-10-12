@@ -388,12 +388,14 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
     if (other is _FileSpan) {
       return _start == other._start &&
           _end == other._end &&
-          sourceUrl == other.sourceUrl;
+          sourceUrl == other.sourceUrl &&
+          (file == other.file || text == other.text);
     }
     if (other is SourceSpan) {
       return _start == other.start.offset &&
           _end == other.end.offset &&
-          sourceUrl == other.sourceUrl;
+          sourceUrl == other.sourceUrl &&
+          text == other.text;
     }
     return false;
   }
