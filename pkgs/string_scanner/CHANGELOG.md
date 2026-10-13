@@ -1,7 +1,9 @@
 ## 1.4.2-wip
 
-* Fix `SpanScanner.within()` returning incorrect line and column coordinates, and throwing `RangeError`s at EOF.
-* Fix `LineScanner.position=` retaining stale match state when assigned.
+* Fix `SpanScanner.within()` line/column tracking, `lastSpan` invalidation, and
+  end-of-span bounds checks in `error()` and `spanFromPosition()`.
+* Clear `lastMatch` and `lastSpan` when assigning the current offset to
+  `LineScanner.position=`.
 
 ## 1.4.1
 
