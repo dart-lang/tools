@@ -64,6 +64,36 @@ void main() async {
   testDirectory('common_mark');
   testDirectory('gfm');
 
+  validateCore(
+    'Custom list syntax with positional capture groups',
+    '''
+paragraph
+2. continuation
+
+3. third
+
+paragraph
+1. item
+
+paragraph
+1.
+''',
+    '''
+<p>paragraph
+2. continuation</p>
+<ol start="3">
+<li>third</li>
+</ol>
+<p>paragraph</p>
+<ol>
+<li>item</li>
+</ol>
+<p>paragraph
+1.</p>
+''',
+    blockSyntaxes: [const _PositionalListSyntax()],
+  );
+
   group('Corner cases', () {
     validateCore(
       'Incorrect Links',
@@ -482,4 +512,11 @@ nyan''',
       );
     });
   });
+}
+
+class _PositionalListSyntax extends OrderedListSyntax {
+  const _PositionalListSyntax();
+
+  @override
+  RegExp get pattern => RegExp(r'^ {0,3}(\d{1,9})[.)](?:[ \t]+(.*))?$');
 }
