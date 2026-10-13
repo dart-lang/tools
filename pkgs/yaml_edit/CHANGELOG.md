@@ -1,3 +1,7 @@
+## 2.3.0-wip
+
+* Require Dart `^3.4.0`.
+
 ## 2.2.5-wip
 
 - Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
