@@ -2,11 +2,23 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'block_parser.dart';
+import 'block_syntaxes/block_syntax.dart';
 import 'charcode.dart';
-import 'text_parser.dart';
 import 'util.dart';
 
-class LinkParser extends TextParser {
+class LinkParser {
+  final BlockParser _blockParser;
+
+  /// The source text accumulated from consumed lines so far.
+  String _source;
+
+  /// The current read position in [_source].
+  int _pos = 0;
+
+  /// How many lines have been consumed from [_blockParser].
+  int _linesConsumed = 1;
+
   /// If there is a valid link formed.
   bool get valid => _valid;
   bool _valid = false;
@@ -23,84 +35,145 @@ class LinkParser extends TextParser {
   String? get title => _title;
   String? _title;
 
-  LinkParser(super.source);
+  LinkParser(this._blockParser) : _source = _blockParser.current.content {
+    _blockParser.advance();
+  }
 
-  /// How many lines of the [source] have been consumed by link reference
-  /// definition.
-  int get unconsumedLines => _unconsumedLines;
-  int _unconsumedLines = 0;
+  int get pos => _pos;
 
-  /// Parses [source] to a link reference definition.
+  int get length => _source.length;
+
+  bool get isDone => _pos == _source.length;
+
+  int charAt([int? position]) => _source.codeUnitAt(position ?? _pos);
+
+  void advance() {
+    _pos++;
+  }
+
+  String substring(int start, [int? end]) => _source.substring(start, end);
+
+  /// Walks the parser forward through horizontal whitespace on the current
+  /// line.
+  int moveThroughWhitespace() {
+    var i = 0;
+    while (!isDone) {
+      final char = charAt();
+      if (char != $space &&
+          char != $tab &&
+          char != $vt &&
+          char != $cr &&
+          char != $ff) {
+        return i;
+      }
+      i++;
+      advance();
+    }
+    return i;
+  }
+
+  /// Appends the next line from [_blockParser] if not at a block end.
+  bool _tryAdvanceLine() {
+    if (BlockSyntax.isAtBlockEnd(_blockParser)) {
+      return false;
+    }
+    _source = '$_source\n${_blockParser.current.content}';
+    _blockParser.advance();
+    _linesConsumed++;
+    return true;
+  }
+
+  void _retreatTo(int targetLinesConsumed) {
+    final delta = _linesConsumed - targetLinesConsumed;
+    if (delta > 0) {
+      _blockParser.retreatBy(delta);
+      _linesConsumed = targetLinesConsumed;
+    }
+  }
+
+  /// Whether [line] begins with optional horizontal whitespace followed by a
+  /// link title opening delimiter (`'`, `"`, or `(`).
+  static bool _startsWithTitleDelimiter(String line) {
+    for (var i = 0; i < line.length; i++) {
+      final char = line.codeUnitAt(i);
+      if (char == $space ||
+          char == $tab ||
+          char == $vt ||
+          char == $cr ||
+          char == $ff) {
+        continue;
+      }
+      return char == $apostrophe || char == $quote || char == $lparen;
+    }
+    return false;
+  }
+
+  /// Parses [_source] to a link reference definition.
   void parseDefinition() {
     if (!parseLabel() || isDone || charAt() != $colon) {
+      _retreatTo(0);
       return;
     }
 
     // Advance to the next character after the colon.
     advance();
     if (!_parseDestination()) {
+      _retreatTo(0);
       return;
     }
 
-    var precedingWhitespaces = moveThroughWhitespace();
-    if (isDone) {
+    final precedingWhitespaces = moveThroughWhitespace();
+    if (!isDone) {
+      // A title on the same line as the destination must be preceded by
+      // whitespace, and nothing but whitespace may follow the closing delimiter
+      // on its line.
+      // For example: `[foo]: <bar> "baz` is an invalid definition, and
+      // `[foo]: <bar> "baz" hello` is also invalid
+      // (see https://spec.commonmark.org/0.30/#example-209).
+      if (precedingWhitespaces == 0 || !_parseTitle()) {
+        _retreatTo(0);
+        return;
+      }
+      moveThroughWhitespace();
+      if (!isDone) {
+        _title = null;
+        _retreatTo(0);
+        return;
+      }
       _valid = true;
       return;
     }
 
-    final multiline = charAt() == $lf;
-    precedingWhitespaces += moveThroughWhitespace(multiLine: true);
-
-    // The title must be preceded by whitespaces.
-    if (precedingWhitespaces == 0 || isDone) {
-      _valid = isDone;
-      return;
-    }
-
-    final hasValidTitle = _parseTitle();
-    // For example: `[foo]: <bar> "baz` is a invalid definition, but this one is
-    // valid:
-    // ```
-    // [foo]: <bar>
-    // "baz
-    // ```
-    if (!hasValidTitle && !multiline) {
-      return;
-    }
-
-    if (hasValidTitle) {
+    // We reached the end of the destination's line, so `[label]: destination`
+    // is already valid even if the next line is not a valid title
+    // (see https://spec.commonmark.org/0.30/#example-210).
+    final savedLinesConsumed = _linesConsumed;
+    if (!_blockParser.isDone &&
+        _startsWithTitleDelimiter(_blockParser.current.content) &&
+        _tryAdvanceLine()) {
+      // Advance past the line feed.
+      advance();
       moveThroughWhitespace();
-      if (!isDone && charAt() != $lf) {
-        // It is not a valid definition if the title is followed by
-        // non-whitespace characters, for example: `[foo]: <bar> "baz" hello`.
-        // See https://spec.commonmark.org/0.30/#example-209.
-        if (!multiline) {
-          return;
+      if (_parseTitle()) {
+        moveThroughWhitespace();
+        if (!isDone) {
+          _title = null;
+          _retreatTo(savedLinesConsumed);
         }
-        // But it is a valid link reference definition if this definition is
-        // multiline, see https://spec.commonmark.org/0.30/#example-210.
+      } else {
         _title = null;
+        _retreatTo(savedLinesConsumed);
       }
     }
-
-    final linesUnconsumed = source.substring(pos).split('\n');
-    if (linesUnconsumed.isNotEmpty && linesUnconsumed.first.isBlank) {
-      linesUnconsumed.removeAt(0);
-    }
-    _unconsumedLines = linesUnconsumed.length;
 
     _valid = true;
   }
 
   /// Parses the link label, returns `true` if there is a valid link label.
   bool parseLabel() {
-    moveThroughWhitespace(multiLine: true);
+    moveThroughWhitespace();
 
-    if (length - pos < 2) {
-      return false;
-    }
-
-    if (charAt() != $lbracket) {
+    if (isDone || charAt() != $lbracket) {
       return false;
     }
 
@@ -115,18 +188,21 @@ class LinkParser extends TextParser {
       if (maxLoop-- < 0) {
         return false;
       }
-      final char = charAt(pos);
+      if (isDone && !_tryAdvanceLine()) {
+        return false;
+      }
+      final char = charAt();
       if (char == $backslash) {
         advance();
+        if (isDone && !_tryAdvanceLine()) {
+          return false;
+        }
       } else if (char == $lbracket) {
         return false;
       } else if (char == $rbracket) {
         break;
       }
       advance();
-      if (isDone) {
-        return false;
-      }
     }
 
     final text = substring(start, pos);
@@ -140,12 +216,20 @@ class LinkParser extends TextParser {
     return true;
   }
 
-  /// Parses the link destination, returns `true` there is a valid link
+  /// Parses the link destination, returns `true` if there is a valid link
   /// destination.
   bool _parseDestination() {
-    moveThroughWhitespace(multiLine: true);
+    moveThroughWhitespace();
     if (isDone) {
-      return false;
+      if (!_tryAdvanceLine()) {
+        return false;
+      }
+      // Advance past the line feed.
+      advance();
+      moveThroughWhitespace();
+      if (isDone) {
+        return false;
+      }
     }
 
     final isValidDestination = charAt() == $lt
@@ -163,12 +247,18 @@ class LinkParser extends TextParser {
   bool _parseBracketedDestination() {
     // Walk past the opening `<`.
     advance();
+    if (isDone) {
+      return false;
+    }
 
     final start = pos;
     while (true) {
       final char = charAt();
       if (char == $backslash) {
         advance();
+        if (isDone) {
+          return false;
+        }
       } else if (char == $lf || char == $cr || char == $ff) {
         return false;
       } else if (char == $gt) {
@@ -200,6 +290,9 @@ class LinkParser extends TextParser {
       final char = charAt();
       if (char == $backslash) {
         advance();
+        if (isDone) {
+          break;
+        }
       } else if (char == $space || char == $lf || char == $cr || char == $ff) {
         break;
       } else if (char == $lparen) {
@@ -238,27 +331,23 @@ class LinkParser extends TextParser {
 
     final closeDelimiter = delimiter == $lparen ? $rparen : delimiter;
     advance();
-    if (isDone) {
-      return false;
-    }
     final start = pos;
 
     // Looking for an un-escaped closing delimiter.
     while (true) {
+      if (isDone && !_tryAdvanceLine()) {
+        return false;
+      }
       final char = charAt();
       if (char == $backslash) {
         advance();
+        if (isDone && !_tryAdvanceLine()) {
+          return false;
+        }
       } else if (char == closeDelimiter) {
         break;
       }
       advance();
-      if (isDone) {
-        return false;
-      }
-    }
-
-    if (isDone) {
-      return false;
     }
 
     _title = substring(start, pos);

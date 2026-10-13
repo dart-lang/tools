@@ -80,4 +80,44 @@ a <!--
     expect(html, isNotNull); // To use the output.
     expect(time.elapsedMilliseconds, lessThan(10000));
   });
+
+  test(
+    'many consecutive link reference definitions do not re-read later lines',
+    () {
+      // LinkReferenceDefinitionSyntax used to consume every remaining line in
+      // the block (because LinkReferenceDefinitionSyntax.canEndBlock is false),
+      // join them with '\n', parse a single definition, split the unconsumed
+      // remainder on '\n', and retreat BlockParser by that count. For N
+      // consecutive definitions, line k had its content read O(k) times.
+      const count = 100;
+      final lines = [
+        for (var i = 1; i <= count; i++)
+          _CountingLine('[#$i]: https://example.com/pull/$i'),
+        _CountingLine(''),
+        _CountingLine('See [#1] and [#$count].'),
+      ];
+
+      final html = renderToHtml(Document().parseLineList(lines));
+      expect(
+        html,
+        '<p>See <a href="https://example.com/pull/1">#1</a> and '
+        '<a href="https://example.com/pull/$count">#$count</a>.</p>',
+      );
+      for (final line in lines) {
+        expect(line.reads, lessThan(20));
+      }
+    },
+  );
+}
+
+class _CountingLine extends Line {
+  int reads = 0;
+
+  _CountingLine(super.content);
+
+  @override
+  String get content {
+    reads++;
+    return super.content;
+  }
 }
