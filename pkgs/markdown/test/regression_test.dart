@@ -82,29 +82,42 @@ a <!--
   });
 
   test(
-    'many consecutive link reference definitions do not take quadratic time',
+    'many consecutive link reference definitions do not re-read later lines',
     () {
       // LinkReferenceDefinitionSyntax used to consume every remaining line in
       // the block (because LinkReferenceDefinitionSyntax.canEndBlock is false),
       // join them with '\n', parse a single definition, split the unconsumed
       // remainder on '\n', and retreat BlockParser by that count. For N
-      // consecutive definitions (such as a large changelog's [#1]..[#N] block),
-      // that took O(N^2) time and allocations.
-      const count = 5000;
-      final buffer = StringBuffer();
-      for (var i = 1; i <= count; i++) {
-        buffer.writeln('[#$i]: https://example.com/pull/$i');
-      }
-      buffer.writeln('\nSee [#1] and [#$count].');
+      // consecutive definitions, line k had its content read O(k) times.
+      const count = 100;
+      final lines = [
+        for (var i = 1; i <= count; i++)
+          _CountingLine('[#$i]: https://example.com/pull/$i'),
+        _CountingLine(''),
+        _CountingLine('See [#1] and [#$count].'),
+      ];
 
-      final time = Stopwatch()..start();
-      final html = markdownToHtml(buffer.toString());
+      final html = renderToHtml(Document().parseLineList(lines));
       expect(
         html,
         '<p>See <a href="https://example.com/pull/1">#1</a> and '
-        '<a href="https://example.com/pull/$count">#$count</a>.</p>\n',
+        '<a href="https://example.com/pull/$count">#$count</a>.</p>',
       );
-      expect(time.elapsedMilliseconds, lessThan(2000));
+      for (final line in lines) {
+        expect(line.reads, lessThan(20));
+      }
     },
   );
+}
+
+class _CountingLine extends Line {
+  int reads = 0;
+
+  _CountingLine(super.content);
+
+  @override
+  String get content {
+    reads++;
+    return super.content;
+  }
 }
