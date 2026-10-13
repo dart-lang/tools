@@ -70,7 +70,7 @@ class Resolver {
         final lib = uri.path;
         filePath = p.join(sdkRoot, lib, '$lib.dart');
       }
-      return resolveSymbolicLinks(filePath);
+      return _resolveLinksWithinKnownRoots(filePath);
     }
     if (uri.scheme == 'package') {
       final packages = _packages;
@@ -86,12 +86,10 @@ class Resolver {
       }
       final packagePath = p.fromUri(packageUri);
       final pathInPackage = p.joinAll(uri.pathSegments.sublist(1));
-      return resolveSymbolicLinks(p.join(packagePath, pathInPackage));
+      return _resolveLinksWithinKnownRoots(p.join(packagePath, pathInPackage));
     }
     if (uri.scheme == 'file') {
-      final resolved = resolveSymbolicLinks(p.fromUri(uri));
-      if (resolved == null || !_isWithinKnownRoots(resolved)) return null;
-      return resolved;
+      return _resolveLinksWithinKnownRoots(p.fromUri(uri));
     }
     // We cannot deal with anything else.
     failed.add('$uri');
@@ -106,6 +104,12 @@ class Resolver {
     return File(normalizedPath).resolveSymbolicLinksSync();
   }
 
+  String? _resolveLinksWithinKnownRoots(String path) {
+    final resolved = resolveSymbolicLinks(path);
+    if (resolved == null || !_isWithinKnownRoots(resolved)) return null;
+    return resolved;
+  }
+
   /// The directories a `file:` URI is allowed to resolve into.
   ///
   /// `source` entries in coverage data are supplied by whatever produced the
@@ -117,13 +121,21 @@ class Resolver {
   /// contents printed straight into the coverage report.
   List<String>? _knownRoots;
 
+  List<String> _createKnownRoots() {
+    return [
+          ?packagePath,
+          ?sdkRoot,
+          ...?_packages?.values.map(p.fromUri),
+          Directory.current.path,
+        ]
+        .map(
+          (root) => resolveSymbolicLinks(root) ?? p.normalize(p.absolute(root)),
+        )
+        .toList();
+  }
+
   bool _isWithinKnownRoots(String path) {
-    final roots = _knownRoots ??= [
-      ?packagePath,
-      ?sdkRoot,
-      ...?_packages?.values.map(p.fromUri),
-      Directory.current.path,
-    ].map(p.normalize).toList();
+    final roots = _knownRoots ??= _createKnownRoots();
     final normalized = p.normalize(path);
     return roots.any(
       (root) => normalized == root || p.isWithin(root, normalized),
