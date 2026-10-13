@@ -2025,7 +2025,9 @@ void main() {
       }
     });
 
-    test('rejects invalid multiline flow scalars', () {
+    test(
+        'rejects unseparated content after a multiline quoted scalar at block '
+        'indent', () {
       for (var input in [
         ' a: "\n"b',
         " a: '\n'b",
