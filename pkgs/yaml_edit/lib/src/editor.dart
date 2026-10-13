@@ -4,6 +4,7 @@
 
 import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
+import 'package:yaml/tokens.dart';
 import 'package:yaml/yaml.dart';
 
 import 'cst.dart';
@@ -227,10 +228,13 @@ class YamlEditor {
       if (_aliases.contains(_contents)) {
         throw AliasException(pathAsList, _contents);
       }
+      final targetNode = _document.root;
       return _performEdit(
         buildUpdate(_document, pathAsList, valueNode),
         pathAsList,
         valueNode,
+        isRemove: false,
+        oldNode: targetNode,
       );
     }
 
@@ -246,20 +250,26 @@ class YamlEditor {
       final expected = wrapAsYamlNode(
         [...parentNode.nodes]..[keyOrIndex] = valueNode,
       );
+      final targetNode = findNode(_document, pathAsList);
       return _performEdit(
         buildUpdate(_document, pathAsList, valueNode),
         collectionPath,
         expected,
+        isRemove: false,
+        oldNode: targetNode,
       );
     }
 
     if (parentNode is YamlMap) {
       final expectedMap =
           updatedYamlMap(parentNode, (nodes) => nodes[keyOrIndex] = valueNode);
+      final targetNode = findNode(_document, pathAsList);
       return _performEdit(
         buildUpdate(_document, pathAsList, valueNode),
         collectionPath,
         expectedMap,
+        isRemove: false,
+        oldNode: targetNode,
       );
     }
 
@@ -408,10 +418,13 @@ class YamlEditor {
 
     if (pathAsList.isEmpty) {
       // Parsing an empty YAML document returns a YamlScalar with value `null`.
+      final targetNode = _document.root;
       _performEdit(
         buildRemove(_document, pathAsList),
         pathAsList,
         wrapAsYamlNode(null),
+        isRemove: true,
+        oldNode: targetNode,
       );
       return nodeToRemove;
     }
@@ -433,10 +446,15 @@ class YamlEditor {
           path, 'Scalar $parentNode does not have key $keyOrIndex');
     }
 
+    final targetNode = findNode(_document, pathAsList);
+    final collectionNode = findNode(_document, collectionPath);
     _performEdit(
       buildRemove(_document, pathAsList),
       collectionPath,
       expectedNode,
+      isRemove: true,
+      oldNode: targetNode,
+      collectionNode: collectionNode,
     );
 
     return nodeToRemove;
@@ -557,11 +575,27 @@ class YamlEditor {
   void _performEdit(
     SourceEdit edit,
     Iterable<Object?> path,
-    YamlNode expectedNode,
-  ) {
+    YamlNode expectedNode, {
+    bool isRemove = false,
+    CstNode? oldNode,
+    CstNode? collectionNode,
+  }) {
     final expectedTree = _deepModify(_contents, path, [], expectedNode);
     final initialYaml = _yaml;
     final updatedYaml = edit.apply(_yaml);
+
+    assert(
+      _assertFrameCondition(
+        initialDocument: _document,
+        edit: edit,
+        initialYaml: initialYaml,
+        updatedYaml: updatedYaml,
+        isRemove: isRemove,
+        oldNode: oldNode,
+        collectionNode: collectionNode,
+        expectedNode: expectedNode,
+      ),
+    );
 
     // Check that the edit does actually parse, and that the result is a
     // document we can go on to model. Rebuilding the CST re-checks its tiling
@@ -597,6 +631,217 @@ class YamlEditor {
     // semantically correct!
     _document = updated;
     _edits.add(edit);
+  }
+
+  bool _assertFrameCondition({
+    required CstDocument initialDocument,
+    required SourceEdit edit,
+    required String initialYaml,
+    required String updatedYaml,
+    required bool isRemove,
+    required CstNode? oldNode,
+    required CstNode? collectionNode,
+    required YamlNode expectedNode,
+  }) {
+    // 1. Assert byte-exactness outside
+    //    [edit.offset, edit.offset + edit.length):
+    if (edit.offset < 0 ||
+        edit.length < 0 ||
+        edit.offset + edit.length > initialYaml.length) {
+      throw createAssertionError(
+        'Frame condition violation: edit range is out of bounds.',
+        initialYaml,
+        updatedYaml,
+      );
+    }
+    final expectedLength =
+        initialYaml.length - edit.length + edit.replacement.length;
+    if (updatedYaml.length != expectedLength) {
+      throw createAssertionError(
+        'Frame condition violation: updated YAML length does not match '
+        'expected.',
+        initialYaml,
+        updatedYaml,
+      );
+    }
+    if (!updatedYaml.startsWith(initialYaml.substring(0, edit.offset))) {
+      throw createAssertionError(
+        'Frame condition violation: prefix before edit was modified.',
+        initialYaml,
+        updatedYaml,
+      );
+    }
+    if (updatedYaml.substring(edit.offset + edit.replacement.length) !=
+        initialYaml.substring(edit.offset + edit.length)) {
+      throw createAssertionError(
+        'Frame condition violation: suffix after edit was modified.',
+        initialYaml,
+        updatedYaml,
+      );
+    }
+
+    // 2. Assert exact CST tiling
+    final CstDocument updatedCst;
+    try {
+      updatedCst = CstDocument.parse(updatedYaml);
+    } on YamlException catch (e) {
+      throw createAssertionError(
+        'Failed to parse updated YAML: $e',
+        initialYaml,
+        updatedYaml,
+      );
+    }
+
+    // 3. Assert comment conservation
+    _assertCommentConservation(
+      initialDocument: initialDocument,
+      updatedDocument: updatedCst,
+      edit: edit,
+      isRemove: isRemove,
+      oldNode: oldNode,
+      collectionNode: collectionNode,
+      expectedNode: expectedNode,
+      initialYaml: initialYaml,
+      updatedYaml: updatedYaml,
+    );
+
+    return true;
+  }
+
+  void _assertCommentConservation({
+    required CstDocument initialDocument,
+    required CstDocument updatedDocument,
+    required SourceEdit edit,
+    required bool isRemove,
+    required CstNode? oldNode,
+    CstNode? collectionNode,
+    required YamlNode expectedNode,
+    required String initialYaml,
+    required String updatedYaml,
+  }) {
+    final initialComments = initialDocument.comments;
+    final updatedComments = updatedDocument.comments;
+
+    final updatedCounts = <String, int>{};
+    for (final comment in updatedComments) {
+      final text = comment.span.text.trimRight();
+      updatedCounts[text] = (updatedCounts[text] ?? 0) + 1;
+    }
+
+    final initialCounts = <String, int>{};
+    final commentsByText = <String, List<CommentToken>>{};
+    for (final comment in initialComments) {
+      final text = comment.span.text.trimRight();
+      initialCounts[text] = (initialCounts[text] ?? 0) + 1;
+      (commentsByText[text] ??= []).add(comment);
+    }
+
+    for (final MapEntry(:key, :value) in initialCounts.entries) {
+      final text = key;
+      final originalCount = value;
+      final remainingCount = updatedCounts[text] ?? 0;
+      final lostCount = originalCount - remainingCount;
+      if (lostCount <= 0) continue;
+
+      final allInstances = commentsByText[text]!;
+      final instancesInEdit = allInstances.where((comment) {
+        return comment.span.start.offset >= edit.offset &&
+            comment.span.end.offset <= edit.offset + edit.length;
+      }).toList();
+
+      if (lostCount > instancesInEdit.length) {
+        throw createAssertionError(
+          'Frame condition violation: comment "$text" outside edit range was '
+          'lost.',
+          initialYaml,
+          updatedYaml,
+        );
+      }
+
+      for (final comment in instancesInEdit) {
+        var isAllowed = false;
+        if (isRemove) {
+          if (oldNode != null &&
+              comment.span.start.offset >= oldNode.contentStart &&
+              comment.span.end.offset <= oldNode.contentEnd) {
+            isAllowed = true;
+          } else if (collectionNode is CstFlowCollection) {
+            final entries = collectionNode.entries;
+            int? removedIndex;
+            if (expectedNode is YamlMap && collectionNode.value is YamlMap) {
+              final parentMap = collectionNode.value as YamlMap;
+              for (final key in parentMap.keys) {
+                if (!expectedNode.containsKey(key)) {
+                  final entryIndex = entries.indexWhere(
+                      (e) => e.key != null && deepEquals(e.key!.value, key));
+                  if (entryIndex != -1) {
+                    removedIndex = entryIndex;
+                    break;
+                  }
+                }
+              }
+            } else if (expectedNode is YamlList &&
+                collectionNode.value is YamlList) {
+              final parentList = collectionNode.value as YamlList;
+              for (var i = 0; i < parentList.length; i++) {
+                if (i >= expectedNode.length ||
+                    !deepEquals(parentList[i], expectedNode[i])) {
+                  removedIndex = i;
+                  break;
+                }
+              }
+            }
+
+            if (removedIndex != null &&
+                removedIndex >= 0 &&
+                removedIndex < entries.length) {
+              final entry = entries[removedIndex];
+              final allowedStart = entries.length == 1
+                  ? collectionNode.openEnd
+                  : entry.contentStart;
+              final commaEnd =
+                  entry.comma != null ? entry.comma! + 1 : entry.end;
+              final lineAnchor = entry.comma ?? entry.end;
+              final allowedEnd =
+                  initialDocument.lineBreakEndOf(lineAnchor) > commaEnd
+                      ? initialDocument.lineBreakEndOf(lineAnchor)
+                      : (entry.end > commaEnd ? entry.end : commaEnd);
+              if (comment.span.start.offset >= allowedStart &&
+                  comment.span.end.offset <= allowedEnd) {
+                isAllowed = true;
+              }
+            } else if (oldNode != null &&
+                initialDocument.lineStartOf(comment.span.start.offset) ==
+                    initialDocument.lineStartOf(oldNode.contentStart)) {
+              isAllowed = true;
+            }
+          } else {
+            isAllowed = true;
+          }
+        } else {
+          if (oldNode == null ||
+              oldNode is CstBlockSeq ||
+              oldNode is CstBlockMap ||
+              oldNode is CstFlowCollection ||
+              oldNode is CstFlowPair) {
+            isAllowed = true;
+          } else {
+            // When updating a scalar/alias/empty node, ALL comments must be
+            // conserved!
+            isAllowed = false;
+          }
+        }
+
+        if (!isAllowed) {
+          throw createAssertionError(
+            'Frame condition violation: comment "$text" was unintentionally '
+            'removed.',
+            initialYaml,
+            updatedYaml,
+          );
+        }
+      }
+    }
   }
 
   /// Utility method to produce an updated YAML tree equivalent to converting
