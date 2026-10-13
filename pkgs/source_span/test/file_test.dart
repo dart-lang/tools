@@ -533,5 +533,31 @@ zip zap zop
         });
       });
     });
+
+    group('equality', () {
+      test('two FileSpans with the same offsets and URL are equal', () {
+        final span1 = file.span(5, 12);
+        final span2 = file.span(5, 12);
+        expect(span1, equals(span2));
+        expect(span1.hashCode, equals(span2.hashCode));
+      });
+
+      test('FileSpan and SourceSpan equality is symmetric', () {
+        final fileSpan = file.span(5, 12);
+        final sourceSpan = SourceSpan(SourceLocation(5, sourceUrl: 'foo.dart'),
+            SourceLocation(12, sourceUrl: 'foo.dart'), 'other!!');
+        expect(fileSpan == sourceSpan, isTrue);
+        expect(sourceSpan == fileSpan, isTrue);
+      });
+
+      test('FileSpans with different offsets or URLs are not equal', () {
+        final span = file.span(5, 12);
+        expect(span, isNot(equals(file.span(6, 12))));
+        expect(span, isNot(equals(file.span(5, 11))));
+        final otherFile =
+            SourceFile.fromString('foo bar baz\nwhiz bang boom', url: 'b.dart');
+        expect(span, isNot(equals(otherFile.span(5, 12))));
+      });
+    });
   });
 }
