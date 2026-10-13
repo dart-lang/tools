@@ -137,9 +137,11 @@ String? _tryYamlEncodeFolded(String string, int indentSize, String lineEnding) {
     return previous + lineEnding + updated;
   });
 
-  return '>-\n'
+  final normalizedStripped =
+      stripped.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+  return '>-$lineEnding'
       '$indent$trimmed'
-      '${stripped.replaceAll('\n', lineEnding + indent)}';
+      '${normalizedStripped.replaceAll('\n', lineEnding + indent)}';
 }
 
 /// Attempts to encode a [string] as a _YAML literal string_ and apply the
@@ -176,7 +178,10 @@ String? _tryYamlEncodeLiteral(
 
   /// Simplest block style.
   /// * https://yaml.org/spec/1.2.2/#812-literal-style
-  return '|-\n$indent${string.replaceAll('\n', lineEnding + indent)}';
+  final normalizedString =
+      string.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+  final indentedString = normalizedString.replaceAll('\n', lineEnding + indent);
+  return '|-$lineEnding$indent$indentedString';
 }
 
 /// Encodes a flow [YamlScalar] based on the provided [YamlScalar.style].
