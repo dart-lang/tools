@@ -172,7 +172,8 @@ class HitMap {
     final ignoredLinesInFilesCache = <String, List<List<int>>?>{};
     for (var file in files) {
       final contents = file.readAsStringSync();
-      switch (json.decode(contents)) {
+      final decoded = json.decode(contents);
+      switch (decoded) {
         case {'coverage': final List jsonResult}:
           globalHitmap.merge(
             HitMap.parseJsonSync(
@@ -186,7 +187,11 @@ class HitMap {
               scopeOutput: scopeOutput,
             ),
           );
-        case final decoded:
+        case final Map map when map.isEmpty:
+          // `dart test --coverage` outputs `{}` for suites where all tests
+          // were skipped.
+          break;
+        default:
           throw FormatException(
             'Unrecognized coverage JSON in "${file.path}". Expected a '
             '{"coverage": [...]} report, but got ${decoded.runtimeType}.',
