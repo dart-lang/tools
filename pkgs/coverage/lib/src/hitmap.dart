@@ -187,7 +187,7 @@ class HitMap {
               scopeOutput: scopeOutput,
             ),
           );
-        case final Map map when map.isEmpty:
+        case Map(isEmpty: true):
           // `dart test --coverage` outputs `{}` for suites where all tests
           // were skipped.
           break;
