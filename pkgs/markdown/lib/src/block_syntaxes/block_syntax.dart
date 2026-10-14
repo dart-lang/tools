@@ -56,10 +56,11 @@ abstract class BlockSyntax {
   }
 
   /// Generates a valid HTML anchor from the inner text of [element].
-  static String generateAnchorHash(Element element) => element
-      .children!
-      .first
-      .textContent
+  ///
+  /// Must be called after inline parsing of [element]'s children, so that
+  /// links contribute only their text (not their target) and images are
+  /// excluded entirely.
+  static String generateAnchorHash(Element element) => element.textContent
       .toLowerCase()
       .trim()
       .replaceAll(RegExp('[^a-z0-9 _-]'), '')
