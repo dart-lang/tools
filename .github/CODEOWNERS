@@ -13,6 +13,7 @@ pkgs/api_summary                @kevmoo
 pkgs/bazel_worker               @dart-lang/dart-bat
 pkgs/benchmark_harness          @dart-lang/dart-native-runtime-team
 pkgs/boolean_selector           @dart-lang/dart-ecosystem-team
+pkgs/boring                     @dart-lang/dart-ecosystem-team
 pkgs/browser_launcher           @dart-lang/dart-ecosystem-team
 pkgs/cli_config                 @dcharkes
 pkgs/cli_util                   @dcharkes

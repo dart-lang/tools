@@ -204,6 +204,9 @@ abstract class Analytics {
   /// Returns true if it is OK to send an analytics message. Do not cache,
   /// as this depends on factors that can change, such as the configuration
   /// file contents.
+  ///
+  /// Instances created by the [Analytics] factories return `false` when the
+  /// `DASH__SUPPRESS_ANALYTICS` environment variable is `true`.
   bool get okToSend;
 
   /// Boolean indicating whether this instance is configured for an external
@@ -271,6 +274,9 @@ abstract class Analytics {
   ///
   /// Setting the telemetry status will also send an event to GA
   /// indicating the latest status of the telemetry from [reportingBool].
+  /// Instances created by the [Analytics] factories don't send this event
+  /// when the `DASH__SUPPRESS_ANALYTICS` environment variable is `true`, but
+  /// still update the configuration file.
   Future<void> setTelemetry(bool reportingBool);
 
   /// Calling this will result in telemetry collection being suppressed for
@@ -304,6 +310,13 @@ abstract class Analytics {
 
   /// Returns an instance of [FakeAnalytics] which can be used in tests to check
   /// for certain [Event] instances within [FakeAnalytics.sentEvents].
+  ///
+  /// The returned instance checks `DASH__SUPPRESS_ANALYTICS` in [environment]
+  /// rather than in the process environment. [environment] defaults to an
+  /// empty map, so tests aren't affected by the shell they run in. Pass
+  /// `Platform.environment` to follow the real environment. The production
+  /// [Analytics] factories don't offer this, and always respect the real
+  /// environment.
   @visibleForTesting
   static FakeAnalytics fake({
     required DashTool tool,
@@ -322,6 +335,7 @@ abstract class Analytics {
     String toolsMessage = kToolsMessage,
     bool enableAsserts = true,
     bool isExternal = true,
+    Map<String, String> environment = const {},
   }) {
     final firstRun = runInitialization(
       homeDirectory: homeDirectory,
@@ -352,6 +366,7 @@ abstract class Analytics {
       firstRun: firstRun,
       enableAsserts: enableAsserts,
       isExternal: isExternal,
+      environment: environment,
     );
   }
 }
@@ -382,6 +397,13 @@ class AnalyticsImpl implements Analytics {
 
   /// Telemetry suppression flag that is set via [Analytics.suppressTelemetry].
   bool _telemetrySuppressed = false;
+
+  /// Whether the `DASH__SUPPRESS_ANALYTICS` environment variable suppresses
+  /// analytics.
+  ///
+  /// Read once, on first use, because a process's environment is fixed when
+  /// it starts.
+  late final bool _envSuppressed = _readEnvSuppressed();
 
   /// Indicates if this is the first run for a given tool.
   bool _firstRun = false;
@@ -522,9 +544,16 @@ class AnalyticsImpl implements Analytics {
   ///
   /// Checking if it is the first time a tool is running with this package
   /// as indicated by [_firstRun].
+  ///
+  /// Events are never sent when the `DASH__SUPPRESS_ANALYTICS` environment
+  /// variable is set to `true`, regardless of the other checks.
   @override
   bool get okToSend =>
-      telemetryEnabled && !_showMessage && !_telemetrySuppressed && !_firstRun;
+      !_envSuppressed &&
+      telemetryEnabled &&
+      !_showMessage &&
+      !_telemetrySuppressed &&
+      !_firstRun;
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
@@ -700,7 +729,7 @@ class AnalyticsImpl implements Analytics {
         enabledFeatures: _enabledFeatures,
       );
 
-      _logHandler.save(data: body);
+      if (!_envSuppressed) _logHandler.save(data: body);
     } else {
       // Construct the body of the request to signal
       // telemetry status toggling
@@ -719,6 +748,10 @@ class AnalyticsImpl implements Analytics {
 
       _clientId = '';
     }
+
+    // The configuration and local files above are still updated, but nothing
+    // is sent when the environment suppresses analytics.
+    if (_envSuppressed) return Future.value();
 
     // Pass to the google analytics client to send with a
     // timeout incase http clients hang
@@ -754,6 +787,13 @@ class AnalyticsImpl implements Analytics {
     _surveyHandler.dismiss(survey, false);
     send(Event.surveyShown(surveyId: survey.uniqueId));
   }
+
+  /// Reads whether analytics are suppressed by the process environment.
+  ///
+  /// Only [FakeAnalytics] overrides this, so tests can be isolated from the
+  /// developer's shell. Production instances always read the real
+  /// environment.
+  bool _readEnvSuppressed() => areAnalyticsSuppressed();
 
   /// Send any pending error events, useful for tests to avoid closing
   /// the connection.
@@ -794,6 +834,10 @@ class FakeAnalytics extends AnalyticsImpl {
   /// invoking the send method
   final List<Event> sentEvents = [];
 
+  /// The environment used in place of the process environment when checking
+  /// `DASH__SUPPRESS_ANALYTICS`.
+  final Map<String, String> _environment;
+
   /// Class to use when you want to see which events were sent
   FakeAnalytics._({
     required super.tool,
@@ -812,10 +856,14 @@ class FakeAnalytics extends AnalyticsImpl {
     super.gaClient = const FakeGAClient(),
     super.enableAsserts = true,
     super.isExternal = true,
-  });
+    Map<String, String> environment = const {},
+  }) : _environment = environment;
 
   /// Getter to reference the private [UserProperty].
   UserProperty get userProperty => _userProperty;
+
+  @override
+  bool _readEnvSuppressed() => areAnalyticsSuppressedIn(_environment);
 
   @override
   void send(Event event) {

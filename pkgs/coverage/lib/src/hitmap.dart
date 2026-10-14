@@ -59,15 +59,23 @@ class HitMap {
     required bool checkIgnoredLines,
     required Map<String, List<List<int>>?> ignoredLinesInFilesCache,
     required Resolver resolver,
+    Set<String> scopeOutput = const {},
   }) {
     // Map of source file to map of line to hit count for that line.
     final globalHitMap = <String, HitMap>{};
 
     for (var e in jsonResult) {
-      final source = e['source'] as String?;
+      var source = e['source'] as String?;
       if (source == null) {
         // Couldn't resolve import, so skip this entry.
         continue;
+      }
+
+      if (scopeOutput.isNotEmpty) {
+        source = resolver.toPackageUri(source);
+        if (!scopeOutput.includesScript(source)) {
+          continue;
+        }
       }
 
       void addToMap(Map<int, int> map, int line, int count) {
@@ -136,6 +144,7 @@ class HitMap {
     bool checkIgnoredLines = false,
     @Deprecated('Use packagePath') String? packagesPath,
     String? packagePath,
+    Set<String> scopeOutput = const {},
   }) async {
     final resolver = await Resolver.create(
       packagesPath: packagesPath,
@@ -146,6 +155,7 @@ class HitMap {
       checkIgnoredLines: checkIgnoredLines,
       ignoredLinesInFilesCache: {},
       resolver: resolver,
+      scopeOutput: scopeOutput,
     );
   }
 
@@ -155,22 +165,32 @@ class HitMap {
     bool checkIgnoredLines = false,
     @Deprecated('Use packagePath') String? packagesPath,
     String? packagePath,
+    Set<String> scopeOutput = const {},
   }) async {
     final globalHitmap = <String, HitMap>{};
+    Resolver? resolver;
+    final ignoredLinesInFilesCache = <String, List<List<int>>?>{};
     for (var file in files) {
       final contents = file.readAsStringSync();
-      final jsonMap = json.decode(contents) as Map<String, dynamic>;
-      if (jsonMap.containsKey('coverage')) {
-        final jsonResult = jsonMap['coverage'] as List;
-        globalHitmap.merge(
-          await HitMap.parseJson(
-            jsonResult.cast<Map<String, dynamic>>(),
-            checkIgnoredLines: checkIgnoredLines,
-            // ignore: deprecated_member_use_from_same_package
-            packagesPath: packagesPath,
-            packagePath: packagePath,
-          ),
-        );
+      switch (json.decode(contents)) {
+        case {'coverage': final List jsonResult}:
+          globalHitmap.merge(
+            HitMap.parseJsonSync(
+              jsonResult.whereType<Map<String, dynamic>>().toList(),
+              checkIgnoredLines: checkIgnoredLines,
+              ignoredLinesInFilesCache: ignoredLinesInFilesCache,
+              resolver: resolver ??= await Resolver.create(
+                packagesPath: packagesPath,
+                packagePath: packagePath,
+              ),
+              scopeOutput: scopeOutput,
+            ),
+          );
+        case final decoded:
+          throw FormatException(
+            'Unrecognized coverage JSON in "${file.path}". Expected a '
+            '{"coverage": [...]} report, but got ${decoded.runtimeType}.',
+          );
       }
     }
     return globalHitmap;
