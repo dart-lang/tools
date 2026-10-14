@@ -57,6 +57,22 @@ ignored
     expect(examples[1].toJson()['extensions'], ['strikethrough']);
   });
 
+  test('parseSpecExamples throws FormatException on malformed examples', () {
+    expect(
+      () => parseSpecExamples(
+        '```````````````````````````````` example\nfoo\n'
+        '````````````````````````````````\n',
+      ),
+      throwsFormatException,
+    );
+    expect(
+      () => parseSpecExamples(
+        '```````````````````````````````` example\nfoo\n.\n<p>foo</p>\n',
+      ),
+      throwsFormatException,
+    );
+  });
+
   for (final prefix in ['common_mark', 'gfm']) {
     test('$prefix unit files and stats are in sync with spec tests', () {
       final sections = loadCommonMarkSections(prefix);
@@ -65,7 +81,7 @@ ignored
               as Map<String, dynamic>;
 
       final specExamplesByHeader = <String, CommonMarkTestCase>{};
-      final statsLevelByHeader = <String, String>{};
+      final statsLevelByHeader = <String, String?>{};
 
       for (final entry in sections.entries) {
         final sectionStats = statsJson[entry.key] as Map<String, dynamic>?;
@@ -80,7 +96,7 @@ ignored
           final header = testCase.toString();
           specExamplesByHeader[header] = testCase;
           statsLevelByHeader[header] =
-              sectionStats![testCase.example.toString()] as String;
+              sectionStats![testCase.example.toString()] as String?;
         }
       }
 
@@ -98,7 +114,9 @@ ignored
 
       for (final dataCase in unitCases) {
         final colonIndex = dataCase.description.indexOf(': ');
-        final header = dataCase.description.substring(colonIndex + 2);
+        final header = colonIndex == -1
+            ? dataCase.description
+            : dataCase.description.substring(colonIndex + 2);
         final specCase = specExamplesByHeader[header];
         expect(
           specCase,

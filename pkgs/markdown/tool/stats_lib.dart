@@ -53,11 +53,7 @@ List<CommonMarkTestCase> parseSpecExamples(String specMarkdown) {
     if (extensions != null) {
       example++;
       final startLine = i + 1;
-      final dotIndex = lines.indexOf('.', i + 1);
-      final endIndex = lines.indexWhere(
-        _exampleEndFence.hasMatch,
-        dotIndex + 1,
-      );
+      final (dotIndex, endIndex) = _findExampleBounds(lines, i);
       if (!extensions.contains('disabled')) {
         tests.add(
           CommonMarkTestCase(
@@ -78,6 +74,24 @@ List<CommonMarkTestCase> parseSpecExamples(String specMarkdown) {
   }
 
   return tests;
+}
+
+(int, int) _findExampleBounds(List<String> lines, int startIndex) {
+  final dotIndex = lines.indexOf('.', startIndex + 1);
+  if (dotIndex == -1) {
+    throw FormatException(
+      'Malformed spec: missing "." separator for example at line '
+      '${startIndex + 1}.',
+    );
+  }
+  final endIndex = lines.indexWhere(_exampleEndFence.hasMatch, dotIndex + 1);
+  if (endIndex == -1) {
+    throw FormatException(
+      'Malformed spec: missing closing fence for example at line '
+      '${startIndex + 1}.',
+    );
+  }
+  return (dotIndex, endIndex);
 }
 
 String _joinSpecLines(List<String> lines) =>
