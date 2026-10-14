@@ -46,3 +46,13 @@ runs the package through the CommonMark specs. To see help:
 ```bash
 $ dart tool/stats.dart --help
 ```
+
+## update_spec_tests.dart
+
+Fetches the latest released CommonMark and GitHub Flavored Markdown `spec.txt`
+files from GitHub, updates `tool/common_mark_tests.json` and
+`tool/gfm_tests.json`, and runs `tool/stats.dart --update-files`:
+
+```bash
+$ dart tool/update_spec_tests.dart
+```
