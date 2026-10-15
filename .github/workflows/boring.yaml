@@ -76,6 +76,44 @@ jobs:
         run: dart test
         if: always() && steps.install.outcome == 'success'
 
+  # Check the bundled BoringSSL and the bindings against Project Wycheproof.
+  conformance:
+    needs: analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: stable
+      - name: Install dependencies
+        run: dart pub get
+      - name: Run Wycheproof conformance tests
+        run: ./tool/run_conformance_tests.sh
+
+  # Check X.509 path validation against x509-limbo.
+  x509-limbo:
+    needs: analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: stable
+      - name: Install dependencies
+        run: dart pub get
+      # limbo.json is ~40 MB, and the revision is pinned in the runner script.
+      - name: Cache x509-limbo testcases
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: pkgs/boring/build/x509-limbo
+          key: x509-limbo-${{ hashFiles('pkgs/boring/tool/run_x509_limbo_tests.sh') }}
+      - name: Run x509-limbo conformance tests
+        run: ./tool/run_x509_limbo_tests.sh
+
   # Re-run the vendoring script at the pinned revision, which also regenerates
   # the bindings, and fail if that changes anything. This keeps the checked-in
   # sources and bindings in sync with tool/REVISION.
