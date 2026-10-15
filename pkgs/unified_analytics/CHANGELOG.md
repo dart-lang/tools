@@ -25,6 +25,10 @@
   to the `Event.contextStructure` constructor.
 - Add `isExternal` to indicate if analytics are collected from an extenal build
   system. The analytics consent mechanism is bypassed for non external builds.
+- `LogHandler.logFileStats` no longer reads the log file into memory when it
+  exceeds `kMaxLogFileSize`, and discards any `FileSystemException` thrown
+  while reading it, to avoid crashing or exhausting memory on an abnormally
+  large or corrupted log file.
 
 ## 8.0.17
 - Added optional `agentPlugin` parameter to the `Event.dartMCPEvent` constructor to identify 
