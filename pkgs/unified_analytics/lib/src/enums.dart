@@ -186,6 +186,10 @@ enum DashEvent {
     description: 'Number of times a given lint is enabled',
   ),
   memoryInfo(label: 'memory_info', description: 'Memory usage information'),
+  migrateEvent(
+    label: 'migrate_event',
+    description: 'Information for a dart migrate event',
+  ),
   pluginRequest(
     label: 'plugin_request',
     description:

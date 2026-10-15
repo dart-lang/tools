@@ -75,7 +75,7 @@ Future<void> main(List<String> args) async {
 
   var testPrefix = options['flavor'] as String?;
   if (!updateFiles) {
-    testPrefix = _configs.first.prefix;
+    testPrefix ??= _configs.first.prefix;
   }
 
   final testPrefixes = testPrefix == null

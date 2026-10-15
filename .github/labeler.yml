@@ -4,6 +4,10 @@
   - changed-files:
     - any-glob-to-any-file: '.github/**'
 
+'package:api_summary':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/api_summary/**'
+
 'package:bazel_worker':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/bazel_worker/**'
@@ -139,6 +143,10 @@
 'package:stream_transform':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/stream_transform/**'
+
+'package:string_scanner':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/string_scanner/**'
 
 'package:term_glyph':
   - changed-files:

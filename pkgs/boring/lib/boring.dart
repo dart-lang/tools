@@ -2,7 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// Raw `ffigen`-generated BoringSSL C bindings (`bssl_dart`).
+/// Raw `ffigen`-generated BoringSSL C bindings (`bssl_dart`),
+/// `opensslAllocator`, `BoringArena`, and `NativeHandle`.
 library;
 
 export 'bindings.dart';
