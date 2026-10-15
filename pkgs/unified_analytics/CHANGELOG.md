@@ -11,6 +11,10 @@
   `setTelemetry`, when `DASH__SUPPRESS_ANALYTICS` is `true`.
 - Added optional `environment` parameter to `Analytics.fake`; it defaults to
   empty, so tests ignore `DASH__SUPPRESS_ANALYTICS` in the real environment.
+- Add optional `minSdkConstraints` and `languageVersionOverrides` parameters
+  to the `Event.contextStructure` constructor.
+- Add `isExternal` to indicate if analytics are collected from an external build
+  system. The analytics consent mechanism is bypassed for non external builds.
 
 ## 8.0.18
 
@@ -21,10 +25,6 @@
 - Dependencies are deterministically sorted and chunked using a hash-based
   algorithm salted with the canonical dependency set to fit within Google
   Analytics 4 parameter limitations without alphabetical or global package bias.
-- Add optional `minSdkConstraints` and `languageVersionOverrides` parameters
-  to the `Event.contextStructure` constructor.
-- Add `isExternal` to indicate if analytics are collected from an extenal build
-  system. The analytics consent mechanism is bypassed for non external builds.
 
 ## 8.0.17
 - Added optional `agentPlugin` parameter to the `Event.dartMCPEvent` constructor to identify 
