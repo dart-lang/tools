@@ -3821,23 +3821,6 @@ external void BIO_vfree(
   ffi.Pointer<BIO> bio,
 );
 
-/// BIO_vsnprintf has the same behavior as vsnprintf(3).
-@meta.RecordUse()
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Char>,
-    ffi.Size,
-    ffi.Pointer<ffi.Char>,
-    ffi.Pointer<__va_list_tag>,
-  )
->(symbol: 'bssl_dart_BIO_vsnprintf')
-external int BIO_vsnprintf(
-  ffi.Pointer<ffi.Char> buf,
-  int n,
-  ffi.Pointer<ffi.Char> format,
-  ffi.Pointer<__va_list_tag> args,
-);
-
 /// BIO_wpending returns the number of bytes pending to be written.
 @meta.RecordUse()
 @ffi.Native<ffi.Size Function(ffi.Pointer<BIO>)>(
@@ -18342,22 +18325,6 @@ external int OPENSSL_tolower(
   int c,
 );
 
-/// OPENSSL_vasprintf has the same behavior as vasprintf(3), except that
-/// memory allocated in a returned string must be freed with `OPENSSL_free`.
-@meta.RecordUse()
-@ffi.Native<
-  ffi.Int Function(
-    ffi.Pointer<ffi.Pointer<ffi.Char>>,
-    ffi.Pointer<ffi.Char>,
-    ffi.Pointer<__va_list_tag>,
-  )
->(symbol: 'bssl_dart_OPENSSL_vasprintf')
-external int OPENSSL_vasprintf(
-  ffi.Pointer<ffi.Pointer<ffi.Char>> str,
-  ffi.Pointer<ffi.Char> format,
-  ffi.Pointer<__va_list_tag> args,
-);
-
 /// OPENSSL_zalloc behaves like `OPENSSL_malloc` except it also initializes the
 /// resulting memory to zero.
 @meta.RecordUse()
@@ -31814,18 +31781,16 @@ external ffi.Pointer<ffi.Void> sk_value(
   int i,
 );
 
-const addresses = _SymbolAddresses();
-
-final class _SymbolAddresses {
-  const _SymbolAddresses();
-}
-
 /// The addresses of the functions releasing BoringSSL objects, for
 /// `NativeFinalizer`s.
 ///
 /// Use these instead of `Native.addressOf`, which is not recorded as a
 /// use of the function, so the link hook would drop it.
-extension SymbolAddresses on _SymbolAddresses {
+const addresses = SymbolAddresses._(null);
+
+/// The extension type for [addresses] providing access to the symbol
+/// addresses.
+extension type const SymbolAddresses._(Null _) {
   @meta.RecordUse()
   ffi.Pointer<
     ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ACCESS_DESCRIPTION>)>
@@ -36649,24 +36614,6 @@ typedef __intptr_t = ffi.Long;
 typedef Dart__intptr_t = int;
 typedef __key_t = ffi.Int;
 typedef Dart__key_t = int;
-
-final class __locale_data extends ffi.Opaque {}
-
-final class __locale_struct extends ffi.Struct {
-  @ffi.Array.multi([13])
-  external ffi.Array<ffi.Pointer<__locale_data>> __locales;
-
-  external ffi.Pointer<ffi.UnsignedShort> __ctype_b;
-
-  external ffi.Pointer<ffi.Int> __ctype_tolower;
-
-  external ffi.Pointer<ffi.Int> __ctype_toupper;
-
-  @ffi.Array.multi([13])
-  external ffi.Array<ffi.Pointer<ffi.Char>> __names;
-}
-
-typedef __locale_t = ffi.Pointer<__locale_struct>;
 typedef __loff_t = __off64_t;
 
 final class __mbstate_t extends ffi.Struct {
@@ -36851,18 +36798,6 @@ typedef __uintmax_t = ffi.UnsignedLong;
 typedef Dart__uintmax_t = int;
 typedef __useconds_t = ffi.UnsignedInt;
 typedef Dart__useconds_t = int;
-
-final class __va_list_tag extends ffi.Struct {
-  @ffi.UnsignedInt()
-  external int gp_offset;
-
-  @ffi.UnsignedInt()
-  external int fp_offset;
-
-  external ffi.Pointer<ffi.Void> overflow_arg_area;
-
-  external ffi.Pointer<ffi.Void> reg_save_area;
-}
 
 /// aes_key_st should be an opaque type, but EVP requires that the size be
 /// known.
@@ -37745,7 +37680,6 @@ final class lldiv_t extends ffi.Struct {
     ..ref.rem = rem;
 }
 
-typedef locale_t = __locale_t;
 typedef loff_t = __loff_t;
 
 final class max_align_t extends ffi.Opaque {}
