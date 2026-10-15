@@ -224,11 +224,15 @@ Future<void> _printRaw(
   await sink.close();
 }
 
-String _pct(int value, int total, String section, [int diverged = 0]) =>
-    '${value.toString().padLeft(4)} '
-    'of ${total.toString().padLeft(4)} '
-    '– ${(100 * value / total).toStringAsFixed(1).padLeft(5)}%  $section'
-    '${diverged == 0 ? '' : ' (+$diverged diverged)'}';
+String _pct(int value, int total, String section, [int diverged = 0]) {
+  final pct = total == 0
+      ? '   n/a'
+      : '${(100 * value / total).toStringAsFixed(1).padLeft(5)}%';
+  return '${value.toString().padLeft(4)} '
+      'of ${total.toString().padLeft(4)} '
+      '– $pct  $section'
+      '${diverged == 0 ? '' : ' (+$diverged diverged)'}';
+}
 
 Future<void> _printFriendly(
   String testPrefix,

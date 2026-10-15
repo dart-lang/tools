@@ -113,10 +113,7 @@ ignored
       );
 
       for (final dataCase in unitCases) {
-        final colonIndex = dataCase.description.indexOf(': ');
-        final header = colonIndex == -1
-            ? dataCase.description
-            : dataCase.description.substring(colonIndex + 2);
+        final header = _unitHeader(dataCase);
         final specCase = specExamplesByHeader[header];
         expect(
           specCase,
@@ -155,9 +152,7 @@ ignored
       };
       final unitOutputs = {
         for (final dataCase in dataCasesUnder(testDirectory: prefix))
-          dataCase.description.substring(
-            dataCase.description.indexOf(': ') + 2,
-          ): dataCase.expectedOutput,
+          _unitHeader(dataCase): dataCase.expectedOutput,
       };
       final statsJson =
           jsonDecode(getStatsFile(prefix).readAsStringSync())
@@ -202,4 +197,12 @@ ignored
       );
     });
   }
+}
+
+/// The spec test header (e.g. `Tabs - 1`) of a generated `.unit` [dataCase].
+String _unitHeader(DataCase dataCase) {
+  final colonIndex = dataCase.description.indexOf(': ');
+  return colonIndex == -1
+      ? dataCase.description
+      : dataCase.description.substring(colonIndex + 2);
 }
