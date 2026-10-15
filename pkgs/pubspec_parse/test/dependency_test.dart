@@ -474,13 +474,45 @@ void _pathDependency() {
     expect(dep.toString(), 'PathDependency: path@../path');
   });
 
-  test('valid with version key is ignored', () async {
+  test('valid with version key exposes the constraint', () async {
     final dep = await _dependency<PathDependency>({
       'path': '../path',
       'version': '^1.2.3',
     });
     expect(dep.path, '../path');
+    expect(dep.version, VersionConstraint.parse('^1.2.3'));
     expect(dep.toString(), 'PathDependency: path@../path');
+  });
+
+  test('without a version key defaults to null', () async {
+    final dep = await _dependency<PathDependency>({'path': '../path'});
+    expect(dep.version, isNull);
+  });
+
+  test('invalid version key fails', () {
+    _expectThrows(
+      {'path': '../path', 'version': 'not a version'},
+      r'''
+line 6, column 15: Unsupported value for "version". Could not parse version "not a version". Unknown text at "not a version".
+  ╷
+6 │    "version": "not a version"
+  │               ^^^^^^^^^^^^^^^
+  ╵''',
+    );
+  });
+
+  test('non-String version key fails', () {
+    _expectThrows(
+      {'path': '../path', 'version': 42},
+      r'''
+line 6, column 15: Unsupported value for "version". `42` is not a String.
+  ╷
+6 │      "version": 42
+  │ ┌───────────────^
+7 │ │   }
+  │ └──^
+  ╵''',
+    );
   });
 
   test('valid with random extra key fails', () {
