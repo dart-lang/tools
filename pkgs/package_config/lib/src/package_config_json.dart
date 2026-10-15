@@ -18,11 +18,13 @@ const String _nameKey = 'name';
 const String _rootUriKey = 'rootUri';
 const String _packageUriKey = 'packageUri';
 const String _languageVersionKey = 'languageVersion';
+const String _experimentsKey = 'experiments';
 const List<String> _packageNames = [
   _nameKey,
   _rootUriKey,
   _packageUriKey,
   _languageVersionKey,
+  _experimentsKey,
 ];
 
 final _jsonUtf8Decoder = json.fuse(utf8).decoder;
@@ -75,6 +77,7 @@ PackageConfig parsePackageConfigString(
 ///     an integer numeral, a decimal point (`.`) and another integer numeral,
 ///     where the integer numeral cannot have a sign, and can only have a
 ///     leading zero if the entire numeral is a single zero.
+/// * `"experiments"`: Optionally a JSON array of experiment flag strings.
 ///
 /// The [baseLocation] is used as base URI to resolve the "rootUri"
 /// URI reference string.
@@ -118,6 +121,7 @@ PackageConfig parsePackageConfigJson(
     String? rootUri;
     String? packageUri;
     String? languageVersion;
+    List<String>? experiments;
     Map<String, Object?>? extraData;
     var hasName = false;
     var hasRoot = false;
@@ -138,6 +142,19 @@ PackageConfig parsePackageConfigJson(
         case _languageVersionKey:
           hasVersion = true;
           languageVersion = checkType<String>(value, _languageVersionKey, name);
+          break;
+        case _experimentsKey:
+          if (checkType<List<Object?>>(value, _experimentsKey, name)
+              case var experimentList?) {
+            var parsedExperiments = <String>[];
+            for (var element in experimentList) {
+              if (checkType<String>(element, 'experiments entry', name)
+                  case var experiment?) {
+                parsedExperiments.add(experiment);
+              }
+            }
+            experiments = parsedExperiments;
+          }
           break;
         default:
           (extraData ??= {})[key] = value;
@@ -175,6 +192,7 @@ PackageConfig parsePackageConfigJson(
       version,
       extraData,
       relativeRoot,
+      experiments,
       (error) {
         if (error is ArgumentError) {
           onError(
@@ -297,6 +315,8 @@ Map<String, Object?> packageConfigToJson(PackageConfig config, Uri? baseUri) =>
             if (package.languageVersion != null &&
                 package.languageVersion is! InvalidLanguageVersion)
               _languageVersionKey: package.languageVersion.toString(),
+            if (package.experiments.isNotEmpty)
+              _experimentsKey: package.experiments,
             ...?_extractExtraData(package.extraData, _packageNames),
           },
       ],
