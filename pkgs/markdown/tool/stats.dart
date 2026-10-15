@@ -224,10 +224,11 @@ Future<void> _printRaw(
   await sink.close();
 }
 
-String _pct(int value, int total, String section) =>
+String _pct(int value, int total, String section, [int diverged = 0]) =>
     '${value.toString().padLeft(4)} '
     'of ${total.toString().padLeft(4)} '
-    '– ${(100 * value / total).toStringAsFixed(1).padLeft(5)}%  $section';
+    '– ${(100 * value / total).toStringAsFixed(1).padLeft(5)}%  $section'
+    '${diverged == 0 ? '' : ' (+$diverged diverged)'}';
 
 Future<void> _printFriendly(
   String testPrefix,
@@ -237,6 +238,7 @@ Future<void> _printFriendly(
   var totalValid = 0;
   var totalStrict = 0;
   var totalExamples = 0;
+  var totalDiverged = 0;
 
   IOSink sink;
   if (updateFiles) {
@@ -249,8 +251,12 @@ Future<void> _printFriendly(
   }
 
   scores.forEach((section, Map<int, CompareLevel> map) {
-    final total = map.values.length;
+    final diverged = map.values
+        .where((val) => val == CompareLevel.diverged)
+        .length;
+    final total = map.values.length - diverged;
     totalExamples += total;
+    totalDiverged += diverged;
 
     final sectionStrictCount = map.values
         .where((val) => val == CompareLevel.strict)
@@ -265,10 +271,10 @@ Future<void> _printFriendly(
     totalStrict += sectionStrictCount;
     totalValid += sectionValidCount;
 
-    sink.writeln(_pct(sectionValidCount, total, section));
+    sink.writeln(_pct(sectionValidCount, total, section, diverged));
   });
 
-  sink.writeln(_pct(totalValid, totalExamples, 'TOTAL'));
+  sink.writeln(_pct(totalValid, totalExamples, 'TOTAL', totalDiverged));
   sink.writeln(_pct(totalStrict, totalValid, 'TOTAL Strict'));
 
   await sink.flush();

@@ -147,5 +147,59 @@ ignored
         );
       }
     });
+
+    test('$prefix divergences are documented and current', () {
+      final specCases = {
+        for (final cases in loadCommonMarkSections(prefix).values)
+          for (final testCase in cases) testCase.example: testCase,
+      };
+      final unitOutputs = {
+        for (final dataCase in dataCasesUnder(testDirectory: prefix))
+          dataCase.description.substring(
+            dataCase.description.indexOf(': ') + 2,
+          ): dataCase.expectedOutput,
+      };
+      final statsJson =
+          jsonDecode(getStatsFile(prefix).readAsStringSync())
+              as Map<String, dynamic>;
+      final divergences = loadDivergences(prefix);
+
+      for (final MapEntry(key: example, value: divergence)
+          in divergences.entries) {
+        final where = 'tool/divergences.json $prefix/$example';
+        final specCase = specCases[example];
+        expect(specCase, isNotNull, reason: '$where: no such spec example.');
+        expect(divergence.reason, isNotEmpty, reason: '$where: needs reason.');
+        expect(
+          Uri.tryParse(divergence.link)?.isScheme('https'),
+          isTrue,
+          reason: '$where: link must be an https URL.',
+        );
+        expect(
+          divergence.html,
+          isNot(specCase!.html),
+          reason: '$where: output now matches the spec; remove the entry.',
+        );
+        expect(
+          unitOutputs[specCase.toString()],
+          divergence.html,
+          reason:
+              '$where: actual output no longer matches the recorded "html".',
+        );
+      }
+
+      final recordedDiverged = [
+        for (final section in statsJson.values.cast<Map<String, dynamic>>())
+          for (final MapEntry(:key, :value) in section.entries)
+            if (value == 'diverged') int.parse(key),
+      ];
+      expect(
+        recordedDiverged,
+        unorderedEquals(divergences.keys),
+        reason:
+            'tool/${prefix}_stats.json and tool/divergences.json disagree. '
+            'Run `dart run tool/stats.dart --update-files`.',
+      );
+    });
   }
 }
