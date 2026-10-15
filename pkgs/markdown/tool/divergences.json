@@ -23,47 +23,47 @@
       "html": "<pre data-metadata=\"``` ~~~\"><code class=\"language-aa\">foo\n</code></pre>\n"
     },
     "398": {
-      "reason": "Nested strong elements are kept, matching CommonMark; cmark-gfm 0.29.0.gfm.13 drops a strong whose parent is strong.",
+      "reason": "Nested strong is kept: the published GFM spec (0.29-gfm, 2019) and CommonMark 0.31.2 both expect it. cmark-gfm's test/spec.txt (updated in 2023 after a perf fix) and github.com collapse a strong whose parent is strong; comrak gates that behind its opt-in gfm_quirks render option.",
       "link": "https://github.com/github/cmark-gfm/commit/5c75d23a02",
       "html": "<p><strong>foo, <strong>bar</strong>, baz</strong></p>\n"
     },
     "426": {
-      "reason": "Nested strong elements are kept, matching CommonMark; cmark-gfm 0.29.0.gfm.13 drops a strong whose parent is strong.",
+      "reason": "Nested strong is kept: the published GFM spec (0.29-gfm, 2019) and CommonMark 0.31.2 both expect it. cmark-gfm's test/spec.txt (updated in 2023 after a perf fix) and github.com collapse a strong whose parent is strong; comrak gates that behind its opt-in gfm_quirks render option.",
       "link": "https://github.com/github/cmark-gfm/commit/5c75d23a02",
       "html": "<p>foo<strong><strong><strong>bar</strong></strong></strong>***baz</p>\n"
     },
     "434": {
-      "reason": "Nested strong elements are kept, matching CommonMark; cmark-gfm 0.29.0.gfm.13 drops a strong whose parent is strong.",
+      "reason": "Nested strong is kept: the published GFM spec (0.29-gfm, 2019) and CommonMark 0.31.2 both expect it. cmark-gfm's test/spec.txt (updated in 2023 after a perf fix) and github.com collapse a strong whose parent is strong; comrak gates that behind its opt-in gfm_quirks render option.",
       "link": "https://github.com/github/cmark-gfm/commit/5c75d23a02",
       "html": "<p><strong>foo <strong>bar</strong> baz</strong></p>\n"
     },
     "435": {
-      "reason": "Nested strong elements are kept, matching CommonMark; cmark-gfm 0.29.0.gfm.13 drops a strong whose parent is strong.",
+      "reason": "Nested strong is kept: the published GFM spec (0.29-gfm, 2019) and CommonMark 0.31.2 both expect it. cmark-gfm's test/spec.txt (updated in 2023 after a perf fix) and github.com collapse a strong whose parent is strong; comrak gates that behind its opt-in gfm_quirks render option.",
       "link": "https://github.com/github/cmark-gfm/commit/5c75d23a02",
       "html": "<p><strong><strong>foo</strong> bar</strong></p>\n"
     },
     "436": {
-      "reason": "Nested strong elements are kept, matching CommonMark; cmark-gfm 0.29.0.gfm.13 drops a strong whose parent is strong.",
+      "reason": "Nested strong is kept: the published GFM spec (0.29-gfm, 2019) and CommonMark 0.31.2 both expect it. cmark-gfm's test/spec.txt (updated in 2023 after a perf fix) and github.com collapse a strong whose parent is strong; comrak gates that behind its opt-in gfm_quirks render option.",
       "link": "https://github.com/github/cmark-gfm/commit/5c75d23a02",
       "html": "<p><strong>foo <strong>bar</strong></strong></p>\n"
     },
     "473": {
-      "reason": "Nested strong elements are kept, matching CommonMark; cmark-gfm 0.29.0.gfm.13 drops a strong whose parent is strong.",
+      "reason": "Nested strong is kept: the published GFM spec (0.29-gfm, 2019) and CommonMark 0.31.2 both expect it. cmark-gfm's test/spec.txt (updated in 2023 after a perf fix) and github.com collapse a strong whose parent is strong; comrak gates that behind its opt-in gfm_quirks render option.",
       "link": "https://github.com/github/cmark-gfm/commit/5c75d23a02",
       "html": "<p><strong><strong>foo</strong></strong></p>\n"
     },
     "474": {
-      "reason": "Nested strong elements are kept, matching CommonMark; cmark-gfm 0.29.0.gfm.13 drops a strong whose parent is strong.",
+      "reason": "Nested strong is kept: the published GFM spec (0.29-gfm, 2019) and CommonMark 0.31.2 both expect it. cmark-gfm's test/spec.txt (updated in 2023 after a perf fix) and github.com collapse a strong whose parent is strong; comrak gates that behind its opt-in gfm_quirks render option.",
       "link": "https://github.com/github/cmark-gfm/commit/5c75d23a02",
       "html": "<p><strong><strong>foo</strong></strong></p>\n"
     },
     "475": {
-      "reason": "Nested strong elements are kept, matching CommonMark; cmark-gfm 0.29.0.gfm.13 drops a strong whose parent is strong.",
+      "reason": "Nested strong is kept: the published GFM spec (0.29-gfm, 2019) and CommonMark 0.31.2 both expect it. cmark-gfm's test/spec.txt (updated in 2023 after a perf fix) and github.com collapse a strong whose parent is strong; comrak gates that behind its opt-in gfm_quirks render option.",
       "link": "https://github.com/github/cmark-gfm/commit/5c75d23a02",
       "html": "<p><strong><strong><strong>foo</strong></strong></strong></p>\n"
     },
     "477": {
-      "reason": "Nested strong elements are kept, matching CommonMark; cmark-gfm 0.29.0.gfm.13 drops a strong whose parent is strong.",
+      "reason": "Nested strong is kept: the published GFM spec (0.29-gfm, 2019) and CommonMark 0.31.2 both expect it. cmark-gfm's test/spec.txt (updated in 2023 after a perf fix) and github.com collapse a strong whose parent is strong; comrak gates that behind its opt-in gfm_quirks render option.",
       "link": "https://github.com/github/cmark-gfm/commit/5c75d23a02",
       "html": "<p><em><strong><strong>foo</strong></strong></em></p>\n"
     }
