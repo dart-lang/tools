@@ -55,10 +55,6 @@ final class ApiSummary {
   /// constraints.
   final Map<String, String> environment;
 
-  /// The direct runtime package dependencies of the package, mapping package
-  /// names to their version constraints or dependency descriptors.
-  final Map<String, String> dependencies;
-
   /// The executables exposed by the package, mapping executable names to
   /// their target script paths within `bin/`.
   final Map<String, String?> executables;
@@ -68,19 +64,14 @@ final class ApiSummary {
   ApiSummary({
     required this.name,
     Map<String, String>? environment,
-    Map<String, String>? dependencies,
     Map<String, String?>? executables,
     required this.libraries,
   }) : environment = _sortedUnmodifiableMap(environment),
-       dependencies = _sortedUnmodifiableMap(dependencies),
        executables = _sortedUnmodifiableMap(executables);
 
   factory ApiSummary.fromJson(Map<String, dynamic> json) => ApiSummary(
     name: json['name'] as String,
     environment: (json['environment'] as Map<String, dynamic>?)?.map(
-      (k, v) => MapEntry(k, v as String),
-    ),
-    dependencies: (json['dependencies'] as Map<String, dynamic>?)?.map(
       (k, v) => MapEntry(k, v as String),
     ),
     executables: (json['executables'] as Map<String, dynamic>?)?.map(
@@ -92,7 +83,6 @@ final class ApiSummary {
   Map<String, dynamic> toJson() => {
     'name': name,
     if (environment.isNotEmpty) 'environment': environment,
-    if (dependencies.isNotEmpty) 'dependencies': dependencies,
     if (executables.isNotEmpty) 'executables': executables,
     'libraries': libraries.map((e) => e.toJson()).toList(),
   };

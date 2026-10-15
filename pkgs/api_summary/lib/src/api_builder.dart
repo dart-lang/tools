@@ -30,10 +30,6 @@ import 'uri_sorting.dart';
 /// [environment] defines the SDK and platform environment constraints of the
 /// package (such as 'sdk' or 'flutter').
 ///
-/// [dependencies] defines the direct runtime package dependencies of the
-/// package, mapping package names to their version constraints or dependency
-/// descriptors.
-///
 /// [executables] defines the executables exposed by the package, mapping
 /// executable names to their target script paths within `bin/`.
 Future<ApiSummary> buildApiPackage(
@@ -41,13 +37,11 @@ Future<ApiSummary> buildApiPackage(
   AnalysisContext context,
   ApiSummaryCustomizer customizer, {
   Map<String, String> environment = const {},
-  Map<String, String> dependencies = const {},
   Map<String, String?> executables = const {},
 }) => _ApiBuilder(
   packageName,
   customizer,
   environment: environment,
-  dependencies: dependencies,
   executables: executables,
 ).build(context);
 
@@ -57,7 +51,6 @@ final class _ApiBuilder {
   final ApiSummaryCustomizer _customizer;
   final String _pkgName;
   final Map<String, String> _environment;
-  final Map<String, String> _dependencies;
   final Map<String, String?> _executables;
 
   final _immediateSubinterfaceCache =
@@ -72,7 +65,6 @@ final class _ApiBuilder {
     this._pkgName,
     this._customizer, {
     this._environment = const {},
-    this._dependencies = const {},
     this._executables = const {},
   });
 
@@ -194,7 +186,6 @@ final class _ApiBuilder {
     return ApiSummary(
       name: _pkgName,
       environment: _environment,
-      dependencies: _dependencies,
       executables: _executables,
       libraries: libraries,
     );
