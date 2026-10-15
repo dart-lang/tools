@@ -1,6 +1,9 @@
 ## 2.2.5-wip
 
 - Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
+- Fix encoding of `ScalarStyle.FOLDED` strings containing a line that starts
+  with a space or tab, or an empty line between two other lines
+  ([#2636](https://github.com/dart-lang/tools/issues/2636)).
 
 ## 2.2.4
 
