@@ -11,6 +11,7 @@
   `setTelemetry`, when `DASH__SUPPRESS_ANALYTICS` is `true`.
 - Added optional `environment` parameter to `Analytics.fake`; it defaults to
   empty, so tests ignore `DASH__SUPPRESS_ANALYTICS` in the real environment.
+- Added `Event.migrateEvent` to track events from `dart migrate`.
 
 ## 8.0.18
 
