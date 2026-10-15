@@ -44,21 +44,7 @@ final class ApiSummaryContext {
 /// Clients should not *implement* this class, however, because additional
 /// methods may be added in the future.
 base class ApiSummaryCustomizer {
-  /// Whether to include full member signatures (constructors, methods) for
-  /// non-public declarations that are implicitly exposed via public signatures.
-  final bool includeImplicitNonPublicMembers;
-
-  /// Whether to include declarations of referenced types from external packages
-  /// or SDK libraries.
-  ///
-  /// If true, referenced types will be included in the summary with a status of
-  /// [ApiDeclarationStatus.referenced] and without their members.
-  final bool includeReferencedTypes;
-
-  const ApiSummaryCustomizer({
-    this.includeImplicitNonPublicMembers = false,
-    this.includeReferencedTypes = false,
-  });
+  const ApiSummaryCustomizer();
 
   /// Called after [ApiSummaryContext.packageName] and
   /// [ApiSummaryContext.analysisContext] have been set, but before any analysis
@@ -73,6 +59,17 @@ base class ApiSummaryCustomizer {
   ///
   /// Further analysis won't be performed until the returned Future completes.
   Future<void> initialScanComplete(ApiSummaryContext context) async {}
+
+  /// Whether to include full member signatures (constructors, methods) for
+  /// non-public declarations that are implicitly exposed via public signatures.
+  bool get includeImplicitNonPublicMembers => false;
+
+  /// Whether to include declarations of referenced types from external packages
+  /// or SDK libraries.
+  ///
+  /// If true, referenced types will be included in the summary with a status of
+  /// [ApiDeclarationStatus.referenced] and without their members.
+  bool get includeReferencedTypes => false;
 
   /// Called after [initialScanComplete] to determine if details about an
   /// element should be shown in the API summary.

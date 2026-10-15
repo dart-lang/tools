@@ -59,8 +59,31 @@ final class _ApiTextRenderer {
   final _renderedTopLevelElements =
       <String>{}; // unique key: "locationUri#name"
   final _potentiallyDanglingReferences = <ApiInterfaceType>[];
+  final _reexportedExternalElements =
+      <
+        ({
+          Uri locationUri,
+          MemberSortKey sortKey,
+          _JsonUniqueName name,
+          String key,
+        })
+      >[];
 
   _ApiTextRenderer(this._package);
+
+  String? _externalDependencyConstraint(Uri uri) => switch (uri.packageName) {
+    final pkg? when pkg != _package.name => _package.dependencies[pkg],
+    _ => null,
+  };
+
+  Node<MemberSortKey> _createDanglingLibraryNode(Uri uri) {
+    final node = Node<MemberSortKey>()..text.add(uri);
+    if (_externalDependencyConstraint(uri) case final constraint?) {
+      node.text.add(' ($constraint)');
+    }
+    node.text.add(':');
+    return node;
+  }
 
   String render() {
     final nodes = <Uri, Node<MemberSortKey>>{};
@@ -98,10 +121,24 @@ final class _ApiTextRenderer {
         childNode.text.add(' (non-public)');
       }
 
-      (nodes[containingLibraryUri] ??= Node<MemberSortKey>()
-            ..text.add('$containingLibraryUri:'))
-          .childNodes
-          .add((_computeSortKeyForDangling(type), childNode));
+      (nodes[containingLibraryUri] ??= _createDanglingLibraryNode(
+        containingLibraryUri,
+      )).childNodes.add((_computeSortKeyForDangling(type), childNode));
+    }
+
+    final renderedExternalSeeAbove = <String>{};
+    for (final reexport in _reexportedExternalElements) {
+      if (!renderedExternalSeeAbove.add(
+        '${reexport.locationUri}#${reexport.key}',
+      )) {
+        continue;
+      }
+      final libraryNode = nodes[reexport.locationUri] ??=
+          _createDanglingLibraryNode(reexport.locationUri);
+      final childNode = Node<MemberSortKey>()
+        ..text.add(reexport.name)
+        ..text.add(' (see above)');
+      libraryNode.childNodes.add((reexport.sortKey, childNode));
     }
 
     final sortedNodes = [
@@ -124,13 +161,6 @@ final class _ApiTextRenderer {
       }
     }
 
-    if (_package.dependencies.isNotEmpty) {
-      stringBuffer.writeln('dependencies:');
-      for (final entry in _package.dependencies.entries) {
-        stringBuffer.writeln('  ${entry.key}: ${entry.value}');
-      }
-    }
-
     if (_package.executables.isNotEmpty) {
       stringBuffer.writeln('executables:');
       for (final entry in _package.executables.entries) {
@@ -147,15 +177,16 @@ final class _ApiTextRenderer {
   }
 
   void _renderLibrary(ApiLibrary library, Node<MemberSortKey> node) {
-    node.text.add(Uri.parse(library.uri));
-    if (library.facets.isNotEmpty) {
-      final parentheticals = [
-        for (final facet in library.facets)
-          for (final segment in facet.parentheticalSegments) [segment],
-      ];
-      if (parentheticals.isNotEmpty) {
-        node.text.addAll(parentheticals.separatedBy(prefix: ' (', suffix: ')'));
-      }
+    final uri = Uri.parse(library.uri);
+    node.text.add(uri);
+    final depConstraint = _externalDependencyConstraint(uri);
+    final parentheticals = <List<Object?>>[
+      if (depConstraint != null) [depConstraint],
+      for (final facet in library.facets)
+        for (final segment in facet.parentheticalSegments) [segment],
+    ];
+    if (parentheticals.isNotEmpty) {
+      node.text.addAll(parentheticals.separatedBy(prefix: ' (', suffix: ')'));
     }
     node.text.add(':');
 
@@ -213,8 +244,20 @@ final class _ApiTextRenderer {
         key = '$key#${element.extendedType.toJson()}#$memberNames';
       }
 
-      final childNode = Node<MemberSortKey>()
-        ..text.add(_uniqueNamer.name(key, name));
+      final uniqueName = _uniqueNamer.name(key, name);
+      final childNode = Node<MemberSortKey>()..text.add(uniqueName);
+
+      if (locationUri != null && locationUri != library.uri) {
+        final parsedLocation = Uri.parse(locationUri);
+        if (!parsedLocation.isIn(_package.name)) {
+          _reexportedExternalElements.add((
+            locationUri: parsedLocation,
+            sortKey: item.sortKey,
+            name: uniqueName,
+            key: key,
+          ));
+        }
+      }
 
       if (!_renderedTopLevelElements.add(key)) {
         childNode.text.add(' (see above)');

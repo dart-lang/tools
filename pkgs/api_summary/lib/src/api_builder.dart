@@ -66,6 +66,7 @@ final class _ApiBuilder {
   final _pendingElements = Queue<Element>();
   final _libraryBuilders = <String, _ApiLibraryBuilder>{};
   final _elementToLibraries = <Element, List<LibraryElement>>{};
+  final _referencedExternalPackages = <String>{};
 
   _ApiBuilder(
     this._pkgName,
@@ -155,6 +156,8 @@ final class _ApiBuilder {
         continue;
       }
 
+      _maybeRecordExternalUri(element.library?.uri);
+
       for (final library in libraries) {
         final builder = _libraryBuilders.putIfAbsent(
           library.uri.toString(),
@@ -190,10 +193,15 @@ final class _ApiBuilder {
         .map((e) => e.build())
         .sortedByUri(_pkgName);
 
+    final referencedDependencies = {
+      for (final MapEntry(:key, :value) in _dependencies.entries)
+        if (_referencedExternalPackages.contains(key)) key: value,
+    };
+
     return ApiSummary(
       name: _pkgName,
       environment: _environment,
-      dependencies: _dependencies,
+      dependencies: referencedDependencies,
       executables: _executables,
       libraries: libraries,
     );
@@ -239,6 +247,12 @@ final class _ApiBuilder {
     _pendingElements.add(element);
   }
 
+  void _maybeRecordExternalUri(Uri? uri) {
+    if (uri?.packageName case final pkg? when pkg != _pkgName) {
+      _referencedExternalPackages.add(pkg);
+    }
+  }
+
   bool _isNullable(NullabilitySuffix suffix) => switch (suffix) {
     NullabilitySuffix.none => false,
     NullabilitySuffix.question => true,
@@ -278,6 +292,7 @@ final class _ApiBuilder {
           isNullable: isNullable,
         );
       case InterfaceType(:final element, :final typeArguments):
+        _maybeRecordExternalUri(element.library.uri);
         _maybeAddPending(element);
         return ApiInterfaceType(
           name: element.name ?? '',

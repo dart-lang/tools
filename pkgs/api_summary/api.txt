@@ -1,14 +1,5 @@
 environment:
   sdk: ^3.12.0
-dependencies:
-  analyzer: >=13.0.0 <15.0.0
-  args: ^2.6.0
-  cli_util: ^0.6.0
-  collection: ^1.19.0
-  path: ^1.9.0
-  pub_semver: ^2.1.4
-  yaml: ^3.1.2
-  yaml_edit: ^2.2.0
 executables:
   api_summary
 package:api_summary/api_summary.dart:
@@ -161,7 +152,7 @@ package:api_summary/api_summary.dart:
     publicApiLibraries (getter: List<LibraryElement>)
     topLevelPublicElements (getter: Set<Element>)
   ApiSummaryCustomizer (class extends Object, base):
-    new (const constructor: ApiSummaryCustomizer Function({bool includeImplicitNonPublicMembers, bool includeReferencedTypes}))
+    new (const constructor: ApiSummaryCustomizer Function())
     includeImplicitNonPublicMembers (getter: bool)
     includeReferencedTypes (getter: bool)
     initialScanComplete (method: Future<void> Function(ApiSummaryContext))
@@ -260,8 +251,8 @@ dart:core:
   String (referenced)
   bool (referenced)
   int (referenced)
-package:analyzer/dart/analysis/analysis_context.dart:
+package:analyzer/dart/analysis/analysis_context.dart (>=13.0.0 <15.0.0):
   AnalysisContext (referenced)
-package:analyzer/dart/element/element.dart:
+package:analyzer/dart/element/element.dart (>=13.0.0 <15.0.0):
   Element (referenced)
   LibraryElement (referenced)

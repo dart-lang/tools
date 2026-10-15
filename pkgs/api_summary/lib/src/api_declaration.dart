@@ -55,8 +55,9 @@ final class ApiSummary {
   /// constraints.
   final Map<String, String> environment;
 
-  /// The direct runtime package dependencies of the package, mapping package
-  /// names to their version constraints or dependency descriptors.
+  /// The direct runtime package dependencies of the package whose declarations
+  /// or types are referenced in the public API, mapping package names to their
+  /// version constraints or dependency descriptors.
   final Map<String, String> dependencies;
 
   /// The executables exposed by the package, mapping executable names to

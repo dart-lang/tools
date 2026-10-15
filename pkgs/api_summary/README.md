@@ -19,10 +19,11 @@ downstream consumers (`dev_dependencies` are ignored):
 
 * `environment`: SDK (`sdk`, `flutter`) version constraints required to resolve
   and run the package.
-* `dependencies`: Direct runtime dependency constraints, making constraint
-  changes (including major version bumps of packages whose types are re-exported
-  or referenced in public signatures) visible in `api.txt` review diffs and
-  automated changelog checks.
+* `dependencies`: Runtime dependency version constraints for external packages
+  whose declarations or types are referenced or re-exported in the public API
+  (rendered inline on referenced `package:...` library headers in `api.txt`, and
+  under `dependencies` in `api.json` and `api.yaml`). Internal-only runtime
+  dependencies that do not appear in the public API are omitted.
 * `executables`: Public command-line executables exposed via `dart run` or
   `dart install`.
 
@@ -135,23 +136,17 @@ void main() async {
 }
 ```
 
-You can also pass `includeReferencedTypes: true` or
-`includeImplicitNonPublicMembers: true` directly to `ApiSummaryCustomizer`:
+You can also override `includeReferencedTypes` to transitively include skeleton declarations (containing type hierarchy but no members) of classes, enums, or mixins from other packages and the SDK that are referenced in your public API:
 
 ```dart
 import 'package:api_summary/api_summary.dart';
 
-void main() async {
-  final summary = await apiSummary(
-    '/path/to/package',
-    customizer: const ApiSummaryCustomizer(
-      includeReferencedTypes: true,
-      includeImplicitNonPublicMembers: true,
-    ),
-  );
-  print(summary);
+base class MyCustomizer extends ApiSummaryCustomizer {
+  @override
+  bool get includeReferencedTypes => true;
 }
 ```
+
 
 ## Golden File / Diff Testing (`expectApiSummaryClean`)
 
