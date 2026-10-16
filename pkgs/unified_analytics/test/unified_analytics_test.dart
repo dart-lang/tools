@@ -902,6 +902,14 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
   test(
     'The UserProperty class correctly sets and exposes the ai_agent value',
     () {
+      expect(
+        analytics.userPropertyMap['ai_agent']?['value'],
+        isNull,
+        reason:
+            'The ai_agent user property should default to null when agent and '
+            'environment are omitted',
+      );
+
       final secondAnalytics = Analytics.fake(
         tool: initialTool,
         homeDirectory: home,
@@ -925,6 +933,45 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         secondAnalytics.userPropertyMap['client_ide']?['value'],
         'CursorIDE',
         reason: 'The client_ide user property should be set to CursorIDE',
+      );
+
+      final envDetectedAnalytics = Analytics.fake(
+        tool: initialTool,
+        homeDirectory: home,
+        flutterChannel: flutterChannel,
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: flutterVersion,
+        dartVersion: dartVersion,
+        fs: fs,
+        platform: platform,
+        environment: const {'CURSOR_AGENT': '1'},
+      );
+      expect(
+        envDetectedAnalytics.userPropertyMap['ai_agent']?['value'],
+        'Cursor',
+        reason:
+            'The ai_agent user property should be detected from environment '
+            'when agent is omitted',
+      );
+
+      final overrideAgentAnalytics = Analytics.fake(
+        tool: initialTool,
+        homeDirectory: home,
+        flutterChannel: flutterChannel,
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: flutterVersion,
+        dartVersion: dartVersion,
+        fs: fs,
+        platform: platform,
+        agent: 'CustomAgent',
+        environment: const {'CURSOR_AGENT': '1'},
+      );
+      expect(
+        overrideAgentAnalytics.userPropertyMap['ai_agent']?['value'],
+        'CustomAgent',
+        reason: 'An explicit agent argument should override environment',
       );
     },
   );

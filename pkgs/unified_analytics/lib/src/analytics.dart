@@ -343,12 +343,12 @@ abstract class Analytics {
   /// Returns an instance of [FakeAnalytics] which can be used in tests to check
   /// for certain [Event] instances within [FakeAnalytics.sentEvents].
   ///
-  /// The returned instance checks `DASH__SUPPRESS_ANALYTICS` in [environment]
-  /// rather than in the process environment. [environment] defaults to an
-  /// empty map, so tests aren't affected by the shell they run in. Pass
-  /// `Platform.environment` to follow the real environment. The production
-  /// [Analytics] factories don't offer this, and always respect the real
-  /// environment.
+  /// The returned instance checks `DASH__SUPPRESS_ANALYTICS` and AI agent
+  /// variables in [environment] rather than in the process environment.
+  /// [environment] defaults to an empty map, so tests aren't affected by the
+  /// shell they run in. Pass `Platform.environment` to follow the real
+  /// environment. The production [Analytics] factories don't offer this, and
+  /// always respect the real environment.
   @visibleForTesting
   static FakeAnalytics fake({
     required DashTool tool,
@@ -394,7 +394,7 @@ abstract class Analytics {
       gaClient: gaClient ?? const FakeGAClient(),
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      agent: agent,
+      agent: agent ?? AiAgent.detectAgentName(environment),
       firstRun: firstRun,
       enableAsserts: enableAsserts,
       isExternal: isExternal,
