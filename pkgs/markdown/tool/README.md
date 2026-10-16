@@ -47,6 +47,16 @@ runs the package through the CommonMark specs. To see help:
 $ dart tool/stats.dart --help
 ```
 
+### Intentional divergences
+
+Some examples intentionally produce output that differs from the spec, e.g.
+fenced code blocks preserving their info string as `data-metadata`. These are
+listed in `tool/divergences.json` with a `reason`, a `link`, and the exact
+`html` the package produces. While the actual output equals the recorded
+`html`, the example is scored `diverged`: it is reported separately and counts
+as neither passing nor failing. If the output changes, the example is scored
+normally again, and `test/stats_test.dart` flags the stale entry.
+
 ## update_spec_tests.dart
 
 Fetches the latest released CommonMark and GitHub Flavored Markdown `spec.txt`
