@@ -676,6 +676,28 @@ line 1, column 1: Not a map
       );
     });
 
+    test('name cannot be null', () {
+      expectParseThrowsContaining(
+        {...defaultPubspec, 'name': null},
+        "Unsupported value for \"name\". type 'Null' is not a subtype of type 'String'",
+        lenient: true,
+      );
+    });
+
+    test('name cannot be empty string with invalid other property', () {
+      expectParseThrows(
+        {'name': '', 'version': 'invalid'},
+        r'''
+line 2, column 10: Unsupported value for "name". "name" cannot be empty.
+  ╷
+2 │  "name": "",
+  │          ^^
+  ╵''',
+        lenient: true,
+        skipTryPub: true,
+      );
+    });
+
     test('bad repository url', () async {
       final value = await parse({
         ...defaultPubspec,
