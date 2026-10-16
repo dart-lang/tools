@@ -1,4 +1,4 @@
-## 8.1.0-wip
+## 8.1.0
 
 - Added optional `isExternal` parameter to `Analytics.fake` to allow overriding
   the build configuration during testing.
