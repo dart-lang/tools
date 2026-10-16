@@ -59,6 +59,33 @@ int countCodeUnits(String string, int codeUnit) {
   return count;
 }
 
+/// Returns whether [text] has a line terminator at [index].
+///
+/// A line terminator is either `\n` or a `\r` not immediately followed by `\n`.
+bool _isLineEnd(String text, int index) {
+  final codeUnit = text.codeUnitAt(index);
+  if (codeUnit == $lf) return true;
+  if (codeUnit != $cr) return false;
+  return index + 1 == text.length || text.codeUnitAt(index + 1) != $lf;
+}
+
+/// Returns the index of the next line terminator in [text] at or after [start],
+/// or `-1` if none exists.
+int _indexOfLineEnd(String text, int start) {
+  for (var i = start; i < text.length; i++) {
+    if (_isLineEnd(text, i)) return i;
+  }
+  return -1;
+}
+
+/// Returns the start index of the line containing [index] in [text].
+int _lineStartAt(String text, int index) {
+  for (var i = index - 1; i >= 0; i--) {
+    if (_isLineEnd(text, i)) return i + 1;
+  }
+  return 0;
+}
+
 /// Finds a line in [context] containing [text] at the specified [column].
 ///
 /// Returns the index in [context] where that line begins, or null if none
@@ -68,15 +95,24 @@ int? findLineStart(String context, String text, int column) {
   // [column] characters.
   if (text.isEmpty) {
     var beginningOfLine = 0;
+    int? fallbackLineStart;
     while (true) {
-      final index = context.indexOf('\n', beginningOfLine);
+      final index = _indexOfLineEnd(context, beginningOfLine);
       if (index == -1) {
         return context.length - beginningOfLine >= column
             ? beginningOfLine
-            : null;
+            : fallbackLineStart;
       }
 
-      if (index - beginningOfLine >= column) return beginningOfLine;
+      final lineEnd = context.codeUnitAt(index) == $lf &&
+              index > beginningOfLine &&
+              context.codeUnitAt(index - 1) == $cr
+          ? index - 1
+          : index;
+      if (lineEnd - beginningOfLine >= column) return beginningOfLine;
+      if (index - beginningOfLine >= column) {
+        fallbackLineStart ??= beginningOfLine;
+      }
       beginningOfLine = index + 1;
     }
   }
@@ -84,7 +120,7 @@ int? findLineStart(String context, String text, int column) {
   var index = context.indexOf(text);
   while (index != -1) {
     // Start looking before [index] in case [text] starts with a newline.
-    final lineStart = index == 0 ? 0 : context.lastIndexOf('\n', index - 1) + 1;
+    final lineStart = _lineStartAt(context, index);
     final textColumn = index - lineStart;
     if (column == textColumn) return lineStart;
     index = context.indexOf(text, index + 1);
@@ -100,6 +136,8 @@ int? findLineStart(String context, String text, int column) {
 /// This is factored out so it can be shared between
 /// [SourceSpanExtension.subspan] and [SourceSpanWithContextExtension.subspan].
 List<SourceLocation> subspanLocations(SourceSpan span, int start, [int? end]) {
+  if (start == span.length) return [span.end, span.end];
+
   final text = span.text;
   final startLocation = span.start;
   var line = startLocation.line;
@@ -112,8 +150,7 @@ List<SourceLocation> subspanLocations(SourceSpan span, int start, [int? end]) {
     if (codeUnit == $lf ||
         // A carriage return counts as a newline, but only if it's not
         // followed by a line feed.
-        (codeUnit == $cr &&
-            (i + 1 == text.length || text.codeUnitAt(i + 1) != $lf))) {
+        (codeUnit == $cr && text.codeUnitAt(i + 1) != $lf)) {
       line += 1;
       column = 0;
     } else {

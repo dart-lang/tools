@@ -602,4 +602,90 @@ ${colors.blue}  '${colors.none}'''));
    '"""));
     });
   });
+
+  group('bare CR and CRLF line endings', () {
+    test('highlights a trailing bare CR (SPAN-1)', () {
+      final file = SourceFile.fromString('ab\r');
+      expect(file.span(2, 3).highlight(), equals("""
+  ,
+1 | ab
+  |   ^
+  '"""));
+    });
+
+    test('highlights spans across bare CR lines', () {
+      final file = SourceFile.fromString('foo bar\rbaz bang\r');
+      expect(file.span(4, 11).highlight(), equals("""
+  ,
+1 |   foo bar
+  | ,-----^
+2 | | baz bang
+  | '---^
+  '"""));
+    });
+
+    test('strips CR from single-line span context in CRLF file', () {
+      final file = SourceFile.fromString('foo bar\r\nbaz');
+      expect(file.span(4, 7).highlight(), equals("""
+  ,
+1 | foo bar
+  |     ^^^
+  '"""));
+    });
+
+    test('handles spans starting or ending between CR and LF', () {
+      final file = SourceFile.fromString('ab\r\ncd');
+      expect(file.span(1, 3).highlight(), equals("""
+  ,
+1 | ab
+  |  ^
+  '"""));
+      expect(file.location(3).pointSpan().highlight(), equals("""
+  ,
+1 | ab
+  |   ^
+  '"""));
+      expect(file.span(3, 5).highlight(), equals("""
+  ,
+1 |   ab
+  | ,---^
+2 | | cd
+  | '-^
+  '"""));
+    });
+
+    test('normalizes plain SourceSpan ending with double newline', () {
+      final span = SourceSpan(
+          SourceLocation(0), SourceLocation(5, line: 2, column: 0), 'abc\n\n');
+      expect(span.highlight(), equals(r"""
+  ,
+1 | / abc
+2 | \ 
+  '"""));
+    });
+  });
+
+  test(
+      'highlights a point span at start of last line without trailing newline '
+      '(SPAN-2)', () {
+    final file = SourceFile.fromString('\n\n~');
+    expect(file.location(2).pointSpan().highlight(), equals("""
+  ,
+3 | ~
+  | ^
+  '"""));
+  });
+
+  test(
+      'highlights a span starting after column 0 and ending at newline with '
+      'following context', () {
+    final span = SourceSpanWithContext(SourceLocation(4, line: 0, column: 4),
+        SourceLocation(8, line: 1, column: 0), 'bar\n', 'foo bar\nbaz\n');
+    expect(span.highlight(), equals("""
+  ,
+1 | foo bar
+  |     ^^^
+2 | baz
+  '"""));
+  });
 }
