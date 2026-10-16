@@ -46,9 +46,11 @@ class PolyFill {
 
     // Resolve all definitions to a non-VarUsage (terminal expression).
     mainStyleSheetVarDefs.forEach((key, value) {
-      for (var _ in (value.expression as Expressions).expressions) {
-        mainStyleSheetVarDefs[key] =
-            _findTerminalVarDefinition(_allVarDefinitions, value);
+      if (value.expression is Expressions) {
+        for (var _ in (value.expression as Expressions).expressions.toList()) {
+          mainStyleSheetVarDefs[key] =
+              _findTerminalVarDefinition(_allVarDefinitions, value);
+        }
       }
     });
   }
@@ -115,9 +117,10 @@ class _VarDefAndUsage extends Visitor {
 
   @override
   void visitExpressions(Expressions node) {
+    var oldExpressions = currentExpressions;
     currentExpressions = node.expressions;
     super.visitExpressions(node);
-    currentExpressions = null;
+    currentExpressions = oldExpressions;
   }
 
   @override
@@ -129,9 +132,13 @@ class _VarDefAndUsage extends Visitor {
     // varDefinition (they're just place holders until we've resolved all real
     // usages.
     var expressions = currentExpressions;
-    var index = expressions!.indexOf(node);
-    assert(index >= 0);
+    if (expressions == null) return;
+    var index = expressions.indexOf(node);
+    if (index < 0) return;
     var def = _knownVarDefs[node.name];
+    if (def == currVarDefinition) {
+      def = null;
+    }
     if (def != null) {
       if (def.badUsage) {
         // Remove any expressions pointing to a bad var definition.
@@ -145,7 +152,11 @@ class _VarDefAndUsage extends Visitor {
       // default values.
       var terminalDefaults = <Expression>[];
       for (var defaultValue in node.defaultValues) {
-        terminalDefaults.addAll(resolveUsageTerminal(defaultValue as VarUsage));
+        if (defaultValue is VarUsage) {
+          terminalDefaults.addAll(resolveUsageTerminal(defaultValue));
+        } else {
+          terminalDefaults.add(defaultValue);
+        }
       }
       expressions.replaceRange(index, index + 1, terminalDefaults);
     } else if (node.defaultValues.isNotEmpty) {
@@ -170,28 +181,35 @@ class _VarDefAndUsage extends Visitor {
     currentExpressions = oldExpressions;
   }
 
-  List<Expression> resolveUsageTerminal(VarUsage usage) {
+  List<Expression> resolveUsageTerminal(VarUsage usage,
+      [Set<VarDefinition>? visited]) {
     var result = <Expression>[];
+    visited ??= <VarDefinition>{};
 
     var varDef = _knownVarDefs[usage.name];
+    if (varDef != null && !visited.add(varDef)) {
+      varDef = null;
+    }
     List<Expression> expressions;
     if (varDef == null) {
       // VarDefinition not found try the defaultValues.
       expressions = usage.defaultValues;
-    } else {
+    } else if (varDef.expression is Expressions) {
       // Use the VarDefinition found.
       expressions = (varDef.expression as Expressions).expressions;
+    } else {
+      expressions = const <Expression>[];
     }
 
     for (var expr in expressions) {
       if (expr is VarUsage) {
         // Get terminal value.
-        result.addAll(resolveUsageTerminal(expr));
+        result.addAll(resolveUsageTerminal(expr, visited));
       }
     }
 
     // We're at a terminal just return the VarDefinition expression.
-    if (result.isEmpty && varDef != null) {
+    if (result.isEmpty && varDef != null && varDef.expression is Expressions) {
       result = (varDef.expression as Expressions).expressions;
     }
 
@@ -200,6 +218,7 @@ class _VarDefAndUsage extends Visitor {
 
   void _resolveVarUsage(
       List<Expression> expressions, int index, VarDefinition def) {
+    if (def.expression is! Expressions) return;
     var defExpressions = (def.expression as Expressions).expressions;
     expressions.replaceRange(index, index + 1, defExpressions);
   }
@@ -227,7 +246,11 @@ class _RemoveVarDefinitions extends Visitor {
 
 /// Find terminal definition (non VarUsage implies real CSS value).
 VarDefinition _findTerminalVarDefinition(
-    Map<String, VarDefinition> varDefs, VarDefinition varDef) {
+    Map<String, VarDefinition> varDefs, VarDefinition varDef,
+    [Set<VarDefinition>? visited]) {
+  visited ??= <VarDefinition>{};
+  if (!visited.add(varDef)) return varDef;
+  if (varDef.expression is! Expressions) return varDef;
   var expressions = varDef.expression as Expressions;
   for (var expr in expressions.expressions) {
     if (expr is VarUsage) {
@@ -236,17 +259,19 @@ VarDefinition _findTerminalVarDefinition(
 
       // If foundDef is unknown check if defaultValues; if it exist then resolve
       // to terminal value.
-      if (foundDef == null) {
+      if (foundDef == null || visited.contains(foundDef)) {
         // We're either a VarUsage or terminal definition if in varDefs;
         // either way replace VarUsage with it's default value because the
         // VarDefinition isn't found.
         var defaultValues = expr.defaultValues;
         var replaceExprs = expressions.expressions;
-        assert(replaceExprs.length == 1);
-        replaceExprs.replaceRange(0, 1, defaultValues);
+        var idx = replaceExprs.indexOf(expr);
+        if (idx != -1) {
+          replaceExprs.replaceRange(idx, idx + 1, defaultValues);
+        }
         return varDef;
       }
-      return _findTerminalVarDefinition(varDefs, foundDef);
+      return _findTerminalVarDefinition(varDefs, foundDef, visited);
     } else {
       // Return real CSS property.
       return varDef;
