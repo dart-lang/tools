@@ -987,10 +987,44 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     );
     expect(
       AiAgent.detectAgentName(<String, String>{'TERM_PROGRAM': 'cursor'}),
-      'Cursor',
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_TRACE_ID': 'abc'}),
+      isNull,
     );
     expect(
       AiAgent.detectAgentName(<String, String>{'CURSOR_APP_VERSION': '1'}),
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': ''}),
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': '0'}),
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': 'false'}),
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': 'FALSE'}),
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': '1'}),
+      'Cursor',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': 'true'}),
+      'Cursor',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{
+        'CURSOR_EXTENSION_HOST_ROLE': 'agent-exec',
+      }),
       'Cursor',
     );
     expect(
@@ -1049,6 +1083,130 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       AiAgent.detectAgentName(<String, String>{'AI_AGENT': 'MyCustomAgent'}),
       'MyCustomAgent',
     );
+  });
+
+  group('Analytics.isBot', () {
+    test('returns false for empty environment', () {
+      expect(Analytics.isBot(<String, String>{}), isFalse);
+    });
+
+    test('returns false for non-bot overrides even when CI vars are set', () {
+      expect(
+        Analytics.isBot(<String, String>{'BOT': 'false', 'CI': 'true'}),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'BOT': 'FALSE', 'CI': 'true'}),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'BOT': '0', 'GITHUB_ACTIONS': 'true'}),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{
+          'FLUTTER_HOST': '1',
+          'CI': 'true',
+          'BOT': 'true',
+        }),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{
+          'FLUTTER_ANALYTICS_LOG_FILE': '/tmp/analytics.log',
+          'CI': 'true',
+          'BOT': 'true',
+        }),
+        isFalse,
+      );
+    });
+
+    test('returns false for falsy or empty CI and BOT values', () {
+      expect(Analytics.isBot(<String, String>{'CI': ''}), isFalse);
+      expect(Analytics.isBot(<String, String>{'CI': '   '}), isFalse);
+      expect(Analytics.isBot(<String, String>{'CI': 'false'}), isFalse);
+      expect(Analytics.isBot(<String, String>{'CI': 'FALSE'}), isFalse);
+      expect(Analytics.isBot(<String, String>{'CI': '0'}), isFalse);
+      expect(Analytics.isBot(<String, String>{'BOT': ''}), isFalse);
+      expect(Analytics.isBot(<String, String>{'BOT': '   '}), isFalse);
+    });
+
+    test('returns true for truthy CI and BOT values', () {
+      expect(Analytics.isBot(<String, String>{'CI': 'true'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'CI': 'TRUE'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'CI': '1'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'BOT': 'true'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'BOT': 'TRUE'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'BOT': '1'}), isTrue);
+    });
+
+    test('returns true for known CI provider environment variables', () {
+      expect(Analytics.isBot(<String, String>{'TRAVIS': 'true'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'TRAVIS': 'false'}), isFalse);
+      expect(
+        Analytics.isBot(<String, String>{'CONTINUOUS_INTEGRATION': 'true'}),
+        isTrue,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'CONTINUOUS_INTEGRATION': 'false'}),
+        isFalse,
+      );
+      expect(Analytics.isBot(<String, String>{'APPVEYOR': 'True'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'CIRRUS_CI': 'true'}), isTrue);
+      expect(
+        Analytics.isBot(<String, String>{
+          'AWS_REGION': 'us-east-1',
+          'CODEBUILD_INITIATOR': 'codepipeline/my-pipeline',
+        }),
+        isTrue,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'AWS_REGION': 'us-east-1'}),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{
+          'CODEBUILD_INITIATOR': 'codepipeline/my-pipeline',
+        }),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{
+          'JENKINS_URL': 'https://jenkins.example.com/',
+        }),
+        isTrue,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'GITHUB_ACTIONS': 'true'}),
+        isTrue,
+      );
+      expect(Analytics.isBot(<String, String>{'CHROME_HEADLESS': '1'}), isTrue);
+      expect(
+        Analytics.isBot(<String, String>{'CHROME_HEADLESS': '0'}),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{
+          'BUILDBOT_BUILDERNAME': 'Linux Engine',
+        }),
+        isTrue,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'SWARMING_TASK_ID': '12345'}),
+        isTrue,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'BORG_ALLOC_DIR': '/borg/alloc'}),
+        isTrue,
+      );
+      expect(Analytics.isBot(<String, String>{'TF_BUILD': 'True'}), isTrue);
+      expect(
+        Analytics.isBot(<String, String>{
+          'AZURE_HTTP_USER_AGENT': 'VSTS_12345',
+        }),
+        isTrue,
+      );
+    });
   });
 
   test('The minimum session duration should be at least 30 minutes', () {
