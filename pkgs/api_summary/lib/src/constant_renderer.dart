@@ -51,7 +51,12 @@ String? formatConstantObject(DartObject object) {
   if (object.isNull) return 'null';
   if (object.toBoolValue() case final b?) return b.toString();
   if (object.toIntValue() case final i?) return i.toString();
-  if (object.toDoubleValue() case final d?) return d.toString();
+  if (object.toDoubleValue() case final d?) {
+    if (d.isNaN) return 'double.nan';
+    if (d == double.infinity) return 'double.infinity';
+    if (d == double.negativeInfinity) return 'double.negativeInfinity';
+    return d.toString();
+  }
   if (object.toStringValue() case final s?) return _formatStringLiteral(s);
   if (object.toSymbolValue() case final sym?) {
     return sym.startsWith('_') ? null : '#$sym';

@@ -548,6 +548,9 @@ class Holder {
 const bool kBool = false;
 const int kInt = -42;
 const double kDouble = 3.14;
+const double kNaN = double.nan;
+const double kInfinity = double.infinity;
+const double kNegativeInfinity = double.negativeInfinity;
 const String kString = 'a\n\$b\'c\\d';
 const Object? kNull = null;
 const Symbol kPublicSymbol = #mySymbol;
@@ -601,6 +604,9 @@ int get kComputedGetter => 1;
       'kBool': 'false',
       'kInt': '-42',
       'kDouble': '3.14',
+      'kNaN': 'double.nan',
+      'kInfinity': 'double.infinity',
+      'kNegativeInfinity': 'double.negativeInfinity',
       'kString': r"'a\n\$b\'c\\d'",
       'kNull': 'null',
       'kPublicSymbol': '#mySymbol',
