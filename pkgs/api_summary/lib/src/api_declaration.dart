@@ -66,22 +66,8 @@ final class ApiSummary {
     Map<String, String>? environment,
     Map<String, String?>? executables,
     required this.libraries,
-  }) : environment = environment == null || environment.isEmpty
-           ? const {}
-           : Map.unmodifiable(
-               Map.fromEntries(
-                 environment.entries.toList()
-                   ..sort((a, b) => a.key.compareTo(b.key)),
-               ),
-             ),
-       executables = executables == null || executables.isEmpty
-           ? const {}
-           : Map.unmodifiable(
-               Map.fromEntries(
-                 executables.entries.toList()
-                   ..sort((a, b) => a.key.compareTo(b.key)),
-               ),
-             );
+  }) : environment = _sortedUnmodifiableMap(environment),
+       executables = _sortedUnmodifiableMap(executables);
 
   factory ApiSummary.fromJson(Map<String, dynamic> json) => ApiSummary(
     name: json['name'] as String,
@@ -104,6 +90,15 @@ final class ApiSummary {
   @override
   String toString() => renderTextSummary(this);
 }
+
+Map<String, V> _sortedUnmodifiableMap<V>(Map<String, V>? source) =>
+    source == null || source.isEmpty
+    ? const {}
+    : Map.unmodifiable(
+        Map.fromEntries(
+          source.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+        ),
+      );
 
 /// A summary of the declarations exposed by a single library within a package.
 final class ApiLibrary {
@@ -397,6 +392,10 @@ final class ApiExecutable extends ApiDeclaration {
 
   final bool isStatic;
 
+  /// The canonical string representation of the constant value of a `const`
+  /// getter, if representable in the public API.
+  final String? constantValue;
+
   ApiExecutable({
     required super.name,
     super.locationUri,
@@ -408,6 +407,7 @@ final class ApiExecutable extends ApiDeclaration {
     required this.isStatic,
     this.isConst = false,
     this.isEnumConstant = false,
+    this.constantValue,
     super.isDeprecated,
     super.facets,
   });
@@ -426,6 +426,7 @@ final class ApiExecutable extends ApiDeclaration {
     isConst: json['isConst'] as bool? ?? false,
     isDeprecated: json['isDeprecated'] as bool? ?? false,
     isEnumConstant: json['isEnumConstant'] as bool? ?? false,
+    constantValue: json['constantValue'] as String?,
     facets: parseList(json, 'facets', ApiFacet.fromJson),
   );
 
@@ -443,6 +444,7 @@ final class ApiExecutable extends ApiDeclaration {
     if (parameters.isNotEmpty)
       'parameters': parameters.map((e) => e.toJson()).toList(),
     if (isConst) 'isConst': isConst,
+    if (constantValue != null) 'constantValue': constantValue,
     if (isDeprecated) 'isDeprecated': isDeprecated,
     if (isEnumConstant) 'isEnumConstant': isEnumConstant,
     if (isStatic) 'isStatic': isStatic,
