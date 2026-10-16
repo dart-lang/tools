@@ -1,4 +1,4 @@
-## 8.2.0-wip
+## 8.2.0
 
 - Default `agent` in `Analytics` and `Analytics.development` to
   `AiAgent.detectAgentName(Platform.environment)` when omitted.
