@@ -180,7 +180,7 @@ class HtmlInputStream {
     if (const ['utf-16', 'utf-16-be', 'utf-16-le'].contains(newEncoding)) {
       newEncoding = 'utf-8';
     }
-    if (newEncoding == null) {
+    if (newEncoding == null || !_isSupportedEncoding(newEncoding)) {
       return;
     } else if (newEncoding == charEncodingName) {
       charEncodingCertain = true;
@@ -212,6 +212,10 @@ class HtmlInputStream {
 
     if (const ['utf-16', 'utf-16-be', 'utf-16-le'].contains(encoding)) {
       encoding = 'utf-8';
+    }
+
+    if (!_isSupportedEncoding(encoding)) {
+      return null;
     }
 
     return encoding;
@@ -423,16 +427,19 @@ bool _hasUtf8Bom(List<int> bytes, [int offset = 0, int? length]) {
       bytes[offset + 2] == 0xBF;
 }
 
+bool _isSupportedEncoding(String? encoding) =>
+    encoding == 'ascii' || encoding == 'utf-8';
+
 /// Decodes the [bytes] with the provided [encoding] and returns a list for
 /// the codepoints. Supports the major unicode encodings as well as ascii and
 /// and windows-1252 encodings.
 List<int> _decodeBytes(String encoding, List<int> bytes) {
   return switch (encoding) {
-    'ascii' => ascii.decode(bytes).codeUnits,
+    'ascii' => ascii.decode(bytes, allowInvalid: true).codeUnits,
     'utf-8' =>
       // NOTE: To match the behavior of the other decode functions, we eat the
       // UTF-8 BOM here. This is the default behavior of `utf8.decode`.
-      utf8.decode(bytes).codeUnits,
+      utf8.decode(bytes, allowMalformed: true).codeUnits,
     _ => throw ArgumentError('Encoding $encoding not supported')
   };
 }

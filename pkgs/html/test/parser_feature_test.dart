@@ -5,6 +5,8 @@
 /// Additional feature tests that aren't based on test data.
 library;
 
+import 'dart:convert';
+
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:html/src/constants.dart';
@@ -171,6 +173,85 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
 
     expect(span.start.offset, text.indexOf('foo'));
     expect(span.text, expectedUrl);
+  });
+
+  test('attribute spans with tokenizer parse errors and duplicate attributes',
+      () {
+    final doc = parse(
+      '<div attr=\x00 a="1"b="2" dup="first" dup="second" empty=>',
+      generateSpans: true,
+    );
+    final div = doc.querySelector('div')!;
+    expect(div.attributeSpans!['attr']!.text, 'attr=\x00');
+    expect(div.attributeValueSpans!['attr']!.text, '\x00');
+    expect(div.attributeSpans!['a']!.text, 'a="1"');
+    expect(div.attributeSpans!['b']!.text, 'b="2"');
+    expect(div.attributeSpans!['dup']!.text, 'dup="first"');
+    expect(div.attributeValueSpans!['dup']!.text, 'first');
+    expect(div.attributeSpans!['empty']!.text, 'empty');
+    expect(div.attributeValueSpans!.containsKey('empty'), isFalse);
+  });
+
+  test('foster-parented text spans are updated when merged before table', () {
+    const html = '<table>a&amp;b</table>';
+    final doc = parse(html, generateSpans: true);
+    final textNode = doc.body!.nodes.first as Text;
+    expect(textNode.data, 'a&b');
+    expect(textNode.sourceSpan!.text, 'a&amp;b');
+  });
+
+  test('numeric character reference overflowing 64-bit integer returns U+FFFD',
+      () {
+    final parser = HtmlParser(
+      '<!DOCTYPE html><html><head></head><body>'
+      '&#99999999999999999999;&#x10000000000000000;'
+      '</body></html>',
+    );
+    final doc = parser.parse();
+    expect(doc.body!.text, '\uFFFD\uFFFD');
+    expect(
+      parser.errors.map((e) => e.errorCode),
+      contains('illegal-codepoint-for-numeric-entity'),
+    );
+  });
+
+  test('byte input tolerates malformed UTF-8, invalid ASCII, and other codecs',
+      () {
+    final malformedUtf8 = <int>[0x3c, 0x6d, 0x65, 0x74, 0x61, 0x20, 0xea];
+    final doc1 = parse(malformedUtf8);
+    expect(doc1.body, isNotNull);
+
+    final invalidAscii = <int>[
+      ...utf8.encode('<meta charset="ascii"><body>'),
+      0xFF,
+    ];
+    final doc2 = parse(invalidAscii);
+    expect(doc2.body!.text, '\uFFFD');
+
+    final unsupportedMeta = utf8.encode(
+      '<meta charset="windows-1252"><body>hello</body>',
+    );
+    final doc3 = parse(unsupportedMeta);
+    expect(doc3.body!.text, 'hello');
+  });
+
+  test('ParseError.message formats all tokenizer error codes without crashing',
+      () {
+    for (final snippet in const ['</div/>', '<div a ', '<div a="1"']) {
+      final parser = HtmlParser(snippet, generateSpans: true);
+      parser.parse();
+      expect(parser.errors, isNotEmpty);
+      for (final error in parser.errors) {
+        expect(error.message, isNotEmpty);
+        expect(error.toString(), isNotEmpty);
+      }
+    }
+    final eofAfterValue = HtmlParser('<div a="1"', generateSpans: true)
+      ..parse();
+    expect(
+      eofAfterValue.errors.map((e) => e.message),
+      contains('Unexpected end of file after attribute value.'),
+    );
   });
 
   test('void element innerHTML', () {
@@ -349,6 +430,12 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
       expect(getEncoding('<meta charset="utf-16">'), 'utf-16');
     });
 
+    test('gets encoding from meta charset with whitespace around =', () {
+      expect(getEncoding('<meta charset = "utf-16">'), 'utf-16');
+      expect(getEncoding('<meta a ><meta charset="utf-16">'), 'utf-16');
+      expect(getEncoding('<meta a   '), isNull);
+    });
+
     test('gets encoding from meta in head', () {
       expect(getEncoding('<head><meta charset="utf-16">'), 'utf-16');
     });
@@ -370,7 +457,15 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
       expect(
           getEncoding(
               '<meta http-equiv="content-type" content="text/html; charset=UTF-8">'),
-          null);
+          'utf-8');
+      expect(
+          getEncoding(
+              '<meta http-equiv="content-type" content="text/html; charset=UTF-8 ">'),
+          'utf-8');
+      expect(
+          getEncoding(
+              '<meta http-equiv="content-type" content="text/html; charset=\'UTF-8">'),
+          isNull);
     });
   });
 }

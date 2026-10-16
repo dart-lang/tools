@@ -1,5 +1,13 @@
 ## 0.15.8-wip
 
+- Fix `Node.attributeSpans` and `Node.attributeValueSpans` throwing a `TypeError` when a start tag emits tokenizer parse errors, and preserve the first occurrence's span on duplicate attributes.
+- Fix `HtmlInputStream` throwing a `FormatException` on malformed UTF-8 or invalid ASCII byte sequences, and ignore `<meta charset>` declarations that resolve to unsupported Dart codecs.
+- Fix `HtmlTokenizer.consumeNumberEntity` throwing a `FormatException` when a numeric character reference overflows a 64-bit integer.
+- Fix `EncodingParser` failing to parse `<meta charset>` attributes with whitespace before `=`, unquoted `charset` values at the end of `content` attributes, and `EncodingBytes` throwing a `RangeError` at offset 0.
+- Fix `querySelector` and `querySelectorAll` throwing a null-check `TypeError` instead of `FormatException` on empty `:not()` selectors.
+- Fix `TreeBuilder` not updating `Text.sourceSpan` when merging consecutive foster-parented text nodes before a `<table>`.
+- Fix `ParseError.message` throwing a null-check `TypeError` on `unexpected-EOF-after-attribute-value` tokenizer errors.
+
 ## 0.15.7
 
 - `writeTextNodeAsHtml`: Escape text inside `<script>` and `<style>`-like tags in foreign namespaces.
