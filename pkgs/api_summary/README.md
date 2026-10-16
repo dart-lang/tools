@@ -11,6 +11,22 @@ reviews (e.g. using `diff` tests).
 > For robust breaking change tracking, you should use
 > [dart_apitool](https://pub.dev/packages/dart_apitool).
 
+## What Is Summarized
+
+In addition to exported `lib/` libraries and declarations, `api_summary` tracks
+the `pubspec.yaml` sections that define a package's external contract with
+downstream consumers (`dev_dependencies` are ignored):
+
+* `environment`: SDK (`sdk`, `flutter`) version constraints required to resolve
+  and run the package.
+* `dependencies`: Runtime dependency version constraints for external packages
+  whose declarations or types are referenced or re-exported in the public API
+  (rendered inline on referenced `package:...` library headers in `api.txt`, and
+  under `dependencies` in `api.json` and `api.yaml`). Internal-only runtime
+  dependencies that do not appear in the public API are omitted.
+* `executables`: Public command-line executables exposed via `dart run` or
+  `dart install`.
+
 ## Command Line Usage
 
 You can use the command-line tool to generate an API summary for any package
