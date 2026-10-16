@@ -44,7 +44,8 @@ abstract class Analytics {
   ///
   /// [agent] is an optional parameter to capture the name of any AI coding
   /// assistant/agent executing the tool. Examples include "Claude Code",
-  /// "Cursor", or "Copilot".
+  /// "Cursor", or "Copilot". If omitted, defaults to
+  /// `AiAgent.detectAgentName(io.Platform.environment)`.
   factory Analytics({
     required DashTool tool,
     required String dartVersion,
@@ -103,7 +104,7 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      agent: agent,
+      agent: agent ?? AiAgent.detectAgentName(io.Platform.environment),
       firstRun: firstRun,
     );
   }
@@ -120,7 +121,8 @@ abstract class Analytics {
   ///
   /// [agent] is an optional parameter to capture the name of any AI coding
   /// assistant/agent executing the tool. Examples include "Claude Code",
-  /// "Cursor", or "Copilot".
+  /// "Cursor", or "Copilot". If omitted, defaults to
+  /// `AiAgent.detectAgentName(io.Platform.environment)`.
   factory Analytics.development({
     required DashTool tool,
     required String dartVersion,
@@ -188,9 +190,39 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      agent: agent,
+      agent: agent ?? AiAgent.detectAgentName(io.Platform.environment),
       firstRun: firstRun,
     );
+  }
+
+  /// Returns `true` if [environment] indicates that the tool is running in an
+  /// automated CI or bot environment.
+  static bool isBot(Map<String, String> environment) {
+    final bot = environment['BOT']?.trim().toLowerCase();
+    if (bot == 'false' ||
+        bot == '0' ||
+        environment.containsKey('FLUTTER_HOST') ||
+        environment.containsKey('FLUTTER_ANALYTICS_LOG_FILE')) {
+      return false;
+    }
+
+    final ci = environment['CI']?.trim().toLowerCase();
+    return (bot != null && bot.isNotEmpty) ||
+        (ci != null && ci.isNotEmpty && ci != 'false' && ci != '0') ||
+        environment['TRAVIS'] == 'true' ||
+        environment['CONTINUOUS_INTEGRATION'] == 'true' ||
+        environment.containsKey('APPVEYOR') ||
+        environment.containsKey('CIRRUS_CI') ||
+        (environment.containsKey('AWS_REGION') &&
+            environment.containsKey('CODEBUILD_INITIATOR')) ||
+        environment.containsKey('JENKINS_URL') ||
+        environment.containsKey('GITHUB_ACTIONS') ||
+        environment['CHROME_HEADLESS'] == '1' ||
+        environment.containsKey('BUILDBOT_BUILDERNAME') ||
+        environment.containsKey('SWARMING_TASK_ID') ||
+        environment.containsKey('BORG_ALLOC_DIR') ||
+        environment.containsKey('TF_BUILD') ||
+        environment.containsKey('AZURE_HTTP_USER_AGENT');
   }
 
   /// The shared identifier for Flutter and Dart related tooling using
@@ -311,12 +343,12 @@ abstract class Analytics {
   /// Returns an instance of [FakeAnalytics] which can be used in tests to check
   /// for certain [Event] instances within [FakeAnalytics.sentEvents].
   ///
-  /// The returned instance checks `DASH__SUPPRESS_ANALYTICS` in [environment]
-  /// rather than in the process environment. [environment] defaults to an
-  /// empty map, so tests aren't affected by the shell they run in. Pass
-  /// `Platform.environment` to follow the real environment. The production
-  /// [Analytics] factories don't offer this, and always respect the real
-  /// environment.
+  /// The returned instance checks `DASH__SUPPRESS_ANALYTICS` and AI agent
+  /// variables in [environment] rather than in the process environment.
+  /// [environment] defaults to an empty map, so tests aren't affected by the
+  /// shell they run in. Pass `Platform.environment` to follow the real
+  /// environment. The production [Analytics] factories don't offer this, and
+  /// always respect the real environment.
   @visibleForTesting
   static FakeAnalytics fake({
     required DashTool tool,
@@ -362,7 +394,7 @@ abstract class Analytics {
       gaClient: gaClient ?? const FakeGAClient(),
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      agent: agent,
+      agent: agent ?? AiAgent.detectAgentName(environment),
       firstRun: firstRun,
       enableAsserts: enableAsserts,
       isExternal: isExternal,
