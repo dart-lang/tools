@@ -59,7 +59,6 @@ const _expectedFailures = <String>[
   'DK95-0',
   'DK95-1',
   'DK95-4',
-  'LHL4-0',
   'ZXT5-0',
   'P76L-0',
   '9JBA-0',
@@ -72,9 +71,19 @@ const _expectedFailures = <String>[
   'ZYU8-2',
   'RHX7-0',
   '2XXW-0',
-  '9HCY-0',
   'KS4U-0',
   'Z9M4-0',
   'EB22-0',
   '3HFZ-0',
+  // These cases use custom local or %TAG-mapped tags (!foo, !local, !shape,
+  // etc.), which Loader intentionally rejects as undefined tags (see
+  // yaml_test.dart Examples 2.24, 5.6, 6.18, and 8.21). They previously passed
+  // only because Scanner._scanTagUri dropped the scanned tag head and rewrote
+  // shorthand '!tag' tokens to the non-specific '!' tag.
+  '6WLZ-0',
+  '9WXW-0',
+  'C4HZ-0',
+  'CUP7-0',
+  'M5C3-0',
+  'Z67P-0',
 ];

@@ -234,13 +234,13 @@ class Scanner {
 
   /// Whether the character at the current position is a hexidecimal
   /// digit.
-  bool get _isHex {
-    var char = _scanner.peekChar();
-    if (char == null) return false;
-    return (char >= NUMBER_0 && char <= NUMBER_9) ||
-        (char >= LETTER_A && char <= LETTER_F) ||
-        (char >= LETTER_CAP_A && char <= LETTER_CAP_F);
-  }
+  bool get _isHex => _isHexChar(_scanner.peekChar());
+
+  bool _isHexChar(int? char) =>
+      char != null &&
+      ((char >= NUMBER_0 && char <= NUMBER_9) ||
+          (char >= LETTER_A && char <= LETTER_F) ||
+          (char >= LETTER_CAP_A && char <= LETTER_CAP_F));
 
   /// Whether the character at the current position is a plain character.
   ///
@@ -486,10 +486,8 @@ class Scanner {
       if (key.line == _scanner.line) continue;
 
       if (key.required) {
-        final keyIndentIdx = _indentLevels
-            .lastIndexWhere((indent) => indent.column == key.column);
-        final inBlockSequence = keyIndentIdx >= 0 &&
-            _indentLevels[keyIndentIdx].type == TokenType.blockSequenceStart;
+        final inBlockSequence =
+            _indentLevels.last.type == TokenType.blockSequenceStart;
         final message = StringBuffer("Expected ':'.");
         if (inBlockSequence) {
           message.write(" If this is a list entry, it must start with '- '.");
@@ -506,16 +504,12 @@ class Scanner {
   /// Checks if a simple key may start at the current position and saves it if
   /// so.
   void _saveSimpleKey() {
+    if (!_simpleKeyAllowed) return;
+
     // A simple key is required at the current position if the scanner is in the
     // block context and the current column coincides with the indentation
     // level.
     var required = _inBlockContext && _indent == _scanner.column;
-
-    // A simple key is required only when it is the first token in the current
-    // line. Therefore it is always allowed. But we add a check anyway.
-    assert(_simpleKeyAllowed || !required);
-
-    if (!_simpleKeyAllowed) return;
 
     // If the current position may start a simple key, save it.
     _removeSimpleKey();
@@ -966,14 +960,9 @@ class Scanner {
     var next = _scanner.peekChar();
     if (name.isEmpty ||
         (!_isBlankOrEnd &&
-            next != QUESTION &&
-            next != COLON &&
             next != COMMA &&
             next != RIGHT_SQUARE &&
-            next != RIGHT_CURLY &&
-            next != PERCENT &&
-            next != AT &&
-            next != GRAVE_ACCENT)) {
+            next != RIGHT_CURLY)) {
       throw YamlException(
           'Expected alphanumeric character.', _scanner.emptySpan);
     }
@@ -1010,7 +999,8 @@ class Scanner {
       if (handle.length > 1 && handle.startsWith('!') && handle.endsWith('!')) {
         suffix = _scanTagUri(flowSeparators: false);
       } else {
-        suffix = _scanTagUri(head: handle, flowSeparators: false);
+        suffix =
+            _scanTagUri(head: handle, headStart: start, flowSeparators: false);
 
         // There was no explicit handle.
         if (suffix.isEmpty) {
@@ -1060,7 +1050,8 @@ class Scanner {
   /// [head] is the initial portion of the tag that's already been scanned.
   /// [flowSeparators] indicates whether the tag URI can contain flow
   /// separators.
-  String _scanTagUri({String? head, bool flowSeparators = true}) {
+  String _scanTagUri(
+      {String? head, LineScannerState? headStart, bool flowSeparators = true}) {
     var length = head == null ? 0 : head.length;
     var buffer = StringBuffer();
 
@@ -1077,6 +1068,7 @@ class Scanner {
     //
     // In a shorthand tag annotation, the flow separators ',', '[', and ']' are
     // disallowed.
+    var startState = headStart ?? _scanner.state;
     var start = _scanner.position;
     var char = _scanner.peekChar();
     while (_isTagChar ||
@@ -1086,8 +1078,31 @@ class Scanner {
       char = _scanner.peekChar();
     }
 
+    buffer.write(_scanner.substring(start));
+
     // libyaml manually decodes the URL, but we don't have to do that.
-    return Uri.decodeFull(_scanner.substring(start));
+    return _decodeTagUri(buffer.toString(), _scanner.spanFrom(startState));
+  }
+
+  /// Decodes a percent-encoded tag [uri], throwing a [YamlException] at [span]
+  /// if it contains malformed percent-encoding or invalid UTF-8 bytes.
+  String _decodeTagUri(String uri, FileSpan span) {
+    for (var i = 0; i < uri.length; i++) {
+      if (uri.codeUnitAt(i) == PERCENT) {
+        if (i + 2 >= uri.length ||
+            !_isHexChar(uri.codeUnitAt(i + 1)) ||
+            !_isHexChar(uri.codeUnitAt(i + 2))) {
+          throw YamlException('Expected 2-digit hexadecimal number.', span);
+        }
+        i += 2;
+      }
+    }
+
+    try {
+      return Uri.decodeFull(uri);
+    } on FormatException catch (error) {
+      throw YamlException(error.message, span);
+    }
   }
 
   /// Scans a block scalar.
@@ -1608,8 +1623,7 @@ class Scanner {
   }
 
   bool _isStandardCharacterAt(int offset) {
-    var first = _scanner.peekChar(offset);
-    if (first == null) return false;
+    var first = _scanner.peekChar(offset)!;
 
     if (isHighSurrogate(first)) {
       var next = _scanner.peekChar(offset + 1);
