@@ -8,6 +8,8 @@
 // ignore_for_file: avoid_dynamic_calls
 
 import 'package:test/test.dart';
+import 'package:yaml/src/scanner.dart';
+import 'package:yaml/src/token.dart';
 import 'package:yaml/yaml.dart';
 
 import 'utils.dart';
@@ -1995,6 +1997,80 @@ void main() {
     final expectedPermutationCount =
         List.generate(keys.length, (i) => i + 1).reduce((n, i) => n * i);
     expect(sanityCheckCount, expectedPermutationCount);
+  });
+
+  group('scanner performance with deep flow nesting', () {
+    // Regression tests for https://github.com/dart-lang/tools/issues/2657.
+    // Before the fix, scanning time was O(depth × tokens) due to linear
+    // walks of the _simpleKeys list on every token.
+    //
+    // The loader is recursive and overflows the stack at a few thousand
+    // levels, which is too shallow to show the slowdown, so these tests drive
+    // the scanner directly.
+    void expectLinearScan(String source) {
+      final stopwatch = Stopwatch()..start();
+      final scanner = Scanner(source);
+      while (scanner.scan().type != TokenType.streamEnd) {}
+      // With the fix this takes well under 100ms; without it, 10+ seconds.
+      // A test timeout can't be used here since the scan is synchronous.
+      expect(stopwatch.elapsed, lessThan(const Duration(seconds: 5)));
+    }
+
+    const scanDepth = 40000;
+
+    test('scans deeply nested flow sequences in linear time', () {
+      expectLinearScan('${'[' * scanDepth}1${']' * scanDepth}');
+    });
+
+    test('scans deeply nested flow mappings in linear time', () {
+      expectLinearScan('${'{"a": ' * scanDepth}1${'}' * scanDepth}');
+    });
+
+    test('parses deeply nested flow sequences efficiently', () {
+      const depth = 2000;
+      final yaml = '${'[' * depth}1${']' * depth}';
+      final result = loadYaml(yaml);
+
+      dynamic current = result;
+      for (var i = 0; i < depth; i++) {
+        expect(current, isList, reason: 'nesting level $i should be a list');
+        expect((current as List).length, 1);
+        current = current[0];
+      }
+      expect(current, 1);
+    });
+
+    test('parses deeply nested flow mappings efficiently', () {
+      const depth = 2000;
+      // Builds: {"a": {"a": {"a": ... {"a": 1} ...}}}
+      final yaml = '${'{"a": ' * depth}1${'}' * depth}';
+      final result = loadYaml(yaml);
+
+      dynamic current = result;
+      for (var i = 0; i < depth; i++) {
+        expect(current, isMap, reason: 'nesting level $i should be a map');
+        current = (current as Map)['a'];
+      }
+      expect(current, 1);
+    });
+
+    test('parses deeply nested mixed flow sequences and mappings efficiently',
+        () {
+      const depth = 1000;
+      // Builds: [{"a": [{"a": ... [{"a": 1}] ...}]}]
+      final yaml = '${'[{"a": ' * depth}1${'}]' * depth}';
+      final result = loadYaml(yaml);
+
+      dynamic current = result;
+      for (var i = 0; i < depth; i++) {
+        expect(current, isList, reason: 'nesting level $i should be a list');
+        expect((current as List).length, 1);
+        current = current[0];
+        expect(current, isMap, reason: 'nesting level $i should be a map');
+        current = (current as Map)['a'];
+      }
+      expect(current, 1);
+    });
   });
 }
 
