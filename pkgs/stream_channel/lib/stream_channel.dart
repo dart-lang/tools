@@ -14,6 +14,7 @@ export 'src/delegating_stream_channel.dart';
 export 'src/disconnector.dart';
 export 'src/json_document_transformer.dart';
 export 'src/multi_channel.dart';
+export 'src/newline_delimited_transformer.dart';
 export 'src/stream_channel_completer.dart';
 export 'src/stream_channel_controller.dart';
 export 'src/stream_channel_transformer.dart';

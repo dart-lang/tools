@@ -1,5 +1,7 @@
-## 2.1.5-wip
+## 2.2.0-wip
 
+* Add `newlineDelimited`, a `StreamChannelTransformer` that frames UTF-8
+  strings as newline-delimited lines (for example JSON-lines over stdio).
 * Require `package:async` `^2.6.0`.
 
 ## 2.1.4
