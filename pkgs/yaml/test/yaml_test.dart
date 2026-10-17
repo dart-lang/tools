@@ -1996,6 +1996,58 @@ void main() {
         List.generate(keys.length, (i) => i + 1).reduce((n, i) => n * i);
     expect(sanityCheckCount, expectedPermutationCount);
   });
+
+  group('scanner performance with deep flow nesting', () {
+    // Regression tests for https://github.com/dart-lang/tools/issues/2657.
+    // Before the fix, scanning time was O(depth × tokens) due to linear
+    // walks of the _simpleKeys list on every token.
+
+    test('parses deeply nested flow sequences efficiently', () {
+      const depth = 2000;
+      final yaml = '${'[' * depth}1${']' * depth}';
+      final result = loadYaml(yaml);
+
+      dynamic current = result;
+      for (var i = 0; i < depth; i++) {
+        expect(current, isList, reason: 'nesting level $i should be a list');
+        expect((current as List).length, 1);
+        current = current[0];
+      }
+      expect(current, 1);
+    }, timeout: Timeout(Duration(seconds: 5)));
+
+    test('parses deeply nested flow mappings efficiently', () {
+      const depth = 2000;
+      // Builds: {"a": {"a": {"a": ... {"a": 1} ...}}}
+      final yaml = '${'{"a": ' * depth}1${'}' * depth}';
+      final result = loadYaml(yaml);
+
+      dynamic current = result;
+      for (var i = 0; i < depth; i++) {
+        expect(current, isMap, reason: 'nesting level $i should be a map');
+        current = (current as Map)['a'];
+      }
+      expect(current, 1);
+    }, timeout: Timeout(Duration(seconds: 5)));
+
+    test('parses deeply nested mixed flow sequences and mappings efficiently',
+        () {
+      const depth = 1000;
+      // Builds: [{"a": [{"a": ... [{"a": 1}] ...}]}]
+      final yaml = '${'[{"a": ' * depth}1${'}]' * depth}';
+      final result = loadYaml(yaml);
+
+      dynamic current = result;
+      for (var i = 0; i < depth; i++) {
+        expect(current, isList, reason: 'nesting level $i should be a list');
+        expect((current as List).length, 1);
+        current = current[0];
+        expect(current, isMap, reason: 'nesting level $i should be a map');
+        current = (current as Map)['a'];
+      }
+      expect(current, 1);
+    }, timeout: Timeout(Duration(seconds: 5)));
+  });
 }
 
 Iterable<List<String>> _generatePermutations(List<String> keys) sync* {

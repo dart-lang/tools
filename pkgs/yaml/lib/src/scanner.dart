@@ -157,6 +157,27 @@ class Scanner {
   /// parser to tell that the key is intended to be a mapping key.
   final _simpleKeys = <_SimpleKey?>[null];
 
+  /// The number of non-null entries in [_simpleKeys], keyed by
+  /// [_SimpleKey.tokenNumber].
+  ///
+  /// This lets [_fetchMoreTokens] check whether any potential simple key
+  /// starts at a given token in O(1) instead of walking [_simpleKeys], which
+  /// would be quadratic in deeply nested flow contexts.
+  final _simpleKeyTokenNumbers = <int, int>{};
+
+  /// Clears the potential simple key at [index] in [_simpleKeys], if any.
+  void _clearSimpleKeyAt(int index) {
+    final key = _simpleKeys[index];
+    if (key == null) return;
+    _simpleKeys[index] = null;
+    final count = _simpleKeyTokenNumbers[key.tokenNumber]!;
+    if (count == 1) {
+      _simpleKeyTokenNumbers.remove(key.tokenNumber);
+    } else {
+      _simpleKeyTokenNumbers[key.tokenNumber] = count - 1;
+    }
+  }
+
   /// The current indentation level.
   int get _indent => _indentLevels.last.column;
 
@@ -328,8 +349,7 @@ class Scanner {
         // If the current token could be a simple key, we need to scan more
         // tokens until we determine whether it is or not. Otherwise we might
         // not emit the `KEY` token before we emit the value of the key.
-        if (!_simpleKeys
-            .any((key) => key != null && key.tokenNumber == _tokensParsed)) {
+        if (!_simpleKeyTokenNumbers.containsKey(_tokensParsed)) {
           break;
         }
       }
@@ -470,6 +490,11 @@ class Scanner {
   /// Checks the list of potential simple keys and remove the positions that
   /// cannot contain simple keys anymore.
   void _staleSimpleKeys() {
+    // In flow context, simple keys are never staled (line-based staleness
+    // checks only apply to block context).  Skipping the loop avoids an
+    // O(depth) scan on every token in deeply nested flows.
+    if (!_inBlockContext) return;
+
     for (var i = 0; i < _simpleKeys.length; i++) {
       var key = _simpleKeys[i];
       if (key == null) continue;
@@ -499,7 +524,7 @@ class Scanner {
             Token(TokenType.key, key.location.pointSpan() as FileSpan));
       }
 
-      _simpleKeys[i] = null;
+      _clearSimpleKeyAt(i);
     }
   }
 
@@ -519,12 +544,11 @@ class Scanner {
 
     // If the current position may start a simple key, save it.
     _removeSimpleKey();
+    final tokenNumber = _tokensParsed + _tokens.length;
     _simpleKeys[_simpleKeys.length - 1] = _SimpleKey(
-        _tokensParsed + _tokens.length,
-        _scanner.line,
-        _scanner.column,
-        _scanner.location,
+        tokenNumber, _scanner.line, _scanner.column, _scanner.location,
         required: required);
+    _simpleKeyTokenNumbers.update(tokenNumber, (c) => c + 1, ifAbsent: () => 1);
   }
 
   /// Removes a potential simple key at the current flow level.
@@ -535,7 +559,7 @@ class Scanner {
           key.location.pointSpan());
     }
 
-    _simpleKeys[_simpleKeys.length - 1] = null;
+    _clearSimpleKeyAt(_simpleKeys.length - 1);
   }
 
   /// Increases the flow level and resizes the simple key list.
@@ -546,6 +570,7 @@ class Scanner {
   /// Decreases the flow level.
   void _decreaseFlowLevel() {
     if (_inBlockContext) return;
+    _clearSimpleKeyAt(_simpleKeys.length - 1);
     _simpleKeys.removeLast();
   }
 
@@ -712,7 +737,7 @@ class Scanner {
           tokenNumber: simpleKey.tokenNumber);
 
       // Remove the simple key.
-      _simpleKeys[_simpleKeys.length - 1] = null;
+      _clearSimpleKeyAt(_simpleKeys.length - 1);
 
       // A simple key cannot follow another simple key.
       _simpleKeyAllowed = false;
