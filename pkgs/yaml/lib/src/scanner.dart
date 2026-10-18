@@ -733,7 +733,7 @@ class Scanner {
       // If we're here, we've found the ':' indicator with an empty key. This
       // behavior differs from libyaml, which disallows empty implicit keys.
       _simpleKeyAllowed = false;
-      _addCharToken(TokenType.key);
+      _tokens.add(Token(TokenType.key, _scanner.emptySpan));
     }
 
     _addCharToken(TokenType.value);
@@ -803,8 +803,14 @@ class Scanner {
       }
 
       if (_scanner.peekChar() == TAB) {
-        _scanner.error('Tab characters are not allowed as indentation.',
-            length: 1);
+        if (_isAtBlankOrCommentLine) {
+          while (_scanner.peekChar() == SP || _scanner.peekChar() == TAB) {
+            _scanner.readChar();
+          }
+        } else {
+          _scanner.error('Tab characters are not allowed as indentation.',
+              length: 1);
+        }
       }
 
       // Eat a comment until a line break.
@@ -1141,6 +1147,7 @@ class Scanner {
           'Expected comment or line break.', _scanner.emptySpan);
     }
 
+    var end = _scanner.state;
     _skipLine();
 
     // If the block scalar has an explicit indentation indicator, add that to
@@ -1153,7 +1160,8 @@ class Scanner {
 
     // Scan the leading line breaks to determine the indentation level if
     // needed.
-    var pair = _scanBlockScalarBreaks(indent);
+    var pair = _scanBlockScalarBreaks(indent,
+        recordLastBreakStart: chomping == _Chomping.keep);
     indent = pair.indent;
     var trailingBreaks = pair.trailingBreaks;
 
@@ -1162,7 +1170,6 @@ class Scanner {
     var leadingBreak = '';
     var leadingBlank = false;
     var trailingBlank = false;
-    var end = _scanner.state;
     while (_scanner.column == indent && !_scanner.isDone) {
       // Check for a document indicator. libyaml doesn't do this, but the spec
       // mandates it. See example 9.5:
@@ -1209,14 +1216,20 @@ class Scanner {
       }
 
       // Eat the following indentation and spaces.
-      var pair = _scanBlockScalarBreaks(indent);
+      pair = _scanBlockScalarBreaks(indent,
+          recordLastBreakStart: chomping == _Chomping.keep);
       indent = pair.indent;
       trailingBreaks = pair.trailingBreaks;
     }
 
     // Chomp the tail.
     if (chomping != _Chomping.strip) buffer.write(leadingBreak);
-    if (chomping == _Chomping.keep) buffer.write(trailingBreaks);
+    if (chomping == _Chomping.keep) {
+      buffer.write(trailingBreaks);
+      if (pair.lastBreakStart != null) {
+        end = pair.lastBreakStart!;
+      }
+    }
 
     return ScalarToken(_scanner.spanFrom(start, end), buffer.toString(),
         literal ? ScalarStyle.LITERAL : ScalarStyle.FOLDED);
@@ -1224,11 +1237,14 @@ class Scanner {
 
   /// Scans indentation spaces and line breaks for a block scalar.
   ///
-  /// Determines the intendation level if needed. Returns the new indentation
-  /// level and the text of the line breaks.
-  ({int indent, String trailingBreaks}) _scanBlockScalarBreaks(int indent) {
+  /// Determines the indentation level if needed. Returns the new indentation
+  /// level, the text of the line breaks, and (when [recordLastBreakStart] is
+  /// `true`) the state just before the last scanned line break.
+  ({int indent, String trailingBreaks, LineScannerState? lastBreakStart})
+      _scanBlockScalarBreaks(int indent, {bool recordLastBreakStart = false}) {
     var maxIndent = 0;
     var breaks = StringBuffer();
+    LineScannerState? lastBreakStart;
 
     while (true) {
       while ((indent == 0 || _scanner.column < indent) &&
@@ -1243,6 +1259,7 @@ class Scanner {
       // http://yaml.org/spec/1.2/spec.html#id2794311.
 
       if (!_isBreak) break;
+      if (recordLastBreakStart) lastBreakStart = _scanner.state;
       breaks.write(_readLine());
     }
 
@@ -1254,7 +1271,11 @@ class Scanner {
       // be supported by the spec.
     }
 
-    return (indent: indent, trailingBreaks: breaks.toString());
+    return (
+      indent: indent,
+      trailingBreaks: breaks.toString(),
+      lastBreakStart: lastBreakStart,
+    );
   }
 
   // Scans a quoted scalar.
@@ -1492,6 +1513,12 @@ class Scanner {
           if (leadingBreak.isNotEmpty &&
               _scanner.column < indent &&
               _scanner.peekChar() == TAB) {
+            if (_isAtBlankOrCommentLine) {
+              while (_scanner.peekChar() == SP || _scanner.peekChar() == TAB) {
+                _scanner.readChar();
+              }
+              continue;
+            }
             _scanner.error('Expected a space but found a tab.', length: 1);
           }
 
@@ -1569,6 +1596,22 @@ class Scanner {
         char == TAB ||
         char == CR ||
         char == LF;
+  }
+
+  /// Whether the remainder of the current line consists solely of whitespace
+  /// (spaces or tabs) optionally followed by a `#` comment or line break.
+  bool get _isAtBlankOrCommentLine {
+    var offset = 0;
+    while (true) {
+      final char = _scanner.peekChar(offset);
+      if (char == null || char == LF || char == CR || char == HASH) {
+        return true;
+      }
+      if (char != SP && char != TAB) {
+        return false;
+      }
+      offset++;
+    }
   }
 
   /// Returns whether the character at [offset] is a plain character.
