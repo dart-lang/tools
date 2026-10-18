@@ -9,6 +9,7 @@ import 'dart:collection';
 
 import 'package:source_span/source_span.dart';
 
+import 'token.dart';
 import 'yaml_node.dart';
 
 /// A YAML document, complete with metadata.
@@ -32,13 +33,25 @@ class YamlDocument {
   /// Whether the end of the document was implicit (versus explicit via `...`).
   final bool endImplicit;
 
+  /// The non-empty lexical tokens emitted while scanning this document, sorted
+  /// in ascending source order by start offset, or `null` if `retainTokens` was
+  /// `false` when loading the document.
+  ///
+  /// When present, this list is unmodifiable and includes structural
+  /// indicators, anchors, tags, aliases, scalars, and comments. See
+  /// `package:yaml/tokens.dart` for the token class hierarchy.
+  final List<Token>? tokens;
+
   /// Users of the library should not use this constructor.
   ///
   /// @nodoc
   YamlDocument.internal(this.contents, this.span, this.versionDirective,
       List<TagDirective> tagDirectives,
-      {this.startImplicit = false, this.endImplicit = false})
-      : tagDirectives = UnmodifiableListView(tagDirectives);
+      {this.startImplicit = false,
+      this.endImplicit = false,
+      List<Token>? tokens})
+      : tagDirectives = UnmodifiableListView(tagDirectives),
+        tokens = tokens != null ? UnmodifiableListView(tokens) : null;
 
   @override
   String toString() => contents.toString();
