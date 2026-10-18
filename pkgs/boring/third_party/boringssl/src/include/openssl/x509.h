@@ -486,9 +486,8 @@ OPENSSL_EXPORT int X509_set_issuer_name(X509 *x509, const X509_NAME *name);
 OPENSSL_EXPORT int X509_set_subject_name(X509 *x509, const X509_NAME *name);
 
 // X509_set_pubkey sets `x509`'s public key to `pkey`. It returns one on success
-// and zero on error. This function does not take ownership of `pkey` and
-// internally copies and updates reference counts as needed.
-OPENSSL_EXPORT int X509_set_pubkey(X509 *x509, EVP_PKEY *pkey);
+// and zero on error.
+OPENSSL_EXPORT int X509_set_pubkey(X509 *x509, const EVP_PKEY *pkey);
 
 // X509_delete_ext removes the extension in `x` at index `loc` and returns the
 // removed extension, or NULL if `loc` was out of bounds. If non-NULL, the
@@ -681,6 +680,10 @@ DEFINE_STACK_OF(X509_REVOKED)
 
 // X509_CRL_up_ref adds one to the reference count of `crl` and returns one.
 OPENSSL_EXPORT int X509_CRL_up_ref(X509_CRL *crl);
+
+// X509_CRL_dup_ref adds one to the reference count of `crl` and returns the
+// same.
+OPENSSL_EXPORT X509_CRL *X509_CRL_dup_ref(const X509_CRL *crl);
 
 // X509_CRL_dup returns a newly-allocated copy of `crl`, or NULL on error. This
 // function works by serializing the structure, so if `crl` is incomplete, it
@@ -2819,7 +2822,7 @@ OPENSSL_EXPORT void X509_STORE_free(X509_STORE *store);
 // is a race condition whether `x509` is available for issuer lookups.
 // Moreover, the result may differ for each issuer lookup performed by a single
 // `X509_verify_cert` call.
-OPENSSL_EXPORT int X509_STORE_add_cert(X509_STORE *store, X509 *x509);
+OPENSSL_EXPORT int X509_STORE_add_cert(X509_STORE *store, const X509 *x509);
 
 // X509_STORE_add_crl adds `crl` to `store`. It returns one on success and zero
 // on error. This function internally increments `crl`'s reference count, so the
@@ -2836,7 +2839,7 @@ OPENSSL_EXPORT int X509_STORE_add_cert(X509_STORE *store, X509 *x509);
 // To vary the set of CRLs over time, callers should either create a new
 // `X509_STORE` or configure CRLs on a per-verification basis with
 // `X509_STORE_CTX_set0_crls`.
-OPENSSL_EXPORT int X509_STORE_add_crl(X509_STORE *store, X509_CRL *crl);
+OPENSSL_EXPORT int X509_STORE_add_crl(X509_STORE *store, const X509_CRL *crl);
 
 // X509_STORE_get0_param returns `store`'s verification parameters. This object
 // is mutable and may be modified by the caller. For an individual certificate
@@ -3068,11 +3071,6 @@ OPENSSL_EXPORT int X509_STORE_CTX_get_error_depth(const X509_STORE_CTX *ctx);
 // error returned by `X509_STORE_CTX_get_error`.
 OPENSSL_EXPORT X509 *X509_STORE_CTX_get_current_cert(const X509_STORE_CTX *ctx);
 
-// X509_STORE_CTX_get0_current_crl returns the CRL which caused the error
-// returned by `X509_STORE_CTX_get_error`.
-OPENSSL_EXPORT X509_CRL *X509_STORE_CTX_get0_current_crl(
-    const X509_STORE_CTX *ctx);
-
 // X509_STORE_CTX_get0_store returns the `X509_STORE` that `ctx` uses.
 OPENSSL_EXPORT X509_STORE *X509_STORE_CTX_get0_store(const X509_STORE_CTX *ctx);
 
@@ -3274,9 +3272,10 @@ OPENSSL_EXPORT int X509_VERIFY_PARAM_set1(X509_VERIFY_PARAM *to,
 // X509_V_FLAG_USE_DELTAS causes all verifications to fail. Delta CRL support
 // has been removed.
 #define X509_V_FLAG_USE_DELTAS 0x2000
-// X509_V_FLAG_CHECK_SS_SIGNATURE checks the redundant signature on self-signed
-// trust anchors. This check provides no security benefit and only wastes CPU.
-#define X509_V_FLAG_CHECK_SS_SIGNATURE 0x4000
+// X509_V_FLAG_CHECK_SS_SIGNATURE does nothing. Historically it would check the
+// redundant signature on self-signed trust anchors. This check provided no
+// security benefit and only wasted CPU.
+#define X509_V_FLAG_CHECK_SS_SIGNATURE 0x0
 // X509_V_FLAG_TRUSTED_FIRST does nothing. The behavior it controls is always
 // enabled.
 #define X509_V_FLAG_TRUSTED_FIRST 0x0
@@ -3291,9 +3290,9 @@ OPENSSL_EXPORT int X509_VERIFY_PARAM_set1(X509_VERIFY_PARAM *to,
 // X509_V_FLAG_ALLOW_TIMEZONE_OFFSET allows `notBefore` and `notAfter` fields
 // to contain a time zone offset.
 #define X509_V_FLAG_ALLOW_TIMEZONE_OFFSET 0x1000000
-// X509_V_FLAG_USE_MTC_DRAFT_PLANTS_05 enables the verification of Merkle Tree
-// Certificates as specified in draft-ietf-plants-merkle-tree-certs-05.
-#define X509_V_FLAG_USE_MTC_DRAFT_PLANTS_05 0x400000
+// X509_V_FLAG_USE_MTC_DRAFT_PLANTS_07 enables the verification of Merkle Tree
+// Certificates as specified in draft-ietf-plants-merkle-tree-certs-07.
+#define X509_V_FLAG_USE_MTC_DRAFT_PLANTS_07 0x400000
 
 // X509_VERIFY_PARAM_set_flags enables all values in `flags` in `param`'s
 // verification flags and returns one. `flags` should be a combination of
@@ -4518,7 +4517,7 @@ OPENSSL_EXPORT int ASN1_item_verify(const ASN1_ITEM *it,
 OPENSSL_EXPORT int ASN1_item_sign(const ASN1_ITEM *it, X509_ALGOR *algor1,
                                   X509_ALGOR *algor2,
                                   ASN1_BIT_STRING *signature, void *data,
-                                  EVP_PKEY *pkey, const EVP_MD *type);
+                                  const EVP_PKEY *pkey, const EVP_MD *type);
 
 // ASN1_item_sign_ctx behaves like `ASN1_item_sign` except the signature is
 // signed with `ctx`, `ctx`, which must have been initialized with
@@ -5332,11 +5331,11 @@ BORINGSSL_MAKE_DELETER(POLICYQUALINFO, POLICYQUALINFO_free)
 BORINGSSL_MAKE_DELETER(RSA_PSS_PARAMS, RSA_PSS_PARAMS_free)
 BORINGSSL_MAKE_DELETER(USERNOTICE, USERNOTICE_free)
 BORINGSSL_MAKE_DELETER(X509, X509_free)
-BORINGSSL_MAKE_UP_REF(X509, X509_up_ref)
+BORINGSSL_MAKE_UP_REF(X509, X509_dup_ref)
 BORINGSSL_MAKE_DELETER(X509_ALGOR, X509_ALGOR_free)
 BORINGSSL_MAKE_DELETER(X509_ATTRIBUTE, X509_ATTRIBUTE_free)
 BORINGSSL_MAKE_DELETER(X509_CRL, X509_CRL_free)
-BORINGSSL_MAKE_UP_REF(X509_CRL, X509_CRL_up_ref)
+BORINGSSL_MAKE_UP_REF(X509_CRL, X509_CRL_dup_ref)
 BORINGSSL_MAKE_DELETER(X509_EXTENSION, X509_EXTENSION_free)
 BORINGSSL_MAKE_DELETER(X509_INFO, X509_INFO_free)
 BORINGSSL_MAKE_DELETER(X509_LOOKUP, X509_LOOKUP_free)
@@ -5348,7 +5347,7 @@ BORINGSSL_MAKE_DELETER(X509_REQ, X509_REQ_free)
 BORINGSSL_MAKE_DELETER(X509_REVOKED, X509_REVOKED_free)
 BORINGSSL_MAKE_DELETER(X509_SIG, X509_SIG_free)
 BORINGSSL_MAKE_DELETER(X509_STORE, X509_STORE_free)
-BORINGSSL_MAKE_UP_REF(X509_STORE, X509_STORE_up_ref)
+BORINGSSL_MAKE_UP_REF(X509_STORE, X509_STORE_dup_ref)
 BORINGSSL_MAKE_DELETER(X509_STORE_CTX, X509_STORE_CTX_free)
 BORINGSSL_MAKE_DELETER(X509_VERIFY_PARAM, X509_VERIFY_PARAM_free)
 

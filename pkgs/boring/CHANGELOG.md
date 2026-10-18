@@ -6,6 +6,7 @@
 - The package is now licensed under the BSD 3-Clause license used by other
   Dart packages.
 - Update BoringSSL to 3fed4f20.
+- Update BoringSSL to 64188f17.
 
 ## 0.4.1
 
