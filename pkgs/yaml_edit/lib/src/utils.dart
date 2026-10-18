@@ -158,8 +158,9 @@ int getMapInsertionIndex(YamlMap map, Object newKey) {
     }
   }
 
+  final newKeyString = newKey.toString();
   final insertionIndex =
-      keys.indexWhere((key) => key.compareTo(newKey as String) > 0);
+      keys.indexWhere((key) => key.compareTo(newKeyString) > 0);
 
   if (insertionIndex != -1) return insertionIndex;
 
