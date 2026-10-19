@@ -183,6 +183,8 @@ class LogHandler {
   ///
   /// Returns `null` if there are no records to report, including when the
   /// log file doesn't exist yet, is abnormally large, or couldn't be read.
+  /// A log file that is abnormally large or couldn't be read is deleted and
+  /// replaced with an empty one.
   LogFileStats? logFileStats() {
     List<String> lines;
     try {
@@ -195,7 +197,13 @@ class LogHandler {
       // logged); treat that the same as "nothing to report" instead of
       // falling through to a FileSystemException.
       final size = logFile.statSync().size;
-      if (size < 0 || size > kMaxLogFileSize) return null;
+      if (size < 0) return null;
+      if (size > kMaxLogFileSize) {
+        // Discard the file, as `save` does. Otherwise it would stay too large
+        // to read and no stats could be collected from it again.
+        _resetLogFile();
+        return null;
+      }
 
       lines = logFile.readAsLinesSync();
     } on FileSystemException catch (err) {
@@ -208,6 +216,9 @@ class LogHandler {
           description: 'message: ${err.message}',
         ),
       );
+      // A log file that can't be read (e.g. it has invalid UTF-8) would keep
+      // failing, so discard it.
+      _resetLogFile();
 
       return null;
     }
@@ -336,6 +347,16 @@ class LogHandler {
         logFile.deleteSync();
       }
       logFile.createSync();
+    }
+  }
+
+  /// Replaces the log file with an empty one, ignoring any failure.
+  void _resetLogFile() {
+    try {
+      if (logFile.existsSync()) logFile.deleteSync();
+      logFile.createSync();
+    } on Object {
+      // Best effort; `save` resets the file again if it's still unusable.
     }
   }
 

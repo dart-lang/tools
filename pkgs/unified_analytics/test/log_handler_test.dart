@@ -435,8 +435,12 @@ void main() {
   test('logFileStats returns null without reading the file when it exceeds '
       'kMaxLogFileSize', () async {
     var readAsLinesSyncCalled = false;
+    var deleted = false;
+    var created = false;
     final logFile = _FakeFile('log.txt')
       .._statSyncImpl = (() => _FakeFileStat(kMaxLogFileSize + 1))
+      .._deleteSyncImpl = (() => deleted = true)
+      .._createSyncImpl = (() => created = true)
       .._readAsLinesSyncImpl = (() {
         readAsLinesSyncCalled = true;
         return <String>[];
@@ -450,6 +454,13 @@ void main() {
       reason:
           'The file should not be read into memory when it exceeds '
           'kMaxLogFileSize, to avoid OOM on abnormally large log files',
+    );
+    expect(
+      deleted && created,
+      isTrue,
+      reason:
+          'The oversized file should be replaced with an empty one, '
+          'otherwise it would stay too large to ever collect stats from',
     );
   });
 
@@ -482,8 +493,12 @@ void main() {
 
   test('logFileStats returns null and records an analyticsException when '
       'reading the log file throws a FileSystemException', () async {
+    var deleted = false;
+    var created = false;
     final logFile = _FakeFile('log.txt')
       .._statSyncImpl = (() => _FakeFileStat(0))
+      .._deleteSyncImpl = (() => deleted = true)
+      .._createSyncImpl = (() => created = true)
       .._readAsLinesSyncImpl = () {
         throw const FileSystemException(
           "Failed to decode data using encoding 'utf-8'",
@@ -503,6 +518,7 @@ void main() {
         ),
       ),
     );
+    expect(deleted && created, isTrue, reason: 'The unreadable file is reset');
   });
 
   test('truncateStringToLength returns same string when '
@@ -583,6 +599,9 @@ class _FakeFile extends Fake implements File {
 
   @override
   FileStat statSync() => _statSyncImpl!();
+
+  @override
+  bool existsSync() => true;
 
   void Function()? _deleteSyncImpl;
 
