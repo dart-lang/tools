@@ -80,6 +80,11 @@ const _expectedFailures = <String>[
   // yaml_test.dart Examples 2.24, 5.6, 6.18, and 8.21). They previously passed
   // only because Scanner._scanTagUri dropped the scanned tag head and rewrote
   // shorthand '!tag' tokens to the non-specific '!' tag.
+  // Note: LHL4-0 ('!invalid{}tag scalar') and 9HCY-0 (missing '...' before
+  // '%TAG' after '!foo "bar"') were removed from _expectedFailures for the
+  // same reason: their 'fail: true' expectation is now satisfied by Loader
+  // rejecting '!invalid' / '!foo', even though the scanner/parser still does
+  // not reject the underlying syntax error.
   '6WLZ-0',
   '9WXW-0',
   'C4HZ-0',
