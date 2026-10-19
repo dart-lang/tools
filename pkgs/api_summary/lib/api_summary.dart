@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
+import 'package:cli_util/cli_util.dart' show sdkPath;
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 
@@ -13,9 +14,17 @@ import 'src/api_builder.dart';
 import 'src/api_declaration.dart';
 import 'src/api_summary_customizer.dart';
 export 'src/api_declaration.dart';
+export 'src/api_facet.dart';
 export 'src/api_summary_customizer.dart'
     show ApiSummaryContext, ApiSummaryCustomizer;
 export 'src/api_type.dart';
+export 'src/js_facet.dart';
+export 'src/meta_facet.dart';
+export 'src/verify.dart'
+    show
+        ApiSummaryFormat,
+        ApiSummaryVerificationException,
+        expectApiSummaryClean;
 
 /// Creates a canonical [ApiSummary] model of the public API of a package.
 ///
@@ -32,16 +41,18 @@ Future<ApiSummary> apiSummary(
   String? packageName,
   ApiSummaryCustomizer? customizer,
 }) async {
-  final pubspec = _extractPubspecDetails(packagePath);
+  final resolvedPackagePath = p.normalize(p.absolute(packagePath));
+  final pubspec = _extractPubspecDetails(resolvedPackagePath);
   final resolvedPackageName = packageName ?? pubspec.name;
   final provider = PhysicalResourceProvider.INSTANCE;
-  final libPath = provider.pathContext.join(packagePath, 'lib');
+  final libPath = provider.pathContext.join(resolvedPackagePath, 'lib');
   if (!provider.getFolder(libPath).exists) {
     throw ArgumentError('No "lib" directory found for "$packagePath".');
   }
   final collection = AnalysisContextCollection(
     resourceProvider: provider,
     includedPaths: [libPath],
+    sdkPath: sdkPath,
   );
   final context = collection.contextFor(libPath);
   return buildApiPackage(

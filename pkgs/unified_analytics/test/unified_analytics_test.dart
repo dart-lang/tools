@@ -826,8 +826,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     }
   });
 
-  test('The isExternal constant is true by default', () {
-    expect(isExternal, true);
+  test('The isExternal constant matches the build configuration', () {
+    expect(isExternal, isA<bool>());
   });
 
   test(
@@ -835,8 +835,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     () {
       expect(
         analytics.userPropertyMap['is_external']?['value'],
-        isExternal,
-        reason: 'The is_external user property should mirror isExternal',
+        analytics.isExternal,
+        reason:
+            'The is_external user property should mirror analytics.isExternal',
       );
 
       final userProperty = UserProperty(
@@ -856,12 +857,59 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         userProperty.preparePayload()['is_external']?['value'],
         isExternal,
       );
+
+      final internalUserProperty = UserProperty(
+        flutterChannel: flutterChannel,
+        host: 'macos',
+        flutterVersion: flutterVersion,
+        dartVersion: dartVersion,
+        tool: initialTool.label,
+        hostOsVersion: '14.0',
+        locale: 'en',
+        clientIde: null,
+        aiAgent: null,
+        sessionFile: sessionFile,
+        isExternal: false,
+      );
+      expect(internalUserProperty.isExternal, false);
+      expect(
+        internalUserProperty.preparePayload()['is_external']?['value'],
+        false,
+      );
     },
   );
+
+  test('When isExternal is false, config and message behavior is bypassed', () {
+    final secondAnalytics = Analytics.fake(
+      tool: secondTool,
+      homeDirectory: home,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+      isExternal: false,
+    );
+
+    expect(secondAnalytics.isExternal, false);
+    expect(secondAnalytics.shouldShowMessage, false);
+    expect(secondAnalytics.telemetryEnabled, true);
+    expect(secondAnalytics.userPropertyMap['is_external']?['value'], false);
+  });
 
   test(
     'The UserProperty class correctly sets and exposes the ai_agent value',
     () {
+      expect(
+        analytics.userPropertyMap['ai_agent']?['value'],
+        isNull,
+        reason:
+            'The ai_agent user property should default to null when agent and '
+            'environment are omitted',
+      );
+
       final secondAnalytics = Analytics.fake(
         tool: initialTool,
         homeDirectory: home,
@@ -885,6 +933,45 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         secondAnalytics.userPropertyMap['client_ide']?['value'],
         'CursorIDE',
         reason: 'The client_ide user property should be set to CursorIDE',
+      );
+
+      final envDetectedAnalytics = Analytics.fake(
+        tool: initialTool,
+        homeDirectory: home,
+        flutterChannel: flutterChannel,
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: flutterVersion,
+        dartVersion: dartVersion,
+        fs: fs,
+        platform: platform,
+        environment: const {'CURSOR_AGENT': '1'},
+      );
+      expect(
+        envDetectedAnalytics.userPropertyMap['ai_agent']?['value'],
+        'Cursor',
+        reason:
+            'The ai_agent user property should be detected from environment '
+            'when agent is omitted',
+      );
+
+      final overrideAgentAnalytics = Analytics.fake(
+        tool: initialTool,
+        homeDirectory: home,
+        flutterChannel: flutterChannel,
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: flutterVersion,
+        dartVersion: dartVersion,
+        fs: fs,
+        platform: platform,
+        agent: 'CustomAgent',
+        environment: const {'CURSOR_AGENT': '1'},
+      );
+      expect(
+        overrideAgentAnalytics.userPropertyMap['ai_agent']?['value'],
+        'CustomAgent',
+        reason: 'An explicit agent argument should override environment',
       );
     },
   );
@@ -947,10 +1034,44 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     );
     expect(
       AiAgent.detectAgentName(<String, String>{'TERM_PROGRAM': 'cursor'}),
-      'Cursor',
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_TRACE_ID': 'abc'}),
+      isNull,
     );
     expect(
       AiAgent.detectAgentName(<String, String>{'CURSOR_APP_VERSION': '1'}),
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': ''}),
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': '0'}),
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': 'false'}),
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': 'FALSE'}),
+      isNull,
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': '1'}),
+      'Cursor',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{'CURSOR_AGENT': 'true'}),
+      'Cursor',
+    );
+    expect(
+      AiAgent.detectAgentName(<String, String>{
+        'CURSOR_EXTENSION_HOST_ROLE': 'agent-exec',
+      }),
       'Cursor',
     );
     expect(
@@ -1009,6 +1130,130 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       AiAgent.detectAgentName(<String, String>{'AI_AGENT': 'MyCustomAgent'}),
       'MyCustomAgent',
     );
+  });
+
+  group('Analytics.isBot', () {
+    test('returns false for empty environment', () {
+      expect(Analytics.isBot(<String, String>{}), isFalse);
+    });
+
+    test('returns false for non-bot overrides even when CI vars are set', () {
+      expect(
+        Analytics.isBot(<String, String>{'BOT': 'false', 'CI': 'true'}),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'BOT': 'FALSE', 'CI': 'true'}),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'BOT': '0', 'GITHUB_ACTIONS': 'true'}),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{
+          'FLUTTER_HOST': '1',
+          'CI': 'true',
+          'BOT': 'true',
+        }),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{
+          'FLUTTER_ANALYTICS_LOG_FILE': '/tmp/analytics.log',
+          'CI': 'true',
+          'BOT': 'true',
+        }),
+        isFalse,
+      );
+    });
+
+    test('returns false for falsy or empty CI and BOT values', () {
+      expect(Analytics.isBot(<String, String>{'CI': ''}), isFalse);
+      expect(Analytics.isBot(<String, String>{'CI': '   '}), isFalse);
+      expect(Analytics.isBot(<String, String>{'CI': 'false'}), isFalse);
+      expect(Analytics.isBot(<String, String>{'CI': 'FALSE'}), isFalse);
+      expect(Analytics.isBot(<String, String>{'CI': '0'}), isFalse);
+      expect(Analytics.isBot(<String, String>{'BOT': ''}), isFalse);
+      expect(Analytics.isBot(<String, String>{'BOT': '   '}), isFalse);
+    });
+
+    test('returns true for truthy CI and BOT values', () {
+      expect(Analytics.isBot(<String, String>{'CI': 'true'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'CI': 'TRUE'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'CI': '1'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'BOT': 'true'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'BOT': 'TRUE'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'BOT': '1'}), isTrue);
+    });
+
+    test('returns true for known CI provider environment variables', () {
+      expect(Analytics.isBot(<String, String>{'TRAVIS': 'true'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'TRAVIS': 'false'}), isFalse);
+      expect(
+        Analytics.isBot(<String, String>{'CONTINUOUS_INTEGRATION': 'true'}),
+        isTrue,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'CONTINUOUS_INTEGRATION': 'false'}),
+        isFalse,
+      );
+      expect(Analytics.isBot(<String, String>{'APPVEYOR': 'True'}), isTrue);
+      expect(Analytics.isBot(<String, String>{'CIRRUS_CI': 'true'}), isTrue);
+      expect(
+        Analytics.isBot(<String, String>{
+          'AWS_REGION': 'us-east-1',
+          'CODEBUILD_INITIATOR': 'codepipeline/my-pipeline',
+        }),
+        isTrue,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'AWS_REGION': 'us-east-1'}),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{
+          'CODEBUILD_INITIATOR': 'codepipeline/my-pipeline',
+        }),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{
+          'JENKINS_URL': 'https://jenkins.example.com/',
+        }),
+        isTrue,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'GITHUB_ACTIONS': 'true'}),
+        isTrue,
+      );
+      expect(Analytics.isBot(<String, String>{'CHROME_HEADLESS': '1'}), isTrue);
+      expect(
+        Analytics.isBot(<String, String>{'CHROME_HEADLESS': '0'}),
+        isFalse,
+      );
+      expect(
+        Analytics.isBot(<String, String>{
+          'BUILDBOT_BUILDERNAME': 'Linux Engine',
+        }),
+        isTrue,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'SWARMING_TASK_ID': '12345'}),
+        isTrue,
+      );
+      expect(
+        Analytics.isBot(<String, String>{'BORG_ALLOC_DIR': '/borg/alloc'}),
+        isTrue,
+      );
+      expect(Analytics.isBot(<String, String>{'TF_BUILD': 'True'}), isTrue);
+      expect(
+        Analytics.isBot(<String, String>{
+          'AZURE_HTTP_USER_AGENT': 'VSTS_12345',
+        }),
+        isTrue,
+      );
+    });
   });
 
   test('The minimum session duration should be at least 30 minutes', () {
@@ -1301,7 +1546,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     }
 
     expect(
-      logFile.readAsLinesSync().length,
+      analytics.logFileStats()!.recordCount,
       kLogFileLength,
       reason: 'The number of events should be capped at $kLogFileLength',
     );

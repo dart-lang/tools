@@ -99,12 +99,26 @@ class Pubspec {
   /// Specifies how to resolve dependencies with the surrounding Pub Workspace.
   final String? resolution;
 
+  /// The platforms this package explicitly declares support for.
+  ///
+  /// Keys are platform names, such as `android`, `ios`, `linux`, `macos`,
+  /// `web` and `windows`. Values are currently always `null`.
+  ///
+  /// See https://dart.dev/tools/pub/pubspec#platforms.
+  final Map<String, Object?>? platforms;
+
+  /// Gitignore style patterns for files that pub should not search for
+  /// leaked secrets when publishing.
+  ///
+  /// See https://dart.dev/tools/pub/pubspec#false_secrets.
+  final List<String>? falseSecrets;
+
   /// Configuration for hooks, such as native build or link hooks.
   ///
   /// May include `user_defines` and other settings.
   ///
   /// See https://dart.dev/tools/pub/pubspec#hooks.
-  final Map<String, dynamic>? hooks;
+  final Map<String, Object?>? hooks;
 
   /// If [author] and [authors] are both provided, their values are combined
   /// with duplicates eliminated.
@@ -128,6 +142,8 @@ class Pubspec {
     this.description,
     this.workspace,
     this.resolution,
+    this.platforms,
+    this.falseSecrets,
     this.hooks,
     Map<String, Dependency>? dependencies,
     Map<String, Dependency>? devDependencies,
@@ -162,14 +178,26 @@ class Pubspec {
 
   factory Pubspec.fromJson(Map json, {bool lenient = false}) {
     if (lenient) {
-      while (json.isNotEmpty) {
+      var currentJson = json;
+      while (currentJson.isNotEmpty) {
         // Attempting to remove top-level properties that cause parsing errors.
         try {
-          return _$PubspecFromJson(json);
+          return _$PubspecFromJson(currentJson);
         } on CheckedFromJsonException catch (e) {
-          if (e.map == json && json.containsKey(e.key)) {
-            json = Map.from(json)..remove(e.key);
-            continue;
+          if (e.map == currentJson) {
+            if (e.key != 'name' && currentJson.containsKey(e.key)) {
+              currentJson = Map.from(currentJson)..remove(e.key);
+              continue;
+            }
+            if (currentJson != json) {
+              throw CheckedFromJsonException(
+                json,
+                e.key,
+                e.className!,
+                e.message,
+                badKey: e.badKey,
+              );
+            }
           }
           rethrow;
         }

@@ -1,3 +1,13 @@
+## 4.2.0-wip
+
+* `Parameters` now carries `id`. A method can read it.
+* Add `Parameters.isNotification`, to tell a notification apart from a request
+  with a `null` ID.
+* A class that implements `Parameters` now needs `id` and `isNotification`.
+* Add `strictProtocolChecks` parameter to `Client` and `Client.withoutJson`,
+  matching the existing parameter on `Server`. When `false`, the client
+  accepts responses that omit the `jsonrpc` parameter.
+
 ## 4.1.0
 
 * Forward errors within `Peer` when it is acting as a client.

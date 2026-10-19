@@ -4,11 +4,17 @@
 
 import 'dart:io';
 
+import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:test/test.dart';
 
 import 'test_utils.dart';
+
+/// The pub client only accepts `tag_pattern` from Dart 3.9, so the
+/// cross-check against it is skipped on older SDKs.
+final _sdkSupportsTagPattern =
+    Version.parse(Platform.version.split(' ').first) >= Version(3, 9, 0);
 
 void main() {
   group('hosted', _hostedDependency);
@@ -58,6 +64,23 @@ line 5, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hos
 5 │    "bob": "a",
   │    ^^^^^
   ╵''',
+      );
+    });
+
+    test('plain Map in Pubspec.fromJson preserves nested key and map', () {
+      final gitMap = {'url': 42};
+      expect(
+        () => Pubspec.fromJson({
+          'name': 'sample',
+          'dependencies': {
+            'dep': {'git': gitMap},
+          },
+        }),
+        throwsA(
+          isA<CheckedFromJsonException>()
+              .having((e) => e.key, 'key', 'url')
+              .having((e) => e.map, 'map', same(gitMap)),
+        ),
       );
     });
   });
@@ -199,6 +222,18 @@ line 5, column 4: These keys had `null` values, which is not allowed: [hosted]
     );
   });
 
+  test('map w/ invalid hosted String should error on hosted key', () {
+    _expectThrows(
+      {'hosted': '://bad_uri'},
+      r'''
+line 5, column 14: Unsupported value for "hosted". Invalid empty scheme at offset 0.
+  ╷
+5 │    "hosted": "://bad_uri"
+  │              ^^^^^^^^^^^^
+  ╵''',
+    );
+  });
+
   test('map w/ null version is fine', () async {
     final dep = await _dependency<HostedDependency>({'version': null});
     expect(dep.version, VersionConstraint.any);
@@ -247,7 +282,7 @@ void _gitDependency() {
     expect(dep.toString(), 'GitDependency: url@url');
   });
 
-  test('string with version key is ignored', () async {
+  test('string with version key', () async {
     // Regression test for https://github.com/dart-lang/pubspec_parse/issues/13
     final dep = await _dependency<GitDependency>({
       'git': 'url',
@@ -256,7 +291,40 @@ void _gitDependency() {
     expect(dep.url.toString(), 'url');
     expect(dep.path, isNull);
     expect(dep.ref, isNull);
+    expect(dep.tagPattern, isNull);
+    expect(dep.version, VersionConstraint.parse('^1.2.3'));
     expect(dep.toString(), 'GitDependency: url@url');
+  });
+
+  test('string without version key', () async {
+    final dep = await _dependency<GitDependency>({'git': 'url'});
+    expect(dep.version, isNull);
+  });
+
+  test('string with invalid version key fails', () {
+    _expectThrows(
+      {'git': 'url', 'version': 'not a version'},
+      r'''
+line 6, column 15: Unsupported value for "version". Could not parse version "not a version". Unknown text at "not a version".
+  ╷
+6 │    "version": "not a version"
+  │               ^^^^^^^^^^^^^^^
+  ╵''',
+    );
+  });
+
+  test('string with non-String version key fails', () {
+    _expectThrows(
+      {'git': 'url', 'version': 42},
+      r'''
+line 6, column 15: Unsupported value for "version". `42` is not a String.
+  ╷
+6 │      "version": 42
+  │ ┌───────────────^
+7 │ │   }
+  │ └──^
+  ╵''',
+    );
   });
 
   test('string with user@ URL', () async {
@@ -292,7 +360,94 @@ line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hos
     expect(dep.url.toString(), 'url');
     expect(dep.path, 'path');
     expect(dep.ref, 'ref');
+    expect(dep.tagPattern, isNull);
+    expect(dep.version, isNull);
     expect(dep.toString(), 'GitDependency: url@url');
+  });
+
+  test('map with tag_pattern and version', () async {
+    final dep = await _dependency<GitDependency>(
+      {
+        'git': {'url': 'url', 'path': 'path', 'tag_pattern': 'v{{version}}'},
+        'version': '^1.2.3',
+      },
+      sdkConstraint: '^3.9.0',
+      skipTryPub: !_sdkSupportsTagPattern,
+    );
+    expect(dep.url.toString(), 'url');
+    expect(dep.path, 'path');
+    expect(dep.ref, isNull);
+    expect(dep.tagPattern, 'v{{version}}');
+    expect(dep.version, VersionConstraint.parse('^1.2.3'));
+    expect(dep.toString(), 'GitDependency: url@url');
+  });
+
+  test('map with tag_pattern without version', () async {
+    final dep = await _dependency<GitDependency>(
+      {
+        'git': {'url': 'url', 'tag_pattern': 'v{{version}}'},
+      },
+      sdkConstraint: '^3.9.0',
+      skipTryPub: !_sdkSupportsTagPattern,
+    );
+    expect(dep.tagPattern, 'v{{version}}');
+    expect(dep.version, isNull);
+  });
+
+  test('map with tag_pattern and ref fails', () {
+    _expectThrows(
+      {
+        'git': {'url': 'url', 'ref': 'ref', 'tag_pattern': 'v{{version}}'},
+      },
+      r'''
+line 11, column 20: Unsupported value for "tag_pattern". Cannot be used together with "ref".
+   ╷
+11 │     "tag_pattern": "v{{version}}"
+   │                    ^^^^^^^^^^^^^^
+   ╵''',
+      sdkConstraint: '^3.9.0',
+    );
+  });
+
+  test('map with tag_pattern missing {{version}} fails', () {
+    _expectThrows(
+      {
+        'git': {'url': 'url', 'tag_pattern': 'v'},
+      },
+      r'''
+line 10, column 20: Unsupported value for "tag_pattern". Must contain a single "{{version}}".
+   ╷
+10 │     "tag_pattern": "v"
+   │                    ^^^
+   ╵''',
+      sdkConstraint: '^3.9.0',
+    );
+  });
+
+  test('map with tag_pattern containing {{version}} twice fails', () {
+    _expectThrows(
+      {
+        'git': {'url': 'url', 'tag_pattern': '{{version}}-{{version}}'},
+      },
+      r'''
+line 10, column 20: Unsupported value for "tag_pattern". Must contain a single "{{version}}".
+   ╷
+10 │     "tag_pattern": "{{version}}-{{version}}"
+   │                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵''',
+      sdkConstraint: '^3.9.0',
+    );
+  });
+
+  test('map with non-String tag_pattern fails', () {
+    _expectThrowsContaining(
+      {
+        'git': {'url': 'url', 'tag_pattern': 42},
+      },
+      'Unsupported value for "tag_pattern". '
+      "type 'int' is not a subtype of type 'String?' in type cast",
+      sdkConstraint: '^3.9.0',
+    );
   });
 
   test('git - null content', () {
@@ -339,6 +494,18 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
     _expectThrowsContaining({
       'git': {'url': 42},
     }, r"type 'int' is not a subtype of type 'String'");
+  });
+
+  test('git - invalid string url', () {
+    _expectThrows(
+      {'git': '://bad_uri'},
+      r'''
+line 5, column 11: Unsupported value for "git". Invalid empty scheme
+  ╷
+5 │    "git": "://bad_uri"
+  │           ^^^^^^^^^^^^
+  ╵''',
+    );
   });
 }
 
@@ -399,16 +566,26 @@ line 5, column 12: Unsupported value for "path". Must be a String.
   });
 }
 
-void _expectThrows(Object content, String expectedError) {
+void _expectThrows(
+  Object content,
+  String expectedError, {
+  String? sdkConstraint,
+}) {
   expectParseThrows({
     'name': 'sample',
+    if (sdkConstraint != null) 'environment': {'sdk': sdkConstraint},
     'dependencies': {'dep': content},
   }, expectedError);
 }
 
-void _expectThrowsContaining(Object content, String errorText) {
+void _expectThrowsContaining(
+  Object content,
+  String errorText, {
+  String? sdkConstraint,
+}) {
   expectParseThrowsContaining({
     'name': 'sample',
+    if (sdkConstraint != null) 'environment': {'sdk': sdkConstraint},
     'dependencies': {'dep': content},
   }, errorText);
 }
@@ -416,9 +593,11 @@ void _expectThrowsContaining(Object content, String errorText) {
 Future<T> _dependency<T extends Dependency>(
   Object? content, {
   bool skipTryPub = false,
+  String? sdkConstraint,
 }) async {
   final value = await parse({
     ...defaultPubspec,
+    if (sdkConstraint != null) 'environment': {'sdk': sdkConstraint},
     'dependencies': {'dep': content},
   }, skipTryPub: skipTryPub);
   expect(value.name, 'sample');
