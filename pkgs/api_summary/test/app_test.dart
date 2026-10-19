@@ -7,7 +7,6 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:api_summary/api_summary.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -105,8 +104,9 @@ void main() {
 
   test('expectApiSummaryClean throws with diff on mismatch', () async {
     final samplePkgDir = await _createSandboxPackage();
-    File(p.join(samplePkgDir, 'api.txt'))
-        .writeAsStringSync('environment:\n  stale_line\n');
+    File(
+      p.join(samplePkgDir, 'api.txt'),
+    ).writeAsStringSync('environment:\n  stale_line\n');
 
     await expectLater(
       expectApiSummaryClean(packagePath: samplePkgDir),

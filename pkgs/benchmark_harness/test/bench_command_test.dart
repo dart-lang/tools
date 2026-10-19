@@ -23,9 +23,9 @@ void main() {
     expect(output.exitCode, 0);
     // Sadly, the help output likes to include trailing spaces that don't
     // copy paste nicely or consistently into the README.
-    final trimmed = LineSplitter.split(output.stdout as String)
-        .map((e) => e.trimRight())
-        .join('\n');
+    final trimmed = LineSplitter.split(
+      output.stdout as String,
+    ).map((e) => e.trimRight()).join('\n');
 
     final readmeFile = File('README.md').readAsStringSync();
 

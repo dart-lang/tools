@@ -50,8 +50,9 @@ void main() {
       ]).create();
     }
 
-    var pubspecContent = File(p.join(_testPkgDirPath, 'pubspec.yaml'))
-        .readAsStringSync();
+    var pubspecContent = File(
+      p.join(_testPkgDirPath, 'pubspec.yaml'),
+    ).readAsStringSync();
 
     expect(
       pubspecContent.replaceAll('\r\n', '\n'),

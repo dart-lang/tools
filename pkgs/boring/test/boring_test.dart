@@ -115,7 +115,10 @@ void main() {
       expect(EC_PKEY_NO_PUBKEY, isNonZero);
       expect(HKDF_R_OUTPUT_TOO_LARGE, isNonZero);
       expect(ERR_LIB_HKDF, isNonZero);
-      expect(point_conversion_form_t.POINT_CONVERSION_UNCOMPRESSED, equals(4));
+      expect(
+        point_conversion_form_t.POINT_CONVERSION_UNCOMPRESSED,
+        equals(4),
+      );
       final packed = (ERR_LIB_HKDF << 24) | HKDF_R_OUTPUT_TOO_LARGE;
       expect(ERR_GET_LIB(packed), equals(ERR_LIB_HKDF));
       expect(ERR_GET_REASON(packed), equals(HKDF_R_OUTPUT_TOO_LARGE));

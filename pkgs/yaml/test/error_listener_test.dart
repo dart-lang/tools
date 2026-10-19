@@ -42,10 +42,14 @@ linter:
       }),
     );
     expect(collector.errors, hasLength(1));
-    expect(collector.errors.first.message, contains("Expected ':'"));
+    expect(
+      collector.errors.first.message,
+      contains("Expected ':'"),
+    );
   });
 
-  test('custom ErrorListener implementation receives errors during recovery '
+  test(
+      'custom ErrorListener implementation receives errors during recovery '
       'parsing', () {
     final listener = _CustomErrorListener();
     final result = loadYaml(
@@ -63,6 +67,9 @@ linter:
       }),
     );
     expect(listener.messages, hasLength(1));
-    expect(listener.messages.first, contains("Expected ':'"));
+    expect(
+      listener.messages.first,
+      contains("Expected ':'"),
+    );
   });
 }

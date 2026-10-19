@@ -30,10 +30,8 @@ mixin _LineScanner on StringScanner {
 
   set state(LineScannerState state) {
     if (!identical(state._scanner, this)) {
-      throw ArgumentError(
-        'The given LineScannerState was not returned by '
-        'this LineScanner.',
-      );
+      throw ArgumentError('The given LineScannerState was not returned by '
+          'this LineScanner.');
     }
 
     super.position = state.position;
@@ -64,9 +62,9 @@ mixin _LineScanner on StringScanner {
         } else if (char == $cr) {
           final nextIsLf =
               (i + 1 < newPosition && string.codeUnitAt(i + 1) == $lf) ||
-              (i + 1 == newPosition &&
-                  newPosition < string.length &&
-                  string.codeUnitAt(newPosition) == $lf);
+                  (i + 1 == newPosition &&
+                      newPosition < string.length &&
+                      string.codeUnitAt(newPosition) == $lf);
           if (!nextIsLf) {
             newlines++;
             lastNewlineEnd = i + 1;

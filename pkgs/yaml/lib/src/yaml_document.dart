@@ -35,14 +35,10 @@ class YamlDocument {
   /// Users of the library should not use this constructor.
   ///
   /// @nodoc
-  YamlDocument.internal(
-    this.contents,
-    this.span,
-    this.versionDirective,
-    List<TagDirective> tagDirectives, {
-    this.startImplicit = false,
-    this.endImplicit = false,
-  }) : tagDirectives = UnmodifiableListView(tagDirectives);
+  YamlDocument.internal(this.contents, this.span, this.versionDirective,
+      List<TagDirective> tagDirectives,
+      {this.startImplicit = false, this.endImplicit = false})
+      : tagDirectives = UnmodifiableListView(tagDirectives);
 
   @override
   String toString() => contents.toString();

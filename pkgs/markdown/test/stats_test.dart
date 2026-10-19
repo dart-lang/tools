@@ -76,9 +76,9 @@ ignored
   for (final prefix in ['common_mark', 'gfm']) {
     test('$prefix unit files and stats are in sync with spec tests', () {
       final sections = loadCommonMarkSections(prefix);
-      final statsJson = jsonDecode(
-        getStatsFile(prefix).readAsStringSync(),
-      ) as Map<String, dynamic>;
+      final statsJson =
+          jsonDecode(getStatsFile(prefix).readAsStringSync())
+              as Map<String, dynamic>;
 
       final specExamplesByHeader = <String, CommonMarkTestCase>{};
       final statsLevelByHeader = <String, String?>{};

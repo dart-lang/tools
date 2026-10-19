@@ -82,10 +82,8 @@ abstract class VersionConstraint {
 
       var version = matchVersion();
       if (version == null) {
-        throw FormatException(
-          'Expected version number after "$op" in '
-          '"$originalText", got "$text".',
-        );
+        throw FormatException('Expected version number after "$op" in '
+            '"$originalText", got "$text".');
       }
 
       return switch (op) {
@@ -106,17 +104,13 @@ abstract class VersionConstraint {
 
       var version = matchVersion();
       if (version == null) {
-        throw FormatException(
-          'Expected version number after '
-          '"$compatibleWithChar" in "$originalText", got "$text".',
-        );
+        throw FormatException('Expected version number after '
+            '"$compatibleWithChar" in "$originalText", got "$text".');
       }
 
       if (text.isNotEmpty) {
-        throw FormatException(
-          'Cannot include other constraints with '
-          '"$compatibleWithChar" constraint in "$originalText".',
-        );
+        throw FormatException('Cannot include other constraints with '
+            '"$compatibleWithChar" constraint in "$originalText".');
       }
 
       return VersionConstraint.compatibleWith(version);
@@ -137,10 +131,8 @@ abstract class VersionConstraint {
 
       var newRange = matchVersion() ?? matchComparison();
       if (newRange == null) {
-        throw FormatException(
-          'Could not parse version "$originalText". '
-          'Unknown text at "$text".',
-        );
+        throw FormatException('Could not parse version "$originalText". '
+            'Unknown text at "$text".');
       }
 
       if (newRange.min != null) {
@@ -175,11 +167,7 @@ abstract class VersionConstraint {
     }
 
     return VersionRange(
-      min: min,
-      includeMin: includeMin,
-      max: max,
-      includeMax: includeMax,
-    );
+        min: min, includeMin: includeMin, max: max, includeMax: includeMax);
   }
 
   /// Creates a version constraint which allows all versions that are
@@ -198,8 +186,7 @@ abstract class VersionConstraint {
   /// constraints is empty, then it returns a VersionConstraint that allows
   /// all versions.
   factory VersionConstraint.intersection(
-    Iterable<VersionConstraint> constraints,
-  ) {
+      Iterable<VersionConstraint> constraints) {
     VersionConstraint constraint = VersionRange();
     for (var other in constraints) {
       constraint = constraint.intersect(other);

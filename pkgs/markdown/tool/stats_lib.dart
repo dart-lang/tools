@@ -23,8 +23,9 @@ import '../test/util.dart';
 // Locate the "tool" directory. Use `Isolate.resolvePackageUriSync` so that this
 // works with the test package, which loads this suite into an isolate.
 final String toolDir = p.fromUri(
-  Isolate.resolvePackageUriSync(Uri.parse('package:markdown/'))!
-      .resolve('../tool'),
+  Isolate.resolvePackageUriSync(
+    Uri.parse('package:markdown/'),
+  )!.resolve('../tool'),
 );
 
 File getStatsFile(String prefix) =>

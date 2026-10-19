@@ -457,50 +457,50 @@ bool _verify(
 });
 
 /// AES-CBC decryption with PKCS #7 padding.
-Uint8List? _aesCbcDecrypt(List<int> key, List<int> iv, List<int> ciphertext) =>
-    ssl.BoringArena.using((arena) {
-      final cipher = switch (key.length) {
-        16 => ssl.EVP_aes_128_cbc(),
-        24 => ssl.EVP_aes_192_cbc(),
-        32 => ssl.EVP_aes_256_cbc(),
-        _ => null,
-      };
-      // EVP_DecryptInit_ex reads a full IV, however long the buffer is.
-      if (cipher == null || iv.length != ssl.EVP_CIPHER_iv_length(cipher)) {
-        return null;
-      }
-      final ctx = arena.register(
-        ssl.EVP_CIPHER_CTX_new(),
-        ssl.EVP_CIPHER_CTX_free,
-      );
-      if (ssl.EVP_DecryptInit_ex(
-            ctx,
-            cipher,
-            ffi.nullptr,
-            arena.copyBytes(key),
-            arena.copyBytes(iv),
-          ) !=
-          1) {
-        return null;
-      }
-      final out = arena<ffi.Uint8>(
-        ciphertext.length + ssl.EVP_CIPHER_block_size(cipher),
-      );
-      final outLen = arena<ffi.Int>();
-      if (ssl.EVP_DecryptUpdate(
-            ctx,
-            out,
-            outLen,
-            arena.copyBytes(ciphertext),
-            ciphertext.length,
-          ) !=
-          1) {
-        return null;
-      }
-      final updated = outLen.value;
-      if (ssl.EVP_DecryptFinal_ex(ctx, out + updated, outLen) != 1) return null;
-      return Uint8List.fromList(out.asTypedList(updated + outLen.value));
-    });
+Uint8List? _aesCbcDecrypt(
+  List<int> key,
+  List<int> iv,
+  List<int> ciphertext,
+) => ssl.BoringArena.using((arena) {
+  final cipher = switch (key.length) {
+    16 => ssl.EVP_aes_128_cbc(),
+    24 => ssl.EVP_aes_192_cbc(),
+    32 => ssl.EVP_aes_256_cbc(),
+    _ => null,
+  };
+  // EVP_DecryptInit_ex reads a full IV, however long the buffer is.
+  if (cipher == null || iv.length != ssl.EVP_CIPHER_iv_length(cipher)) {
+    return null;
+  }
+  final ctx = arena.register(ssl.EVP_CIPHER_CTX_new(), ssl.EVP_CIPHER_CTX_free);
+  if (ssl.EVP_DecryptInit_ex(
+        ctx,
+        cipher,
+        ffi.nullptr,
+        arena.copyBytes(key),
+        arena.copyBytes(iv),
+      ) !=
+      1) {
+    return null;
+  }
+  final out = arena<ffi.Uint8>(
+    ciphertext.length + ssl.EVP_CIPHER_block_size(cipher),
+  );
+  final outLen = arena<ffi.Int>();
+  if (ssl.EVP_DecryptUpdate(
+        ctx,
+        out,
+        outLen,
+        arena.copyBytes(ciphertext),
+        ciphertext.length,
+      ) !=
+      1) {
+    return null;
+  }
+  final updated = outLen.value;
+  if (ssl.EVP_DecryptFinal_ex(ctx, out + updated, outLen) != 1) return null;
+  return Uint8List.fromList(out.asTypedList(updated + outLen.value));
+});
 
 /// AES key unwrap (RFC 3394).
 Uint8List? _aesKeyUnwrap(List<int> key, List<int> wrapped) =>

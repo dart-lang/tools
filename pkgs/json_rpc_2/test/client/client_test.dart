@@ -17,33 +17,29 @@ void main() {
     test('sends a message and returns the response', () {
       controller.expectRequest((request) {
         expect(
-          request,
-          allOf([
-            containsPair('jsonrpc', '2.0'),
-            containsPair('method', 'foo'),
-            containsPair('params', {'param': 'value'}),
-          ]),
-        );
+            request,
+            allOf([
+              containsPair('jsonrpc', '2.0'),
+              containsPair('method', 'foo'),
+              containsPair('params', {'param': 'value'})
+            ]));
 
         return {'jsonrpc': '2.0', 'result': 'bar', 'id': request['id']};
       });
 
-      expect(
-        controller.client.sendRequest('foo', {'param': 'value'}),
-        completion(equals('bar')),
-      );
+      expect(controller.client.sendRequest('foo', {'param': 'value'}),
+          completion(equals('bar')));
     });
 
     test('sends a notification and expects no response', () {
       controller.expectRequest((request) {
         expect(
-          request,
-          equals({
-            'jsonrpc': '2.0',
-            'method': 'foo',
-            'params': {'param': 'value'},
-          }),
-        );
+            request,
+            equals({
+              'jsonrpc': '2.0',
+              'method': 'foo',
+              'params': {'param': 'value'}
+            }));
       });
 
       controller.client.sendNotification('foo', {'param': 'value'});
@@ -52,13 +48,12 @@ void main() {
     test('sends a notification with positional parameters', () {
       controller.expectRequest((request) {
         expect(
-          request,
-          equals({
-            'jsonrpc': '2.0',
-            'method': 'foo',
-            'params': ['value1', 'value2'],
-          }),
-        );
+            request,
+            equals({
+              'jsonrpc': '2.0',
+              'method': 'foo',
+              'params': ['value1', 'value2']
+            }));
       });
 
       controller.client.sendNotification('foo', ['value1', 'value2']);
@@ -78,37 +73,31 @@ void main() {
         expect(request, hasLength(3));
         expect(request[0], equals({'jsonrpc': '2.0', 'method': 'foo'}));
         expect(
-          request[1],
-          allOf([
-            containsPair('jsonrpc', '2.0'),
-            containsPair('method', 'bar'),
-            containsPair('params', {'param': 'value'}),
-          ]),
-        );
+            request[1],
+            allOf([
+              containsPair('jsonrpc', '2.0'),
+              containsPair('method', 'bar'),
+              containsPair('params', {'param': 'value'})
+            ]));
         expect(
-          request[2],
-          allOf([
-            containsPair('jsonrpc', '2.0'),
-            containsPair('method', 'baz'),
-          ]),
-        );
+            request[2],
+            allOf([
+              containsPair('jsonrpc', '2.0'),
+              containsPair('method', 'baz')
+            ]));
 
         return [
           {'jsonrpc': '2.0', 'result': 'baz response', 'id': request[2]['id']},
-          {'jsonrpc': '2.0', 'result': 'bar response', 'id': request[1]['id']},
+          {'jsonrpc': '2.0', 'result': 'bar response', 'id': request[1]['id']}
         ];
       });
 
       controller.client.withBatch(() {
         controller.client.sendNotification('foo');
-        expect(
-          controller.client.sendRequest('bar', {'param': 'value'}),
-          completion(equals('bar response')),
-        );
-        expect(
-          controller.client.sendRequest('baz'),
-          completion(equals('baz response')),
-        );
+        expect(controller.client.sendRequest('bar', {'param': 'value'}),
+            completion(equals('bar response')));
+        expect(controller.client.sendRequest('baz'),
+            completion(equals('baz response')));
       });
     });
 
@@ -118,77 +107,64 @@ void main() {
         expect(request, hasLength(3));
         expect(request[0], equals({'jsonrpc': '2.0', 'method': 'foo'}));
         expect(
-          request[1],
-          allOf([
-            containsPair('jsonrpc', '2.0'),
-            containsPair('method', 'bar'),
-            containsPair('params', {'param': 'value'}),
-          ]),
-        );
+            request[1],
+            allOf([
+              containsPair('jsonrpc', '2.0'),
+              containsPair('method', 'bar'),
+              containsPair('params', {'param': 'value'})
+            ]));
         expect(
-          request[2],
-          allOf([
-            containsPair('jsonrpc', '2.0'),
-            containsPair('method', 'baz'),
-          ]),
-        );
+            request[2],
+            allOf([
+              containsPair('jsonrpc', '2.0'),
+              containsPair('method', 'baz')
+            ]));
 
         return [
           {'jsonrpc': '2.0', 'result': 'baz response', 'id': request[2]['id']},
-          {'jsonrpc': '2.0', 'result': 'bar response', 'id': request[1]['id']},
+          {'jsonrpc': '2.0', 'result': 'bar response', 'id': request[1]['id']}
         ];
       });
 
       controller.client.withBatch(() {
-        return Future<void>.value()
-            .then<void>((_) {
-              controller.client.sendNotification('foo');
-            })
-            .then<void>((_) {
-              expect(
-                controller.client.sendRequest('bar', {'param': 'value'}),
-                completion(equals('bar response')),
-              );
-            })
-            .then<void>((_) {
-              expect(
-                controller.client.sendRequest('baz'),
-                completion(equals('baz response')),
-              );
-            });
+        return Future<void>.value().then<void>((_) {
+          controller.client.sendNotification('foo');
+        }).then<void>((_) {
+          expect(controller.client.sendRequest('bar', {'param': 'value'}),
+              completion(equals('bar response')));
+        }).then<void>((_) {
+          expect(controller.client.sendRequest('baz'),
+              completion(equals('baz response')));
+        });
       });
     });
 
     test('reports an error from the server', () {
       controller.expectRequest((request) {
         expect(
-          request,
-          allOf([
-            containsPair('jsonrpc', '2.0'),
-            containsPair('method', 'foo'),
-          ]),
-        );
+            request,
+            allOf([
+              containsPair('jsonrpc', '2.0'),
+              containsPair('method', 'foo')
+            ]));
 
         return {
           'jsonrpc': '2.0',
           'error': {
             'code': error_code.SERVER_ERROR,
             'message': 'you are bad at requests',
-            'data': 'some junk',
+            'data': 'some junk'
           },
-          'id': request['id'],
+          'id': request['id']
         };
       });
 
       expect(
-        controller.client.sendRequest('foo', {'param': 'value'}),
-        throwsA(
-          isA<json_rpc.RpcException>()
+          controller.client.sendRequest('foo', {'param': 'value'}),
+          throwsA(isA<json_rpc.RpcException>()
               .having((e) => e.code, 'code', error_code.SERVER_ERROR)
               .having((e) => e.message, 'message', 'you are bad at requests')
-              .having((e) => e.data, 'data', 'some junk'),
-        ),
-      );
+              .having((e) => e.data, 'data', 'some junk')));
     });
 
     test('requests throw StateErrors if the client is closed', () {
@@ -205,29 +181,25 @@ void main() {
         controller.sendResponse({
           'jsonrpc': 'wrong version',
           'result': 'wrong',
-          'id': request['id'],
+          'id': request['id']
         });
         controller.sendResponse({'jsonrpc': '2.0', 'result': 'wrong'});
         controller.sendResponse({'jsonrpc': '2.0', 'id': request['id']});
-        controller.sendResponse({
-          'jsonrpc': '2.0',
-          'error': 'not a map',
-          'id': request['id'],
-        });
+        controller.sendResponse(
+            {'jsonrpc': '2.0', 'error': 'not a map', 'id': request['id']});
         controller.sendResponse({
           'jsonrpc': '2.0',
           'error': {'code': 'not an int', 'message': 'dang yo'},
-          'id': request['id'],
+          'id': request['id']
         });
         controller.sendResponse({
           'jsonrpc': '2.0',
           'error': {'code': 123, 'message': 0xDEADBEEF},
-          'id': request['id'],
+          'id': request['id']
         });
 
         return pumpEventQueue().then(
-          (_) => {'jsonrpc': '2.0', 'result': 'right', 'id': request['id']},
-        );
+            (_) => {'jsonrpc': '2.0', 'result': 'right', 'id': request['id']});
       });
 
       expect(controller.client.sendRequest('foo'), completion(equals('right')));
@@ -250,12 +222,11 @@ void main() {
         controller.sendResponse({
           'jsonrpc': 'wrong version',
           'result': 'wrong',
-          'id': request['id'],
+          'id': request['id']
         });
 
         return pumpEventQueue().then(
-          (_) => {'jsonrpc': '2.0', 'result': 'right', 'id': request['id']},
-        );
+            (_) => {'jsonrpc': '2.0', 'result': 'right', 'id': request['id']});
       });
 
       expect(controller.client.sendRequest('foo'), completion(equals('right')));
@@ -267,22 +238,19 @@ void main() {
     controller = ClientController(idGenerator: () => 'ID-${id++}');
     controller.expectRequest((request) {
       expect(
-        request,
-        allOf([
-          containsPair('jsonrpc', '2.0'),
-          containsPair('method', 'foo'),
-          containsPair('params', {'param': 'value'}),
-          containsPair('id', 'ID-0'),
-        ]),
-      );
+          request,
+          allOf([
+            containsPair('jsonrpc', '2.0'),
+            containsPair('method', 'foo'),
+            containsPair('params', {'param': 'value'}),
+            containsPair('id', 'ID-0'),
+          ]));
 
       return {'jsonrpc': '2.0', 'result': 'bar', 'id': request['id']};
     });
 
-    expect(
-      controller.client.sendRequest('foo', {'param': 'value'}),
-      completion(equals('bar')),
-    );
+    expect(controller.client.sendRequest('foo', {'param': 'value'}),
+        completion(equals('bar')));
   });
 
   test('String ids are not parsed as ints', () {
@@ -290,21 +258,18 @@ void main() {
     controller = ClientController(idGenerator: () => '${id++}');
     controller.expectRequest((request) {
       expect(
-        request,
-        allOf([
-          containsPair('jsonrpc', '2.0'),
-          containsPair('method', 'foo'),
-          containsPair('params', {'param': 'value'}),
-          containsPair('id', '0'),
-        ]),
-      );
+          request,
+          allOf([
+            containsPair('jsonrpc', '2.0'),
+            containsPair('method', 'foo'),
+            containsPair('params', {'param': 'value'}),
+            containsPair('id', '0'),
+          ]));
 
       return {'jsonrpc': '2.0', 'result': 'bar', 'id': request['id']};
     });
 
-    expect(
-      controller.client.sendRequest('foo', {'param': 'value'}),
-      completion(equals('bar')),
-    );
+    expect(controller.client.sendRequest('foo', {'param': 'value'}),
+        completion(equals('bar')));
   });
 }

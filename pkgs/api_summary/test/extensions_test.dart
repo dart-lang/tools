@@ -61,8 +61,9 @@ extension type ExtensionType(int i) {}
   }
 
   Future<void> test_formalParameterElement_isDeprecated() async {
-    final f = (await analyzeLibrary('f({int? i, @deprecated int? j}) {}'))
-        .getTopLevelFunction('f')!;
+    final f = (await analyzeLibrary(
+      'f({int? i, @deprecated int? j}) {}',
+    )).getTopLevelFunction('f')!;
     expect(f.formalParameters[0].isDeprecated, isFalse);
     expect(f.formalParameters[1].isDeprecated, isTrue);
   }

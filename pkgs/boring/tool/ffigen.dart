@@ -78,7 +78,9 @@ Future<void> main() async {
 ''',
     ),
     input: Input(
-      entryPoints: [packageRoot.resolve('src/wrapper.h')],
+      entryPoints: [
+        packageRoot.resolve('src/wrapper.h'),
+      ],
       compilerOptions: const [
         '-Ithird_party/boringssl/src/include',
         '-DBORINGSSL_PREFIX=bssl_dart',
@@ -168,9 +170,9 @@ Future<void> _recordAddressUses(File bindings) async {
     '  @meta.RecordUse()\n  ',
   );
   final getterCount = RegExp(r'\bget \w+ =>').allMatches(getters).length;
-  final annotationCount = RegExp('@meta.RecordUse')
-      .allMatches(annotated)
-      .length;
+  final annotationCount = RegExp(
+    '@meta.RecordUse',
+  ).allMatches(annotated).length;
   if (getterCount == 0 || getterCount != annotationCount) {
     throw StateError(
       'Annotated $annotationCount of $getterCount address getters.',

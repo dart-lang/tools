@@ -22,69 +22,55 @@ void main() {
     });
 
     expect(
-      controller.handleRequest({
-        'jsonrpc': '2.0',
-        'method': 'foo',
-        'params': {'param': 'value'},
-        'id': 1234,
-      }),
-      completion(
-        equals({
+        controller.handleRequest({
+          'jsonrpc': '2.0',
+          'method': 'foo',
+          'params': {'param': 'value'},
+          'id': 1234
+        }),
+        completion(equals({
           'jsonrpc': '2.0',
           'result': {
-            'params': {'param': 'value'},
+            'params': {'param': 'value'}
           },
-          'id': 1234,
-        }),
-      ),
-    );
+          'id': 1234
+        })));
   });
 
   test('passes the ID of the request being answered', () {
     controller.server.registerMethod(
-      'foo',
-      (json_rpc.Parameters params) => {
-        'id': params.id,
-        'nested': params['param'].id,
-      },
-    );
+        'foo',
+        (json_rpc.Parameters params) =>
+            {'id': params.id, 'nested': params['param'].id});
 
     expect(
-      controller.handleRequest({
-        'jsonrpc': '2.0',
-        'method': 'foo',
-        'params': {'param': 'value'},
-        'id': 1234,
-      }),
-      completion(
-        equals({
+        controller.handleRequest({
+          'jsonrpc': '2.0',
+          'method': 'foo',
+          'params': {'param': 'value'},
+          'id': 1234
+        }),
+        completion(equals({
           'jsonrpc': '2.0',
           'result': {'id': 1234, 'nested': 1234},
-          'id': 1234,
-        }),
-      ),
-    );
+          'id': 1234
+        })));
   });
 
   test('a null ID is not a notification', () {
     controller.server.registerMethod(
-      'foo',
-      (json_rpc.Parameters params) => {
-        'id': params.id,
-        'notification': params.isNotification,
-      },
-    );
+        'foo',
+        (json_rpc.Parameters params) =>
+            {'id': params.id, 'notification': params.isNotification});
 
     expect(
-      controller.handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': null}),
-      completion(
-        equals({
+        controller
+            .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': null}),
+        completion(equals({
           'jsonrpc': '2.0',
           'result': {'id': null, 'notification': false},
-          'id': null,
-        }),
-      ),
-    );
+          'id': null
+        })));
   });
 
   test('a request with no ID is a notification', () async {
@@ -95,13 +81,11 @@ void main() {
       handled.complete();
     });
 
-    unawaited(
-      controller.handleRequest({
-        'jsonrpc': '2.0',
-        'method': 'foo',
-        'params': {'param': 'value'},
-      }),
-    );
+    unawaited(controller.handleRequest({
+      'jsonrpc': '2.0',
+      'method': 'foo',
+      'params': {'param': 'value'}
+    }));
 
     await handled.future;
     expect(received!.id, isNull);
@@ -113,71 +97,64 @@ void main() {
     controller.server.registerMethod('foo', () => 'foo');
 
     expect(
-      controller.handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1234}),
-      completion(equals({'jsonrpc': '2.0', 'result': 'foo', 'id': 1234})),
-    );
+        controller
+            .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1234}),
+        completion(equals({'jsonrpc': '2.0', 'result': 'foo', 'id': 1234})));
   });
 
   test('Allows a `null` result', () {
     controller.server.registerMethod('foo', () => null);
 
     expect(
-      controller.handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1234}),
-      completion(equals({'jsonrpc': '2.0', 'result': null, 'id': 1234})),
-    );
+        controller
+            .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1234}),
+        completion(equals({'jsonrpc': '2.0', 'result': null, 'id': 1234})));
   });
 
   test('a method that takes no parameters rejects parameters', () {
     controller.server.registerMethod('foo', () => 'foo');
 
     expectErrorResponse(
-      controller,
-      {
-        'jsonrpc': '2.0',
-        'method': 'foo',
-        'params': <String, dynamic>{},
-        'id': 1234,
-      },
-      error_code.INVALID_PARAMS,
-      'No parameters are allowed for method "foo".',
-    );
+        controller,
+        {
+          'jsonrpc': '2.0',
+          'method': 'foo',
+          'params': <String, dynamic>{},
+          'id': 1234
+        },
+        error_code.INVALID_PARAMS,
+        'No parameters are allowed for method "foo".');
   });
 
   test('an unexpected error in a method is captured', () {
-    controller.server.registerMethod(
-      'foo',
-      () => throw const FormatException('bad format'),
-    );
+    controller.server
+        .registerMethod('foo', () => throw const FormatException('bad format'));
 
     expect(
-      controller.handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1234}),
-      completion({
-        'jsonrpc': '2.0',
-        'id': 1234,
-        'error': {
-          'code': error_code.SERVER_ERROR,
-          'message': 'bad format',
-          'data': {
-            'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
-            'full': 'FormatException: bad format',
-            'stack': isA<String>(),
-          },
-        },
-      }),
-    );
+        controller
+            .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1234}),
+        completion({
+          'jsonrpc': '2.0',
+          'id': 1234,
+          'error': {
+            'code': error_code.SERVER_ERROR,
+            'message': 'bad format',
+            'data': {
+              'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
+              'full': 'FormatException: bad format',
+              'stack': isA<String>()
+            }
+          }
+        }));
   });
 
   test('doesn\'t return a result for a notification', () {
     controller.server.registerMethod('foo', (args) => 'result');
 
     expect(
-      controller.handleRequest({
-        'jsonrpc': '2.0',
-        'method': 'foo',
-        'params': <String, dynamic>{},
-      }),
-      doesNotComplete,
-    );
+        controller.handleRequest(
+            {'jsonrpc': '2.0', 'method': 'foo', 'params': <String, dynamic>{}}),
+        doesNotComplete);
   });
 
   test('includes the error data in the response', () {
@@ -186,17 +163,16 @@ void main() {
     });
 
     expectErrorResponse(
-      controller,
-      {
-        'jsonrpc': '2.0',
-        'method': 'foo',
-        'params': <String, dynamic>{},
-        'id': 1234,
-      },
-      5,
-      'Error message.',
-      data: 'data value',
-    );
+        controller,
+        {
+          'jsonrpc': '2.0',
+          'method': 'foo',
+          'params': <String, dynamic>{},
+          'id': 1234
+        },
+        5,
+        'Error message.',
+        data: 'data value');
   });
 
   test('a JSON parse error is rejected', () {
@@ -208,10 +184,10 @@ void main() {
           'message': startsWith('Invalid JSON: '),
           // TODO(nweiz): Always expect the source when sdk#25655 is fixed.
           'data': {
-            'request': anyOf([isNull, 'invalid json {']),
-          },
+            'request': anyOf([isNull, 'invalid json {'])
+          }
         },
-        'id': null,
+        'id': null
       });
     });
   });
@@ -224,77 +200,61 @@ void main() {
         ..registerFallback((params) => {'fallback': params.value});
 
       expect(
-        controller.handleRequest({
-          'jsonrpc': '2.0',
-          'method': 'baz',
-          'params': {'param': 'value'},
-          'id': 1234,
-        }),
-        completion(
-          equals({
+          controller.handleRequest({
+            'jsonrpc': '2.0',
+            'method': 'baz',
+            'params': {'param': 'value'},
+            'id': 1234
+          }),
+          completion(equals({
             'jsonrpc': '2.0',
             'result': {
-              'fallback': {'param': 'value'},
+              'fallback': {'param': 'value'}
             },
-            'id': 1234,
-          }),
-        ),
-      );
+            'id': 1234
+          })));
     });
 
     test('calls the first matching fallback', () {
       controller.server
-        ..registerFallback(
-          (params) => throw json_rpc.RpcException.methodNotFound(params.method),
-        )
+        ..registerFallback((params) =>
+            throw json_rpc.RpcException.methodNotFound(params.method))
         ..registerFallback((params) => 'fallback 2')
         ..registerFallback((params) => 'fallback 3');
 
       expect(
-        controller.handleRequest({
-          'jsonrpc': '2.0',
-          'method': 'fallback 2',
-          'id': 1234,
-        }),
-        completion(
-          equals({'jsonrpc': '2.0', 'result': 'fallback 2', 'id': 1234}),
-        ),
-      );
+          controller.handleRequest(
+              {'jsonrpc': '2.0', 'method': 'fallback 2', 'id': 1234}),
+          completion(
+              equals({'jsonrpc': '2.0', 'result': 'fallback 2', 'id': 1234})));
     });
 
     test('an unexpected error in a fallback is captured', () {
-      controller.server.registerFallback(
-        (_) => throw const FormatException('bad format'),
-      );
+      controller.server
+          .registerFallback((_) => throw const FormatException('bad format'));
 
       expect(
-        controller.handleRequest({
-          'jsonrpc': '2.0',
-          'method': 'foo',
-          'id': 1234,
-        }),
-        completion({
-          'jsonrpc': '2.0',
-          'id': 1234,
-          'error': {
-            'code': error_code.SERVER_ERROR,
-            'message': 'bad format',
-            'data': {
-              'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
-              'full': 'FormatException: bad format',
-              'stack': isA<String>(),
-            },
-          },
-        }),
-      );
+          controller
+              .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1234}),
+          completion({
+            'jsonrpc': '2.0',
+            'id': 1234,
+            'error': {
+              'code': error_code.SERVER_ERROR,
+              'message': 'bad format',
+              'data': {
+                'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
+                'full': 'FormatException: bad format',
+                'stack': isA<String>()
+              }
+            }
+          }));
     });
   });
 
   test('disallows multiple methods with the same name', () {
     controller.server.registerMethod('foo', () => null);
-    expect(
-      () => controller.server.registerMethod('foo', () => null),
-      throwsArgumentError,
-    );
+    expect(() => controller.server.registerMethod('foo', () => null),
+        throwsArgumentError);
   });
 }

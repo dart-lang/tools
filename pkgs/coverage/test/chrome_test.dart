@@ -33,9 +33,13 @@ Future<Uri> sourceUriProvider(String sourceUrl, String scriptId) async =>
 
 void main() {
   test('reports correctly', () async {
-    final preciseCoverage = json.decode(
-      await File('test/test_files/chrome_precise_report.txt').readAsString(),
-    ) as List;
+    final preciseCoverage =
+        json.decode(
+              await File(
+                'test/test_files/chrome_precise_report.txt',
+              ).readAsString(),
+            )
+            as List;
 
     final report = await parseChromeCoverage(
       preciseCoverage.cast(),
@@ -78,9 +82,13 @@ void main() {
   });
 
   test('HitMap.parseFiles parses Chrome coverage reports', () async {
-    final preciseCoverage = json.decode(
-      await File('test/test_files/chrome_precise_report.txt').readAsString(),
-    ) as List;
+    final preciseCoverage =
+        json.decode(
+              await File(
+                'test/test_files/chrome_precise_report.txt',
+              ).readAsString(),
+            )
+            as List;
 
     final report = await parseChromeCoverage(
       preciseCoverage.cast(),
@@ -142,9 +150,13 @@ void main() {
   });
 
   test('HitMap.parseFiles skips non-map entries in a coverage list', () async {
-    final preciseCoverage = json.decode(
-      await File('test/test_files/chrome_precise_report.txt').readAsString(),
-    ) as List;
+    final preciseCoverage =
+        json.decode(
+              await File(
+                'test/test_files/chrome_precise_report.txt',
+              ).readAsString(),
+            )
+            as List;
     final report = await parseChromeCoverage(
       preciseCoverage.cast(),
       sourceProvider,
@@ -169,9 +181,13 @@ void main() {
   });
 
   test('HitMap.parseFiles rejects a raw V8 list', () async {
-    final preciseCoverage = json.decode(
-      await File('test/test_files/chrome_precise_report.txt').readAsString(),
-    ) as List;
+    final preciseCoverage =
+        json.decode(
+              await File(
+                'test/test_files/chrome_precise_report.txt',
+              ).readAsString(),
+            )
+            as List;
     final tempDir = Directory.systemTemp.createTempSync('hitmap_v8_reject_');
     final tempFile = File('${tempDir.path}/raw_v8.json');
     tempFile.writeAsStringSync(jsonEncode(preciseCoverage));
@@ -241,8 +257,9 @@ void main() {
               },
               {
                 'name': 'other_pkg',
-                'rootUri': Uri.directory('${tempDir.path}/other_pkg')
-                    .toString(),
+                'rootUri': Uri.directory(
+                  '${tempDir.path}/other_pkg',
+                ).toString(),
                 'packageUri': otherPkgLib.uri.toString(),
               },
             ],

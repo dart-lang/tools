@@ -80,15 +80,12 @@ class Server {
   /// If [strictProtocolChecks] is false, this [Server] will accept some
   /// requests which are not conformant with the JSON-RPC 2.0 specification. In
   /// particular, requests missing the `jsonrpc` parameter will be accepted.
-  Server(
-    StreamChannel<String> channel, {
-    ErrorCallback? onUnhandledError,
-    bool strictProtocolChecks = true,
-  }) : this.withoutJson(
-         jsonDocument.bind(channel).transform(respondToFormatExceptions),
-         onUnhandledError: onUnhandledError,
-         strictProtocolChecks: strictProtocolChecks,
-       );
+  Server(StreamChannel<String> channel,
+      {ErrorCallback? onUnhandledError, bool strictProtocolChecks = true})
+      : this.withoutJson(
+            jsonDocument.bind(channel).transform(respondToFormatExceptions),
+            onUnhandledError: onUnhandledError,
+            strictProtocolChecks: strictProtocolChecks);
 
   /// Creates a [Server] that communicates using decoded messages over
   /// [_channel].
@@ -105,11 +102,8 @@ class Server {
   /// If [strictProtocolChecks] is false, this [Server] will accept some
   /// requests which are not conformant with the JSON-RPC 2.0 specification. In
   /// particular, requests missing the `jsonrpc` parameter will be accepted.
-  Server.withoutJson(
-    this._channel, {
-    this.onUnhandledError,
-    this.strictProtocolChecks = true,
-  });
+  Server.withoutJson(this._channel,
+      {this.onUnhandledError, this.strictProtocolChecks = true});
 
   /// Starts listening to the underlying stream.
   ///
@@ -118,16 +112,13 @@ class Server {
   ///
   /// [listen] may only be called once.
   Future listen() {
-    _channel.stream.listen(
-      _handleRequest,
-      onError: (Object error, StackTrace stackTrace) {
-        _done.completeError(error, stackTrace);
-        _channel.sink.close();
-      },
-      onDone: () {
-        if (!_done.isCompleted) _done.complete();
-      },
-    );
+    _channel.stream.listen(_handleRequest,
+        onError: (Object error, StackTrace stackTrace) {
+      _done.completeError(error, stackTrace);
+      _channel.sink.close();
+    }, onDone: () {
+      if (!_done.isCompleted) _done.complete();
+    });
     return done;
   }
 
@@ -183,10 +174,9 @@ class Server {
     dynamic response;
     if (request is List) {
       if (request.isEmpty) {
-        response = RpcException(
-          error_code.INVALID_REQUEST,
-          'A batch must contain at least one request.',
-        ).serialize(request);
+        response = RpcException(error_code.INVALID_REQUEST,
+                'A batch must contain at least one request.')
+            .serialize(request);
       } else {
         var results = await Future.wait(request.map(_handleSingleRequest));
         var nonNull = results.where((result) => result != null);
@@ -214,21 +204,13 @@ class Server {
       Object? result;
       if (method is ZeroArgumentFunction) {
         if (request.containsKey('params')) {
-          throw RpcException.invalidParams(
-            'No parameters are allowed for '
-            'method "$name".',
-          );
+          throw RpcException.invalidParams('No parameters are allowed for '
+              'method "$name".');
         }
         result = await method();
       } else {
-        result = await method(
-          Parameters(
-            name,
-            request['params'],
-            id: request['id'],
-            isNotification: !request.containsKey('id'),
-          ),
-        );
+        result = await method(Parameters(name, request['params'],
+            id: request['id'], isNotification: !request.containsKey('id')));
       }
 
       // A request without an id is a notification, which should not be sent a
@@ -250,11 +232,11 @@ class Server {
         return null;
       }
       final chain = Chain.forTrace(stackTrace);
-      return RpcException(
-        error_code.SERVER_ERROR,
-        getErrorMessage(error),
-        data: {'full': '$error', 'stack': '$chain'},
-      ).serialize(request);
+      return RpcException(error_code.SERVER_ERROR, getErrorMessage(error),
+          data: {
+            'full': '$error',
+            'stack': '$chain',
+          }).serialize(request);
     }
   }
 
@@ -262,64 +244,57 @@ class Server {
   void _validateRequest(Object? request) {
     if (request is! Map) {
       throw RpcException(
-        error_code.INVALID_REQUEST,
-        'Request must be '
-        'an Array or an Object.',
-      );
+          error_code.INVALID_REQUEST,
+          'Request must be '
+          'an Array or an Object.');
     }
 
     if (strictProtocolChecks && !request.containsKey('jsonrpc')) {
       throw RpcException(
-        error_code.INVALID_REQUEST,
-        'Request must '
-        'contain a "jsonrpc" key.',
-      );
+          error_code.INVALID_REQUEST,
+          'Request must '
+          'contain a "jsonrpc" key.');
     }
 
     if ((strictProtocolChecks || request.containsKey('jsonrpc')) &&
         request['jsonrpc'] != '2.0') {
       throw RpcException(
-        error_code.INVALID_REQUEST,
-        'Invalid JSON-RPC '
-        'version ${jsonEncode(request['jsonrpc'])}, expected "2.0".',
-      );
+          error_code.INVALID_REQUEST,
+          'Invalid JSON-RPC '
+          'version ${jsonEncode(request['jsonrpc'])}, expected "2.0".');
     }
 
     if (!request.containsKey('method')) {
       throw RpcException(
-        error_code.INVALID_REQUEST,
-        'Request must '
-        'contain a "method" key.',
-      );
+          error_code.INVALID_REQUEST,
+          'Request must '
+          'contain a "method" key.');
     }
 
     var method = request['method'];
     if (request['method'] is! String) {
       throw RpcException(
-        error_code.INVALID_REQUEST,
-        'Request method must '
-        'be a string, but was ${jsonEncode(method)}.',
-      );
+          error_code.INVALID_REQUEST,
+          'Request method must '
+          'be a string, but was ${jsonEncode(method)}.');
     }
 
     if (request.containsKey('params')) {
       var params = request['params'];
       if (params is! List && params is! Map) {
         throw RpcException(
-          error_code.INVALID_REQUEST,
-          'Request params must '
-          'be an Array or an Object, but was ${jsonEncode(params)}.',
-        );
+            error_code.INVALID_REQUEST,
+            'Request params must '
+            'be an Array or an Object, but was ${jsonEncode(params)}.');
       }
     }
 
     var id = request['id'];
     if (id != null && id is! String && id is! num) {
       throw RpcException(
-        error_code.INVALID_REQUEST,
-        'Request id must be a '
-        'string, number, or null, but was ${jsonEncode(id)}.',
-      );
+          error_code.INVALID_REQUEST,
+          'Request id must be a '
+          'string, number, or null, but was ${jsonEncode(id)}.');
     }
   }
 
