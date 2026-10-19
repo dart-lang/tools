@@ -510,6 +510,16 @@ void main() {
             'null element',
             '{$cfg,"packages":[{$name,$root,"experiments":[null]}]}',
           );
+          test('non-string element with non-throwing onError rejects list', () {
+            var errors = <Object>[];
+            var config = PackageConfig.parseString(
+              '{$cfg,"packages":[{$name,$root,"experiments":["variance",1]}]}',
+              Uri.parse('file:///tmp/.dart_tool/package_config.json'),
+              onError: errors.add,
+            );
+            expect(errors, hasLength(1));
+            expect(config['foo']!.experiments, isEmpty);
+          });
         });
       });
       testThrows(

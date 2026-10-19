@@ -147,13 +147,18 @@ PackageConfig parsePackageConfigJson(
           if (checkType<List<Object?>>(value, _experimentsKey, name)
               case var experimentList?) {
             var parsedExperiments = <String>[];
+            var hasError = false;
             for (var element in experimentList) {
               if (checkType<String>(element, 'experiments entry', name)
                   case var experiment?) {
-                parsedExperiments.add(experiment);
+                if (!hasError) parsedExperiments.add(experiment);
+              } else {
+                hasError = true;
               }
             }
-            experiments = parsedExperiments;
+            if (!hasError) {
+              experiments = parsedExperiments;
+            }
           }
           break;
         default:

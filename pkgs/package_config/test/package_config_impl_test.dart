@@ -6,6 +6,7 @@ import 'dart:convert' show jsonDecode;
 
 import 'package:package_config/package_config_types.dart';
 import 'package:test/test.dart';
+
 import 'src/util.dart';
 
 void main() {
@@ -176,7 +177,7 @@ void main() {
         packageUriRoot: absolute,
         relativeRoot: false,
         languageVersion: version,
-        experiments: ['variance'],
+        experiments: {'variance'},
         extraData: unique,
       );
       expect(package.name, 'name');

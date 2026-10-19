@@ -262,7 +262,7 @@ abstract class Package {
     LanguageVersion? languageVersion,
     Object? extraData,
     bool relativeRoot = true,
-    List<String>? experiments,
+    Iterable<String>? experiments,
   }) => SimplePackage.validate(
     name,
     root,
@@ -798,7 +798,7 @@ class SimplePackage implements Package {
     LanguageVersion? languageVersion,
     Object? extraData,
     bool relativeRoot,
-    List<String>? experiments,
+    Iterable<String>? experiments,
     void Function(Object error) onError,
   ) {
     var fatalError = false;
@@ -865,6 +865,11 @@ class SimplePackage implements Package {
       }
     }
     if (fatalError) return null;
+    var experimentList = const <String>[];
+    if (experiments != null) {
+      experimentList = List<String>.unmodifiable(experiments);
+      if (experimentList.isEmpty) experimentList = const <String>[];
+    }
     return SimplePackage._(
       name,
       root,
@@ -872,9 +877,7 @@ class SimplePackage implements Package {
       languageVersion,
       extraData,
       relativeRoot,
-      experiments != null && experiments.isNotEmpty
-          ? List<String>.unmodifiable(experiments)
-          : const <String>[],
+      experimentList,
     );
   }
 }
