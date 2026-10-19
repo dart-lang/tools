@@ -107,6 +107,12 @@ class Pubspec {
   /// See https://dart.dev/tools/pub/pubspec#platforms.
   final Map<String, Object?>? platforms;
 
+  /// Gitignore style patterns for files that pub should not search for
+  /// leaked secrets when publishing.
+  ///
+  /// See https://dart.dev/tools/pub/pubspec#false_secrets.
+  final List<String>? falseSecrets;
+
   /// If [author] and [authors] are both provided, their values are combined
   /// with duplicates eliminated.
   Pubspec(
@@ -130,6 +136,7 @@ class Pubspec {
     this.workspace,
     this.resolution,
     this.platforms,
+    this.falseSecrets,
     Map<String, Dependency>? dependencies,
     Map<String, Dependency>? devDependencies,
     Map<String, Dependency>? dependencyOverrides,

@@ -35,6 +35,7 @@ void main() {
     expect(value.resolution, isNull);
     expect(value.executables, isEmpty);
     expect(value.platforms, isNull);
+    expect(value.falseSecrets, isNull);
   });
 
   test('all fields set', () async {
@@ -60,6 +61,7 @@ void main() {
       'workspace': ['pkg1', 'pkg2'],
       'resolution': 'workspace',
       'platforms': {'android': null, 'web': null},
+      'false_secrets': ['/lib/src/hardcoded_api_key.dart', '/test/*.pem'],
       'executables': {
         'my_script': 'bin/my_script.dart',
         'my_script2': 'bin/my_script2.dart',
@@ -104,6 +106,10 @@ void main() {
     expect(value.workspace!.last, 'pkg2');
     expect(value.resolution, 'workspace');
     expect(value.platforms, {'android': null, 'web': null});
+    expect(value.falseSecrets, [
+      '/lib/src/hardcoded_api_key.dart',
+      '/test/*.pem',
+    ]);
   });
 
   test('environment values can be null', () async {
@@ -426,6 +432,54 @@ line 4, column 10: Unsupported value for "sdk". Could not parse version "silly".
       );
       expect(value.name, 'sample');
       expect(value.platforms, isNull);
+    });
+  });
+
+  group('false_secrets', () {
+    test('list of patterns', () async {
+      final value = await parse({
+        ...defaultPubspec,
+        'false_secrets': [
+          '/lib/src/hardcoded_api_key.dart',
+          '/test/localhost_certificates/*.pem',
+        ],
+      });
+      expect(value.falseSecrets, [
+        '/lib/src/hardcoded_api_key.dart',
+        '/test/localhost_certificates/*.pem',
+      ]);
+    });
+
+    test('not a list', () {
+      expectParseThrowsContaining(
+        {...defaultPubspec, 'false_secrets': 1},
+        "Unsupported value for \"false_secrets\". type 'int' is not a subtype of type 'List<dynamic>?'",
+        skipTryPub: true,
+      );
+    });
+
+    test('not a string', () {
+      expectParseThrowsContaining(
+        {
+          ...defaultPubspec,
+          'false_secrets': [1],
+        },
+        "Unsupported value for \"false_secrets\". type 'int' is not a subtype of type 'String'",
+        skipTryPub: true,
+      );
+    });
+
+    test('invalid data - lenient', () async {
+      final value = await parse(
+        {
+          ...defaultPubspec,
+          'false_secrets': [1],
+        },
+        skipTryPub: true,
+        lenient: true,
+      );
+      expect(value.name, 'sample');
+      expect(value.falseSecrets, isNull);
     });
   });
 
