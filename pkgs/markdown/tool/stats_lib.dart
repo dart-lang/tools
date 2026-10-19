@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'dart:mirrors';
+import 'dart:isolate';
 
 import 'package:html/dom.dart' show Element;
 import 'package:html/parser.dart' show parseFragment;
@@ -20,25 +20,96 @@ import 'package:path/path.dart' as p;
 
 import '../test/util.dart';
 
-// Locate the "tool" directory. Use mirrors so that this works with the test
-// package, which loads this suite into an isolate.
-String get toolDir {
-  final path = (reflect(loadCommonMarkSections) as ClosureMirror)
-      .function
-      .location!
-      .sourceUri
-      .path;
-
-  return p.dirname(path);
-}
+// Locate the "tool" directory. Use `Isolate.resolvePackageUriSync` so that this
+// works with the test package, which loads this suite into an isolate.
+final String toolDir = p.fromUri(
+  Isolate.resolvePackageUriSync(Uri.parse('package:markdown/'))!
+      .resolve('../tool'),
+);
 
 File getStatsFile(String prefix) =>
     File(p.join(toolDir, '${prefix}_stats.json'));
 
+File getTestsFile(String prefix) =>
+    File(p.join(toolDir, '${prefix}_tests.json'));
+
+final _exampleStartFence = RegExp(r'^`{32} example(.*)$');
+final _exampleEndFence = RegExp(r'^`{32}$');
+final _headerPrefix = RegExp('^#+ ');
+final _htmlComment = RegExp('<!--.*?-->', dotAll: true);
+
+/// Parses CommonMark / GFM spec test cases from raw `spec.txt` contents.
+List<CommonMarkTestCase> parseSpecExamples(String specMarkdown) {
+  final tests = <CommonMarkTestCase>[];
+  final lines = const LineSplitter().convert(specMarkdown);
+
+  var example = 0;
+  var section = '';
+
+  for (var i = 0; i < lines.length; i++) {
+    final line = lines[i];
+    final extensions = _tryParseExampleFence(line);
+    if (extensions != null) {
+      example++;
+      final startLine = i + 1;
+      final (dotIndex, endIndex) = _findExampleBounds(lines, i);
+      if (!extensions.contains('disabled')) {
+        tests.add(
+          CommonMarkTestCase(
+            example,
+            section,
+            startLine,
+            endIndex + 1,
+            _joinSpecLines(lines.sublist(i + 1, dotIndex)),
+            _joinSpecLines(lines.sublist(dotIndex + 1, endIndex)),
+            extensions,
+          ),
+        );
+      }
+      i = endIndex;
+    } else if (_headerPrefix.hasMatch(line)) {
+      section = _parseSectionHeader(line);
+    }
+  }
+
+  return tests;
+}
+
+(int, int) _findExampleBounds(List<String> lines, int startIndex) {
+  final dotIndex = lines.indexOf('.', startIndex + 1);
+  if (dotIndex == -1) {
+    throw FormatException(
+      'Malformed spec: missing "." separator for example at line '
+      '${startIndex + 1}.',
+    );
+  }
+  final endIndex = lines.indexWhere(_exampleEndFence.hasMatch, dotIndex + 1);
+  if (endIndex == -1) {
+    throw FormatException(
+      'Malformed spec: missing closing fence for example at line '
+      '${startIndex + 1}.',
+    );
+  }
+  return (dotIndex, endIndex);
+}
+
+String _joinSpecLines(List<String> lines) =>
+    lines.map((l) => '${l.replaceAll('→', '\t')}\n').join();
+
+Set<String>? _tryParseExampleFence(String line) {
+  final match = _exampleStartFence.firstMatch(line);
+  if (match == null) return null;
+  final extText = match.group(1)!.trim();
+  return extText.isEmpty ? const {} : extText.split(RegExp(r'\s+')).toSet();
+}
+
+String _parseSectionHeader(String line) =>
+    line.replaceFirst(_headerPrefix, '').replaceAll(_htmlComment, '').trim();
+
 Map<String, List<CommonMarkTestCase>> loadCommonMarkSections(
   String testPrefix,
 ) {
-  final testFile = File(p.join(toolDir, '${testPrefix}_tests.json'));
+  final testFile = getTestsFile(testPrefix);
   final testsJson = testFile.readAsStringSync();
 
   final testArray = jsonDecode(testsJson) as List;
@@ -64,17 +135,23 @@ Map<String, List<CommonMarkTestCase>> loadCommonMarkSections(
 class Config {
   static final Config commonMarkConfig = Config._(
     'common_mark',
-    'https://spec.commonmark.org/0.30/',
+    'https://spec.commonmark.org/0.31.2/',
+    'commonmark/commonmark-spec',
+    'spec.txt',
   );
   static final Config gfmConfig = Config._(
     'gfm',
     'https://github.github.com/gfm/',
+    'github/cmark-gfm',
+    'test/spec.txt',
   );
 
   final String prefix;
   final String baseUrl;
+  final String githubRepo;
+  final String specFilePath;
 
-  Config._(this.prefix, this.baseUrl);
+  Config._(this.prefix, this.baseUrl, this.githubRepo, this.specFilePath);
 }
 
 class CommonMarkTestCase {
@@ -109,6 +186,16 @@ class CommonMarkTestCase {
           : Set.from(json['extensions'] as List),
     );
   }
+
+  Map<String, Object?> toJson() => {
+    'markdown': markdown,
+    'html': html,
+    'example': example,
+    'start_line': startLine,
+    'end_line': endLine,
+    'section': section,
+    if (extensions.isNotEmpty) 'extensions': extensions.toList(),
+  };
 
   @override
   String toString() => '$section - $example';

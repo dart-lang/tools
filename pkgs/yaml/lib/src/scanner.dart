@@ -234,13 +234,13 @@ class Scanner {
 
   /// Whether the character at the current position is a hexidecimal
   /// digit.
-  bool get _isHex {
-    var char = _scanner.peekChar();
-    if (char == null) return false;
-    return (char >= NUMBER_0 && char <= NUMBER_9) ||
-        (char >= LETTER_A && char <= LETTER_F) ||
-        (char >= LETTER_CAP_A && char <= LETTER_CAP_F);
-  }
+  bool get _isHex => _isHexChar(_scanner.peekChar());
+
+  bool _isHexChar(int? char) =>
+      char != null &&
+      ((char >= NUMBER_0 && char <= NUMBER_9) ||
+          (char >= LETTER_A && char <= LETTER_F) ||
+          (char >= LETTER_CAP_A && char <= LETTER_CAP_F));
 
   /// Whether the character at the current position is a plain character.
   ///
@@ -285,11 +285,14 @@ class Scanner {
       (_scanner.matches('---') || _scanner.matches('...'));
 
   /// Creates a scanner that scans [source].
-  Scanner(String source,
-      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener})
-      : _recover = recover,
-        _errorListener = errorListener,
-        _scanner = SpanScanner.eager(source, sourceUrl: sourceUrl);
+  Scanner(
+    String source, {
+    Uri? sourceUrl,
+    bool recover = false,
+    ErrorListener? errorListener,
+  }) : _recover = recover,
+       _errorListener = errorListener,
+       _scanner = SpanScanner.eager(source, sourceUrl: sourceUrl);
 
   /// Consumes and returns the next token.
   Token scan() {
@@ -328,8 +331,9 @@ class Scanner {
         // If the current token could be a simple key, we need to scan more
         // tokens until we determine whether it is or not. Otherwise we might
         // not emit the `KEY` token before we emit the value of the key.
-        if (!_simpleKeys
-            .any((key) => key != null && key.tokenNumber == _tokensParsed)) {
+        if (!_simpleKeys.any(
+          (key) => key != null && key.tokenNumber == _tokensParsed,
+        )) {
           break;
         }
       }
@@ -486,17 +490,17 @@ class Scanner {
       if (key.line == _scanner.line) continue;
 
       if (key.required) {
-        final keyIndentIdx = _indentLevels
-            .lastIndexWhere((indent) => indent.column == key.column);
-        final inBlockSequence = keyIndentIdx >= 0 &&
-            _indentLevels[keyIndentIdx].type == TokenType.blockSequenceStart;
+        final inBlockSequence =
+            _indentLevels.last.type == TokenType.blockSequenceStart;
         final message = StringBuffer("Expected ':'.");
         if (inBlockSequence) {
           message.write(" If this is a list entry, it must start with '- '.");
         }
         _reportError(YamlException(message.toString(), _scanner.emptySpan));
-        _tokens.insert(key.tokenNumber - _tokensParsed,
-            Token(TokenType.key, key.location.pointSpan() as FileSpan));
+        _tokens.insert(
+          key.tokenNumber - _tokensParsed,
+          Token(TokenType.key, key.location.pointSpan() as FileSpan),
+        );
       }
 
       _simpleKeys[i] = null;
@@ -506,33 +510,32 @@ class Scanner {
   /// Checks if a simple key may start at the current position and saves it if
   /// so.
   void _saveSimpleKey() {
+    if (!_simpleKeyAllowed) return;
+
     // A simple key is required at the current position if the scanner is in the
     // block context and the current column coincides with the indentation
     // level.
     var required = _inBlockContext && _indent == _scanner.column;
 
-    // A simple key is required only when it is the first token in the current
-    // line. Therefore it is always allowed. But we add a check anyway.
-    assert(_simpleKeyAllowed || !required);
-
-    if (!_simpleKeyAllowed) return;
-
     // If the current position may start a simple key, save it.
     _removeSimpleKey();
     _simpleKeys[_simpleKeys.length - 1] = _SimpleKey(
-        _tokensParsed + _tokens.length,
-        _scanner.line,
-        _scanner.column,
-        _scanner.location,
-        required: required);
+      _tokensParsed + _tokens.length,
+      _scanner.line,
+      _scanner.column,
+      _scanner.location,
+      required: required,
+    );
   }
 
   /// Removes a potential simple key at the current flow level.
   void _removeSimpleKey() {
     var key = _simpleKeys.last;
     if (key != null && key.required) {
-      throw YamlException("Could not find expected ':' for simple key.",
-          key.location.pointSpan());
+      throw YamlException(
+        "Could not find expected ':' for simple key.",
+        key.location.pointSpan(),
+      );
     }
 
     _simpleKeys[_simpleKeys.length - 1] = null;
@@ -555,8 +558,12 @@ class Scanner {
   /// If it is, appends or inserts the specified token into [_tokens]. If
   /// [tokenNumber] is provided, the corresponding token will be replaced;
   /// otherwise, the token will be added at the end.
-  void _rollIndent(int column, TokenType type, SourceLocation location,
-      {int? tokenNumber}) {
+  void _rollIndent(
+    int column,
+    TokenType type,
+    SourceLocation location, {
+    int? tokenNumber,
+  }) {
     if (!_inBlockContext) return;
     if (_indent != -1 && _indent >= column) return;
 
@@ -663,11 +670,16 @@ class Scanner {
     if (_inBlockContext) {
       if (!_simpleKeyAllowed) {
         throw YamlException(
-            'Block sequence entries are not allowed here.', _scanner.emptySpan);
+          'Block sequence entries are not allowed here.',
+          _scanner.emptySpan,
+        );
       }
 
       _rollIndent(
-          _scanner.column, TokenType.blockSequenceStart, _scanner.location);
+        _scanner.column,
+        TokenType.blockSequenceStart,
+        _scanner.location,
+      );
     } else {
       // It is an error for the '-' indicator to occur in the flow context, but
       // we let the Parser detect and report it because it's able to point to
@@ -684,11 +696,16 @@ class Scanner {
     if (_inBlockContext) {
       if (!_simpleKeyAllowed) {
         throw YamlException(
-            'Mapping keys are not allowed here.', _scanner.emptySpan);
+          'Mapping keys are not allowed here.',
+          _scanner.emptySpan,
+        );
       }
 
       _rollIndent(
-          _scanner.column, TokenType.blockMappingStart, _scanner.location);
+        _scanner.column,
+        TokenType.blockMappingStart,
+        _scanner.location,
+      );
     }
 
     // Simple keys are allowed after `?` in a block context.
@@ -702,14 +719,19 @@ class Scanner {
     if (simpleKey != null) {
       // Add a [TokenType.KEY] directive before the first token of the simple
       // key so the parser knows that it's part of a key/value pair.
-      _tokens.insert(simpleKey.tokenNumber - _tokensParsed,
-          Token(TokenType.key, simpleKey.location.pointSpan() as FileSpan));
+      _tokens.insert(
+        simpleKey.tokenNumber - _tokensParsed,
+        Token(TokenType.key, simpleKey.location.pointSpan() as FileSpan),
+      );
 
       // In the block context, we may need to add the
       // [TokenType.BLOCK_MAPPING_START] token.
       _rollIndent(
-          simpleKey.column, TokenType.blockMappingStart, simpleKey.location,
-          tokenNumber: simpleKey.tokenNumber);
+        simpleKey.column,
+        TokenType.blockMappingStart,
+        simpleKey.location,
+        tokenNumber: simpleKey.tokenNumber,
+      );
 
       // Remove the simple key.
       _simpleKeys[_simpleKeys.length - 1] = null;
@@ -719,15 +741,19 @@ class Scanner {
     } else if (_inBlockContext) {
       if (!_simpleKeyAllowed) {
         throw YamlException(
-            'Mapping values are not allowed here. Did you miss a colon '
-            'earlier?',
-            _scanner.emptySpan);
+          'Mapping values are not allowed here. Did you miss a colon '
+          'earlier?',
+          _scanner.emptySpan,
+        );
       }
 
       // If we're here, we've found the ':' indicator following a complex key.
 
       _rollIndent(
-          _scanner.column, TokenType.blockMappingStart, _scanner.location);
+        _scanner.column,
+        TokenType.blockMappingStart,
+        _scanner.location,
+      );
       _simpleKeyAllowed = true;
     } else if (_simpleKeyAllowed) {
       // If we're here, we've found the ':' indicator with an empty key. This
@@ -803,8 +829,10 @@ class Scanner {
       }
 
       if (_scanner.peekChar() == TAB) {
-        _scanner.error('Tab characters are not allowed as indentation.',
-            length: 1);
+        _scanner.error(
+          'Tab characters are not allowed as indentation.',
+          length: 1,
+        );
       }
 
       // Eat a comment until a line break.
@@ -859,8 +887,10 @@ class Scanner {
     _skipComment();
 
     if (!_isBreakOrEnd) {
-      throw YamlException('Expected comment or line break after directive.',
-          _scanner.spanFrom(start));
+      throw YamlException(
+        'Expected comment or line break after directive.',
+        _scanner.spanFrom(start),
+      );
     }
 
     _skipLine();
@@ -886,7 +916,9 @@ class Scanner {
       throw YamlException('Expected directive name.', _scanner.emptySpan);
     } else if (!_isBlankOrEnd) {
       throw YamlException(
-          'Unexpected character in directive name.', _scanner.emptySpan);
+        'Unexpected character in directive name.',
+        _scanner.emptySpan,
+      );
     }
 
     return name;
@@ -966,16 +998,13 @@ class Scanner {
     var next = _scanner.peekChar();
     if (name.isEmpty ||
         (!_isBlankOrEnd &&
-            next != QUESTION &&
-            next != COLON &&
             next != COMMA &&
             next != RIGHT_SQUARE &&
-            next != RIGHT_CURLY &&
-            next != PERCENT &&
-            next != AT &&
-            next != GRAVE_ACCENT)) {
+            next != RIGHT_CURLY)) {
       throw YamlException(
-          'Expected alphanumeric character.', _scanner.emptySpan);
+        'Expected alphanumeric character.',
+        _scanner.emptySpan,
+      );
     }
 
     if (anchor) {
@@ -1010,7 +1039,11 @@ class Scanner {
       if (handle.length > 1 && handle.startsWith('!') && handle.endsWith('!')) {
         suffix = _scanTagUri(flowSeparators: false);
       } else {
-        suffix = _scanTagUri(head: handle, flowSeparators: false);
+        suffix = _scanTagUri(
+          head: handle,
+          headStart: start,
+          flowSeparators: false,
+        );
 
         // There was no explicit handle.
         if (suffix.isEmpty) {
@@ -1060,7 +1093,11 @@ class Scanner {
   /// [head] is the initial portion of the tag that's already been scanned.
   /// [flowSeparators] indicates whether the tag URI can contain flow
   /// separators.
-  String _scanTagUri({String? head, bool flowSeparators = true}) {
+  String _scanTagUri({
+    String? head,
+    LineScannerState? headStart,
+    bool flowSeparators = true,
+  }) {
     var length = head == null ? 0 : head.length;
     var buffer = StringBuffer();
 
@@ -1077,6 +1114,7 @@ class Scanner {
     //
     // In a shorthand tag annotation, the flow separators ',', '[', and ']' are
     // disallowed.
+    var startState = headStart ?? _scanner.state;
     var start = _scanner.position;
     var char = _scanner.peekChar();
     while (_isTagChar ||
@@ -1086,8 +1124,31 @@ class Scanner {
       char = _scanner.peekChar();
     }
 
+    buffer.write(_scanner.substring(start));
+
     // libyaml manually decodes the URL, but we don't have to do that.
-    return Uri.decodeFull(_scanner.substring(start));
+    return _decodeTagUri(buffer.toString(), _scanner.spanFrom(startState));
+  }
+
+  /// Decodes a percent-encoded tag [uri], throwing a [YamlException] at [span]
+  /// if it contains malformed percent-encoding or invalid UTF-8 bytes.
+  String _decodeTagUri(String uri, FileSpan span) {
+    for (var i = 0; i < uri.length; i++) {
+      if (uri.codeUnitAt(i) == PERCENT) {
+        if (i + 2 >= uri.length ||
+            !_isHexChar(uri.codeUnitAt(i + 1)) ||
+            !_isHexChar(uri.codeUnitAt(i + 2))) {
+          throw YamlException('Expected 2-digit hexadecimal number.', span);
+        }
+        i += 2;
+      }
+    }
+
+    try {
+      return Uri.decodeFull(uri);
+    } on FormatException catch (error) {
+      throw YamlException(error.message, span);
+    }
   }
 
   /// Scans a block scalar.
@@ -1109,8 +1170,10 @@ class Scanner {
       if (_isDigit) {
         // Check that the indentation is greater than 0.
         if (_scanner.peekChar() == NUMBER_0) {
-          throw YamlException('0 may not be used as an indentation indicator.',
-              _scanner.spanFrom(start));
+          throw YamlException(
+            '0 may not be used as an indentation indicator.',
+            _scanner.spanFrom(start),
+          );
         }
 
         increment = _scanner.readCodePoint() - NUMBER_0;
@@ -1118,8 +1181,10 @@ class Scanner {
     } else if (_isDigit) {
       // Do the same as above, but in the opposite order.
       if (_scanner.peekChar() == NUMBER_0) {
-        throw YamlException('0 may not be used as an indentation indicator.',
-            _scanner.spanFrom(start));
+        throw YamlException(
+          '0 may not be used as an indentation indicator.',
+          _scanner.spanFrom(start),
+        );
       }
 
       increment = _scanner.readCodePoint() - NUMBER_0;
@@ -1138,7 +1203,9 @@ class Scanner {
     // Check if we're at the end of the line.
     if (!_isBreakOrEnd) {
       throw YamlException(
-          'Expected comment or line break.', _scanner.emptySpan);
+        'Expected comment or line break.',
+        _scanner.emptySpan,
+      );
     }
 
     _skipLine();
@@ -1218,8 +1285,11 @@ class Scanner {
     if (chomping != _Chomping.strip) buffer.write(leadingBreak);
     if (chomping == _Chomping.keep) buffer.write(trailingBreaks);
 
-    return ScalarToken(_scanner.spanFrom(start, end), buffer.toString(),
-        literal ? ScalarStyle.LITERAL : ScalarStyle.FOLDED);
+    return ScalarToken(
+      _scanner.spanFrom(start, end),
+      buffer.toString(),
+      literal ? ScalarStyle.LITERAL : ScalarStyle.FOLDED,
+    );
   }
 
   /// Scans indentation spaces and line breaks for a block scalar.
@@ -1361,7 +1431,9 @@ class Scanner {
               break;
             default:
               throw YamlException(
-                  'Unknown escape character.', _scanner.spanFrom(escapeStart));
+                'Unknown escape character.',
+                _scanner.spanFrom(escapeStart),
+              );
           }
 
           _scanner.readChar();
@@ -1373,8 +1445,9 @@ class Scanner {
               if (!_isHex) {
                 _scanner.readChar();
                 throw YamlException(
-                    'Expected $codeLength-digit hexidecimal number.',
-                    _scanner.spanFrom(escapeStart));
+                  'Expected $codeLength-digit hexidecimal number.',
+                  _scanner.spanFrom(escapeStart),
+                );
               }
 
               value = (value << 4) + _asHex(_scanner.readChar());
@@ -1382,8 +1455,10 @@ class Scanner {
 
             // Check the value and write the character.
             if ((value >= 0xD800 && value <= 0xDFFF) || value > 0x10FFFF) {
-              throw YamlException('Invalid Unicode character escape code.',
-                  _scanner.spanFrom(escapeStart));
+              throw YamlException(
+                'Invalid Unicode character escape code.',
+                _scanner.spanFrom(escapeStart),
+              );
             }
 
             buffer.writeCharCode(value);
@@ -1437,8 +1512,11 @@ class Scanner {
     // Eat the right quote.
     _scanner.readChar();
 
-    return ScalarToken(_scanner.spanFrom(start), buffer.toString(),
-        singleQuote ? ScalarStyle.SINGLE_QUOTED : ScalarStyle.DOUBLE_QUOTED);
+    return ScalarToken(
+      _scanner.spanFrom(start),
+      buffer.toString(),
+      singleQuote ? ScalarStyle.SINGLE_QUOTED : ScalarStyle.DOUBLE_QUOTED,
+    );
   }
 
   /// Scans a plain scalar.
@@ -1519,7 +1597,10 @@ class Scanner {
     if (leadingBreak.isNotEmpty) _simpleKeyAllowed = true;
 
     return ScalarToken(
-        _scanner.spanFrom(start, end), buffer.toString(), ScalarStyle.PLAIN);
+      _scanner.spanFrom(start, end),
+      buffer.toString(),
+      ScalarStyle.PLAIN,
+    );
   }
 
   /// Moves past the current line break, if there is one.
@@ -1593,23 +1674,18 @@ class Scanner {
     var char = _scanner.peekChar(offset);
     return switch (char) {
       null => false,
-      COMMA ||
-      LEFT_SQUARE ||
-      RIGHT_SQUARE ||
-      LEFT_CURLY ||
-      RIGHT_CURLY =>
+      COMMA || LEFT_SQUARE || RIGHT_SQUARE || LEFT_CURLY || RIGHT_CURLY =>
         // These characters are delimiters in a flow context and thus are only
         // safe in a block context.
         _inBlockContext,
       SP || TAB || LF || CR || BOM => false,
       NEL => true,
-      _ => _isStandardCharacterAt(offset)
+      _ => _isStandardCharacterAt(offset),
     };
   }
 
   bool _isStandardCharacterAt(int offset) {
-    var first = _scanner.peekChar(offset);
-    if (first == null) return false;
+    var first = _scanner.peekChar(offset)!;
 
     if (isHighSurrogate(first)) {
       var next = _scanner.peekChar(offset + 1);
@@ -1707,5 +1783,5 @@ enum _Chomping {
   clip,
 
   /// All trailing whitespace is preserved.
-  keep
+  keep,
 }

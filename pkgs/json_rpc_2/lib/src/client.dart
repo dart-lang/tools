@@ -47,6 +47,14 @@ class Client {
   /// endpoint closes the connection.
   bool get isClosed => _done.isCompleted;
 
+  /// Whether to strictly enforce the JSON-RPC 2.0 specification for received
+  /// responses.
+  ///
+  /// If `false`, this [Client] will accept some responses which are not
+  /// conformant with the JSON-RPC 2.0 specification. In particular, responses
+  /// missing the `jsonrpc` parameter will be accepted.
+  final bool strictProtocolChecks;
+
   /// Creates a [Client] that communicates over [channel].
   ///
   /// Note that the client won't begin listening to [channel] until
@@ -55,10 +63,20 @@ class Client {
   /// If [idGenerator] is passed, it will be called to generate an ID for each
   /// request. Defaults to an auto-incrementing `int`. The value returned must
   /// be either an `int` or `String`.
-  Client(StreamChannel<String> channel, {Object Function()? idGenerator})
-      : this.withoutJson(
-            jsonDocument.bind(channel).transformStream(ignoreFormatExceptions),
-            idGenerator: idGenerator);
+  ///
+  /// If [strictProtocolChecks] is false, this [Client] will accept some
+  /// responses which are not conformant with the JSON-RPC 2.0 specification.
+  /// In particular, responses missing the `jsonrpc` parameter will be
+  /// accepted.
+  Client(
+    StreamChannel<String> channel, {
+    Object Function()? idGenerator,
+    bool strictProtocolChecks = true,
+  }) : this.withoutJson(
+         jsonDocument.bind(channel).transformStream(ignoreFormatExceptions),
+         idGenerator: idGenerator,
+         strictProtocolChecks: strictProtocolChecks,
+       );
 
   /// Creates a [Client] that communicates using decoded messages over
   /// [_channel].
@@ -72,17 +90,30 @@ class Client {
   /// If [_idGenerator] is passed, it will be called to generate an ID for each
   /// request. Defaults to an auto-incrementing `int`. The value returned must
   /// be either an `int` or `String`.
-  Client.withoutJson(this._channel, {Object Function()? idGenerator})
-      : _idGenerator = idGenerator ?? _createIncrementingIdGenerator() {
-    done.whenComplete(() {
-      for (var request in _pendingRequests.values) {
-        request.completer.completeError(StateError(
-            'The client closed with pending request "${request.method}".'));
-      }
-      _pendingRequests.clear();
-    }).catchError((_) {
-      // Avoid an unhandled error.
-    });
+  ///
+  /// If [strictProtocolChecks] is false, this [Client] will accept some
+  /// responses which are not conformant with the JSON-RPC 2.0 specification.
+  /// In particular, responses missing the `jsonrpc` parameter will be
+  /// accepted.
+  Client.withoutJson(
+    this._channel, {
+    Object Function()? idGenerator,
+    this.strictProtocolChecks = true,
+  }) : _idGenerator = idGenerator ?? _createIncrementingIdGenerator() {
+    done
+        .whenComplete(() {
+          for (var request in _pendingRequests.values) {
+            request.completer.completeError(
+              StateError(
+                'The client closed with pending request "${request.method}".',
+              ),
+            );
+          }
+          _pendingRequests.clear();
+        })
+        .catchError((_) {
+          // Avoid an unhandled error.
+        });
   }
 
   /// Starts listening to the underlying stream.
@@ -92,14 +123,17 @@ class Client {
   ///
   /// [listen] may only be called once.
   Future listen() {
-    _channel.stream.listen(_handleResponse,
-        onError: (Object error, StackTrace stackTrace) {
-      _done.completeError(error, stackTrace);
-      _channel.sink.close();
-    }, onDone: () {
-      if (!_done.isCompleted) _done.complete();
-      close();
-    });
+    _channel.stream.listen(
+      _handleResponse,
+      onError: (Object error, StackTrace stackTrace) {
+        _done.completeError(error, stackTrace);
+        _channel.sink.close();
+      },
+      onDone: () {
+        if (!_done.isCompleted) _done.complete();
+        close();
+      },
+    );
     return done;
   }
 
@@ -157,8 +191,10 @@ class Client {
   void _send(String method, Object? parameters, [Object? id]) {
     if (parameters is Iterable) parameters = parameters.toList();
     if (parameters is! Map && parameters is! List && parameters != null) {
-      throw ArgumentError('Only maps and lists may be used as JSON-RPC '
-          'parameters, was "$parameters".');
+      throw ArgumentError(
+        'Only maps and lists may be used as JSON-RPC '
+        'parameters, was "$parameters".',
+      );
     }
     if (isClosed) throw StateError('The client is closed.');
 
@@ -218,16 +254,24 @@ class Client {
       request.completer.complete(response['result']);
     } else {
       request.completer.completeError(
-          RpcException(response['error']['code'], response['error']['message'],
-              data: response['error']['data']),
-          request.chain);
+        RpcException(
+          response['error']['code'],
+          response['error']['message'],
+          data: response['error']['data'],
+        ),
+        request.chain,
+      );
     }
   }
 
   /// Determines whether the server's response is valid per the spec.
   bool _isResponseValid(Object? response) {
     if (response is! Map) return false;
-    if (response['jsonrpc'] != '2.0') return false;
+    if (response.containsKey('jsonrpc')) {
+      if (response['jsonrpc'] != '2.0') return false;
+    } else if (strictProtocolChecks) {
+      return false;
+    }
     var id = response['id'];
     if (!_pendingRequests.containsKey(id)) return false;
     if (response.containsKey('result')) return true;

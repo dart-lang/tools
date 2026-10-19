@@ -3,9 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io' as io;
+import 'dart:math';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
+import 'package:meta/meta.dart';
 
 import 'constants.dart';
 import 'event.dart';
@@ -154,10 +157,12 @@ class LogFileStats {
 /// This class is responsible for writing to a log
 /// file that has been initialized by the [createLogFile].
 ///
-/// It will be treated as an append only log and will be limited
-/// to have has many data records as specified by [kLogFileLength].
+/// It will be treated as an append only log, trimmed to the newest
+/// [kLogFileLength] records when it grows past [kLogFileTrimSize].
 class LogHandler {
   final File logFile;
+
+  final int _trimSize;
 
   /// Contains instances of [Event.analyticsException] that were encountered
   /// during a workflow and will be sent to GA4 for collection.
@@ -165,7 +170,10 @@ class LogHandler {
 
   /// A log handler constructor that will delegate saving
   /// logs and retrieving stats from the persisted log.
-  LogHandler({required this.logFile});
+  LogHandler({
+    required this.logFile,
+    @visibleForTesting int trimSize = kLogFileTrimSize,
+  }) : _trimSize = trimSize;
 
   /// Get stats from the persisted log file.
   ///
@@ -176,8 +184,9 @@ class LogHandler {
     // Parse each line of the log file through [LogItem],
     // some returned records may be null if malformed, they will be
     // removed later through `whereType<LogItem>`
-    final records = logFile
-        .readAsLinesSync()
+    final lines = logFile.readAsLinesSync();
+    final records = lines
+        .skip(max(0, lines.length - kLogFileLength))
         .map((String e) {
           try {
             return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
@@ -273,31 +282,22 @@ class LogHandler {
 
   /// Saves the data passed in as a single line in the log file.
   ///
-  /// This will keep the max number of records limited to equal to
-  /// or less than [kLogFileLength] records.
+  /// This only appends to the file, unless the file has grown past the trim
+  /// size, see [kLogFileTrimSize]; then it is first trimmed to the newest
+  /// [kLogFileLength] records.
   void save({required Map<String, Object?> data}) {
     try {
-      List<String> records;
       final stat = logFile.statSync();
       if (stat.size > kMaxLogFileSize) {
         logFile.deleteSync();
         logFile.createSync();
-        records = [];
-      } else {
-        records = logFile.readAsLinesSync();
+      } else if (stat.size > _trimSize) {
+        _trim();
       }
-      final content = '${jsonEncode(data)}\n';
-
-      // When the record count is less than the max, add as normal;
-      // else drop the oldest records until equal to max
-      if (records.length < kLogFileLength) {
-        logFile.writeAsStringSync(content, mode: FileMode.writeOnlyAppend);
-      } else {
-        records.add(content);
-        records = records.skip(records.length - kLogFileLength).toList();
-
-        logFile.writeAsStringSync(records.join('\n'));
-      }
+      logFile.writeAsStringSync(
+        '${jsonEncode(data)}\n',
+        mode: FileMode.writeOnlyAppend,
+      );
     } on Object {
       // Logging isn't important enough to warrant raising an
       // exception or error that will surprise consumers of this package.
@@ -306,6 +306,47 @@ class LogHandler {
         logFile.deleteSync();
       }
       logFile.createSync();
+    }
+  }
+
+  /// Rewrites the log file keeping only its newest records.
+  ///
+  /// Keeps at most [kLogFileLength] records and at most about half the trim
+  /// size, so that trims stay rare however large the records are.
+  ///
+  /// The new content is written to a temporary file which is then renamed
+  /// over the log file, so other processes see the old or the new file and
+  /// never a partial one. A record that another process appends during the
+  /// trim can be lost; the log is only a local record, so that is accepted.
+  void _trim() {
+    File? tempFile;
+    try {
+      final lines = logFile.readAsLinesSync();
+      final maxBytes = _trimSize ~/ 2;
+      var start = lines.length;
+      var bytes = 0;
+      while (start > 0 && lines.length - start < kLogFileLength) {
+        // UTF-16 length approximates UTF-8 bytes; log records are almost
+        // entirely ASCII.
+        bytes += lines[start - 1].length + 1;
+        if (bytes > maxBytes) break;
+        start--;
+      }
+      final kept = lines.sublist(start);
+      // The random part keeps trims in different isolates of one process
+      // apart.
+      final suffix = '${io.pid}.${Random().nextInt(1 << 32)}';
+      tempFile = logFile.fileSystem.file('${logFile.path}.$suffix.tmp');
+      tempFile.writeAsStringSync(kept.isEmpty ? '' : '${kept.join('\n')}\n');
+      tempFile.renameSync(logFile.path);
+    } on Object {
+      // Trimming is best effort; the next save tries again. If it keeps
+      // failing, the file grows until [kMaxLogFileSize] and is deleted.
+      try {
+        if (tempFile != null && tempFile.existsSync()) tempFile.deleteSync();
+      } on Object {
+        // Nothing more to do.
+      }
     }
   }
 }

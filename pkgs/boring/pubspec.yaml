@@ -1,0 +1,29 @@
+name: boring
+description: >-
+  Raw FFI bindings to BoringSSL, compiled and bundled through Dart Native
+  Assets.
+version: 0.4.2-wip
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/boring
+issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aboring
+
+environment:
+  # Dart 3.13.3 is the first Dart version to support native asset cross-compilation
+  # using `dart build cli`.
+  sdk: ^3.13.3
+
+dependencies:
+  code_assets: ^2.1.0
+  hooks: ^2.2.0
+  meta: ^1.19.0
+  native_toolchain_cmake: ^0.3.2
+
+dev_dependencies:
+  dart_flutter_team_lints: ^3.5.2
+  ffi: ^2.2.0
+  ffigen: ^22.0.0
+  test: ^1.32.0
+
+topics:
+  - crypto
+  - ffi
+  - security

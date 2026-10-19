@@ -26,9 +26,10 @@ GitDependency _$GitDependencyFromJson(Map json) =>
         $checkedConvert('url', (v) => parseGitUri(v as String)),
         ref: $checkedConvert('ref', (v) => v as String?),
         path: $checkedConvert('path', (v) => v as String?),
+        tagPattern: $checkedConvert('tag_pattern', (v) => v as String?),
       );
       return val;
-    });
+    }, fieldKeyMap: const {'tagPattern': 'tag_pattern'});
 
 HostedDependency _$HostedDependencyFromJson(Map json) =>
     $checkedCreate('HostedDependency', json, ($checkedConvert) {

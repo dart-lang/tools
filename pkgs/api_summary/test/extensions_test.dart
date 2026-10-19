@@ -61,9 +61,8 @@ extension type ExtensionType(int i) {}
   }
 
   Future<void> test_formalParameterElement_isDeprecated() async {
-    final f = (await analyzeLibrary(
-      'f({int? i, @deprecated int? j}) {}',
-    )).getTopLevelFunction('f')!;
+    final f = (await analyzeLibrary('f({int? i, @deprecated int? j}) {}'))
+        .getTopLevelFunction('f')!;
     expect(f.formalParameters[0].isDeprecated, isFalse);
     expect(f.formalParameters[1].isDeprecated, isTrue);
   }
@@ -118,5 +117,25 @@ extension type ExtensionType(int i) {}
     expect(Uri.parse('dart:core').isInPublicLibOf('foo'), isFalse);
     expect(Uri.parse('dart:core').isInPublicLibOf('dart'), isFalse);
     expect(Uri.parse('dart:core').isInPublicLibOf('core'), isFalse);
+  }
+
+  void test_uri_isPrimaryPublicLibOf() {
+    expect(
+      Uri.parse('package:foo/foo.dart').isPrimaryPublicLibOf('foo'),
+      isTrue,
+    );
+    expect(
+      Uri.parse('package:foo/bar.dart').isPrimaryPublicLibOf('foo'),
+      isFalse,
+    );
+    expect(
+      Uri.parse('package:foo/sub/foo.dart').isPrimaryPublicLibOf('foo'),
+      isFalse,
+    );
+    expect(
+      Uri.parse('package:foo/src/foo.dart').isPrimaryPublicLibOf('foo'),
+      isFalse,
+    );
+    expect(Uri.parse('dart:core').isPrimaryPublicLibOf('foo'), isFalse);
   }
 }

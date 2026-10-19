@@ -4,7 +4,6 @@
 
 import 'package:source_span/source_span.dart';
 
-import 'eager_span_scanner.dart';
 import 'exception.dart';
 import 'line_scanner.dart';
 import 'relative_span_scanner.dart';
@@ -30,8 +29,10 @@ class SpanScanner extends StringScanner implements LineScanner {
   @override
   set state(LineScannerState state) {
     if (state is! _SpanScannerState || !identical(state._scanner, this)) {
-      throw ArgumentError('The given LineScannerState was not returned by '
-          'this LineScanner.');
+      throw ArgumentError(
+        'The given LineScannerState was not returned by '
+        'this LineScanner.',
+      );
     }
 
     position = state.position;
@@ -60,7 +61,7 @@ class SpanScanner extends StringScanner implements LineScanner {
   /// [FileSpan]s as well as for error reporting. It can be a [String], a
   /// [Uri], or `null`.
   SpanScanner(super.string, {super.sourceUrl, super.position})
-      : _sourceFile = SourceFile.fromString(string, url: sourceUrl);
+    : _sourceFile = SourceFile.fromString(string, url: sourceUrl);
 
   /// Creates a new [SpanScanner] that eagerly computes line and column numbers.
   ///

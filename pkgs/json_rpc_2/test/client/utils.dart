@@ -20,10 +20,15 @@ class ClientController {
   /// The client.
   late final json_rpc.Client client;
 
-  ClientController({Object Function()? idGenerator}) {
+  ClientController({
+    Object Function()? idGenerator,
+    bool strictProtocolChecks = true,
+  }) {
     client = json_rpc.Client(
-        StreamChannel(_responseController.stream, _requestController.sink),
-        idGenerator: idGenerator);
+      StreamChannel(_responseController.stream, _requestController.sink),
+      idGenerator: idGenerator,
+      strictProtocolChecks: strictProtocolChecks,
+    );
     client.listen();
   }
 
@@ -35,14 +40,17 @@ class ClientController {
   /// as the response.
   void expectRequest(FutureOr Function(dynamic) callback) {
     expect(
-        _requestController.stream.first.then((request) {
-          return callback(jsonDecode(request));
-        }).then((response) {
-          if (response == null) return;
-          if (response is! String) response = jsonEncode(response);
-          _responseController.add(response);
-        }),
-        completes);
+      _requestController.stream.first
+          .then((request) {
+            return callback(jsonDecode(request));
+          })
+          .then((response) {
+            if (response == null) return;
+            if (response is! String) response = jsonEncode(response);
+            _responseController.add(response);
+          }),
+      completes,
+    );
   }
 
   /// Sends [response], a decoded response, to [client].

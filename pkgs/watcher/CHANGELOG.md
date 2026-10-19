@@ -1,6 +1,8 @@
 ## 1.2.2-wip
 
 - Require Dart SDK `^3.8.0`.
+- Document what `Watcher.events` guarantees: events converge on the state of the
+  filesystem, and there is deliberately no guarantee of one event per change.
 
 ## 1.2.1
 

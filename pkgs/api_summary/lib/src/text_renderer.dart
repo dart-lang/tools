@@ -64,9 +64,15 @@ final class _ApiTextRenderer {
 
   String render() {
     final nodes = <Uri, Node<MemberSortKey>>{};
+    final experimentalUris = <Uri>{};
 
-    for (final library in _package.libraries) {
+    final sortedLibraries = _package.libraries.sortedByUri(_package.name);
+
+    for (final library in sortedLibraries) {
       final uri = Uri.parse(library.uri);
+      if (library.isExperimental) {
+        experimentalUris.add(uri);
+      }
       final node = nodes[uri] = Node<MemberSortKey>();
       _renderLibrary(library, node);
     }
@@ -100,7 +106,14 @@ final class _ApiTextRenderer {
 
     final sortedNodes = [
       for (final entry in nodes.entries)
-        (UriSortKey(entry.key, _package.name), entry.value),
+        (
+          UriSortKey(
+            entry.key,
+            _package.name,
+            isExperimental: experimentalUris.contains(entry.key),
+          ),
+          entry.value,
+        ),
     ];
 
     final stringBuffer = StringBuffer();
@@ -127,7 +140,17 @@ final class _ApiTextRenderer {
   }
 
   void _renderLibrary(ApiLibrary library, Node<MemberSortKey> node) {
-    node.text.addAll([Uri.parse(library.uri), ':']);
+    node.text.add(Uri.parse(library.uri));
+    if (library.facets.isNotEmpty) {
+      final parentheticals = [
+        for (final facet in library.facets)
+          for (final segment in facet.parentheticalSegments) [segment],
+      ];
+      if (parentheticals.isNotEmpty) {
+        node.text.addAll(parentheticals.separatedBy(prefix: ' (', suffix: ')'));
+      }
+    }
+    node.text.add(':');
 
     // Combine all top level items to sort them correctly
     final allItems =
@@ -622,21 +645,14 @@ final class _ApiTextRenderer {
     required ApiDeclaration element,
     required Node<MemberSortKey> node,
   }) {
-    parentheticals.addAll([
-      if (element.isDeprecated) ['deprecated'],
-      if (element.isExperimental) ['experimental'],
-      if (element is ApiClass && element.isImmutable) ['immutable'],
-      if (element.isInternal) ['internal'],
-      if (element is ApiExecutable) ...[
-        if (element.isMustBeOverridden) ['must be overridden'],
-        if (element.isMustCallSuper) ['must call super'],
-        if (element.isNonVirtual) ['non-virtual'],
-        if (element.isProtected) ['protected'],
-        if (element.isUseResult) ['use result'],
-        if (element.isVisibleForOverriding) ['visible for overriding'],
-      ],
-      if (element.isVisibleForTesting) ['visible for testing'],
-    ]);
+    if (element.isDeprecated) {
+      parentheticals.add(['deprecated']);
+    }
+    for (final facet in element.facets) {
+      for (final segment in facet.parentheticalSegments) {
+        parentheticals.add([segment]);
+      }
+    }
     if (parentheticals.isNotEmpty) {
       node.text.addAll(parentheticals.separatedBy(prefix: ' (', suffix: ')'));
     }

@@ -25,6 +25,22 @@ abstract class Watcher {
   /// Changes will only be monitored while this stream has subscribers. Any
   /// changes that occur during periods when there are no subscribers will not
   /// be reported the next time a subscriber is added.
+  ///
+  /// Events converge on the state of the filesystem. A listener that applies
+  /// them to a model of the watched paths holds, once changes stop, a model
+  /// that matches what is on disk. This is the guarantee the package provides
+  /// and the property its tests check.
+  ///
+  /// There is deliberately no guarantee of one event per change. Platform
+  /// notifications are batched, and arrive in an order that often does not
+  /// determine what happened, so watchers resolve them by reading the paths
+  /// involved. A path that is deleted and written again between reads is
+  /// reported as a single modification, and a path that is created and deleted
+  /// may produce no event at all.
+  ///
+  /// So: use an event to learn that a path is worth looking at, and read the
+  /// path to learn what it now contains. Do not count events, do not pair them
+  /// up, and do not wait for a particular event to arrive.
   Stream<WatchEvent> get events;
 
   /// Whether the watcher is initialized and watching for changes.

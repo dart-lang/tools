@@ -152,7 +152,7 @@ class Document {
         final idr = r.attributes['id']?.toLowerCase() ?? '';
         return (ordinal[idl] ?? 0) - (ordinal[idr] ?? 0);
       });
-      final list = Element('ol', footnotes);
+      final list = Element('ol', <Node>[...footnotes]);
 
       // Ignore GFM attribute: <data-footnotes>.
       final section = Element('section', [list])
@@ -174,8 +174,10 @@ class Document {
       children.addAll(refs);
     } else {
       final last = children.last;
-      if (last is Element) {
-        last.children?.addAll(refs);
+      if (last is Element && last.children != null) {
+        last.children!.addAll(refs);
+      } else if (last is Element) {
+        children.addAll(refs);
       } else {
         children.last = Element('p', [last, ...refs]);
       }
