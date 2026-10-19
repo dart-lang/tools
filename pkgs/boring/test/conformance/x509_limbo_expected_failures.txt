@@ -1,0 +1,630 @@
+# Testcases from https://x509-limbo.com where BoringSSL's X509_verify_cert,
+# followed by the policy checks in x509_limbo_test.dart, disagrees with the
+# suite's expected result.
+#
+# Every entry is a difference in scope between BoringSSL and the suite, not a
+# known bug in this package. Entries are grouped below by explanation, since
+# one underlying limitation can surface as several different errors. Each
+# group lists the errors BoringSSL reported and why they are expected.
+#
+# The suite fails both on a divergence that is not listed here and on a listed
+# testcase that starts agreeing, so this list cannot silently go stale.
+#
+# Generated. Regenerate with:
+#   X509_LIMBO_REGENERATE=1 ./tool/run_x509_limbo_tests.sh
+
+# ===========================================================================
+# 452 testcase(s):
+#   452 x rejected with "unsupported name constraint type"
+# ---------------------------------------------------------------------------
+# BoringSSL's NAME_CONSTRAINTS_check (crypto/x509/v3_ncons.cc) handles only
+# directoryName, dNSName, rfc822Name and uniformResourceIdentifier
+# constraints, and returns X509_V_ERR_UNSUPPORTED_CONSTRAINT_TYPE for every
+# other GeneralName type. The BetterTLS name constraints suite is built
+# almost entirely on iPAddress constraints, so it trips this on both the
+# permitted and the excluded path. Supporting these would mean
+# reimplementing name constraint checking on top of BoringSSL, which is out
+# of scope for raw bindings.
+
+bettertls::nameconstraints::tc1062
+bettertls::nameconstraints::tc1068
+bettertls::nameconstraints::tc1069
+bettertls::nameconstraints::tc1071
+bettertls::nameconstraints::tc1075
+bettertls::nameconstraints::tc1077
+bettertls::nameconstraints::tc1089
+bettertls::nameconstraints::tc1095
+bettertls::nameconstraints::tc1096
+bettertls::nameconstraints::tc1098
+bettertls::nameconstraints::tc1102
+bettertls::nameconstraints::tc1104
+bettertls::nameconstraints::tc1142
+bettertls::nameconstraints::tc1148
+bettertls::nameconstraints::tc1159
+bettertls::nameconstraints::tc1160
+bettertls::nameconstraints::tc1165
+bettertls::nameconstraints::tc1166
+bettertls::nameconstraints::tc1169
+bettertls::nameconstraints::tc1175
+bettertls::nameconstraints::tc1186
+bettertls::nameconstraints::tc1187
+bettertls::nameconstraints::tc1192
+bettertls::nameconstraints::tc1193
+bettertls::nameconstraints::tc1791
+bettertls::nameconstraints::tc1797
+bettertls::nameconstraints::tc1798
+bettertls::nameconstraints::tc1800
+bettertls::nameconstraints::tc1804
+bettertls::nameconstraints::tc1806
+bettertls::nameconstraints::tc1818
+bettertls::nameconstraints::tc1824
+bettertls::nameconstraints::tc1825
+bettertls::nameconstraints::tc1827
+bettertls::nameconstraints::tc1831
+bettertls::nameconstraints::tc1833
+bettertls::nameconstraints::tc1871
+bettertls::nameconstraints::tc1877
+bettertls::nameconstraints::tc1888
+bettertls::nameconstraints::tc1889
+bettertls::nameconstraints::tc1894
+bettertls::nameconstraints::tc1895
+bettertls::nameconstraints::tc1898
+bettertls::nameconstraints::tc1904
+bettertls::nameconstraints::tc1915
+bettertls::nameconstraints::tc1916
+bettertls::nameconstraints::tc1921
+bettertls::nameconstraints::tc1922
+bettertls::nameconstraints::tc2520
+bettertls::nameconstraints::tc2526
+bettertls::nameconstraints::tc2527
+bettertls::nameconstraints::tc2529
+bettertls::nameconstraints::tc2533
+bettertls::nameconstraints::tc2535
+bettertls::nameconstraints::tc2547
+bettertls::nameconstraints::tc2553
+bettertls::nameconstraints::tc2554
+bettertls::nameconstraints::tc2556
+bettertls::nameconstraints::tc2560
+bettertls::nameconstraints::tc2562
+bettertls::nameconstraints::tc2600
+bettertls::nameconstraints::tc2606
+bettertls::nameconstraints::tc2617
+bettertls::nameconstraints::tc2618
+bettertls::nameconstraints::tc2623
+bettertls::nameconstraints::tc2624
+bettertls::nameconstraints::tc2627
+bettertls::nameconstraints::tc2633
+bettertls::nameconstraints::tc2644
+bettertls::nameconstraints::tc2645
+bettertls::nameconstraints::tc2650
+bettertls::nameconstraints::tc2651
+bettertls::nameconstraints::tc3249
+bettertls::nameconstraints::tc3255
+bettertls::nameconstraints::tc3256
+bettertls::nameconstraints::tc3258
+bettertls::nameconstraints::tc3262
+bettertls::nameconstraints::tc3264
+bettertls::nameconstraints::tc3276
+bettertls::nameconstraints::tc3282
+bettertls::nameconstraints::tc3283
+bettertls::nameconstraints::tc3285
+bettertls::nameconstraints::tc3289
+bettertls::nameconstraints::tc3291
+bettertls::nameconstraints::tc3329
+bettertls::nameconstraints::tc333
+bettertls::nameconstraints::tc3335
+bettertls::nameconstraints::tc3346
+bettertls::nameconstraints::tc3347
+bettertls::nameconstraints::tc3352
+bettertls::nameconstraints::tc3353
+bettertls::nameconstraints::tc3356
+bettertls::nameconstraints::tc3362
+bettertls::nameconstraints::tc3373
+bettertls::nameconstraints::tc3374
+bettertls::nameconstraints::tc3379
+bettertls::nameconstraints::tc3380
+bettertls::nameconstraints::tc339
+bettertls::nameconstraints::tc340
+bettertls::nameconstraints::tc342
+bettertls::nameconstraints::tc346
+bettertls::nameconstraints::tc348
+bettertls::nameconstraints::tc360
+bettertls::nameconstraints::tc366
+bettertls::nameconstraints::tc367
+bettertls::nameconstraints::tc369
+bettertls::nameconstraints::tc373
+bettertls::nameconstraints::tc375
+bettertls::nameconstraints::tc3978
+bettertls::nameconstraints::tc3984
+bettertls::nameconstraints::tc3985
+bettertls::nameconstraints::tc3987
+bettertls::nameconstraints::tc3991
+bettertls::nameconstraints::tc3993
+bettertls::nameconstraints::tc4005
+bettertls::nameconstraints::tc4011
+bettertls::nameconstraints::tc4012
+bettertls::nameconstraints::tc4014
+bettertls::nameconstraints::tc4018
+bettertls::nameconstraints::tc4020
+bettertls::nameconstraints::tc4058
+bettertls::nameconstraints::tc4064
+bettertls::nameconstraints::tc4075
+bettertls::nameconstraints::tc4076
+bettertls::nameconstraints::tc4081
+bettertls::nameconstraints::tc4082
+bettertls::nameconstraints::tc4085
+bettertls::nameconstraints::tc4091
+bettertls::nameconstraints::tc4102
+bettertls::nameconstraints::tc4103
+bettertls::nameconstraints::tc4108
+bettertls::nameconstraints::tc4109
+bettertls::nameconstraints::tc413
+bettertls::nameconstraints::tc419
+bettertls::nameconstraints::tc430
+bettertls::nameconstraints::tc431
+bettertls::nameconstraints::tc436
+bettertls::nameconstraints::tc437
+bettertls::nameconstraints::tc440
+bettertls::nameconstraints::tc446
+bettertls::nameconstraints::tc4464
+bettertls::nameconstraints::tc4467
+bettertls::nameconstraints::tc4470
+bettertls::nameconstraints::tc4471
+bettertls::nameconstraints::tc4473
+bettertls::nameconstraints::tc4474
+bettertls::nameconstraints::tc4476
+bettertls::nameconstraints::tc4477
+bettertls::nameconstraints::tc4479
+bettertls::nameconstraints::tc4491
+bettertls::nameconstraints::tc4494
+bettertls::nameconstraints::tc4497
+bettertls::nameconstraints::tc4498
+bettertls::nameconstraints::tc4500
+bettertls::nameconstraints::tc4501
+bettertls::nameconstraints::tc4503
+bettertls::nameconstraints::tc4504
+bettertls::nameconstraints::tc4506
+bettertls::nameconstraints::tc4518
+bettertls::nameconstraints::tc4521
+bettertls::nameconstraints::tc4524
+bettertls::nameconstraints::tc4525
+bettertls::nameconstraints::tc4527
+bettertls::nameconstraints::tc4528
+bettertls::nameconstraints::tc4530
+bettertls::nameconstraints::tc4531
+bettertls::nameconstraints::tc4533
+bettertls::nameconstraints::tc457
+bettertls::nameconstraints::tc458
+bettertls::nameconstraints::tc463
+bettertls::nameconstraints::tc464
+bettertls::nameconstraints::tc4707
+bettertls::nameconstraints::tc4713
+bettertls::nameconstraints::tc4714
+bettertls::nameconstraints::tc4716
+bettertls::nameconstraints::tc4720
+bettertls::nameconstraints::tc4722
+bettertls::nameconstraints::tc4734
+bettertls::nameconstraints::tc4740
+bettertls::nameconstraints::tc4741
+bettertls::nameconstraints::tc4743
+bettertls::nameconstraints::tc4747
+bettertls::nameconstraints::tc4749
+bettertls::nameconstraints::tc4950
+bettertls::nameconstraints::tc4953
+bettertls::nameconstraints::tc4957
+bettertls::nameconstraints::tc4959
+bettertls::nameconstraints::tc4960
+bettertls::nameconstraints::tc4962
+bettertls::nameconstraints::tc5004
+bettertls::nameconstraints::tc5007
+bettertls::nameconstraints::tc5011
+bettertls::nameconstraints::tc5013
+bettertls::nameconstraints::tc5014
+bettertls::nameconstraints::tc5016
+bettertls::nameconstraints::tc5193
+bettertls::nameconstraints::tc5196
+bettertls::nameconstraints::tc5199
+bettertls::nameconstraints::tc5200
+bettertls::nameconstraints::tc5202
+bettertls::nameconstraints::tc5203
+bettertls::nameconstraints::tc5205
+bettertls::nameconstraints::tc5206
+bettertls::nameconstraints::tc5208
+bettertls::nameconstraints::tc5220
+bettertls::nameconstraints::tc5223
+bettertls::nameconstraints::tc5226
+bettertls::nameconstraints::tc5227
+bettertls::nameconstraints::tc5229
+bettertls::nameconstraints::tc5230
+bettertls::nameconstraints::tc5232
+bettertls::nameconstraints::tc5233
+bettertls::nameconstraints::tc5235
+bettertls::nameconstraints::tc5247
+bettertls::nameconstraints::tc5250
+bettertls::nameconstraints::tc5253
+bettertls::nameconstraints::tc5254
+bettertls::nameconstraints::tc5256
+bettertls::nameconstraints::tc5257
+bettertls::nameconstraints::tc5259
+bettertls::nameconstraints::tc5260
+bettertls::nameconstraints::tc5262
+bettertls::nameconstraints::tc5436
+bettertls::nameconstraints::tc5442
+bettertls::nameconstraints::tc5443
+bettertls::nameconstraints::tc5445
+bettertls::nameconstraints::tc5449
+bettertls::nameconstraints::tc5451
+bettertls::nameconstraints::tc5463
+bettertls::nameconstraints::tc5469
+bettertls::nameconstraints::tc5470
+bettertls::nameconstraints::tc5472
+bettertls::nameconstraints::tc5476
+bettertls::nameconstraints::tc5478
+bettertls::nameconstraints::tc5679
+bettertls::nameconstraints::tc5682
+bettertls::nameconstraints::tc5686
+bettertls::nameconstraints::tc5688
+bettertls::nameconstraints::tc5689
+bettertls::nameconstraints::tc5691
+bettertls::nameconstraints::tc5733
+bettertls::nameconstraints::tc5736
+bettertls::nameconstraints::tc5740
+bettertls::nameconstraints::tc5742
+bettertls::nameconstraints::tc5743
+bettertls::nameconstraints::tc5745
+bettertls::nameconstraints::tc5922
+bettertls::nameconstraints::tc5925
+bettertls::nameconstraints::tc5928
+bettertls::nameconstraints::tc5929
+bettertls::nameconstraints::tc5931
+bettertls::nameconstraints::tc5932
+bettertls::nameconstraints::tc5934
+bettertls::nameconstraints::tc5935
+bettertls::nameconstraints::tc5937
+bettertls::nameconstraints::tc5949
+bettertls::nameconstraints::tc5952
+bettertls::nameconstraints::tc5955
+bettertls::nameconstraints::tc5956
+bettertls::nameconstraints::tc5958
+bettertls::nameconstraints::tc5959
+bettertls::nameconstraints::tc5961
+bettertls::nameconstraints::tc5962
+bettertls::nameconstraints::tc5964
+bettertls::nameconstraints::tc5976
+bettertls::nameconstraints::tc5979
+bettertls::nameconstraints::tc5982
+bettertls::nameconstraints::tc5983
+bettertls::nameconstraints::tc5985
+bettertls::nameconstraints::tc5986
+bettertls::nameconstraints::tc5988
+bettertls::nameconstraints::tc5989
+bettertls::nameconstraints::tc5991
+bettertls::nameconstraints::tc6165
+bettertls::nameconstraints::tc6171
+bettertls::nameconstraints::tc6172
+bettertls::nameconstraints::tc6174
+bettertls::nameconstraints::tc6178
+bettertls::nameconstraints::tc6180
+bettertls::nameconstraints::tc6192
+bettertls::nameconstraints::tc6198
+bettertls::nameconstraints::tc6199
+bettertls::nameconstraints::tc6201
+bettertls::nameconstraints::tc6205
+bettertls::nameconstraints::tc6207
+bettertls::nameconstraints::tc6408
+bettertls::nameconstraints::tc6411
+bettertls::nameconstraints::tc6415
+bettertls::nameconstraints::tc6417
+bettertls::nameconstraints::tc6418
+bettertls::nameconstraints::tc6420
+bettertls::nameconstraints::tc6462
+bettertls::nameconstraints::tc6465
+bettertls::nameconstraints::tc6469
+bettertls::nameconstraints::tc6471
+bettertls::nameconstraints::tc6472
+bettertls::nameconstraints::tc6474
+bettertls::nameconstraints::tc6651
+bettertls::nameconstraints::tc6654
+bettertls::nameconstraints::tc6657
+bettertls::nameconstraints::tc6658
+bettertls::nameconstraints::tc6660
+bettertls::nameconstraints::tc6661
+bettertls::nameconstraints::tc6663
+bettertls::nameconstraints::tc6664
+bettertls::nameconstraints::tc6666
+bettertls::nameconstraints::tc6678
+bettertls::nameconstraints::tc6681
+bettertls::nameconstraints::tc6684
+bettertls::nameconstraints::tc6685
+bettertls::nameconstraints::tc6687
+bettertls::nameconstraints::tc6688
+bettertls::nameconstraints::tc6690
+bettertls::nameconstraints::tc6691
+bettertls::nameconstraints::tc6693
+bettertls::nameconstraints::tc6705
+bettertls::nameconstraints::tc6708
+bettertls::nameconstraints::tc6711
+bettertls::nameconstraints::tc6712
+bettertls::nameconstraints::tc6714
+bettertls::nameconstraints::tc6715
+bettertls::nameconstraints::tc6717
+bettertls::nameconstraints::tc6718
+bettertls::nameconstraints::tc6720
+bettertls::nameconstraints::tc6894
+bettertls::nameconstraints::tc6900
+bettertls::nameconstraints::tc6901
+bettertls::nameconstraints::tc6903
+bettertls::nameconstraints::tc6907
+bettertls::nameconstraints::tc6909
+bettertls::nameconstraints::tc6921
+bettertls::nameconstraints::tc6927
+bettertls::nameconstraints::tc6928
+bettertls::nameconstraints::tc6930
+bettertls::nameconstraints::tc6934
+bettertls::nameconstraints::tc6936
+bettertls::nameconstraints::tc7137
+bettertls::nameconstraints::tc7140
+bettertls::nameconstraints::tc7144
+bettertls::nameconstraints::tc7146
+bettertls::nameconstraints::tc7147
+bettertls::nameconstraints::tc7149
+bettertls::nameconstraints::tc7191
+bettertls::nameconstraints::tc7194
+bettertls::nameconstraints::tc7198
+bettertls::nameconstraints::tc7200
+bettertls::nameconstraints::tc7201
+bettertls::nameconstraints::tc7203
+bettertls::nameconstraints::tc7380
+bettertls::nameconstraints::tc7383
+bettertls::nameconstraints::tc7386
+bettertls::nameconstraints::tc7387
+bettertls::nameconstraints::tc7389
+bettertls::nameconstraints::tc7390
+bettertls::nameconstraints::tc7392
+bettertls::nameconstraints::tc7393
+bettertls::nameconstraints::tc7395
+bettertls::nameconstraints::tc7407
+bettertls::nameconstraints::tc7410
+bettertls::nameconstraints::tc7413
+bettertls::nameconstraints::tc7414
+bettertls::nameconstraints::tc7416
+bettertls::nameconstraints::tc7417
+bettertls::nameconstraints::tc7419
+bettertls::nameconstraints::tc7420
+bettertls::nameconstraints::tc7422
+bettertls::nameconstraints::tc7434
+bettertls::nameconstraints::tc7437
+bettertls::nameconstraints::tc7440
+bettertls::nameconstraints::tc7441
+bettertls::nameconstraints::tc7443
+bettertls::nameconstraints::tc7444
+bettertls::nameconstraints::tc7446
+bettertls::nameconstraints::tc7447
+bettertls::nameconstraints::tc7449
+bettertls::nameconstraints::tc7623
+bettertls::nameconstraints::tc7629
+bettertls::nameconstraints::tc7630
+bettertls::nameconstraints::tc7632
+bettertls::nameconstraints::tc7636
+bettertls::nameconstraints::tc7638
+bettertls::nameconstraints::tc7650
+bettertls::nameconstraints::tc7656
+bettertls::nameconstraints::tc7657
+bettertls::nameconstraints::tc7659
+bettertls::nameconstraints::tc7663
+bettertls::nameconstraints::tc7665
+bettertls::nameconstraints::tc7866
+bettertls::nameconstraints::tc7869
+bettertls::nameconstraints::tc7873
+bettertls::nameconstraints::tc7875
+bettertls::nameconstraints::tc7876
+bettertls::nameconstraints::tc7878
+bettertls::nameconstraints::tc7920
+bettertls::nameconstraints::tc7923
+bettertls::nameconstraints::tc7927
+bettertls::nameconstraints::tc7929
+bettertls::nameconstraints::tc7930
+bettertls::nameconstraints::tc7932
+bettertls::nameconstraints::tc8109
+bettertls::nameconstraints::tc8112
+bettertls::nameconstraints::tc8115
+bettertls::nameconstraints::tc8116
+bettertls::nameconstraints::tc8118
+bettertls::nameconstraints::tc8119
+bettertls::nameconstraints::tc8121
+bettertls::nameconstraints::tc8122
+bettertls::nameconstraints::tc8124
+bettertls::nameconstraints::tc8136
+bettertls::nameconstraints::tc8139
+bettertls::nameconstraints::tc8142
+bettertls::nameconstraints::tc8143
+bettertls::nameconstraints::tc8145
+bettertls::nameconstraints::tc8146
+bettertls::nameconstraints::tc8148
+bettertls::nameconstraints::tc8149
+bettertls::nameconstraints::tc8151
+bettertls::nameconstraints::tc8163
+bettertls::nameconstraints::tc8166
+bettertls::nameconstraints::tc8169
+bettertls::nameconstraints::tc8170
+bettertls::nameconstraints::tc8172
+bettertls::nameconstraints::tc8173
+bettertls::nameconstraints::tc8175
+bettertls::nameconstraints::tc8176
+bettertls::nameconstraints::tc8178
+bettertls::nameconstraints::tc8352
+bettertls::nameconstraints::tc8358
+bettertls::nameconstraints::tc8359
+bettertls::nameconstraints::tc8361
+bettertls::nameconstraints::tc8365
+bettertls::nameconstraints::tc8367
+bettertls::nameconstraints::tc8379
+bettertls::nameconstraints::tc8385
+bettertls::nameconstraints::tc8386
+bettertls::nameconstraints::tc8388
+bettertls::nameconstraints::tc8392
+bettertls::nameconstraints::tc8394
+bettertls::nameconstraints::tc8595
+bettertls::nameconstraints::tc8598
+bettertls::nameconstraints::tc8602
+bettertls::nameconstraints::tc8604
+bettertls::nameconstraints::tc8605
+bettertls::nameconstraints::tc8607
+bettertls::nameconstraints::tc8649
+bettertls::nameconstraints::tc8652
+bettertls::nameconstraints::tc8656
+bettertls::nameconstraints::tc8658
+bettertls::nameconstraints::tc8659
+bettertls::nameconstraints::tc8661
+rfc5280::nc::permitted-ipv4-match  # The root contains a NameConstraints extension with a permitted iPAddress of `192.0.2.0/24`, which...
+rfc5280::nc::permitted-ipv6-match  # The root contains a NameConstraints extension with a permitted iPAddress of `::1/128`, which matc...
+
+# ===========================================================================
+# 46 testcase(s):
+#   46 x accepted, but the suite expects rejection
+# ---------------------------------------------------------------------------
+# BoringSSL accepted a chain the suite expects to be rejected. Most of these
+# encode CA/Browser Forum baseline requirements, or deliberately pedantic
+# readings of RFC 5280, that BoringSSL does not enforce: it is an RFC 5280
+# path validator and leaves CABF profile checks to the caller. Examples:
+# requiring the subject common name to be a character-for-character copy of
+# a SAN entry, forbidding anyExtendedKeyUsage, forbidding a critical
+# extKeyUsage, requiring an authorityKeyIdentifier on every certificate, and
+# rejecting key usage bits that a given key type cannot honour. The two
+# RSA-2052 cases are a deliberate omission rather than a gap: CABF requires
+# the modulus size to be divisible by 8, but RSA-2052 is stronger than the
+# RSA-2048 the same profile permits, so this harness's key strength check,
+# which is about strength rather than profile conformance, does not enforce
+# it.
+
+rfc5280::aki::critical-aki  # The root cert has an AKI extension marked as critical, which is disallowed under RFC 5280 4.2.1.1...
+rfc5280::aki::intermediate-missing-aki  # The intermediate is signed by the root but missing the AKI extension, which is forbidden under RF...
+rfc5280::aki::leaf-missing-aki  # The EE cert is signed by the root but missing the AKI extension, which is forbidden under RFC 528...
+rfc5280::leaf-ku-keycertsign  # The leaf has a BasicConstraints extension with cA=FALSE and a KeyUsage extension with keyCertSign...
+rfc5280::nc::invalid-dnsname-leading-period  # The root contains a Name Constraint extension with a malformed DNS name (uses a leading period, w...
+rfc5280::nc::nc-permits-invalid-dns-san  # The ICA contains a NC that allows `example.com` and all subdomains, but the EE's SAN contains a m...
+rfc5280::nc::not-allowed-in-ee-critical  # The EE contains a critical NameConstraints extension, which is not permitted under the RFC 5280 p...
+rfc5280::nc::not-allowed-in-ee-noncritical  # The EE contains a non-critical NameConstraints extension, which is not permitted under the RFC 52...
+rfc5280::nc::permitted-dns-match-noncritical  # The root contains a NameConstraints extension with a permitted dNSName of "example.com", matching...
+rfc5280::nc::permitted-empty-sequence-excluded-nonempty  # The ICA contains a NameConstraints extension whose permittedSubtrees is present but empty, alongs...
+rfc5280::nc::permitted-nonempty-excluded-empty-sequence  # The ICA contains a NameConstraints extension with a permitted dNSName of "example.com" alongside ...
+rfc5280::pc::ica-noncritical-pc  # The ICA has a `PolicyConstraints` extension marked as non-critical, which is disallowed under RFC...
+rfc5280::root-missing-basic-constraints  # The root CA is missing the BasicConstraints extension, which is disallowed under RFC 5280 4.2.1.9...
+rfc5280::root-non-critical-basic-constraints  # The root CA has a non-critical BasicConstraints extension, which is disallowed under RFC 5280 4.2...
+rfc5280::san::noncritical-with-empty-subject  # Produces an **invalid** chain due to an invalid EE cert.
+rfc5280::san::underscore-dns  # Produces an **invalid** chain due to an invalid EE cert.
+rfc5280::serial::too-long  # Produces an **invalid** chain due to an invalid EE cert.
+rfc5280::serial::zero  # Produces an **invalid** chain due to an invalid EE cert.
+rfc5280::ski::intermediate-missing-ski  # The intermediate cert is missing the SKI extension, which is disallowed under RFC 5280 4.2.1.2.
+rfc5280::ski::root-missing-ski  # The root cert is missing the SKI extension, which is disallowed under RFC 5280 4.2.1.2.
+rfc5280::unknown-critical-extension-root  # The root has an extension, 1.3.6.1.4.1.55738.666.1, that no implementation should recognize.
+rfc9881::ml-dsa-44-key-agreement  # The EE conveys an ML-DSA-44 key, but asserts `keyAgreement` in its `keyUsage` extension.
+rfc9881::ml-dsa-44-key-encipherment  # The EE conveys an ML-DSA-44 key, but asserts `keyEncipherment` in its `keyUsage` extension.
+webpki::aki::root-with-aki-missing-keyidentifier  # The root cert incudes the authorityKeyIdentifier extension but without the keyIdentifier field, w...
+webpki::cn::case-mismatch  # Produces a certificate where the CN differs from the SAN entry only in letter case, violating CAB...
+webpki::cn::ipv4-hex-mismatch  # Produces a certificate where the CN contains an IPv4 address in hexadecimal format, which violate...
+webpki::cn::ipv4-leading-zeros-mismatch  # Produces a certificate where the CN contains an IPv4 address with leading zeros, which violates C...
+webpki::cn::ipv6-non-rfc5952-mismatch  # Produces a certificate where the CN contains an IPv6 address that doesn't use "::" compression fo...
+webpki::cn::ipv6-uncompressed-mismatch  # Produces a certificate where the CN contains an uncompressed IPv6 address with leading zeros and ...
+webpki::cn::ipv6-uppercase-mismatch  # Produces a certificate where the CN contains an IPv6 address with uppercase hexadecimal character...
+webpki::cn::not-in-san  # Produces a certificate where the CN contains a domain name that is not present in any SAN entry, ...
+webpki::cn::punycode-not-in-san  # Produces a certificate where the CN contains a punycode domain that is not present in the SAN, vi...
+webpki::cn::utf8-vs-punycode-mismatch  # Produces a certificate where the CN contains a UTF-8 internationalized domain name while the SAN ...
+webpki::ee-basicconstraints-ca  # The EE certificate has `keyUsage.keyCertSign=FALSE` but `basicConstraints.cA=TRUE`, which is expl...
+webpki::eku::ee-anyeku  # This chain is correctly constructed, but the EE cert contains an Extended Key Usage extension tha...
+webpki::eku::ee-critical-eku  # This chain is correctly constructed, but the EE has an extKeyUsage extension marked as critical, ...
+webpki::eku::ee-without-eku  # This chain is correctly constructed, but the EE does not have the extKeyUsage extension, which is...
+webpki::eku::root-has-eku  # The root cert includes the extKeyUsage extension, which is forbidden under CABF: > 7.1.2.1.2 Root...
+webpki::forbidden-rsa-key-not-divisible-by-8-in-leaf  # The EE cert conveys an RSA-2052 key, which is above the security margin (2048) but not divisible ...
+webpki::forbidden-rsa-not-divisible-by-8-in-root  # The root cert is signed with and conveys an RSA-2052 key, which is above the security margin (204...
+webpki::malformed-aia  # Produces a chain with an EE cert.
+webpki::nc::intermediate-permitted-excluded-subtrees-both-empty-sequences  # The intermediate contains a NameConstraints extension with empty sequences for both permittedSubt...
+webpki::nc::intermediate-permitted-excluded-subtrees-both-null  # The intermediate contains a NameConstraints extension with `ASN.1 NULL` for both permittedSubtree...
+webpki::san::public-suffix-multi-label-wildcard-san  # Produces a chain with an EE cert.
+webpki::san::public-suffix-private-namespace-wildcard-san  # Produces a chain with an EE cert.
+webpki::san::san-critical-with-nonempty-subject  # The EE cert includes a critical subjectAlternativeName extension, which is forbidden under CABF w...
+
+# ===========================================================================
+# 29 testcase(s):
+#   18 x rejected with "unable to get local issuer certificate"
+#   4 x rejected with "invalid CA certificate"
+#   2 x rejected with "permitted subtree violation"
+#   2 x rejected with "signed with a weak signature digest"
+#   2 x rejected with "unable to get issuer certificate"
+#   1 x rejected with "excluded subtree violation"
+# ---------------------------------------------------------------------------
+# BoringSSL does not backtrack when a subject has more than one candidate
+# issuer certificate. It commits to the first candidate it finds and reports
+# whatever goes wrong down that branch, instead of retrying the alternative.
+# bettertls::pathbuilding::tc52 is the clearest example: the intermediate
+# "B" appears twice, once issued by "C" with CA:TRUE and once issued by "A"
+# with CA:FALSE. BoringSSL picks the CA:FALSE certificate and stops, even
+# though the other branch chains to the trust root. The same limitation
+# produces the cross-signed cycle failure in cve::cve-2024-0567, the name
+# constraint violations here are reported against a branch the suite does
+# not expect a validator to choose, and the weak signature digest rejections
+# here are on branches where an ecdsa-with-SHA1 cross-signature exists
+# alongside an ecdsa-with-SHA256 one.
+
+bettertls::pathbuilding::tc2  # unable to get local issuer certificate
+bettertls::pathbuilding::tc23  # unable to get local issuer certificate
+bettertls::pathbuilding::tc30  # unable to get local issuer certificate
+bettertls::pathbuilding::tc31  # unable to get local issuer certificate
+bettertls::pathbuilding::tc32  # unable to get local issuer certificate
+bettertls::pathbuilding::tc33  # unable to get local issuer certificate
+bettertls::pathbuilding::tc34  # unable to get local issuer certificate
+bettertls::pathbuilding::tc35  # unable to get local issuer certificate
+bettertls::pathbuilding::tc50  # permitted subtree violation
+bettertls::pathbuilding::tc52  # invalid CA certificate
+bettertls::pathbuilding::tc53  # invalid CA certificate
+bettertls::pathbuilding::tc54  # signed with a weak signature digest
+bettertls::pathbuilding::tc56  # permitted subtree violation
+bettertls::pathbuilding::tc58  # invalid CA certificate
+bettertls::pathbuilding::tc59  # invalid CA certificate
+bettertls::pathbuilding::tc60  # signed with a weak signature digest
+bettertls::pathbuilding::tc61  # unable to get local issuer certificate
+bettertls::pathbuilding::tc62  # unable to get local issuer certificate
+bettertls::pathbuilding::tc63  # unable to get local issuer certificate
+bettertls::pathbuilding::tc64  # unable to get local issuer certificate
+bettertls::pathbuilding::tc65  # unable to get local issuer certificate
+bettertls::pathbuilding::tc66  # unable to get local issuer certificate
+bettertls::pathbuilding::tc67  # unable to get local issuer certificate
+bettertls::pathbuilding::tc68  # unable to get local issuer certificate
+cve::cve-2024-0567  # unable to get issuer certificate; Tests CVE-2024-0567.
+pathlen::max-chain-depth-1-self-issued  # unable to get local issuer certificate; When validating with a maximum chain depth of 1, there may only be one logical intermediate.
+rfc5280::nc::nc-forbids-alternate-chain-ica  # unable to get local issuer certificate; `ICA_B'` and `ICA_B''` are certificates for the same logical intermediate, but issued by differen...
+rfc5280::nc::nc-forbids-same-chain-ica  # excluded subtree violation; `ICA_B'` and `ICA_B''` are certificates for the same logical intermediate, but chained to differe...
+rfc5280::root-and-intermediate-swapped  # unable to get issuer certificate; The configuration puts the ICA in the trusted set, meaning that validation should ignore (and not...
+
+# ===========================================================================
+# 4 testcase(s):
+#   4 x rejected with "unsupported certificate purpose"
+# ---------------------------------------------------------------------------
+# The leaf's key usage or extended key usage does not satisfy the requested
+# purpose. This harness maps the testcase validation_kind onto
+# X509_PURPOSE_SSL_SERVER or X509_PURPOSE_SSL_CLIENT, so BoringSSL applies
+# the TLS key usage check to the leaf. Two of these put a CA certificate in
+# the leaf position, which RFC 5280 permits but which then asserts
+# keyCertSign rather than a TLS key usage. The two bettertls::pathbuilding
+# cases are instead the chain building limitation described in another
+# group: the purpose check fails on a branch a backtracking validator would
+# not have chosen.
+
+bettertls::pathbuilding::tc51
+bettertls::pathbuilding::tc57
+pathlen::validation-ignores-pathlen-in-leaf  # This is, unintuitively, a valid chain construction: RFC 5280 4.2.1.9 notes that the leaf certific...
+rfc5280::ca-as-leaf  # The ICA is in leaf position, despite being a CA certificate.
+
+# ===========================================================================
+# 2 testcase(s):
+#   2 x rejected with "certificate has expired"
+# ---------------------------------------------------------------------------
+# BoringSSL treats notAfter as exclusive. X509_cmp_time_posix
+# (crypto/x509/x509_vfy.cc) reports expiry when the certificate time minus
+# the comparison time is <= 0, so validating at exactly notAfter fails. RFC
+# 5280 4.1.2.5 defines notAfter as inclusive. The second case validates five
+# milliseconds past notAfter, which this harness truncates to whole seconds,
+# producing the same comparison.
+
+rfc5280::validity::notafter-exact  # EE expires at `2024-04-01T00:00:00Z`, and the chain is validated at exactly `2024-04-01T00:00:00Z`.
+rfc5280::validity::notafter-fractional  # EE expires at `2024-04-01T00:00:00Z`, and the chain is validated at `2024-04-01T00:00:00.005Z`, i.e.

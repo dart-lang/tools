@@ -34,6 +34,7 @@ void main() {
     expect(value.workspace, isNull);
     expect(value.resolution, isNull);
     expect(value.executables, isEmpty);
+    expect(value.platforms, isNull);
     expect(value.falseSecrets, isNull);
   });
 
@@ -59,6 +60,7 @@ void main() {
       ],
       'workspace': ['pkg1', 'pkg2'],
       'resolution': 'workspace',
+      'platforms': {'android': null, 'web': null},
       'false_secrets': ['/lib/src/hardcoded_api_key.dart', '/test/*.pem'],
       'executables': {
         'my_script': 'bin/my_script.dart',
@@ -103,6 +105,7 @@ void main() {
     expect(value.workspace!.first, 'pkg1');
     expect(value.workspace!.last, 'pkg2');
     expect(value.resolution, 'workspace');
+    expect(value.platforms, {'android': null, 'web': null});
     expect(value.falseSecrets, [
       '/lib/src/hardcoded_api_key.dart',
       '/test/*.pem',
@@ -401,6 +404,34 @@ line 4, column 10: Unsupported value for "sdk". Could not parse version "silly".
         "Unsupported value for \"issue_tracker\". type 'YamlMap' is not a subtype of type 'String'",
         skipTryPub: true,
       );
+    });
+  });
+
+  group('platforms', () {
+    test('map with null values', () async {
+      final value = await parse({
+        ...defaultPubspec,
+        'platforms': {'android': null, 'ios': null, 'web': null},
+      });
+      expect(value.platforms, {'android': null, 'ios': null, 'web': null});
+    });
+
+    test('not a map', () {
+      expectParseThrowsContaining(
+        {...defaultPubspec, 'platforms': 1},
+        "Unsupported value for \"platforms\". type 'int' is not a subtype of type 'Map<dynamic, dynamic>?'",
+        skipTryPub: true,
+      );
+    });
+
+    test('invalid data - lenient', () async {
+      final value = await parse(
+        {...defaultPubspec, 'platforms': 1},
+        skipTryPub: true,
+        lenient: true,
+      );
+      expect(value.name, 'sample');
+      expect(value.platforms, isNull);
     });
   });
 
@@ -727,6 +758,28 @@ line 1, column 1: Not a map
         {},
         "Missing key \"name\". type 'Null' is not a subtype of type 'String'",
         lenient: true,
+      );
+    });
+
+    test('name cannot be null', () {
+      expectParseThrowsContaining(
+        {...defaultPubspec, 'name': null},
+        "Unsupported value for \"name\". type 'Null' is not a subtype of type 'String'",
+        lenient: true,
+      );
+    });
+
+    test('name cannot be empty string with invalid other property', () {
+      expectParseThrows(
+        {'name': '', 'version': 'invalid'},
+        r'''
+line 2, column 10: Unsupported value for "name". "name" cannot be empty.
+  ╷
+2 │  "name": "",
+  │          ^^
+  ╵''',
+        lenient: true,
+        skipTryPub: true,
       );
     });
 

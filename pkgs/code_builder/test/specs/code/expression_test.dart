@@ -358,6 +358,10 @@ void main() {
     expect(refer('foo').nullSafeProperty('bar'), equalsDart('foo?.bar'));
   });
 
+  test('should emit invoking a null-aware cascade property accessor', () {
+    expect(refer('foo').nullSafeCascade('bar'), equalsDart('foo?..bar'));
+  });
+
   test('should emit invoking a method with a single positional argument', () {
     expect(refer('foo').call([literal(1)]), equalsDart('foo(1)'));
   });
@@ -634,6 +638,28 @@ void main() {
           .assignVar('foo')
           .statement,
       equalsDart('var foo = bar[true] ??= false;'),
+    );
+  });
+
+  test('should emit a cascade index operator set', () {
+    expect(
+      refer('bar')
+          .cascadeIndex(literalString('key'))
+          .assign(literalFalse)
+          .assignVar('foo')
+          .statement,
+      equalsDart("var foo = bar..['key'] = false;"),
+    );
+  });
+
+  test('should emit a null-aware cascade index operator set', () {
+    expect(
+      refer('bar')
+          .nullSafeCascadeIndex(literalString('key'))
+          .assign(literalFalse)
+          .assignVar('foo')
+          .statement,
+      equalsDart("var foo = bar?..['key'] = false;"),
     );
   });
 

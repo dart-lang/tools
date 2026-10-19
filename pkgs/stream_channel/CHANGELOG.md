@@ -1,3 +1,7 @@
+## 2.1.5-wip
+
+* Require `package:async` `^2.6.0`.
+
 ## 2.1.4
 
 * Fix `StreamChannelMixin` so that it can be used as a mixin again.
