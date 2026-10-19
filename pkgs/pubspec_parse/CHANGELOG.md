@@ -9,6 +9,8 @@
   dependency shorthands fail to parse or when `Pubspec.fromJson` is called with
   a non-`YamlMap` `Map`.
 - Added fields to `Pubspec`: `falseSecrets`, `hooks`, `platforms`.
+- Added `version` to `PathDependency`, exposing the constraint from an
+  accompanying `version` key instead of silently discarding it.
 
 ## 1.6.0
 
