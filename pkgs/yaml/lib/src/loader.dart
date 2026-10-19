@@ -284,13 +284,16 @@ class Loader {
       {bool allowInt = true, bool allowFloat = true}) {
     assert(allowInt || allowFloat);
 
-    var firstChar = contents.codeUnitAt(0);
     var length = contents.length;
+    if (length == 0) return null;
 
-    // Quick check for single digit integers.
-    if (allowInt && length == 1) {
+    var firstChar = contents.codeUnitAt(0);
+
+    // Quick check for single digit numbers.
+    if (length == 1) {
       var value = firstChar - $0;
-      return value >= 0 && value <= 9 ? value : null;
+      if (value < 0 || value > 9) return null;
+      return allowInt ? value : value.toDouble();
     }
 
     var secondChar = contents.codeUnitAt(1);
