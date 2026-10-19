@@ -40,6 +40,10 @@ abstract class ErrorListener {
 /// print('Found ${listener.errors.length} error(s)');
 /// ```
 class ErrorCollector extends ErrorListener {
+  /// The errors reported so far, in the order they were encountered.
+  ///
+  /// This list is empty until parsing reports its first error, so read it
+  /// after the `load*` call that was given this collector has returned.
   final List<YamlException> errors = [];
 
   @override
