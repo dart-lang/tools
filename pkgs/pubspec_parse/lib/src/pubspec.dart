@@ -105,7 +105,7 @@ class Pubspec {
   /// `web` and `windows`. Values are currently always `null`.
   ///
   /// See https://dart.dev/tools/pub/pubspec#platforms.
-  final Map<String, dynamic>? platforms;
+  final Map<String, Object?>? platforms;
 
   /// If [author] and [authors] are both provided, their values are combined
   /// with duplicates eliminated.
