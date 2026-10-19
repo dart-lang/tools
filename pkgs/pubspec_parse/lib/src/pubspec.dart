@@ -154,14 +154,26 @@ class Pubspec {
 
   factory Pubspec.fromJson(Map json, {bool lenient = false}) {
     if (lenient) {
-      while (json.isNotEmpty) {
+      var currentJson = json;
+      while (currentJson.isNotEmpty) {
         // Attempting to remove top-level properties that cause parsing errors.
         try {
-          return _$PubspecFromJson(json);
+          return _$PubspecFromJson(currentJson);
         } on CheckedFromJsonException catch (e) {
-          if (e.map == json && json.containsKey(e.key)) {
-            json = Map.from(json)..remove(e.key);
-            continue;
+          if (e.map == currentJson) {
+            if (e.key != 'name' && currentJson.containsKey(e.key)) {
+              currentJson = Map.from(currentJson)..remove(e.key);
+              continue;
+            }
+            if (currentJson != json) {
+              throw CheckedFromJsonException(
+                json,
+                e.key,
+                e.className!,
+                e.message,
+                badKey: e.badKey,
+              );
+            }
           }
           rethrow;
         }
