@@ -69,6 +69,10 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
         'false_secrets',
         (v) => (v as List<dynamic>?)?.map((e) => e as String).toList(),
       ),
+      hooks: $checkedConvert(
+        'hooks',
+        (v) => (v as Map?)?.map((k, e) => MapEntry(k as String, e)),
+      ),
       dependencies: $checkedConvert(
         'dependencies',
         (v) => parseDeps(v as Map?),
@@ -127,4 +131,5 @@ Map<String, dynamic> _$PubspecToJson(Pubspec instance) => <String, dynamic>{
   'resolution': instance.resolution,
   'platforms': instance.platforms,
   'false_secrets': instance.falseSecrets,
+  'hooks': instance.hooks,
 };

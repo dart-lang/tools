@@ -36,6 +36,7 @@ void main() {
     expect(value.executables, isEmpty);
     expect(value.platforms, isNull);
     expect(value.falseSecrets, isNull);
+    expect(value.hooks, isNull);
   });
 
   test('all fields set', () async {
@@ -62,6 +63,11 @@ void main() {
       'resolution': 'workspace',
       'platforms': {'android': null, 'web': null},
       'false_secrets': ['/lib/src/hardcoded_api_key.dart', '/test/*.pem'],
+      'hooks': {
+        'user_defines': {
+          'my_package': {'enable_experimental': true},
+        },
+      },
       'executables': {
         'my_script': 'bin/my_script.dart',
         'my_script2': 'bin/my_script2.dart',
@@ -110,6 +116,11 @@ void main() {
       '/lib/src/hardcoded_api_key.dart',
       '/test/*.pem',
     ]);
+    expect(value.hooks, {
+      'user_defines': {
+        'my_package': {'enable_experimental': true},
+      },
+    });
   });
 
   test('environment values can be null', () async {
@@ -480,6 +491,42 @@ line 4, column 10: Unsupported value for "sdk". Could not parse version "silly".
       );
       expect(value.name, 'sample');
       expect(value.falseSecrets, isNull);
+    });
+  });
+
+  group('hooks', () {
+    test('map', () async {
+      final value = await parse({
+        ...defaultPubspec,
+        'hooks': {
+          'user_defines': {
+            'my_package': {'enable_experimental': true},
+          },
+        },
+      });
+      expect(value.hooks, {
+        'user_defines': {
+          'my_package': {'enable_experimental': true},
+        },
+      });
+    });
+
+    test('not a map', () {
+      expectParseThrowsContaining(
+        {...defaultPubspec, 'hooks': 1},
+        "Unsupported value for \"hooks\". type 'int' is not a subtype of type 'Map<dynamic, dynamic>?'",
+        skipTryPub: true,
+      );
+    });
+
+    test('invalid data - lenient', () async {
+      final value = await parse(
+        {...defaultPubspec, 'hooks': 1},
+        skipTryPub: true,
+        lenient: true,
+      );
+      expect(value.name, 'sample');
+      expect(value.hooks, isNull);
     });
   });
 

@@ -113,6 +113,13 @@ class Pubspec {
   /// See https://dart.dev/tools/pub/pubspec#false_secrets.
   final List<String>? falseSecrets;
 
+  /// Configuration for hooks, such as native build or link hooks.
+  ///
+  /// May include `user_defines` and other settings.
+  ///
+  /// See https://dart.dev/tools/pub/pubspec#hooks.
+  final Map<String, Object?>? hooks;
+
   /// If [author] and [authors] are both provided, their values are combined
   /// with duplicates eliminated.
   Pubspec(
@@ -137,6 +144,7 @@ class Pubspec {
     this.resolution,
     this.platforms,
     this.falseSecrets,
+    this.hooks,
     Map<String, Dependency>? dependencies,
     Map<String, Dependency>? devDependencies,
     Map<String, Dependency>? dependencyOverrides,
