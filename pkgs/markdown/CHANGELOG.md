@@ -1,5 +1,9 @@
 ## 7.4.1-wip
 
+* Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
+  `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
+  position cannot start a match. This makes inline parsing faster, mostly on
+  text with many spaces, punctuation marks, or CJK characters.
 * Fix quadratic parsing time on blocks of consecutive link reference
   definitions by only consuming lines from `BlockParser` as needed for a
   single definition rather than joining and re-splitting the remainder of the

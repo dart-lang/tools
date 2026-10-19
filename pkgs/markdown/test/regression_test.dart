@@ -188,6 +188,50 @@ a <!--
       }
     },
   );
+
+  group('inline syntaxes that check their first character', () {
+    // These syntaxes skip the regex when the first character cannot match.
+    // They must still match after CJK text and punctuation, and leave a lone
+    // first character as text.
+    test('EmojiSyntax', () {
+      expect(
+        markdownToHtml(
+          '中文:smile: a: b, (:+1:)',
+          inlineSyntaxes: [EmojiSyntax()],
+        ),
+        '<p>中文😄 a: b, (👍)</p>\n',
+      );
+    });
+
+    test('AutolinkSyntax', () {
+      expect(
+        markdownToHtml('中文<http://a.b>, (<mailto:x@y.z>) a < b'),
+        '<p>中文<a href="http://a.b">http://a.b</a>, '
+        '(<a href="mailto:x@y.z">mailto:x@y.z</a>) a &lt; b</p>\n',
+      );
+    });
+
+    test('CodeSyntax', () {
+      expect(
+        markdownToHtml('中文`code`, (``a`b``) a ` b'),
+        '<p>中文<code>code</code>, (<code>a`b</code>) a ` b</p>\n',
+      );
+    });
+
+    test('ColorSwatchSyntax', () {
+      expect(
+        markdownToHtml(
+          '中文`#f00`, (`rgb(0,255,0)`) `#ba`',
+          inlineSyntaxes: [ColorSwatchSyntax()],
+        ),
+        '<p>中文<code class="gfm-color_chip">#f00<span '
+        'style="background-color:#f00;"></span></code>, '
+        '(<code class="gfm-color_chip">rgb(0,255,0)<span '
+        'style="background-color:rgb(0,255,0);"></span></code>) '
+        '<code>#ba</code></p>\n',
+      );
+    });
+  });
 }
 
 class _CountingLine extends Line {
