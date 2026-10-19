@@ -260,6 +260,10 @@ void main() {
             'version': '^2.0.1',
           },
           'local_utils': {'path': '../local_utils'},
+          'versioned_local': {
+            'path': '../versioned_local',
+            'version': '^1.2.3',
+          },
         },
       }, skipTryPub: true);
 
@@ -267,7 +271,7 @@ void main() {
 
       final newValue = await parse(jsonValue, skipTryPub: true);
 
-      expect(value.dependencies, hasLength(9));
+      expect(value.dependencies, hasLength(10));
       expect(value.dependencies, {
         'flutter': isA<SdkDependency>(),
         'http': isA<HostedDependency>(),
@@ -278,6 +282,7 @@ void main() {
         'shared_preferences': isA<GitDependency>(),
         'kittens': isA<GitDependency>(),
         'local_utils': isA<PathDependency>(),
+        'versioned_local': isA<PathDependency>(),
       });
 
       expect(
@@ -322,6 +327,14 @@ void main() {
       expect(
         value.dependencies['local_utils']?.toJson(),
         newValue.dependencies['local_utils']?.toJson(),
+      );
+      expect(value.dependencies['versioned_local']?.toJson(), {
+        'path': '../versioned_local',
+        'version': '^1.2.3',
+      });
+      expect(
+        value.dependencies['versioned_local']?.toJson(),
+        newValue.dependencies['versioned_local']?.toJson(),
       );
     });
   });
