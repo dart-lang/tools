@@ -3,13 +3,18 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../ast.dart';
+import '../charcode.dart';
 import '../inline_parser.dart';
 import '../util.dart';
 import 'inline_syntax.dart';
 
 /// Matches autolinks like `<http://foo.com>`.
 class AutolinkSyntax extends InlineSyntax {
-  AutolinkSyntax() : super(r'<(([a-zA-Z][a-zA-Z\-\+\.]+):(?://)?[^\s>]*)>');
+  AutolinkSyntax()
+    : super(
+        r'<(([a-zA-Z][a-zA-Z\-\+\.]+):(?://)?[^\s>]*)>',
+        startCharacter: $lt,
+      );
 
   @override
   bool onMatch(InlineParser parser, Match match) {
