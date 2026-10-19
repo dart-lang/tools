@@ -34,6 +34,7 @@ void main() {
     expect(value.workspace, isNull);
     expect(value.resolution, isNull);
     expect(value.executables, isEmpty);
+    expect(value.platforms, isNull);
   });
 
   test('all fields set', () async {
@@ -58,6 +59,7 @@ void main() {
       ],
       'workspace': ['pkg1', 'pkg2'],
       'resolution': 'workspace',
+      'platforms': {'android': null, 'web': null},
       'executables': {
         'my_script': 'bin/my_script.dart',
         'my_script2': 'bin/my_script2.dart',
@@ -101,6 +103,7 @@ void main() {
     expect(value.workspace!.first, 'pkg1');
     expect(value.workspace!.last, 'pkg2');
     expect(value.resolution, 'workspace');
+    expect(value.platforms, {'android': null, 'web': null});
   });
 
   test('environment values can be null', () async {
@@ -395,6 +398,34 @@ line 4, column 10: Unsupported value for "sdk". Could not parse version "silly".
         "Unsupported value for \"issue_tracker\". type 'YamlMap' is not a subtype of type 'String'",
         skipTryPub: true,
       );
+    });
+  });
+
+  group('platforms', () {
+    test('map with null values', () async {
+      final value = await parse({
+        ...defaultPubspec,
+        'platforms': {'android': null, 'ios': null, 'web': null},
+      });
+      expect(value.platforms, {'android': null, 'ios': null, 'web': null});
+    });
+
+    test('not a map', () {
+      expectParseThrowsContaining(
+        {...defaultPubspec, 'platforms': 1},
+        "Unsupported value for \"platforms\". type 'int' is not a subtype of type 'Map<dynamic, dynamic>?'",
+        skipTryPub: true,
+      );
+    });
+
+    test('invalid data - lenient', () async {
+      final value = await parse(
+        {...defaultPubspec, 'platforms': 1},
+        skipTryPub: true,
+        lenient: true,
+      );
+      expect(value.name, 'sample');
+      expect(value.platforms, isNull);
     });
   });
 

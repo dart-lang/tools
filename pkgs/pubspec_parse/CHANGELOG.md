@@ -8,6 +8,7 @@
 - Preserve nested `Map` (`YamlMap`) keys and spans when `git` or `hosted`
   dependency shorthands fail to parse or when `Pubspec.fromJson` is called with
   a non-`YamlMap` `Map`.
+- Added `platforms` field to `Pubspec`.
 
 ## 1.6.0
 
