@@ -262,7 +262,7 @@ abstract class Package {
     LanguageVersion? languageVersion,
     Object? extraData,
     bool relativeRoot = true,
-    Iterable<String>? experiments,
+    Iterable<String> experiments = const <String>[],
   }) => SimplePackage.validate(
     name,
     root,
@@ -324,10 +324,10 @@ abstract class Package {
   /// location or absolute, controller by this value.
   bool get relativeRoot;
 
-  /// Experimental features enabled or disabled for this package.
+  /// Experimental features enabled for this package.
   ///
-  /// An unmodifiable list of experiment flag strings (such as `'variance'`,
-  /// `'no-variance'`, or <i>package</i>`.`<i>experiment</i>).
+  /// An unmodifiable list of experiment flag strings (such as `'variance'`
+  /// or `_package.experiment_`).
   ///
   /// Empty if no experiments are specified for this package.
   List<String> get experiments;
