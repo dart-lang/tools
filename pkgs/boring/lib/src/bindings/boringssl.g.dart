@@ -1011,7 +1011,7 @@ external int ASN1_STRING_copy(
 /// representation that does not always correspond to the DER encoding of the
 /// type. See the documentation for `ASN1_STRING` for details.
 ///
-/// Prefer `ASN1_STRING_get0_data`.
+/// Prefer `ASN1_STRING_get0_data`. See crbug.com/574019297.
 @meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.UnsignedChar> Function(ffi.Pointer<ASN1_STRING>)>(
   symbol: 'bssl_dart_ASN1_STRING_data',
@@ -1060,7 +1060,21 @@ external ffi.Pointer<ffi.UnsignedChar> ASN1_STRING_get0_data(
 )
 external int ASN1_STRING_get_default_mask();
 
-/// ASN1_STRING_length returns the length of `str`, in bytes.
+/// ASN1_STRING_get_length returns the length of `str`, in bytes.
+///
+/// The contents of an `ASN1_STRING` encode the value in some type-specific
+/// representation that does not always correspond to the DER encoding of the
+/// type. See the documentation for `ASN1_STRING` for details.
+@meta.RecordUse()
+@ffi.Native<ffi.Size Function(ffi.Pointer<ASN1_STRING>)>(
+  symbol: 'bssl_dart_ASN1_STRING_get_length',
+)
+external int ASN1_STRING_get_length(
+  ffi.Pointer<ASN1_STRING> str,
+);
+
+/// ASN1_STRING_length returns the length of `str`, in bytes. Prefer
+/// `ASN1_STRING_get_length`.
 ///
 /// The contents of an `ASN1_STRING` encode the value in some type-specific
 /// representation that does not always correspond to the DER encoding of the
@@ -2381,6 +2395,16 @@ external int BIO_ctrl_pending(
   symbol: 'bssl_dart_BIO_do_connect',
 )
 external int BIO_do_connect(
+  ffi.Pointer<BIO> bio,
+);
+
+/// BIO_dup_ref increments the reference count of `bio` and returns the same
+/// handle.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<BIO> Function(ffi.Pointer<BIO>)>(
+  symbol: 'bssl_dart_BIO_dup_ref',
+)
+external ffi.Pointer<BIO> BIO_dup_ref(
   ffi.Pointer<BIO> bio,
 );
 
@@ -8208,6 +8232,17 @@ external int DH_compute_key_padded(
   ffi.Pointer<DH> dh,
 );
 
+/// DH_dup_ref increments the reference count of `dh` and returns the same
+/// handle. It does not mutate `dh` for thread-safety purposes and may be used
+/// concurrently.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<DH> Function(ffi.Pointer<DH>)>(
+  symbol: 'bssl_dart_DH_dup_ref',
+)
+external ffi.Pointer<DH> DH_dup_ref(
+  ffi.Pointer<DH> dh,
+);
+
 /// DH_free decrements the reference count of `dh` and frees it if the reference
 /// count drops to zero.
 @meta.RecordUse()
@@ -13059,9 +13094,6 @@ external int EVP_DigestSignFinal(
 /// Ed25519, `type` should be NULL. The `EVP_MD_CTX` itself is unused but is
 /// present so the API is uniform. See `EVP_DigestSign`.
 ///
-/// This function does not mutate `pkey` for thread-safety purposes and may be
-/// used concurrently with other non-mutating functions on `pkey`.
-///
 /// It returns one on success, or zero on error.
 @meta.RecordUse()
 @ffi.Native<
@@ -13155,9 +13187,6 @@ external int EVP_DigestVerifyFinal(
 /// For single-shot signing algorithms which do not use a pre-hash, such as
 /// Ed25519, `type` should be NULL. The `EVP_MD_CTX` itself is unused but is
 /// present so the API is uniform. See `EVP_DigestVerify`.
-///
-/// This function does not mutate `pkey` for thread-safety purposes and may be
-/// used concurrently with other non-mutating functions on `pkey`.
 ///
 /// It returns one on success, or zero on error.
 @meta.RecordUse()
@@ -15671,11 +15700,6 @@ external ffi.Pointer<EVP_PKEY> EVP_RSA_gen(
 /// actual size of the signature is written to `*out_sig_len`.
 ///
 /// It returns one on success and zero otherwise.
-///
-/// It does not modify `ctx`, thus it's possible to continue to use `ctx` in
-/// order to sign a longer message. It also does not mutate `pkey` for
-/// thread-safety purposes and may be used concurrently with other non-mutating
-/// functions on `pkey`.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
@@ -15741,11 +15765,6 @@ external int EVP_SignUpdate(
 /// calls to `EVP_VerifyUpdate`.
 ///
 /// It returns one on success and zero otherwise.
-///
-/// It does not modify `ctx`, thus it's possible to continue to use `ctx` in
-/// order to verify a longer message. It also does not mutate `pkey` for
-/// thread-safety purposes and may be used concurrently with other non-mutating
-/// functions on `pkey`.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
@@ -16730,6 +16749,23 @@ external ffi.Pointer<EVP_MD> EVP_sha256();
 @meta.RecordUse()
 @ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha384')
 external ffi.Pointer<EVP_MD> EVP_sha384();
+
+/// SHA-3 family of digest functions.
+///
+/// WARNING: Prefer to use SHA-2 (e.g. `EVP_sha256`) over SHA-3. Despite being a
+/// newer hash function, SHA-3 performs poorly and should only be used when
+/// necessary for interoperability with existing systems.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha3_256')
+external ffi.Pointer<EVP_MD> EVP_sha3_256();
+
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha3_384')
+external ffi.Pointer<EVP_MD> EVP_sha3_384();
+
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha3_512')
+external ffi.Pointer<EVP_MD> EVP_sha3_512();
 
 @meta.RecordUse()
 @ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha512')
@@ -23213,6 +23249,16 @@ external ffi.Pointer<X509_CRL> X509_CRL_dup(
   ffi.Pointer<X509_CRL> crl,
 );
 
+/// X509_CRL_dup_ref adds one to the reference count of `crl` and returns the
+/// same.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<X509_CRL> Function(ffi.Pointer<X509_CRL>)>(
+  symbol: 'bssl_dart_X509_CRL_dup_ref',
+)
+external ffi.Pointer<X509_CRL> X509_CRL_dup_ref(
+  ffi.Pointer<X509_CRL> crl,
+);
+
 /// X509_CRL_free decrements `crl`'s reference count and, if zero, releases
 /// memory associated with `crl`.
 @meta.RecordUse()
@@ -25543,16 +25589,6 @@ external ffi.Pointer<X509> X509_STORE_CTX_get0_cert(
   symbol: 'bssl_dart_X509_STORE_CTX_get0_chain',
 )
 external ffi.Pointer<stack_st_X509> X509_STORE_CTX_get0_chain(
-  ffi.Pointer<X509_STORE_CTX> ctx,
-);
-
-/// X509_STORE_CTX_get0_current_crl returns the CRL which caused the error
-/// returned by `X509_STORE_CTX_get_error`.
-@meta.RecordUse()
-@ffi.Native<ffi.Pointer<X509_CRL> Function(ffi.Pointer<X509_STORE_CTX>)>(
-  symbol: 'bssl_dart_X509_STORE_CTX_get0_current_crl',
-)
-external ffi.Pointer<X509_CRL> X509_STORE_CTX_get0_current_crl(
   ffi.Pointer<X509_STORE_CTX> ctx,
 );
 
@@ -28088,8 +28124,7 @@ external int X509_set_notBefore(
 );
 
 /// X509_set_pubkey sets `x509`'s public key to `pkey`. It returns one on success
-/// and zero on error. This function does not take ownership of `pkey` and
-/// internally copies and updates reference counts as needed.
+/// and zero on error.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<X509>, ffi.Pointer<EVP_PKEY>)>(
   symbol: 'bssl_dart_X509_set_pubkey',
@@ -32975,9 +33010,9 @@ const int EVP_MAX_IV_LENGTH = 16;
 
 const int EVP_MAX_KEY_LENGTH = 64;
 
-const int EVP_MAX_MD_BLOCK_SIZE = 128;
+const int EVP_MAX_MD_BLOCK_SIZE = 136;
 
-const int EVP_MAX_MD_DATA_SIZE = 208;
+const int EVP_MAX_MD_DATA_SIZE = 240;
 
 const int EVP_MAX_MD_SIZE = 64;
 
@@ -33276,11 +33311,11 @@ const int NID_OCSP_sign = 180;
 
 const int NID_Private = 385;
 
-const int NID_SLH_DSA_SHA2_128s = 979;
+const int NID_SLH_DSA_SHA2_128s = 973;
 
-const int NID_SLH_DSA_SHA2_128s_WITH_SHA256 = 981;
+const int NID_SLH_DSA_SHA2_128s_WITH_SHA256 = 975;
 
-const int NID_SLH_DSA_SHAKE_256f = 980;
+const int NID_SLH_DSA_SHAKE_256f = 974;
 
 const int NID_SMIME = 188;
 
@@ -33462,7 +33497,7 @@ const int NID_aes_256_ofb128 = 428;
 
 const int NID_aes_256_xts = 914;
 
-const int NID_alg_mtcProof_draft = 976;
+const int NID_alg_mtcProof = 976;
 
 const int NID_algorithm = 376;
 
@@ -34532,7 +34567,7 @@ const int NID_pbes2 = 161;
 
 const int NID_pbmac1 = 162;
 
-const int NID_pe_mtcCertificationAuthority_draft = 978;
+const int NID_pe_mtcCertificationAuthority_SHA256 = 978;
 
 const int NID_personalSignature = 499;
 
@@ -34662,7 +34697,7 @@ const int NID_rc5_ecb = 121;
 
 const int NID_rc5_ofb64 = 123;
 
-const int NID_rdna_trustAnchorID_draft = 977;
+const int NID_rdna_trustAnchorID = 977;
 
 const int NID_registeredAddress = 870;
 
@@ -35771,7 +35806,7 @@ final class UnnamedUnion$1 extends ffi.Union {
 
 /// md_data contains the hash-specific context.
 final class UnnamedUnion$2 extends ffi.Union {
-  @ffi.Array.multi([208])
+  @ffi.Array.multi([240])
   external ffi.Array<ffi.Uint8> md_data;
 
   @ffi.Uint64()
@@ -36367,7 +36402,7 @@ const int X509_V_FLAG_ALLOW_TIMEZONE_OFFSET = 16777216;
 
 const int X509_V_FLAG_CB_ISSUER_CHECK = 1;
 
-const int X509_V_FLAG_CHECK_SS_SIGNATURE = 16384;
+const int X509_V_FLAG_CHECK_SS_SIGNATURE = 0;
 
 const int X509_V_FLAG_CRL_CHECK = 4;
 
@@ -36399,7 +36434,7 @@ const int X509_V_FLAG_USE_CHECK_TIME = 2;
 
 const int X509_V_FLAG_USE_DELTAS = 8192;
 
-const int X509_V_FLAG_USE_MTC_DRAFT_PLANTS_05 = 4194304;
+const int X509_V_FLAG_USE_MTC_DRAFT_PLANTS_07 = 4194304;
 
 const int X509_V_FLAG_X509_STRICT = 0;
 

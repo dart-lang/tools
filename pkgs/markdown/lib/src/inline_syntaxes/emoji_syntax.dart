@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../ast.dart';
+import '../charcode.dart';
 import '../emojis.dart';
 import '../inline_parser.dart';
 import 'inline_syntax.dart';
@@ -15,7 +16,7 @@ import 'inline_syntax.dart';
 class EmojiSyntax extends InlineSyntax {
   // Emoji "aliases" are mostly limited to lower-case letters, numbers, and
   // underscores, but GitHub also supports `:+1:` and `:-1:`.
-  EmojiSyntax() : super(':([a-z0-9_+-]+):');
+  EmojiSyntax() : super(':([a-z0-9_+-]+):', startCharacter: $colon);
 
   @override
   bool onMatch(InlineParser parser, Match match) {

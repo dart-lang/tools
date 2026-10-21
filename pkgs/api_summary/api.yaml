@@ -2127,6 +2127,19 @@ libraries:
               kind: interface
               name: ApiSummaryCustomizer
               libraryUri: package:api_summary/src/api_summary_customizer.dart
+            parameters:
+              - name: includeImplicitNonPublicMembers
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
+              - name: includeReferencedTypes
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
             isConst: true
         methods:
           - name: includeImplicitNonPublicMembers

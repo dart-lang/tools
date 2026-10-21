@@ -1,4 +1,14 @@
-## 8.1.0-wip
+## 8.2.0
+
+- Default `agent` in `Analytics` and `Analytics.development` to
+  `AiAgent.detectAgentName(Platform.environment)` when omitted.
+- Tightened `AiAgent.cursor` detection in `AiAgent.detectAgentName` to check
+  `CURSOR_AGENT` and `CURSOR_EXTENSION_HOST_ROLE=agent-exec` rather than
+  `TERM_PROGRAM=cursor` or any `CURSOR_*` environment variable.
+- Added `Analytics.isBot` to detect CI and bot environments from environment
+  variables.
+
+## 8.1.0
 
 - Added optional `isExternal` parameter to `Analytics.fake` to allow overriding
   the build configuration during testing.
