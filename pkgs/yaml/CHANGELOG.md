@@ -7,6 +7,8 @@
 * Support single-digit `!!float` scalars and throw `YamlException` instead of
   `RangeError` on empty or invalid single-character `!!int` and `!!float`
   scalars.
+* Speed up scanning deeply nested flow collections: the scanner no longer
+  walks every open flow level for each token.
 
 ## 3.1.4
 
