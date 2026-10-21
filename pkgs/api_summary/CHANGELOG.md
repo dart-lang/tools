@@ -1,5 +1,7 @@
 ## 1.3.0-wip
 
+- Add `includeImplicitNonPublicMembers` and `includeReferencedTypes` optional
+  named constructor parameters to `ApiSummaryCustomizer`.
 - Track parameter `defaultValue` on `ApiParameter` (including inherited `super.`
   defaults) and render non-null public default values in text, JSON, and YAML
   summaries ([#2461](https://github.com/dart-lang/tools/issues/2461)).

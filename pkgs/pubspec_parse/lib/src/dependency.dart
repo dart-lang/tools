@@ -16,7 +16,7 @@ Map<String, Dependency> parseDeps(Map? source) =>
       try {
         value = _fromJson(v, k);
       } on CheckedFromJsonException catch (e) {
-        if (e.map is! YamlMap) {
+        if (v is! Map || (source is YamlMap && e.map is! YamlMap)) {
           // This is likely a "synthetic" map created from a String value
           // Use `source` to throw this exception with an actual YamlMap and
           // extract the associated error information.
@@ -83,9 +83,12 @@ Dependency? _fromJson(Object? data, String name) {
         return switch (key) {
           'git' => GitDependency.fromData(
             data[key],
-            version: _optionalConstraintFromData(data),
+            version: _optionalConstraintFromData(data, 'GitDependency'),
           ),
-          'path' => PathDependency.fromData(data[key]),
+          'path' => PathDependency.fromData(
+            data[key],
+            version: _optionalConstraintFromData(data, 'PathDependency'),
+          ),
           'sdk' => _$SdkDependencyFromJson(data),
           'hosted' => _$HostedDependencyFromJson(
             data,
@@ -153,7 +156,11 @@ class GitDependency extends Dependency {
 
   factory GitDependency.fromData(Object? data, {VersionConstraint? version}) {
     if (data is String) {
-      data = {'url': data};
+      try {
+        return GitDependency(parseGitUri(data), version: version);
+      } on FormatException catch (e) {
+        throw ArgumentError.value(data, 'git', e.message);
+      }
     }
 
     if (data is Map) {
@@ -261,27 +268,37 @@ Uri? _tryParseScpUri(String value) {
 class PathDependency extends Dependency {
   final String path;
 
-  PathDependency(this.path);
+  /// The version constraint specified next to the `path` source.
+  ///
+  /// `null` if no constraint is specified, which pub treats as any version.
+  /// This isn't used to select the dependency, but pub's solver still
+  /// validates it against the resolved package's version.
+  final VersionConstraint? version;
 
-  factory PathDependency.fromData(Object? data) {
+  PathDependency(this.path, {this.version});
+
+  factory PathDependency.fromData(Object? data, {VersionConstraint? version}) {
     if (data is String) {
-      return PathDependency(data);
+      return PathDependency(data, version: version);
     }
     throw ArgumentError.value(data, 'path', 'Must be a String.');
   }
 
   @override
   bool operator ==(Object other) =>
-      other is PathDependency && other.path == path;
+      other is PathDependency && other.path == path && other.version == version;
 
   @override
-  int get hashCode => path.hashCode;
+  int get hashCode => Object.hash(path, version);
 
   @override
   String toString() => 'PathDependency: path@$path';
 
   @override
-  Map<String, dynamic> toJson() => {'path': path};
+  Map<String, dynamic> toJson() => {
+    'path': path,
+    'version': ?version?.toString(),
+  };
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
@@ -339,7 +356,7 @@ class HostedDetails {
 
   factory HostedDetails.fromJson(Object data) {
     if (data is String) {
-      data = {'url': data};
+      return HostedDetails(null, _parseUriOrNull(data));
     }
 
     if (data is Map) {
@@ -366,7 +383,7 @@ class HostedDetails {
 VersionConstraint _constraintFromString(String? input) =>
     input == null ? VersionConstraint.any : VersionConstraint.parse(input);
 
-VersionConstraint? _optionalConstraintFromData(Map data) {
+VersionConstraint? _optionalConstraintFromData(Map data, String className) {
   final value = data['version'];
   if (value == null) {
     return null;
@@ -375,13 +392,13 @@ VersionConstraint? _optionalConstraintFromData(Map data) {
     throw CheckedFromJsonException(
       data,
       'version',
-      'GitDependency',
+      className,
       '`$value` is not a String.',
     );
   }
   try {
     return VersionConstraint.parse(value);
   } on FormatException catch (e) {
-    throw CheckedFromJsonException(data, 'version', 'GitDependency', e.message);
+    throw CheckedFromJsonException(data, 'version', className, e.message);
   }
 }
