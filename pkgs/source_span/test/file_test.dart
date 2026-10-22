@@ -548,6 +548,7 @@ zip zap zop
             SourceLocation(12, sourceUrl: 'foo.dart'), 'other!!');
         expect(fileSpan == sourceSpan, isTrue);
         expect(sourceSpan == fileSpan, isTrue);
+        expect(fileSpan.hashCode, equals(sourceSpan.hashCode));
       });
 
       test('FileSpans with different offsets or URLs are not equal', () {

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'charcode.dart';
+import 'file.dart';
 import 'location.dart';
 import 'span.dart';
 import 'span_with_context.dart';
@@ -95,24 +96,14 @@ int? findLineStart(String context, String text, int column) {
   // [column] characters.
   if (text.isEmpty) {
     var beginningOfLine = 0;
-    int? fallbackLineStart;
     while (true) {
       final index = _indexOfLineEnd(context, beginningOfLine);
       if (index == -1) {
         return context.length - beginningOfLine >= column
             ? beginningOfLine
-            : fallbackLineStart;
+            : null;
       }
-
-      final lineEnd = context.codeUnitAt(index) == $lf &&
-              index > beginningOfLine &&
-              context.codeUnitAt(index - 1) == $cr
-          ? index - 1
-          : index;
-      if (lineEnd - beginningOfLine >= column) return beginningOfLine;
-      if (index - beginningOfLine >= column) {
-        fallbackLineStart ??= beginningOfLine;
-      }
+      if (index - beginningOfLine >= column) return beginningOfLine;
       beginningOfLine = index + 1;
     }
   }
@@ -127,6 +118,83 @@ int? findLineStart(String context, String text, int column) {
   }
   // ignore: avoid_returning_null
   return null;
+}
+
+/// Finds the line in `span.context` containing [span], returning both the
+/// code-unit offset where that line begins and the number of preceding context
+/// lines.
+///
+/// Uses [span]'s start and end location metadata to disambiguate when multiple
+/// lines in `span.context` contain `span.text` at `span.start.column`. Returns
+/// `null` if no line matches.
+({int lineStart, int linesBefore})? findSpanLineStart(
+    SourceSpanWithContext span) {
+  if (span is FileSpan) return (lineStart: 0, linesBefore: 0);
+
+  final context = span.context;
+  ({int lineStart, int linesBefore})? best;
+  var bestTier = 0;
+
+  var lineStart = 0;
+  var linesBefore = 0;
+  while (true) {
+    final lineEnd = _indexOfLineEnd(context, lineStart);
+    final effectiveLineEnd = lineEnd == -1 ? context.length : lineEnd;
+    final tier =
+        _scoreSpanLineCandidate(span, lineStart, effectiveLineEnd, linesBefore);
+    if (tier > bestTier) {
+      best = (lineStart: lineStart, linesBefore: linesBefore);
+      bestTier = tier;
+      if (tier == 4) return best;
+    }
+    if (lineEnd == -1) return best;
+    lineStart = lineEnd + 1;
+    linesBefore++;
+  }
+}
+
+/// Scores a candidate line at [lineStart] (after [linesBefore] lines) in
+/// `span.context`, returning `0` when [span] cannot start on this line or
+/// `1..4` (higher is better) when it matches.
+int _scoreSpanLineCandidate(
+  SourceSpanWithContext span,
+  int lineStart,
+  int effectiveLineEnd,
+  int linesBefore,
+) {
+  final context = span.context;
+  final text = span.text;
+  final column = span.start.column;
+  if (column > effectiveLineEnd - lineStart) return 0;
+
+  final textStart = lineStart + column;
+  if (textStart + text.length > context.length ||
+      !context.startsWith(text, textStart)) {
+    return 0;
+  }
+  if (!_matchesEndLocation(context, textStart, span)) return 1;
+  if (linesBefore > span.start.line || textStart > span.start.offset) return 2;
+  if (linesBefore == span.start.line && textStart == span.start.offset) {
+    return 4;
+  }
+  return 3;
+}
+
+/// Returns whether advancing `span.text.length` code units from [textStart] in
+/// [context] lands on `span.end.line` and `span.end.column`.
+bool _matchesEndLocation(String context, int textStart, SourceSpan span) {
+  var line = span.start.line;
+  var column = span.start.column;
+  final textEnd = textStart + span.text.length;
+  for (var i = textStart; i < textEnd; i++) {
+    if (_isLineEnd(context, i)) {
+      line++;
+      column = 0;
+    } else {
+      column++;
+    }
+  }
+  return line == span.end.line && column == span.end.column;
 }
 
 /// Returns a two-element list containing the start and end locations of the

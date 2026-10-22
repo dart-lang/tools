@@ -6,6 +6,7 @@
   of the last line in a multi-line file without a trailing newline.
 * Fix `SourceSpan.highlight()` off-by-one column calculation for plain spans
   ending with `\n\n` and spans ending at column 0 after a non-zero start column.
+* Fix `FileSpan.hashCode` to match `SourceSpan.hashCode` when comparing equal.
 
 ## 1.10.2
 

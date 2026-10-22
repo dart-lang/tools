@@ -604,7 +604,7 @@ ${colors.blue}  '${colors.none}'''));
   });
 
   group('bare CR and CRLF line endings', () {
-    test('highlights a trailing bare CR (SPAN-1)', () {
+    test('highlights a trailing bare CR', () {
       final file = SourceFile.fromString('ab\r');
       expect(file.span(2, 3).highlight(), equals("""
   ,
@@ -654,6 +654,72 @@ ${colors.blue}  '${colors.none}'''));
   '"""));
     });
 
+    test('disambiguates SourceSpanWithContext subspans across lines', () {
+      SourceSpanWithContext contextSpan(String source) {
+        final span = SourceFile.fromString(source).span(0, source.length);
+        return SourceSpanWithContext(
+            span.start, span.end, span.text, span.context);
+      }
+
+      expect(contextSpan('ab\r\nabba').subspan(3, 3).highlight(), equals("""
+  ,
+1 | ab
+  |   ^
+2 | abba
+  '"""));
+      expect(contextSpan('ab\r\nabba').subspan(7, 7).highlight(), equals("""
+  ,
+1 | ab
+2 | abba
+  |    ^
+  '"""));
+      expect(contextSpan('a\rb\r\n').subspan(3, 4).highlight(), equals("""
+  ,
+1 | a
+2 | b
+  |  ^
+  '"""));
+      expect(contextSpan('b\r\nb\r').subspan(4, 5).highlight(), equals("""
+  ,
+1 | b
+2 | b
+  |  ^
+  '"""));
+    });
+
+    test('highlights all 4-char CR/LF SourceSpanWithContext subspans', () {
+      const chars = ['a', 'b', '\r', '\n'];
+      final strings = <String>[''];
+      for (var length = 1; length <= 4; length++) {
+        final previous = strings.where((s) => s.length == length - 1).toList();
+        for (var prefix in previous) {
+          for (var char in chars) {
+            strings.add(prefix + char);
+          }
+        }
+      }
+
+      for (var source in strings) {
+        final fileSpan = SourceFile.fromString(source).span(0, source.length);
+        final full = SourceSpanWithContext(
+            fileSpan.start, fileSpan.end, fileSpan.text, fileSpan.context);
+        for (var i = 0; i <= source.length; i++) {
+          for (var j = i; j <= source.length; j++) {
+            final highlighted = full.subspan(i, j).highlight();
+            if (!source.contains('\r\n')) {
+              final lfSource = source.replaceAll('\r', '\n');
+              final lfFileSpan =
+                  SourceFile.fromString(lfSource).span(0, lfSource.length);
+              final lfFull = SourceSpanWithContext(lfFileSpan.start,
+                  lfFileSpan.end, lfFileSpan.text, lfFileSpan.context);
+              expect(highlighted, equals(lfFull.subspan(i, j).highlight()),
+                  reason: 'source=${source.codeUnits} [$i, $j]');
+            }
+          }
+        }
+      }
+    });
+
     test('normalizes plain SourceSpan ending with double newline', () {
       final span = SourceSpan(
           SourceLocation(0), SourceLocation(5, line: 2, column: 0), 'abc\n\n');
@@ -665,9 +731,8 @@ ${colors.blue}  '${colors.none}'''));
     });
   });
 
-  test(
-      'highlights a point span at start of last line without trailing newline '
-      '(SPAN-2)', () {
+  test('highlights a point span at start of last line without trailing newline',
+      () {
     final file = SourceFile.fromString('\n\n~');
     expect(file.location(2).pointSpan().highlight(), equals("""
   ,

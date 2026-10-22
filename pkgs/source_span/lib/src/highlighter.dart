@@ -148,13 +148,7 @@ class Highlighter {
         final context = highlight.span.context;
         // If [highlight.span.context] contains lines prior to the one
         // [highlight.span.text] appears on, write those first.
-        final lineStart = findLineStart(
-            context, highlight.span.text, highlight.span.start.column)!;
-
-        final linesBeforeSpan =
-            '\n'.allMatches(context.substring(0, lineStart)).length;
-
-        var lineNumber = highlight.span.start.line - linesBeforeSpan;
+        var lineNumber = highlight.span.start.line - highlight.linesBeforeSpan;
         for (var line in context.split('\n')) {
           // Only add a line if it hasn't already been added for a previous span
           if (lines.isEmpty || lineNumber > lines.last.number) {
@@ -551,6 +545,9 @@ class _Highlight {
   /// This is normalized to make it easier for [Highlighter] to work with.
   final SourceSpanWithContext span;
 
+  /// The number of lines in `span.context` preceding `span.start.line`.
+  final int linesBeforeSpan;
+
   /// Whether this is the primary span in the highlight.
   ///
   /// The primary span is highlighted with a different character and colored
@@ -563,15 +560,27 @@ class _Highlight {
   /// used in the same message.
   final String? label;
 
-  _Highlight(SourceSpan span, {String? label, bool primary = false})
-      : span = (() {
-          var newSpan = _normalizeContext(span);
-          newSpan = _normalizeNewlines(newSpan);
-          newSpan = _normalizeTrailingNewline(newSpan);
-          return _normalizeEndOfLine(newSpan);
-        })(),
-        isPrimary = primary,
-        label = label?.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+  factory _Highlight(SourceSpan span, {String? label, bool primary = false}) {
+    final normalized = _normalizeContext(span);
+    var newSpan = normalized.span;
+    var lineStart = normalized.lineStart;
+    (newSpan, lineStart) = _normalizeNewlines(newSpan, lineStart);
+    newSpan = _normalizeTrailingNewline(newSpan, lineStart);
+    newSpan = _normalizeEndOfLine(newSpan);
+    return _Highlight._(
+      newSpan,
+      normalized.linesBefore,
+      isPrimary: primary,
+      label: label?.replaceAll('\r\n', '\n').replaceAll('\r', '\n'),
+    );
+  }
+
+  _Highlight._(
+    this.span,
+    this.linesBeforeSpan, {
+    required this.isPrimary,
+    required this.label,
+  });
 
   /// Normalizes [span] to ensure that it's a [SourceSpanWithContext] whose
   /// context actually contains its text at the expected column.
@@ -579,41 +588,46 @@ class _Highlight {
   /// If it's not already a [SourceSpanWithContext], adjust the start and end
   /// locations' line and column fields so that the highlighter can assume they
   /// match up with the context.
-  static SourceSpanWithContext _normalizeContext(SourceSpan span) {
-    if (span is SourceSpanWithContext &&
-        findLineStart(span.context, span.text, span.start.column) != null) {
-      return span;
+  static ({SourceSpanWithContext span, int lineStart, int linesBefore})
+      _normalizeContext(SourceSpan span) {
+    if (span is SourceSpanWithContext) {
+      final match = findSpanLineStart(span);
+      if (match != null) {
+        return (
+          span: span,
+          lineStart: match.lineStart,
+          linesBefore: match.linesBefore,
+        );
+      }
     }
     final text = span.text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
-    return SourceSpanWithContext(
-        SourceLocation(span.start.offset,
-            sourceUrl: span.sourceUrl, line: 0, column: 0),
-        SourceLocation(span.start.offset + text.length,
-            sourceUrl: span.sourceUrl,
-            line: countCodeUnits(text, $lf),
-            column: _lastLineLength(text)),
-        text,
-        text);
+    return (
+      span: SourceSpanWithContext(
+          SourceLocation(span.start.offset,
+              sourceUrl: span.sourceUrl, line: 0, column: 0),
+          SourceLocation(span.start.offset + text.length,
+              sourceUrl: span.sourceUrl,
+              line: countCodeUnits(text, $lf),
+              column: _lastLineLength(text)),
+          text,
+          text),
+      lineStart: 0,
+      linesBefore: 0,
+    );
   }
 
   /// Normalizes [span] to replace Windows-style and Mac-style newlines with
   /// Unix-style newlines.
-  static SourceSpanWithContext _normalizeNewlines(SourceSpanWithContext span) {
+  static (SourceSpanWithContext, int) _normalizeNewlines(
+      SourceSpanWithContext span, int lineStart) {
     final context = span.context;
-    if (!context.contains('\r')) return span;
+    if (!context.contains('\r')) return (span, lineStart);
 
-    final lineStart = findLineStart(context, span.text, span.start.column)!;
     final textStart = lineStart + span.start.column;
     final textEnd = textStart + span.text.length;
 
-    final startBetweenCrLf = textStart > 0 &&
-        textStart < context.length &&
-        context.codeUnitAt(textStart - 1) == $cr &&
-        context.codeUnitAt(textStart) == $lf;
-    final endBetweenCrLf = textEnd > 0 &&
-        textEnd < context.length &&
-        context.codeUnitAt(textEnd - 1) == $cr &&
-        context.codeUnitAt(textEnd) == $lf;
+    final startBetweenCrLf = _isBetweenCrLf(context, textStart);
+    final endBetweenCrLf = _isBetweenCrLf(context, textEnd);
 
     var text = span.text;
     if (endBetweenCrLf && text.isNotEmpty) {
@@ -621,36 +635,54 @@ class _Highlight {
     }
     text = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
 
-    return SourceSpanWithContext(
-        SourceLocation(span.start.offset,
-            sourceUrl: span.sourceUrl,
-            line: span.start.line,
-            column: span.start.column - (startBetweenCrLf ? 1 : 0)),
-        SourceLocation(span.start.offset + text.length,
-            sourceUrl: span.sourceUrl,
-            line: span.end.line,
-            column: span.end.column - (endBetweenCrLf ? 1 : 0)),
-        text,
-        context.replaceAll('\r\n', '\n').replaceAll('\r', '\n'));
+    final normalizedLineStart =
+        context.substring(0, lineStart).replaceAll('\r\n', '\n').length;
+
+    return (
+      SourceSpanWithContext(
+          SourceLocation(span.start.offset,
+              sourceUrl: span.sourceUrl,
+              line: span.start.line,
+              column: span.start.column - (startBetweenCrLf ? 1 : 0)),
+          SourceLocation(span.start.offset + text.length,
+              sourceUrl: span.sourceUrl,
+              line: span.end.line,
+              column: span.end.column - (endBetweenCrLf ? 1 : 0)),
+          text,
+          context.replaceAll('\r\n', '\n').replaceAll('\r', '\n')),
+      normalizedLineStart,
+    );
   }
+
+  static bool _isBetweenCrLf(String text, int index) =>
+      index > 0 &&
+      index < text.length &&
+      text.codeUnitAt(index - 1) == $cr &&
+      text.codeUnitAt(index) == $lf;
 
   /// Normalizes [span] to remove a trailing newline from `span.context`.
   ///
   /// If necessary, also adjust `span.end` so that it doesn't point past where
   /// the trailing newline used to be.
   static SourceSpanWithContext _normalizeTrailingNewline(
-      SourceSpanWithContext span) {
+      SourceSpanWithContext span, int lineStart) {
     if (!span.context.endsWith('\n')) return span;
 
     // If there's a full blank line on the end of [span.context], it's probably
     // significant, so we shouldn't trim it.
     if (span.text.endsWith('\n\n')) return span;
 
+    final textStart = lineStart + span.start.column;
+    // If [span] is a point span on the empty line after the trailing newline,
+    // keep that newline so the empty line remains in context.
+    if (textStart == span.context.length) return span;
+
     final context = span.context.substring(0, span.context.length - 1);
     var text = span.text;
     final start = span.start;
     var end = span.end;
-    if (span.text.endsWith('\n') && _isTextAtEndOfContext(span)) {
+    if (span.text.endsWith('\n') &&
+        textStart + span.length == span.context.length) {
       text = span.text.substring(0, span.text.length - 1);
       if (text.isEmpty) {
         end = start;
@@ -692,13 +724,6 @@ class _Highlight {
   /// Returns the length of the last line in [text].
   static int _lastLineLength(String text) =>
       text.length - text.lastIndexOf('\n') - 1;
-
-  /// Returns whether [span]'s text runs all the way to the end of its context.
-  static bool _isTextAtEndOfContext(SourceSpanWithContext span) =>
-      findLineStart(span.context, span.text, span.start.column)! +
-          span.start.column +
-          span.length ==
-      span.context.length;
 
   @override
   String toString() {

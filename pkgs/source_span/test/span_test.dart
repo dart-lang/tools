@@ -315,7 +315,11 @@ void main() {
         final result = crSpan.subspan(2);
         expect(result.text, isEmpty);
         expect(result.start, equals(crSpan.end));
+        expect(result.start.line, equals(0));
+        expect(result.start.column, equals(2));
         expect(result.end, equals(crSpan.end));
+        expect(result.end.line, equals(0));
+        expect(result.end.column, equals(2));
       });
 
       test('across bare CR line endings in SourceSpanWithContext', () {

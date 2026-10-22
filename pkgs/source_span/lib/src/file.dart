@@ -399,7 +399,7 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
   }
 
   @override
-  int get hashCode => Object.hash(_start, _end, sourceUrl);
+  int get hashCode => Object.hash(start, end);
 
   /// Returns a new span that covers both `this` and [other].
   ///
