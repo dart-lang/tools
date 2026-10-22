@@ -129,7 +129,9 @@ Future<void> main() async {
           node.isIncluded = node.originalName.startsWith('ERR_LIB_');
         },
         typealias: (node) {
-          node.isIncluded = TypealiasInclude.always;
+          node.isIncluded = !node.originalName.startsWith('_')
+              ? TypealiasInclude.always
+              : TypealiasInclude.never;
         },
         macroConstant: (node) {
           final name = node.originalName;

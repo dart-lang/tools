@@ -36427,17 +36427,6 @@ final class X509_sig_st extends ffi.Opaque {}
 
 final class _IO_FILE extends ffi.Opaque {}
 
-/// Deprecated private functions (hidden).
-///
-/// TODO(crbug.com/boringssl/499): Migrate callers to the typed wrappers, or at
-/// least the new names and remove the old ones.
-///
-/// TODO(b/290792019, b/290785937): Ideally these would at least be inline
-/// functions, so we do not squat the symbols.
-typedef _STACK = OPENSSL_STACK;
-typedef __time_t = ffi.Long;
-typedef Dart__time_t = int;
-
 /// aes_key_st should be an opaque type, but EVP requires that the size be
 /// known.
 final class aes_key_st extends ffi.Struct {
@@ -38577,7 +38566,7 @@ final class stack_st_X509_REVOKED extends ffi.Opaque {}
 
 final class stack_st_void extends ffi.Opaque {}
 
-typedef time_t = __time_t;
+typedef time_t = ffi.Long;
 
 final class tm extends ffi.Struct {
   @ffi.Int()
