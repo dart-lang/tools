@@ -511,8 +511,7 @@ abstract mixin class ExpressionEmitter
     StringSink? output,
   ]) {
     output ??= StringBuffer();
-    final left = expression.left;
-    left.accept(this, output);
+    final left = expression.left..accept(this, output);
     // Keep a nullable type's '?' separate from the next cascade operator.
     if (expression.addSpace ||
         (left is BinaryExpression &&
