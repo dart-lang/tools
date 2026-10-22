@@ -181,6 +181,8 @@ const _legacyPseudoElements = <String>{
 
 /// A simple recursive descent parser for CSS.
 class _Parser {
+  static const int _maxSupportsDepth = 512;
+
   final Tokenizer tokenizer;
 
   /// File containing the source being parsed, used to report errors with
@@ -189,6 +191,7 @@ class _Parser {
 
   Token? _previousToken;
   late Token _peekToken;
+  int _supportsDepth = 0;
 
   _Parser(this.file, String text, {int start = 0})
       : tokenizer = Tokenizer(file, text, true, start) {
@@ -1090,16 +1093,36 @@ class _Parser {
   SupportsConditionInParens processSupportsConditionInParens() {
     var start = _peekToken.span;
     _eat(TokenKind.LPAREN);
-    // Try to parse a condition.
-    var condition = processSupportsCondition();
-    if (condition != null) {
-      _eat(TokenKind.RPAREN);
-      return SupportsConditionInParens.nested(condition, _makeSpan(start));
+    if (_supportsDepth >= _maxSupportsDepth) {
+      _error('Supports condition nesting exceeded maximum depth',
+          _makeSpan(start));
+      var parenDepth = 1;
+      while (parenDepth > 0 && !_peekKind(TokenKind.END_OF_FILE)) {
+        if (_maybeEat(TokenKind.LPAREN)) {
+          parenDepth++;
+        } else if (_maybeEat(TokenKind.RPAREN)) {
+          parenDepth--;
+        } else {
+          _next();
+        }
+      }
+      return SupportsConditionInParens(null, _makeSpan(start));
     }
-    // Otherwise, parse a declaration.
-    var declaration = processDeclaration([]);
-    _eat(TokenKind.RPAREN);
-    return SupportsConditionInParens(declaration, _makeSpan(start));
+    _supportsDepth++;
+    try {
+      // Try to parse a condition.
+      var condition = processSupportsCondition();
+      if (condition != null) {
+        _eat(TokenKind.RPAREN);
+        return SupportsConditionInParens.nested(condition, _makeSpan(start));
+      }
+      // Otherwise, parse a declaration.
+      var declaration = processDeclaration([]);
+      _eat(TokenKind.RPAREN);
+      return SupportsConditionInParens(declaration, _makeSpan(start));
+    } finally {
+      _supportsDepth--;
+    }
   }
 
   ViewportDirective processViewportDirective() {
@@ -2355,7 +2378,7 @@ class _Parser {
 
         _eat(TokenKind.RBRACK);
 
-        if (term is NumberTerm) {
+        if (term is LiteralTerm) {
           return ItemTerm(term.value, term.text, _makeSpan(start));
         }
         return ItemTerm(0, '', _makeSpan(start));

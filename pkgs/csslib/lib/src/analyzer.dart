@@ -452,8 +452,10 @@ class _MediaRulesReplacer extends Visitor {
 /// Expand all @include at the top-level the ruleset(s) associated with the
 /// mixin.
 class TopLevelIncludes extends Visitor {
+  static const int _maxExpansions = 256;
   StyleSheet? _styleSheet;
   final Messages _messages;
+  int _expansions = 0;
 
   /// Map of variable name key to it's definition.
   final map = <String, MixinDefinition>{};
@@ -487,7 +489,12 @@ class TopLevelIncludes extends Visitor {
     } else if (map.containsKey(node.name)) {
       var mixinDef = map[node.name];
       if (mixinDef is MixinRulesetDirective) {
-        _TopLevelIncludeReplacer.replace(_styleSheet!, node, mixinDef.rulesets);
+        _TopLevelIncludeReplacer.replace(
+            _styleSheet!,
+            node,
+            _expansions++ < _maxExpansions
+                ? mixinDef.rulesets
+                : const <TreeNode>[]);
       } else if (currDef is MixinRulesetDirective && _anyRulesets(currDef)) {
         final mixinRuleset = currDef;
         var index = mixinRuleset.rulesets.indexOf(node);
@@ -538,7 +545,6 @@ class TopLevelIncludes extends Visitor {
 
 /// @include as a top-level with ruleset(s).
 class _TopLevelIncludeReplacer extends Visitor {
-  static const int _maxExpansions = 256;
   final IncludeDirective _include;
   final List<TreeNode> _newRules;
 
@@ -556,9 +562,7 @@ class _TopLevelIncludeReplacer extends Visitor {
   void visitStyleSheet(StyleSheet node) {
     var index = node.topLevels.indexOf(_include);
     if (index != -1) {
-      if (node.topLevels.length < _maxExpansions) {
-        node.topLevels.insertAll(index + 1, _newRules);
-      }
+      node.topLevels.insertAll(index + 1, _newRules);
       node.topLevels.replaceRange(index, index + 1, [NoOp()]);
     }
     super.visitStyleSheet(node);
@@ -568,9 +572,7 @@ class _TopLevelIncludeReplacer extends Visitor {
   void visitMixinRulesetDirective(MixinRulesetDirective node) {
     var index = node.rulesets.indexOf(_include);
     if (index != -1) {
-      if (node.rulesets.length < _maxExpansions) {
-        node.rulesets.insertAll(index + 1, _newRules);
-      }
+      node.rulesets.insertAll(index + 1, _newRules);
       // Only the resolve the @include once.
       node.rulesets.replaceRange(index, index + 1, [NoOp()]);
     }
@@ -734,8 +736,10 @@ class CallMixin extends Visitor {
 
 /// Expand all @include inside of a declaration associated with a mixin.
 class DeclarationIncludes extends Visitor {
+  static const int _maxExpansions = 256;
   StyleSheet? _styleSheet;
   final Messages _messages;
+  int _expansions = 0;
 
   /// Map of variable name key to it's definition.
   final Map<String, MixinDefinition> map = <String, MixinDefinition>{};
@@ -804,7 +808,12 @@ class DeclarationIncludes extends Visitor {
               rulesets.add(IncludeMixinAtDeclaration(
                   ruleset as IncludeDirective, ruleset.span));
             }
-            _IncludeReplacer.replace(_styleSheet!, node, rulesets);
+            _IncludeReplacer.replace(
+                _styleSheet!,
+                node,
+                _expansions++ < _maxExpansions
+                    ? rulesets
+                    : const <Declaration>[]);
           }
         }
       }
@@ -816,7 +825,11 @@ class DeclarationIncludes extends Visitor {
 
       if (mixinDef is MixinDeclarationDirective) {
         _IncludeReplacer.replace(
-            _styleSheet!, node, mixinDef.declarations.declarations);
+            _styleSheet!,
+            node,
+            _expansions++ < _maxExpansions
+                ? mixinDef.declarations.declarations
+                : const <TreeNode>[]);
       }
     } else {
       _messages.warning('Undefined mixin ${node.include.name}', node.span);
@@ -832,7 +845,11 @@ class DeclarationIncludes extends Visitor {
       if (currDef is MixinDeclarationDirective &&
           mixinDef is MixinDeclarationDirective) {
         _IncludeReplacer.replace(
-            _styleSheet!, node, mixinDef.declarations.declarations);
+            _styleSheet!,
+            node,
+            _expansions++ < _maxExpansions
+                ? mixinDef.declarations.declarations
+                : const <TreeNode>[]);
       } else if (currDef is MixinDeclarationDirective) {
         var decls =
             (currDef as MixinDeclarationDirective).declarations.declarations;
@@ -889,7 +906,6 @@ class DeclarationIncludes extends Visitor {
 
 /// @include as a top-level with ruleset(s).
 class _IncludeReplacer extends Visitor {
-  static const int _maxExpansions = 256;
   final TreeNode _include;
   final List<TreeNode> _newDeclarations;
 
@@ -907,9 +923,7 @@ class _IncludeReplacer extends Visitor {
   void visitDeclarationGroup(DeclarationGroup node) {
     var index = _findInclude(node.declarations, _include);
     if (index != -1) {
-      if (node.declarations.length < _maxExpansions) {
-        node.declarations.insertAll(index + 1, _newDeclarations);
-      }
+      node.declarations.insertAll(index + 1, _newDeclarations);
       // Change @include to NoOp so it's processed only once.
       node.declarations.replaceRange(index, index + 1, [NoOp()]);
     }
@@ -956,7 +970,7 @@ class AllExtends extends Visitor {
 
   SelectorGroup? _currSelectorGroup;
   int? _currDeclIndex;
-  final _extendsToRemove = <int>[];
+  List<int> _extendsToRemove = <int>[];
 
   @override
   void visitRuleSet(RuleSet node) {
@@ -993,6 +1007,8 @@ class AllExtends extends Visitor {
   @override
   void visitDeclarationGroup(DeclarationGroup node) {
     var oldDeclIndex = _currDeclIndex;
+    var oldExtendsToRemove = _extendsToRemove;
+    _extendsToRemove = <int>[];
 
     var decls = node.declarations;
     for (_currDeclIndex = 0;
@@ -1009,6 +1025,7 @@ class AllExtends extends Visitor {
       _extendsToRemove.clear();
     }
 
+    _extendsToRemove = oldExtendsToRemove;
     _currDeclIndex = oldDeclIndex;
   }
 }
@@ -1018,14 +1035,16 @@ class AllExtends extends Visitor {
 // TODO(terry): Need to handle !optional glag.
 /// Changes any selector that matches @extend.
 class InheritExtends extends Visitor {
+  static const int _maxExpansions = 256;
   final AllExtends _allExtends;
 
   InheritExtends(Messages messages, this._allExtends);
 
   @override
   void visitSelectorGroup(SelectorGroup node) {
+    var expansions = 0;
     for (var selectorsIndex = 0;
-        selectorsIndex < node.selectors.length && node.selectors.length < 64;
+        selectorsIndex < node.selectors.length && expansions < _maxExpansions;
         selectorsIndex++) {
       var selectors = node.selectors[selectorsIndex];
       var isLastNone = false;
@@ -1040,6 +1059,8 @@ class InheritExtends extends Visitor {
         if (matches != null) {
           for (var match in matches) {
             if (match == node || match.selectors.isEmpty) continue;
+            if (expansions >= _maxExpansions) break;
+            expansions++;
             // Create a new group.
             var newSelectors = selectors.clone();
             var newSeq = match.selectors[0].clone();

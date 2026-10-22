@@ -419,7 +419,8 @@ void main() {
       _exerciseAllEntryPoints(
           '@keyframes k {\u00a00%, from { top: 0%; } 50% { top: 5px; } }');
       _exerciseAllEntryPoints('@stylet foo { a { color: red; } } @stylet { }');
-      _exerciseAllEntryPoints('@namespace prefix; @namespace ;');
+      _exerciseAllEntryPoints('@namespace prefix');
+      _exerciseAllEntryPoints('@namespace ;');
     });
 
     test('malformed @mixin, @include, and variable definitions do not hang',
@@ -439,6 +440,22 @@ void main() {
       _exerciseAllEntryPoints(
           '@mixin b { color: red; } @mixin a { @include b; } '
           '@mixin b { @include a; } div { @include b; }');
+
+      final manyRules = [
+        for (var i = 0; i < 300; i++) '.r$i { color: red; }',
+        '@mixin m { .mixed { color: blue; } }',
+        '@include m;',
+      ].join('\n');
+      expect(prettyPrint(compileCss(manyRules)), contains('.mixed'));
+
+      final manyDecls = [
+        '@mixin m { color: blue; }',
+        '.box {',
+        for (var i = 0; i < 260; i++) '  --p$i: ${i}px;',
+        '  @include m;',
+        '}',
+      ].join('\n');
+      expect(prettyPrint(compileCss(manyDecls)), contains('color: #00f'));
     });
 
     test('malformed @-moz-document and @supports directives', () {
@@ -450,7 +467,7 @@ void main() {
       _exerciseAllEntryPoints('@supports () { } @supports not () { }');
       _exerciseAllEntryPoints('@supports (a: 1) and () { }');
       _exerciseAllEntryPoints('@supports (a: 1) or () { }');
-      final deepParens = '${'(' * 40}a: 1${')' * 40}';
+      final deepParens = '${'(' * 10000}a: 1${')' * 10000}';
       _exerciseAllEntryPoints('@supports $deepParens { a { color: red; } }');
     });
 
@@ -481,6 +498,12 @@ void main() {
           'font-size: 10cm; }');
       _exerciseAllEntryPoints(
           'a { margin: [foo]; font-weight: [bar]; line-height: [baz]; }');
+      expect(
+        prettyPrint(
+          parse('.g { grid-template-columns: [full-start] 1fr [full-end]; }'),
+        ),
+        contains('[full-start] 1fr [full-end]'),
+      );
       _exerciseAllEntryPoints(r'a { width: 99999999999999999999999px; '
           r'top: 1px\99999999999999999999999; }');
       _exerciseAllEntryPoints(
@@ -511,10 +534,42 @@ void main() {
       _exerciseAllEntryPoints(
           '@media screen { @media print { a { b { color: red; } } } }');
       _exerciseAllEntryPoints('a { @extend .b; } .b { @extend a; }');
+      final manySelectors = [
+        '${[for (var i = 0; i < 70; i++) '.t$i'].join(', ')}, '
+            '.base { color: red; }',
+        '.x { @extend .base; }',
+      ].join('\n');
+      expect(prettyPrint(compileCss(manySelectors)), contains('.x'));
+
+      final keyframesExtend = compileCss(
+        '@keyframes k { 0% { @extend .a; a { color: red; } } }',
+      );
+      expect(prettyPrint(keyframesExtend), contains('color: #f00'));
+      _exerciseAllEntryPoints('@keyframes k { 0% { @extend .a; a { } } }');
+      _exerciseAllEntryPoints('@font-face { @extend .a; a { } }');
+
       _exerciseAllEntryPoints('@namespefix; @name @name;');
-      _exerciseAllEntryPoints('var-a: var(a); var-b: var(c); var-c: var(b); '
-          'a { color: var(a); width: var(b, var(c)); '
-          'height: var(u, 1px var(a)); }');
+      _exerciseAllEntryPoints(
+        ':root { var-a: var(a); var-b: var(c); var-c: var(b); } '
+        'a { color: var(a); width: var(b, var(c)); '
+        'height: var(u, 1px var(a)); }',
+      );
+      _exerciseAllEntryPoints(
+        '@a: var(a); a { color: var(a); height: var(u) var(a, 1px); }',
+      );
+      expect(
+        prettyPrint(
+          compileCss(
+            '@a: var(a); a { height: var(u) var(a, 1px); }',
+            polyfill: true,
+          ),
+        ),
+        isNot(contains('var(')),
+      );
+      _exerciseAllEntryPoints(
+        ':root { var-u: var(undef); var-a: 1px var(u) var(a); } '
+        'a { color: var(a); }',
+      );
     });
   });
 }

@@ -83,12 +83,14 @@ class _VarDefinitionsIncludes extends Visitor {
 /// Find var- definitions in a style sheet.
 /// [found] list of known definitions.
 class _VarDefAndUsage extends Visitor {
+  static const int _maxExpansions = 256;
   final Messages _messages;
   final Map<String, VarDefinition> _knownVarDefs;
   final varDefs = <String, VarDefinition>{};
 
   VarDefinition? currVarDefinition;
   List<Expression>? currentExpressions;
+  int _expansions = 0;
 
   _VarDefAndUsage(this._messages, this._knownVarDefs);
 
@@ -118,8 +120,19 @@ class _VarDefAndUsage extends Visitor {
   @override
   void visitExpressions(Expressions node) {
     var oldExpressions = currentExpressions;
-    currentExpressions = node.expressions;
-    super.visitExpressions(node);
+    var expressions = node.expressions;
+    currentExpressions = expressions;
+    var index = 0;
+    while (index < expressions.length) {
+      var current = expressions[index];
+      current.visit(this);
+      if (index < expressions.length &&
+          identical(expressions[index], current)) {
+        index++;
+      } else if (_expansions++ >= _maxExpansions) {
+        break;
+      }
+    }
     currentExpressions = oldExpressions;
   }
 
@@ -139,12 +152,7 @@ class _VarDefAndUsage extends Visitor {
     if (def == currVarDefinition) {
       def = null;
     }
-    if (def != null) {
-      if (def.badUsage) {
-        // Remove any expressions pointing to a bad var definition.
-        expressions.removeAt(index);
-        return;
-      }
+    if (def != null && !def.badUsage) {
       _resolveVarUsage(currentExpressions!, index,
           _findTerminalVarDefinition(_knownVarDefs, def));
     } else if (node.defaultValues.any((e) => e is VarUsage)) {
@@ -172,7 +180,9 @@ class _VarDefAndUsage extends Visitor {
       }
       // Remove var usage that points at an undefined definition.
       expressions.removeAt(index);
-      _messages.warning('Variable is not defined.', node.span);
+      if (def == null) {
+        _messages.warning('Variable is not defined.', node.span);
+      }
     }
 
     var oldExpressions = currentExpressions;
@@ -187,7 +197,7 @@ class _VarDefAndUsage extends Visitor {
     visited ??= <VarDefinition>{};
 
     var varDef = _knownVarDefs[usage.name];
-    if (varDef != null && !visited.add(varDef)) {
+    if (varDef != null && (varDef.badUsage || !visited.add(varDef))) {
       varDef = null;
     }
     List<Expression> expressions;
@@ -205,12 +215,9 @@ class _VarDefAndUsage extends Visitor {
       if (expr is VarUsage) {
         // Get terminal value.
         result.addAll(resolveUsageTerminal(expr, visited));
+      } else {
+        result.add(expr);
       }
-    }
-
-    // We're at a terminal just return the VarDefinition expression.
-    if (result.isEmpty && varDef != null && varDef.expression is Expressions) {
-      result = (varDef.expression as Expressions).expressions;
     }
 
     return result;
