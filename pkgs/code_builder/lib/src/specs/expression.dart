@@ -512,7 +512,10 @@ abstract mixin class ExpressionEmitter
   ]) {
     output ??= StringBuffer();
     expression.left.accept(this, output);
-    if (expression.addSpace) {
+    // Keep a nullable type's '?' separate from the next cascade operator.
+    if (expression.addSpace ||
+        (expression.left is BinaryExpression &&
+            (expression.operator == '..' || expression.operator == '?..'))) {
       output.write(' ');
     }
     output.write(expression.operator);
