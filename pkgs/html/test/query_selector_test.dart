@@ -26,8 +26,15 @@ void main() {
     });
 
     test('empty :not() throws FormatException', () {
-      expect(() => el.querySelector(':not()'), throwsFormatException);
-      expect(() => el.querySelectorAll(':not()'), throwsFormatException);
+      final isInvalidNotSelector = throwsA(
+        isA<FormatException>().having(
+          (e) => e.message,
+          'message',
+          "':not()' is not a valid selector",
+        ),
+      );
+      expect(() => el.querySelector(':not()'), isInvalidNotSelector);
+      expect(() => el.querySelectorAll(':not()'), isInvalidNotSelector);
     });
   });
 }

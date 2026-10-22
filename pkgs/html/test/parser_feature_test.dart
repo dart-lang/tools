@@ -193,11 +193,15 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
   });
 
   test('foster-parented text spans are updated when merged before table', () {
-    const html = '<table>a&amp;b</table>';
-    final doc = parse(html, generateSpans: true);
-    final textNode = doc.body!.nodes.first as Text;
-    expect(textNode.data, 'a&b');
-    expect(textNode.sourceSpan!.text, 'a&amp;b');
+    final doc1 = parse('<table>a</tr>b</table>', generateSpans: true);
+    final textNode1 = doc1.body!.nodes.first as Text;
+    expect(textNode1.data, 'ab');
+    expect(textNode1.sourceSpan!.text, 'a</tr>b');
+
+    final doc2 = parse('x<table>a</table>', generateSpans: true);
+    final textNode2 = doc2.body!.nodes.first as Text;
+    expect(textNode2.data, 'xa');
+    expect(textNode2.sourceSpan!.text, 'x<table>a');
   });
 
   test('numeric character reference overflowing 64-bit integer returns U+FFFD',
@@ -237,10 +241,18 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
 
   test('ParseError.message formats all tokenizer error codes without crashing',
       () {
-    for (final snippet in const ['</div/>', '<div a ', '<div a="1"']) {
-      final parser = HtmlParser(snippet, generateSpans: true);
+    final expectedCodes = {
+      '</div/>': 'self-closing-flag-on-end-tag',
+      '<div a ': 'expected-end-of-tag-name-but-got-eof',
+      '<div a="1"': 'unexpected-EOF-after-attribute-value',
+    };
+    for (final entry in expectedCodes.entries) {
+      final parser = HtmlParser(entry.key, generateSpans: true);
       parser.parse();
-      expect(parser.errors, isNotEmpty);
+      expect(
+        parser.errors.map((e) => e.errorCode),
+        contains(entry.value),
+      );
       for (final error in parser.errors) {
         expect(error.message, isNotEmpty);
         expect(error.toString(), isNotEmpty);

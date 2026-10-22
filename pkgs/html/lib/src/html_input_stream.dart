@@ -431,8 +431,7 @@ bool _isSupportedEncoding(String? encoding) =>
     encoding == 'ascii' || encoding == 'utf-8';
 
 /// Decodes the [bytes] with the provided [encoding] and returns a list for
-/// the codepoints. Supports the major unicode encodings as well as ascii and
-/// and windows-1252 encodings.
+/// the codepoints. Supports ascii and utf-8 encodings.
 List<int> _decodeBytes(String encoding, List<int> bytes) {
   return switch (encoding) {
     'ascii' => ascii.decode(bytes, allowInvalid: true).codeUnits,

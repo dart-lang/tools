@@ -31,7 +31,7 @@ class EncodingBytes {
     var p = __position;
     if (p >= _length) {
       throw _EncodingRangeException('No more elements');
-    } else if (p <= 0) {
+    } else if (p < 0) {
       throw RangeError(p);
     }
     __position = p = p - 1;
