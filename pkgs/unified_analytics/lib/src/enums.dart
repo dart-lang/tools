@@ -228,6 +228,13 @@ enum DashEvent {
       DashEvent.values.where((e) => e.label == label).firstOrNull;
 }
 
+/// The kind of [DashTool], indicating whether it is an end-user tool or a
+/// shared component.
+enum DashToolKind {
+  tool,
+  sharedComponent,
+}
+
 /// Officially-supported clients of this package as logical
 /// tools, grouped by user point of view.  Derived directly
 /// from the PDD.
@@ -249,6 +256,21 @@ enum DashTool {
   vscodePlugins(
     label: 'vscode-plugins',
     description: 'VS Code IDE extensions for Dart and Flutter',
+  ),
+  analysisServer(
+    label: 'analysis-server',
+    description: 'Dart Analysis Server',
+    kind: DashToolKind.sharedComponent,
+  ),
+  dartMcpServer(
+    label: 'dart-mcp-server',
+    description: 'Dart MCP Server',
+    kind: DashToolKind.sharedComponent,
+  ),
+  skillsCli(
+    label: 'skills-cli',
+    description: 'Skills CLI developer tool',
+    kind: DashToolKind.sharedComponent,
   );
 
   /// String used as the control flag and the value of the tool key in
@@ -259,7 +281,18 @@ enum DashTool {
   /// grouping.
   final String description;
 
-  const DashTool({required this.label, required this.description});
+  /// The kind of tool, indicating whether this tool is an entry point or a
+  /// shared component.
+  final DashToolKind kind;
+
+  const DashTool({
+    required this.label,
+    required this.description,
+    this.kind = DashToolKind.tool,
+  });
+
+  /// Whether this tool can act as a root tool (the user's entry point).
+  bool get canBeRootTool => kind == DashToolKind.tool;
 
   /// This takes in the string label for a given [DashTool] and returns the
   /// enum for that string label.

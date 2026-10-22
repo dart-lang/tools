@@ -307,13 +307,21 @@ bool surveySnoozedOrDismissed(
 
 /// Returns the top-level tool from the environment variable `DASH__TOOL`.
 ///
-/// If the environment variable is set and valid, return the corresponding
-/// [DashTool]. Otherwise, return the [current] tool.
-DashTool topLevelTool({required DashTool current}) {
-  final toolValue = io.Platform.environment[DashEnvVar.tool.name];
+/// If the environment variable is set, valid, and represents a root tool
+/// (not a shared component), return the corresponding [DashTool]. Otherwise,
+/// return the [current] tool.
+DashTool topLevelTool({
+  required DashTool current,
+  Map<String, String>? environment,
+}) {
+  final env = environment ?? io.Platform.environment;
+  final toolValue = env[DashEnvVar.tool.name];
   if (toolValue != null) {
     try {
-      return DashTool.fromLabel(toolValue);
+      final tool = DashTool.fromLabel(toolValue);
+      if (tool.canBeRootTool) {
+        return tool;
+      }
     } on Exception {
       // Fallback to `current` if the value in ENV is invalid.
     }

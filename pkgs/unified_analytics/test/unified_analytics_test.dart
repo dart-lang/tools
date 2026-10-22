@@ -2018,4 +2018,84 @@ Privacy Policy (https://policies.google.com/privacy).
       expect(parseDartSDKVersion(originalVersion), '3.3.0');
     });
   });
+
+  group('DashToolKind and DashTool.canBeRootTool tests', () {
+    test('shared components have correct kind and cannot be root tools', () {
+      const sharedComponents = [
+        DashTool.analysisServer,
+        DashTool.dartMcpServer,
+        DashTool.skillsCli,
+      ];
+
+      for (final tool in sharedComponents) {
+        expect(tool.kind, DashToolKind.sharedComponent);
+        expect(tool.canBeRootTool, false);
+      }
+    });
+
+    test('standard tools have DashToolKind.tool and can be root tools', () {
+      const standardTools = [
+        DashTool.androidStudioPlugins,
+        DashTool.dartTool,
+        DashTool.devtools,
+        DashTool.flutterTool,
+        DashTool.intellijPlugins,
+        DashTool.vscodePlugins,
+      ];
+
+      for (final tool in standardTools) {
+        expect(tool.kind, DashToolKind.tool);
+        expect(tool.canBeRootTool, true);
+      }
+    });
+  });
+
+  group('topLevelTool rejection of shared components', () {
+    test('returns root tool when DASH__TOOL is valid root tool', () {
+      final result = topLevelTool(
+        current: DashTool.dartTool,
+        environment: {DashEnvVar.tool.name: DashTool.flutterTool.label},
+      );
+      expect(result, DashTool.flutterTool);
+    });
+
+    test('rejects shared components from DASH__TOOL and falls back to current', () {
+      final sharedLabels = [
+        DashTool.analysisServer.label,
+        DashTool.dartMcpServer.label,
+        DashTool.skillsCli.label,
+      ];
+
+      for (final label in sharedLabels) {
+        final result = topLevelTool(
+          current: DashTool.dartTool,
+          environment: {DashEnvVar.tool.name: label},
+        );
+        expect(
+          result,
+          DashTool.dartTool,
+          reason: 'Expected $label to be rejected as a top level tool',
+        );
+      }
+    });
+
+    test('falls back to current when DASH__TOOL is invalid or absent', () {
+      expect(
+        topLevelTool(
+          current: DashTool.devtools,
+          environment: {DashEnvVar.tool.name: 'not-a-real-tool'},
+        ),
+        DashTool.devtools,
+      );
+
+      expect(
+        topLevelTool(
+          current: DashTool.devtools,
+          environment: {},
+        ),
+        DashTool.devtools,
+      );
+    });
+  });
 }
+

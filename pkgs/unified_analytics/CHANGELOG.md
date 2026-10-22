@@ -1,3 +1,12 @@
+## 8.3.0-wip
+
+- Added `DashToolKind` enum and `kind` field on `DashTool` to distinguish
+  end-user entry tools from embedded shared components.
+- Added `canBeRootTool` getter on `DashTool`.
+- Added shared-component `DashTool` enum values: `analysisServer`,
+  `dartMcpServer`, and `skillsCli`.
+- Updated `topLevelTool()` to reject shared-component labels.
+
 ## 8.2.0
 
 - Default `agent` in `Analytics` and `Analytics.development` to
