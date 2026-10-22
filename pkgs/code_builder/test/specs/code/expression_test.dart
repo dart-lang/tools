@@ -357,6 +357,26 @@ void main() {
   for (final nullAware in [false, true]) {
     final operator = nullAware ? '?..' : '..';
 
+    for (final entry in {
+      'property access': refer('foo').property('bar'),
+      'index access': refer('foo').index(literalNum(0)),
+    }.entries) {
+      test(
+        'should preserve raw cascade spacing after ${entry.key} ($operator)',
+        () {
+          final receiver = entry.value;
+          final expression = nullAware
+              ? receiver.nullSafeCascade('baz')
+              : receiver.cascade('baz');
+          final rawReceiver = receiver.accept(DartEmitter()).toString();
+          expect(
+            expression.accept(DartEmitter()).toString(),
+            '$rawReceiver${operator}baz',
+          );
+        },
+      );
+    }
+
     test(
       'should separate a property cascade after a nullable cast ($operator)',
       () {

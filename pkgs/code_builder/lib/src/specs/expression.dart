@@ -511,11 +511,14 @@ abstract mixin class ExpressionEmitter
     StringSink? output,
   ]) {
     output ??= StringBuffer();
-    expression.left.accept(this, output);
+    final left = expression.left;
+    left.accept(this, output);
     // Keep a nullable type's '?' separate from the next cascade operator.
     if (expression.addSpace ||
-        (expression.left is BinaryExpression &&
-            (expression.operator == '..' || expression.operator == '?..'))) {
+        (left is BinaryExpression &&
+            (expression.operator == '..' || expression.operator == '?..') &&
+            left.operator.endsWith('=') &&
+            !const {'==', '!=', '<=', '>='}.contains(left.operator))) {
       output.write(' ');
     }
     output.write(expression.operator);
