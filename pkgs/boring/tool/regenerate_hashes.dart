@@ -28,9 +28,8 @@ const _hashesFile = 'lib/src/hook_helpers/hashes.dart';
 ///
 /// Fails without writing anything if an asset of a prebuilt target is missing
 /// from a release built by that workflow, so that a failed or partial release
-/// can't silently turn the `fetch` build mode into a source build for that
-/// target. Releases built elsewhere (`sourceCommit` is empty) may predate some
-/// targets, which then compile from source.
+/// can't break the `fetch` build mode for that target. Releases built elsewhere
+/// (`sourceCommit` is empty) may predate some targets.
 Future<void> main(List<String> args) async {
   final parser = ArgParser()
     ..addOption(
@@ -133,8 +132,7 @@ Future<void> main(List<String> args) async {
       exit(1);
     }
     stdout.writeln(
-      'Warning: $summary\nThe release wasn\'t built by this repository, so '
-      'those targets compile BoringSSL from source.',
+      'Warning: $summary\nThe release wasn\'t built by this repository.',
     );
   }
 

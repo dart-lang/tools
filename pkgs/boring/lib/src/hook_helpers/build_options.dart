@@ -6,8 +6,7 @@ import 'package:hooks/hooks.dart' show BuildError, HookInputUserDefines;
 
 /// How `hook/build.dart` obtains the BoringSSL library, see the README.
 enum BuildModeEnum {
-  /// Downloads the prebuilt library of the pinned release, and compiles
-  /// BoringSSL from source if there is none for the target.
+  /// Downloads the prebuilt library of the pinned release.
   fetch,
 
   /// Compiles BoringSSL from the vendored source with CMake.

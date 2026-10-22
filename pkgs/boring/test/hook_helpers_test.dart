@@ -5,6 +5,7 @@
 import 'dart:io';
 
 import 'package:boring/src/hook_helpers/build_options.dart';
+import 'package:boring/src/hook_helpers/fetch.dart';
 import 'package:boring/src/hook_helpers/hashes.dart';
 import 'package:boring/src/hook_helpers/targets.dart';
 import 'package:code_assets/code_assets.dart';
@@ -14,7 +15,7 @@ import 'package:test/test.dart';
 void main() {
   group('hashes.dart', () {
     // If the asset naming and the hashes file drift apart, `fetch` finds no
-    // hash and silently compiles from source for every user.
+    // hash and fails for every user.
     test('pins exactly the assets of the prebuilt targets', () {
       final expected = {
         for (final (os, arch, iosSdk) in prebuiltTargets)
@@ -22,8 +23,7 @@ void main() {
             releaseAssetName(os, arch, iosSdk: iosSdk, static: static),
       };
       if (sourceCommit.isEmpty) {
-        // A release built elsewhere may predate some of the prebuilt targets,
-        // which then compile from source.
+        // A release built elsewhere may predate some of the prebuilt targets.
         expect(fileHashes, isNotEmpty);
         expect(expected, containsAll(fileHashes.keys));
       } else {
@@ -132,6 +132,39 @@ void main() {
       expect(
         () => BuildOptions.fromDefines(_userDefines({'buildMode': true})),
         throwsA(isA<BuildError>()),
+      );
+    });
+  });
+
+  group('fetchPrebuiltLibrary', () {
+    test('throws a BuildError when no prebuilt binary exists for target', () {
+      final builder = BuildInputBuilder()
+        ..setupShared(
+          packageRoot: _basePath,
+          packageName: 'boring',
+          outputDirectoryShared: _basePath.resolve('.dart_tool/shared/'),
+          outputFile: _basePath.resolve('.dart_tool/output.json'),
+        )
+        ..config.setupBuild(linkingEnabled: false)
+        ..addExtension(
+          CodeAssetExtension(
+            targetOS: OS.linux,
+            targetArchitecture: Architecture.riscv64,
+            linkModePreference: LinkModePreference.dynamic,
+          ),
+        );
+      expect(
+        () => fetchPrebuiltLibrary(builder.build(), static: false),
+        throwsA(
+          isA<BuildError>().having(
+            (e) => e.message,
+            'message',
+            allOf(
+              contains('linux-riscv64'),
+              contains('buildMode: checkout'),
+            ),
+          ),
+        ),
       );
     });
   });

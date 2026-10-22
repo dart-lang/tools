@@ -54,35 +54,13 @@ jobs:
       # sources than the ones it vendors, so this fails once the version is no
       # longer a -wip one.
       - name: Check that the prebuilt libraries match the native sources
+        run: ./tool/check_prebuilt_binaries.sh
         if: always() && steps.install.outcome == 'success'
-        run: |
-          source_commit="$(sed -n "s/^const sourceCommit = '\([0-9a-f]*\)';$/\1/p" lib/src/hook_helpers/hashes.dart)"
-          stale=false
-          if [ -z "$source_commit" ]; then
-            stale=true
-            message="The prebuilt libraries pinned in lib/src/hook_helpers/hashes.dart weren't built from this repository."
-          else
-            git fetch --quiet --depth=1 origin "$source_commit"
-            if ! git diff --quiet "$source_commit" HEAD -- src third_party/boringssl tool/REVISION; then
-              stale=true
-              message="src/, third_party/boringssl/ or tool/REVISION changed since the prebuilt libraries pinned in lib/src/hook_helpers/hashes.dart were built at $source_commit."
-            fi
-          fi
-          if [ "$stale" = true ]; then
-            message="$message The 'package:boring binaries' workflow builds and pins new ones when such a change lands on main; merge its pull request before releasing."
-            if grep -Eq '^version: .*-wip$' pubspec.yaml; then
-              echo "::warning::$message"
-            else
-              echo "::error::$message"
-              exit 1
-            fi
-          else
-            echo "The prebuilt libraries were built from the current native sources ($source_commit)."
-          fi
 
   # Build BoringSSL from source with the build hook and run the tests on each
-  # desktop OS. The tree-shaking tests run hook/link.dart natively and when
-  # cross-compiling to Linux, whose linker invocation differs per OS.
+  # desktop OS (Linux, macOS, and Windows each use different linker flags in
+  # hook/link.dart), including cross-compiling to linux-arm64 with and without
+  # a cross-toolchain.
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
@@ -192,8 +170,7 @@ jobs:
       - name: Regenerate at tool/REVISION
         run: ./tool/bump-boringssl-revision.sh "$(cat tool/REVISION)"
       # Also checks that every prebuilt target's asset exists in the pinned
-      # release, since `fetch` silently compiles from source for a target
-      # without a hash.
+      # release, since `fetch` fails for a target without a hash.
       - name: Regenerate the hashes of the pinned release
         run: dart run tool/regenerate_hashes.dart
       - name: Check for changes

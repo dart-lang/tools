@@ -33,7 +33,8 @@ Future<void> main(List<String> args) async {
 
     switch (buildOptions.buildMode) {
       case BuildModeEnum.fetch:
-        await _fetchPrebuiltBinary(input, output, static: static);
+        final library = await fetchPrebuiltLibrary(input, static: static);
+        _addLibrary(input, output, library, static: static);
       case BuildModeEnum.checkout:
         await _buildLocalCMake(input, output, static: static);
       case BuildModeEnum.local:
@@ -64,22 +65,6 @@ void _addLibrary(
     ),
     routing: static ? ToLinkHook(input.packageName) : const ToAppBundle(),
   );
-}
-
-Future<void> _fetchPrebuiltBinary(
-  BuildInput input,
-  BuildOutputBuilder output, {
-  required bool static,
-}) async {
-  final cachedLibrary = await fetchPrebuiltLibrary(input, static: static);
-  if (cachedLibrary == null) {
-    stdout.writeln(
-      'boring: falling back to building from local source via CMake.',
-    );
-    await _buildLocalCMake(input, output, static: static);
-    return;
-  }
-  _addLibrary(input, output, cachedLibrary, static: static);
 }
 
 /// Bundles the dynamic library at [localPath] as is, even when linking is

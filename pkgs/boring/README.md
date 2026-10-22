@@ -54,36 +54,17 @@ hooks:
 
 - **`fetch`** *(default)*: Downloads the prebuilt library of the pinned
   release from GitHub Releases and verifies it against the SHA-256 hash pinned
-  in the package. A hash mismatch is an error, not a fallback. Falls back to
-  compiling BoringSSL locally if the download fails or if there is no prebuilt
-  library for the target.
-- **`checkout`**: Always compiles BoringSSL locally from bundled sources via
-  CMake and Ninja.
+  in the package. A hash mismatch is an error.
+- **`checkout`**: Compiles BoringSSL locally from bundled sources via CMake and
+  Ninja.
 - **`local`**: Uses a custom prebuilt dynamic library at `localPath`, which is
   bundled as is, without [tree-shaking](#tree-shaking).
 
-Any other `buildMode` value is an error, so a typo can't silently switch
-between downloading and compiling.
-
 Prebuilt libraries exist for Linux (x64 and arm64), macOS (arm64 and x64),
 Windows (x64), Android (arm, arm64 and x64; API 21 and later), and iOS (arm64,
-and the arm64 and x64 simulators; iOS 12 and later). Other targets compile
-BoringSSL from source, which requires CMake and Ninja.
-
-The [`package:boring binaries`](https://github.com/dart-lang/tools/blob/main/.github/workflows/boring_binaries.yaml)
-workflow builds the prebuilt libraries from the vendored BoringSSL whenever a
-change to the native sources lands on `main`, attaches them to a
-`boring-binaries-<date>-<commit>` pre-release with a provenance attestation
-(`gh attestation verify <file> --repo dart-lang/tools`), and opens a pull
-request that pins their SHA-256 hashes in
-[`lib/src/hook_helpers/hashes.dart`](lib/src/hook_helpers/hashes.dart). CI
-checks that a release of this package pins libraries built from the sources
-it vendors, so `fetch` and `checkout` produce the same BoringSSL.
-
-`fetch` and `checkout` provide a dynamic library with all of BoringSSL when
-linking is disabled (`dart run`, `dart test`, and Flutter debug builds), and a
-static library for [tree-shaking](#tree-shaking) when it is enabled. Every
-GitHub Release has both for each prebuilt target.
+and the arm64 and x64 simulators; iOS 12 and later). Other targets require
+`buildMode: checkout`, which requires CMake, Ninja, and a C toolchain (Clang or
+GCC, Xcode, MSVC, or the Android NDK), plus NASM on Windows.
 
 ## Tree-Shaking
 

@@ -117,9 +117,6 @@ Future<bool> _fallBackToPrebuiltLibrary(
     return false;
   }
   final library = await fetchPrebuiltLibrary(input, static: false);
-  if (library == null) {
-    return false;
-  }
   final reason = switch (linkError) {
     // native_toolchain_c puts the whole linker command, which has an argument
     // for each used symbol, into the message.

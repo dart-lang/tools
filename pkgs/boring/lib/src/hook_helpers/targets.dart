@@ -7,8 +7,8 @@ import 'package:code_assets/code_assets.dart';
 /// The targets that `.github/workflows/boring_binaries.yaml` builds the
 /// prebuilt libraries for.
 ///
-/// The `fetch` build mode compiles BoringSSL from source for all other
-/// targets. Keep in sync with the matrix of the `precompile` job.
+/// Other targets require `buildMode: checkout` to compile BoringSSL from
+/// source. Keep in sync with the matrix of the `precompile` job.
 const prebuiltTargets = <(OS, Architecture, IOSSdk?)>[
   (OS.android, Architecture.arm, null),
   (OS.android, Architecture.arm64, null),
