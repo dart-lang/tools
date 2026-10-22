@@ -290,19 +290,24 @@ abstract class Node {
     final tokenizer = HtmlTokenizer(sourceSpan!.text,
         generateSpans: true, attributeSpans: true);
 
-    tokenizer.moveNext();
-    final token = tokenizer.current as StartTagToken;
+    while (tokenizer.moveNext()) {
+      final token = tokenizer.current;
+      if (token is StartTagToken) {
+        if (token.attributeSpans == null) return; // no attributes
 
-    if (token.attributeSpans == null) return; // no attributes
-
-    for (var attr in token.attributeSpans!) {
-      final offset = sourceSpan!.start.offset;
-      final name = attr.name!;
-      attributeSpans[name] =
-          sourceSpan!.file.span(offset + attr.start, offset + attr.end);
-      if (attr.startValue != null) {
-        attributeValueSpans[name] = sourceSpan!.file
-            .span(offset + attr.startValue!, offset + attr.endValue);
+        for (var attr in token.attributeSpans!) {
+          final offset = sourceSpan!.start.offset;
+          final name = attr.name!;
+          if (!attributeSpans.containsKey(name)) {
+            attributeSpans[name] =
+                sourceSpan!.file.span(offset + attr.start, offset + attr.end);
+            if (attr.startValue != null) {
+              attributeValueSpans[name] = sourceSpan!.file
+                  .span(offset + attr.startValue!, offset + attr.endValue);
+            }
+          }
+        }
+        return;
       }
     }
   }
