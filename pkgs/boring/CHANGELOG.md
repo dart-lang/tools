@@ -6,9 +6,11 @@
 - The package is now licensed under the BSD 3-Clause license used by other
   Dart packages.
 - Update BoringSSL to 3fed4f20.
-- Removed the `BIO_vsnprintf`, `OPENSSL_vasprintf` (`va_list`), and `locale_t`
-  bindings, and changed `SymbolAddresses` to an extension type so `addresses`
-  no longer leaks a private type.
+- Update BoringSSL to 64188f17.
+- Removed the `BIO_vsnprintf` and `OPENSSL_vasprintf` (`va_list`) bindings,
+  excluded unused system-header declarations from the generated bindings, and
+  changed `SymbolAddresses` to an extension type so `addresses` no longer leaks
+  a private type.
 
 ## 0.4.1
 

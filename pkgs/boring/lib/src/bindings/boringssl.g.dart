@@ -1011,7 +1011,7 @@ external int ASN1_STRING_copy(
 /// representation that does not always correspond to the DER encoding of the
 /// type. See the documentation for `ASN1_STRING` for details.
 ///
-/// Prefer `ASN1_STRING_get0_data`.
+/// Prefer `ASN1_STRING_get0_data`. See crbug.com/574019297.
 @meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.UnsignedChar> Function(ffi.Pointer<ASN1_STRING>)>(
   symbol: 'bssl_dart_ASN1_STRING_data',
@@ -1060,7 +1060,21 @@ external ffi.Pointer<ffi.UnsignedChar> ASN1_STRING_get0_data(
 )
 external int ASN1_STRING_get_default_mask();
 
-/// ASN1_STRING_length returns the length of `str`, in bytes.
+/// ASN1_STRING_get_length returns the length of `str`, in bytes.
+///
+/// The contents of an `ASN1_STRING` encode the value in some type-specific
+/// representation that does not always correspond to the DER encoding of the
+/// type. See the documentation for `ASN1_STRING` for details.
+@meta.RecordUse()
+@ffi.Native<ffi.Size Function(ffi.Pointer<ASN1_STRING>)>(
+  symbol: 'bssl_dart_ASN1_STRING_get_length',
+)
+external int ASN1_STRING_get_length(
+  ffi.Pointer<ASN1_STRING> str,
+);
+
+/// ASN1_STRING_length returns the length of `str`, in bytes. Prefer
+/// `ASN1_STRING_get_length`.
 ///
 /// The contents of an `ASN1_STRING` encode the value in some type-specific
 /// representation that does not always correspond to the DER encoding of the
@@ -2381,6 +2395,16 @@ external int BIO_ctrl_pending(
   symbol: 'bssl_dart_BIO_do_connect',
 )
 external int BIO_do_connect(
+  ffi.Pointer<BIO> bio,
+);
+
+/// BIO_dup_ref increments the reference count of `bio` and returns the same
+/// handle.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<BIO> Function(ffi.Pointer<BIO>)>(
+  symbol: 'bssl_dart_BIO_dup_ref',
+)
+external ffi.Pointer<BIO> BIO_dup_ref(
   ffi.Pointer<BIO> bio,
 );
 
@@ -8191,6 +8215,17 @@ external int DH_compute_key_padded(
   ffi.Pointer<DH> dh,
 );
 
+/// DH_dup_ref increments the reference count of `dh` and returns the same
+/// handle. It does not mutate `dh` for thread-safety purposes and may be used
+/// concurrently.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<DH> Function(ffi.Pointer<DH>)>(
+  symbol: 'bssl_dart_DH_dup_ref',
+)
+external ffi.Pointer<DH> DH_dup_ref(
+  ffi.Pointer<DH> dh,
+);
+
 /// DH_free decrements the reference count of `dh` and frees it if the reference
 /// count drops to zero.
 @meta.RecordUse()
@@ -13042,9 +13077,6 @@ external int EVP_DigestSignFinal(
 /// Ed25519, `type` should be NULL. The `EVP_MD_CTX` itself is unused but is
 /// present so the API is uniform. See `EVP_DigestSign`.
 ///
-/// This function does not mutate `pkey` for thread-safety purposes and may be
-/// used concurrently with other non-mutating functions on `pkey`.
-///
 /// It returns one on success, or zero on error.
 @meta.RecordUse()
 @ffi.Native<
@@ -13138,9 +13170,6 @@ external int EVP_DigestVerifyFinal(
 /// For single-shot signing algorithms which do not use a pre-hash, such as
 /// Ed25519, `type` should be NULL. The `EVP_MD_CTX` itself is unused but is
 /// present so the API is uniform. See `EVP_DigestVerify`.
-///
-/// This function does not mutate `pkey` for thread-safety purposes and may be
-/// used concurrently with other non-mutating functions on `pkey`.
 ///
 /// It returns one on success, or zero on error.
 @meta.RecordUse()
@@ -15654,11 +15683,6 @@ external ffi.Pointer<EVP_PKEY> EVP_RSA_gen(
 /// actual size of the signature is written to `*out_sig_len`.
 ///
 /// It returns one on success and zero otherwise.
-///
-/// It does not modify `ctx`, thus it's possible to continue to use `ctx` in
-/// order to sign a longer message. It also does not mutate `pkey` for
-/// thread-safety purposes and may be used concurrently with other non-mutating
-/// functions on `pkey`.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
@@ -15724,11 +15748,6 @@ external int EVP_SignUpdate(
 /// calls to `EVP_VerifyUpdate`.
 ///
 /// It returns one on success and zero otherwise.
-///
-/// It does not modify `ctx`, thus it's possible to continue to use `ctx` in
-/// order to verify a longer message. It also does not mutate `pkey` for
-/// thread-safety purposes and may be used concurrently with other non-mutating
-/// functions on `pkey`.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
@@ -16713,6 +16732,23 @@ external ffi.Pointer<EVP_MD> EVP_sha256();
 @meta.RecordUse()
 @ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha384')
 external ffi.Pointer<EVP_MD> EVP_sha384();
+
+/// SHA-3 family of digest functions.
+///
+/// WARNING: Prefer to use SHA-2 (e.g. `EVP_sha256`) over SHA-3. Despite being a
+/// newer hash function, SHA-3 performs poorly and should only be used when
+/// necessary for interoperability with existing systems.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha3_256')
+external ffi.Pointer<EVP_MD> EVP_sha3_256();
+
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha3_384')
+external ffi.Pointer<EVP_MD> EVP_sha3_384();
+
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha3_512')
+external ffi.Pointer<EVP_MD> EVP_sha3_512();
 
 @meta.RecordUse()
 @ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha512')
@@ -23180,6 +23216,16 @@ external ffi.Pointer<X509_CRL> X509_CRL_dup(
   ffi.Pointer<X509_CRL> crl,
 );
 
+/// X509_CRL_dup_ref adds one to the reference count of `crl` and returns the
+/// same.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<X509_CRL> Function(ffi.Pointer<X509_CRL>)>(
+  symbol: 'bssl_dart_X509_CRL_dup_ref',
+)
+external ffi.Pointer<X509_CRL> X509_CRL_dup_ref(
+  ffi.Pointer<X509_CRL> crl,
+);
+
 /// X509_CRL_free decrements `crl`'s reference count and, if zero, releases
 /// memory associated with `crl`.
 @meta.RecordUse()
@@ -25510,16 +25556,6 @@ external ffi.Pointer<X509> X509_STORE_CTX_get0_cert(
   symbol: 'bssl_dart_X509_STORE_CTX_get0_chain',
 )
 external ffi.Pointer<stack_st_X509> X509_STORE_CTX_get0_chain(
-  ffi.Pointer<X509_STORE_CTX> ctx,
-);
-
-/// X509_STORE_CTX_get0_current_crl returns the CRL which caused the error
-/// returned by `X509_STORE_CTX_get_error`.
-@meta.RecordUse()
-@ffi.Native<ffi.Pointer<X509_CRL> Function(ffi.Pointer<X509_STORE_CTX>)>(
-  symbol: 'bssl_dart_X509_STORE_CTX_get0_current_crl',
-)
-external ffi.Pointer<X509_CRL> X509_STORE_CTX_get0_current_crl(
   ffi.Pointer<X509_STORE_CTX> ctx,
 );
 
@@ -28055,8 +28091,7 @@ external int X509_set_notBefore(
 );
 
 /// X509_set_pubkey sets `x509`'s public key to `pkey`. It returns one on success
-/// and zero on error. This function does not take ownership of `pkey` and
-/// internally copies and updates reference counts as needed.
+/// and zero on error.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<X509>, ffi.Pointer<EVP_PKEY>)>(
   symbol: 'bssl_dart_X509_set_pubkey',
@@ -32940,9 +32975,9 @@ const int EVP_MAX_IV_LENGTH = 16;
 
 const int EVP_MAX_KEY_LENGTH = 64;
 
-const int EVP_MAX_MD_BLOCK_SIZE = 128;
+const int EVP_MAX_MD_BLOCK_SIZE = 136;
 
-const int EVP_MAX_MD_DATA_SIZE = 208;
+const int EVP_MAX_MD_DATA_SIZE = 240;
 
 const int EVP_MAX_MD_SIZE = 64;
 
@@ -33241,11 +33276,11 @@ const int NID_OCSP_sign = 180;
 
 const int NID_Private = 385;
 
-const int NID_SLH_DSA_SHA2_128s = 979;
+const int NID_SLH_DSA_SHA2_128s = 973;
 
-const int NID_SLH_DSA_SHA2_128s_WITH_SHA256 = 981;
+const int NID_SLH_DSA_SHA2_128s_WITH_SHA256 = 975;
 
-const int NID_SLH_DSA_SHAKE_256f = 980;
+const int NID_SLH_DSA_SHAKE_256f = 974;
 
 const int NID_SMIME = 188;
 
@@ -33427,7 +33462,7 @@ const int NID_aes_256_ofb128 = 428;
 
 const int NID_aes_256_xts = 914;
 
-const int NID_alg_mtcProof_draft = 976;
+const int NID_alg_mtcProof = 976;
 
 const int NID_algorithm = 376;
 
@@ -34497,7 +34532,7 @@ const int NID_pbes2 = 161;
 
 const int NID_pbmac1 = 162;
 
-const int NID_pe_mtcCertificationAuthority_draft = 978;
+const int NID_pe_mtcCertificationAuthority_SHA256 = 978;
 
 const int NID_personalSignature = 499;
 
@@ -34627,7 +34662,7 @@ const int NID_rc5_ecb = 121;
 
 const int NID_rc5_ofb64 = 123;
 
-const int NID_rdna_trustAnchorID_draft = 977;
+const int NID_rdna_trustAnchorID = 977;
 
 const int NID_registeredAddress = 870;
 
@@ -35638,22 +35673,6 @@ final class UnnamedStruct extends ffi.Struct {
     ..ref.h4 = h4;
 }
 
-final class UnnamedStruct$1 extends ffi.Struct {
-  @ffi.UnsignedInt()
-  external int __low;
-
-  @ffi.UnsignedInt()
-  external int __high;
-
-  static ffi.Pointer<UnnamedStruct$1> $allocate(
-    ffi.Allocator $allocator, {
-    required int $low,
-    required int $high,
-  }) => $allocator<UnnamedStruct$1>()
-    ..ref.__low = $low
-    ..ref.__high = $high;
-}
-
 final class UnnamedUnion extends ffi.Union {
   external ffi.Pointer<ffi.Char> ptr;
 
@@ -35736,7 +35755,7 @@ final class UnnamedUnion$1 extends ffi.Union {
 
 /// md_data contains the hash-specific context.
 final class UnnamedUnion$2 extends ffi.Union {
-  @ffi.Array.multi([208])
+  @ffi.Array.multi([240])
   external ffi.Array<ffi.Uint8> md_data;
 
   @ffi.Uint64()
@@ -35789,14 +35808,6 @@ final class UnnamedUnion$7 extends ffi.Union {
   external ffi.Array<ffi.Uint32> h;
 
   external UnnamedStruct unnamed;
-}
-
-final class UnnamedUnion$8 extends ffi.Union {
-  @ffi.UnsignedInt()
-  external int __wch;
-
-  @ffi.Array.multi([4])
-  external ffi.Array<ffi.Char> __wchb;
 }
 
 const int V_ASN1_ANY = -4;
@@ -36332,7 +36343,7 @@ const int X509_V_FLAG_ALLOW_TIMEZONE_OFFSET = 16777216;
 
 const int X509_V_FLAG_CB_ISSUER_CHECK = 1;
 
-const int X509_V_FLAG_CHECK_SS_SIGNATURE = 16384;
+const int X509_V_FLAG_CHECK_SS_SIGNATURE = 0;
 
 const int X509_V_FLAG_CRL_CHECK = 4;
 
@@ -36364,7 +36375,7 @@ const int X509_V_FLAG_USE_CHECK_TIME = 2;
 
 const int X509_V_FLAG_USE_DELTAS = 8192;
 
-const int X509_V_FLAG_USE_MTC_DRAFT_PLANTS_05 = 4194304;
+const int X509_V_FLAG_USE_MTC_DRAFT_PLANTS_07 = 4194304;
 
 const int X509_V_FLAG_X509_STRICT = 0;
 
@@ -36414,116 +36425,7 @@ final class X509_req_st extends ffi.Opaque {}
 
 final class X509_sig_st extends ffi.Opaque {}
 
-typedef _Float32 = ffi.Float;
-typedef Dart_Float32 = double;
-typedef _Float32x = ffi.Double;
-typedef Dart_Float32x = double;
-typedef _Float64 = ffi.Double;
-typedef Dart_Float64 = double;
-
-final class _G_fpos64_t extends ffi.Struct {
-  @__off64_t()
-  external int __pos;
-
-  external __mbstate_t __state;
-}
-
-final class _G_fpos_t extends ffi.Struct {
-  @__off_t()
-  external int __pos;
-
-  external __mbstate_t __state;
-}
-
-final class _IO_FILE extends ffi.Struct {
-  @ffi.Int()
-  external int _flags;
-
-  external ffi.Pointer<ffi.Char> _IO_read_ptr;
-
-  external ffi.Pointer<ffi.Char> _IO_read_end;
-
-  external ffi.Pointer<ffi.Char> _IO_read_base;
-
-  external ffi.Pointer<ffi.Char> _IO_write_base;
-
-  external ffi.Pointer<ffi.Char> _IO_write_ptr;
-
-  external ffi.Pointer<ffi.Char> _IO_write_end;
-
-  external ffi.Pointer<ffi.Char> _IO_buf_base;
-
-  external ffi.Pointer<ffi.Char> _IO_buf_end;
-
-  external ffi.Pointer<ffi.Char> _IO_save_base;
-
-  external ffi.Pointer<ffi.Char> _IO_backup_base;
-
-  external ffi.Pointer<ffi.Char> _IO_save_end;
-
-  external ffi.Pointer<_IO_marker> _markers;
-
-  external ffi.Pointer<_IO_FILE> _chain;
-
-  @ffi.Int()
-  external int _fileno;
-
-  @ffi.Int()
-  external int _flags2;
-
-  @__off_t()
-  external int _old_offset;
-
-  @ffi.UnsignedShort()
-  external int _cur_column;
-
-  @ffi.SignedChar()
-  external int _vtable_offset;
-
-  @ffi.Array.multi([1])
-  external ffi.Array<ffi.Char> _shortbuf;
-
-  external ffi.Pointer<_IO_lock_t> _lock;
-
-  @__off64_t()
-  external int _offset;
-
-  external ffi.Pointer<_IO_codecvt> _codecvt;
-
-  external ffi.Pointer<_IO_wide_data> _wide_data;
-
-  external ffi.Pointer<_IO_FILE> _freeres_list;
-
-  external ffi.Pointer<ffi.Void> _freeres_buf;
-
-  @ffi.Size()
-  external int __pad5;
-
-  @ffi.Int()
-  external int _mode;
-
-  @ffi.Array.multi([20])
-  external ffi.Array<ffi.Char> _unused2;
-}
-
-final class _IO_codecvt extends ffi.Opaque {}
-
-final class _IO_cookie_io_functions_t extends ffi.Struct {
-  external ffi.Pointer<cookie_read_function_t> read;
-
-  external ffi.Pointer<cookie_write_function_t> write;
-
-  external ffi.Pointer<cookie_seek_function_t> seek;
-
-  external ffi.Pointer<cookie_close_function_t> close;
-}
-
-typedef _IO_lock_t = ffi.Void;
-typedef Dart_IO_lock_t = void;
-
-final class _IO_marker extends ffi.Opaque {}
-
-final class _IO_wide_data extends ffi.Opaque {}
+final class _IO_FILE extends ffi.Opaque {}
 
 /// Deprecated private functions (hidden).
 ///
@@ -36533,271 +36435,8 @@ final class _IO_wide_data extends ffi.Opaque {}
 /// TODO(b/290792019, b/290785937): Ideally these would at least be inline
 /// functions, so we do not squat the symbols.
 typedef _STACK = OPENSSL_STACK;
-typedef __FILE = _IO_FILE;
-
-final class __atomic_wide_counter extends ffi.Union {
-  @ffi.UnsignedLongLong()
-  external int __value64;
-
-  external UnnamedStruct$1 __value32;
-}
-
-typedef __blkcnt64_t = ffi.Long;
-typedef Dart__blkcnt64_t = int;
-typedef __blkcnt_t = ffi.Long;
-typedef Dart__blkcnt_t = int;
-typedef __blksize_t = ffi.Long;
-typedef Dart__blksize_t = int;
-typedef __caddr_t = ffi.Pointer<ffi.Char>;
-typedef __clock_t = ffi.Long;
-typedef Dart__clock_t = int;
-typedef __clockid_t = ffi.Int;
-typedef Dart__clockid_t = int;
-typedef __compar_fn_t = ffi.Pointer<ffi.NativeFunction<__compar_fn_tFunction>>;
-typedef __compar_fn_tFunction = ffi.Int Function(
-  ffi.Pointer<ffi.Void>,
-  ffi.Pointer<ffi.Void>,
-);
-typedef Dart__compar_fn_tFunction = int Function(
-  ffi.Pointer<ffi.Void>,
-  ffi.Pointer<ffi.Void>,
-);
-typedef __daddr_t = ffi.Int;
-typedef Dart__daddr_t = int;
-typedef __dev_t = ffi.UnsignedLong;
-typedef Dart__dev_t = int;
-typedef __fd_mask = ffi.Long;
-typedef Dart__fd_mask = int;
-typedef __fpos64_t = _G_fpos64_t;
-typedef __fpos_t = _G_fpos_t;
-typedef __fsblkcnt64_t = ffi.UnsignedLong;
-typedef Dart__fsblkcnt64_t = int;
-typedef __fsblkcnt_t = ffi.UnsignedLong;
-typedef Dart__fsblkcnt_t = int;
-typedef __fsfilcnt64_t = ffi.UnsignedLong;
-typedef Dart__fsfilcnt64_t = int;
-typedef __fsfilcnt_t = ffi.UnsignedLong;
-typedef Dart__fsfilcnt_t = int;
-
-final class __fsid_t extends ffi.Struct {
-  @ffi.Array.multi([2])
-  external ffi.Array<ffi.Int> __val;
-}
-
-typedef __fsword_t = ffi.Long;
-typedef Dart__fsword_t = int;
-typedef __gid_t = ffi.UnsignedInt;
-typedef Dart__gid_t = int;
-typedef __gwchar_t = ffi.Int;
-typedef Dart__gwchar_t = int;
-typedef __id_t = ffi.UnsignedInt;
-typedef Dart__id_t = int;
-typedef __ino64_t = ffi.UnsignedLong;
-typedef Dart__ino64_t = int;
-typedef __ino_t = ffi.UnsignedLong;
-typedef Dart__ino_t = int;
-typedef __int16_t = ffi.Short;
-typedef Dart__int16_t = int;
-typedef __int32_t = ffi.Int;
-typedef Dart__int32_t = int;
-typedef __int64_t = ffi.Long;
-typedef Dart__int64_t = int;
-typedef __int8_t = ffi.SignedChar;
-typedef Dart__int8_t = int;
-typedef __int_least16_t = __int16_t;
-typedef __int_least32_t = __int32_t;
-typedef __int_least64_t = __int64_t;
-typedef __int_least8_t = __int8_t;
-typedef __intmax_t = ffi.Long;
-typedef Dart__intmax_t = int;
-typedef __intptr_t = ffi.Long;
-typedef Dart__intptr_t = int;
-typedef __key_t = ffi.Int;
-typedef Dart__key_t = int;
-typedef __loff_t = __off64_t;
-
-final class __mbstate_t extends ffi.Struct {
-  @ffi.Int()
-  external int __count;
-
-  external UnnamedUnion$8 __value;
-}
-
-typedef __mode_t = ffi.UnsignedInt;
-typedef Dart__mode_t = int;
-typedef __nlink_t = ffi.UnsignedLong;
-typedef Dart__nlink_t = int;
-typedef __off64_t = ffi.Long;
-typedef Dart__off64_t = int;
-typedef __off_t = ffi.Long;
-typedef Dart__off_t = int;
-
-final class __once_flag extends ffi.Struct {
-  @ffi.Int()
-  external int __data;
-}
-
-typedef __pid_t = ffi.Int;
-typedef Dart__pid_t = int;
-
-final class __pthread_cond_s extends ffi.Struct {
-  external __atomic_wide_counter __wseq;
-
-  external __atomic_wide_counter __g1_start;
-
-  @ffi.Array.multi([2])
-  external ffi.Array<ffi.UnsignedInt> __g_refs;
-
-  @ffi.Array.multi([2])
-  external ffi.Array<ffi.UnsignedInt> __g_size;
-
-  @ffi.UnsignedInt()
-  external int __g1_orig_size;
-
-  @ffi.UnsignedInt()
-  external int __wrefs;
-
-  @ffi.Array.multi([2])
-  external ffi.Array<ffi.UnsignedInt> __g_signals;
-}
-
-final class __pthread_internal_list extends ffi.Struct {
-  external ffi.Pointer<__pthread_internal_list> __prev;
-
-  external ffi.Pointer<__pthread_internal_list> __next;
-}
-
-final class __pthread_internal_slist extends ffi.Struct {
-  external ffi.Pointer<__pthread_internal_slist> __next;
-}
-
-typedef __pthread_list_t = __pthread_internal_list;
-
-final class __pthread_mutex_s extends ffi.Struct {
-  @ffi.Int()
-  external int __lock;
-
-  @ffi.UnsignedInt()
-  external int __count;
-
-  @ffi.Int()
-  external int __owner;
-
-  @ffi.UnsignedInt()
-  external int __nusers;
-
-  @ffi.Int()
-  external int __kind;
-
-  @ffi.Short()
-  external int __spins;
-
-  @ffi.Short()
-  external int __elision;
-
-  external __pthread_list_t __list;
-}
-
-final class __pthread_rwlock_arch_t extends ffi.Struct {
-  @ffi.UnsignedInt()
-  external int __readers;
-
-  @ffi.UnsignedInt()
-  external int __writers;
-
-  @ffi.UnsignedInt()
-  external int __wrphase_futex;
-
-  @ffi.UnsignedInt()
-  external int __writers_futex;
-
-  @ffi.UnsignedInt()
-  external int __pad3;
-
-  @ffi.UnsignedInt()
-  external int __pad4;
-
-  @ffi.Int()
-  external int __cur_writer;
-
-  @ffi.Int()
-  external int __shared;
-
-  @ffi.SignedChar()
-  external int __rwelision;
-
-  @ffi.Array.multi([7])
-  external ffi.Array<ffi.UnsignedChar> __pad1;
-
-  @ffi.UnsignedLong()
-  external int __pad2;
-
-  @ffi.UnsignedInt()
-  external int __flags;
-}
-
-typedef __pthread_slist_t = __pthread_internal_slist;
-typedef __quad_t = ffi.Long;
-typedef Dart__quad_t = int;
-typedef __rlim64_t = ffi.UnsignedLong;
-typedef Dart__rlim64_t = int;
-typedef __rlim_t = ffi.UnsignedLong;
-typedef Dart__rlim_t = int;
-typedef __sig_atomic_t = ffi.Int;
-typedef Dart__sig_atomic_t = int;
-
-final class __sigset_t extends ffi.Struct {
-  @ffi.Array.multi([16])
-  external ffi.Array<ffi.UnsignedLong> __val;
-}
-
-typedef __socklen_t = ffi.UnsignedInt;
-typedef Dart__socklen_t = int;
-typedef __ssize_t = ffi.Long;
-typedef Dart__ssize_t = int;
-typedef __suseconds64_t = ffi.Long;
-typedef Dart__suseconds64_t = int;
-typedef __suseconds_t = ffi.Long;
-typedef Dart__suseconds_t = int;
-typedef __syscall_slong_t = ffi.Long;
-typedef Dart__syscall_slong_t = int;
-typedef __syscall_ulong_t = ffi.UnsignedLong;
-typedef Dart__syscall_ulong_t = int;
-typedef __thrd_t = ffi.UnsignedLong;
-typedef Dart__thrd_t = int;
 typedef __time_t = ffi.Long;
 typedef Dart__time_t = int;
-typedef __timer_t = ffi.Pointer<ffi.Void>;
-typedef __tss_t = ffi.UnsignedInt;
-typedef Dart__tss_t = int;
-typedef __u_char = ffi.UnsignedChar;
-typedef Dart__u_char = int;
-typedef __u_int = ffi.UnsignedInt;
-typedef Dart__u_int = int;
-typedef __u_long = ffi.UnsignedLong;
-typedef Dart__u_long = int;
-typedef __u_quad_t = ffi.UnsignedLong;
-typedef Dart__u_quad_t = int;
-typedef __u_short = ffi.UnsignedShort;
-typedef Dart__u_short = int;
-typedef __uid_t = ffi.UnsignedInt;
-typedef Dart__uid_t = int;
-typedef __uint16_t = ffi.UnsignedShort;
-typedef Dart__uint16_t = int;
-typedef __uint32_t = ffi.UnsignedInt;
-typedef Dart__uint32_t = int;
-typedef __uint64_t = ffi.UnsignedLong;
-typedef Dart__uint64_t = int;
-typedef __uint8_t = ffi.UnsignedChar;
-typedef Dart__uint8_t = int;
-typedef __uint_least16_t = __uint16_t;
-typedef __uint_least32_t = __uint32_t;
-typedef __uint_least64_t = __uint64_t;
-typedef __uint_least8_t = __uint8_t;
-typedef __uintmax_t = ffi.UnsignedLong;
-typedef Dart__uintmax_t = int;
-typedef __useconds_t = ffi.UnsignedInt;
-typedef Dart__useconds_t = int;
 
 /// aes_key_st should be an opaque type, but EVP requires that the size be
 /// known.
@@ -37010,9 +36649,6 @@ final class bio_st extends ffi.Opaque {}
 
 final class blake2b_state_st extends ffi.Opaque {}
 
-typedef blkcnt_t = __blkcnt_t;
-typedef blksize_t = __blksize_t;
-
 /// bn_gencb_st, or `BN_GENCB`, holds a callback function that is used by
 /// generation functions that can take a very long time to complete. Use
 /// `BN_GENCB_set` to initialise a `BN_GENCB` structure.
@@ -37087,8 +36723,6 @@ final class buf_mem_st extends ffi.Struct {
     ..ref.data = data
     ..ref.max = max;
 }
-
-typedef caddr_t = __caddr_t;
 
 final class cbb_buffer_st extends ffi.Struct {
   external ffi.Pointer<ffi.Uint8> buf;
@@ -37165,9 +36799,6 @@ final class cbs_st extends ffi.Struct {
     ..ref.len = len;
 }
 
-typedef clock_t = __clock_t;
-typedef clockid_t = __clockid_t;
-
 final class cmac_ctx_st extends ffi.Opaque {}
 
 final class conf_st extends ffi.Opaque {}
@@ -37205,34 +36836,6 @@ final class conf_value_st extends ffi.Struct {
     ..ref.name = name
     ..ref.value = value;
 }
-
-typedef cookie_close_function_t =
-    ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Void> __cookie)>;
-typedef cookie_io_functions_t = _IO_cookie_io_functions_t;
-typedef cookie_read_function_t =
-    ffi.NativeFunction<
-      __ssize_t Function(
-        ffi.Pointer<ffi.Void> __cookie,
-        ffi.Pointer<ffi.Char> __buf,
-        ffi.Size __nbytes,
-      )
-    >;
-typedef cookie_seek_function_t =
-    ffi.NativeFunction<
-      ffi.Int Function(
-        ffi.Pointer<ffi.Void> __cookie,
-        ffi.Pointer<__off64_t> __pos,
-        ffi.Int __w,
-      )
-    >;
-typedef cookie_write_function_t =
-    ffi.NativeFunction<
-      __ssize_t Function(
-        ffi.Pointer<ffi.Void> __cookie,
-        ffi.Pointer<ffi.Char> __buf,
-        ffi.Size __nbytes,
-      )
-    >;
 
 final class cpace_ctx_st extends ffi.Opaque {}
 
@@ -37306,43 +36909,8 @@ typedef d2i_of_void =
         ffi.Long,
       )
     >;
-typedef daddr_t = __daddr_t;
-typedef dev_t = __dev_t;
 
 final class dh_st extends ffi.Opaque {}
-
-final class div_t extends ffi.Struct {
-  @ffi.Int()
-  external int quot;
-
-  @ffi.Int()
-  external int rem;
-
-  static ffi.Pointer<div_t> $allocate(
-    ffi.Allocator $allocator, {
-    required int quot,
-    required int rem,
-  }) => $allocator<div_t>()
-    ..ref.quot = quot
-    ..ref.rem = rem;
-}
-
-final class drand48_data extends ffi.Struct {
-  @ffi.Array.multi([3])
-  external ffi.Array<ffi.UnsignedShort> __x;
-
-  @ffi.Array.multi([3])
-  external ffi.Array<ffi.UnsignedShort> __old_x;
-
-  @ffi.UnsignedShort()
-  external int __c;
-
-  @ffi.UnsignedShort()
-  external int __init;
-
-  @ffi.UnsignedLongLong()
-  external int __a;
-}
 
 final class dsa_st extends ffi.Opaque {}
 
@@ -37565,13 +37133,6 @@ final class evp_pkey_ctx_st extends ffi.Opaque {}
 
 final class evp_pkey_st extends ffi.Opaque {}
 
-typedef fd_mask = __fd_mask;
-
-final class fd_set extends ffi.Struct {
-  @ffi.Array.multi([16])
-  external ffi.Array<__fd_mask> __fds_bits;
-}
-
 /// fips_counter_t denotes specific APIs/algorithms. A counter is maintained for
 /// each in FIPS mode so that tests can be written to assert that the expected,
 /// FIPS functions are being called by a certain piece of code.
@@ -37582,12 +37143,6 @@ sealed class fips_counter_t {
   static const fips_counter_evp_aes_256_ctr = 3;
   static const fips_counter_max = 3;
 }
-
-typedef fpos_t = __fpos_t;
-typedef fsblkcnt_t = __fsblkcnt_t;
-typedef fsfilcnt_t = __fsfilcnt_t;
-typedef fsid_t = __fsid_t;
-typedef gid_t = __gid_t;
 
 /// Private functions
 final class hmac_ctx_st extends ffi.Struct {
@@ -37607,89 +37162,10 @@ typedef i2d_of_void =
         ffi.Pointer<ffi.Pointer<ffi.UnsignedChar>>,
       )
     >;
-typedef id_t = __id_t;
-
-final class imaxdiv_t extends ffi.Struct {
-  @ffi.Long()
-  external int quot;
-
-  @ffi.Long()
-  external int rem;
-
-  static ffi.Pointer<imaxdiv_t> $allocate(
-    ffi.Allocator $allocator, {
-    required int quot,
-    required int rem,
-  }) => $allocator<imaxdiv_t>()
-    ..ref.quot = quot
-    ..ref.rem = rem;
-}
-
-typedef ino_t = __ino_t;
-typedef int_fast16_t = ffi.Long;
-typedef Dartint_fast16_t = int;
-typedef int_fast32_t = ffi.Long;
-typedef Dartint_fast32_t = int;
-typedef int_fast64_t = ffi.Long;
-typedef Dartint_fast64_t = int;
-typedef int_fast8_t = ffi.SignedChar;
-typedef Dartint_fast8_t = int;
-typedef int_least16_t = __int_least16_t;
-typedef int_least32_t = __int_least32_t;
-typedef int_least64_t = __int_least64_t;
-typedef int_least8_t = __int_least8_t;
-typedef intmax_t = __intmax_t;
-
-final class itimerspec extends ffi.Struct {
-  external timespec it_interval;
-
-  external timespec it_value;
-}
-
-typedef key_t = __key_t;
-
-final class ldiv_t extends ffi.Struct {
-  @ffi.Long()
-  external int quot;
-
-  @ffi.Long()
-  external int rem;
-
-  static ffi.Pointer<ldiv_t> $allocate(
-    ffi.Allocator $allocator, {
-    required int quot,
-    required int rem,
-  }) => $allocator<ldiv_t>()
-    ..ref.quot = quot
-    ..ref.rem = rem;
-}
-
-final class lldiv_t extends ffi.Struct {
-  @ffi.LongLong()
-  external int quot;
-
-  @ffi.LongLong()
-  external int rem;
-
-  static ffi.Pointer<lldiv_t> $allocate(
-    ffi.Allocator $allocator, {
-    required int quot,
-    required int rem,
-  }) => $allocator<lldiv_t>()
-    ..ref.quot = quot
-    ..ref.rem = rem;
-}
-
-typedef loff_t = __loff_t;
-
-final class max_align_t extends ffi.Opaque {}
 
 final class md4_state_st extends ffi.Opaque {}
 
 final class md5_state_st extends ffi.Opaque {}
-
-typedef mode_t = __mode_t;
-typedef nlink_t = __nlink_t;
 
 /// Deprecated functions.
 final class obj_name_st extends ffi.Struct {
@@ -37715,8 +37191,6 @@ final class obj_name_st extends ffi.Struct {
     ..ref.name = name
     ..ref.data = data;
 }
-
-typedef off_t = __off_t;
 
 /// openssl_method_common_st contains the common part of all method structures.
 /// This must be the first member of all method structures.
@@ -37792,7 +37266,6 @@ typedef pem_password_cb =
         ffi.Pointer<ffi.Void> userdata,
       )
     >;
-typedef pid_t = __pid_t;
 
 final class pkcs12_st extends ffi.Opaque {}
 
@@ -37832,15 +37305,8 @@ final class private_key_st extends ffi.Struct {
   }) => $allocator<private_key_st>()..ref.dec_pkey = dec_pkey;
 }
 
-typedef pthread_key_t = ffi.UnsignedInt;
-typedef Dartpthread_key_t = int;
-typedef pthread_once_t = ffi.Int;
-typedef Dartpthread_once_t = int;
-typedef pthread_t = ffi.UnsignedLong;
-typedef Dartpthread_t = int;
 typedef ptrdiff_t = ffi.Long;
 typedef Dartptrdiff_t = int;
-typedef quad_t = __quad_t;
 
 /// rand_meth_st is typedefed to `RAND_METHOD` in base.h. It isn't used; it
 /// exists only to be the return type of `RAND_SSLeay`. It's
@@ -37923,47 +37389,7 @@ final class rand_meth_st extends ffi.Struct {
     ..ref.status = status;
 }
 
-final class random_data extends ffi.Struct {
-  external ffi.Pointer<ffi.Int32> fptr;
-
-  external ffi.Pointer<ffi.Int32> rptr;
-
-  external ffi.Pointer<ffi.Int32> state;
-
-  @ffi.Int()
-  external int rand_type;
-
-  @ffi.Int()
-  external int rand_deg;
-
-  @ffi.Int()
-  external int rand_sep;
-
-  external ffi.Pointer<ffi.Int32> end_ptr;
-
-  static ffi.Pointer<random_data> $allocate(
-    ffi.Allocator $allocator, {
-    required ffi.Pointer<ffi.Int32> fptr,
-    required ffi.Pointer<ffi.Int32> rptr,
-    required ffi.Pointer<ffi.Int32> state,
-    required int rand_type,
-    required int rand_deg,
-    required int rand_sep,
-    required ffi.Pointer<ffi.Int32> end_ptr,
-  }) => $allocator<random_data>()
-    ..ref.fptr = fptr
-    ..ref.rptr = rptr
-    ..ref.state = state
-    ..ref.rand_type = rand_type
-    ..ref.rand_deg = rand_deg
-    ..ref.rand_sep = rand_sep
-    ..ref.end_ptr = end_ptr;
-}
-
 final class rc4_key_st extends ffi.Opaque {}
-
-typedef register_t = ffi.Long;
-typedef Dartregister_t = int;
 
 final class rsa_meth_st extends ffi.Struct {
   external openssl_method_common_st common;
@@ -38142,9 +37568,6 @@ final class sha_state_st extends ffi.Struct {
   external int num;
 }
 
-final class sigevent extends ffi.Opaque {}
-
-typedef sigset_t = __sigset_t;
 typedef sk_ACCESS_DESCRIPTION_cmp_func =
     ffi.Pointer<ffi.NativeFunction<sk_ACCESS_DESCRIPTION_cmp_funcFunction>>;
 typedef sk_ACCESS_DESCRIPTION_cmp_funcFunction = ffi.Int Function(
@@ -39016,8 +38439,6 @@ sealed class spake2_role_t {
 
 final class srtp_protection_profile_st extends ffi.Opaque {}
 
-typedef ssize_t = __ssize_t;
-
 final class ssl_cipher_st extends ffi.Opaque {}
 
 final class ssl_credential_st extends ffi.Opaque {}
@@ -39156,41 +38577,7 @@ final class stack_st_X509_REVOKED extends ffi.Opaque {}
 
 final class stack_st_void extends ffi.Opaque {}
 
-typedef suseconds_t = __suseconds_t;
 typedef time_t = __time_t;
-typedef timer_t = __timer_t;
-
-final class timespec extends ffi.Struct {
-  @__time_t()
-  external int tv_sec;
-
-  @__syscall_slong_t()
-  external int tv_nsec;
-
-  static ffi.Pointer<timespec> $allocate(
-    ffi.Allocator $allocator, {
-    required int tv_sec,
-    required int tv_nsec,
-  }) => $allocator<timespec>()
-    ..ref.tv_sec = tv_sec
-    ..ref.tv_nsec = tv_nsec;
-}
-
-final class timeval extends ffi.Struct {
-  @__time_t()
-  external int tv_sec;
-
-  @__suseconds_t()
-  external int tv_usec;
-
-  static ffi.Pointer<timeval> $allocate(
-    ffi.Allocator $allocator, {
-    required int tv_sec,
-    required int tv_usec,
-  }) => $allocator<timeval>()
-    ..ref.tv_sec = tv_sec
-    ..ref.tv_usec = tv_usec;
-}
 
 final class tm extends ffi.Struct {
   @ffi.Int()
@@ -39259,36 +38646,6 @@ final class trust_token_issuer_st extends ffi.Opaque {}
 final class trust_token_method_st extends ffi.Opaque {}
 
 final class trust_token_st extends ffi.Opaque {}
-
-typedef u_char = __u_char;
-typedef u_int = __u_int;
-typedef u_int16_t = __uint16_t;
-typedef u_int32_t = __uint32_t;
-typedef u_int64_t = __uint64_t;
-typedef u_int8_t = __uint8_t;
-typedef u_long = __u_long;
-typedef u_quad_t = __u_quad_t;
-typedef u_short = __u_short;
-typedef uid_t = __uid_t;
-typedef uint = ffi.UnsignedInt;
-typedef Dartuint = int;
-typedef uint_fast16_t = ffi.UnsignedLong;
-typedef Dartuint_fast16_t = int;
-typedef uint_fast32_t = ffi.UnsignedLong;
-typedef Dartuint_fast32_t = int;
-typedef uint_fast64_t = ffi.UnsignedLong;
-typedef Dartuint_fast64_t = int;
-typedef uint_fast8_t = ffi.UnsignedChar;
-typedef Dartuint_fast8_t = int;
-typedef uint_least16_t = __uint_least16_t;
-typedef uint_least32_t = __uint_least32_t;
-typedef uint_least64_t = __uint_least64_t;
-typedef uint_least8_t = __uint_least8_t;
-typedef uintmax_t = __uintmax_t;
-typedef ulong = ffi.UnsignedLong;
-typedef Dartulong = int;
-typedef ushort = ffi.UnsignedShort;
-typedef Dartushort = int;
 
 /// v3_ext_ctx, aka `X509V3_CTX`, contains additional context information for
 /// constructing extensions. Some string formats reference additional values in

@@ -54,6 +54,7 @@ const _vaListFunctions = {
 
 Future<void> main() async {
   final packageRoot = Platform.script.resolve('../');
+  final includeDir = packageRoot.resolve('third_party/boringssl/src/include');
   final bindings = packageRoot.resolve('lib/src/bindings/boringssl.g.dart');
 
   print('Generating Dart FFI bindings for BoringSSL (bssl_dart)...');
@@ -89,8 +90,9 @@ Future<void> main() async {
       entryPoints: [
         packageRoot.resolve('src/wrapper.h'),
       ],
-      compilerOptions: const [
-        '-Ithird_party/boringssl/src/include',
+      include: (header) => header.path.startsWith(packageRoot.path),
+      compilerOptions: [
+        '-I${includeDir.toFilePath()}',
         '-DBORINGSSL_PREFIX=bssl_dart',
         '-U__PRAGMA_REDEFINE_EXTNAME',
       ],
@@ -115,12 +117,7 @@ Future<void> main() async {
           }
         },
         struct: (node) {
-          final name = node.originalName;
-          node.isIncluded =
-              !name.startsWith('_bssl_hidden_') &&
-              name != '__locale_data' &&
-              name != '__locale_struct' &&
-              name != '__va_list_tag';
+          node.isIncluded = !node.originalName.startsWith('_');
           node.dependencies = CompoundDependencies.opaque;
         },
         enumClass: (node) {
@@ -132,10 +129,7 @@ Future<void> main() async {
           node.isIncluded = node.originalName.startsWith('ERR_LIB_');
         },
         typealias: (node) {
-          final name = node.originalName;
-          node.isIncluded = name != 'locale_t' && name != '__locale_t'
-              ? TypealiasInclude.always
-              : TypealiasInclude.never;
+          node.isIncluded = TypealiasInclude.always;
         },
         macroConstant: (node) {
           final name = node.originalName;
