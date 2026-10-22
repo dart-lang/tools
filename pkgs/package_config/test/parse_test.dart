@@ -24,6 +24,7 @@ void main() {
               "rootUri": "file:///foo/",
               "packageUri": "lib/",
               "languageVersion": "2.5",
+              "experiments": ["variance", "no-triple-shift"],
               "nonstandard": true
             },
             {
@@ -76,6 +77,7 @@ void main() {
       expect(foo.root, Uri.parse('file:///foo/'));
       expect(foo.packageUriRoot, Uri.parse('file:///foo/lib/'));
       expect(foo.languageVersion, LanguageVersion(2, 5));
+      expect(foo.experiments, ['variance', 'no-triple-shift']);
       expect(foo.extraData, {'nonstandard': true});
       expect(foo.relativeRoot, false);
 
@@ -84,6 +86,7 @@ void main() {
       expect(bar.root, Uri.parse('file:///bar/'));
       expect(bar.packageUriRoot, Uri.parse('file:///bar/lib/'));
       expect(bar.languageVersion, LanguageVersion(9999, 9999));
+      expect(bar.experiments, isEmpty);
       expect(bar.extraData, null);
       expect(bar.relativeRoot, false);
 
@@ -481,6 +484,42 @@ void main() {
             'trailing+',
             '{$cfg,"packages":[{$name,$root,"languageVersion":"1.1+1"}]}',
           );
+        });
+        group('experiments', () {
+          testThrows(
+            'null',
+            '{$cfg,"packages":[{$name,$root,"experiments":null}]}',
+          );
+          testThrows(
+            'num',
+            '{$cfg,"packages":[{$name,$root,"experiments":1}]}',
+          );
+          testThrows(
+            'string',
+            '{$cfg,"packages":[{$name,$root,"experiments":"variance"}]}',
+          );
+          testThrows(
+            'object',
+            '{$cfg,"packages":[{$name,$root,"experiments":{}}]}',
+          );
+          testThrows(
+            'non-string element',
+            '{$cfg,"packages":[{$name,$root,"experiments":[1]}]}',
+          );
+          testThrows(
+            'null element',
+            '{$cfg,"packages":[{$name,$root,"experiments":[null]}]}',
+          );
+          test('non-string element with non-throwing onError rejects list', () {
+            var errors = <Object>[];
+            var config = PackageConfig.parseString(
+              '{$cfg,"packages":[{$name,$root,"experiments":["variance",1]}]}',
+              Uri.parse('file:///tmp/.dart_tool/package_config.json'),
+              onError: errors.add,
+            );
+            expect(errors, hasLength(1));
+            expect(config['foo']!.experiments, isEmpty);
+          });
         });
       });
       testThrows(
