@@ -220,11 +220,11 @@ jobs:
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
-      # BoringSSL's X.509 behaviour changes between revisions, and the
+      # BoringSSL's X.509 behavior changes between revisions, and the
       # x509-limbo job fails on any divergence from the suite that
       # test/conformance/x509_limbo_expected_failures.txt does not list, and on
       # any listed testcase that started agreeing. Regenerate the list against
-      # the new revision, so that the pull request shows a behaviour change as
+      # the new revision, so that the pull request shows a behavior change as
       # a diff of that file for review, rather than as a red check that needs
       # a manual push to the bot's branch. The bump script removes build/, so
       # the cached testcases are restored only now.
