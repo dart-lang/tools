@@ -83,8 +83,9 @@ class BuildOptions {
   BuildOptions({required this.buildMode, this.localPath, this.checkoutPath});
 
   factory BuildOptions.fromDefines(HookInputUserDefines defines) {
-    final modeName =
-        Platform.environment['SIGSTORE_BUILD_MODE'] ?? defines['buildMode'];
+    // Only `hooks.user_defines` of the root package reach the hook; the hook
+    // runner does not forward arbitrary environment variables.
+    final modeName = defines['buildMode'];
     return BuildOptions(
       buildMode: BuildModeEnum.values.firstWhere(
         (element) => element.name == modeName,
@@ -117,10 +118,31 @@ final class FetchMode extends BuildMode {
 
   @override
   Future<Uri> build() async {
+    final rustTarget = asRustTarget(input.config.code);
+    final libraryType = input.config.buildStatic ? 'static' : 'dynamic';
+    // Never run a binary whose hash is not pinned in hashes.dart: a release
+    // asset that is missing from the table was not part of this package
+    // version's release, and must not be downloaded unverified.
+    final expectedFileHash = fileHashes[(rustTarget, libraryType)];
+    if (expectedFileHash == null) {
+      final supported = fileHashes.keys
+          .where((key) => key.$2 == libraryType)
+          .map((key) => key.$1)
+          .join(', ');
+      throw UnsupportedError(
+        'package:sigstore has no precompiled $libraryType library for '
+        '$rustTarget in release $version (available: $supported). Build it '
+        'from source instead by setting the `checkout` build mode in the '
+        'pubspec of your application:\n'
+        'hooks:\n'
+        '  user_defines:\n'
+        '    sigstore:\n'
+        '      buildMode: checkout',
+      );
+    }
+
     final httpClient = HttpClient();
     try {
-      final rustTarget = asRustTarget(input.config.code);
-      final libraryType = input.config.buildStatic ? 'static' : 'dynamic';
       final dylibRemoteUri = Uri.parse(
         'https://github.com/mosuem/sigstore/releases/'
         'download/$version/libsigstore_ffi-$libraryType-$rustTarget',
@@ -137,8 +159,7 @@ final class FetchMode extends BuildMode {
       await response.forEach(builder.add);
       final bytes = builder.takeBytes();
       final fileHash = sha256.convert(bytes).toString();
-      final expectedFileHash = fileHashes[(rustTarget, libraryType)];
-      if (expectedFileHash != null && fileHash != expectedFileHash) {
+      if (fileHash != expectedFileHash) {
         throw Exception(
           'The pre-built binary for the target $rustTarget-$libraryType at '
           '$dylibRemoteUri has a hash of $fileHash, which does not match '
@@ -222,6 +243,7 @@ final class CheckoutMode extends BuildMode {
     return [
       root.resolve('Cargo.lock'),
       root.resolve('src/lib.rs'),
+      root.resolve('src/boring_provider.rs'),
     ];
   }
 }

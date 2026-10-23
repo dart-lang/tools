@@ -37,7 +37,7 @@ void main() {
       final decoded = jsonDecode(exportedJson) as Map<String, Object?>;
       expect(
         decoded['mediaType'],
-        equals('application/vnd.dev.sigstore.bundle+json;version=0.3'),
+        equals('application/vnd.dev.sigstore.bundle.v0.3+json'),
       );
     });
 
@@ -76,19 +76,32 @@ void main() {
       );
     });
 
-    test('refreshes trusted root from TUF repository', () {
+    test('refreshes trusted root from TUF repository', () async {
       final client = SigstoreClient.create();
       final tempDir = Directory.systemTemp.createTempSync('tuf_test');
       try {
-        final trustedRootJson = client.refreshTrustedRoot(
+        final trustedRootJson = await client.refreshTrustedRoot(
           'https://tuf-repo-cdn.sigstore.dev',
           tempDir.path,
         );
         expect(trustedRootJson, isNotEmpty);
-        final decoded = jsonDecode(trustedRootJson) as Map<String, dynamic>;
+        final decoded = jsonDecode(trustedRootJson) as Map<String, Object?>;
         expect(
           decoded['mediaType'],
           equals('application/vnd.dev.sigstore.trustedroot+json;version=0.1'),
+        );
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+
+    test('throws SigstoreError on invalid TUF repository URL', () async {
+      final client = SigstoreClient.create();
+      final tempDir = Directory.systemTemp.createTempSync('tuf_invalid_test');
+      try {
+        await expectLater(
+          client.refreshTrustedRoot('not-a-valid-url', tempDir.path),
+          throwsA(isA<SigstoreError>()),
         );
       } finally {
         tempDir.deleteSync(recursive: true);

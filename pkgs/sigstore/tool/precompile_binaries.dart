@@ -91,6 +91,7 @@ void main(List<String> args) async {
     '${targetsToBuild.length} targets...',
   );
 
+  final failures = <String>[];
   for (final target in targetsToBuild) {
     for (final isStatic in staticModes) {
       final libType = isStatic ? 'static' : 'dynamic';
@@ -106,9 +107,20 @@ void main(List<String> args) async {
         );
         print('Successfully built $outFileName');
       } catch (e) {
-        stderr.writeln('Warning: Build for $target ($libType) failed: $e');
+        stderr.writeln('Error: Build for $target ($libType) failed: $e');
+        failures.add(outFileName);
       }
     }
+  }
+
+  if (failures.isNotEmpty) {
+    // Every target in `builder.dart` is a supported `fetch` mode target, so a
+    // release with a missing asset would break consumers on that platform.
+    stderr.writeln(
+      '==> ${failures.length} of the expected binaries failed to build:\n'
+      '  ${failures.join('\n  ')}',
+    );
+    exit(1);
   }
 
   print('==> Precompilation complete. Output at ${outDir.path}');

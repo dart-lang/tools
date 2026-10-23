@@ -12,10 +12,11 @@ import 'dart:typed_data';
 import 'package:ffi/ffi.dart' as ffi2 show Arena, calloc;
 import 'package:meta/meta.dart' as meta;
 part 'SigstoreBundle.g.dart';
-part 'SigstoreClient.g.dart';
 part 'SigstoreError.g.dart';
+part 'SigstoreTufUpdater.g.dart';
 part 'SigstoreVerificationPolicy.g.dart';
 part 'SigstoreVerificationResult.g.dart';
+part 'SigstoreVerifier.g.dart';
 
 /// A [Rune] is a Unicode code point, such as `a`, or `💡`.
 ///
@@ -199,6 +200,56 @@ extension on core.List<int> {
     slice._data = alloc(length);
     for (var i = 0; i < length; i++) {
       slice._data[i] = this[i].clamp(0, 255);
+    }
+    slice._length = length;
+    return slice;
+  }
+}
+
+final class _SliceUsize extends ffi.Struct {
+  external ffi.Pointer<ffi.Size> _data;
+
+  @ffi.Size()
+  external int _length;
+
+  // This is expensive
+  @override
+  bool operator ==(Object other) {
+    if (other is! _SliceUsize || other._length != _length) {
+      return false;
+    }
+
+    for (var i = 0; i < _length; i++) {
+      if (other._data[i] != _data[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // This is cheap
+  @override
+  int get hashCode => _length.hashCode;
+
+  // ignore: unused_element
+  core.List<int> _toDart(core.List<Object> lifetimeEdges, {bool isStatic = false}) {
+    final r = core.Iterable.generate(_length, (i) => _data[i]).toList(growable: false);
+    if (lifetimeEdges.isEmpty && !isStatic) {
+      _diplomat_free(_data.cast(), _length * ffi.sizeOf<ffi.Size>(), ffi.sizeOf<ffi.Size>());
+    } else {
+      // Lifetime edges will be cleaned up
+    }
+    return r;
+  }
+}
+
+extension on core.List<int> {
+  // ignore: unused_element
+  _SliceUsize _usizeAllocIn(ffi.Allocator alloc) {
+    final slice = ffi.Struct.create<_SliceUsize>();
+    slice._data = alloc(length);
+    for (var i = 0; i < length; i++) {
+      slice._data[i] = this[i] < 0 ? 0 : this[i];
     }
     slice._length = length;
     return slice;
