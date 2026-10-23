@@ -1,12 +1,11 @@
-## 0.4.2-wip
+## 0.4.2
 
-- Update BoringSSL to e98a6564.
 - Moved the package to the
   [dart-lang/tools](https://github.com/dart-lang/tools) repository.
 - The package is now licensed under the BSD 3-Clause license used by other
   Dart packages.
-- Update BoringSSL to 3fed4f20.
-- Update BoringSSL to 64188f17.
+- Update BoringSSL to 90c6b370 (including the intermediate certificate
+  blocklist update at dd682072).
 - Removed the `BIO_vsnprintf` and `OPENSSL_vasprintf` (`va_list`) bindings,
   excluded unused system-header declarations from the generated bindings, and
   changed `SymbolAddresses` to an extension type so `addresses` no longer leaks
@@ -29,7 +28,6 @@
   source.
 - The libraries no longer reference libc++ when built with it, which failed
   to link on Android.
-- Update BoringSSL to 90c6b370.
 
 ## 0.4.1
 
