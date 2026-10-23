@@ -54,6 +54,6 @@ BoringSSL's X.509 behavior changes between revisions. After updating it, run
 X509_LIMBO_REGENERATE=1 ./tool/run_x509_limbo_tests.sh
 ```
 
-to regenerate the list, and read the diff: it is the change in behaviour. The
+to regenerate the list, and read the diff to see the change in behavior. The
 `refresh` job does this for its pull requests, so a change to the list there is
 part of what to review.
