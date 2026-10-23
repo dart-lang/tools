@@ -2,7 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:csslib/parser.dart';
 import 'package:csslib/src/messages.dart';
+import 'package:csslib/visitor.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'package:test/test.dart';
 
@@ -348,6 +350,52 @@ div {
   expect(errorMessage.span!.text, '\n');
 }
 
+void _exerciseAllEntryPoints(String input) {
+  const checkedLessOptions = PreprocessorOptions(
+    useColors: false,
+    checked: true,
+    warningsAsErrors: false,
+    lessSupport: true,
+    inputFile: 'memory',
+  );
+  const uncheckedOptions = PreprocessorOptions(
+    useColors: false,
+    checked: false,
+    warningsAsErrors: false,
+    lessSupport: true,
+    inputFile: 'memory',
+  );
+
+  void exerciseTree(StyleSheet tree) {
+    final cloned = tree.clone();
+    Visitor().visitTree(tree);
+    Visitor().visitTree(cloned);
+    (CssPrinter()..visitTree(tree, pretty: true)).toString();
+    (CssPrinter()..visitTree(tree, pretty: false)).toString();
+    (CssPrinter()..visitTree(cloned, pretty: true)).toString();
+    treeToDebugString(tree);
+  }
+
+  final errors = <Message>[];
+  exerciseTree(
+      parse(input, errors: errors..clear(), options: uncheckedOptions));
+  exerciseTree(
+      parse(input, errors: errors..clear(), options: checkedLessOptions));
+  exerciseTree(compile(input,
+      errors: errors..clear(), options: uncheckedOptions, polyfill: false));
+  exerciseTree(compile(input,
+      errors: errors..clear(), options: checkedLessOptions, polyfill: true));
+  exerciseTree(selector(input, errors: errors..clear()));
+
+  final selGroup = parseSelectorGroup(input, errors: errors..clear());
+  if (selGroup != null) {
+    final clonedGroup = selGroup.clone();
+    Visitor().visitSelectorGroup(selGroup);
+    Visitor().visitSelectorGroup(clonedGroup);
+    (CssPrinter()..visitSelectorGroup(selGroup)).toString();
+  }
+}
+
 void main() {
   glyph.ascii = true;
   test('font-weight value errors', testUnsupportedFontWeights);
@@ -356,4 +404,289 @@ void main() {
   test('bad Hex values', testBadHexValues);
   test('bad unicode ranges', testBadUnicode);
   test('nested rules', testBadNesting);
+
+  group('malformed input resilience (fuzz regressions)', () {
+    test('out-of-range hex escapes in identifiers clamp without RangeError',
+        () {
+      _exerciseAllEntryPoints(r'.\110000 .\ffffff .\999999 { color: red; }');
+    });
+
+    test('malformed @import, @keyframes, @stylet, and @namespace directives',
+        () {
+      _exerciseAllEntryPoints('@import foo; @import ;');
+      _exerciseAllEntryPoints('@keyframes { 0% { top: 0; } }');
+      _exerciseAllEntryPoints('@keyframes k { @foo { top: 0; } }');
+      _exerciseAllEntryPoints(
+          '@keyframes k {\u00a00%, from { top: 0%; } 50% { top: 5px; } }');
+      _exerciseAllEntryPoints('@stylet foo { a { color: red; } } @stylet { }');
+      _exerciseAllEntryPoints('@namespace prefix');
+      _exerciseAllEntryPoints('@namespace ;');
+    });
+
+    test('malformed @mixin, @include, and variable definitions do not hang',
+        () {
+      _exerciseAllEntryPoints('@mixin m(123) { color: red; }');
+      _exerciseAllEntryPoints(
+          '@mixin box-shadow(@shadows...) { box-shadow: @shadows; }');
+      _exerciseAllEntryPoints('@mixin m(@: 1px, var-: 2px) { color: red; }');
+      _exerciseAllEntryPoints('@: 1px; a { var-: 2px; }');
+      _exerciseAllEntryPoints(
+          '@mixin m(@a) { color: @a; } @include ; a { @include m(); }');
+      _exerciseAllEntryPoints(
+          '@mixin m { @media screen { } color: red; } @include m;');
+      _exerciseAllEntryPoints(
+          '@mixin a { color: red; } @mixin a { @include a; } '
+          '@include a; div { @include a; }');
+      _exerciseAllEntryPoints(
+          '@mixin b { color: red; } @mixin a { @include b; } '
+          '@mixin b { @include a; } div { @include b; }');
+
+      final manyRules = [
+        for (var i = 0; i < 300; i++) '.r$i { color: red; }',
+        '@mixin m { .mixed { color: blue; } }',
+        '@include m;',
+      ].join('\n');
+      expect(prettyPrint(compileCss(manyRules)), contains('.mixed'));
+
+      final manyDecls = [
+        '@mixin m { color: blue; }',
+        '.box {',
+        for (var i = 0; i < 260; i++) '  --p$i: ${i}px;',
+        '  @include m;',
+        '}',
+      ].join('\n');
+      expect(prettyPrint(compileCss(manyDecls)), contains('color: #00f'));
+
+      final topIncludeErrors = <Message>[];
+      final topIncludeSheet = parseCss(
+        '@mixin m1 { .a { color: red; } }\n'
+        '@mixin m2 { @include m1; .b { color: blue; } }\n'
+        '@include m2;',
+        errors: topIncludeErrors,
+        opts: options,
+      );
+      TopLevelIncludes.expand(messages, [topIncludeSheet]);
+      expect(topIncludeErrors, isEmpty);
+      expect(topIncludeSheet.topLevels.last, isA<RuleSet>());
+      expect(
+        topIncludeSheet.topLevels.whereType<NoOp>().map((n) => n.runtimeType),
+        [NoOp],
+      );
+      expect(topIncludeSheet.clone().topLevels, hasLength(5));
+
+      final declIncludeErrors = <Message>[];
+      final declIncludeSheet = parseCss(
+        '@mixin d1 { color: red; }\n'
+        '@mixin d2 { @include d1; background: blue; }\n'
+        '.box { @include d2; }',
+        errors: declIncludeErrors,
+        opts: options,
+      );
+      DeclarationIncludes.expand(messages, [declIncludeSheet]);
+      expect(declIncludeErrors, isEmpty);
+      final boxRule = declIncludeSheet.topLevels.last as RuleSet;
+      expect(boxRule.declarationGroup.declarations.last, isA<Declaration>());
+      expect(
+        boxRule.declarationGroup.declarations
+            .whereType<NoOp>()
+            .map((n) => n.runtimeType),
+        [NoOp],
+      );
+    });
+
+    test('malformed @-moz-document and @supports directives', () {
+      _exerciseAllEntryPoints(
+          '@-moz-document regexp(".*"), foo(1), url-prefix() '
+          '{ a { top: 0; } }');
+      _exerciseAllEntryPoints('@-moz-document\uFFFDfoo(1) { a { top: 0; } }');
+      _exerciseAllEntryPoints('@-moz-document { }');
+      _exerciseAllEntryPoints('@supports () { } @supports not () { }');
+      _exerciseAllEntryPoints('@supports (a: 1) and () { }');
+      _exerciseAllEntryPoints('@supports (a: 1) or () { }');
+      final deepParens = '${'(' * 10000}a: 1${')' * 10000}';
+      _exerciseAllEntryPoints('@supports $deepParens { a { color: red; } }');
+    });
+
+    test('malformed @page and @media unary operators', () {
+      _exerciseAllEntryPoints('@page { 123 } @page :top { + color: red; }');
+      _exerciseAllEntryPoints(
+          '@page :first { @top-left { color: red; } width: 10px; }');
+      final errors = <Message>[];
+      parseCss('@media only screen { a { color: red; } }', errors: errors);
+      expect(errors, isEmpty);
+    });
+
+    test('malformed selectors, namespace selectors, and selector expressions',
+        () {
+      _exerciseAllEntryPoints('ns| { color: red; } | { color: blue; }');
+      _exerciseAllEntryPoints('ns|\uFFFD { color: red; }');
+      _exerciseAllEntryPoints(
+          ':not(ns|a) { color: red; } :not(ns|) { color: blue; }');
+      expect(NamespaceSelector(null, '', null).clone().toString(), '|');
+      _exerciseAllEntryPoints(':not() { color: red; }');
+      _exerciseAllEntryPoints(':nth-child(99999999999999999999999) { }');
+      _exerciseAllEntryPoints(':nth-child(n%) { }');
+    });
+
+    test('malformed declarations, expressions, and integer overflows', () {
+      _exerciseAllEntryPoints(
+          'a { font-weight: ; border-width: ; margin-left: ; '
+          'font-size: 10cm; }');
+      _exerciseAllEntryPoints(
+          'a { margin: [foo]; font-weight: [bar]; line-height: [baz]; }');
+      expect(
+        prettyPrint(
+          parse('.g { grid-template-columns: [full-start] 1fr [full-end]; }'),
+        ),
+        contains('[full-start] 1fr [full-end]'),
+      );
+      _exerciseAllEntryPoints(r'a { width: 99999999999999999999999px; '
+          r'top: 1px\99999999999999999999999; }');
+      _exerciseAllEntryPoints(
+          'a { unicode-range: U+99999999999999999999-999999999999999999999; }');
+      _exerciseAllEntryPoints(
+          'a { color: #@foo; width: (@foo); height: [@foo]; top: @; }');
+      _exerciseAllEntryPoints('a { color: var(); background: var(123); }');
+      final errors = <Message>[];
+      parse(
+        '@\uFFFD { }',
+        errors: errors,
+        options: const PreprocessorOptions(
+          useColors: false,
+          checked: true,
+          lessSupport: false,
+          inputFile: 'memory',
+        ),
+      );
+      expect(errors, isNotEmpty);
+    });
+
+    test('nested selectors inside directives and cyclic @extend / var()', () {
+      _exerciseAllEntryPoints('@host { a { b { color: red; } } }');
+      _exerciseAllEntryPoints('@supports (a: 1) { a { b { color: red; } } }');
+      _exerciseAllEntryPoints(
+          '@-moz-document url-prefix() { a { b { color: red; } } }');
+      _exerciseAllEntryPoints('@stylet s { a { b { color: red; } } }');
+      _exerciseAllEntryPoints(
+          '@media screen { @media print { a { b { color: red; } } } }');
+      _exerciseAllEntryPoints('a { @extend .b; } .b { @extend a; }');
+      final manySelectors = [
+        '${[for (var i = 0; i < 70; i++) '.t$i'].join(', ')}, '
+            '.base { color: red; }',
+        '.x { @extend .base; }',
+      ].join('\n');
+      expect(prettyPrint(compileCss(manySelectors)), contains('.x'));
+
+      final keyframesExtend = compileCss(
+        '@keyframes k { 0% { @extend .a; a { color: red; } } }',
+      );
+      expect(prettyPrint(keyframesExtend), contains('color: #f00'));
+      _exerciseAllEntryPoints('@keyframes k { 0% { @extend .a; a { } } }');
+      _exerciseAllEntryPoints('@font-face { @extend .a; a { } }');
+
+      _exerciseAllEntryPoints('@namespefix; @name @name;');
+      _exerciseAllEntryPoints(
+        ':root { var-a: var(a); var-b: var(c); var-c: var(b); } '
+        'a { color: var(a); width: var(b, var(c)); '
+        'height: var(u, 1px var(a)); }',
+      );
+      _exerciseAllEntryPoints(
+        '@a: var(a); a { color: var(a); height: var(u) var(a, 1px); }',
+      );
+      expect(
+        prettyPrint(
+          compileCss(
+            '@a: var(a); a { height: var(u) var(a, 1px); }',
+            polyfill: true,
+          ),
+        ),
+        isNot(contains('var(')),
+      );
+      _exerciseAllEntryPoints(
+        ':root { var-u: var(undef); var-a: 1px var(u) var(a); } '
+        'a { color: var(a); }',
+      );
+      _exerciseAllEntryPoints(
+        ':root { var-a: 1px var(b); var-b: 1px var(a); } '
+        'a { margin: var(a); }',
+      );
+      _exerciseAllEntryPoints(
+        '@mixin d1 { color: red; a { @include d1; } } div { @include d1; }',
+      );
+      _exerciseAllEntryPoints(
+        '.b { color: red; } .x1 .a { @extend .b; } .x2 .a { @extend .b; } '
+        '.y1 .b { @extend .a; } .y2 .b { @extend .a; }',
+      );
+
+      final expTopMixins = [
+        '@mixin m0 { .x { color: red; } }',
+        for (var i = 1; i <= 25; i++)
+          '@mixin m$i { @include m${i - 1}; @include m${i - 1}; }',
+        '@include m25;',
+      ].join('\n');
+      _exerciseAllEntryPoints(expTopMixins);
+
+      final expDeclMixins = [
+        '@mixin d0 { color: red; }',
+        for (var i = 1; i <= 25; i++)
+          '@mixin d$i { @include d${i - 1}; color: blue; @include d${i - 1}; }',
+        '.box { @include d25; }',
+      ].join('\n');
+      _exerciseAllEntryPoints(expDeclMixins);
+    });
+
+    test('preserves large non-recursive @include, @extend, and var() sheets',
+        () {
+      const count = 300;
+
+      final topLevelErrors = <Message>[];
+      final topLevelCss = [
+        '@mixin m { .from-mixin { color: red; } }',
+        for (var i = 0; i < count; i++) '.r$i { width: 1px; }\n@include m;',
+      ].join('\n');
+      final topLevelOut = prettyPrint(
+        compileCss(topLevelCss, errors: topLevelErrors, opts: options),
+      );
+      expect(topLevelErrors, isEmpty);
+      expect('.from-mixin'.allMatches(topLevelOut), hasLength(count));
+
+      final declErrors = <Message>[];
+      final declCss = [
+        '@mixin d { color: red; }',
+        for (var i = 0; i < count; i++) '.r$i { @include d; }',
+      ].join('\n');
+      final declOut = prettyPrint(
+        compileCss(declCss, errors: declErrors, opts: options),
+      );
+      expect(declErrors, isEmpty);
+      expect('color: #f00'.allMatches(declOut), hasLength(count));
+
+      final extendErrors = <Message>[];
+      final extendCss = [
+        '.base { color: red; }',
+        for (var i = 0; i < count; i++) '.x$i { @extend .base; }',
+      ].join('\n');
+      final extendSheet = compileCss(
+        extendCss,
+        errors: extendErrors,
+        opts: options,
+      );
+      expect(extendErrors, isEmpty);
+      final baseRule = extendSheet.topLevels.first as RuleSet;
+      expect(baseRule.selectorGroup!.selectors, hasLength(count + 1));
+
+      const varRules = 130;
+      final varErrors = <Message>[];
+      final varCss = [
+        ':root { var-a: 1px; var-b: 2px; }',
+        for (var i = 0; i < varRules; i++) '.v$i { margin: var(a) var(b); }',
+      ].join('\n');
+      final varOut = prettyPrint(
+        compileCss(varCss, errors: varErrors, opts: options, polyfill: true),
+      );
+      expect(varErrors, isEmpty);
+      expect(varOut, isNot(contains('var(')));
+      expect('margin: 1px 2px'.allMatches(varOut), hasLength(varRules));
+    });
+  });
 }
