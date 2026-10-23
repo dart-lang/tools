@@ -127,8 +127,6 @@ class BoundMultipartStream {
             _parse();
           } on MimeMultipartException catch (error, stackTrace) {
             _state = _failCode;
-            _multipartController?.close();
-            _multipartController = null;
             _buffer = _placeholderBuffer;
             _index = 0;
             _controller.addError(error, stackTrace);
@@ -137,8 +135,9 @@ class BoundMultipartStream {
           }
         }, onDone: () {
           if (_state != _doneCode && _state != _failCode) {
-            _controller
-                .addError(const MimeMultipartException('Bad multipart ending'));
+            final error = const MimeMultipartException('Bad multipart ending');
+            _controller.addError(error);
+            _multipartController?.addError(error);
           }
           _multipartController?.close();
           _controller.close();

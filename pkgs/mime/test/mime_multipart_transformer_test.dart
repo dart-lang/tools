@@ -513,11 +513,11 @@ Body2\r
         ascii.encode('--bnd\r\ninvalid header\r\n\r\n'),
       );
       for (final invalidFirstChar in [
-        '--bnd\r\n: value\r\n\r\n--bnd--\r\n',
+        '--bnd\r\n:: value\r\n\r\n--bnd--\r\n',
         '--bnd\r\n@: value\r\n\r\n--bnd--\r\n',
         '--bnd\r\n : value\r\n\r\n--bnd--\r\n',
         '--bnd\r\n\x02Fold: value\r\n\r\n--bnd--\r\n',
-        '--bnd\r\nx-ok: 1\r\n: empty-second\r\n\r\n--bnd--\r\n',
+        '--bnd\r\nx-ok: 1\r\n:foo: empty-second\r\n\r\n--bnd--\r\n',
         '--bnd\r\nx-ok: 1\r\n\x00bad: 2\r\n\r\n--bnd--\r\n',
       ]) {
         await expectStreamMultipartError(ascii.encode(invalidFirstChar));
