@@ -456,6 +456,42 @@ void main() {
         '}',
       ].join('\n');
       expect(prettyPrint(compileCss(manyDecls)), contains('color: #00f'));
+
+      final topIncludeErrors = <Message>[];
+      final topIncludeSheet = parseCss(
+        '@mixin m1 { .a { color: red; } }\n'
+        '@mixin m2 { @include m1; .b { color: blue; } }\n'
+        '@include m2;',
+        errors: topIncludeErrors,
+        opts: options,
+      );
+      TopLevelIncludes.expand(messages, [topIncludeSheet]);
+      expect(topIncludeErrors, isEmpty);
+      expect(topIncludeSheet.topLevels.last, isA<RuleSet>());
+      expect(
+        topIncludeSheet.topLevels.whereType<NoOp>().map((n) => n.runtimeType),
+        [NoOp],
+      );
+      expect(topIncludeSheet.clone().topLevels, hasLength(5));
+
+      final declIncludeErrors = <Message>[];
+      final declIncludeSheet = parseCss(
+        '@mixin d1 { color: red; }\n'
+        '@mixin d2 { @include d1; background: blue; }\n'
+        '.box { @include d2; }',
+        errors: declIncludeErrors,
+        opts: options,
+      );
+      DeclarationIncludes.expand(messages, [declIncludeSheet]);
+      expect(declIncludeErrors, isEmpty);
+      final boxRule = declIncludeSheet.topLevels.last as RuleSet;
+      expect(boxRule.declarationGroup.declarations.last, isA<Declaration>());
+      expect(
+        boxRule.declarationGroup.declarations
+            .whereType<NoOp>()
+            .map((n) => n.runtimeType),
+        [NoOp],
+      );
     });
 
     test('malformed @-moz-document and @supports directives', () {

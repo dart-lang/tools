@@ -314,7 +314,8 @@ class _Parser {
   String _safeTokenString(Token tok) {
     try {
       return tok.toString();
-    } catch (_) {
+      // ignore: avoid_catching_errors
+    } on StateError {
       return tok.text;
     }
   }
