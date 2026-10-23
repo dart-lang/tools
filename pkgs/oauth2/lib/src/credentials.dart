@@ -181,7 +181,7 @@ class Credentials {
       refreshToken: parsed['refreshToken'] as String?,
       idToken: parsed['idToken'] as String?,
       tokenEndpoint: tokenEndpointUri,
-      scopes: (scopes as List).map((scope) => scope as String),
+      scopes: (scopes as List?)?.map((scope) => scope as String),
       expiration: expirationDateTime,
     );
   }
