@@ -28,15 +28,19 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
   final FileLocation _startLocation;
 
   @override
-  int get line =>
+  int get line => _lineFor(position);
+
+  @override
+  int get column => _columnFor(position);
+
+  int _lineFor(int position) =>
       _sourceFile.getLine(_startLocation.offset + position) -
       _startLocation.line;
 
-  @override
-  int get column {
-    final line = _sourceFile.getLine(_startLocation.offset + position);
-    final column =
-        _sourceFile.getColumn(_startLocation.offset + position, line: line);
+  int _columnFor(int position) {
+    final offset = _startLocation.offset + position;
+    final line = _sourceFile.getLine(offset);
+    final column = _sourceFile.getColumn(offset, line: line);
     return line == _startLocation.line
         ? column - _startLocation.column
         : column;
@@ -105,12 +109,9 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
 
   @override
   Never error(String message, {Match? match, int? position, int? length}) {
-    validateErrorArgs(string, match, position, length);
-
     if (match == null && position == null && length == null) match = lastMatch;
-    position ??= match == null ? this.position : match.start;
-    length ??= match == null ? 0 : match.end - match.start;
-    validateErrorArgs(string, null, position, length);
+    (position, length) =
+        resolveErrorArgs(string, match, position, length, this.position);
 
     final span = _sourceFile.span(_startLocation.offset + position,
         _startLocation.offset + position + length);
@@ -126,19 +127,9 @@ class _SpanScannerState implements LineScannerState {
   @override
   final int position;
   @override
-  int get line =>
-      _scanner._sourceFile.getLine(_scanner._startLocation.offset + position) -
-      _scanner._startLocation.line;
+  int get line => _scanner._lineFor(position);
   @override
-  int get column {
-    final line =
-        _scanner._sourceFile.getLine(_scanner._startLocation.offset + position);
-    final column = _scanner._sourceFile
-        .getColumn(_scanner._startLocation.offset + position, line: line);
-    return line == _scanner._startLocation.line
-        ? column - _scanner._startLocation.column
-        : column;
-  }
+  int get column => _scanner._columnFor(position);
 
   _SpanScannerState(this._scanner, this.position);
 }

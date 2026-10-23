@@ -114,12 +114,9 @@ class SpanScanner extends StringScanner implements LineScanner {
 
   @override
   Never error(String message, {Match? match, int? position, int? length}) {
-    validateErrorArgs(string, match, position, length);
-
     if (match == null && position == null && length == null) match = lastMatch;
-    position ??= match == null ? this.position : match.start;
-    length ??= match == null ? 0 : match.end - match.start;
-    validateErrorArgs(string, null, position, length);
+    (position, length) =
+        resolveErrorArgs(string, match, position, length, this.position);
 
     final span = _sourceFile.span(position, position + length);
     throw StringScannerException(message, span, string);

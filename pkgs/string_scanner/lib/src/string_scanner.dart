@@ -252,12 +252,9 @@ class StringScanner {
   ///
   /// It's an error to pass [match] at the same time as [position] or [length].
   Never error(String message, {Match? match, int? position, int? length}) {
-    validateErrorArgs(string, match, position, length);
-
     if (match == null && position == null && length == null) match = lastMatch;
-    position ??= match == null ? this.position : match.start;
-    length ??= match == null ? 0 : match.end - match.start;
-    validateErrorArgs(string, null, position, length);
+    (position, length) =
+        resolveErrorArgs(string, match, position, length, this.position);
 
     final sourceFile = SourceFile.fromString(string, url: sourceUrl);
     final span = sourceFile.span(position, position + length);
