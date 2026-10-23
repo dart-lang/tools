@@ -602,4 +602,209 @@ ${colors.blue}  '${colors.none}'''));
    '"""));
     });
   });
+
+  group('bare CR and CRLF line endings', () {
+    test('highlights a trailing bare CR', () {
+      final file = SourceFile.fromString('ab\r');
+      expect(file.span(2, 3).highlight(), equals("""
+  ,
+1 | ab
+  |   ^
+  '"""));
+    });
+
+    test('highlights spans across bare CR lines', () {
+      final file = SourceFile.fromString('foo bar\rbaz bang\r');
+      expect(file.span(4, 11).highlight(), equals("""
+  ,
+1 |   foo bar
+  | ,-----^
+2 | | baz bang
+  | '---^
+  '"""));
+    });
+
+    test('strips CR from single-line span context in CRLF file', () {
+      final file = SourceFile.fromString('foo bar\r\nbaz');
+      expect(file.span(4, 7).highlight(), equals("""
+  ,
+1 | foo bar
+  |     ^^^
+  '"""));
+    });
+
+    test('handles spans starting or ending between CR and LF', () {
+      final file = SourceFile.fromString('ab\r\ncd');
+      expect(file.span(1, 3).highlight(), equals("""
+  ,
+1 | ab
+  |  ^
+  '"""));
+      expect(file.location(3).pointSpan().highlight(), equals("""
+  ,
+1 | ab
+  |   ^
+  '"""));
+      expect(file.span(3, 5).highlight(), equals("""
+  ,
+1 |   ab
+  | ,---^
+2 | | cd
+  | '-^
+  '"""));
+    });
+
+    test('disambiguates SourceSpanWithContext subspans across lines', () {
+      SourceSpanWithContext contextSpan(
+        String source, [
+        int start = 0,
+        int? end,
+      ]) {
+        final span =
+            SourceFile.fromString(source).span(start, end ?? source.length);
+        return SourceSpanWithContext(
+            span.start, span.end, span.text, span.context);
+      }
+
+      expect(contextSpan('ab\r\nabba').subspan(3, 3).highlight(), equals("""
+  ,
+1 | ab
+  |   ^
+2 | abba
+  '"""));
+      expect(contextSpan('ab\r\nabba').subspan(7, 7).highlight(), equals("""
+  ,
+1 | ab
+2 | abba
+  |    ^
+  '"""));
+      expect(contextSpan('a\rb\r\n').subspan(3, 4).highlight(), equals("""
+  ,
+1 | a
+2 | b
+  |  ^
+  '"""));
+      expect(contextSpan('b\r\nb\r').subspan(4, 5).highlight(), equals("""
+  ,
+1 | b
+2 | b
+  |  ^
+  '"""));
+      expect(contextSpan('foo\nbar\nbar\n', 4, 12).subspan(0, 3).highlight(),
+          equals("""
+  ,
+2 | bar
+  | ^^^
+3 | bar
+  '"""));
+      expect(contextSpan('foo\nbar\nbar\n', 4, 12).subspan(4, 7).highlight(),
+          equals("""
+  ,
+2 | bar
+3 | bar
+  | ^^^
+  '"""));
+      expect(
+          contextSpan('x\na\nb\n', 2, 6).subspan(1, 2).highlight(), equals("""
+  ,
+2 | a
+  |  ^
+3 | b
+  '"""));
+      expect(contextSpan('x\nab\r\nabba', 2, 10).subspan(3, 3).highlight(),
+          equals("""
+  ,
+2 | ab
+  |   ^
+3 | abba
+  '"""));
+      expect(contextSpan('x\nab\r\nabba', 2, 10).subspan(7, 7).highlight(),
+          equals("""
+  ,
+2 | ab
+3 | abba
+  |    ^
+  '"""));
+    });
+
+    test('highlights all 4-char CR/LF SourceSpanWithContext subspans', () {
+      const chars = ['a', 'b', '\r', '\n'];
+      final strings = <String>[''];
+      for (var length = 1; length <= 4; length++) {
+        final previous = strings.where((s) => s.length == length - 1).toList();
+        for (var prefix in previous) {
+          for (var char in chars) {
+            strings.add(prefix + char);
+          }
+        }
+      }
+
+      for (var source in strings) {
+        final file = SourceFile.fromString(source);
+        final lfFile = !source.contains('\r\n')
+            ? SourceFile.fromString(source.replaceAll('\r', '\n'))
+            : null;
+        for (var a = 0; a <= source.length; a++) {
+          for (var b = a; b <= source.length; b++) {
+            final fileSpan = file.span(a, b);
+            final span = SourceSpanWithContext(
+                fileSpan.start, fileSpan.end, fileSpan.text, fileSpan.context);
+            final lfSpan = lfFile == null
+                ? null
+                : () {
+                    final s = lfFile.span(a, b);
+                    return SourceSpanWithContext(
+                        s.start, s.end, s.text, s.context);
+                  }();
+            for (var i = 0; i <= span.length; i++) {
+              for (var j = i; j <= span.length; j++) {
+                final highlighted = span.subspan(i, j).highlight();
+                if (lfSpan != null) {
+                  expect(
+                    highlighted,
+                    equals(lfSpan.subspan(i, j).highlight()),
+                    reason:
+                        'source=${source.codeUnits} span=[$a, $b] sub=[$i, $j]',
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    test('normalizes plain SourceSpan ending with double newline', () {
+      final span = SourceSpan(
+          SourceLocation(0), SourceLocation(5, line: 2, column: 0), 'abc\n\n');
+      expect(span.highlight(), equals(r"""
+  ,
+1 | / abc
+2 | \ 
+  '"""));
+    });
+  });
+
+  test('highlights a point span at start of last line without trailing newline',
+      () {
+    final file = SourceFile.fromString('\n\n~');
+    expect(file.location(2).pointSpan().highlight(), equals("""
+  ,
+3 | ~
+  | ^
+  '"""));
+  });
+
+  test(
+      'highlights a span starting after column 0 and ending at newline with '
+      'following context', () {
+    final span = SourceSpanWithContext(SourceLocation(4, line: 0, column: 4),
+        SourceLocation(8, line: 1, column: 0), 'bar\n', 'foo bar\nbaz\n');
+    expect(span.highlight(), equals("""
+  ,
+1 | foo bar
+  |     ^^^
+2 | baz
+  '"""));
+  });
 }
