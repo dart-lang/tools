@@ -99,7 +99,7 @@ suites, calling BoringSSL directly through the bindings (see
   and PBKDF2.
 - [**x509-limbo**](https://x509-limbo.com) (`./tool/run_x509_limbo_tests.sh`):
   9,770 of the 9,793 path validation testcases run against `X509_verify_cert`,
-  and 9,237 (94.5%) agree. The divergences, mostly name constraint types
+  and 9,240 (94.6%) agree. The divergences, mostly name constraint types
   BoringSSL does not support and CA/Browser Forum profile checks it leaves to
   the caller, are listed and explained in
   [`test/conformance/x509_limbo_expected_failures.txt`][limbo-failures].
