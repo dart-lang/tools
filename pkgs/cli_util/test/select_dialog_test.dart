@@ -292,7 +292,7 @@ ${maybeLegend()}''');
             final future = renderer(
               ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
               inputController.stream,
-              maxVisibleItems: 5, // ignore: avoid_redundant_argument_values
+              maxVisibleItems: 5,
             );
             await pumpEventQueue();
 
@@ -335,7 +335,7 @@ ${maybeLegend()}''');
             final future = renderer(
               options,
               inputController.stream,
-              maxVisibleItems: 5, // ignore: avoid_redundant_argument_values
+              maxVisibleItems: 5,
             );
             await pumpEventQueue();
 
@@ -446,7 +446,7 @@ ${maybeLegend()}''');
             final future = renderer(
               options,
               inputController.stream,
-              maxVisibleItems: 5, // ignore: avoid_redundant_argument_values
+              maxVisibleItems: 5,
             );
             await pumpEventQueue();
 
