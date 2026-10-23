@@ -8,3 +8,4 @@ test/fixtures/** -text
 lib/src/bindings/** linguist-generated=true
 rust/repository/** linguist-generated=true
 test/fixtures/sample_bundle.json linguist-generated=true
+test/fixtures/helpful_bundle.sigstore.json linguist-generated=true
