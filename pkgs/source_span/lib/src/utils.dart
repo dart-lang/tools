@@ -139,13 +139,18 @@ int? findLineStart(String context, String text, int column) {
   var linesBefore = 0;
   while (true) {
     final lineEnd = _indexOfLineEnd(context, lineStart);
-    final effectiveLineEnd = lineEnd == -1 ? context.length : lineEnd;
+    var effectiveLineEnd = lineEnd == -1 ? context.length : lineEnd;
+    if (lineEnd != -1 &&
+        lineEnd > lineStart &&
+        context.codeUnitAt(lineEnd - 1) == $cr) {
+      effectiveLineEnd--;
+    }
+
     final tier =
         _scoreSpanLineCandidate(span, lineStart, effectiveLineEnd, linesBefore);
     if (tier > bestTier) {
       best = (lineStart: lineStart, linesBefore: linesBefore);
       bestTier = tier;
-      if (tier == 4) return best;
     }
     if (lineEnd == -1) return best;
     lineStart = lineEnd + 1;
@@ -173,11 +178,7 @@ int _scoreSpanLineCandidate(
     return 0;
   }
   if (!_matchesEndLocation(context, textStart, span)) return 1;
-  if (linesBefore > span.start.line || textStart > span.start.offset) return 2;
-  if (linesBefore == span.start.line && textStart == span.start.offset) {
-    return 4;
-  }
-  return 3;
+  return 2;
 }
 
 /// Returns whether advancing `span.text.length` code units from [textStart] in
