@@ -156,52 +156,14 @@ int _countLinesBefore(String text, int end) {
   if (span is FileSpan) return (lineStart: 0, linesBefore: 0);
 
   final context = span.context;
-  if (span case SubspanWithContext(:final contextStart)) {
-    final lineStart = _lineStartAt(context, contextStart);
-    return (
-      lineStart: lineStart,
-      linesBefore: _countLinesBefore(context, lineStart),
-    );
-  }
-
-  final text = span.text;
-  final column = span.start.column;
-  ({int lineStart, int linesBefore})? fallback;
-
-  var lineStart = 0;
-  var linesBefore = 0;
-  while (true) {
-    final lineEnd = _indexOfLineEnd(context, lineStart);
-    final effectiveLineEnd = lineEnd == -1 ? context.length : lineEnd;
-    final textStart = lineStart + column;
-    if (column <= effectiveLineEnd - lineStart &&
-        textStart + text.length <= context.length &&
-        context.startsWith(text, textStart)) {
-      final candidate = (lineStart: lineStart, linesBefore: linesBefore);
-      if (_matchesEndLocation(context, textStart, span)) return candidate;
-      fallback ??= candidate;
-    }
-    if (lineEnd == -1) return fallback;
-    lineStart = lineEnd + 1;
-    linesBefore++;
-  }
-}
-
-/// Returns whether advancing `span.text.length` code units from [textStart] in
-/// [context] lands on `span.end.line` and `span.end.column`.
-bool _matchesEndLocation(String context, int textStart, SourceSpan span) {
-  var line = span.start.line;
-  var column = span.start.column;
-  final textEnd = textStart + span.text.length;
-  for (var i = textStart; i < textEnd; i++) {
-    if (_isLineEnd(context, i)) {
-      line++;
-      column = 0;
-    } else {
-      column++;
-    }
-  }
-  return line == span.end.line && column == span.end.column;
+  final lineStart = span is SubspanWithContext
+      ? _lineStartAt(context, span.contextStart)
+      : findLineStart(context, span.text, span.start.column);
+  if (lineStart == null) return null;
+  return (
+    lineStart: lineStart,
+    linesBefore: _countLinesBefore(context, lineStart),
+  );
 }
 
 /// Returns a two-element list containing the start and end locations of the
@@ -221,11 +183,7 @@ List<SourceLocation> subspanLocations(SourceSpan span, int start, [int? end]) {
   // Adjust [line] and [column] as necessary if the character at [i] in [text]
   // is a newline.
   void consumeCodePoint(int i) {
-    final codeUnit = text.codeUnitAt(i);
-    if (codeUnit == $lf ||
-        // A carriage return counts as a newline, but only if it's not
-        // followed by a line feed.
-        (codeUnit == $cr && text.codeUnitAt(i + 1) != $lf)) {
+    if (_isLineEnd(text, i)) {
       line += 1;
       column = 0;
     } else {
