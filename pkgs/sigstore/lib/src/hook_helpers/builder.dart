@@ -7,34 +7,20 @@
 import 'dart:io';
 import 'package:code_assets/code_assets.dart';
 
-const linuxTargets = [
-  'x86_64-unknown-linux-gnu',
-  'aarch64-unknown-linux-gnu',
-  'armv7-unknown-linux-gnueabihf',
-  'riscv64gc-unknown-linux-gnu',
-  'aarch64-linux-android',
-  'armv7-linux-androideabi',
-  'x86_64-linux-android',
-  'i686-linux-android',
-];
+/// The Rust targets that `tool/precompile_binaries.dart` builds release assets
+/// for, and therefore the only targets the `fetch` build mode supports.
+///
+/// This mirrors the platforms `package:boring` ships a prebuilt `libbssl_dart`
+/// for (Linux x64/arm64, macOS x64/arm64, and Windows x64): a precompiled
+/// `libsigstore_ffi` is useless without it. Other targets must build from
+/// source with the `checkout` build mode.
+const linuxTargets = ['x86_64-unknown-linux-gnu', 'aarch64-unknown-linux-gnu'];
 
-const macosTargets = [
-  'aarch64-apple-darwin',
-  'x86_64-apple-darwin',
-  'aarch64-apple-ios',
-  'x86_64-apple-ios',
-];
+const macosTargets = ['aarch64-apple-darwin', 'x86_64-apple-darwin'];
 
-const windowsTargets = [
-  'x86_64-pc-windows-msvc',
-  'aarch64-pc-windows-msvc',
-];
+const windowsTargets = ['x86_64-pc-windows-msvc'];
 
-const allTargets = [
-  ...linuxTargets,
-  ...macosTargets,
-  ...windowsTargets,
-];
+const allTargets = [...linuxTargets, ...macosTargets, ...windowsTargets];
 
 /// Converts Dart [CodeConfig] to Rust target triple.
 String asRustTarget(CodeConfig code) {

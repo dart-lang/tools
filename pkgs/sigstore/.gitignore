@@ -2,6 +2,6 @@
 .packages
 pubspec.lock
 build/
-rust/target/
+rust/**/target/
 bin/conformance
 

@@ -20,6 +20,7 @@ Future<void> main(List<String> args) async {
 
   print('Checking hashes for $version');
   final fileHashes = <(String, String), String>{};
+  final missing = <String>[];
   for (final rustTarget in allTargets) {
     for (final libraryType in ['dynamic', 'static']) {
       final uri = Uri.parse(
@@ -31,7 +32,8 @@ Future<void> main(List<String> args) async {
         final request = await httpClient.getUrl(uri);
         final response = await request.close();
         if (response.statusCode != 200) {
-          print('Skipping: not found at $uri');
+          print('Not found at $uri (status ${response.statusCode})');
+          missing.add('libsigstore_ffi-$libraryType-$rustTarget');
           continue;
         }
         final builder = BytesBuilder(copy: false);
@@ -42,10 +44,23 @@ Future<void> main(List<String> args) async {
         print('Target $rustTarget ($libraryType): $fileHash');
       } catch (e) {
         print('Error fetching $uri: $e');
+        missing.add('libsigstore_ffi-$libraryType-$rustTarget');
       }
     }
   }
   httpClient.close(force: true);
+
+  if (missing.isNotEmpty) {
+    // `fetch` mode refuses to download assets without a pinned hash, so a
+    // release missing any of the supported targets would break consumers on
+    // those platforms. Rerun `release-binaries.yml` for `version` instead of
+    // committing a partial table.
+    stderr.writeln(
+      'Release $version is missing ${missing.length} of the expected assets, '
+      'not updating hashes.dart:\n  ${missing.join('\n  ')}',
+    );
+    exit(1);
+  }
 
   await File('lib/src/hook_helpers/hashes.dart').writeAsString('''
 // Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
