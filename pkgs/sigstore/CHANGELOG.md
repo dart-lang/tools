@@ -3,6 +3,11 @@
 ## 0.2.5-wip
 
 - Move to `dart-lang/tools` monorepo.
+- Add `package:sigstore/provenance.dart`, a pure-Dart library (no native
+  bindings) with the SLSA build provenance parsing and the package attestation
+  policy shared by `pub` and `pub.dev`: `GitHubRepository`,
+  `GitHubWorkflowIdentity`, `BuildProvenance`, `TransparencyLogEntry` and
+  `checkProvenancePolicy`.
 
 ## 0.2.4
 
