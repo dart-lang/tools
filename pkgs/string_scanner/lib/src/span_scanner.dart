@@ -119,6 +119,7 @@ class SpanScanner extends StringScanner implements LineScanner {
     if (match == null && position == null && length == null) match = lastMatch;
     position ??= match == null ? this.position : match.start;
     length ??= match == null ? 0 : match.end - match.start;
+    validateErrorArgs(string, null, position, length);
 
     final span = _sourceFile.span(position, position + length);
     throw StringScannerException(message, span, string);

@@ -257,6 +257,7 @@ class StringScanner {
     if (match == null && position == null && length == null) match = lastMatch;
     position ??= match == null ? this.position : match.start;
     length ??= match == null ? 0 : match.end - match.start;
+    validateErrorArgs(string, null, position, length);
 
     final sourceFile = SourceFile.fromString(string, url: sourceUrl);
     final span = sourceFile.span(position, position + length);

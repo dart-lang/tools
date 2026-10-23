@@ -110,6 +110,7 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
     if (match == null && position == null && length == null) match = lastMatch;
     position ??= match == null ? this.position : match.start;
     length ??= match == null ? 0 : match.end - match.start;
+    validateErrorArgs(string, null, position, length);
 
     final span = _sourceFile.span(_startLocation.offset + position,
         _startLocation.offset + position + length);
