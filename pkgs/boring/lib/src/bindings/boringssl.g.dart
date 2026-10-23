@@ -12942,8 +12942,9 @@ external int EVP_DigestFinal(
   ffi.Pointer<ffi.UnsignedInt> out_size,
 );
 
-/// EVP_DigestFinalXOF returns zero and adds an error to the error queue.
-/// BoringSSL does not support any XOF digests.
+/// EVP_DigestFinalXOF behaves like `EVP_DigestSqueeze` but calls
+/// `EVP_MD_CTX_cleanup` after being called, so it is not possible to call it
+/// multiple times.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<EVP_MD_CTX>, ffi.Pointer<ffi.Uint8>, ffi.Size)
@@ -13109,6 +13110,26 @@ external int EVP_DigestSignInit(
 external int EVP_DigestSignUpdate(
   ffi.Pointer<EVP_MD_CTX> ctx,
   ffi.Pointer<ffi.Void> data,
+  int len,
+);
+
+/// EVP_DigestSqueeze writes len bytes of output from `ctx` to `out` and returns
+/// one. This operation is only implemented if `ctx` was initialized with an
+/// extendable-output function, which can return arbitrarily long outputs. If
+/// not, this function returns zero. This function may be repeated to split its
+/// output over multiple calls. Doing so will give the same output as
+/// concatenating the calls into a single call.
+@meta.RecordUse()
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<EVP_MD_CTX>,
+    ffi.Pointer<ffi.UnsignedChar>,
+    ffi.Size,
+  )
+>(symbol: 'bssl_dart_EVP_DigestSqueeze')
+external int EVP_DigestSqueeze(
+  ffi.Pointer<EVP_MD_CTX> ctx,
+  ffi.Pointer<ffi.UnsignedChar> out,
   int len,
 );
 
@@ -16758,6 +16779,21 @@ external ffi.Pointer<EVP_MD> EVP_sha512();
 @ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha512_256')
 external ffi.Pointer<EVP_MD> EVP_sha512_256();
 
+/// EVP_shake256 is SHAKE256 extendable-output function.
+///
+/// WARNING: SHAKE is slow. Prefer SHA-2, or TurboSHAKE (`EVP_turboshake256`) if
+/// an XOF is needed.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_shake256')
+external ffi.Pointer<EVP_MD> EVP_shake256();
+
+/// EVP_turboshake256 is TurboSHAKE extendable output function.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(
+  symbol: 'bssl_dart_EVP_turboshake256',
+)
+external ffi.Pointer<EVP_MD> EVP_turboshake256();
+
 /// EXTENDED_KEY_USAGE_free releases memory associated with `eku`.
 @meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<EXTENDED_KEY_USAGE>)>(
@@ -17495,8 +17531,7 @@ external ffi.Pointer<EVP_PKEY> NETSCAPE_SPKI_get_pubkey(
 external ffi.Pointer<NETSCAPE_SPKI> NETSCAPE_SPKI_new();
 
 /// NETSCAPE_SPKI_set_pubkey sets `spki`'s public key to `pkey`. It returns one
-/// on success or zero on error. This function does not take ownership of `pkey`,
-/// so the caller may continue to manage its lifetime independently of `spki`.
+/// on success or zero on error.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<NETSCAPE_SPKI>, ffi.Pointer<EVP_PKEY>)
@@ -25164,8 +25199,7 @@ external int X509_REQ_set1_signature_value(
 );
 
 /// X509_REQ_set_pubkey sets `req`'s public key to `pkey`. It returns one on
-/// success and zero on error. This function does not take ownership of `pkey`
-/// and internally copies and updates reference counts as needed.
+/// success and zero on error.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<X509_REQ>, ffi.Pointer<EVP_PKEY>)>(
   symbol: 'bssl_dart_X509_REQ_set_pubkey',
@@ -26074,8 +26108,9 @@ external void X509_STORE_CTX_trusted_stack(
 /// returns one on success and zero on error. This function internally increments
 /// `x509`'s reference count, so the caller retains ownership of `x509`.
 ///
-/// Certificates configured by this function are still subject to the checks
-/// described in `X509_VERIFY_PARAM_set_trust`.
+/// Certificates configured by this function are potential trust anchors, but
+/// whether they are trust anchors for any given verification depends on the
+/// checks described in `X509_VERIFY_PARAM_set_trust`.
 ///
 /// Although `store` is not const, this function's use of `store` is thread-safe.
 /// However, if this function is called concurrently with `X509_verify_cert`, it
@@ -26988,6 +27023,10 @@ external int X509_check_purpose(
 /// was distrusted, and `X509_TRUST_UNTRUSTED` otherwise. `id` should be one of
 /// the `X509_TRUST_*` constants, or zero to indicate the default behavior.
 /// `flags` should be zero and is ignored.
+///
+/// WARNING: This function assumes `x509` is a trusted certificate, installed in
+/// an `X509_STORE`. If passed an arbitrary certificate from an untrusted source,
+/// it may return `X509_TRUST_TRUSTED`.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<X509>, ffi.Int, ffi.Int)>(
   symbol: 'bssl_dart_X509_check_trust',

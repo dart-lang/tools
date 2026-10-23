@@ -398,8 +398,6 @@ struct x509_store_ctx_st {
   // Callbacks for various operations
   X509_STORE_CTX_verify_cb verify_cb;  // error callback
 
-  // The following is built up
-  int last_untrusted;     // index of last untrusted cert
   STACK_OF(X509) *chain;  // chain of X509s - built up and trusted
 
   // When something goes wrong, this is why
@@ -424,7 +422,7 @@ int X509_CERT_AUX_print(BIO *bp, X509_CERT_AUX *x, int indent);
 // `NID_rsassaPss`) and key `pkey`. It returns one on success and zero on
 // error.
 int x509_rsa_pss_to_ctx(EVP_MD_CTX *ctx, const X509_ALGOR *sigalg,
-                        EVP_PKEY *pkey);
+                        const EVP_PKEY *pkey);
 
 // x509_rsa_pss_to_ctx sets `algor` to the signature algorithm parameters for
 // `ctx`, which must have been configured for an RSA-PSS signing operation. It
@@ -450,20 +448,20 @@ int x509_digest_sign_algorithm(EVP_MD_CTX *ctx, X509_ALGOR *algor);
 // have been initialised with `EVP_MD_CTX_init`. It returns one on success, or
 // zero on error.
 int x509_digest_verify_init(EVP_MD_CTX *ctx, const X509_ALGOR *sigalg,
-                            EVP_PKEY *pkey);
+                            const EVP_PKEY *pkey);
 
 // x509_verify_signature verifies a `signature` using `sigalg` and `pkey` over
 // `in`. It returns one if the signature is valid and zero on error.
 int x509_verify_signature(const X509_ALGOR *sigalg,
                           const ASN1_BIT_STRING *signature,
-                          Span<const uint8_t> in, EVP_PKEY *pkey);
+                          Span<const uint8_t> in, const EVP_PKEY *pkey);
 
 // x509_verify_signature_bytes behaves like `x509_verify_signature` but takes in
 // a span containing the signature bytes (without ASN.1 headers). It returns one
 // if the signature is valid and zero on error.
 int x509_verify_signature_bytes(const X509_ALGOR *sigalg,
                                 Span<const uint8_t> signature,
-                                Span<const uint8_t> in, EVP_PKEY *pkey);
+                                Span<const uint8_t> in, const EVP_PKEY *pkey);
 
 // x509_sign_to_bit_string signs `in` using `ctx` and saves the result in `out`.
 // It returns the length of the signature on success and zero on error.
