@@ -446,7 +446,7 @@ ${maybeLegend()}''');
             final future = renderer(
               options,
               inputController.stream,
-              maxVisibleItems: 5,
+              maxVisibleItems: 5, // ignore: avoid_redundant_argument_values
             );
             await pumpEventQueue();
 
