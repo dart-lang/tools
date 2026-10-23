@@ -26,19 +26,31 @@ String get dateStamp {
 /// Returns `true` if analytics are suppressed based on the environment variable
 /// `DASH__SUPPRESS_ANALYTICS`.
 ///
-/// If the environment variable is set and not "false", return the
-/// corresponding boolean value. Otherwise, return the [defaultValue].
-bool areAnalyticsSuppressed({bool defaultValue = false}) {
-  final value = io.Platform.environment[DashEnvVar.suppressAnalytics.name];
-  if (value != null) {
-    try {
-      return bool.parse(value);
-    } on Exception {
-      // Fallback to `defaultValue` if the value in ENV is invalid.
-    }
-  }
+/// Returns `true` if the variable is exactly `"true"`, `false` if it is exactly
+/// `"false"`, and [defaultValue] otherwise, including when it's unset.
+bool areAnalyticsSuppressed({bool defaultValue = false}) =>
+    areAnalyticsSuppressedIn(
+      io.Platform.environment,
+      defaultValue: defaultValue,
+    );
 
-  return defaultValue;
+/// Returns whether [environment] suppresses analytics through the
+/// `DASH__SUPPRESS_ANALYTICS` variable.
+///
+/// Returns `true` if the variable is exactly `"true"`, `false` if it is exactly
+/// `"false"`, and [defaultValue] otherwise, including when it's unset. This is
+/// the same parsing as [areAnalyticsSuppressed].
+///
+/// Unlike [areAnalyticsSuppressed], which always reads the real process
+/// environment, this is useful for tools that read an overridable or injected
+/// environment map (for example, to allow overriding it in tests).
+bool areAnalyticsSuppressedIn(
+  Map<String, String> environment, {
+  bool defaultValue = false,
+}) {
+  final value = environment[DashEnvVar.suppressAnalytics.name];
+  // Fallback to `defaultValue` if the value in ENV is invalid.
+  return (value == null ? null : bool.tryParse(value)) ?? defaultValue;
 }
 
 /// Reads in a directory and returns `true` if write permissions are enabled.

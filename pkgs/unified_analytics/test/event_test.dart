@@ -469,6 +469,27 @@ void main() {
     expect(constructedEvent.eventData.length, 3);
   });
 
+  test('Event.migrateEvent constructed', () {
+    final event = Event.migrateEvent(
+      type: 'some_event',
+      additionalData: _TestMetrics(
+        boolField: true,
+        stringField: 'hello',
+        intField: 1,
+      ),
+    );
+    expect(event.eventName, DashEvent.migrateEvent);
+    expect(
+      event.eventData,
+      equals({
+        'type': 'some_event',
+        'boolField': true,
+        'stringField': 'hello',
+        'intField': 1,
+      }),
+    );
+  });
+
   test('Event.pluginRequest constructed', () {
     Event generateEvent() => Event.pluginRequest(
       duration: 'duration',
@@ -1204,7 +1225,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 35;
+    final eventsAccountedForInTests = 36;
     expect(
       eventsAccountedForInTests,
       constructorNames.length,

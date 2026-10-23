@@ -1,4 +1,23 @@
-## 8.0.19-wip
+## 8.3.0
+
+- Exported `areAnalyticsSuppressedIn`, which reads `DASH__SUPPRESS_ANALYTICS`
+  from a provided environment map instead of the real process environment.
+  This lets tools with an overridable environment (such as `dartdev`) let
+  `DASH__SUPPRESS_ANALYTICS` take precedence over their own implicit
+  suppression, e.g.
+  `areAnalyticsSuppressedIn(environment, defaultValue: isBot)`.
+
+## 8.2.0
+
+- Default `agent` in `Analytics` and `Analytics.development` to
+  `AiAgent.detectAgentName(Platform.environment)` when omitted.
+- Tightened `AiAgent.cursor` detection in `AiAgent.detectAgentName` to check
+  `CURSOR_AGENT` and `CURSOR_EXTENSION_HOST_ROLE=agent-exec` rather than
+  `TERM_PROGRAM=cursor` or any `CURSOR_*` environment variable.
+- Added `Analytics.isBot` to detect CI and bot environments from environment
+  variables.
+
+## 8.1.0
 
 - Added optional `isExternal` parameter to `Analytics.fake` to allow overriding
   the build configuration during testing.
@@ -7,6 +26,11 @@
   once full, rewriting it; the log is now trimmed only when it passes 4 MiB.
   This cuts the synchronous cost of `send` with a full log from about 16 ms
   to under 1 ms.
+- `Analytics` instances no longer send any events, including from
+  `setTelemetry`, when `DASH__SUPPRESS_ANALYTICS` is `true`.
+- Added optional `environment` parameter to `Analytics.fake`; it defaults to
+  empty, so tests ignore `DASH__SUPPRESS_ANALYTICS` in the real environment.
+- Added `Event.migrateEvent` to track events from `dart migrate`.
 
 ## 8.0.18
 

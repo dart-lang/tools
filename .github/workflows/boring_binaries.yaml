@@ -1,0 +1,317 @@
+# Builds the prebuilt libraries that hook/build.dart downloads in the `fetch`
+# build mode, attaches them to a `boring-binaries-<date>-<commit>` GitHub
+# pre-release, and opens a pull request that pins their SHA-256 hashes in
+# lib/src/hook_helpers/hashes.dart.
+#
+# Runs when a change to the native sources (src/, the vendored BoringSSL, or
+# this pipeline) lands on main, for example the weekly BoringSSL update, and on
+# `workflow_dispatch` on main. The `analyze` job of boring.yaml checks that the
+# pinned libraries were built from the current native sources, so a release of
+# package:boring can't ship stale ones: merge the pin pull request first.
+#
+# Pull requests that change the pipeline or the native build only run the
+# `precompile` job, as does `workflow_dispatch` on other branches, and upload
+# workflow artifacts without creating a release.
+name: package:boring binaries
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/boring_binaries.yaml'
+      - 'pkgs/boring/src/**'
+      - 'pkgs/boring/third_party/boringssl/**'
+      - 'pkgs/boring/tool/REVISION'
+      - 'pkgs/boring/tool/precompile_binaries.dart'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/boring_binaries.yaml'
+      - 'pkgs/boring/src/**'
+      - 'pkgs/boring/tool/precompile_binaries.dart'
+  workflow_dispatch:
+
+# Releases are named after the commit, so builds of the same ref run one after
+# the other instead of racing for the release.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  precompile:
+    name: Precompile (${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write # To sign the provenance attestations of the libraries.
+      attestations: write # To store the attestations with the repository.
+    defaults:
+      run:
+        working-directory: pkgs/boring/
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        # Keep in sync with `prebuiltTargets` in lib/src/hook_helpers/targets.dart.
+        # `max-glibc` and `min-os` are the ABI floors that the libraries are
+        # checked against below. Keep `min-os` in sync with
+        # `macOSDeploymentTargets` and `iOSDeploymentTarget` in
+        # tool/precompile_binaries.dart.
+        include:
+          # The oldest available Ubuntu, so the libraries only require glibc
+          # 2.35.
+          - os: ubuntu-22.04
+            target-os: linux
+            target-arch: x64
+            max-glibc: '2.35'
+          - os: ubuntu-22.04-arm
+            target-os: linux
+            target-arch: arm64
+            max-glibc: '2.35'
+          - os: macos-14
+            target-os: macos
+            target-arch: arm64
+            min-os: '11.0'
+          - os: macos-14
+            target-os: macos
+            target-arch: x64
+            min-os: '10.15'
+          - os: windows-latest
+            target-os: windows
+            target-arch: x64
+          - os: macos-14
+            target-os: ios
+            target-arch: arm64
+            ios-sdk: iphoneos
+            min-os: '12.0'
+          - os: macos-14
+            target-os: ios
+            target-arch: arm64
+            ios-sdk: iphonesimulator
+            # The arm64 simulator only exists since iOS 14.
+            min-os: '14.0'
+          - os: macos-14
+            target-os: ios
+            target-arch: x64
+            ios-sdk: iphonesimulator
+            min-os: '12.0'
+          # The Android libraries don't depend on the host, so any Ubuntu does.
+          - os: ubuntu-24.04
+            target-os: android
+            target-arch: arm
+          - os: ubuntu-24.04
+            target-os: android
+            target-arch: arm64
+          - os: ubuntu-24.04
+            target-os: android
+            target-arch: x64
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: stable
+      - name: Setup NASM
+        if: matrix.target-os == 'windows'
+        uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b
+      - name: Install dependencies
+        run: dart pub get
+      # Builds the dynamic library, which is bundled when linking is disabled,
+      # and the static library, which hook/link.dart links into a dynamic
+      # library with only the functions an application uses.
+      - name: Precompile the libraries
+        env:
+          TARGET_OS: ${{ matrix.target-os }}
+          TARGET_ARCH: ${{ matrix.target-arch }}
+          IOS_SDK: ${{ matrix.ios-sdk }}
+        run: |
+          dart run tool/precompile_binaries.dart --target-os="$TARGET_OS" --target-arch="$TARGET_ARCH" \
+            ${IOS_SDK:+--ios-sdk="$IOS_SDK"} \
+            ${ANDROID_NDK_LATEST_HOME:+--android-ndk="$ANDROID_NDK_LATEST_HOME"}
+      - name: List the libraries
+        run: ls -l bin
+      # The dynamic library is bundled as is, so it must run on every OS version
+      # that Dart and Flutter support, not only on the build machine's.
+      - name: Check the ABI floor of the dynamic library (Linux)
+        if: matrix.target-os == 'linux'
+        env:
+          MAX_GLIBC: ${{ matrix.max-glibc }}
+        run: |
+          glibc="$(objdump -T bin/*.so | grep -oE 'GLIBC_[0-9.]+' | sed 's/GLIBC_//' | sort -Vu | tail -1)"
+          echo "Newest glibc symbol version: $glibc (allowed: $MAX_GLIBC)"
+          if [ "$(printf '%s\n%s\n' "$glibc" "$MAX_GLIBC" | sort -V | tail -1)" != "$MAX_GLIBC" ]; then
+            echo "::error::The library requires glibc $glibc, newer than $MAX_GLIBC. Build on an older runner."
+            exit 1
+          fi
+      - name: Check the ABI floor of the dynamic library (macOS, iOS)
+        if: matrix.target-os == 'macos' || matrix.target-os == 'ios'
+        env:
+          MIN_OS: ${{ matrix.min-os }}
+          TARGET_OS: ${{ matrix.target-os }}
+        run: |
+          minos="$(otool -l bin/*.dylib | awk '/minos/ {print $2}' | sort -u)"
+          echo "Minimum $TARGET_OS version: $minos (expected: $MIN_OS)"
+          if [ "$minos" != "$MIN_OS" ]; then
+            echo "::error::The library requires $TARGET_OS '$minos' instead of $MIN_OS. Check the deployment targets in tool/precompile_binaries.dart."
+            exit 1
+          fi
+      - name: Check the ABI of the dynamic library (Android)
+        if: matrix.target-os == 'android'
+        env:
+          TARGET_ARCH: ${{ matrix.target-arch }}
+        run: |
+          # Android 15+ requires 16 KB page alignment of 64-bit native
+          # libraries, and the libraries must only depend on the C library
+          # (see src/CMakeLists.txt), not on libc++_shared.so.
+          case "$TARGET_ARCH" in
+            arm|ia32) expected_alignment=0x1000 ;;
+            *) expected_alignment=0x4000 ;;
+          esac
+          alignments="$(readelf -lW bin/*.so | awk '$1 == "LOAD" {print $NF}' | sort -u)"
+          needed="$(readelf -d bin/*.so | awk '/NEEDED/ {print $NF}' | tr -d '[]' | sort -u | tr '\n' ' ')"
+          echo "LOAD segment alignment: $alignments (expected: $expected_alignment)"
+          echo "Needed libraries: $needed"
+          readelf -n bin/*.so | grep -A2 'Android' || true
+          if [ "$alignments" != "$expected_alignment" ]; then
+            echo "::error::The LOAD segments are aligned to $alignments instead of $expected_alignment. Use NDK r28 or newer, or ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES."
+            exit 1
+          fi
+          case " $needed" in
+            *" libc++"*|*" libstdc++"*)
+              echo "::error::The library depends on a C++ runtime: $needed. See the C++ runtime notes in src/CMakeLists.txt."
+              exit 1
+              ;;
+          esac
+      - name: Check the ABI floor of the dynamic library (Windows)
+        if: matrix.target-os == 'windows'
+        run: |
+          # The C runtime is linked statically (see src/CMakeLists.txt), so the
+          # DLL must not import the Visual C++ Redistributable's DLLs.
+          imports="$(grep -a -o -i -E '(vcruntime|msvcp|msvcr)[0-9_]*\.dll|api-ms-win-crt-[a-z0-9-]*\.dll' bin/*.dll | sort -u || true)"
+          if [ -n "$imports" ]; then
+            echo "$imports"
+            echo "::error::The DLL imports the C runtime dynamically. Check CMAKE_MSVC_RUNTIME_LIBRARY in src/CMakeLists.txt."
+            exit 1
+          fi
+          echo "The DLL doesn't import the C runtime dynamically."
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: binaries-${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }}
+          path: pkgs/boring/bin/*
+          if-no-files-found: error
+      # Verify with `gh attestation verify <file> --repo dart-lang/tools`.
+      - name: Attest the provenance of the release libraries
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
+        with:
+          subject-path: pkgs/boring/bin/*
+
+  release:
+    name: Attach the binaries to a GitHub release
+    needs: precompile
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # To create the release and upload its assets.
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      id: ${{ steps.release.outputs.id }}
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Create the GitHub release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          id="$(date -u +%Y%m%d)-${COMMIT::12}"
+          tag="boring-binaries-$id"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if ! gh release view "$tag" > /dev/null 2>&1; then
+            gh release create "$tag" --prerelease --target "$COMMIT" \
+              --title "package:boring binaries $tag" \
+              --notes "The prebuilt BoringSSL libraries for package:boring, built from $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$COMMIT by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Verify a library with \`gh attestation verify <file> --repo $GITHUB_REPOSITORY\`."
+          fi
+          # lib/src/hook_helpers/hashes.dart pins the hashes of the assets, so
+          # never replace them. Delete a failed release to rebuild a commit.
+          if [ "$(gh release view "$tag" --json assets --jq '.assets | length')" -ne 0 ]; then
+            echo "::error::Release $tag already has assets. Delete the release to upload new ones."
+            exit 1
+          fi
+          gh release upload "$tag" release-assets/*
+          echo "Created $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$tag"
+
+  # Pins the hashes of the release in hashes.dart, like the refresh job of
+  # boring.yaml updates BoringSSL. The Dart Bot token is needed so that the
+  # PR's CI runs: its `generated` job re-hashes the release assets, and the
+  # tree-shaking tests download them in the `fetch` build mode.
+  pin:
+    name: Open the pull request that pins the binaries
+    needs: release
+    if: github.repository_owner == 'dart-lang'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # To push the branch of the pull request.
+      pull-requests: write # To open the pull request.
+    steps:
+      - name: Generate Dart Bot token
+        id: generate-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        with:
+          client-id: ${{ vars.ECOSYSTEM_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.ECOSYSTEM_BOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          token: ${{ steps.generate-token.outputs.token }}
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: stable
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Install dependencies
+        working-directory: pkgs/boring/
+        run: dart pub get
+      - name: Pin the hashes
+        working-directory: pkgs/boring/
+        env:
+          TAG: ${{ needs.release.outputs.tag }}
+          COMMIT: ${{ github.sha }}
+          GH_REPO: ${{ github.repository }}
+        run: dart run tool/regenerate_hashes.dart --repository "$GH_REPO" --source-commit "$COMMIT" --assets "$GITHUB_WORKSPACE/release-assets" "$TAG"
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@653ba8b281fa5e1ee78ec20dda96cf9a79102c04
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          committer: dart-ecosystem-bot <dart-ecosystem-bot@google.com>
+          author: dart-ecosystem-bot <dart-ecosystem-bot@google.com>
+          base: main
+          add-paths: pkgs/boring/lib/src/hook_helpers/hashes.dart
+          commit-message: "[boring] Pin the prebuilt binaries of ${{ needs.release.outputs.tag }}"
+          branch: "boring-pin-binaries-${{ needs.release.outputs.id }}"
+          title: "[boring] Pin the prebuilt binaries of ${{ needs.release.outputs.tag }}"
+          body: >-
+            Pins the SHA-256 hashes of the prebuilt libraries of
+            [`${{ needs.release.outputs.tag }}`](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.release.outputs.tag }}),
+            built from ${{ github.sha }} by
+            [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            of `boring_binaries.yaml`.
+
+
+            The `generated` job re-hashes the release assets, and the
+            tree-shaking tests download them in the `fetch` build mode.
+          labels: skip-changelog-check
+          delete-branch: true

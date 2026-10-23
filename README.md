@@ -18,6 +18,7 @@ don't naturally belong to other topic monorepos (like
 | [bazel_worker](pkgs/bazel_worker/) | Protocol and utilities to implement or invoke persistent bazel workers. | [![issues](https://img.shields.io/badge/issues-4774bc)][bazel_worker_issues] | [![pub package](https://img.shields.io/pub/v/bazel_worker.svg)](https://pub.dev/packages/bazel_worker) |
 | [benchmark_harness](pkgs/benchmark_harness/) | The official Dart project benchmark harness. | [![issues](https://img.shields.io/badge/issues-4774bc)][benchmark_harness_issues] | [![pub package](https://img.shields.io/pub/v/benchmark_harness.svg)](https://pub.dev/packages/benchmark_harness) |
 | [boolean_selector](pkgs/boolean_selector/) | A flexible syntax for boolean expressions, based on a simplified version of Dart's expression syntax. | [![issues](https://img.shields.io/badge/issues-4774bc)][boolean_selector_issues] | [![pub package](https://img.shields.io/pub/v/boolean_selector.svg)](https://pub.dev/packages/boolean_selector) |
+| [boring](pkgs/boring/) | Raw FFI bindings to BoringSSL, compiled and bundled through Dart Native Assets. | [![issues](https://img.shields.io/badge/issues-4774bc)][boring_issues] | [![pub package](https://img.shields.io/pub/v/boring.svg)](https://pub.dev/packages/boring) |
 | [browser_launcher](pkgs/browser_launcher/) | Provides a standardized way to launch web browsers for testing and tools. | [![issues](https://img.shields.io/badge/issues-4774bc)][browser_launcher_issues] | [![pub package](https://img.shields.io/pub/v/browser_launcher.svg)](https://pub.dev/packages/browser_launcher) |
 | [cli_config](pkgs/cli_config/) | A library to take config values from configuration files, CLI arguments, and environment variables. | [![issues](https://img.shields.io/badge/issues-4774bc)][cli_config_issues] | [![pub package](https://img.shields.io/pub/v/cli_config.svg)](https://pub.dev/packages/cli_config) |
 | [cli_util](pkgs/cli_util/) | A library to help in building Dart command-line apps. | [![issues](https://img.shields.io/badge/issues-4774bc)][cli_util_issues] | [![pub package](https://img.shields.io/pub/v/cli_util.svg)](https://pub.dev/packages/cli_util) |
@@ -61,6 +62,7 @@ don't naturally belong to other topic monorepos (like
 [bazel_worker_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Abazel_worker
 [benchmark_harness_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Abenchmark_harness
 [boolean_selector_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aboolean_selector
+[boring_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aboring
 [browser_launcher_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Abrowser_launcher
 [cli_config_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Acli_config
 [cli_util_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Acli_util

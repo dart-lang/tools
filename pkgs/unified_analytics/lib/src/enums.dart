@@ -186,6 +186,10 @@ enum DashEvent {
     description: 'Number of times a given lint is enabled',
   ),
   memoryInfo(label: 'memory_info', description: 'Memory usage information'),
+  migrateEvent(
+    label: 'migrate_event',
+    description: 'Information for a dart migrate event',
+  ),
   pluginRequest(
     label: 'plugin_request',
     description:
@@ -324,8 +328,12 @@ enum AiAgent {
       return gemini.label;
     }
 
-    if (environment['TERM_PROGRAM'] == 'cursor' ||
-        environment.keys.any((String key) => key.startsWith('CURSOR_'))) {
+    final cursorAgent = environment['CURSOR_AGENT']?.trim();
+    if ((cursorAgent != null &&
+            cursorAgent.isNotEmpty &&
+            cursorAgent != '0' &&
+            cursorAgent.toLowerCase() != 'false') ||
+        environment['CURSOR_EXTENSION_HOST_ROLE'] == 'agent-exec') {
       return cursor.label;
     }
 
