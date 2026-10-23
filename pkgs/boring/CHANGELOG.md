@@ -29,6 +29,7 @@
   source.
 - The libraries no longer reference libc++ when built with it, which failed
   to link on Android.
+- Update BoringSSL to 90c6b370.
 
 ## 0.4.1
 
