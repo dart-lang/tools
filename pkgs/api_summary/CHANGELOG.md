@@ -2,6 +2,10 @@
 
 - Add `includeImplicitNonPublicMembers` and `includeReferencedTypes` optional
   named constructor parameters to `ApiSummaryCustomizer`.
+- Track `pubspec.yaml` runtime `dependencies` constraints for external packages
+  referenced in the public API on `ApiSummary.dependencies`, and render them
+  inline on referenced `package:...` library headers in `api.txt`
+  ([#2463](https://github.com/dart-lang/tools/issues/2463)).
 
 ## 1.2.0
 

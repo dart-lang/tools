@@ -137,11 +137,57 @@ void main() {
   group('pubspec.yaml parsing in apiSummary', () {
     Future<void> withTempPkg(
       String pubspecContent,
-      Future<void> Function(String pkgPath) fn,
-    ) async {
+      Future<void> Function(String pkgPath) fn, {
+      List<String> referencedPackages = const [],
+      List<String> reexportedPackages = const [],
+    }) async {
+      final allExternalPackages = {
+        ...referencedPackages,
+        ...reexportedPackages,
+      };
+      for (final dep in allExternalPackages) {
+        final typeName = 'Dep_${dep.replaceAll(RegExp('[^a-zA-Z0-9_]'), '_')}';
+        await d.dir(dep, [
+          d.file('pubspec.yaml', 'name: $dep\nenvironment:\n  sdk: ^3.12.0\n'),
+          d.dir('lib', [d.file('$dep.dart', 'class $typeName {}\n')]),
+        ]).create();
+      }
+
+      final imports = [
+        for (final dep in referencedPackages)
+          "import 'package:$dep/$dep.dart';",
+        for (final dep in reexportedPackages)
+          "export 'package:$dep/$dep.dart';",
+      ].join('\n');
+      final fields = [
+        for (final dep in referencedPackages)
+          'Dep_${dep.replaceAll(RegExp('[^a-zA-Z0-9_]'), '_')}? field_$dep;',
+      ].join('\n  ');
+      final fooSource = allExternalPackages.isEmpty
+          ? 'void foo() {}'
+          : '$imports\n\nclass Foo {\n  $fields\n}\n';
+
+      final packageEntries = [
+        '{"name": "sample_pkg", "rootUri": "../", "packageUri": "lib/"}',
+        for (final dep in allExternalPackages)
+          '{"name": "$dep", "rootUri": "../../$dep", "packageUri": "lib/"}',
+      ].join(',\n    ');
+
       await d.dir('pkg', [
         d.file('pubspec.yaml', pubspecContent),
-        d.dir('lib', [d.file('foo.dart', 'void foo() {}')]),
+        if (allExternalPackages.isNotEmpty)
+          d.dir('.dart_tool', [
+            d.file(
+              'package_config.json',
+              '{\n'
+                  '  "configVersion": 2,\n'
+                  '  "packages": [\n'
+                  '    $packageEntries\n'
+                  '  ]\n'
+                  '}\n',
+            ),
+          ]),
+        d.dir('lib', [d.file('foo.dart', fooSource)]),
       ]).create();
 
       await fn(d.path('pkg'));
@@ -375,6 +421,174 @@ executables:
                   contains(
                     'Expected executable target for "my_tool" '
                     'to be a string or null',
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    test('extracts API-referenced dependencies and ignores unreferenced, '
+        'dev_dependencies, and overrides', () async {
+      await withTempPkg(
+        '''
+name: sample_pkg
+environment:
+  sdk: ^3.12.0
+dependencies:
+  z_pkg: ^2.0.0
+  a_pkg: ">=1.0.0 <2.0.0"
+  range_pkg: ">= 13.0.0   < 15.0.0"
+  any_pkg:
+  flutter:
+    sdk: flutter
+  local_pkg:
+    path: ../local_pkg
+  hosted_pkg:
+    hosted: https://pub.example.org
+    version: ">=1.2.3 <2.0.0"
+  git_pkg:
+    git:
+      url: https://example.com/git_pkg.git
+      ref: main
+  unreferenced_pkg: ^9.9.9
+dev_dependencies:
+  test: ^1.28.0
+dependency_overrides:
+  a_pkg: ^1.5.0
+''',
+        referencedPackages: [
+          'a_pkg',
+          'any_pkg',
+          'flutter',
+          'git_pkg',
+          'hosted_pkg',
+          'local_pkg',
+          'range_pkg',
+        ],
+        reexportedPackages: ['z_pkg'],
+        (pkgPath) async {
+          final summary = await apiSummary(pkgPath);
+          expect(
+            summary.dependencies.keys.toList(),
+            equals([
+              'a_pkg',
+              'any_pkg',
+              'flutter',
+              'git_pkg',
+              'hosted_pkg',
+              'local_pkg',
+              'range_pkg',
+              'z_pkg',
+            ]),
+          );
+          expect(
+            summary.dependencies,
+            equals({
+              'a_pkg': '^1.0.0',
+              'any_pkg': 'any',
+              'flutter': '{sdk: flutter}',
+              'git_pkg':
+                  '{git: {ref: main, url: https://example.com/git_pkg.git}}',
+              'hosted_pkg':
+                  '{hosted: https://pub.example.org, version: ^1.2.3}',
+              'local_pkg': '{path: ../local_pkg}',
+              'range_pkg': '>=13.0.0 <15.0.0',
+              'z_pkg': '^2.0.0',
+            }),
+          );
+          expect(summary.dependencies.containsKey('unreferenced_pkg'), isFalse);
+          expect(summary.dependencies.containsKey('test'), isFalse);
+
+          final json = summary.toJson();
+          expect(json['dependencies'], equals(summary.dependencies));
+          final rehydrated = ApiSummary.fromJson(json);
+          expect(rehydrated.dependencies, equals(summary.dependencies));
+          final rendered = summary.toString();
+          expect(rendered, isNot(contains('dependencies:\n')));
+          expect(rendered, isNot(contains('unreferenced_pkg')));
+          expect(
+            rendered,
+            contains(
+              'package:a_pkg/a_pkg.dart (^1.0.0):\n'
+              '  Dep_a_pkg (referenced)\n'
+              'package:any_pkg/any_pkg.dart (any):\n'
+              '  Dep_any_pkg (referenced)\n'
+              'package:flutter/flutter.dart ({sdk: flutter}):\n'
+              '  Dep_flutter (referenced)\n'
+              'package:git_pkg/git_pkg.dart '
+              '({git: {ref: main, url: https://example.com/git_pkg.git}}):\n'
+              '  Dep_git_pkg (referenced)\n'
+              'package:hosted_pkg/hosted_pkg.dart '
+              '({hosted: https://pub.example.org, version: ^1.2.3}):\n'
+              '  Dep_hosted_pkg (referenced)\n'
+              'package:local_pkg/local_pkg.dart ({path: ../local_pkg}):\n'
+              '  Dep_local_pkg (referenced)\n'
+              'package:range_pkg/range_pkg.dart (>=13.0.0 <15.0.0):\n'
+              '  Dep_range_pkg (referenced)\n'
+              'package:z_pkg/z_pkg.dart (^2.0.0):\n'
+              '  Dep_z_pkg (see above)\n',
+            ),
+          );
+        },
+      );
+    });
+
+    test('normalizes equivalent version constraints in environment '
+        'and dependencies', () async {
+      await withTempPkg(
+        '''
+name: sample_pkg
+environment:
+  sdk: ">=3.12.0 <4.0.0"
+dependencies:
+  foo: ">= 1.2.3   < 2.0.0"
+''',
+        referencedPackages: ['foo'],
+        (pkgPath) async {
+          final summary = await apiSummary(pkgPath);
+          expect(summary.environment, equals({'sdk': '^3.12.0'}));
+          expect(summary.dependencies, equals({'foo': '^1.2.3'}));
+        },
+      );
+    });
+
+    test('throws FormatException when dependencies is not a map', () async {
+      await withTempPkg('name: foo\ndependencies: "^1.0.0"', (pkgPath) async {
+        await expectLater(
+          apiSummary(pkgPath),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains('Expected "dependencies" to be a YAML map'),
+            ),
+          ),
+        );
+      });
+    });
+
+    test(
+      'throws FormatException when dependency constraint is invalid',
+      () async {
+        await withTempPkg(
+          '''
+name: foo
+dependencies:
+  bar: [1, 2]
+''',
+          (pkgPath) async {
+            await expectLater(
+              apiSummary(pkgPath),
+              throwsA(
+                isA<FormatException>().having(
+                  (e) => e.message,
+                  'message',
+                  contains(
+                    'Expected dependency constraint for "bar" '
+                    'to be a string, null, or map',
                   ),
                 ),
               ),

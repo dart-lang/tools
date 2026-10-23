@@ -29,6 +29,10 @@ import 'uri_sorting.dart';
 /// [environment] defines the SDK and platform environment constraints of the
 /// package (such as 'sdk' or 'flutter').
 ///
+/// [dependencies] defines the direct runtime package dependencies of the
+/// package, mapping package names to their version constraints or dependency
+/// descriptors.
+///
 /// [executables] defines the executables exposed by the package, mapping
 /// executable names to their target script paths within `bin/`.
 Future<ApiSummary> buildApiPackage(
@@ -36,11 +40,13 @@ Future<ApiSummary> buildApiPackage(
   AnalysisContext context,
   ApiSummaryCustomizer customizer, {
   Map<String, String> environment = const {},
+  Map<String, String> dependencies = const {},
   Map<String, String?> executables = const {},
 }) => _ApiBuilder(
   packageName,
   customizer,
   environment: environment,
+  dependencies: dependencies,
   executables: executables,
 ).build(context);
 
@@ -50,6 +56,7 @@ final class _ApiBuilder {
   final ApiSummaryCustomizer _customizer;
   final String _pkgName;
   final Map<String, String> _environment;
+  final Map<String, String> _dependencies;
   final Map<String, String?> _executables;
 
   final _immediateSubinterfaceCache =
@@ -59,11 +66,13 @@ final class _ApiBuilder {
   final _pendingElements = Queue<Element>();
   final _libraryBuilders = <String, _ApiLibraryBuilder>{};
   final _elementToLibraries = <Element, List<LibraryElement>>{};
+  final _referencedExternalPackages = <String>{};
 
   _ApiBuilder(
     this._pkgName,
     this._customizer, {
     this._environment = const {},
+    this._dependencies = const {},
     this._executables = const {},
   });
 
@@ -147,6 +156,8 @@ final class _ApiBuilder {
         continue;
       }
 
+      _maybeRecordExternalUri(element.library?.uri);
+
       for (final library in libraries) {
         final builder = _libraryBuilders.putIfAbsent(
           library.uri.toString(),
@@ -182,9 +193,15 @@ final class _ApiBuilder {
         .map((e) => e.build())
         .sortedByUri(_pkgName);
 
+    final referencedDependencies = {
+      for (final MapEntry(:key, :value) in _dependencies.entries)
+        if (_referencedExternalPackages.contains(key)) key: value,
+    };
+
     return ApiSummary(
       name: _pkgName,
       environment: _environment,
+      dependencies: referencedDependencies,
       executables: _executables,
       libraries: libraries,
     );
@@ -230,6 +247,12 @@ final class _ApiBuilder {
     _pendingElements.add(element);
   }
 
+  void _maybeRecordExternalUri(Uri? uri) {
+    if (uri?.packageName case final pkg? when pkg != _pkgName) {
+      _referencedExternalPackages.add(pkg);
+    }
+  }
+
   bool _isNullable(NullabilitySuffix suffix) => switch (suffix) {
     NullabilitySuffix.none => false,
     NullabilitySuffix.question => true,
@@ -269,6 +292,7 @@ final class _ApiBuilder {
           isNullable: isNullable,
         );
       case InterfaceType(:final element, :final typeArguments):
+        _maybeRecordExternalUri(element.library.uri);
         _maybeAddPending(element);
         return ApiInterfaceType(
           name: element.name ?? '',
