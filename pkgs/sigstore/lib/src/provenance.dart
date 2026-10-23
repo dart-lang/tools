@@ -268,8 +268,13 @@ class BuildProvenance {
     }
     final Object? decodedStatement;
     try {
+      // ProtoJSON permits the standard and the URL-safe alphabet, with or
+      // without padding, and `sigstore-rust` accepts all of these when it
+      // verifies the envelope. Accept the same forms here, so that a payload
+      // the verifier accepted never fails to parse. All of them decode to the
+      // same bytes.
       decodedStatement = json.decode(
-        utf8.decode(base64.decode(encodedPayload)),
+        utf8.decode(base64.decode(base64.normalize(encodedPayload))),
       );
     } on FormatException catch (e) {
       throw FormatException(
@@ -374,10 +379,8 @@ class BuildProvenance {
         ? internalParameters['github']
         : null;
     if (github is Map) {
-      final id = github['repository_id'];
-      if (id is String && id.isNotEmpty) repositoryId = id;
-      final ownerId = github['repository_owner_id'];
-      if (ownerId is String && ownerId.isNotEmpty) repositoryOwnerId = ownerId;
+      repositoryId = _idString(github['repository_id']);
+      repositoryOwnerId = _idString(github['repository_owner_id']);
     }
 
     final ref = workflow['ref'];
@@ -448,3 +451,13 @@ Map<String, Object?> _expectMap(Object? value, String what) {
   }
   return value;
 }
+
+/// The GitHub id in [value], or `null` if there is none.
+///
+/// GitHub records its ids as strings, as they are in the OIDC token claims
+/// they come from. Tolerate a tool that emits them as the numbers they are.
+String? _idString(Object? value) => switch (value) {
+  final String id when id.isNotEmpty => id,
+  final int id => '$id',
+  _ => null,
+};

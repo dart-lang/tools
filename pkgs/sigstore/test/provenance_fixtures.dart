@@ -45,8 +45,8 @@ String buildProvenanceBundleJson({
   String? builderId =
       'https://github.com/dart-lang/setup-dart/.github/workflows/'
       'publish.yml@refs/tags/v2',
-  String? repositoryId,
-  String? repositoryOwnerId,
+  Object? repositoryId,
+  Object? repositoryOwnerId,
   String? runUrl,
   String statementType = 'https://in-toto.io/Statement/v1',
   String predicateType = 'https://slsa.dev/provenance/v1',
@@ -102,4 +102,19 @@ String buildProvenanceBundleJson({
       ],
     },
   });
+}
+
+/// Re-encodes the DSSE payload of [bundleJson] in the URL-safe alphabet,
+/// without padding - the other base64 form ProtoJSON permits.
+String withUrlSafeUnpaddedPayload(String bundleJson) {
+  final bundle = json.decode(bundleJson) as Map<String, Object?>;
+  final envelope = bundle['dsseEnvelope'] as Map<String, Object?>;
+  final payload = base64.decode(envelope['payload'] as String);
+  final reencoded = base64Url.encode(payload).replaceAll('=', '');
+  // Make sure the test is not vacuous.
+  if (reencoded == envelope['payload']) {
+    throw StateError('payload is unchanged by re-encoding');
+  }
+  envelope['payload'] = reencoded;
+  return json.encode(bundle);
 }

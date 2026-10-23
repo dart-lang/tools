@@ -203,6 +203,37 @@ void main() {
       );
     });
 
+    test('accepts repository ids recorded as numbers', () {
+      final provenance = BuildProvenance.parseBundle(
+        buildProvenanceBundleJson(
+          repositoryId: 1339313025,
+          repositoryOwnerId: 27859082,
+        ),
+      );
+      expect(provenance.repositoryId, '1339313025');
+      expect(provenance.repositoryOwnerId, '27859082');
+    });
+
+    test('ignores empty or malformed repository ids', () {
+      final provenance = BuildProvenance.parseBundle(
+        buildProvenanceBundleJson(repositoryId: '', repositoryOwnerId: true),
+      );
+      expect(provenance.repositoryId, isNull);
+      expect(provenance.repositoryOwnerId, isNull);
+    });
+
+    test('accepts the payload in every base64 form ProtoJSON permits', () {
+      // `sigstore-rust` verifies a payload in the standard or the URL-safe
+      // alphabet, padded or not. A payload the verifier accepted must parse.
+      final padded = BuildProvenance.parseBundle(helpfulBundleJson);
+      final unpadded = BuildProvenance.parseBundle(
+        withUrlSafeUnpaddedPayload(helpfulBundleJson),
+      );
+      expect(unpadded.sourceRepository, padded.sourceRepository);
+      expect(unpadded.commitSha, padded.commitSha);
+      expect(unpadded.subjects.single.sha256, padded.subjects.single.sha256);
+    });
+
     test('tolerates a missing commit and builder', () {
       final provenance = BuildProvenance.parseBundle(
         buildProvenanceBundleJson(commitSha: null, builderId: null),
