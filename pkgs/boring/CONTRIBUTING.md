@@ -48,7 +48,7 @@ records the testcases BoringSSL is known to disagree with. The `x509-limbo` job
 fails on a divergence that the list does not record, and on a listed testcase
 that started agreeing, so the list cannot go stale.
 
-BoringSSL's X.509 behaviour changes between revisions. After updating it, run
+BoringSSL's X.509 behavior changes between revisions. After updating it, run
 
 ```sh
 X509_LIMBO_REGENERATE=1 ./tool/run_x509_limbo_tests.sh
