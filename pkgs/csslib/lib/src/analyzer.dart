@@ -452,10 +452,16 @@ class _MediaRulesReplacer extends Visitor {
 /// Expand all @include at the top-level the ruleset(s) associated with the
 /// mixin.
 class TopLevelIncludes extends Visitor {
-  static const int _maxExpansions = 256;
+  static const int _maxExpansions = 100000;
   StyleSheet? _styleSheet;
   final Messages _messages;
   int _expansions = 0;
+
+  void _checkLimit(SourceSpan? span) {
+    if (_expansions >= _maxExpansions) {
+      _messages.error('Maximum @include expansions reached', span);
+    }
+  }
 
   /// Map of variable name key to it's definition.
   final map = <String, MixinDefinition>{};
@@ -489,6 +495,7 @@ class TopLevelIncludes extends Visitor {
     } else if (map.containsKey(node.name)) {
       var mixinDef = map[node.name];
       if (mixinDef is MixinRulesetDirective) {
+        _checkLimit(node.span);
         _TopLevelIncludeReplacer.replace(
             _styleSheet!,
             node,
@@ -736,10 +743,16 @@ class CallMixin extends Visitor {
 
 /// Expand all @include inside of a declaration associated with a mixin.
 class DeclarationIncludes extends Visitor {
-  static const int _maxExpansions = 256;
+  static const int _maxExpansions = 100000;
   StyleSheet? _styleSheet;
   final Messages _messages;
   int _expansions = 0;
+
+  void _checkLimit(SourceSpan? span) {
+    if (_expansions >= _maxExpansions) {
+      _messages.error('Maximum @include expansions reached', span);
+    }
+  }
 
   /// Map of variable name key to it's definition.
   final Map<String, MixinDefinition> map = <String, MixinDefinition>{};
@@ -824,6 +837,7 @@ class DeclarationIncludes extends Visitor {
       }
 
       if (mixinDef is MixinDeclarationDirective) {
+        _checkLimit(node.span);
         _IncludeReplacer.replace(
             _styleSheet!,
             node,
@@ -844,6 +858,7 @@ class DeclarationIncludes extends Visitor {
       var mixinDef = map[node.name];
       if (currDef is MixinDeclarationDirective &&
           mixinDef is MixinDeclarationDirective) {
+        _checkLimit(node.span);
         _IncludeReplacer.replace(
             _styleSheet!,
             node,
@@ -1035,16 +1050,17 @@ class AllExtends extends Visitor {
 // TODO(terry): Need to handle !optional glag.
 /// Changes any selector that matches @extend.
 class InheritExtends extends Visitor {
-  static const int _maxExpansions = 256;
+  static const int _maxExpansions = 100000;
   final AllExtends _allExtends;
+  final Messages _messages;
 
-  InheritExtends(Messages messages, this._allExtends);
+  InheritExtends(this._messages, this._allExtends);
 
   @override
   void visitSelectorGroup(SelectorGroup node) {
     var expansions = 0;
     for (var selectorsIndex = 0;
-        selectorsIndex < node.selectors.length && expansions < _maxExpansions;
+        selectorsIndex < node.selectors.length;
         selectorsIndex++) {
       var selectors = node.selectors[selectorsIndex];
       var isLastNone = false;
@@ -1059,7 +1075,10 @@ class InheritExtends extends Visitor {
         if (matches != null) {
           for (var match in matches) {
             if (match == node || match.selectors.isEmpty) continue;
-            if (expansions >= _maxExpansions) break;
+            if (expansions >= _maxExpansions) {
+              _messages.error("Maximum @extend expansions reached", node.span);
+              break;
+            }
             expansions++;
             // Create a new group.
             var newSelectors = selectors.clone();

@@ -83,7 +83,7 @@ class _VarDefinitionsIncludes extends Visitor {
 /// Find var- definitions in a style sheet.
 /// [found] list of known definitions.
 class _VarDefAndUsage extends Visitor {
-  static const int _maxExpansions = 256;
+  static const int _maxExpansions = 100000;
   final Messages _messages;
   final Map<String, VarDefinition> _knownVarDefs;
   final varDefs = <String, VarDefinition>{};
@@ -93,6 +93,12 @@ class _VarDefAndUsage extends Visitor {
   int _expansions = 0;
 
   _VarDefAndUsage(this._messages, this._knownVarDefs);
+
+  void _checkLimit(SourceSpan? span) {
+    if (_expansions >= _maxExpansions) {
+      _messages.error("Maximum @include expansions reached", span);
+    }
+  }
 
   @override
   void visitTree(StyleSheet tree) {
@@ -129,8 +135,9 @@ class _VarDefAndUsage extends Visitor {
       if (index < expressions.length &&
           identical(expressions[index], current)) {
         index++;
-      } else if (_expansions++ >= _maxExpansions) {
-        break;
+      } else {
+        _checkLimit(node.span);
+        if (_expansions++ >= _maxExpansions) break;
       }
     }
     currentExpressions = oldExpressions;
