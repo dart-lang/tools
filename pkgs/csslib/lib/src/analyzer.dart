@@ -7,11 +7,8 @@ part of '../parser.dart';
 /// Maximum nesting or derivation depth for `@include`, `@extend`, and `var()`.
 const int _maxExpansionDepth = 64;
 
-/// Maximum expansions produced from a single root `@include` directive.
-const int _maxTotalIncludeExpansions = 1024;
-
-/// Maximum expansions produced from a transitive `@extend` group or
-/// `Expressions` list during `var()` polyfill resolution.
+/// Maximum expansions produced from a single root `@include`, transitive
+/// `@extend` group, or `Expressions` list during `var()` polyfill resolution.
 const int _maxExpansions = 4096;
 
 // TODO(terry): Add optimizing phase to remove duplicated selectors in the same
@@ -494,7 +491,7 @@ class TopLevelIncludes extends Visitor {
     final stepCost = math.max(1, rules.length);
     if (_activeMixins.contains(name) ||
         _activeMixins.length >= _maxExpansionDepth ||
-        _totalExpansions + stepCost > _maxTotalIncludeExpansions) {
+        _totalExpansions + stepCost > _maxExpansions) {
       _messages.error('Circular or too deep @include for $name', node.span);
       return const <TreeNode>[];
     }
@@ -811,7 +808,7 @@ class DeclarationIncludes extends Visitor {
     final targetRoot = currDeclGroup ?? _styleSheet!;
     if (_activeMixins.contains(mixinName) ||
         _activeMixins.length >= _maxExpansionDepth ||
-        _totalExpansions + stepCost > _maxTotalIncludeExpansions) {
+        _totalExpansions + stepCost > _maxExpansions) {
       _messages.error(
           'Circular or too deep @include for $mixinName', node.span);
       _IncludeReplacer.replace(targetRoot, node, const <TreeNode>[]);
