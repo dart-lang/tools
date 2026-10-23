@@ -120,65 +120,71 @@ int? findLineStart(String context, String text, int column) {
   return null;
 }
 
+/// A [SourceSpanWithContext] created by
+/// [SourceSpanWithContextExtension.subspan] that records its start offset
+/// within [context].
+class SubspanWithContext extends SourceSpanWithContext {
+  /// The code-unit offset where [text] begins within [context].
+  final int contextStart;
+
+  SubspanWithContext(
+    super.start,
+    super.end,
+    super.text,
+    super.context,
+    this.contextStart,
+  );
+}
+
+/// Returns the number of line terminators in [text] before [end].
+int _countLinesBefore(String text, int end) {
+  var count = 0;
+  for (var i = 0; i < end; i++) {
+    if (_isLineEnd(text, i)) count++;
+  }
+  return count;
+}
+
 /// Finds the line in `span.context` containing [span], returning both the
 /// code-unit offset where that line begins and the number of preceding context
 /// lines.
 ///
-/// Uses [span]'s start and end location metadata to disambiguate when multiple
-/// lines in `span.context` contain `span.text` at `span.start.column`. Returns
-/// `null` if no line matches.
+/// Returns `null` if no line in `span.context` contains `span.text` at
+/// `span.start.column`.
 ({int lineStart, int linesBefore})? findSpanLineStart(
     SourceSpanWithContext span) {
   if (span is FileSpan) return (lineStart: 0, linesBefore: 0);
 
   final context = span.context;
-  ({int lineStart, int linesBefore})? best;
-  var bestTier = 0;
+  if (span case SubspanWithContext(:final contextStart)) {
+    final lineStart = _lineStartAt(context, contextStart);
+    return (
+      lineStart: lineStart,
+      linesBefore: _countLinesBefore(context, lineStart),
+    );
+  }
+
+  final text = span.text;
+  final column = span.start.column;
+  ({int lineStart, int linesBefore})? fallback;
 
   var lineStart = 0;
   var linesBefore = 0;
   while (true) {
     final lineEnd = _indexOfLineEnd(context, lineStart);
-    var effectiveLineEnd = lineEnd == -1 ? context.length : lineEnd;
-    if (lineEnd != -1 &&
-        lineEnd > lineStart &&
-        context.codeUnitAt(lineEnd - 1) == $cr) {
-      effectiveLineEnd--;
+    final effectiveLineEnd = lineEnd == -1 ? context.length : lineEnd;
+    final textStart = lineStart + column;
+    if (column <= effectiveLineEnd - lineStart &&
+        textStart + text.length <= context.length &&
+        context.startsWith(text, textStart)) {
+      final candidate = (lineStart: lineStart, linesBefore: linesBefore);
+      if (_matchesEndLocation(context, textStart, span)) return candidate;
+      fallback ??= candidate;
     }
-
-    final tier =
-        _scoreSpanLineCandidate(span, lineStart, effectiveLineEnd, linesBefore);
-    if (tier > bestTier) {
-      best = (lineStart: lineStart, linesBefore: linesBefore);
-      bestTier = tier;
-    }
-    if (lineEnd == -1) return best;
+    if (lineEnd == -1) return fallback;
     lineStart = lineEnd + 1;
     linesBefore++;
   }
-}
-
-/// Scores a candidate line at [lineStart] (after [linesBefore] lines) in
-/// `span.context`, returning `0` when [span] cannot start on this line or
-/// `1..4` (higher is better) when it matches.
-int _scoreSpanLineCandidate(
-  SourceSpanWithContext span,
-  int lineStart,
-  int effectiveLineEnd,
-  int linesBefore,
-) {
-  final context = span.context;
-  final text = span.text;
-  final column = span.start.column;
-  if (column > effectiveLineEnd - lineStart) return 0;
-
-  final textStart = lineStart + column;
-  if (textStart + text.length > context.length ||
-      !context.startsWith(text, textStart)) {
-    return 0;
-  }
-  if (!_matchesEndLocation(context, textStart, span)) return 1;
-  return 2;
 }
 
 /// Returns whether advancing `span.text.length` code units from [textStart] in

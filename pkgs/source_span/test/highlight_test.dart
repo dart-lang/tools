@@ -655,9 +655,13 @@ ${colors.blue}  '${colors.none}'''));
     });
 
     test('disambiguates SourceSpanWithContext subspans across lines', () {
-      return;
-      SourceSpanWithContext contextSpan(String source) {
-        final span = SourceFile.fromString(source).span(0, source.length);
+      SourceSpanWithContext contextSpan(
+        String source, [
+        int start = 0,
+        int? end,
+      ]) {
+        final span =
+            SourceFile.fromString(source).span(start, end ?? source.length);
         return SourceSpanWithContext(
             span.start, span.end, span.text, span.context);
       }
@@ -686,10 +690,44 @@ ${colors.blue}  '${colors.none}'''));
 2 | b
   |  ^
   '"""));
+      expect(contextSpan('foo\nbar\nbar\n', 4, 12).subspan(0, 3).highlight(),
+          equals("""
+  ,
+2 | bar
+  | ^^^
+3 | bar
+  '"""));
+      expect(contextSpan('foo\nbar\nbar\n', 4, 12).subspan(4, 7).highlight(),
+          equals("""
+  ,
+2 | bar
+3 | bar
+  | ^^^
+  '"""));
+      expect(
+          contextSpan('x\na\nb\n', 2, 6).subspan(1, 2).highlight(), equals("""
+  ,
+2 | a
+  |  ^
+3 | b
+  '"""));
+      expect(contextSpan('x\nab\r\nabba', 2, 10).subspan(3, 3).highlight(),
+          equals("""
+  ,
+2 | ab
+  |   ^
+3 | abba
+  '"""));
+      expect(contextSpan('x\nab\r\nabba', 2, 10).subspan(7, 7).highlight(),
+          equals("""
+  ,
+2 | ab
+3 | abba
+  |    ^
+  '"""));
     });
 
     test('highlights all 4-char CR/LF SourceSpanWithContext subspans', () {
-      return;
       const chars = ['a', 'b', '\r', '\n'];
       final strings = <String>[''];
       for (var length = 1; length <= 4; length++) {
@@ -702,20 +740,34 @@ ${colors.blue}  '${colors.none}'''));
       }
 
       for (var source in strings) {
-        final fileSpan = SourceFile.fromString(source).span(0, source.length);
-        final full = SourceSpanWithContext(
-            fileSpan.start, fileSpan.end, fileSpan.text, fileSpan.context);
-        for (var i = 0; i <= source.length; i++) {
-          for (var j = i; j <= source.length; j++) {
-            final highlighted = full.subspan(i, j).highlight();
-            if (!source.contains('\r\n')) {
-              final lfSource = source.replaceAll('\r', '\n');
-              final lfFileSpan =
-                  SourceFile.fromString(lfSource).span(0, lfSource.length);
-              final lfFull = SourceSpanWithContext(lfFileSpan.start,
-                  lfFileSpan.end, lfFileSpan.text, lfFileSpan.context);
-              expect(highlighted, equals(lfFull.subspan(i, j).highlight()),
-                  reason: 'source=${source.codeUnits} [$i, $j]');
+        final file = SourceFile.fromString(source);
+        final lfFile = !source.contains('\r\n')
+            ? SourceFile.fromString(source.replaceAll('\r', '\n'))
+            : null;
+        for (var a = 0; a <= source.length; a++) {
+          for (var b = a; b <= source.length; b++) {
+            final fileSpan = file.span(a, b);
+            final span = SourceSpanWithContext(
+                fileSpan.start, fileSpan.end, fileSpan.text, fileSpan.context);
+            final lfSpan = lfFile == null
+                ? null
+                : () {
+                    final s = lfFile.span(a, b);
+                    return SourceSpanWithContext(
+                        s.start, s.end, s.text, s.context);
+                  }();
+            for (var i = 0; i <= span.length; i++) {
+              for (var j = i; j <= span.length; j++) {
+                final highlighted = span.subspan(i, j).highlight();
+                if (lfSpan != null) {
+                  expect(
+                    highlighted,
+                    equals(lfSpan.subspan(i, j).highlight()),
+                    reason:
+                        'source=${source.codeUnits} span=[$a, $b] sub=[$i, $j]',
+                  );
+                }
+              }
             }
           }
         }

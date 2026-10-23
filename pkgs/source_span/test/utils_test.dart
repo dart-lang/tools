@@ -72,8 +72,10 @@ void main() {
   });
 
   group('find span line start', () {
-    SourceSpanWithContext contextSpan(String source) {
-      final span = SourceFile.fromString(source).span(0, source.length);
+    SourceSpanWithContext contextSpan(String source,
+        [int start = 0, int? end]) {
+      final span =
+          SourceFile.fromString(source).span(start, end ?? source.length);
       return SourceSpanWithContext(
           span.start, span.end, span.text, span.context);
     }
@@ -83,13 +85,29 @@ void main() {
           equals((lineStart: 0, linesBefore: 0)));
       expect(findSpanLineStart(contextSpan('ab\r\nabba').subspan(7, 7)),
           equals((lineStart: 4, linesBefore: 1)));
-    }, skip: 'absolute offset heuristic removed');
+    });
 
     test('disambiguates bare CR vs CR of CRLF across lines', () {
       expect(findSpanLineStart(contextSpan('a\rb\r\n').subspan(3, 4)),
           equals((lineStart: 2, linesBefore: 1)));
       expect(findSpanLineStart(contextSpan('b\r\nb\r').subspan(4, 5)),
           equals((lineStart: 3, linesBefore: 1)));
+    });
+
+    test('disambiguates subspans when context starts on a later file line', () {
+      expect(
+          findSpanLineStart(
+              contextSpan('foo\nbar\nbar\n', 4, 12).subspan(0, 3)),
+          equals((lineStart: 0, linesBefore: 0)));
+      expect(
+          findSpanLineStart(
+              contextSpan('foo\nbar\nbar\n', 4, 12).subspan(4, 7)),
+          equals((lineStart: 4, linesBefore: 1)));
+      expect(findSpanLineStart(contextSpan('x\na\nb\n', 2, 6).subspan(1, 2)),
+          equals((lineStart: 0, linesBefore: 0)));
+      expect(
+          findSpanLineStart(contextSpan('x\nab\r\nabba', 2, 10).subspan(7, 7)),
+          equals((lineStart: 4, linesBefore: 1)));
     });
   });
 }
