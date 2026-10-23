@@ -570,6 +570,87 @@ void main() {
         ':root { var-u: var(undef); var-a: 1px var(u) var(a); } '
         'a { color: var(a); }',
       );
+      _exerciseAllEntryPoints(
+        ':root { var-a: 1px var(b); var-b: 1px var(a); } '
+        'a { margin: var(a); }',
+      );
+      _exerciseAllEntryPoints(
+        '@mixin d1 { color: red; a { @include d1; } } div { @include d1; }',
+      );
+      _exerciseAllEntryPoints(
+        '.b { color: red; } .x1 .a { @extend .b; } .x2 .a { @extend .b; } '
+        '.y1 .b { @extend .a; } .y2 .b { @extend .a; }',
+      );
+
+      final expTopMixins = [
+        '@mixin m0 { .x { color: red; } }',
+        for (var i = 1; i <= 25; i++)
+          '@mixin m$i { @include m${i - 1}; @include m${i - 1}; }',
+        '@include m25;',
+      ].join('\n');
+      _exerciseAllEntryPoints(expTopMixins);
+
+      final expDeclMixins = [
+        '@mixin d0 { color: red; }',
+        for (var i = 1; i <= 25; i++)
+          '@mixin d$i { @include d${i - 1}; color: blue; @include d${i - 1}; }',
+        '.box { @include d25; }',
+      ].join('\n');
+      _exerciseAllEntryPoints(expDeclMixins);
+    });
+
+    test('preserves large non-recursive @include, @extend, and var() sheets',
+        () {
+      const count = 300;
+
+      final topLevelErrors = <Message>[];
+      final topLevelCss = [
+        '@mixin m { .from-mixin { color: red; } }',
+        for (var i = 0; i < count; i++) '.r$i { width: 1px; }\n@include m;',
+      ].join('\n');
+      final topLevelOut = prettyPrint(
+        compileCss(topLevelCss, errors: topLevelErrors, opts: options),
+      );
+      expect(topLevelErrors, isEmpty);
+      expect('.from-mixin'.allMatches(topLevelOut), hasLength(count));
+
+      final declErrors = <Message>[];
+      final declCss = [
+        '@mixin d { color: red; }',
+        for (var i = 0; i < count; i++) '.r$i { @include d; }',
+      ].join('\n');
+      final declOut = prettyPrint(
+        compileCss(declCss, errors: declErrors, opts: options),
+      );
+      expect(declErrors, isEmpty);
+      expect('color: #f00'.allMatches(declOut), hasLength(count));
+
+      final extendErrors = <Message>[];
+      final extendCss = [
+        '.base { color: red; }',
+        for (var i = 0; i < count; i++) '.x$i { @extend .base; }',
+      ].join('\n');
+      final extendSheet = compileCss(
+        extendCss,
+        errors: extendErrors,
+        opts: options,
+      );
+      expect(extendErrors, isEmpty);
+      final baseRule = extendSheet.topLevels.first as RuleSet;
+      expect(baseRule.selectorGroup!.selectors, hasLength(count + 1));
+
+      const varRules = 130;
+      final varErrors = <Message>[];
+      final varCss = [
+        ':root { var-a: 1px; var-b: 2px; }',
+        for (var i = 0; i < varRules; i++) '.v$i { margin: var(a) var(b); }',
+      ].join('\n');
+      final varOut = prettyPrint(
+        compileCss(varCss, errors: varErrors, opts: options, polyfill: true),
+      );
+      expect(varErrors, isEmpty);
+      expect(varOut, isNot(contains('var(')));
+      expect('margin: 1px 2px'.allMatches(varOut), hasLength(varRules));
     });
   });
 }

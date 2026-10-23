@@ -83,22 +83,14 @@ class _VarDefinitionsIncludes extends Visitor {
 /// Find var- definitions in a style sheet.
 /// [found] list of known definitions.
 class _VarDefAndUsage extends Visitor {
-  static const int _maxExpansions = 100000;
   final Messages _messages;
   final Map<String, VarDefinition> _knownVarDefs;
   final varDefs = <String, VarDefinition>{};
 
   VarDefinition? currVarDefinition;
   List<Expression>? currentExpressions;
-  int _expansions = 0;
 
   _VarDefAndUsage(this._messages, this._knownVarDefs);
-
-  void _checkLimit(SourceSpan? span) {
-    if (_expansions >= _maxExpansions) {
-      _messages.error("Maximum @include expansions reached", span);
-    }
-  }
 
   @override
   void visitTree(StyleSheet tree) {
@@ -128,16 +120,26 @@ class _VarDefAndUsage extends Visitor {
     var oldExpressions = currentExpressions;
     var expressions = node.expressions;
     currentExpressions = expressions;
+    final initialLength = expressions.length;
     var index = 0;
+    var stepsAtIndex = 0;
     while (index < expressions.length) {
       var current = expressions[index];
       current.visit(this);
       if (index < expressions.length &&
           identical(expressions[index], current)) {
         index++;
+        stepsAtIndex = 0;
       } else {
-        _checkLimit(node.span);
-        if (_expansions++ >= _maxExpansions) break;
+        stepsAtIndex++;
+        if (stepsAtIndex >= _maxExpansionDepth) {
+          _messages.error('Circular or too deep var() resolution', node.span);
+          index++;
+          stepsAtIndex = 0;
+        } else if (expressions.length - initialLength > _maxExpansions) {
+          _messages.error('Maximum var() expansion size reached', node.span);
+          break;
+        }
       }
     }
     currentExpressions = oldExpressions;
