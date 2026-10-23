@@ -135,13 +135,18 @@ class BoundMultipartStream {
           }
         }, onDone: () {
           if (_state != _doneCode && _state != _failCode) {
-            final error = const MimeMultipartException('Bad multipart ending');
+            const error = MimeMultipartException('Bad multipart ending');
             _controller.addError(error);
             _multipartController?.addError(error);
           }
           _multipartController?.close();
+          _multipartController = null;
           _controller.close();
-        }, onError: _controller.addError);
+        }, onError: (Object error, StackTrace stackTrace) {
+          _state = _failCode;
+          _controller.addError(error, stackTrace);
+          _multipartController?.addError(error, stackTrace);
+        });
       };
   }
 
@@ -283,10 +288,9 @@ class BoundMultipartStream {
           if (byte == char_code.sp || byte == char_code.ht) {
             _state = _headerValueStartCode;
           } else {
-            final String headerField;
+            final headerField = ascii.decode(_headerField);
             final String headerValue;
             try {
-              headerField = utf8.decode(_headerField);
               headerValue = utf8.decode(_headerValue);
             } on FormatException {
               throw const MimeMultipartException(

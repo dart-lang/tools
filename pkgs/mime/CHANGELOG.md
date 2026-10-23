@@ -3,6 +3,8 @@
 * Forward mid-stream multipart parse errors and invalid UTF-8 header bytes to
   the output stream as `MimeMultipartException` instead of throwing uncaught
   synchronous errors or raw `FormatException`s.
+* Propagate mid-part truncation (`MimeMultipartException`) and source stream
+  errors to the active part stream before closing it.
 * Validate the first byte of multipart header field names against token
   characters.
 * Fix a stream hang and buffer assertion failure when trailing epilogue bytes

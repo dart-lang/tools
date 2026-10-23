@@ -522,6 +522,11 @@ Body2\r
       ]) {
         await expectStreamMultipartError(ascii.encode(invalidFirstChar));
       }
+      await expectStreamMultipartError([
+        ...ascii.encode('--bnd\r\n'),
+        0xFF,
+        ...ascii.encode(': value\r\n\r\nbody\r\n--bnd--\r\n'),
+      ]);
     });
 
     test('malformed boundary and CRLF route MimeMultipartException to stream',
@@ -539,8 +544,7 @@ Body2\r
       }
     });
 
-    test(
-        'non-UTF-8 bytes in header value or field throw MimeMultipartException',
+    test('non-UTF-8 bytes in header value route MimeMultipartException',
         () async {
       await expectStreamMultipartError([
         ...ascii.encode('--bnd\r\ncontent-disposition: '),
@@ -548,10 +552,93 @@ Body2\r
         ...ascii.encode('\r\n\r\nbody\r\n--bnd--\r\n'),
       ]);
       await expectStreamMultipartError([
-        ...ascii.encode('--bnd\r\n'),
+        ...ascii.encode('--bnd\r\ncontent-disposition: ok\r\n '),
         0xFF,
-        ...ascii.encode(': value\r\n\r\nbody\r\n--bnd--\r\n'),
+        ...ascii.encode('\r\n\r\nbody\r\n--bnd--\r\n'),
       ]);
+    });
+
+    test(
+        'mid-part EOF propagates MimeMultipartException to part and outer '
+        'streams', () async {
+      final truncated = ascii.encode('--bnd\r\na: 1\r\n\r\nhel');
+      await expectStreamMultipartError(truncated);
+
+      for (final chunks in [
+        [truncated],
+        truncated.map((b) => [b]).toList(),
+      ]) {
+        Object? zoneError;
+        await runZonedGuarded(() async {
+          final received = <int>[];
+          final outerErrors = <Object>[];
+          final partErrors = <Object>[];
+          final partDone = Completer<void>();
+          final outerDone = Completer<void>();
+
+          Stream<List<int>>.fromIterable(chunks)
+              .transform(MimeMultipartTransformer('bnd'))
+              .listen(
+            (part) {
+              expect(part.headers, {'a': '1'});
+              part.listen(
+                received.addAll,
+                onError: partErrors.add,
+                onDone: partDone.complete,
+              );
+            },
+            onError: outerErrors.add,
+            onDone: outerDone.complete,
+          );
+
+          await Future.wait([partDone.future, outerDone.future]);
+          expect(ascii.decode(received), 'hel');
+          expect(partErrors, [isA<MimeMultipartException>()]);
+          expect(outerErrors, [isA<MimeMultipartException>()]);
+        }, (error, _) {
+          zoneError = error;
+        });
+        expect(zoneError, isNull);
+      }
+    });
+
+    test(
+        'mid-part source error propagates to active part and outer streams '
+        'without Bad multipart ending', () async {
+      Object? zoneError;
+      await runZonedGuarded(() async {
+        final source = StreamController<List<int>>();
+        final received = <int>[];
+        final outerErrors = <Object>[];
+        final partErrors = <Object>[];
+        final partDone = Completer<void>();
+        final outerDone = Completer<void>();
+
+        source.stream.transform(MimeMultipartTransformer('bnd')).listen(
+          (part) {
+            part.listen(
+              received.addAll,
+              onError: partErrors.add,
+              onDone: partDone.complete,
+            );
+          },
+          onError: outerErrors.add,
+          onDone: outerDone.complete,
+        );
+
+        source.add(ascii.encode('--bnd\r\na: 1\r\n\r\nhel'));
+        await pumpEventQueue();
+        source.addError(StateError('source stream failed'));
+        await source.close();
+
+        await Future.wait([partDone.future, outerDone.future]);
+        expect(ascii.decode(received), 'hel');
+        expect(partErrors, [isA<StateError>()]);
+        expect(outerErrors, [isA<StateError>()]);
+      }, (error, _) {
+        zoneError = error;
+      });
+      expect(zoneError, isNull);
     });
   });
 }
