@@ -126,28 +126,30 @@ class BoundMultipartStream {
           try {
             _parse();
           } on MimeMultipartException catch (error, stackTrace) {
-            _state = _failCode;
-            _buffer = _placeholderBuffer;
-            _index = 0;
-            _controller.addError(error, stackTrace);
-            _subscription.cancel();
-            _controller.close();
+            _fail(error, stackTrace);
           }
         }, onDone: () {
           if (_state != _doneCode && _state != _failCode) {
-            const error = MimeMultipartException('Bad multipart ending');
-            _controller.addError(error);
-            _multipartController?.addError(error);
+            _fail(const MimeMultipartException('Bad multipart ending'));
+            return;
           }
           _multipartController?.close();
           _multipartController = null;
           _controller.close();
-        }, onError: (Object error, StackTrace stackTrace) {
-          _state = _failCode;
-          _controller.addError(error, stackTrace);
-          _multipartController?.addError(error, stackTrace);
-        });
+        }, onError: _fail);
       };
+  }
+
+  void _fail(Object error, [StackTrace? stackTrace]) {
+    _state = _failCode;
+    _buffer = _placeholderBuffer;
+    _index = 0;
+    _controller.addError(error, stackTrace);
+    _multipartController?.addError(error, stackTrace);
+    _multipartController?.close();
+    _multipartController = null;
+    _subscription.cancel();
+    _controller.close();
   }
 
   void _resumeStream() {
@@ -296,7 +298,7 @@ class BoundMultipartStream {
               throw const MimeMultipartException(
                   'Failed to parse multipart mime header');
             }
-            _headers![headerField.toLowerCase()] = headerValue;
+            _headers![headerField] = headerValue;
             _headerField.clear();
             _headerValue.clear();
             if (byte == char_code.cr) {

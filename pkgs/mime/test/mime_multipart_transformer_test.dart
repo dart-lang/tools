@@ -570,31 +570,30 @@ Body2\r
       ]) {
         Object? zoneError;
         await runZonedGuarded(() async {
-          final received = <int>[];
-          final outerErrors = <Object>[];
-          final partErrors = <Object>[];
-          final partDone = Completer<void>();
-          final outerDone = Completer<void>();
+          late Future<void> partExpectation;
+          final stream = Stream<List<int>>.fromIterable(chunks)
+              .transform(MimeMultipartTransformer('bnd'));
 
-          Stream<List<int>>.fromIterable(chunks)
-              .transform(MimeMultipartTransformer('bnd'))
-              .listen(
-            (part) {
-              expect(part.headers, {'a': '1'});
-              part.listen(
-                received.addAll,
-                onError: partErrors.add,
-                onDone: partDone.complete,
-              );
-            },
-            onError: outerErrors.add,
-            onDone: outerDone.complete,
+          await expectLater(
+            stream,
+            emitsInOrder([
+              predicate<MimeMultipart>((part) {
+                expect(part.headers, {'a': '1'});
+                partExpectation = expectLater(
+                  part.transform(ascii.decoder),
+                  emitsInOrder([
+                    if (chunks.length == 1) 'hel' else ...['', 'h', 'e', 'l'],
+                    emitsError(isA<MimeMultipartException>()),
+                    emitsDone,
+                  ]),
+                );
+                return true;
+              }),
+              emitsError(isA<MimeMultipartException>()),
+              emitsDone,
+            ]),
           );
-
-          await Future.wait([partDone.future, outerDone.future]);
-          expect(ascii.decode(received), 'hel');
-          expect(partErrors, [isA<MimeMultipartException>()]);
-          expect(outerErrors, [isA<MimeMultipartException>()]);
+          await partExpectation;
         }, (error, _) {
           zoneError = error;
         });
@@ -605,40 +604,59 @@ Body2\r
     test(
         'mid-part source error propagates to active part and outer streams '
         'without Bad multipart ending', () async {
-      Object? zoneError;
-      await runZonedGuarded(() async {
-        final source = StreamController<List<int>>();
-        final received = <int>[];
-        final outerErrors = <Object>[];
-        final partErrors = <Object>[];
-        final partDone = Completer<void>();
-        final outerDone = Completer<void>();
+      for (final closeSource in [false, true]) {
+        Object? zoneError;
+        await runZonedGuarded(() async {
+          final source = StreamController<List<int>>();
+          addTearDown(source.close);
+          late Future<void> partExpectation;
 
-        source.stream.transform(MimeMultipartTransformer('bnd')).listen(
-          (part) {
-            part.listen(
-              received.addAll,
-              onError: partErrors.add,
-              onDone: partDone.complete,
-            );
-          },
-          onError: outerErrors.add,
-          onDone: outerDone.complete,
-        );
+          final outerExpectation = expectLater(
+            source.stream.transform(MimeMultipartTransformer('bnd')),
+            emitsInOrder([
+              predicate<MimeMultipart>((part) {
+                expect(part.headers, {'a': '1'});
+                partExpectation = expectLater(
+                  part.transform(ascii.decoder),
+                  emitsInOrder([
+                    'hel',
+                    emitsError(
+                      isA<StateError>().having(
+                        (e) => e.message,
+                        'message',
+                        'upstream error',
+                      ),
+                    ),
+                    emitsDone,
+                  ]),
+                );
+                return true;
+              }),
+              emitsError(
+                isA<StateError>().having(
+                  (e) => e.message,
+                  'message',
+                  'upstream error',
+                ),
+              ),
+              emitsDone,
+            ]),
+          );
 
-        source.add(ascii.encode('--bnd\r\na: 1\r\n\r\nhel'));
-        await pumpEventQueue();
-        source.addError(StateError('source stream failed'));
-        await source.close();
+          source.add(ascii.encode('--bnd\r\na: 1\r\n\r\nhel'));
+          await pumpEventQueue();
+          source.addError(StateError('upstream error'));
+          if (closeSource) {
+            await source.close();
+          }
 
-        await Future.wait([partDone.future, outerDone.future]);
-        expect(ascii.decode(received), 'hel');
-        expect(partErrors, [isA<StateError>()]);
-        expect(outerErrors, [isA<StateError>()]);
-      }, (error, _) {
-        zoneError = error;
-      });
-      expect(zoneError, isNull);
+          await outerExpectation;
+          await partExpectation;
+        }, (error, _) {
+          zoneError = error;
+        });
+        expect(zoneError, isNull);
+      }
     });
   });
 }
