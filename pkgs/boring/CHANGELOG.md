@@ -7,6 +7,10 @@
   Dart packages.
 - Update BoringSSL to 3fed4f20.
 - Update BoringSSL to 64188f17.
+- Removed the `BIO_vsnprintf` and `OPENSSL_vasprintf` (`va_list`) bindings,
+  excluded unused system-header declarations from the generated bindings, and
+  changed `SymbolAddresses` to an extension type so `addresses` no longer leaks
+  a private type.
 
 ## 0.4.1
 
