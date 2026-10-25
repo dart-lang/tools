@@ -1,3 +1,7 @@
+## 0.4.2-wip
+
+- Update BoringSSL to 8f77af2e.
+
 ## 0.4.2
 
 - Moved the package to the
