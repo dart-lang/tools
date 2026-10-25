@@ -11,7 +11,7 @@ jobs:
   health:
     uses: dart-lang/ecosystem/.github/workflows/health.yaml@e1d4a04b8d1cff6214a7861c59140aad0d93636b
     with:
-      ignore_coverage: "**.mock.dart,**.g.dart"
+      ignore_coverage: "**.mock.dart,**.g.dart,**/bin/**,**/example/**,**/hook/**,**/tool/**,**/hook_helpers/**,pkgs/sigstore/lib/sigstore.dart"
       ignore_license: "**.mock.dart,**.g.dart,**.mocks.dart,pkgs/markdown/**"
       license_test_string: "// Copyright"
       license: |
