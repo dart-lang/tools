@@ -11,6 +11,31 @@ const int _maxExpansionDepth = 64;
 /// `@extend` group, or `Expressions` list during `var()` polyfill resolution.
 const int _maxExpansions = 4096;
 
+bool _checkIncludeLimits(
+  Messages messages,
+  String name,
+  SourceSpan? span,
+  Set<String> activeMixins,
+  int totalExpansions,
+  int stepCost,
+) {
+  if (activeMixins.contains(name)) {
+    messages.error('Circular @include for $name', span);
+    return false;
+  }
+  if (activeMixins.length >= _maxExpansionDepth) {
+    messages.error(
+        '@include depth exceeded $_maxExpansionDepth for $name', span);
+    return false;
+  }
+  if (totalExpansions + stepCost > _maxExpansions) {
+    messages.error(
+        '@include expansions exceeded $_maxExpansions for $name', span);
+    return false;
+  }
+  return true;
+}
+
 // TODO(terry): Add optimizing phase to remove duplicated selectors in the same
 //              selector group (e.g., .btn, .btn { color: red; }).  Also, look
 //              at simplifying selectors expressions too (much harder).
@@ -489,10 +514,8 @@ class TopLevelIncludes extends Visitor {
     final name = node.name;
     final rules = mixinDef.rulesets;
     final stepCost = math.max(1, rules.length);
-    if (_activeMixins.contains(name) ||
-        _activeMixins.length >= _maxExpansionDepth ||
-        _totalExpansions + stepCost > _maxExpansions) {
-      _messages.error('Circular or too deep @include for $name', node.span);
+    if (!_checkIncludeLimits(_messages, name, node.span, _activeMixins,
+        _totalExpansions, stepCost)) {
       return const <TreeNode>[];
     }
     _activeMixins.add(name);
@@ -530,9 +553,7 @@ class TopLevelIncludes extends Visitor {
   @override
   void visitIncludeDirective(IncludeDirective node) {
     final currDef = this.currDef;
-    if (currDef is MixinRulesetDirective && node.name == currDef.name) {
-      currDef.rulesets.removeWhere((entry) => entry == node);
-    } else if (map.containsKey(node.name)) {
+    if (map.containsKey(node.name)) {
       var mixinDef = map[node.name];
       if (mixinDef is MixinRulesetDirective) {
         final targetList = currDef is MixinRulesetDirective
@@ -806,11 +827,8 @@ class DeclarationIncludes extends Visitor {
     if (_activeMixins.isEmpty) _totalExpansions = 0;
     final stepCost = math.max(1, estimatedCount);
     final targetRoot = currDeclGroup ?? _styleSheet!;
-    if (_activeMixins.contains(mixinName) ||
-        _activeMixins.length >= _maxExpansionDepth ||
-        _totalExpansions + stepCost > _maxExpansions) {
-      _messages.error(
-          'Circular or too deep @include for $mixinName', node.span);
+    if (!_checkIncludeLimits(_messages, mixinName, node.span, _activeMixins,
+        _totalExpansions, stepCost)) {
       _IncludeReplacer.replace(targetRoot, node, const <TreeNode>[]);
       return;
     }
@@ -879,9 +897,6 @@ class DeclarationIncludes extends Visitor {
     var mixinDef = map[node.include.name];
     if (mixinDef == null) {
       _messages.warning('Undefined mixin ${node.include.name}', node.span);
-      if (currDeclGroup != null) {
-        _IncludeReplacer.replace(currDeclGroup!, node, const <TreeNode>[]);
-      }
     } else if (mixinDef is MixinRulesetDirective) {
       if (!_allIncludes(mixinDef.rulesets) && currDeclGroup != null) {
         _IncludeReplacer.replace(currDeclGroup!, node, const <TreeNode>[]);
@@ -1133,13 +1148,25 @@ class InheritExtends extends Visitor {
   static String _selectorText(Selector selector) =>
       (CssPrinter()..visitSelector(selector)).toString();
 
+  static bool _hasCycleInChain(
+    Selector selector,
+    String candidateText,
+    Map<Selector, Selector> parents,
+    Map<Selector, String> texts,
+  ) {
+    for (Selector? curr = selector; curr != null; curr = parents[curr]) {
+      if ((texts[curr] ??= _selectorText(curr)) == candidateText) return true;
+    }
+    return false;
+  }
+
   static Selector? _deriveSelector(
     SelectorGroup group,
     Selector selectors,
     SelectorGroup match,
     int index,
-    Map<String, int> seenDepth,
-    int depth, {
+    Map<Selector, Selector> parents,
+    Map<Selector, String> texts, {
     required bool isLastNone,
   }) {
     if (match == group || match.selectors.isEmpty) return null;
@@ -1164,16 +1191,15 @@ class InheritExtends extends Visitor {
       derived = newSelectors;
     }
     final derivedText = _selectorText(derived);
-    if ((seenDepth[derivedText] ?? depth) < depth) return null;
-    seenDepth[derivedText] = depth;
+    if (_hasCycleInChain(selectors, derivedText, parents, texts)) return null;
+    texts[derived] = derivedText;
     return derived;
   }
 
   @override
   void visitSelectorGroup(SelectorGroup node) {
-    final seenDepth = <String, int>{
-      for (final s in node.selectors) _selectorText(s): 0,
-    };
+    final parents = <Selector, Selector>{};
+    final texts = <Selector, String>{};
     final depths = <Selector, int>{};
     var expansions = 0;
     for (var selectorsIndex = 0;
@@ -1200,18 +1226,26 @@ class InheritExtends extends Visitor {
             selectors,
             match,
             index,
-            seenDepth,
-            depth,
+            parents,
+            texts,
             isLastNone: isLastNone,
           );
           isLastNone = false;
           if (derived == null) continue;
-          if (depth > _maxExpansionDepth || expansions >= _maxExpansions) {
-            _messages.error('Maximum @extend depth reached', node.span);
+          if (depth > _maxExpansionDepth) {
+            _messages.error(
+                '@extend depth exceeded $_maxExpansionDepth', node.span);
+            super.visitSelectorGroup(node);
+            return;
+          }
+          if (expansions >= _maxExpansions) {
+            _messages.error(
+                '@extend expansions exceeded $_maxExpansions', node.span);
             super.visitSelectorGroup(node);
             return;
           }
           expansions++;
+          parents[derived] = selectors;
           depths[derived] = depth;
           node.selectors.add(derived);
         }

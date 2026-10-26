@@ -688,5 +688,94 @@ void main() {
       expect(varOut, isNot(contains('var(')));
       expect('margin: 1px 2px'.allMatches(varOut), hasLength(varRules));
     });
+
+    test(
+        'forward-referenced declaration mixins, @page @include, '
+        'sibling @extend, and distinct limit messages', () {
+      final forwardDeclErrors = <Message>[];
+      final forwardDeclOut = prettyPrint(
+        compile(
+          '@mixin d1 { color: red; @include d2; }\n'
+          '@mixin d2 { width: 1px; }\n'
+          '.a { @include d1; }',
+          errors: forwardDeclErrors,
+        ),
+      );
+      expect(
+        forwardDeclErrors.where((m) => m.level == MessageLevel.severe),
+        isEmpty,
+      );
+      expect(forwardDeclOut, contains('color: #f00'));
+      expect(forwardDeclOut, contains('width: 1px'));
+
+      final undefIncludeOut = prettyPrint(
+        compileCss('div { @include nope; color: red; }', opts: options),
+      );
+      expect(undefIncludeOut, contains('@include nope'));
+
+      _exerciseAllEntryPoints('@page { @include nope; }');
+      _exerciseAllEntryPoints('@page { @include ; }');
+      _exerciseAllEntryPoints('@mixin d { color: red; } @page { @include d; }');
+      final pageIncludeOut = prettyPrint(
+        compileCss(
+          '@mixin d { color: red; } @page { @include d; }',
+          opts: options,
+        ),
+      );
+      expect(pageIncludeOut, contains('color: #f00'));
+
+      final siblingExtendOut = prettyPrint(
+        compileCss('.a, .b { color: red; } .b { @extend .a; }', opts: options),
+      );
+      expect(siblingExtendOut, contains('.a, .b, .b {'));
+
+      final circularErrors = <Message>[];
+      compileCss(
+        '@mixin cyc { color: red; @include cyc; } .a { @include cyc; }',
+        errors: circularErrors,
+        opts: options,
+      );
+      expect(
+        circularErrors.map((e) => e.message),
+        contains('Circular @include for cyc'),
+      );
+
+      final deepIncludeErrors = <Message>[];
+      final deepIncludeCss = [
+        for (var i = 0; i < 66; i++)
+          '@mixin d$i { color: red; @include d${i + 1}; }',
+        '@mixin d66 { color: blue; }',
+        '.a { @include d0; }',
+      ].join('\n');
+      compile(deepIncludeCss, errors: deepIncludeErrors);
+      expect(
+        deepIncludeErrors.map((e) => e.message),
+        contains('@include depth exceeded 64 for d64'),
+      );
+
+      final manyIncludeErrors = <Message>[];
+      final manyIncludeCss = [
+        '@mixin m0 { .x { color: red; } }',
+        for (var i = 1; i <= 14; i++)
+          '@mixin m$i { @include m${i - 1}; @include m${i - 1}; }',
+        '@include m14;',
+      ].join('\n');
+      compileCss(manyIncludeCss, errors: manyIncludeErrors, opts: options);
+      expect(
+        manyIncludeErrors.map((e) => e.message),
+        contains(startsWith('@include expansions exceeded 4096 for ')),
+      );
+
+      final deepExtendErrors = <Message>[];
+      final deepExtendCss = [
+        '.s0 { color: red; }',
+        for (var i = 1; i <= 70; i++) '.s$i { @extend .s${i - 1}; }',
+      ].join('\n');
+      compileCss(deepExtendCss, errors: deepExtendErrors, opts: options);
+      expect(
+        deepExtendErrors.map((e) => e.message),
+        contains('@extend depth exceeded 64'),
+      );
+    });
   });
 }

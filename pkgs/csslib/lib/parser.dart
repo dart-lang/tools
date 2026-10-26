@@ -1281,7 +1281,7 @@ class _Parser {
 
     _eat(TokenKind.LBRACE);
 
-    var decls = <Declaration>[];
+    var decls = <TreeNode>[];
     var dartStyles =
         <DartStyleExpression>[]; // List of latest styles exposed to Dart.
 
