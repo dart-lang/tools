@@ -120,16 +120,52 @@ Map<String, Object?> generateRequestBody({
 
 /// Returns a Map of environment variables that should be included in processes
 /// that spawn a Dash sub-tool.
+///
+/// Sets `DASH__TOOL` to the label of the root tool, the user's entry point,
+/// resolved for [currentTool]. A shared component therefore passes on its own
+/// root tool, never itself. If no root tool resolves, `DASH__TOOL` is left out,
+/// even if this process inherited a value for it.
+///
+/// The root tool is resolved from `DASH__TOOL` and [currentTool] only. A
+/// `fallbackRootTool` passed to the `Analytics` factories isn't used here, so
+/// a shared component that relies on one passes on no `DASH__TOOL`.
 Map<String, String> getEnvironment({
   required DashTool currentTool,
   bool suppressAnalytics = false,
-}) => {
-  ...io.Platform.environment,
-  DashEnvVar.suppressAnalytics.name: areAnalyticsSuppressed(
-    defaultValue: suppressAnalytics,
-  ).toString(),
-  DashEnvVar.tool.name: topLevelTool(current: currentTool).name,
-};
+}) => getEnvironmentIn(
+  io.Platform.environment,
+  currentTool: currentTool,
+  suppressAnalytics: suppressAnalytics,
+);
+
+/// Returns the variables to pass to a Dash sub-tool, starting from
+/// [environment].
+///
+/// Builds the map the same way as [getEnvironment].
+///
+/// This isn't exported from the package. Production code should call
+/// [getEnvironment], which always reads the real process environment.
+Map<String, String> getEnvironmentIn(
+  Map<String, String> environment, {
+  required DashTool currentTool,
+  bool suppressAnalytics = false,
+}) {
+  final rootTool = resolveRootToolIn(environment, tool: currentTool);
+  final result = {
+    ...environment,
+    DashEnvVar.suppressAnalytics.name: areAnalyticsSuppressedIn(
+      environment,
+      defaultValue: suppressAnalytics,
+    ).toString(),
+  };
+  if (rootTool != null) {
+    result[DashEnvVar.tool.name] = rootTool.label;
+  } else {
+    // Don't pass on an inherited value that isn't a valid root tool.
+    result.remove(DashEnvVar.tool.name);
+  }
+  return result;
+}
 
 /// This will use environment variables to get the user's
 /// home directory where all the directory will be created that will
@@ -310,19 +346,85 @@ bool surveySnoozedOrDismissed(
 
 /// Returns the top-level tool from the environment variable `DASH__TOOL`.
 ///
-/// If the environment variable is set and valid, return the corresponding
-/// [DashTool]. Otherwise, return the [current] tool.
-DashTool topLevelTool({required DashTool current}) {
-  final toolValue = io.Platform.environment[DashEnvVar.tool.name];
+/// If the environment variable is set, valid, and names a tool that
+/// [DashTool.canBeRootTool], return the corresponding [DashTool]. Otherwise,
+/// return the [current] tool.
+///
+/// Deprecated: tools no longer need to read `DASH__TOOL` themselves. Pass the
+/// tool's own [DashTool] to `Analytics`, which resolves the root tool, and
+/// use [getEnvironment] to pass the root tool on to child processes.
+@Deprecated(
+  'Pass your own tool to Analytics, which resolves the root tool from '
+  'DASH__TOOL, and use getEnvironment() for child processes.',
+)
+DashTool topLevelTool({required DashTool current}) =>
+    topLevelToolIn(io.Platform.environment, current: current);
+
+/// Returns the top-level tool named by the `DASH__TOOL` variable in
+/// [environment].
+///
+/// Resolves the tool the same way as [topLevelTool].
+///
+/// This isn't exported from the package. It exists so that the deprecated
+/// [topLevelTool] can be tested without the real process environment.
+DashTool topLevelToolIn(
+  Map<String, String> environment, {
+  required DashTool current,
+}) => resolveRootToolIn(environment, tool: current) ?? current;
+
+/// Resolves the root tool, the user's entry point, for events sent by [tool].
+///
+/// The root tool decides opt-in status and consent. Only a [DashTool] that
+/// [DashTool.canBeRootTool] can be the root tool. Resolves, in order:
+///
+/// 1. The tool named by the `DASH__TOOL` environment variable, if it's set
+///    and valid.
+/// 2. [fallbackRootTool], for callers that can work out the entry point
+///    another way when `DASH__TOOL` isn't set.
+/// 3. [tool] itself.
+///
+/// Returns `null` when [tool] is a shared component and no root tool can be
+/// resolved.
+///
+/// This isn't exported from the package. The `Analytics` factories resolve the
+/// root tool themselves, so tools only need to pass their own `tool` and,
+/// optionally, a `fallbackRootTool`.
+DashTool? resolveRootTool({
+  required DashTool tool,
+  DashTool? fallbackRootTool,
+}) => resolveRootToolIn(
+  io.Platform.environment,
+  tool: tool,
+  fallbackRootTool: fallbackRootTool,
+);
+
+/// Resolves the root tool for events sent by [tool], reading `DASH__TOOL`
+/// from [environment].
+///
+/// Resolves the root tool the same way as [resolveRootTool].
+///
+/// This isn't exported from the package. Production code should call
+/// [resolveRootTool], which always reads the real process environment.
+DashTool? resolveRootToolIn(
+  Map<String, String> environment, {
+  required DashTool tool,
+  DashTool? fallbackRootTool,
+}) {
+  final toolValue = environment[DashEnvVar.tool.name];
   if (toolValue != null) {
     try {
-      return DashTool.fromLabel(toolValue);
+      final envTool = DashTool.fromLabel(toolValue);
+      // Shared components can never be the root tool.
+      if (envTool.canBeRootTool) return envTool;
     } on Exception {
-      // Fallback to `current` if the value in ENV is invalid.
+      // Invalid value. Fall through to the fallbacks.
     }
   }
-
-  return current;
+  if (fallbackRootTool != null && fallbackRootTool.canBeRootTool) {
+    return fallbackRootTool;
+  }
+  // Only a tool, not a shared component, can be its own root.
+  return tool.canBeRootTool ? tool : null;
 }
 
 /// Due to some limitations for GA4, this function can be used to
