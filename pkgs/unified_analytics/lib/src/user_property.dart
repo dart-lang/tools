@@ -19,6 +19,10 @@ class UserProperty {
   final String? flutterVersion;
   final String dartVersion;
   final String tool;
+
+  /// The label of the root tool, the user's entry point, or `null` if no root
+  /// tool could be resolved.
+  final String? rootTool;
   final String hostOsVersion;
   final String locale;
   final String? clientIde;
@@ -42,6 +46,7 @@ class UserProperty {
     required this.flutterVersion,
     required this.dartVersion,
     required this.tool,
+    required this.rootTool,
     required this.hostOsVersion,
     required this.locale,
     required this.clientIde,
@@ -160,6 +165,7 @@ class UserProperty {
     'dart_version': dartVersion,
     'analytics_pkg_version': kPackageVersion,
     'tool': tool,
+    'root_tool': rootTool,
     'local_time': formatDateTime(clock.now()),
     'host_os_version': hostOsVersion,
     'locale': locale,
