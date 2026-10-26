@@ -543,7 +543,11 @@ class AnalyticsImpl implements Analytics {
     required bool firstRun,
     String? agent,
     this.isExternal = ie.isExternal,
-  }) : _gaClient = gaClient,
+  }) : assert(
+         rootTool == null || rootTool.canBeRootTool,
+         'rootTool must be a tool that can be a root tool.',
+       ),
+       _gaClient = gaClient,
        _surveyHandler = surveyHandler,
        _enableAsserts = enableAsserts,
        _clientIdFile = homeDirectory
