@@ -410,6 +410,10 @@ DashTool? resolveRootToolIn(
   required DashTool tool,
   DashTool? fallbackRootTool,
 }) {
+  assert(
+    fallbackRootTool == null || fallbackRootTool.canBeRootTool,
+    'fallbackRootTool must be a tool that can be a root tool.',
+  );
   final toolValue = environment[DashEnvVar.tool.name];
   if (toolValue != null) {
     try {
