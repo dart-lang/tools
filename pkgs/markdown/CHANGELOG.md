@@ -1,5 +1,7 @@
 ## 7.4.1-wip
 
+* Fix quadratic inline parsing time on inputs with many emphasis delimiters or
+  nested brackets (CVE-2026-34679 / GHSA-g6hw-h366-8h6m).
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on

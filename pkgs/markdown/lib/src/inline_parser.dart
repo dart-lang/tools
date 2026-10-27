@@ -318,24 +318,37 @@ class InlineParser {
 
   // Combine any remaining adjacent Text nodes. This is important to produce
   // correct output across newlines, where whitespace is sometimes compressed.
-  void _combineAdjacentText(List<Node> nodes) {
-    for (var i = 0; i < nodes.length - 1; i++) {
-      final node = nodes[i];
-      if (node is Element && node.children != null) {
-        _combineAdjacentText(node.children!);
-        continue;
-      }
-      if (node is Text && nodes[i + 1] is Text) {
-        final buffer = StringBuffer(
-          '${node.textContent}${nodes[i + 1].textContent}',
-        );
-        var j = i + 2;
-        while (j < nodes.length && nodes[j] is Text) {
-          buffer.write(nodes[j].textContent);
-          j++;
+  void _combineAdjacentText(List<Node> rootNodes) {
+    final stack = <List<Node>>[rootNodes];
+    while (stack.isNotEmpty) {
+      final nodes = stack.removeLast();
+      var writeIndex = 0;
+      for (var i = 0; i < nodes.length; i++) {
+        final node = nodes[i];
+        if (node is Element && node.children != null) {
+          stack.add(node.children!);
+          if (writeIndex != i) nodes[writeIndex] = node;
+          writeIndex++;
+        } else if (node is Text &&
+            i + 1 < nodes.length &&
+            nodes[i + 1] is Text) {
+          final buffer = StringBuffer(
+            '${node.textContent}${nodes[i + 1].textContent}',
+          );
+          var j = i + 2;
+          while (j < nodes.length && nodes[j] is Text) {
+            buffer.write(nodes[j].textContent);
+            j++;
+          }
+          nodes[writeIndex++] = Text(buffer.toString());
+          i = j - 1;
+        } else {
+          if (writeIndex != i) nodes[writeIndex] = node;
+          writeIndex++;
         }
-        nodes[i] = Text(buffer.toString());
-        nodes.removeRange(i + 1, j);
+      }
+      if (writeIndex != nodes.length) {
+        nodes.length = writeIndex;
       }
     }
   }
