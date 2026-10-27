@@ -232,6 +232,21 @@ a <!--
       );
     });
   });
+
+  test(
+    'unclosed inline link destinations and titles do not take quadratic time',
+    () {
+      const count = 8000;
+      final unclosedBracketed = '[a](<' * count;
+
+      final time = Stopwatch()..start();
+      expect(
+        markdownToHtml(unclosedBracketed),
+        '<p>${'[a](&lt;' * count}</p>\n',
+      );
+      expect(time.elapsedMilliseconds, lessThan(10000));
+    },
+  );
 }
 
 class _CountingLine extends Line {

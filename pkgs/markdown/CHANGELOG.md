@@ -1,5 +1,7 @@
 ## 7.4.1-wip
 
+* Fix quadratic scan-and-rewind time on repeated unclosed inline link
+  destinations and titles in `LinkSyntax`.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on
