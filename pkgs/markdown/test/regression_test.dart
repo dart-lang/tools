@@ -239,6 +239,7 @@ a <!--
       const count = 8000;
       final unclosedBare = '[a]((' * count;
       final unclosedBracketed = '[a](<' * count;
+      final unclosedParenTitle = '[a](b (' * count;
       final unbalancedBeforeTitle = '[a](b( "t")' * count;
 
       final time = Stopwatch()..start();
@@ -246,6 +247,10 @@ a <!--
       expect(
         markdownToHtml(unclosedBracketed),
         '<p>${'[a](&lt;' * count}</p>\n',
+      );
+      expect(
+        markdownToHtml(unclosedParenTitle),
+        '<p>$unclosedParenTitle</p>\n',
       );
       expect(
         markdownToHtml(unbalancedBeforeTitle),
