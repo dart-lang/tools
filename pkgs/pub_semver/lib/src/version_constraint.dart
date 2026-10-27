@@ -187,9 +187,11 @@ abstract class VersionConstraint {
   /// all versions.
   factory VersionConstraint.intersection(
       Iterable<VersionConstraint> constraints) {
-    var constraint = VersionRange();
+    VersionConstraint constraint = VersionRange();
     for (var other in constraints) {
-      constraint = constraint.intersect(other) as VersionRange;
+      constraint = constraint.intersect(other);
+      // Once the intersection is empty it cannot become non-empty again.
+      if (constraint.isEmpty) return VersionConstraint.empty;
     }
     return constraint;
   }

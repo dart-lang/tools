@@ -359,7 +359,7 @@ class InlineParser {
   /// Push [delimiter] onto the stack of [Delimiter]s.
   void pushDelimiter(Delimiter delimiter) => _delimiterStack.add(delimiter);
 
-  bool get isDone => pos == source.length;
+  bool get isDone => pos >= source.length;
 
   void advanceBy(int length) {
     pos += length;

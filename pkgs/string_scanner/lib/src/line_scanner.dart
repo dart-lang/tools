@@ -2,14 +2,14 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:meta/meta.dart';
+
 import 'charcode.dart';
+import 'span_scanner.dart';
 import 'string_scanner.dart';
 import 'utils.dart';
 
-// Note that much of this code is duplicated in eager_span_scanner.dart.
-
-/// A subclass of [StringScanner] that tracks line and column information.
-class LineScanner extends StringScanner {
+mixin _LineScanner on StringScanner {
   /// The scanner's current (zero-based) line number.
   int get line => _line;
   int _line = 0;
@@ -41,59 +41,21 @@ class LineScanner extends StringScanner {
 
   @override
   set position(int newPosition) {
-    if (newPosition == position) {
-      return;
-    }
-
     final oldPosition = position;
     super.position = newPosition;
+    if (newPosition == oldPosition) {
+      return;
+    }
 
     if (newPosition == 0) {
       _line = 0;
       _column = 0;
     } else if (newPosition > oldPosition) {
-      var newlines = 0;
-      var lastNewlineEnd = -1;
-      for (var i = oldPosition; i < newPosition; i++) {
-        final char = string.codeUnitAt(i);
-        if (char == $lf) {
-          newlines++;
-          lastNewlineEnd = i + 1;
-        } else if (char == $cr) {
-          final nextIsLf =
-              (i + 1 < newPosition && string.codeUnitAt(i + 1) == $lf) ||
-                  (i + 1 == newPosition &&
-                      newPosition < string.length &&
-                      string.codeUnitAt(newPosition) == $lf);
-          if (!nextIsLf) {
-            newlines++;
-            lastNewlineEnd = i + 1;
-          }
-        }
-      }
-      _line += newlines;
-      if (newlines == 0) {
-        _column += newPosition - oldPosition;
-      } else {
-        _column = newPosition - lastNewlineEnd;
-      }
+      _advancePosition(oldPosition, newPosition);
     } else {
       var newlines = 0;
       for (var i = newPosition; i < oldPosition; i++) {
-        final char = string.codeUnitAt(i);
-        if (char == $lf) {
-          newlines++;
-        } else if (char == $cr) {
-          if (i + 1 < oldPosition) {
-            if (string.codeUnitAt(i + 1) != $lf) newlines++;
-          } else {
-            // i + 1 == oldPosition
-            if (oldPosition >= string.length ||
-                string.codeUnitAt(oldPosition) != $lf) {
-              newlines++;
-            }
-          }
-        }
+        if (_isNewlineAt(i)) newlines++;
       }
       _line -= newlines;
 
@@ -102,14 +64,7 @@ class LineScanner extends StringScanner {
       } else {
         var offsetAfterLastNewline = 0;
         for (var i = newPosition - 1; i >= 0; i--) {
-          final char = string.codeUnitAt(i);
-          if (char == $lf) {
-            offsetAfterLastNewline = i + 1;
-            break;
-          } else if (char == $cr) {
-            if (i + 1 < string.length && string.codeUnitAt(i + 1) == $lf) {
-              continue;
-            }
+          if (_isNewlineAt(i)) {
             offsetAfterLastNewline = i + 1;
             break;
           }
@@ -119,7 +74,32 @@ class LineScanner extends StringScanner {
     }
   }
 
-  LineScanner(super.string, {super.sourceUrl, super.position});
+  /// Returns whether the character at [index] in [string] is a line break
+  /// (`\n`, or `\r` not immediately followed by `\n`).
+  bool _isNewlineAt(int index) {
+    final char = string.codeUnitAt(index);
+    return char == $lf ||
+        (char == $cr &&
+            (index + 1 == string.length ||
+                string.codeUnitAt(index + 1) != $lf));
+  }
+
+  void _advancePosition(int oldPosition, int newPosition) {
+    var newlines = 0;
+    var lastNewlineEnd = -1;
+    for (var i = oldPosition; i < newPosition; i++) {
+      if (_isNewlineAt(i)) {
+        newlines++;
+        lastNewlineEnd = i + 1;
+      }
+    }
+    _line += newlines;
+    if (newlines == 0) {
+      _column += newPosition - oldPosition;
+    } else {
+      _column = newPosition - lastNewlineEnd;
+    }
+  }
 
   @override
   bool scanChar(int character) {
@@ -154,47 +134,28 @@ class LineScanner extends StringScanner {
 
   @override
   bool scan(Pattern pattern) {
+    final oldPosition = position;
     if (!super.scan(pattern)) return false;
-
-    final match = lastMatch![0]!;
-    var newlines = 0;
-    var lastNewlineEnd = -1;
-    for (var i = 0; i < match.length; i++) {
-      final char = match.codeUnitAt(i);
-      if (char == $lf) {
-        newlines++;
-        lastNewlineEnd = i + 1;
-      } else if (char == $cr) {
-        if (i + 1 < match.length) {
-          if (match.codeUnitAt(i + 1) != $lf) {
-            newlines++;
-            lastNewlineEnd = i + 1;
-          }
-        } else {
-          // i + 1 == match.length
-          if (position >= string.length || string.codeUnitAt(position) != $lf) {
-            newlines++;
-            lastNewlineEnd = i + 1;
-          }
-        }
-      }
-    }
-
-    _line += newlines;
-    if (newlines == 0) {
-      _column += match.length;
-    } else {
-      _column = match.length - lastNewlineEnd;
-    }
-
+    _advancePosition(oldPosition, position);
     return true;
   }
 }
 
+/// A [StringScanner] that tracks line and column information.
+class LineScanner extends StringScanner with _LineScanner {
+  LineScanner(super.string, {super.sourceUrl, super.position});
+}
+
+/// A [SpanScanner] that tracks the line and column eagerly, like [LineScanner].
+@internal
+class EagerSpanScanner extends SpanScanner with _LineScanner {
+  EagerSpanScanner(super.string, {super.sourceUrl, super.position});
+}
+
 /// A class representing the state of a [LineScanner].
 class LineScannerState {
-  /// The [LineScanner] that created this.
-  final LineScanner _scanner;
+  /// The [StringScanner] that created this.
+  final StringScanner _scanner;
 
   /// The position of the scanner in this state.
   final int position;

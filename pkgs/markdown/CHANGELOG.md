@@ -1,9 +1,30 @@
 ## 7.4.1-wip
 
+* Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
+  `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
+  position cannot start a match. This makes inline parsing faster, mostly on
+  text with many spaces, punctuation marks, or CJK characters.
+* Fix quadratic parsing time on blocks of consecutive link reference
+  definitions by only consuming lines from `BlockParser` as needed for a
+  single definition rather than joining and re-splitting the remainder of the
+  block on every definition.
 * Fix quadratic parsing time on a long unbroken run of word characters (for
   example a single very long word). The plain-text accelerator regex required
   a trailing whitespace, so a run reaching the end of a line without one
   backtracked across the whole run at every position.
+* Fix `RangeError` in `LinkParser` when a link reference definition ends with a
+  trailing backslash (`\`) or an unclosed `<` destination at EOF.
+* Reject unbalanced parentheses and allow characters after balanced parentheses
+  in bare link reference destinations (`LinkParser`).
+* Fix `AssertionError('BlockParser.parseLines is not advancing')` when multiple
+  `BlockSyntax` rules (such as `TableSyntax` and `LinkReferenceDefinitionSyntax`)
+  match `canParse` on the same line and retreat without advancing.
+* Fix `TypeError` in `Document` when appending footnote backreferences to a
+  footnote definition that ends with a list block (`<ul>` or `<ol>`).
+* Fix a bug where nested lists inside a GitHub alert block (`> [!NOTE]`, etc.)
+  were flattened. `AlertBlockSyntax` stripped all whitespace following the
+  `>` marker instead of at most one space, discarding the indentation that
+  marks a list item as nested.
 
 ## 7.4.0
 

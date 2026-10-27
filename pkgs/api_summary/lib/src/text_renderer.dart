@@ -64,9 +64,15 @@ final class _ApiTextRenderer {
 
   String render() {
     final nodes = <Uri, Node<MemberSortKey>>{};
+    final experimentalUris = <Uri>{};
 
-    for (final library in _package.libraries) {
+    final sortedLibraries = _package.libraries.sortedByUri(_package.name);
+
+    for (final library in sortedLibraries) {
       final uri = Uri.parse(library.uri);
+      if (library.isExperimental) {
+        experimentalUris.add(uri);
+      }
       final node = nodes[uri] = Node<MemberSortKey>();
       _renderLibrary(library, node);
     }
@@ -100,7 +106,14 @@ final class _ApiTextRenderer {
 
     final sortedNodes = [
       for (final entry in nodes.entries)
-        (UriSortKey(entry.key, _package.name), entry.value),
+        (
+          UriSortKey(
+            entry.key,
+            _package.name,
+            isExperimental: experimentalUris.contains(entry.key),
+          ),
+          entry.value,
+        ),
     ];
 
     final stringBuffer = StringBuffer();

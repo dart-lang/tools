@@ -72,6 +72,26 @@ abstract class Expression implements Spec {
     '',
   );
 
+  /// Accesses the index operator (`[]`) on `this` via a cascade (`..`).
+  Expression cascadeIndex(Expression index) => BinaryExpression._(
+    this,
+    CodeExpression(Block.of([const Code('['), index.code, const Code(']')])),
+    '..',
+    addSpace: false,
+  );
+
+  /// Accesses the index operator (`[]`) on `this` via a null-aware cascade
+  /// (`?..`).
+  ///
+  /// Only the first cascade in a chain needs to use `?..`; subsequent
+  /// cascades in the same chain should use [cascadeIndex] or [cascade].
+  Expression nullSafeCascadeIndex(Expression index) => BinaryExpression._(
+    this,
+    CodeExpression(Block.of([const Code('['), index.code, const Code(']')])),
+    '?..',
+    addSpace: false,
+  );
+
   /// Returns the result of `this` `is` [other].
   Expression isA(Expression other) => BinaryExpression._(this, other, 'is');
 
@@ -297,6 +317,17 @@ abstract class Expression implements Spec {
     this,
     LiteralExpression._(name),
     '..',
+    addSpace: false,
+  );
+
+  /// Returns an expression accessing `?..<name>` on this expression.
+  ///
+  /// Only the first cascade in a chain needs to use `?..`; subsequent
+  /// cascades in the same chain should use [cascade].
+  Expression nullSafeCascade(String name) => BinaryExpression._(
+    this,
+    LiteralExpression._(name),
+    '?..',
     addSpace: false,
   );
 

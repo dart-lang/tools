@@ -44,6 +44,7 @@ class ColorSwatchSyntax extends InlineSyntax {
 
   @override
   bool tryMatch(InlineParser parser, [int? startMatchPos]) {
+    if (parser.charAt(parser.pos) != $backquote) return false;
     if (parser.pos > 0 && parser.charAt(parser.pos - 1) == $backquote) {
       // Not really a match! We can't just sneak past one backtick to try the
       // next character. An example of this situation would be:

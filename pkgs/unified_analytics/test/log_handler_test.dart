@@ -241,7 +241,11 @@ void main() {
     expect(analytics.sentEvents.last, testEvent);
     expect(secondLogFileStats, isNotNull);
     expect(secondLogFileStats!.recordCount, kLogFileLength);
-    expect(logFile.readAsLinesSync()[0].trim(), isNot('{{'));
+    expect(
+      logFile.readAsLinesSync().length,
+      kLogFileLength + 1,
+      reason: 'The file is append only until it is trimmed',
+    );
   });
 
   test('Catches and discards any FileSystemException raised from attempting '
@@ -322,6 +326,84 @@ void main() {
 
     logHandler.save(data: data);
     expect(wroteDataToLogFile, isTrue);
+  });
+
+  test('does not read the log file if smaller than kLogFileTrimSize', () {
+    var readLogFile = false;
+    var wroteDataToLogFile = false;
+    final logFile = _FakeFile('log.txt')
+      .._readAsLinesSyncImpl = () {
+        readLogFile = true;
+        return [];
+      }
+      .._statSyncImpl = (() => _FakeFileStat(kLogFileTrimSize))
+      .._writeAsStringSync = (contents, {mode = FileMode.append}) {
+        expect(mode, FileMode.writeOnlyAppend);
+        wroteDataToLogFile = true;
+      };
+    final logHandler = LogHandler(logFile: logFile);
+
+    logHandler.save(data: const {});
+    expect(readLogFile, isFalse);
+    expect(wroteDataToLogFile, isTrue);
+  });
+
+  test('trims the log file to its newest records', () {
+    final logFile = fs.file('trim.log')..createSync();
+    const trimSize = 1000;
+    final logHandler = LogHandler(logFile: logFile, trimSize: trimSize);
+
+    const count = 200;
+    for (var i = 0; i < count; i++) {
+      logHandler.save(data: {'i': i});
+      expect(
+        logFile.lengthSync(),
+        lessThan(trimSize + 20),
+        reason: 'The file is trimmed once past the trim size',
+      );
+    }
+
+    final lines = logFile.readAsLinesSync();
+    final indexes = [
+      for (final line in lines)
+        (jsonDecode(line) as Map<String, Object?>)['i'] as int,
+    ];
+    expect(indexes.last, count - 1);
+    expect(indexes, [
+      for (var i = count - indexes.length; i < count; i++) i,
+    ], reason: 'The newest records are kept, whole and in order');
+    expect(
+      fs.directory('.').listSync().map((e) => e.basename),
+      isNot(contains(endsWith('.tmp'))),
+      reason: 'The temporary file is renamed over the log file',
+    );
+  });
+
+  test('a failed trim keeps the log file and still saves', () {
+    final fs = MemoryFileSystem.test(
+      opHandle: (context, operation) {
+        if (context.endsWith('.tmp') && operation == FileSystemOp.write) {
+          throw FileSystemException('write failed', context);
+        }
+      },
+    );
+    final logFile = fs.file('trim.log')..createSync();
+    const trimSize = 1000;
+    final logHandler = LogHandler(logFile: logFile, trimSize: trimSize);
+
+    const count = 200;
+    for (var i = 0; i < count; i++) {
+      logHandler.save(data: {'i': i});
+    }
+
+    final lines = logFile.readAsLinesSync();
+    expect(lines, hasLength(count), reason: 'Every record is still saved');
+    expect(jsonDecode(lines.last), {'i': count - 1});
+    expect(
+      fs.directory('.').listSync().map((e) => e.basename),
+      isNot(contains(endsWith('.tmp'))),
+      reason: 'The temporary file is deleted after a failed trim',
+    );
   });
 
   test('Catching cast errors for each log record silently', () async {

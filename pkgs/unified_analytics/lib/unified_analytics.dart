@@ -11,6 +11,7 @@ export 'src/survey_handler.dart' show Survey, SurveyButton, SurveyHandler;
 export 'src/utils.dart'
     show
         areAnalyticsSuppressed,
+        areAnalyticsSuppressedIn,
         getEnvironment,
         parseDartSDKVersion,
         topLevelTool;

@@ -1,3 +1,10 @@
+## 2.4.1-wip
+
+- Align the hot loops in `BenchmarkBase.exercise` and `measureForImpl` with
+  `@pragma('vm:align-loops')`, so that AOT results don't flip with unrelated
+  code layout changes. See https://github.com/dart-lang/sdk/issues/64423.
+- Migrate `bench` command Dart subprocess spawning to `package:cli_util` (`dartExecutable`) to support AOT-compiled executables (`dart compile exe` / `dart install`).
+
 ## 2.4.0
 
 - Added a `bench` command.

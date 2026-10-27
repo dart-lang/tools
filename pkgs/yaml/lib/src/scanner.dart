@@ -157,6 +157,13 @@ class Scanner {
   /// parser to tell that the key is intended to be a mapping key.
   final _simpleKeys = <_SimpleKey?>[null];
 
+  /// The first live key in [_simpleKeys], or `null` if there is none.
+  ///
+  /// Keys are saved in increasing token order by flow level, so this is the
+  /// live key with the smallest token number. Tracking it avoids walking every
+  /// open flow level for each token.
+  _SimpleKey? _earliestSimpleKey;
+
   /// The current indentation level.
   int get _indent => _indentLevels.last.column;
 
@@ -234,13 +241,13 @@ class Scanner {
 
   /// Whether the character at the current position is a hexidecimal
   /// digit.
-  bool get _isHex {
-    var char = _scanner.peekChar();
-    if (char == null) return false;
-    return (char >= NUMBER_0 && char <= NUMBER_9) ||
-        (char >= LETTER_A && char <= LETTER_F) ||
-        (char >= LETTER_CAP_A && char <= LETTER_CAP_F);
-  }
+  bool get _isHex => _isHexChar(_scanner.peekChar());
+
+  bool _isHexChar(int? char) =>
+      char != null &&
+      ((char >= NUMBER_0 && char <= NUMBER_9) ||
+          (char >= LETTER_A && char <= LETTER_F) ||
+          (char >= LETTER_CAP_A && char <= LETTER_CAP_F));
 
   /// Whether the character at the current position is a plain character.
   ///
@@ -328,10 +335,7 @@ class Scanner {
         // If the current token could be a simple key, we need to scan more
         // tokens until we determine whether it is or not. Otherwise we might
         // not emit the `KEY` token before we emit the value of the key.
-        if (!_simpleKeys
-            .any((key) => key != null && key.tokenNumber == _tokensParsed)) {
-          break;
-        }
+        if (_earliestSimpleKey?.tokenNumber != _tokensParsed) break;
       }
 
       _fetchNextToken();
@@ -470,61 +474,53 @@ class Scanner {
   /// Checks the list of potential simple keys and remove the positions that
   /// cannot contain simple keys anymore.
   void _staleSimpleKeys() {
-    for (var i = 0; i < _simpleKeys.length; i++) {
-      var key = _simpleKeys[i];
-      if (key == null) continue;
+    // Simple keys are only staled in the block context, where there is a
+    // single level.
+    if (!_inBlockContext) return;
+    var key = _simpleKeys.single;
+    if (key == null) return;
 
-      // libyaml requires that all simple keys be a single line and no longer
-      // than 1024 characters. However, in section 7.4.2 of the spec
-      // (http://yaml.org/spec/1.2/spec.html#id2790832), these restrictions are
-      // only applied when the curly braces are omitted. It's difficult to
-      // retain enough context to know which keys need to have the restriction
-      // placed on them, so for now we go the other direction and allow
-      // everything but multiline simple keys in a block context.
-      if (!_inBlockContext) continue;
+    // libyaml requires that all simple keys be a single line and no longer
+    // than 1024 characters. However, in section 7.4.2 of the spec
+    // (http://yaml.org/spec/1.2/spec.html#id2790832), these restrictions are
+    // only applied when the curly braces are omitted. It's difficult to
+    // retain enough context to know which keys need to have the restriction
+    // placed on them, so for now we go the other direction and allow
+    // everything but multiline simple keys in a block context.
+    if (key.line == _scanner.line) return;
 
-      if (key.line == _scanner.line) continue;
-
-      if (key.required) {
-        final keyIndentIdx = _indentLevels
-            .lastIndexWhere((indent) => indent.column == key.column);
-        final inBlockSequence = keyIndentIdx >= 0 &&
-            _indentLevels[keyIndentIdx].type == TokenType.blockSequenceStart;
-        final message = StringBuffer("Expected ':'.");
-        if (inBlockSequence) {
-          message.write(" If this is a list entry, it must start with '- '.");
-        }
-        _reportError(YamlException(message.toString(), _scanner.emptySpan));
-        _tokens.insert(key.tokenNumber - _tokensParsed,
-            Token(TokenType.key, key.location.pointSpan() as FileSpan));
+    if (key.required) {
+      final inBlockSequence =
+          _indentLevels.last.type == TokenType.blockSequenceStart;
+      final message = StringBuffer("Expected ':'.");
+      if (inBlockSequence) {
+        message.write(" If this is a list entry, it must start with '- '.");
       }
-
-      _simpleKeys[i] = null;
+      _reportError(YamlException(message.toString(), _scanner.emptySpan));
+      _tokens.insert(key.tokenNumber - _tokensParsed,
+          Token(TokenType.key, key.location.pointSpan() as FileSpan));
     }
+
+    _clearLastSimpleKey();
   }
 
   /// Checks if a simple key may start at the current position and saves it if
   /// so.
   void _saveSimpleKey() {
+    if (!_simpleKeyAllowed) return;
+
     // A simple key is required at the current position if the scanner is in the
     // block context and the current column coincides with the indentation
     // level.
     var required = _inBlockContext && _indent == _scanner.column;
 
-    // A simple key is required only when it is the first token in the current
-    // line. Therefore it is always allowed. But we add a check anyway.
-    assert(_simpleKeyAllowed || !required);
-
-    if (!_simpleKeyAllowed) return;
-
     // If the current position may start a simple key, save it.
     _removeSimpleKey();
-    _simpleKeys[_simpleKeys.length - 1] = _SimpleKey(
-        _tokensParsed + _tokens.length,
-        _scanner.line,
-        _scanner.column,
-        _scanner.location,
+    final key = _SimpleKey(_tokensParsed + _tokens.length, _scanner.line,
+        _scanner.column, _scanner.location,
         required: required);
+    _simpleKeys[_simpleKeys.length - 1] = key;
+    _earliestSimpleKey ??= key;
   }
 
   /// Removes a potential simple key at the current flow level.
@@ -535,6 +531,14 @@ class Scanner {
           key.location.pointSpan());
     }
 
+    _clearLastSimpleKey();
+  }
+
+  /// Clears the key at the current flow level.
+  void _clearLastSimpleKey() {
+    if (identical(_simpleKeys.last, _earliestSimpleKey)) {
+      _earliestSimpleKey = null;
+    }
     _simpleKeys[_simpleKeys.length - 1] = null;
   }
 
@@ -546,6 +550,9 @@ class Scanner {
   /// Decreases the flow level.
   void _decreaseFlowLevel() {
     if (_inBlockContext) return;
+    if (identical(_simpleKeys.last, _earliestSimpleKey)) {
+      _earliestSimpleKey = null;
+    }
     _simpleKeys.removeLast();
   }
 
@@ -712,7 +719,7 @@ class Scanner {
           tokenNumber: simpleKey.tokenNumber);
 
       // Remove the simple key.
-      _simpleKeys[_simpleKeys.length - 1] = null;
+      _clearLastSimpleKey();
 
       // A simple key cannot follow another simple key.
       _simpleKeyAllowed = false;
@@ -966,14 +973,9 @@ class Scanner {
     var next = _scanner.peekChar();
     if (name.isEmpty ||
         (!_isBlankOrEnd &&
-            next != QUESTION &&
-            next != COLON &&
             next != COMMA &&
             next != RIGHT_SQUARE &&
-            next != RIGHT_CURLY &&
-            next != PERCENT &&
-            next != AT &&
-            next != GRAVE_ACCENT)) {
+            next != RIGHT_CURLY)) {
       throw YamlException(
           'Expected alphanumeric character.', _scanner.emptySpan);
     }
@@ -1010,7 +1012,8 @@ class Scanner {
       if (handle.length > 1 && handle.startsWith('!') && handle.endsWith('!')) {
         suffix = _scanTagUri(flowSeparators: false);
       } else {
-        suffix = _scanTagUri(head: handle, flowSeparators: false);
+        suffix =
+            _scanTagUri(head: handle, headStart: start, flowSeparators: false);
 
         // There was no explicit handle.
         if (suffix.isEmpty) {
@@ -1060,7 +1063,8 @@ class Scanner {
   /// [head] is the initial portion of the tag that's already been scanned.
   /// [flowSeparators] indicates whether the tag URI can contain flow
   /// separators.
-  String _scanTagUri({String? head, bool flowSeparators = true}) {
+  String _scanTagUri(
+      {String? head, LineScannerState? headStart, bool flowSeparators = true}) {
     var length = head == null ? 0 : head.length;
     var buffer = StringBuffer();
 
@@ -1077,6 +1081,7 @@ class Scanner {
     //
     // In a shorthand tag annotation, the flow separators ',', '[', and ']' are
     // disallowed.
+    var startState = headStart ?? _scanner.state;
     var start = _scanner.position;
     var char = _scanner.peekChar();
     while (_isTagChar ||
@@ -1086,8 +1091,31 @@ class Scanner {
       char = _scanner.peekChar();
     }
 
+    buffer.write(_scanner.substring(start));
+
     // libyaml manually decodes the URL, but we don't have to do that.
-    return Uri.decodeFull(_scanner.substring(start));
+    return _decodeTagUri(buffer.toString(), _scanner.spanFrom(startState));
+  }
+
+  /// Decodes a percent-encoded tag [uri], throwing a [YamlException] at [span]
+  /// if it contains malformed percent-encoding or invalid UTF-8 bytes.
+  String _decodeTagUri(String uri, FileSpan span) {
+    for (var i = 0; i < uri.length; i++) {
+      if (uri.codeUnitAt(i) == PERCENT) {
+        if (i + 2 >= uri.length ||
+            !_isHexChar(uri.codeUnitAt(i + 1)) ||
+            !_isHexChar(uri.codeUnitAt(i + 2))) {
+          throw YamlException('Expected 2-digit hexadecimal number.', span);
+        }
+        i += 2;
+      }
+    }
+
+    try {
+      return Uri.decodeFull(uri);
+    } on FormatException catch (error) {
+      throw YamlException(error.message, span);
+    }
   }
 
   /// Scans a block scalar.
@@ -1608,8 +1636,7 @@ class Scanner {
   }
 
   bool _isStandardCharacterAt(int offset) {
-    var first = _scanner.peekChar(offset);
-    if (first == null) return false;
+    var first = _scanner.peekChar(offset)!;
 
     if (isHighSurrogate(first)) {
       var next = _scanner.peekChar(offset + 1);
