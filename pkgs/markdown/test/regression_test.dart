@@ -237,12 +237,19 @@ a <!--
     'unclosed inline link destinations and titles do not take quadratic time',
     () {
       const count = 8000;
+      final unclosedBare = '[a]((' * count;
       final unclosedBracketed = '[a](<' * count;
+      final unbalancedBeforeTitle = '[a](b( "t")' * count;
 
       final time = Stopwatch()..start();
+      expect(markdownToHtml(unclosedBare), '<p>$unclosedBare</p>\n');
       expect(
         markdownToHtml(unclosedBracketed),
         '<p>${'[a](&lt;' * count}</p>\n',
+      );
+      expect(
+        markdownToHtml(unbalancedBeforeTitle),
+        '<p>${'[a](b( &quot;t&quot;)' * count}</p>\n',
       );
       expect(time.elapsedMilliseconds, lessThan(10000));
     },
