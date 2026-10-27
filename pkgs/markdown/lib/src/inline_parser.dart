@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:collection';
+
 import 'ast.dart';
 import 'charcode.dart';
 import 'document.dart';
@@ -53,7 +55,9 @@ class InlineParser {
 
   /// The delimiter stack tracking possible opening delimiters and closing
   /// delimiters for [DelimiterSyntax] nodes.
-  final _delimiterStack = <Delimiter>[];
+  final _delimiterStack = LinkedList<_DelimiterNode>();
+
+  int _nextDelimiterPos = 0;
 
   /// The tree of parsed HTML nodes.
   final _tree = <Node>[];
@@ -123,7 +127,7 @@ class InlineParser {
 
     // Write any trailing text content to a Text node.
     writeText();
-    _processDelimiterRun(-1);
+    _processDelimiterRun(null);
     _combineAdjacentText(_tree);
     return _tree;
   }
@@ -134,19 +138,22 @@ class InlineParser {
   /// This is the "look for link or image" routine from the CommonMark spec:
   /// https://spec.commonmark.org/0.31.2/#look-for-link-or-image.
   void _linkOrImage() {
-    final index = _delimiterStack.lastIndexWhere(
-      (d) => d.char == $lbracket || d.char == $exclamation,
-    );
-    if (index < 0) {
+    var bracketNode = _delimiterStack.lastOrNull;
+    while (bracketNode != null &&
+        bracketNode.delimiter.char != $lbracket &&
+        bracketNode.delimiter.char != $exclamation) {
+      bracketNode = bracketNode.previous;
+    }
+    if (bracketNode == null) {
       // Never found a possible open bracket. This is just a literal "]".
       addNode(Text(']'));
       advanceBy(1);
       start = pos;
       return;
     }
-    final delimiter = _delimiterStack[index] as SimpleDelimiter;
+    final delimiter = bracketNode.delimiter as SimpleDelimiter;
     if (!delimiter.isActive) {
-      _delimiterStack.removeAt(index);
+      bracketNode.unlink();
       addNode(Text(']'));
       advanceBy(1);
       start = pos;
@@ -160,7 +167,7 @@ class InlineParser {
         delimiter,
         null,
         getChildren: () {
-          _processDelimiterRun(index);
+          _processDelimiterRun(bracketNode);
           // All of the nodes which lie past [index] are children of this
           // link/image.
           final children = _tree.sublist(nodeIndex + 1, _tree.length);
@@ -169,17 +176,20 @@ class InlineParser {
         },
       );
       if (linkNodes != null) {
-        _delimiterStack.removeAt(index);
+        while (bracketNode.next != null) {
+          bracketNode.next!.unlink();
+        }
+        bracketNode.unlink();
         if (delimiter.char == $lbracket) {
-          for (final d in _delimiterStack.sublist(0, index)) {
-            if (d.char == $lbracket) d.isActive = false;
+          for (final d in _delimiterStack) {
+            if (d.delimiter.char == $lbracket) d.delimiter.isActive = false;
           }
         }
         _tree.replaceRange(nodeIndex, _tree.length, linkNodes);
         advanceBy(1);
         start = pos;
       } else {
-        _delimiterStack.removeAt(index);
+        bracketNode.unlink();
         pos = start;
         advanceBy(1);
       }
@@ -202,37 +212,41 @@ class InlineParser {
     }
   }
 
-  /// Processes [DelimiterRun] type delimiters from [bottomIndex] and up.
+  /// Processes [DelimiterRun] type delimiters from [bottom] and up.
   ///
   /// This is the same strategy as "process emphasis" routine according to the
   /// CommonMark spec: https://spec.commonmark.org/0.31.2/#phase-2-inline-structure.
-  void _processDelimiterRun(int bottomIndex) {
-    var currentIndex = bottomIndex + 1;
+  void _processDelimiterRun(_DelimiterNode? bottom) {
+    final bottomIndex = bottom?.pos ?? -1;
+    var next = bottom == null ? _delimiterStack.firstOrNull : bottom.next;
     // Track the lowest index where we might find an open delimiter given a
     // closing delimiter length modulo 3.
     // Each key in this map is an open delimiter character. Each value is a
     // 3-element list. Each value in the list is the lowest index for the given
     // delimiter length modulo 3 (0, 1, 2).
     final openersBottom = <int, List<int>>{};
-    while (currentIndex < _delimiterStack.length) {
-      final closer = _delimiterStack[currentIndex];
+    while (next != null) {
+      final current = next;
+      next = current.next;
+      final closer = current.delimiter;
       if (!closer.canClose || closer is! DelimiterRun) {
-        currentIndex++;
         continue;
       }
       openersBottom.putIfAbsent(closer.char, () => List.filled(3, bottomIndex));
       final openersBottomPerCloserLength = openersBottom[closer.char]!;
       final openerBottom = openersBottomPerCloserLength[closer.length % 3];
-      final openerIndex = _delimiterStack.lastIndexWhere(
-        (d) =>
-            d.char == closer.char && d.canOpen && _canFormEmphasis(d, closer),
-        currentIndex - 1,
-      );
-      if (openerIndex > bottomIndex && openerIndex > openerBottom) {
+      var openerNode = current.previous;
+      while (openerNode != null &&
+          openerNode.pos > openerBottom &&
+          !(openerNode.delimiter.char == closer.char &&
+              openerNode.delimiter.canOpen &&
+              _canFormEmphasis(openerNode.delimiter, closer))) {
+        openerNode = openerNode.previous;
+      }
+      if (openerNode != null && openerNode.pos > openerBottom) {
         // Found an opener for [closer].
-        final opener = _delimiterStack[openerIndex];
+        final opener = openerNode.delimiter;
         if (opener is! DelimiterRun) {
-          currentIndex++;
           continue;
         }
         final matchedTagIndex = opener.tags.lastIndexWhere(
@@ -241,7 +255,6 @@ class InlineParser {
               closer.length >= e.indicatorLength,
         );
         if (matchedTagIndex == -1) {
-          currentIndex++;
           continue;
         }
         final matchedTag = opener.tags[matchedTagIndex];
@@ -268,17 +281,16 @@ class InlineParser {
         // Slide [closerTextNodeIndex] back accordingly.
         closerTextNodeIndex = openerTextNodeIndex + 2;
 
-        _delimiterStack.removeRange(openerIndex + 1, currentIndex);
-        // Slide [currentIndex] back accordingly.
-        currentIndex = openerIndex + 1;
+        while (openerNode.next != current) {
+          openerNode.next!.unlink();
+        }
 
         // Remove delimiter characters, possibly removing nodes from the tree
         // and Delimiters from the delimiter stack.
         if (opener.length == indicatorLength) {
           _tree.removeAt(openerTextNodeIndex);
-          _delimiterStack.removeAt(openerIndex);
-          // Slide [currentIndex] and [closerTextNodeIndex] back accordingly.
-          currentIndex--;
+          openerNode.unlink();
+          // Slide [closerTextNodeIndex] back accordingly.
           closerTextNodeIndex--;
         } else {
           final newOpenerTextNode = Text(
@@ -290,30 +302,29 @@ class InlineParser {
 
         if (closer.length == indicatorLength) {
           _tree.removeAt(closerTextNodeIndex);
-          _delimiterStack.removeAt(currentIndex);
-          // [currentIndex] has just moved to point at the next delimiter;
-          // leave it.
+          current.unlink();
         } else {
           final newCloserTextNode = Text(
             closerTextNode.text.substring(indicatorLength),
           );
           _tree[closerTextNodeIndex] = newCloserTextNode;
           closer.node = newCloserTextNode;
-          // [currentIndex] needs to be considered again; leave it.
+          // [current] needs to be considered again; leave it.
+          next = current;
         }
       } else {
         // No opener is found.
-        openersBottomPerCloserLength[closer.length % 3] = currentIndex - 1;
+        openersBottomPerCloserLength[closer.length % 3] =
+            current.previous?.pos ?? -1;
         if (!closer.canOpen) {
-          _delimiterStack.removeAt(currentIndex);
-          // This advances [currentIndex] to the next delimiter.
-        } else {
-          currentIndex++;
+          current.unlink();
         }
       }
     }
 
-    _delimiterStack.removeRange(bottomIndex + 1, _delimiterStack.length);
+    while (_delimiterStack.isNotEmpty && _delimiterStack.last != bottom) {
+      _delimiterStack.last.unlink();
+    }
   }
 
   // Combine any remaining adjacent Text nodes. This is important to produce
@@ -370,7 +381,8 @@ class InlineParser {
   }
 
   /// Push [delimiter] onto the stack of [Delimiter]s.
-  void pushDelimiter(Delimiter delimiter) => _delimiterStack.add(delimiter);
+  void pushDelimiter(Delimiter delimiter) =>
+      _delimiterStack.add(_DelimiterNode(delimiter, _nextDelimiterPos++));
 
   bool get isDone => pos >= source.length;
 
@@ -384,4 +396,11 @@ class InlineParser {
   }
 
   bool get encodeHtml => document.encodeHtml;
+}
+
+final class _DelimiterNode extends LinkedListEntry<_DelimiterNode> {
+  final Delimiter delimiter;
+  final int pos;
+
+  _DelimiterNode(this.delimiter, this.pos);
 }
