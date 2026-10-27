@@ -1,5 +1,7 @@
 ## 7.4.1-wip
 
+* Enforce the 999-character CommonMark limit on reference link labels in
+  `LinkSyntax`.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on
