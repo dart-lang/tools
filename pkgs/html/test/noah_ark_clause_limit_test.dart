@@ -22,4 +22,14 @@ void main() {
       parse(payloadStr);
     });
   }, timeout: const Timeout(Duration(seconds: 10)));
+
+  test('parse() limits elementInScope backwards scan', () async {
+    final payloadStr = '<div>' * 50000;
+
+    // This will reliably timeout on unpatched versions because Isolate.run
+    // frees the main event loop to trigger the test framework's timer.
+    await Isolate.run(() {
+      parse(payloadStr);
+    });
+  }, timeout: const Timeout(Duration(seconds: 10)));
 }

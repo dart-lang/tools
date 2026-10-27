@@ -31,6 +31,11 @@ class ActiveFormattingElements extends ListProxy<Element?> {
 
 /// Basic treebuilder implementation.
 class TreeBuilder {
+  /// Upper bound on how many open elements [elementInScope] scans backwards.
+  ///
+  /// Prevents O(N^2) parse time on deeply nested non-scoping elements.
+  static const int scopeScanLimit = 512;
+
   final String? defaultNamespace;
 
   late Document document;
@@ -102,13 +107,15 @@ class TreeBuilder {
       }
     }
 
+    var scanned = 0;
     for (var node in openElements.reversed) {
       if (!exactNode && node.localName == target ||
           exactNode && node == target) {
         return true;
       } else if (invert !=
-          (setElements1.contains(getElementNameTuple(node)) ||
-              setElements2.contains(getElementNameTuple(node)))) {
+              (setElements1.contains(getElementNameTuple(node)) ||
+                  setElements2.contains(getElementNameTuple(node))) ||
+          ++scanned >= scopeScanLimit) {
         return false;
       }
     }
