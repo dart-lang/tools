@@ -5,7 +5,6 @@
 import '../ast.dart';
 import '../block_parser.dart';
 import '../document.dart';
-import '../line.dart';
 import '../link_parser.dart';
 import '../patterns.dart';
 import '../util.dart';
@@ -22,32 +21,10 @@ class LinkReferenceDefinitionSyntax extends BlockSyntax {
 
   @override
   Node? parse(BlockParser parser) {
-    final lines = <Line>[parser.current];
-    parser.advance();
-
-    while (!BlockSyntax.isAtBlockEnd(parser)) {
-      lines.add(parser.current);
-      parser.advance();
-    }
-
-    if (!_parseLinkReferenceDefinition(lines, parser)) {
-      parser.retreatBy(lines.length);
-    }
-
-    return null;
-  }
-
-  bool _parseLinkReferenceDefinition(List<Line> lines, BlockParser parser) {
-    final linkParser = LinkParser(lines.map((e) => e.content).join('\n'))
-      ..parseDefinition();
-
+    final linkParser = LinkParser(parser)..parseDefinition();
     if (!linkParser.valid) {
-      return false;
+      return null;
     }
-
-    // Retreat the parsing position back to where the link reference definition
-    // ends, so that the next syntax can continue parsing from there.
-    parser.retreatBy(linkParser.unconsumedLines);
 
     final labelString = normalizeLinkLabel(linkParser.label!);
 
@@ -57,6 +34,6 @@ class LinkReferenceDefinitionSyntax extends BlockSyntax {
           LinkReference(labelString, linkParser.destination!, linkParser.title),
     );
 
-    return true;
+    return null;
   }
 }

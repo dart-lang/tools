@@ -20,6 +20,11 @@ export 'src/api_summary_customizer.dart'
 export 'src/api_type.dart';
 export 'src/js_facet.dart';
 export 'src/meta_facet.dart';
+export 'src/verify.dart'
+    show
+        ApiSummaryFormat,
+        ApiSummaryVerificationException,
+        expectApiSummaryClean;
 
 /// Creates a canonical [ApiSummary] model of the public API of a package.
 ///
@@ -36,10 +41,11 @@ Future<ApiSummary> apiSummary(
   String? packageName,
   ApiSummaryCustomizer? customizer,
 }) async {
-  final pubspec = _extractPubspecDetails(packagePath);
+  final resolvedPackagePath = p.normalize(p.absolute(packagePath));
+  final pubspec = _extractPubspecDetails(resolvedPackagePath);
   final resolvedPackageName = packageName ?? pubspec.name;
   final provider = PhysicalResourceProvider.INSTANCE;
-  final libPath = provider.pathContext.join(packagePath, 'lib');
+  final libPath = provider.pathContext.join(resolvedPackagePath, 'lib');
   if (!provider.getFolder(libPath).exists) {
     throw ArgumentError('No "lib" directory found for "$packagePath".');
   }

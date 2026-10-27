@@ -1,6 +1,14 @@
 ## 3.2.0-wip
 
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
+* Improve error messages when mixing list and key-value syntax.
+* Preserve scanned local tag names and throw `YamlException` on malformed or
+  non-UTF-8 percent-encoded tag URIs.
+* Support single-digit `!!float` scalars and throw `YamlException` instead of
+  `RangeError` on empty or invalid single-character `!!int` and `!!float`
+  scalars.
+* Speed up scanning deeply nested flow collections: the scanner no longer
+  walks every open flow level for each token.
 
 ## 3.1.4
 

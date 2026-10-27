@@ -60,6 +60,7 @@ void main() async {
     'extensions/footnote_block.unit',
     blockSyntaxes: [const FootnoteDefSyntax()],
   );
+  testFile('extensions/disallowed_raw_html.unit', enableTagfilter: true);
 
   testDirectory('common_mark');
   testDirectory('gfm');

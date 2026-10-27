@@ -214,7 +214,7 @@ Future<Set<int>?> _runDialog(
     // Handle Ctrl+C and abort the dialog.
     final sigintSub = ProcessSignal.sigint.watch().listen((_) {
       if (!doneCompleter.isCompleted) {
-        doneCompleter.complete(null);
+        doneCompleter.complete();
       }
     });
     cleanupTasks.add(sigintSub.cancel);
@@ -252,7 +252,7 @@ Future<Set<int>?> _runDialog(
           doneCompleter.complete(selection());
           return;
         case Key.quit:
-          doneCompleter.complete(null);
+          doneCompleter.complete();
           return;
       }
       render();

@@ -171,13 +171,13 @@ class BlockParser {
     // For example the `TableSyntax` might not advance the `_pos` in `parse`
     // method, beause of the header row does not match the delimiter row in the
     // number of cells, which makes a table like structure not be recognized.
-    BlockSyntax? neverMatch;
+    final neverMatch = <BlockSyntax>[];
 
     var iterationsWithoutProgress = 0;
     while (!isDone) {
       final positionBefore = _pos;
       for (final syntax in blockSyntaxes) {
-        if (neverMatch == syntax) {
+        if (neverMatch.contains(syntax)) {
           continue;
         }
 
@@ -188,7 +188,11 @@ class BlockParser {
           if (block != null) {
             blocks.add(block);
           }
-          neverMatch = _pos != positionBefore ? null : syntax;
+          if (_pos != positionBefore) {
+            neverMatch.clear();
+          } else {
+            neverMatch.add(syntax);
+          }
 
           if (block != null ||
               syntax is EmptyBlockSyntax ||

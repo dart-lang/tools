@@ -30,6 +30,55 @@ void main() {
           \tbar"
           error'''), throwsA(isNot(tabError)));
     });
+
+    Matcher yamlError(String message, int line, int column) =>
+        isA<YamlException>()
+            .having((e) => e.message, 'message', message)
+            .having((e) => e.span!.start.line, 'line', line)
+            .having((e) => e.span!.start.column, 'column', column)
+            .having((e) => e.span!.length, 'span length', 0);
+
+    test('a list entry in a block mapping', () {
+      expect(
+          () => loadYaml('linter:\n'
+              '  rules:\n'
+              '    close_sinks: false\n'
+              '    - empty_statements\n'),
+          throwsA(yamlError(
+              'Expected a key while parsing a block mapping. '
+              'You cannot mix list and key-value syntax in the same '
+              'collection.',
+              3,
+              4)));
+    });
+
+    test('a mapping entry in a block sequence', () {
+      expect(
+          () => loadYaml('linter:\n'
+              '  rules:\n'
+              '    - empty_statements\n'
+              '    close_sinks: false\n'),
+          throwsA(yamlError(
+              "While parsing a block collection, expected '-'. "
+              'You cannot mix list and key-value syntax in the same '
+              'collection.',
+              3,
+              15)));
+    });
+
+    test('a block scalar where a mapping key is expected', () {
+      expect(
+          () => loadYaml('a: 1\n|\n  b\n'),
+          throwsA(yamlError(
+              'Expected a key while parsing a block mapping.', 1, 0)));
+    });
+
+    test('a block scalar where a list entry is expected', () {
+      expect(
+          () => loadYaml('- a\n|\n  b\n'),
+          throwsA(yamlError(
+              "While parsing a block collection, expected '-'.", 1, 0)));
+    });
   });
 
   group('refuses', () {
@@ -1105,6 +1154,71 @@ void main() {
         First occurrence: &anchor Value
         Second occurrence: *anchor''');
     });
+
+    test('rejects malformed percent-encoding in tag URIs with YamlException',
+        () {
+      for (var input in [
+        '!<%> foo',
+        '!a!% foo',
+        '%TAG ! tag:%\n---\n!foo bar',
+        '!% foo',
+        '!<%GG> foo',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
+
+    test(
+        'rejects invalid UTF-8 percent-encoding in tag URIs with YamlException',
+        () {
+      for (var input in [
+        '!<%C3%28> foo',
+        '!%C3%28 foo',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
+
+    test('rejects undefined local tags with YamlException', () {
+      for (var input in [
+        '!custom 123',
+        '!<custom> 123',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+
+      // When %TAG ! is mapped to the standard YAML tag prefix, shorthand !str
+      // and !int tags resolve through the primary handle.
+      expectYamlLoads(['12', 12], '''
+        %TAG ! tag:yaml.org,2002:
+        ---
+        - !str 12
+        - !int "12"''');
+    });
+
+    test('handles block sequence, simple key, and CRLF edge cases cleanly', () {
+      for (var input in [
+        '- :?\t-\r:',
+        'a: "\r\n:',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+
+      expect(
+          loadYaml('?\r-'),
+          deepEquals(deepEqualsMap({
+            [null]: null
+          })));
+      expect(loadYamlNode('?\r-'), isA<YamlMap>());
+      expect(loadYaml('-\n...'), equals([null]));
+      expect(loadYamlNode('-\n...'), isA<YamlList>());
+      expect(loadYaml(':?\t'), equals(':?'));
+      expect(loadYamlNode(':?\t'), isA<YamlScalar>());
+    });
   });
 
   // Chapter 7: Flow Styles
@@ -1892,7 +2006,36 @@ void main() {
         positive: !!float 2.3e4
         infinity: !!float .inf
         not a number: !!float .nan''');
-    }, skip: 'Fails for single digit float');
+    });
+
+    test('rejects empty and invalid 1-character !!int and !!float scalars', () {
+      for (var input in [
+        '!!int',
+        '!!int ""',
+        '- !!int\n',
+        '!!float',
+        '!!float ""',
+        '- !!float\n',
+        '!!float a',
+        '!!float .',
+        '!!float -',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
+
+    test(
+        'rejects unseparated content after a multiline quoted scalar at block '
+        'indent', () {
+      for (var input in [
+        ' a: "\n"b',
+        " a: '\n'b",
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
 
     test('[Example 10.8]', () {
       expectYamlStreamLoads([

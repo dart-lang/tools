@@ -16,7 +16,7 @@ Map<String, Dependency> parseDeps(Map? source) =>
       try {
         value = _fromJson(v, k);
       } on CheckedFromJsonException catch (e) {
-        if (e.map is! YamlMap) {
+        if (v is! Map || (source is YamlMap && e.map is! YamlMap)) {
           // This is likely a "synthetic" map created from a String value
           // Use `source` to throw this exception with an actual YamlMap and
           // extract the associated error information.
@@ -81,8 +81,14 @@ Dependency? _fromJson(Object? data, String name) {
         final key = matchedKeys.single;
 
         return switch (key) {
-          'git' => GitDependency.fromData(data[key]),
-          'path' => PathDependency.fromData(data[key]),
+          'git' => GitDependency.fromData(
+            data[key],
+            version: _optionalConstraintFromData(data, 'GitDependency'),
+          ),
+          'path' => PathDependency.fromData(
+            data[key],
+            version: _optionalConstraintFromData(data, 'PathDependency'),
+          ),
           'sdk' => _$SdkDependencyFromJson(data),
           'hosted' => _$HostedDependencyFromJson(
             data,
@@ -131,18 +137,68 @@ class GitDependency extends Dependency {
   final String? ref;
   final String? path;
 
-  GitDependency(this.url, {this.ref, this.path});
+  /// A pattern used to find version tagged commits in the repository.
+  ///
+  /// Must contain a single `{{version}}` marker, for example `v{{version}}`.
+  /// Cannot be combined with [ref].
+  ///
+  /// See https://dart.dev/tools/pub/dependencies#git-packages.
+  final String? tagPattern;
 
-  factory GitDependency.fromData(Object? data) {
+  /// The version constraint specified next to the `git` source.
+  ///
+  /// `null` if no constraint is specified, which pub treats as any version.
+  /// This is mostly useful together with [tagPattern].
+  @JsonKey(includeFromJson: false)
+  final VersionConstraint? version;
+
+  GitDependency(this.url, {this.ref, this.path, this.tagPattern, this.version});
+
+  factory GitDependency.fromData(Object? data, {VersionConstraint? version}) {
     if (data is String) {
-      data = {'url': data};
+      try {
+        return GitDependency(parseGitUri(data), version: version);
+      } on FormatException catch (e) {
+        throw ArgumentError.value(data, 'git', e.message);
+      }
     }
 
     if (data is Map) {
-      return _$GitDependencyFromJson(data);
+      final parsed = _$GitDependencyFromJson(data);
+      _validateTagPattern(data, parsed);
+      return GitDependency(
+        parsed.url,
+        ref: parsed.ref,
+        path: parsed.path,
+        tagPattern: parsed.tagPattern,
+        version: version,
+      );
     }
 
     throw ArgumentError.value(data, 'git', 'Must be a String or a Map.');
+  }
+
+  static void _validateTagPattern(Map data, GitDependency parsed) {
+    final tagPattern = parsed.tagPattern;
+    if (tagPattern == null) {
+      return;
+    }
+    if (tagPattern.split(_tagPatternVersionMarker).length != 2) {
+      throw CheckedFromJsonException(
+        data,
+        'tag_pattern',
+        'GitDependency',
+        'Must contain a single "$_tagPatternVersionMarker".',
+      );
+    }
+    if (parsed.ref != null) {
+      throw CheckedFromJsonException(
+        data,
+        'tag_pattern',
+        'GitDependency',
+        'Cannot be used together with "ref".',
+      );
+    }
   }
 
   @override
@@ -150,19 +206,29 @@ class GitDependency extends Dependency {
       other is GitDependency &&
       other.url == url &&
       other.ref == ref &&
-      other.path == path;
+      other.path == path &&
+      other.tagPattern == tagPattern &&
+      other.version == version;
 
   @override
-  int get hashCode => Object.hash(url, ref, path);
+  int get hashCode => Object.hash(url, ref, path, tagPattern, version);
 
   @override
   String toString() => 'GitDependency: url@$url';
 
   @override
   Map<String, dynamic> toJson() => {
-    'git': {'url': url.toString(), 'ref': ?ref, 'path': ?path},
+    'git': {
+      'url': url.toString(),
+      'ref': ?ref,
+      'path': ?path,
+      'tag_pattern': ?tagPattern,
+    },
+    'version': ?version?.toString(),
   };
 }
+
+const _tagPatternVersionMarker = '{{version}}';
 
 Uri? _parseUriOrNull(String? value) => value == null ? null : Uri.parse(value);
 
@@ -202,27 +268,37 @@ Uri? _tryParseScpUri(String value) {
 class PathDependency extends Dependency {
   final String path;
 
-  PathDependency(this.path);
+  /// The version constraint specified next to the `path` source.
+  ///
+  /// `null` if no constraint is specified, which pub treats as any version.
+  /// This isn't used to select the dependency, but pub's solver still
+  /// validates it against the resolved package's version.
+  final VersionConstraint? version;
 
-  factory PathDependency.fromData(Object? data) {
+  PathDependency(this.path, {this.version});
+
+  factory PathDependency.fromData(Object? data, {VersionConstraint? version}) {
     if (data is String) {
-      return PathDependency(data);
+      return PathDependency(data, version: version);
     }
     throw ArgumentError.value(data, 'path', 'Must be a String.');
   }
 
   @override
   bool operator ==(Object other) =>
-      other is PathDependency && other.path == path;
+      other is PathDependency && other.path == path && other.version == version;
 
   @override
-  int get hashCode => path.hashCode;
+  int get hashCode => Object.hash(path, version);
 
   @override
   String toString() => 'PathDependency: path@$path';
 
   @override
-  Map<String, dynamic> toJson() => {'path': path};
+  Map<String, dynamic> toJson() => {
+    'path': path,
+    'version': ?version?.toString(),
+  };
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
@@ -280,7 +356,7 @@ class HostedDetails {
 
   factory HostedDetails.fromJson(Object data) {
     if (data is String) {
-      data = {'url': data};
+      return HostedDetails(null, _parseUriOrNull(data));
     }
 
     if (data is Map) {
@@ -306,3 +382,23 @@ class HostedDetails {
 
 VersionConstraint _constraintFromString(String? input) =>
     input == null ? VersionConstraint.any : VersionConstraint.parse(input);
+
+VersionConstraint? _optionalConstraintFromData(Map data, String className) {
+  final value = data['version'];
+  if (value == null) {
+    return null;
+  }
+  if (value is! String) {
+    throw CheckedFromJsonException(
+      data,
+      'version',
+      className,
+      '`$value` is not a String.',
+    );
+  }
+  try {
+    return VersionConstraint.parse(value);
+  } on FormatException catch (e) {
+    throw CheckedFromJsonException(data, 'version', className, e.message);
+  }
+}

@@ -1,8 +1,9 @@
-## 4.13.0-wip
+## 4.13.0
 
 - Add `Expression.nullSafeCascade`, `cascadeIndex`, and `nullSafeCascadeIndex`
   for building null-aware cascades (`?..`) and cascaded index accesses
   (`..[]`, `?..[]`).
+- Allow `package:built_collection` 6.x.
 
 ## 4.12.0
 
