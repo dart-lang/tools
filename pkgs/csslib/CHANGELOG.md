@@ -1,5 +1,8 @@
 ## 1.0.3-wip
 
+- Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
+  `Color.antiqueWhite` and `Color.peru` constants.
+
 ## 1.0.2
 
 - Require Dart 3.1
