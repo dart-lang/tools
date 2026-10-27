@@ -232,6 +232,35 @@ a <!--
       );
     });
   });
+
+  test('many inline delimiters on a line do not take quadratic time', () {
+    const count = 16000;
+    final emphasis = '*a* ' * count;
+    final links = '[a](/u) ' * count;
+    final imagesAndLinks = '${'![ ' * 4000}${'[a](/u) ' * 4000}';
+
+    final time = Stopwatch()..start();
+    expect(
+      markdownToHtml(emphasis),
+      '<p>${'<em>a</em> ' * (count - 1)}<em>a</em></p>\n',
+    );
+    expect(
+      markdownToHtml(links),
+      '<p>${'<a href="/u">a</a> ' * (count - 1)}<a href="/u">a</a></p>\n',
+    );
+    expect(
+      markdownToHtml(imagesAndLinks),
+      '<p>${'![ ' * 4000}${'<a href="/u">a</a> ' * 3999}<a href="/u">a</a></p>\n',
+    );
+    expect(
+      markdownToHtml(
+        'hello [*a] b*',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>*a</a> b*</p>\n',
+    );
+    expect(time.elapsedMilliseconds, lessThan(10000));
+  });
 }
 
 class _CountingLine extends Line {

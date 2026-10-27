@@ -57,6 +57,12 @@ class InlineParser {
   /// delimiters for [DelimiterSyntax] nodes.
   final _delimiterStack = LinkedList<_DelimiterNode>();
 
+  /// Top of the open bracket stack (`[` or `![` delimiters).
+  _DelimiterNode? _topBracket;
+
+  /// Top of the active link bracket stack (`[` delimiters with `isActive`).
+  _DelimiterNode? _topActiveLinkBracket;
+
   int _nextDelimiterPos = 0;
 
   /// The tree of parsed HTML nodes.
@@ -139,12 +145,7 @@ class InlineParser {
   /// This is the "look for link or image" routine from the CommonMark spec:
   /// https://spec.commonmark.org/0.31.2/#look-for-link-or-image.
   void _linkOrImage() {
-    var bracketNode = _delimiterStack.lastOrNull;
-    while (bracketNode != null &&
-        bracketNode.delimiter.char != $lbracket &&
-        bracketNode.delimiter.char != $exclamation) {
-      bracketNode = bracketNode.previous;
-    }
+    final bracketNode = _topBracket;
     if (bracketNode == null) {
       // Never found a possible open bracket. This is just a literal "]".
       addNode(Text(']'));
@@ -154,6 +155,7 @@ class InlineParser {
     }
     final delimiter = bracketNode.delimiter as SimpleDelimiter;
     if (!delimiter.isActive) {
+      _topBracket = bracketNode.previousBracket;
       bracketNode.unlink();
       addNode(Text(']'));
       advanceBy(1);
@@ -180,14 +182,20 @@ class InlineParser {
         },
       );
       if (linkNodes != null) {
+        _topBracket = bracketNode.previousBracket;
         while (bracketNode.next != null) {
           bracketNode.next!.unlink();
         }
         bracketNode.unlink();
         if (delimiter.char == $lbracket) {
-          for (final d in _delimiterStack) {
-            if (d.delimiter.char == $lbracket) d.delimiter.isActive = false;
+          for (
+            var b = _topActiveLinkBracket;
+            b != null;
+            b = b.previousActiveLinkBracket
+          ) {
+            b.delimiter.isActive = false;
           }
+          _topActiveLinkBracket = null;
         }
         while (delimiterTreeNode.next != null) {
           delimiterTreeNode.next!.unlink();
@@ -199,6 +207,7 @@ class InlineParser {
         advanceBy(1);
         start = pos;
       } else {
+        _topBracket = bracketNode.previousBracket;
         bracketNode.unlink();
         pos = start;
         advanceBy(1);
@@ -402,8 +411,20 @@ class InlineParser {
   }
 
   /// Push [delimiter] onto the stack of [Delimiter]s.
-  void pushDelimiter(Delimiter delimiter) =>
-      _delimiterStack.add(_DelimiterNode(delimiter, _nextDelimiterPos++));
+  void pushDelimiter(Delimiter delimiter) {
+    final node = _DelimiterNode(delimiter, _nextDelimiterPos++);
+    _delimiterStack.add(node);
+    if (delimiter is SimpleDelimiter &&
+        delimiter.syntax is LinkSyntax &&
+        (delimiter.char == $lbracket || delimiter.char == $exclamation)) {
+      node.previousBracket = _topBracket;
+      _topBracket = node;
+      if (delimiter.char == $lbracket) {
+        node.previousActiveLinkBracket = _topActiveLinkBracket;
+        _topActiveLinkBracket = node;
+      }
+    }
+  }
 
   bool get isDone => pos >= source.length;
 
@@ -429,6 +450,8 @@ final class _DelimiterNode extends LinkedListEntry<_DelimiterNode> {
   final Delimiter delimiter;
   final int pos;
   _TreeNode? treeNode;
+  _DelimiterNode? previousBracket;
+  _DelimiterNode? previousActiveLinkBracket;
 
   _DelimiterNode(this.delimiter, this.pos);
 }
