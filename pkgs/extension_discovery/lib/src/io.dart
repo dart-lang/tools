@@ -34,7 +34,7 @@ Future<T> _attempt<T>(FutureOr<T> Function() fn) async {
   var attempts = 0;
   while (true) {
     try {
-      await fn();
+      return await fn();
     } on FileSystemException catch (e) {
       attempts += 1;
       if (attempts >= _maxAttempts) rethrow;

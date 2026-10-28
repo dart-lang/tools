@@ -1,3 +1,12 @@
+## 8.3.0
+
+- Exported `areAnalyticsSuppressedIn`, which reads `DASH__SUPPRESS_ANALYTICS`
+  from a provided environment map instead of the real process environment.
+  This lets tools with an overridable environment (such as `dartdev`) let
+  `DASH__SUPPRESS_ANALYTICS` take precedence over their own implicit
+  suppression, e.g.
+  `areAnalyticsSuppressedIn(environment, defaultValue: isBot)`.
+
 ## 8.2.0
 
 - Default `agent` in `Analytics` and `Analytics.development` to

@@ -41,12 +41,50 @@ its queue, so:
 - Call `ERR_clear_error()` before a call whose errors you report, so errors
   left behind by other code aren't attributed to it.
 
-## Building
+## Native Asset Build Modes
 
-`hook/build.dart` compiles the bundled BoringSSL sources with CMake and Ninja
-when the package is first built, for example by `dart run` or `dart test`. This
-requires CMake, Ninja, and a C toolchain (Clang or GCC, Xcode, MSVC, or the
-Android NDK), plus NASM on Windows.
+Configured in `pubspec.yaml` under `hooks.user_defines.boring`:
+
+```yaml
+hooks:
+  user_defines:
+    boring:
+      buildMode: fetch # 'fetch', 'checkout', or 'local'
+```
+
+- **`fetch`** *(default)*: Downloads the prebuilt library of the pinned
+  release from GitHub Releases and verifies it against the SHA-256 hash pinned
+  in the package. A hash mismatch is an error.
+- **`checkout`**: Compiles BoringSSL locally from bundled sources via CMake and
+  Ninja.
+- **`local`**: Uses a custom prebuilt dynamic library at `localPath`, which is
+  bundled as is, without [tree-shaking](#tree-shaking).
+
+Prebuilt libraries exist for Linux (x64 and arm64), macOS (arm64 and x64),
+Windows (x64), Android (arm, arm64 and x64; API 21 and later), and iOS (arm64,
+and the arm64 and x64 simulators; iOS 12 and later). Other targets require
+`buildMode: checkout`, which requires CMake, Ninja, and a C toolchain (Clang or
+GCC, Xcode, MSVC, or the Android NDK), plus NASM on Windows.
+
+## Tree-Shaking
+
+When linking is enabled (`dart build`, and Flutter profile and release builds),
+`hook/link.dart` links a dynamic library with only the functions the
+application uses from the static library. The bindings are annotated with
+`@RecordUse()`, so the Dart compiler records which of them the application
+calls, tears off, or takes the address of with `addresses.*`. For the
+[example](example/boring_example.dart), the bundled library shrinks from 2.9 MB
+to 240 KB on Linux x64.
+
+- Use `addresses.X` rather than `Native.addressOf(X)` for the address of a
+  function, for example for a `NativeFinalizer`. `Native.addressOf` isn't
+  recorded, so the function would be missing from the library.
+- Without recorded uses, for example with `flutter config
+  --no-enable-record-use`, all functions are kept.
+- Linking requires a C toolchain for the target (Clang or GCC, Xcode, MSVC, or
+  the Android NDK). Without one, for example when cross-compiling, the `fetch`
+  build mode bundles the prebuilt dynamic library instead, which is not
+  tree-shaken, and prints a warning.
 
 ## Conformance Testing
 
@@ -61,7 +99,7 @@ suites, calling BoringSSL directly through the bindings (see
   and PBKDF2.
 - [**x509-limbo**](https://x509-limbo.com) (`./tool/run_x509_limbo_tests.sh`):
   9,770 of the 9,793 path validation testcases run against `X509_verify_cert`,
-  and 9,237 (94.5%) agree. The divergences, mostly name constraint types
+  and 9,240 (94.6%) agree. The divergences, mostly name constraint types
   BoringSSL does not support and CA/Browser Forum profile checks it leaves to
   the caller, are listed and explained in
   [`test/conformance/x509_limbo_expected_failures.txt`][limbo-failures].

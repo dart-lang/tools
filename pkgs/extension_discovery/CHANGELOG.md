@@ -1,6 +1,7 @@
 ## 2.1.1-wip
 
 - Prevent symlinks from causing `config.yaml` to be read from outside the package folder.
+- Fix `reliablyRename` on Windows always throwing after a successful rename.
 
 ## 2.1.0
 

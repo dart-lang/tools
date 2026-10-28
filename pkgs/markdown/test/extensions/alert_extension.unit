@@ -153,10 +153,39 @@ with two lines.</p>
 </div>
 >>> crash repro #584.2
 > [!NOTE]
-> 
+>
 > if you receive the following error:
 <<<
 <div class="markdown-alert markdown-alert-note">
 <p class="markdown-alert-title">Note</p>
 <p>if you receive the following error:</p>
+</div>
+>>> nested lists are not flattened #2292
+> [!NOTE]
+> - Item1
+>     - Item1-1
+>     - Item1-2
+>         - Item1-2-1
+> - Item2
+>     - Item2-1
+<<<
+<div class="markdown-alert markdown-alert-note">
+<p class="markdown-alert-title">Note</p>
+<ul>
+<li>Item1
+<ul>
+<li>Item1-1</li>
+<li>Item1-2
+<ul>
+<li>Item1-2-1</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Item2
+<ul>
+<li>Item2-1</li>
+</ul>
+</li>
+</ul>
 </div>
