@@ -25,6 +25,9 @@
   were flattened. `AlertBlockSyntax` stripped all whitespace following the
   `>` marker instead of at most one space, discarding the indentation that
   marks a list item as nested.
+* Fix a bug where adjacent `Text` nodes were not combined if they were the
+  children of the last node in a list, which could split plain text into
+  multiple `Text` nodes when a custom inline syntax was registered.
 
 ## 7.4.0
 

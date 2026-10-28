@@ -67,6 +67,29 @@ a <!--
     expect(html, '<h2>I am paragraph</h2>\n');
   });
 
+  test('adjacent text nodes are combined when a custom inline syntax is '
+      'registered, #2037', () {
+    // See https://github.com/dart-lang/tools/issues/2037.
+    // `_combineAdjacentText` only recursed into an `Element`'s children
+    // when the element was not the last node in its containing list, so
+    // adjacent `Text` children of a trailing element were never merged.
+    // Registering any custom inline syntax (here, `StrikethroughSyntax`)
+    // switches on a stricter word-matching accelerator regex that splits
+    // plain text into more `Text` nodes than usual, which surfaced the bug
+    // even though the input contains no `~`.
+    final document = Document(inlineSyntaxes: [StrikethroughSyntax()]);
+    final nodes = document.parseInline('**This _is italics_ inside bold.**');
+
+    final strong = (nodes.single as Element).children!;
+    expect(strong[0], isA<Text>().having((t) => t.text, 'text', 'This '));
+    expect(strong[1], isA<Element>());
+    expect(
+      strong[2],
+      isA<Text>().having((t) => t.text, 'text', ' inside bold.'),
+    );
+    expect(strong, hasLength(3));
+  });
+
   test('long unbroken word does not take quadratic time', () {
     // The plain-text accelerator regex required a trailing whitespace, so a
     // long run of word characters that reached the end of a line without one
