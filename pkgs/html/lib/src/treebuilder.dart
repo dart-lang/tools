@@ -31,6 +31,18 @@ class ActiveFormattingElements extends ListProxy<Element?> {
 
 /// Basic treebuilder implementation.
 class TreeBuilder {
+  /// Upper bound on how many open elements [elementInScope] scans backwards.
+  ///
+  /// Prevents O(N^2) parse time on deeply nested non-scoping elements.
+  static const int scopeScanLimit = 512;
+
+  /// Maximum DOM tree depth constructed by [insertElementNormal].
+  ///
+  /// Elements opened beyond this depth are attached as siblings at depth
+  /// [maxDomDepth] (matching Chromium/Gecko) to prevent `StackOverflowError`
+  /// during recursive DOM traversal and serialization.
+  static const int maxDomDepth = 512;
+
   final String? defaultNamespace;
 
   late Document document;
@@ -102,13 +114,15 @@ class TreeBuilder {
       }
     }
 
+    var scanned = 0;
     for (var node in openElements.reversed) {
       if (!exactNode && node.localName == target ||
           exactNode && node == target) {
         return true;
       } else if (invert !=
-          (setElements1.contains(getElementNameTuple(node)) ||
-              setElements2.contains(getElementNameTuple(node)))) {
+              (setElements1.contains(getElementNameTuple(node)) ||
+                  setElements2.contains(getElementNameTuple(node))) ||
+          ++scanned >= scopeScanLimit) {
         return false;
       }
     }
@@ -232,7 +246,11 @@ class TreeBuilder {
 
   Element insertElementNormal(StartTagToken token) {
     final element = createElement(token);
-    openElements.last.nodes.add(element);
+    var parent = openElements.last;
+    if (openElements.length >= maxDomDepth && parent.parentNode is Element) {
+      parent = parent.parentNode as Element;
+    }
+    parent.nodes.add(element);
     openElements.add(element);
     return element;
   }
