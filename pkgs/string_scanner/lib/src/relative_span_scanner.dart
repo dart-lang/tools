@@ -28,15 +28,19 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
   final FileLocation _startLocation;
 
   @override
-  int get line =>
+  int get line => _lineFor(position);
+
+  @override
+  int get column => _columnFor(position);
+
+  int _lineFor(int position) =>
       _sourceFile.getLine(_startLocation.offset + position) -
       _startLocation.line;
 
-  @override
-  int get column {
-    final line = _sourceFile.getLine(_startLocation.offset + position);
-    final column =
-        _sourceFile.getColumn(_startLocation.offset + position, line: line);
+  int _columnFor(int position) {
+    final offset = _startLocation.offset + position;
+    final line = _sourceFile.getLine(offset);
+    final column = _sourceFile.getColumn(offset, line: line);
     return line == _startLocation.line
         ? column - _startLocation.column
         : column;
@@ -56,7 +60,11 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
   }
 
   @override
-  FileSpan? get lastSpan => _lastSpan;
+  FileSpan? get lastSpan {
+    if (lastMatch == null) _lastSpan = null;
+    return _lastSpan;
+  }
+
   FileSpan? _lastSpan;
 
   @override
@@ -80,14 +88,11 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
 
   @override
   FileSpan spanFromPosition(int startPosition, [int? endPosition]) {
-    RangeError.checkValidRange(
-        startPosition,
-        endPosition,
-        _sourceFile.length - _startLocation.offset,
-        'startPosition',
-        'endPosition');
+    endPosition ??= position;
+    RangeError.checkValidRange(startPosition, endPosition, string.length,
+        'startPosition', 'endPosition');
     return _sourceFile.span(_startLocation.offset + startPosition,
-        _startLocation.offset + (endPosition ?? position));
+        _startLocation.offset + endPosition);
   }
 
   @override
@@ -104,11 +109,9 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
 
   @override
   Never error(String message, {Match? match, int? position, int? length}) {
-    validateErrorArgs(string, match, position, length);
-
     if (match == null && position == null && length == null) match = lastMatch;
-    position ??= match == null ? this.position : match.start;
-    length ??= match == null ? 1 : match.end - match.start;
+    (position, length) =
+        resolveErrorArgs(string, match, position, length, this.position);
 
     final span = _sourceFile.span(_startLocation.offset + position,
         _startLocation.offset + position + length);
@@ -124,9 +127,9 @@ class _SpanScannerState implements LineScannerState {
   @override
   final int position;
   @override
-  int get line => _scanner._sourceFile.getLine(position);
+  int get line => _scanner._lineFor(position);
   @override
-  int get column => _scanner._sourceFile.getColumn(position);
+  int get column => _scanner._columnFor(position);
 
   _SpanScannerState(this._scanner, this.position);
 }

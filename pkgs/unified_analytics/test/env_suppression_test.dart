@@ -13,7 +13,6 @@ import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart' show DashEvent;
 import 'package:unified_analytics/src/ga_client.dart';
 import 'package:unified_analytics/src/survey_handler.dart';
-import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {

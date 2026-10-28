@@ -480,8 +480,8 @@ rfc5280::nc::permitted-ipv4-match  # The root contains a NameConstraints extensi
 rfc5280::nc::permitted-ipv6-match  # The root contains a NameConstraints extension with a permitted iPAddress of `::1/128`, which matc...
 
 # ===========================================================================
-# 46 testcase(s):
-#   46 x accepted, but the suite expects rejection
+# 43 testcase(s):
+#   43 x accepted, but the suite expects rejection
 # ---------------------------------------------------------------------------
 # BoringSSL accepted a chain the suite expects to be rejected. Most of these
 # encode CA/Browser Forum baseline requirements, or deliberately pedantic
@@ -497,7 +497,6 @@ rfc5280::nc::permitted-ipv6-match  # The root contains a NameConstraints extensi
 # which is about strength rather than profile conformance, does not enforce
 # it.
 
-rfc5280::aki::critical-aki  # The root cert has an AKI extension marked as critical, which is disallowed under RFC 5280 4.2.1.1...
 rfc5280::aki::intermediate-missing-aki  # The intermediate is signed by the root but missing the AKI extension, which is forbidden under RF...
 rfc5280::aki::leaf-missing-aki  # The EE cert is signed by the root but missing the AKI extension, which is forbidden under RFC 528...
 rfc5280::leaf-ku-keycertsign  # The leaf has a BasicConstraints extension with cA=FALSE and a KeyUsage extension with keyCertSign...
@@ -509,7 +508,6 @@ rfc5280::nc::permitted-dns-match-noncritical  # The root contains a NameConstrai
 rfc5280::nc::permitted-empty-sequence-excluded-nonempty  # The ICA contains a NameConstraints extension whose permittedSubtrees is present but empty, alongs...
 rfc5280::nc::permitted-nonempty-excluded-empty-sequence  # The ICA contains a NameConstraints extension with a permitted dNSName of "example.com" alongside ...
 rfc5280::pc::ica-noncritical-pc  # The ICA has a `PolicyConstraints` extension marked as non-critical, which is disallowed under RFC...
-rfc5280::root-missing-basic-constraints  # The root CA is missing the BasicConstraints extension, which is disallowed under RFC 5280 4.2.1.9...
 rfc5280::root-non-critical-basic-constraints  # The root CA has a non-critical BasicConstraints extension, which is disallowed under RFC 5280 4.2...
 rfc5280::san::noncritical-with-empty-subject  # Produces an **invalid** chain due to an invalid EE cert.
 rfc5280::san::underscore-dns  # Produces an **invalid** chain due to an invalid EE cert.
@@ -517,7 +515,6 @@ rfc5280::serial::too-long  # Produces an **invalid** chain due to an invalid EE 
 rfc5280::serial::zero  # Produces an **invalid** chain due to an invalid EE cert.
 rfc5280::ski::intermediate-missing-ski  # The intermediate cert is missing the SKI extension, which is disallowed under RFC 5280 4.2.1.2.
 rfc5280::ski::root-missing-ski  # The root cert is missing the SKI extension, which is disallowed under RFC 5280 4.2.1.2.
-rfc5280::unknown-critical-extension-root  # The root has an extension, 1.3.6.1.4.1.55738.666.1, that no implementation should recognize.
 rfc9881::ml-dsa-44-key-agreement  # The EE conveys an ML-DSA-44 key, but asserts `keyAgreement` in its `keyUsage` extension.
 rfc9881::ml-dsa-44-key-encipherment  # The EE conveys an ML-DSA-44 key, but asserts `keyEncipherment` in its `keyUsage` extension.
 webpki::aki::root-with-aki-missing-keyidentifier  # The root cert incudes the authorityKeyIdentifier extension but without the keyIdentifier field, w...
@@ -545,8 +542,8 @@ webpki::san::public-suffix-private-namespace-wildcard-san  # Produces a chain wi
 webpki::san::san-critical-with-nonempty-subject  # The EE cert includes a critical subjectAlternativeName extension, which is forbidden under CABF w...
 
 # ===========================================================================
-# 29 testcase(s):
-#   18 x rejected with "unable to get local issuer certificate"
+# 28 testcase(s):
+#   17 x rejected with "unable to get local issuer certificate"
 #   4 x rejected with "invalid CA certificate"
 #   2 x rejected with "permitted subtree violation"
 #   2 x rejected with "signed with a weak signature digest"
@@ -591,7 +588,6 @@ bettertls::pathbuilding::tc66  # unable to get local issuer certificate
 bettertls::pathbuilding::tc67  # unable to get local issuer certificate
 bettertls::pathbuilding::tc68  # unable to get local issuer certificate
 cve::cve-2024-0567  # unable to get issuer certificate; Tests CVE-2024-0567.
-pathlen::max-chain-depth-1-self-issued  # unable to get local issuer certificate; When validating with a maximum chain depth of 1, there may only be one logical intermediate.
 rfc5280::nc::nc-forbids-alternate-chain-ica  # unable to get local issuer certificate; `ICA_B'` and `ICA_B''` are certificates for the same logical intermediate, but issued by differen...
 rfc5280::nc::nc-forbids-same-chain-ica  # excluded subtree violation; `ICA_B'` and `ICA_B''` are certificates for the same logical intermediate, but chained to differe...
 rfc5280::root-and-intermediate-swapped  # unable to get issuer certificate; The configuration puts the ICA in the trusted set, meaning that validation should ignore (and not...
@@ -628,3 +624,13 @@ rfc5280::ca-as-leaf  # The ICA is in leaf position, despite being a CA certifica
 
 rfc5280::validity::notafter-exact  # EE expires at `2024-04-01T00:00:00Z`, and the chain is validated at exactly `2024-04-01T00:00:00Z`.
 rfc5280::validity::notafter-fractional  # EE expires at `2024-04-01T00:00:00Z`, and the chain is validated at `2024-04-01T00:00:00.005Z`, i.e.
+
+# ===========================================================================
+# 1 testcase(s):
+#   1 x rejected with "certificate chain too long"
+# ---------------------------------------------------------------------------
+# No explanation has been written for this reason yet. Investigate before
+# accepting these entries: add a note to _divergenceNotes in
+# test/conformance/x509_limbo_test.dart.
+
+pathlen::max-chain-depth-1-self-issued  # When validating with a maximum chain depth of 1, there may only be one logical intermediate.

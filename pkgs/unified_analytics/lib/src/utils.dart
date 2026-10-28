@@ -37,10 +37,13 @@ bool areAnalyticsSuppressed({bool defaultValue = false}) =>
 /// Returns whether [environment] suppresses analytics through the
 /// `DASH__SUPPRESS_ANALYTICS` variable.
 ///
-/// Parses the variable the same way as [areAnalyticsSuppressed].
+/// Returns `true` if the variable is exactly `"true"`, `false` if it is exactly
+/// `"false"`, and [defaultValue] otherwise, including when it's unset. This is
+/// the same parsing as [areAnalyticsSuppressed].
 ///
-/// This isn't exported from the package. Production code should call
-/// [areAnalyticsSuppressed], which always reads the real process environment.
+/// Unlike [areAnalyticsSuppressed], which always reads the real process
+/// environment, this is useful for tools that read an overridable or injected
+/// environment map (for example, to allow overriding it in tests).
 bool areAnalyticsSuppressedIn(
   Map<String, String> environment, {
   bool defaultValue = false,

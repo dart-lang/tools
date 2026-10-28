@@ -44,8 +44,17 @@ const _notCompiled = {
   'X509V3_EXT_conf_nid',
 };
 
+/// Functions taking a C `va_list`, which cannot be constructed or passed
+/// through `dart:ffi` and whose representation (`__va_list_tag`) is a
+/// compiler-internal struct.
+const _vaListFunctions = {
+  'BIO_vsnprintf',
+  'OPENSSL_vasprintf',
+};
+
 Future<void> main() async {
   final packageRoot = Platform.script.resolve('../');
+  final includeDir = packageRoot.resolve('third_party/boringssl/src/include');
   final bindings = packageRoot.resolve('lib/src/bindings/boringssl.g.dart');
 
   print('Generating Dart FFI bindings for BoringSSL (bssl_dart)...');
@@ -81,8 +90,9 @@ Future<void> main() async {
       entryPoints: [
         packageRoot.resolve('src/wrapper.h'),
       ],
-      compilerOptions: const [
-        '-Ithird_party/boringssl/src/include',
+      include: (header) => header.path.startsWith(packageRoot.path),
+      compilerOptions: [
+        '-I${includeDir.toFilePath()}',
         '-DBORINGSSL_PREFIX=bssl_dart',
         '-U__PRAGMA_REDEFINE_EXTNAME',
       ],
@@ -96,7 +106,9 @@ Future<void> main() async {
             return;
           }
           final unprefixed = name.substring('bssl_dart_'.length);
-          node.isIncluded = !_notCompiled.contains(unprefixed);
+          node.isIncluded =
+              !_notCompiled.contains(unprefixed) &&
+              !_vaListFunctions.contains(unprefixed);
           node.name = unprefixed;
           // Lets the link hook keep only the functions an application uses.
           node.recordUse = true;
@@ -105,7 +117,7 @@ Future<void> main() async {
           }
         },
         struct: (node) {
-          node.isIncluded = !node.originalName.startsWith('_bssl_hidden_');
+          node.isIncluded = !node.originalName.startsWith('_');
           node.dependencies = CompoundDependencies.opaque;
         },
         enumClass: (node) {
@@ -117,7 +129,9 @@ Future<void> main() async {
           node.isIncluded = node.originalName.startsWith('ERR_LIB_');
         },
         typealias: (node) {
-          node.isIncluded = TypealiasInclude.always;
+          node.isIncluded = !node.originalName.startsWith('_')
+              ? TypealiasInclude.always
+              : TypealiasInclude.never;
         },
         macroConstant: (node) {
           final name = node.originalName;
@@ -146,15 +160,19 @@ Future<void> main() async {
   print('BoringSSL FFI bindings generated successfully.');
 }
 
-/// Moves the `addresses` getters into an extension and annotates them with
+/// Moves the `addresses` getters into an extension type and annotates them with
 /// `@RecordUse()`, so that the link hook keeps the functions whose addresses
 /// are used.
 ///
 /// `Native.addressOf` is not recorded as a use of the function, and ffigen
 /// does not annotate the getters, which it generates as instance members of a
-/// class. Instance members can't be recorded, but extension members can.
+/// private class. Instance members of a class can't be recorded, and the
+/// private class would leak through `addresses`, so this replaces it with a
+/// public extension type.
 Future<void> _recordAddressUses(File bindings) async {
   const classHeader =
+      'const addresses = _SymbolAddresses();\n'
+      '\n'
       'class _SymbolAddresses {\n'
       '  const _SymbolAddresses();\n';
   final source = bindings.readAsStringSync();
@@ -181,16 +199,16 @@ Future<void> _recordAddressUses(File bindings) async {
 
   bindings.writeAsStringSync(
     '${source.substring(0, start)}'
-    'final class _SymbolAddresses {\n'
-    '  const _SymbolAddresses();\n'
-    '}\n'
-    '\n'
     '/// The addresses of the functions releasing BoringSSL objects, for\n'
     '/// `NativeFinalizer`s.\n'
     '///\n'
     '/// Use these instead of `Native.addressOf`, which is not recorded as a\n'
     '/// use of the function, so the link hook would drop it.\n'
-    'extension SymbolAddresses on _SymbolAddresses {\n'
+    'const addresses = SymbolAddresses._(null);\n'
+    '\n'
+    '/// The extension type for [addresses] providing access to the symbol\n'
+    '/// addresses.\n'
+    'extension type const SymbolAddresses._(Null _) {\n'
     '$annotated'
     '${source.substring(end + 1)}',
   );

@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
         with:
           sdk: ${{ matrix.sdk }}
       - id: install
@@ -48,9 +48,19 @@ jobs:
       - name: Analyze code
         run: dart analyze --fatal-infos
         if: always() && steps.install.outcome == 'success'
+      # The `fetch` build mode downloads the libraries pinned in hashes.dart,
+      # which boring_binaries.yaml builds from the native sources on main. A
+      # release of package:boring mustn't ship libraries built from other
+      # sources than the ones it vendors, so this fails once the version is no
+      # longer a -wip one.
+      - name: Check that the prebuilt libraries match the native sources
+        run: ./tool/check_prebuilt_binaries.sh
+        if: always() && steps.install.outcome == 'success'
 
   # Build BoringSSL from source with the build hook and run the tests on each
-  # desktop OS.
+  # desktop OS (Linux, macOS, and Windows each use different linker flags in
+  # hook/link.dart), including cross-compiling to linux-arm64 with and without
+  # a cross-toolchain.
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
@@ -63,12 +73,41 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
         with:
           sdk: ${{ matrix.sdk }}
       - name: Setup NASM
         if: runner.os == 'Windows'
         uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b
+      - name: Install Linux cross toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+      # A third-party tap, which Homebrew can't pin, unlike the Windows download
+      # below. It only links the test's cross-compiled example, never anything
+      # that is released.
+      - name: Install Linux cross toolchain (macOS)
+        if: runner.os == 'macOS'
+        run: brew install messense/macos-cross-toolchains/aarch64-unknown-linux-gnu
+      - name: Install Linux cross toolchain (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          TOOLCHAIN_URL: https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-mingw-w64-x86_64-aarch64-none-linux-gnu.zip
+          # From the .sha256asc file published next to the zip.
+          TOOLCHAIN_SHA256: 9428b2039923916418ec7037025be8cec3202926d65db9452519977834ad2a89
+        run: |
+          curl -fSL -o "$RUNNER_TEMP/arm-gnu-toolchain.zip" "$TOOLCHAIN_URL"
+          actual="$(sha256sum < "$RUNNER_TEMP/arm-gnu-toolchain.zip" | cut -d' ' -f1)"
+          if [ "$actual" != "$TOOLCHAIN_SHA256" ]; then
+            echo "::error::Expected SHA-256 $TOOLCHAIN_SHA256 for $TOOLCHAIN_URL, got $actual."
+            exit 1
+          fi
+          7z x "$RUNNER_TEMP/arm-gnu-toolchain.zip" -o"$RUNNER_TEMP/arm-gnu-toolchain" -y >/dev/null
+          BIN_DIR="$RUNNER_TEMP/arm-gnu-toolchain/bin"
+          for f in "$BIN_DIR"/aarch64-none-linux-gnu-*.exe; do
+            cp "$f" "${f/aarch64-none-linux-gnu-/aarch64-linux-gnu-}"
+          done
+          cygpath -w "$BIN_DIR" >> "$GITHUB_PATH"
       - id: install
         name: Install dependencies
         run: dart pub get
@@ -84,7 +123,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
         with:
           sdk: stable
       - name: Install dependencies
@@ -100,7 +139,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
         with:
           sdk: stable
       - name: Install dependencies
@@ -125,16 +164,20 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
         with:
           sdk: dev
       - name: Regenerate at tool/REVISION
         run: ./tool/bump-boringssl-revision.sh "$(cat tool/REVISION)"
+      # Also checks that every prebuilt target's asset exists in the pinned
+      # release, since `fetch` fails for a target without a hash.
+      - name: Regenerate the hashes of the pinned release
+        run: dart run tool/regenerate_hashes.dart
       - name: Check for changes
         run: |
           if [ -n "$(git status --porcelain -- .)" ]; then
             git status --short -- .
-            echo "::error::Generated files are out of date. Run ./tool/bump-boringssl-revision.sh \"\$(cat tool/REVISION)\" in pkgs/boring and commit the result."
+            echo "::error::Generated files are out of date. Run ./tool/bump-boringssl-revision.sh \"\$(cat tool/REVISION)\" and dart run tool/regenerate_hashes.dart in pkgs/boring and commit the result."
             exit 1
           fi
 
@@ -153,7 +196,7 @@ jobs:
     steps:
       - name: Generate Dart Bot token
         id: generate-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510
         with:
           client-id: ${{ vars.ECOSYSTEM_BOT_CLIENT_ID }}
           private-key: ${{ secrets.ECOSYSTEM_BOT_PRIVATE_KEY }}
@@ -163,7 +206,7 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: false
-      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
         with:
           sdk: dev
       - name: Update BoringSSL
@@ -189,7 +232,7 @@ jobs:
           SHORT_REVISION: ${{ steps.refresh.outputs.short_revision }}
       - name: Create pull request
         if: steps.check_changes.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@653ba8b281fa5e1ee78ec20dda96cf9a79102c04
+        uses: peter-evans/create-pull-request@bd09a93810788ce61d2d5fb7d6b221b9b4a4aab7
         with:
           token: ${{ steps.generate-token.outputs.token }}
           committer: dart-ecosystem-bot <dart-ecosystem-bot@google.com>
