@@ -148,13 +148,14 @@ class SelectorEvaluator extends Visitor {
 
       // http://dev.w3.org/csswg/selectors-4/#the-empty-pseudo
       case 'empty':
-        return _element!.nodes
-            .any((n) => !(n is Element || n is Text && n.text.isNotEmpty));
+        return !_element!.nodes
+            .any((n) => n is Element || n is Text && n.text.isNotEmpty);
 
       // http://dev.w3.org/csswg/selectors-4/#the-blank-pseudo
       case 'blank':
-        return _element!.nodes.any((n) => !(n is Element ||
-            n is Text && n.text.runes.any((r) => !isWhitespaceCC(r))));
+        return !_element!.nodes.any((n) =>
+            n is Element ||
+            n is Text && n.text.runes.any((r) => !isWhitespaceCC(r)));
 
       // http://dev.w3.org/csswg/selectors-4/#the-first-child-pseudo
       case 'first-child':
