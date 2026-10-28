@@ -335,8 +335,8 @@ class Color implements _StyleProperty, ColorBase {
 
   // Predefined CSS colors see <http://www.w3.org/TR/css3-color/>
   static final Color transparent = const Color.hex('00ffffff'); // Alpha 0.0
-  static final Color aliceBlue = const Color.hex('0f08ff');
-  static final Color antiqueWhite = const Color.hex('0faebd7');
+  static final Color aliceBlue = const Color.hex('f0f8ff');
+  static final Color antiqueWhite = const Color.hex('faebd7');
   static final Color aqua = const Color.hex('00ffff');
   static final Color aquaMarine = const Color.hex('7fffd4');
   static final Color azure = const Color.hex('f0ffff');
@@ -449,7 +449,7 @@ class Color implements _StyleProperty, ColorBase {
   static final Color paleVioletRed = const Color.hex('db7093');
   static final Color papayaWhip = const Color.hex('ffefd5');
   static final Color peachPuff = const Color.hex('ffdab9');
-  static final Color peru = const Color.hex('cd85ef');
+  static final Color peru = const Color.hex('cd853f');
   static final Color pink = const Color.hex('ffc0cb');
   static final Color plum = const Color.hex('dda0dd');
   static final Color powderBlue = const Color.hex('b0e0e6');
