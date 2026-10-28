@@ -6,7 +6,7 @@
 * Propagate mid-part truncation (`MimeMultipartException`) and source stream
   errors to the active part stream before closing it.
 * Validate the first byte of multipart header field names against token
-  characters.
+  characters and reject ASCII DEL (`0x7F`) in header field names.
 * Fix a stream hang and buffer assertion failure when trailing epilogue bytes
   follow the final `--boundary--\r\n` delimiter.
 

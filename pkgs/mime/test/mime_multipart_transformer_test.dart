@@ -489,7 +489,9 @@ Body2\r
     Future<void> expectStreamMultipartError(List<int> bytes) async {
       for (final chunks in [
         [bytes],
-        bytes.map((b) => [b]).toList(),
+        [
+          for (final b in bytes) [b]
+        ],
       ]) {
         Object? zoneError;
         await runZonedGuarded(() async {
@@ -510,17 +512,20 @@ Body2\r
     test('invalid header field routes MimeMultipartException to stream',
         () async {
       await expectStreamMultipartError(
-        ascii.encode('--bnd\r\ninvalid header\r\n\r\n'),
+        ascii.encode('--bnd\r\ninvalid header\r\n\r\n\r\n--bnd--\r\n'),
       );
-      for (final invalidFirstChar in [
-        '--bnd\r\n:: value\r\n\r\n--bnd--\r\n',
-        '--bnd\r\n@: value\r\n\r\n--bnd--\r\n',
-        '--bnd\r\n : value\r\n\r\n--bnd--\r\n',
-        '--bnd\r\n\x02Fold: value\r\n\r\n--bnd--\r\n',
-        '--bnd\r\nx-ok: 1\r\n:foo: empty-second\r\n\r\n--bnd--\r\n',
-        '--bnd\r\nx-ok: 1\r\n\x00bad: 2\r\n\r\n--bnd--\r\n',
+      for (final invalidHeader in [
+        ':: value',
+        '@: value',
+        ' : value',
+        '\x02Fold: value',
+        '\x7f: value',
+        'x\x7f: value',
+        'x-ok: 1\r\n:foo: empty-second',
+        'x-ok: 1\r\n\x00bad: 2',
       ]) {
-        await expectStreamMultipartError(ascii.encode(invalidFirstChar));
+        final message = '--bnd\r\n$invalidHeader\r\n\r\n\r\n--bnd--\r\n';
+        await expectStreamMultipartError(ascii.encode(message));
       }
       await expectStreamMultipartError([
         ...ascii.encode('--bnd\r\n'),
@@ -531,14 +536,15 @@ Body2\r
 
     test('malformed boundary and CRLF route MimeMultipartException to stream',
         () async {
+      // The X marks the spot of the error.
       for (final input in [
-        '--bndX\r\n',
-        '--bnd\rX',
-        '--bnd\r\nheader: value\rX\r\n\r\n',
-        '--bnd\r\nheader: value\r\n\rX',
-        '--bnd-X\r\n',
-        '--bnd--X\r\n',
-        '--bnd--\rX',
+        '--bndX\r\n', // Only whitespace, `-`, or `\r` may follow `--bnd`.
+        '--bnd\rX', // Must have `\n` after boundary `\r`.
+        '--bnd\r\nheader: value\rX\r\n\r\n', // Must have `\n` after header `\r`.
+        '--bnd\r\nheader: value\r\n\rX', // Must have `\n` after header-ending `\r`.
+        '--bnd-X\r\n', // First `-` after `--bnd` must be followed by `-`.
+        '--bnd--X\r\n', // Only whitespace or `\r` may follow `--bnd--`.
+        '--bnd--\rX', // Must have `\n` after closing boundary `\r`.
       ]) {
         await expectStreamMultipartError(ascii.encode(input));
       }
@@ -566,7 +572,9 @@ Body2\r
 
       for (final chunks in [
         [truncated],
-        truncated.map((b) => [b]).toList(),
+        [
+          for (final b in truncated) [b]
+        ],
       ]) {
         Object? zoneError;
         await runZonedGuarded(() async {
@@ -604,6 +612,9 @@ Body2\r
     test(
         'mid-part source error propagates to active part and outer streams '
         'without Bad multipart ending', () async {
+      // Injects a synthetic `StateError('upstream error')` into the input byte
+      // stream to verify that non-parser upstream errors are forwarded as-is to
+      // both the active `MimeMultipart` stream and the outer stream.
       for (final closeSource in [false, true]) {
         Object? zoneError;
         await runZonedGuarded(() async {
@@ -644,7 +655,10 @@ Body2\r
           );
 
           source.add(ascii.encode('--bnd\r\na: 1\r\n\r\nhel'));
-          await pumpEventQueue();
+          // Wait for microtasks so `outerExpectation`'s `StreamQueue` receives
+          // the `MimeMultipart` event, subscribes to `part`, and consumes
+          // `'hel'` before the mid-part source error is injected.
+          await Future<void>.delayed(Duration.zero);
           source.addError(StateError('upstream error'));
           if (closeSource) {
             await source.close();
