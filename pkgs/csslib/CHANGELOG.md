@@ -2,6 +2,11 @@
 
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
+- Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
+  `ConcurrentModificationError`, `TypeError`, `StackOverflowError`, and
+  `AssertionError`) and infinite loops across the tokenizer, parser, analyzer,
+  polyfill pass, and printers when processing malformed or deeply nested CSS,
+  SCSS, and Less inputs.
 
 ## 1.0.2
 

@@ -288,7 +288,9 @@ class Tokenizer extends TokenizerBase {
         eatHexDigits(startHex + 6);
         if (_index != startHex) {
           // Parse the hex digits and add that character.
-          chars.add(int.parse('0x${_text.substring(startHex, _index)}'));
+          var hexVal =
+              int.tryParse('0x${_text.substring(startHex, _index)}') ?? 0xFFFD;
+          chars.add(hexVal <= 0x10FFFF ? hexVal : 0xFFFD);
 
           if (_index == _text.length) break;
 
