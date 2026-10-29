@@ -39,6 +39,8 @@
   inside an indented code block.
 * `tablePattern` no longer backtracks exponentially on table delimiter rows
   containing many spaces.
+* `AutolinkSyntax` no longer accepts `<` inside `<...>` autolinks, per the
+  CommonMark definition of an absolute URI.
 
 ## 7.4.0
 
