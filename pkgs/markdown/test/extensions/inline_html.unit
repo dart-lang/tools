@@ -20,3 +20,13 @@ a <?pi > b <!--comment- > c <![CDATA[x >
 
 <<<
 <p>a &lt;?pi &gt; b &lt;!--comment- &gt; c &lt;![CDATA[x &gt;</p>
+>>> minimal processing instruction, comment, CDATA, and declaration
+a <??> <!----> <![CDATA[]]> <!x>
+
+<<<
+<p>a <??> <!----> <![CDATA[]]> <!x></p>
+>>> closer before the opener does not count
+a <?x?> b <?y >
+
+<<<
+<p>a <?x?> b &lt;?y &gt;</p>

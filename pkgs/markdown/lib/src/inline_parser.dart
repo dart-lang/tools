@@ -58,6 +58,8 @@ class InlineParser {
   /// The tree of parsed HTML nodes.
   final _tree = <Node>[];
 
+  HtmlClosers? _htmlClosers;
+
   InlineParser(this.source, this.document) {
     // User specified syntaxes are the first syntaxes to be evaluated.
     syntaxes.addAll(document.inlineSyntaxes);
@@ -402,4 +404,27 @@ class _PlainTextSyntax extends TextSyntax {
       (char >= 0x30 && char <= 0x39) ||
       (char >= 0x41 && char <= 0x5A) ||
       (char >= 0x61 && char <= 0x7A);
+}
+
+/// Scan state that inline syntaxes keep per parse to avoid rescanning input
+/// they have already rejected.
+extension InlineParserScanState on InlineParser {
+  /// The last positions of the closers an inline HTML construct can end with.
+  HtmlClosers get htmlClosers => _htmlClosers ??= HtmlClosers(source);
+}
+
+/// The last index of each closer that an inline HTML construct can end with,
+/// computed lazily and at most once per parse.
+///
+/// `InlineHtmlSyntax` uses these to skip its regular expression at a `<` that
+/// cannot be closed, so an unclosed `<!--`, `<?`, or `<![CDATA[` is not
+/// rescanned to the end of the line at every later `<`.
+class HtmlClosers {
+  final String _source;
+  late final int lastGt = _source.lastIndexOf('>');
+  late final int lastProcessingEnd = _source.lastIndexOf('?>');
+  late final int lastCommentEnd = _source.lastIndexOf('-->');
+  late final int lastCdataEnd = _source.lastIndexOf(']]>');
+
+  HtmlClosers(this._source);
 }

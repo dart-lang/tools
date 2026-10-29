@@ -83,7 +83,7 @@ export 'src/document.dart' show Document, LinkReference;
 export 'src/emojis.dart';
 export 'src/extension_set.dart';
 export 'src/html_renderer.dart';
-export 'src/inline_parser.dart';
+export 'src/inline_parser.dart' show InlineParser;
 export 'src/inline_syntaxes/autolink_extension_syntax.dart';
 export 'src/inline_syntaxes/autolink_syntax.dart';
 export 'src/inline_syntaxes/code_syntax.dart';
