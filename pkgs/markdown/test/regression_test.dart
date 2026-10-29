@@ -356,6 +356,55 @@ a <!--
   test('container block nesting depth is capped at 100', () {
     expect(markdownToHtml('${'> ' * 101}a'), isNotEmpty);
   });
+
+  test(
+    'unclosed inline link destinations and titles do not take quadratic time',
+    () {
+      const count = 8000;
+      final unclosedBare = '[a]((' * count;
+      final unclosedBracketed = '[a](<' * count;
+      final unclosedParenTitle = '[a](b (' * count;
+      final unbalancedBeforeTitle = '[a](b( "t")' * count;
+
+      final time = Stopwatch()..start();
+      expect(markdownToHtml(unclosedBare), '<p>$unclosedBare</p>\n');
+      expect(
+        markdownToHtml(unclosedBracketed),
+        '<p>${'[a](&lt;' * count}</p>\n',
+      );
+      expect(
+        markdownToHtml(unclosedParenTitle),
+        '<p>$unclosedParenTitle</p>\n',
+      );
+      expect(
+        markdownToHtml(unbalancedBeforeTitle),
+        '<p>${'[a](b( &quot;t&quot;)' * count}</p>\n',
+      );
+      expect(time.elapsedMilliseconds, lessThan(10000));
+    },
+  );
+
+  test('many inline delimiters on a line do not take quadratic time', () {
+    const count = 16000;
+    final emphasis = '*a* ' * count;
+    final links = '[a](/u) ' * count;
+    final imagesAndLinks = '${'![ ' * 4000}${'[a](/u) ' * 4000}';
+
+    final time = Stopwatch()..start();
+    expect(
+      markdownToHtml(emphasis),
+      '<p>${'<em>a</em> ' * (count - 1)}<em>a</em></p>\n',
+    );
+    expect(
+      markdownToHtml(links),
+      '<p>${'<a href="/u">a</a> ' * (count - 1)}<a href="/u">a</a></p>\n',
+    );
+    expect(
+      markdownToHtml(imagesAndLinks),
+      '<p>${'![ ' * 4000}${'<a href="/u">a</a> ' * 3999}<a href="/u">a</a></p>\n',
+    );
+    expect(time.elapsedMilliseconds, lessThan(10000));
+  });
 }
 
 class _CountingLine extends Line {
