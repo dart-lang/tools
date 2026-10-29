@@ -58,6 +58,9 @@
   parentheses, matching `cmark`.
 * A parenthesized inline link title (`(...)`) may no longer contain an
   unescaped `(`, per the CommonMark specification.
+* Shortcut and collapsed reference links (`[label]`, `[label][]`) whose label
+  has more than 999 characters are no longer resolved, per the CommonMark limit
+  on link labels; `linkResolver`/`linkBuilder` are no longer invoked for them.
 
 ## 7.4.0
 
