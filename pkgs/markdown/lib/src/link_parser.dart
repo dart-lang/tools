@@ -349,6 +349,8 @@ class LinkParser {
         }
       } else if (char == closeDelimiter) {
         break;
+      } else if (delimiter == $lparen && char == $lparen) {
+        return false;
       }
       advance();
     }
