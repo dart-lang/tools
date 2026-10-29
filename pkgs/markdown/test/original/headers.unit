@@ -33,3 +33,13 @@
 
 <<<
 <h1>header</h1>
+>>> empty header with tabs and closing "#"
+###	#	
+
+<<<
+<h3></h3>
+>>> header with many spaces before text
+#                                                  header
+
+<<<
+<h1>header</h1>
