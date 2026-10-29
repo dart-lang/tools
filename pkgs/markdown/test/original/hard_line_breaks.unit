@@ -38,3 +38,10 @@ code`.
 
 <<<
 <p><code>Some code</code>.</p>
+>>> interior spaces not followed by newline and trailing spaces after inline element
+First   word and *emphasised*  
+Second line.
+
+<<<
+<p>First   word and <em>emphasised</em><br />
+Second line.</p>
