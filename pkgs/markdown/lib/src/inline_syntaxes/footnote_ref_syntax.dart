@@ -31,8 +31,14 @@ class FootnoteRefSyntax {
   }) {
     secondary ??= false;
     final parser = context.parser;
-    final key = _footnoteLabel(text);
     final refs = parser.document.footnoteReferences;
+    if (refs.isEmpty) {
+      return null;
+    }
+    final key = _footnoteLabel(text);
+    if (key == null) {
+      return null;
+    }
     // `label` is what footnoteReferences stored, it is case sensitive.
     final label = refs.keys.firstWhere(
       (k) => k.toLowerCase() == key,
@@ -41,7 +47,7 @@ class FootnoteRefSyntax {
     // `count != null` means footnote was valid.
     var count = refs[label];
     // And then check if footnote was matched.
-    if (key == null || count == null) {
+    if (count == null) {
       return null;
     }
     final result = <Node>[];
