@@ -22,18 +22,19 @@ class CodeBlockSyntax extends BlockSyntax {
   @override
   List<Line> parseChildLines(BlockParser parser) {
     final childLines = <Line>[];
+    var prevWasBlank = false;
 
     while (!parser.isDone) {
       final isBlankLine = parser.current.isBlankLine;
-      if (isBlankLine && _shouldEnd(parser)) {
-        break;
-      }
-
-      if (!isBlankLine &&
-          childLines.isNotEmpty &&
+      if (isBlankLine) {
+        if (!prevWasBlank && _shouldEnd(parser)) {
+          break;
+        }
+      } else if (childLines.isNotEmpty &&
           !pattern.hasMatch(parser.current.content)) {
         break;
       }
+      prevWasBlank = isBlankLine;
 
       childLines.add(
         Line(

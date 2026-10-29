@@ -27,6 +27,14 @@
   marks a list item as nested.
 * `Document` no longer recurses when parsing the inline content of deeply
   nested blocks.
+* `HtmlRenderer.uniquifyId` no longer probes every previously used suffix for
+  each duplicate heading ID.
+* `FootnoteRefSyntax` no longer scans footnote definitions for brackets that
+  cannot be footnote references.
+* `CodeBlockSyntax` no longer rescans the following lines at every blank line
+  inside an indented code block.
+* `tablePattern` no longer backtracks exponentially on table delimiter rows
+  containing many spaces.
 
 ## 7.4.0
 
