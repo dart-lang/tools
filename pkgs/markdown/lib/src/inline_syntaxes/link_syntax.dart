@@ -56,14 +56,14 @@ class LinkSyntax extends DelimiterSyntax {
     required List<Node> Function() getChildren,
   }) {
     final context = LinkContext(parser, opener, getChildren);
-    final text = parser.source.substring(opener.endPos, parser.pos);
+    final textEnd = parser.pos;
     // The current character is the `]` that closed the link text. Examine the
     // next character, to determine what type of link we might have (a '('
     // means a possible inline link; otherwise a possible reference link).
     if (parser.pos + 1 >= parser.source.length) {
       // The `]` is at the end of the document, but this may still be a valid
       // shortcut reference link.
-      return _tryCreateReferenceLink(context, text, null);
+      return _tryCreateShortcutReferenceLink(context, textEnd);
     }
 
     // Peek at the next character; don't advance, so as to avoid later stepping
@@ -91,7 +91,7 @@ class LinkSyntax extends DelimiterSyntax {
       // Reset the parser position.
       parser.pos = leftParenIndex;
       parser.advanceBy(-1);
-      return _tryCreateReferenceLink(context, text, null);
+      return _tryCreateShortcutReferenceLink(context, textEnd);
     }
 
     if (char == $lbracket) {
@@ -103,10 +103,13 @@ class LinkSyntax extends DelimiterSyntax {
         // That opening `[` is not actually part of the link. Maybe a
         // *shortcut* reference link (followed by a `[`).
         parser.advanceBy(1);
-        return _tryCreateReferenceLink(context, text, null);
+        return _tryCreateShortcutReferenceLink(context, textEnd);
       }
       final label = _parseReferenceLinkLabel(parser);
       if (label != null) {
+        final text = linkBuilder == _noBuilder
+            ? null
+            : parser.source.substring(opener.endPos, textEnd);
         return _tryCreateReferenceLink(context, label, text, secondary: true);
       }
       return null;
@@ -114,6 +117,21 @@ class LinkSyntax extends DelimiterSyntax {
 
     // The link text (inside `[...]`) was not followed with a opening `(` nor
     // an opening `[`. Perhaps just a simple shortcut reference link (`[...]`).
+    return _tryCreateShortcutReferenceLink(context, textEnd);
+  }
+
+  Iterable<Node>? _tryCreateShortcutReferenceLink(
+    LinkContext context,
+    int textEnd,
+  ) {
+    final parser = context.parser;
+    final opener = context.opener;
+    // A link label can have at most 999 characters inside the square brackets.
+    // See https://spec.commonmark.org/0.30/#link-label.
+    if (textEnd - opener.endPos > 999) {
+      return null;
+    }
+    final text = parser.source.substring(opener.endPos, textEnd);
     return _tryCreateReferenceLink(context, text, null);
   }
 
