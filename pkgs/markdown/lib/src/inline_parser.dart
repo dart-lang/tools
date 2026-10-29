@@ -69,6 +69,7 @@ class InlineParser {
   final _tree = LinkedList<_TreeNode>();
 
   HtmlClosers? _htmlClosers;
+  Map<int, int>? _lastBacktickRun;
 
   InlineParser(this.source, this.document) {
     // User specified syntaxes are the first syntaxes to be evaluated.
@@ -479,6 +480,24 @@ final class _DelimiterNode extends LinkedListEntry<_DelimiterNode> {
 
 extension InlineParserScanState on InlineParser {
   HtmlClosers get htmlClosers => _htmlClosers ??= HtmlClosers(source);
+
+  Map<int, int> get lastBacktickRun =>
+      _lastBacktickRun ??= _scanBackticks(source);
+
+  static Map<int, int> _scanBackticks(String source) {
+    final result = <int, int>{};
+    var i = 0;
+    while (true) {
+      final start = source.indexOf('`', i);
+      if (start == -1) return result;
+      var end = start + 1;
+      while (end < source.length && source.codeUnitAt(end) == $backquote) {
+        end++;
+      }
+      result[end - start] = start;
+      i = end;
+    }
+  }
 }
 
 class HtmlClosers {
