@@ -326,8 +326,8 @@ class LinkSyntax extends DelimiterSyntax {
           buffer.writeCharCode(char);
         }
         buffer.writeCharCode(next);
-      } else if (char == $lf || char == $cr || char == $ff) {
-        // Not a link (no line breaks allowed within `<...>`).
+      } else if (char == $lf || char == $cr || char == $ff || char == $lt) {
+        // Not a link (no line breaks or unescaped `<` allowed within `<...>`).
         return null;
       } else if (char == $space) {
         buffer.write('%20');
