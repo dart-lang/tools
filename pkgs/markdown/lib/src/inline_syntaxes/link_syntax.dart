@@ -220,8 +220,14 @@ class LinkSyntax extends DelimiterSyntax {
     parser.advanceBy(1);
     if (parser.isDone) return null;
 
+    // A link label can have at most 999 characters inside the square brackets.
+    // See https://spec.commonmark.org/0.30/#link-label.
+    final start = parser.pos;
     final buffer = StringBuffer();
     while (true) {
+      if (parser.pos - start > 999) {
+        return null;
+      }
       final char = parser.charAt(parser.pos);
       if (char == $backslash) {
         parser.advanceBy(1);
@@ -240,7 +246,6 @@ class LinkSyntax extends DelimiterSyntax {
       }
       parser.advanceBy(1);
       if (parser.isDone) return null;
-      // TODO(srawlins): only check 999 characters, for performance reasons?
     }
 
     final label = buffer.toString();
