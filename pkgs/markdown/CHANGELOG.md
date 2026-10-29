@@ -25,6 +25,8 @@
   were flattened. `AlertBlockSyntax` stripped all whitespace following the
   `>` marker instead of at most one space, discarding the indentation that
   marks a list item as nested.
+* `Document` no longer recurses when parsing the inline content of deeply
+  nested blocks.
 
 ## 7.4.0
 
