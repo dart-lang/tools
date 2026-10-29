@@ -6,15 +6,19 @@
 library;
 
 import 'ast.dart';
+import 'block_syntaxes/alert_block_syntax.dart';
 import 'block_syntaxes/block_syntax.dart';
 import 'block_syntaxes/blockquote_syntax.dart';
 import 'block_syntaxes/code_block_syntax.dart';
 import 'block_syntaxes/dummy_block_syntax.dart';
 import 'block_syntaxes/empty_block_syntax.dart';
+import 'block_syntaxes/fenced_blockquote_syntax.dart';
+import 'block_syntaxes/footnote_def_syntax.dart';
 import 'block_syntaxes/header_syntax.dart';
 import 'block_syntaxes/horizontal_rule_syntax.dart';
 import 'block_syntaxes/html_block_syntax.dart';
 import 'block_syntaxes/link_reference_definition_syntax.dart';
+import 'block_syntaxes/list_syntax.dart';
 import 'block_syntaxes/ordered_list_syntax.dart';
 import 'block_syntaxes/paragraph_syntax.dart';
 import 'block_syntaxes/setext_header_syntax.dart';
@@ -84,7 +88,26 @@ class BlockParser {
     } else {
       blockSyntaxes.add(const DummyBlockSyntax());
     }
+
+    // Container blocks parse their content with a nested parser, so input
+    // such as many `>` markers on one line nests without bound and overflows
+    // the stack. Past [_maxContainerNesting] containers are not recognized,
+    // and their markers are parsed as text.
+    if (document.containerBlockNesting >= _maxContainerNesting) {
+      blockSyntaxes.removeWhere(_isContainer);
+    }
   }
+
+  /// How deeply container blocks such as block quotes and lists may nest.
+  static const _maxContainerNesting = 100;
+
+  /// Whether [syntax] parses its content with a nested [BlockParser].
+  static bool _isContainer(BlockSyntax syntax) =>
+      syntax is BlockquoteSyntax ||
+      syntax is ListSyntax ||
+      syntax is AlertBlockSyntax ||
+      syntax is FencedBlockquoteSyntax ||
+      syntax is FootnoteDefSyntax;
 
   /// Gets the current line.
   Line get current => lines[_pos];
@@ -161,6 +184,19 @@ class BlockParser {
     BlockSyntax? parentSyntax,
     bool disabledSetextHeading = false,
   }) {
+    final nesting = document.containerBlockNesting;
+    document.containerBlockNesting = nesting + 1;
+    try {
+      return _parseLines(parentSyntax, disabledSetextHeading);
+    } finally {
+      document.containerBlockNesting = nesting;
+    }
+  }
+
+  List<Node> _parseLines(
+    BlockSyntax? parentSyntax,
+    bool disabledSetextHeading,
+  ) {
     _parentSyntax = parentSyntax;
     _setextHeadingDisabled = disabledSetextHeading;
 

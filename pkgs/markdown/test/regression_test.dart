@@ -339,6 +339,10 @@ a <!--
     final imgHtml = markdownToHtml('${'![x' * 130}${'](/u)' * 130}');
     expect(imgHtml, contains('alt="${'x' * 128}"'));
   });
+
+  test('container block nesting depth is capped at 100', () {
+    expect(markdownToHtml('${'> ' * 101}a'), isNotEmpty);
+  });
 }
 
 class _CountingLine extends Line {
