@@ -51,7 +51,7 @@ final listPattern = RegExp(
 
 /// A line of hyphens separated by at least one pipe.
 final tablePattern = RegExp(
-  r'^[ ]{0,3}\|?([ \t]*:?\-+:?[ \t]*\|[ \t]*)+([ \t]|[ \t]*:?\-+:?[ \t]*)?$',
+  r'^[ ]{0,3}\|?[ \t]*(:?\-+:?[ \t]*\|[ \t]*)+(:?\-+:?[ \t]*)?$',
 );
 
 /// A line starting with `[^` and contains with `]:`, but without special chars
