@@ -60,6 +60,9 @@ class InlineParser {
   /// Top of the open bracket stack (`[` or `![` delimiters).
   _DelimiterNode? _topBracket;
 
+  /// Top of the active link bracket stack (`[` delimiters with `isActive`).
+  _DelimiterNode? _topActiveLinkBracket;
+
   int _nextDelimiterPos = 0;
 
   /// The tree of parsed HTML nodes.
@@ -156,6 +159,9 @@ class InlineParser {
       start = pos;
       return;
     }
+    if (delimiter.char == $lbracket) {
+      _topActiveLinkBracket = bracketNode.previousActiveLinkBracket;
+    }
     final syntax = delimiter.syntax;
     if (syntax is LinkSyntax && syntaxes.any((e) => e is LinkSyntax)) {
       final delimiterTreeNode = bracketNode.treeNode!;
@@ -181,9 +187,14 @@ class InlineParser {
         }
         bracketNode.unlink();
         if (delimiter.char == $lbracket) {
-          for (var b = _topBracket; b != null; b = b.previousBracket) {
-            if (b.delimiter.char == $lbracket) b.delimiter.isActive = false;
+          for (
+            var b = _topActiveLinkBracket;
+            b != null;
+            b = b.previousActiveLinkBracket
+          ) {
+            b.delimiter.isActive = false;
           }
+          _topActiveLinkBracket = null;
         }
         while (delimiterTreeNode.next != null) {
           delimiterTreeNode.next!.unlink();
@@ -393,6 +404,10 @@ class InlineParser {
     if (delimiter.char == $lbracket || delimiter.char == $exclamation) {
       node.previousBracket = _topBracket;
       _topBracket = node;
+      if (delimiter.char == $lbracket) {
+        node.previousActiveLinkBracket = _topActiveLinkBracket;
+        _topActiveLinkBracket = node;
+      }
     }
   }
 
@@ -455,6 +470,7 @@ final class _DelimiterNode extends LinkedListEntry<_DelimiterNode> {
   final int pos;
   _TreeNode? treeNode;
   _DelimiterNode? previousBracket;
+  _DelimiterNode? previousActiveLinkBracket;
 
   _DelimiterNode(this.delimiter, this.pos);
 }
