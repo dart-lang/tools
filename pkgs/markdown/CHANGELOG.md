@@ -67,6 +67,9 @@
 * An extended email autolink is now recognized at a position where a URL
   autolink is not allowed to start; previously `/www.a.b@c.d` linked only
   `ww.a.b@c.d`.
+* Emphasis after an earlier emphasis span that contained an unmatched
+  delimiter is now resolved, per the CommonMark specification; previously
+  `_*_ *a*` rendered the trailing `*a*` literally.
 
 ## 7.4.0
 
