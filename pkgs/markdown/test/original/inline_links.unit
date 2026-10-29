@@ -89,3 +89,8 @@ links [are](<http://example.com> "title\") awesome
 
 <<<
 <p>links [are](<a href="http://example.com">http://example.com</a> &quot;title&quot;) awesome</p>
+>>> not an inline link: unbalanced parenthesis in the destination before a title
+[a](b( "t"))
+
+<<<
+<p>[a](b( &quot;t&quot;))</p>
