@@ -25,6 +25,8 @@
   were flattened. `AlertBlockSyntax` stripped all whitespace following the
   `>` marker instead of at most one space, discarding the indentation that
   marks a list item as nested.
+* `tablePattern` no longer backtracks exponentially on table delimiter rows
+  containing many spaces.
 
 ## 7.4.0
 
