@@ -228,6 +228,24 @@ enum DashEvent {
       DashEvent.values.where((e) => e.label == label).firstOrNull;
 }
 
+/// The kind of a [DashTool].
+enum DashToolKind {
+  /// One of "the tools" in the PDD, such as the Dart CLI or the VS Code
+  /// plugins.
+  ///
+  /// Tools of this kind can be the root tool, the user's entry point, and own
+  /// opt-in status and consent.
+  tool,
+
+  /// A PDD "shared component", such as the analysis server, embedded inside
+  /// one or more tools.
+  ///
+  /// Shared components are only ever reported as the `tool` of an event. They
+  /// are never the root tool, never prompt for consent, and are never written
+  /// to the config file.
+  sharedComponent,
+}
+
 /// Officially-supported clients of this package as logical
 /// tools, grouped by user point of view.  Derived directly
 /// from the PDD.
@@ -249,6 +267,23 @@ enum DashTool {
   vscodePlugins(
     label: 'vscode-plugins',
     description: 'VS Code IDE extensions for Dart and Flutter',
+  ),
+
+  // Shared components.
+  analysisServer(
+    label: 'analysis-server',
+    description: 'Dart analysis server',
+    kind: DashToolKind.sharedComponent,
+  ),
+  dartMcpServer(
+    label: 'dart-mcp-server',
+    description: 'Dart and Flutter MCP server',
+    kind: DashToolKind.sharedComponent,
+  ),
+  skillsCli(
+    label: 'skills-cli',
+    description: 'Dart and Flutter agent skills CLI',
+    kind: DashToolKind.sharedComponent,
   );
 
   /// String used as the control flag and the value of the tool key in
@@ -259,7 +294,20 @@ enum DashTool {
   /// grouping.
   final String description;
 
-  const DashTool({required this.label, required this.description});
+  /// Whether this is a top-level tool or a shared component.
+  final DashToolKind kind;
+
+  const DashTool({
+    required this.label,
+    required this.description,
+    this.kind = DashToolKind.tool,
+  });
+
+  /// Whether this tool can be the root tool, the user's entry point that
+  /// determines opt-in status and consent.
+  ///
+  /// Shared components can't be the root tool.
+  bool get canBeRootTool => kind == DashToolKind.tool;
 
   /// This takes in the string label for a given [DashTool] and returns the
   /// enum for that string label.
