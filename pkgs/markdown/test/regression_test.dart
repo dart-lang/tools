@@ -252,6 +252,10 @@ a <!--
     expect(renderer.render(nodes), expected);
     expect(renderer.render(nodes), expected);
   });
+
+  test('container block nesting depth is capped at 100', () {
+    expect(markdownToHtml('${'> ' * 101}a'), isNotEmpty);
+  });
 }
 
 class _CountingLine extends Line {
