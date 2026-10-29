@@ -27,6 +27,8 @@
   marks a list item as nested.
 * `HtmlBlockSyntax.parseChildLines` no longer recurses for each consecutive
   HTML block, which overflowed the stack on many consecutive HTML blocks.
+* `ImageSyntax` no longer re-escapes the `alt` text of nested images at every
+  nesting level.
 * `Document` no longer recurses when parsing the inline content of deeply
   nested blocks.
 * `HtmlRenderer.uniquifyId` no longer probes every previously used suffix for
