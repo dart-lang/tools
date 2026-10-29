@@ -308,6 +308,16 @@ a <!--
       '<p>[text][${'a' * 998}[]</p>\n',
     );
   });
+
+  test('bare inline link destinations allow at most 32 nested parentheses', () {
+    final parens32 = '${'(' * 32}u${')' * 32}';
+    final parens33 = '${'(' * 33}u${')' * 33}';
+    expect(
+      markdownToHtml('[a]($parens32)'),
+      '<p><a href="$parens32">a</a></p>\n',
+    );
+    expect(markdownToHtml('[a]($parens33)'), '<p>[a]($parens33)</p>\n');
+  });
 }
 
 class _CountingLine extends Line {

@@ -415,6 +415,12 @@ class LinkSyntax extends DelimiterSyntax {
 
         case $lparen:
           parenCount++;
+          // Limit parentheses nesting to avoid quadratic scans on unclosed
+          // bare link destinations (see
+          // https://spec.commonmark.org/0.31.2/#link-destination).
+          if (parenCount > 33) {
+            return null;
+          }
           buffer.writeCharCode(char);
           break;
 
