@@ -25,6 +25,8 @@
   were flattened. `AlertBlockSyntax` stripped all whitespace following the
   `>` marker instead of at most one space, discarding the indentation that
   marks a list item as nested.
+* `HtmlRenderer.uniquifyId` no longer probes every previously used suffix for
+  each duplicate heading ID.
 * `FootnoteRefSyntax` no longer scans footnote definitions for brackets that
   cannot be footnote references.
 * `CodeBlockSyntax` no longer rescans the following lines at every blank line
