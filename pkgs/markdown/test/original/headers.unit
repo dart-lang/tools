@@ -43,3 +43,13 @@
 
 <<<
 <h1>header</h1>
+>>> header with trailing U+2028 line separator
+### Heading 
+
+<<<
+<h3>Heading</h3>
+>>> header with U+2028 and U+2029 in the text
+### Heading  mid  text
+
+<<<
+<h3>Heading  mid  text</h3>
