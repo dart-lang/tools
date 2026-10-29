@@ -351,6 +351,25 @@ a <!--
       '<p>ref:1000</p>\n',
     );
   });
+
+  test('inline nesting depth is capped at 128', () {
+    expect(markdownToHtml('${'*a **a ' * 100}b${' a** a*' * 100}'), isNotEmpty);
+    expect(markdownToHtml('${'**' * 200}a${'**' * 200}'), isNotEmpty);
+    final imgHtml = markdownToHtml('${'![x' * 130}${'](/u)' * 130}');
+    expect(imgHtml, contains('alt="${'x' * 128}"'));
+  });
+
+  test('deeply nested inline emphasis does not overflow the stack', () {
+    const n = 32000;
+    for (final input in [
+      '${'*a **a ' * n}b${' a** a*' * n}',
+      '${'*a **a ' * n}b${' a** a*' * n} x',
+      '${'**' * n}a${'**' * n}',
+      '![${'*a **a ' * n}b${' a** a*' * n}](/u)',
+    ]) {
+      expect(markdownToHtml(input), isNotEmpty);
+    }
+  });
 }
 
 class _CountingLine extends Line {
