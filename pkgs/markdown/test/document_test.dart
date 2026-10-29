@@ -125,5 +125,18 @@ void main() {
         );
       });
     });
+
+    test('reusing Document resolves newly added footnote definitions', () {
+      final document = Document(extensionSet: ExtensionSet.gitHubWeb);
+      final first = HtmlRenderer().render(
+        document.parseLines(['Text[^a]', '', '[^a]: first']),
+      );
+      expect(first, contains('href="#fn-a"'));
+
+      final second = HtmlRenderer().render(
+        document.parseLines(['Text[^b]', '', '[^b]: second']),
+      );
+      expect(second, contains('href="#fn-b"'));
+    });
   });
 }

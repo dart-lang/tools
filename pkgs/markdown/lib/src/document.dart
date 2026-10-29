@@ -23,6 +23,9 @@ class Document {
   /// They are case-insensitive and added by ref syntax.
   final footnoteLabels = <String>[];
 
+  Map<String, String>? _footnoteKeyByLower;
+  final _footnoteLabelIndex = <String, int>{};
+
   final LinkBuilder? linkBuilder;
   final LinkBuilder? imageLinkBuilder;
   final bool encodeHtml;
@@ -95,6 +98,7 @@ class Document {
   /// Parses the given [lines] of [Line] to a series of AST nodes.
   List<Node> parseLineList(List<Line> lines) {
     final nodes = BlockParser(lines, this).parseLines();
+    _footnoteKeyByLower = null;
     _parseInlineContent(nodes);
     // Do filter after parsing inline as we need ref count.
     return _filterFootnotes(nodes);
@@ -232,4 +236,18 @@ class LinkReference {
   /// If the parsed link reference definition does not include a title, use
   /// `null` for the [title] parameter.
   LinkReference(this.label, this.destination, this.title);
+}
+
+extension DocumentFootnotes on Document {
+  String? findFootnoteLabel(String key) => (_footnoteKeyByLower ??= {
+    for (final k in footnoteReferences.keys.toList().reversed)
+      k.toLowerCase(): k,
+  })[key];
+
+  int footnoteLabelOrdinal(String key) =>
+      _footnoteLabelIndex.putIfAbsent(key, () {
+        final index = footnoteLabels.length;
+        footnoteLabels.add(key);
+        return index;
+      });
 }
