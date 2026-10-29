@@ -74,12 +74,9 @@ class InlineParser {
     // of the line, then backtracks one character at a time, and the parser
     // retries from the next position, giving quadratic behavior on long
     // unbroken runs. Allowing the run to end at `$` makes it match in one step.
-    if (document.hasCustomInlineSyntaxes) {
-      // We should be less aggressive in blowing past "words".
-      syntaxes.add(TextSyntax(r'[A-Za-z0-9]+(?=\s|$)'));
-    } else {
-      syntaxes.add(TextSyntax(r'[ \tA-Za-z0-9]*[A-Za-z0-9](?=\s|$)'));
-    }
+    syntaxes.add(
+      _PlainTextSyntax(allowSpaces: !document.hasCustomInlineSyntaxes),
+    );
 
     if (document.withDefaultInlineSyntaxes) {
       // Custom link resolvers go after the generic text syntax.
@@ -371,4 +368,34 @@ class InlineParser {
   }
 
   bool get encodeHtml => document.encodeHtml;
+}
+
+class _PlainTextSyntax extends TextSyntax {
+  final bool _allowSpaces;
+
+  _PlainTextSyntax({required bool allowSpaces})
+    : _allowSpaces = allowSpaces,
+      super(
+        allowSpaces
+            ? r'[ \tA-Za-z0-9]*[A-Za-z0-9](?=\s|$)'
+            : r'[A-Za-z0-9]+(?=\s|$)',
+      );
+
+  @override
+  bool tryMatch(InlineParser parser, [int? startMatchPos]) {
+    final pos = startMatchPos ?? parser.pos;
+    if (pos > parser.start) {
+      final prev = parser.charAt(pos - 1);
+      if (_isAlphaNum(prev) ||
+          (_allowSpaces && (prev == $space || prev == $tab))) {
+        return false;
+      }
+    }
+    return super.tryMatch(parser, startMatchPos);
+  }
+
+  static bool _isAlphaNum(int char) =>
+      (char >= 0x30 && char <= 0x39) ||
+      (char >= 0x41 && char <= 0x5A) ||
+      (char >= 0x61 && char <= 0x7A);
 }

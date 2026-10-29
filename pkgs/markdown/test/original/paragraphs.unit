@@ -53,3 +53,8 @@ para
 <<<
 <p>para
 not code</p>
+>>> plain text runs interrupted by punctuation and inline elements
+hello_world.foo@bar and *emphasis*followed by plain text.
+
+<<<
+<p>hello_world.foo@bar and <em>emphasis</em>followed by plain text.</p>
