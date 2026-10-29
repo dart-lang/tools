@@ -27,6 +27,8 @@
   marks a list item as nested.
 * `CodeBlockSyntax` no longer rescans the following lines at every blank line
   inside an indented code block.
+* `tablePattern` no longer backtracks exponentially on table delimiter rows
+  containing many spaces.
 
 ## 7.4.0
 
