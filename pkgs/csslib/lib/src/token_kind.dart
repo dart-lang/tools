@@ -302,7 +302,7 @@ class TokenKind {
 
   // Extended color keywords:
   static const List<Map<String, Object>> _EXTENDED_COLOR_NAMES = [
-    {'name': 'aliceblue', 'value': 0xF08FF},
+    {'name': 'aliceblue', 'value': 0xF0F8FF},
     {'name': 'antiquewhite', 'value': 0xFAEBD7},
     {'name': 'aqua', 'value': 0x00FFFF},
     {'name': 'aquamarine', 'value': 0x7FFFD4},
