@@ -400,6 +400,9 @@ class LinkSyntax extends DelimiterSyntax {
         case $lf:
         case $cr:
         case $ff:
+          if (parenCount != 1) {
+            return null;
+          }
           final destination = buffer.toString();
           final title = _parseTitle(parser);
           if (title == null &&
@@ -408,14 +411,7 @@ class LinkSyntax extends DelimiterSyntax {
             // followed by mystery characters; no longer a link.
             return null;
           }
-          // [_parseTitle] made sure the title was follwed by a closing `)`
-          // (but it's up to the code here to examine the balance of
-          // parentheses).
-          parenCount--;
-          if (parenCount == 0) {
-            return InlineLink(destination, title: title);
-          }
-          break;
+          return InlineLink(destination, title: title);
 
         case $lparen:
           parenCount++;
