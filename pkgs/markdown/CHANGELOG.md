@@ -25,6 +25,8 @@
   were flattened. `AlertBlockSyntax` stripped all whitespace following the
   `>` marker instead of at most one space, discarding the indentation that
   marks a list item as nested.
+* `Document` no longer recurses when parsing the inline content of deeply
+  nested blocks.
 * `HtmlRenderer.uniquifyId` no longer probes every previously used suffix for
   each duplicate heading ID.
 * `FootnoteRefSyntax` no longer scans footnote definitions for brackets that
