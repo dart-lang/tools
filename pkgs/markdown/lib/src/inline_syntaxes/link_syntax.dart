@@ -155,30 +155,31 @@ class LinkSyntax extends DelimiterSyntax {
     Map<String, LinkReference> linkReferences, {
     required List<Node> Function() getChildren,
   }) {
-    final linkReference = linkReferences[normalizeLinkLabel(label)];
-    if (linkReference != null) {
-      return [
-        createNode(
-          linkReference.destination,
-          linkReference.title,
-          getChildren: getChildren,
-        ),
-      ];
-    } else {
-      // This link has no reference definition. But we allow users of the
-      // library to specify a custom resolver function ([linkResolver]) that
-      // may choose to handle this. Otherwise, it's just treated as plain
-      // text.
-
-      // Normally, label text does not get parsed as inline Markdown. However,
-      // for the benefit of the link resolver, we need to at least escape
-      // brackets, so that, e.g. a link resolver can receive `[\[\]]` as `[]`.
-      final sanitizedLabel = label
-          .replaceAll(r'\\', r'\')
-          .replaceAll(r'\[', '[')
-          .replaceAll(r'\]', ']');
-      return linkBuilder(sanitizedLabel, title, getChildren);
+    if (linkReferences.isNotEmpty) {
+      final linkReference = linkReferences[normalizeLinkLabel(label)];
+      if (linkReference != null) {
+        return [
+          createNode(
+            linkReference.destination,
+            linkReference.title,
+            getChildren: getChildren,
+          ),
+        ];
+      }
     }
+    // This link has no reference definition. But we allow users of the
+    // library to specify a custom resolver function ([linkResolver]) that
+    // may choose to handle this. Otherwise, it's just treated as plain
+    // text.
+
+    // Normally, label text does not get parsed as inline Markdown. However,
+    // for the benefit of the link resolver, we need to at least escape
+    // brackets, so that, e.g. a link resolver can receive `[\[\]]` as `[]`.
+    final sanitizedLabel = label
+        .replaceAll(r'\\', r'\')
+        .replaceAll(r'\[', '[')
+        .replaceAll(r'\]', ']');
+    return linkBuilder(sanitizedLabel, title, getChildren);
   }
 
   /// Create the node represented by a Markdown link.
