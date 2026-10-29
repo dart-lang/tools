@@ -25,6 +25,8 @@
   were flattened. `AlertBlockSyntax` stripped all whitespace following the
   `>` marker instead of at most one space, discarding the indentation that
   marks a list item as nested.
+* `HtmlRenderer.uniquifyId` no longer probes every previously used suffix for
+  each duplicate heading ID.
 
 ## 7.4.0
 
