@@ -108,6 +108,7 @@ class HtmlRenderer implements NodeVisitor {
   String render(List<Node> nodes) {
     buffer = StringBuffer();
     uniqueIds = <String>{};
+    _lastSuffix.clear();
 
     for (final node in nodes) {
       node.accept(this);
@@ -192,6 +193,8 @@ class HtmlRenderer implements NodeVisitor {
     _lastVisitedTag = _elementStack.removeLast().tag;
   }
 
+  final _lastSuffix = <String, int>{};
+
   /// Uniquifies an id generated from text.
   String uniquifyId(String id) {
     if (!uniqueIds.contains(id)) {
@@ -199,11 +202,12 @@ class HtmlRenderer implements NodeVisitor {
       return id;
     }
 
-    var suffix = 2;
+    var suffix = _lastSuffix[id] ?? 2;
     var suffixedId = '$id-$suffix';
     while (uniqueIds.contains(suffixedId)) {
-      suffixedId = '$id-${suffix++}';
+      suffixedId = '$id-${++suffix}';
     }
+    _lastSuffix[id] = suffix + 1;
     uniqueIds.add(suffixedId);
     return suffixedId;
   }

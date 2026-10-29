@@ -15,3 +15,8 @@ Text <a href="_foo_">And "_foo_"</a>.
 
 <<<
 <p>Text <a href="_foo_">And &quot;<em>foo</em>&quot;</a>.</p>
+>>> unclosed processing instruction, comment, and CDATA with trailing >
+a <?pi > b <!--comment- > c <![CDATA[x >
+
+<<<
+<p>a &lt;?pi &gt; b &lt;!--comment- &gt; c &lt;![CDATA[x &gt;</p>

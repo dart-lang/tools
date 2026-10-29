@@ -104,15 +104,21 @@ class Document {
   List<Node> parseInline(String text) => InlineParser(text, this).parse();
 
   void _parseInlineContent(List<Node> nodes) {
-    for (var i = 0; i < nodes.length; i++) {
-      final node = nodes[i];
-      if (node is UnparsedContent) {
-        final inlineNodes = parseInline(node.textContent);
-        nodes.removeAt(i);
-        nodes.insertAll(i, inlineNodes);
-        i += inlineNodes.length - 1;
-      } else if (node is Element && node.children != null) {
-        _parseInlineContent(node.children!);
+    final stack = <(List<Node>, int)>[(nodes, 0)];
+    while (stack.isNotEmpty) {
+      final (currentNodes, index) = stack.removeLast();
+      for (var i = index; i < currentNodes.length; i++) {
+        final node = currentNodes[i];
+        if (node is UnparsedContent) {
+          final inlineNodes = parseInline(node.textContent);
+          currentNodes.removeAt(i);
+          currentNodes.insertAll(i, inlineNodes);
+          i += inlineNodes.length - 1;
+        } else if (node is Element && node.children != null) {
+          stack.add((currentNodes, i + 1));
+          stack.add((node.children!, 0));
+          break;
+        }
       }
     }
   }
