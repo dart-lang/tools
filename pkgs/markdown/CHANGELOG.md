@@ -27,6 +27,8 @@
   marks a list item as nested.
 * `HtmlRenderer.uniquifyId` no longer probes every previously used suffix for
   each duplicate heading ID.
+* `tablePattern` no longer backtracks exponentially on table delimiter rows
+  containing many spaces.
 
 ## 7.4.0
 
