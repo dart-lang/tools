@@ -18,6 +18,18 @@ void main() {
       );
     });
 
+    test('combines adjacent Text nodes inside the last element', () {
+      final result = Document().parseInline('a [b] *c [d] e*');
+      expect(result, hasLength(2));
+      expect(result[0], isA<Text>().having((e) => e.text, 'text', 'a [b] '));
+      final em = result[1] as Element;
+      expect(em.tag, 'em');
+      expect(
+        em.children!.single,
+        isA<Text>().having((e) => e.text, 'text', 'c [d] e'),
+      );
+    });
+
     group('with encodeHtml enabled', () {
       final document = Document();
 
