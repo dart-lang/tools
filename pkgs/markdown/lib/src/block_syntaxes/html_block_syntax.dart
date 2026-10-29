@@ -46,10 +46,11 @@ class HtmlBlockSyntax extends BlockSyntax {
 
     // If the line after an HTML block starts an HTML block again, put them
     // together with the previous HTML block.
-    do {
+    while (!parser.isDone) {
       final match = pattern.firstMatch(parser.current.content);
+      if (match == null) break;
       var matchedCondition = 0;
-      for (var i = 0; i < match!.groupCount; i++) {
+      for (var i = 0; i < match.groupCount; i++) {
         if (match.group(i + 1) != null) {
           matchedCondition = i;
           break;
@@ -76,7 +77,7 @@ class HtmlBlockSyntax extends BlockSyntax {
         }
         parser.advance();
       }
-    } while (!parser.isDone && pattern.hasMatch(parser.current.content));
+    }
 
     return lines;
   }
