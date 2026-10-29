@@ -68,6 +68,8 @@ class InlineParser {
   /// The tree of parsed HTML nodes.
   final _tree = LinkedList<_TreeNode>();
 
+  HtmlClosers? _htmlClosers;
+
   InlineParser(this.source, this.document) {
     // User specified syntaxes are the first syntaxes to be evaluated.
     syntaxes.addAll(document.inlineSyntaxes);
@@ -473,4 +475,18 @@ final class _DelimiterNode extends LinkedListEntry<_DelimiterNode> {
   _DelimiterNode? previousActiveLinkBracket;
 
   _DelimiterNode(this.delimiter, this.pos);
+}
+
+extension InlineParserScanState on InlineParser {
+  HtmlClosers get htmlClosers => _htmlClosers ??= HtmlClosers(source);
+}
+
+class HtmlClosers {
+  final String _source;
+  late final int lastGt = _source.lastIndexOf('>');
+  late final int lastProcessingEnd = _source.lastIndexOf('?>');
+  late final int lastCommentEnd = _source.lastIndexOf('-->');
+  late final int lastCdataEnd = _source.lastIndexOf(']]>');
+
+  HtmlClosers(this._source);
 }

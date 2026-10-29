@@ -7,6 +7,7 @@
 
 import '../../markdown.dart';
 import '../charcode.dart';
+import '../inline_parser.dart' show InlineParserScanState;
 import '../patterns.dart';
 
 /// Leave inline HTML tags alone, from
@@ -41,4 +42,27 @@ class InlineHtmlSyntax extends TextSyntax {
 
   InlineHtmlSyntax()
     : super(_pattern, startCharacter: $lt, caseSensitive: true);
+
+  @override
+  bool tryMatch(InlineParser parser, [int? startMatchPos]) {
+    final pos = startMatchPos ?? parser.pos;
+    final source = parser.source;
+    if (source.codeUnitAt(pos) != $lt) return false;
+    final closers = parser.htmlClosers;
+    if (closers.lastGt <= pos) return false;
+    if (pos + 1 < source.length) {
+      final next = source.codeUnitAt(pos + 1);
+      if (next == 0x3F && closers.lastProcessingEnd < pos + 2) {
+        return false;
+      }
+      if (next == $exclamation && pos + 2 < source.length) {
+        final afterBang = source.codeUnitAt(pos + 2);
+        if (afterBang == 0x2D && closers.lastCommentEnd <= pos) return false;
+        if (afterBang == $lbracket && closers.lastCdataEnd < pos + 9) {
+          return false;
+        }
+      }
+    }
+    return super.tryMatch(parser, pos);
+  }
 }
