@@ -492,6 +492,8 @@ class LinkSyntax extends DelimiterSyntax {
         buffer.writeCharCode(next);
       } else if (char == closeDelimiter) {
         break;
+      } else if (delimiter == $lparen && char == $lparen) {
+        return null;
       } else {
         buffer.writeCharCode(char);
       }
