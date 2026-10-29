@@ -12,3 +12,7 @@ http://www.foo.com
 www._www._a
 <<<
 <p>www._www._a</p>
+>>> url schemes, www boundary, and email with special characters
+https://example.com and ftp://example.com and awww.example.com and foo+bar-baz.qux@example.com
+<<<
+<p><a href="https://example.com">https://example.com</a> and <a href="ftp://example.com">ftp://example.com</a> and awww.example.com and <a href="mailto:foo+bar-baz.qux@example.com">foo+bar-baz.qux@example.com</a></p>
