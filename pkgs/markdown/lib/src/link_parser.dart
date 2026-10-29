@@ -10,7 +10,7 @@ import 'util.dart';
 class LinkParser {
   final BlockParser _blockParser;
 
-  /// The source text accumulated from consumed lines so far.
+  /// The source text of the current line (prefixed with `\n` after advancing).
   String _source;
 
   /// The current read position in [_source].
@@ -72,12 +72,14 @@ class LinkParser {
     return i;
   }
 
-  /// Appends the next line from [_blockParser] if not at a block end.
+  /// Advances [_source] to the next line from [_blockParser] if not at a block
+  /// end.
   bool _tryAdvanceLine() {
     if (BlockSyntax.isAtBlockEnd(_blockParser)) {
       return false;
     }
-    _source = '$_source\n${_blockParser.current.content}';
+    _source = '\n${_blockParser.current.content}';
+    _pos = 0;
     _blockParser.advance();
     _linesConsumed++;
     return true;
@@ -179,32 +181,36 @@ class LinkParser {
 
     // Advance past the opening `[`.
     advance();
-    final start = pos;
 
     // A link label can have at most 999 characters inside the square brackets.
     // See https://spec.commonmark.org/0.30/#link-label.
+    final buffer = StringBuffer();
     while (true) {
-      if (pos - start > 999) {
-        return false;
-      }
       if (isDone && !_tryAdvanceLine()) {
         return false;
       }
       final char = charAt();
       if (char == $backslash) {
+        buffer.writeCharCode(char);
         advance();
         if (isDone && !_tryAdvanceLine()) {
           return false;
         }
+        buffer.writeCharCode(charAt());
       } else if (char == $lbracket) {
         return false;
       } else if (char == $rbracket) {
         break;
+      } else {
+        buffer.writeCharCode(char);
+      }
+      if (buffer.length > 999) {
+        return false;
       }
       advance();
     }
 
-    final text = substring(start, pos);
+    final text = buffer.toString();
     if (text.isBlank) {
       return false;
     }
@@ -333,7 +339,7 @@ class LinkParser {
 
     final closeDelimiter = delimiter == $lparen ? $rparen : delimiter;
     advance();
-    final start = pos;
+    final buffer = StringBuffer();
 
     // Looking for an un-escaped closing delimiter.
     while (true) {
@@ -342,19 +348,23 @@ class LinkParser {
       }
       final char = charAt();
       if (char == $backslash) {
+        buffer.writeCharCode(char);
         advance();
         if (isDone && !_tryAdvanceLine()) {
           return false;
         }
+        buffer.writeCharCode(charAt());
       } else if (char == closeDelimiter) {
         break;
       } else if (delimiter == $lparen && char == $lparen) {
         return false;
+      } else {
+        buffer.writeCharCode(char);
       }
       advance();
     }
 
-    _title = substring(start, pos);
+    _title = buffer.toString();
 
     // Advance past the closing delimiter.
     advance();
