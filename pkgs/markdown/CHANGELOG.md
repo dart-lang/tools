@@ -25,6 +25,8 @@
   were flattened. `AlertBlockSyntax` stripped all whitespace following the
   `>` marker instead of at most one space, discarding the indentation that
   marks a list item as nested.
+* `HtmlBlockSyntax.parseChildLines` no longer recurses for each consecutive
+  HTML block, which overflowed the stack on many consecutive HTML blocks.
 
 ## 7.4.0
 
