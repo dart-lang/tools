@@ -167,6 +167,9 @@ class LinkSyntax extends DelimiterSyntax {
         ];
       }
     }
+    if (linkBuilder == _noBuilder) {
+      return null;
+    }
     // This link has no reference definition. But we allow users of the
     // library to specify a custom resolver function ([linkResolver]) that
     // may choose to handle this. Otherwise, it's just treated as plain
