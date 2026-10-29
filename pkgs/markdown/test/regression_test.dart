@@ -313,7 +313,20 @@ a <!--
       ),
       '<p>ref:1000</p>\n',
     );
+    expect(
+      markdownToHtml('[$label1000]: /url\n\n[a]'),
+      '<p>[$label1000]: /url</p>\n<p>[a]</p>\n',
+    );
+    final escaped999 = '${'a' * 997}\\[';
     final escaped1000 = '${'a' * 998}\\[';
+    expect(
+      markdownToHtml('[$escaped999]: /url\n\n[text][$escaped999]'),
+      '<p><a href="/url">text</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$escaped1000]: /url\n\n[text][$escaped1000]'),
+      '<p>[${'a' * 998}[]: /url</p>\n<p>[text][${'a' * 998}[]</p>\n',
+    );
     expect(
       markdownToHtml(
         '[text][$escaped1000]',
