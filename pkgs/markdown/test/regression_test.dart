@@ -241,6 +241,20 @@ a <!--
       ),
       '<p>hello <a>a</a></p>\n',
     );
+    expect(
+      markdownToHtml(
+        'hello [*a] b*',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>*a</a> b*</p>\n',
+    );
+    expect(
+      markdownToHtml(
+        'hello [*a*]',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>*a*</a></p>\n',
+    );
   });
 
   test('reusing HtmlRenderer resets duplicate heading ID suffixes', () {
