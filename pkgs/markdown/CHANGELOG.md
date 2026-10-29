@@ -27,6 +27,8 @@
   marks a list item as nested.
 * `ImageSyntax` no longer re-escapes the `alt` text of nested images at every
   nesting level.
+* `Document` no longer recurses when parsing the inline content of deeply
+  nested blocks.
 * `HtmlRenderer.uniquifyId` no longer probes every previously used suffix for
   each duplicate heading ID.
 * `FootnoteRefSyntax` no longer scans footnote definitions for brackets that
