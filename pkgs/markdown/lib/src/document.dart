@@ -238,12 +238,25 @@ class LinkReference {
   LinkReference(this.label, this.destination, this.title);
 }
 
+/// Footnote lookups used by `FootnoteRefSyntax`, cached on the [Document] so
+/// that each reference costs O(1) instead of a scan over all definitions.
 extension DocumentFootnotes on Document {
-  String? findFootnoteLabel(String key) => (_footnoteKeyByLower ??= {
-    for (final k in footnoteReferences.keys.toList().reversed)
-      k.toLowerCase(): k,
-  })[key];
+  /// Finds the footnote definition label whose lower-cased form is [key].
+  ///
+  /// When several definitions share a lower-cased label, the first one wins.
+  String? findFootnoteLabel(String key) {
+    var byLower = _footnoteKeyByLower;
+    if (byLower == null) {
+      byLower = <String, String>{};
+      for (final k in footnoteReferences.keys) {
+        byLower[k.toLowerCase()] ??= k;
+      }
+      _footnoteKeyByLower = byLower;
+    }
+    return byLower[key];
+  }
 
+  /// The 0-based position of [key] in [footnoteLabels], adding it if absent.
   int footnoteLabelOrdinal(String key) =>
       _footnoteLabelIndex.putIfAbsent(key, () {
         final index = footnoteLabels.length;

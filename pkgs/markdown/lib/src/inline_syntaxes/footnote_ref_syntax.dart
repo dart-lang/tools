@@ -42,10 +42,12 @@ class FootnoteRefSyntax {
     }
     // `label` is what footnoteReferences stored, it is case sensitive.
     final label = parser.document.findFootnoteLabel(key);
+    if (label == null) {
+      return null;
+    }
     // `count != null` means footnote was valid.
-    var count = label == null ? null : refs[label];
-    // And then check if footnote was matched.
-    if (label == null || count == null) {
+    var count = refs[label];
+    if (count == null) {
       return null;
     }
     final result = <Node>[];
