@@ -43,6 +43,8 @@
   CommonMark definition of an absolute URI.
 * `headerPattern` no longer backtracks quadratically on ATX headings with many
   spaces before the text, and ATX headings may contain `U+2028` and `U+2029`.
+* A bare inline link destination must have balanced parentheses before a
+  title; `[a](b( "t"))` is no longer a link, per the CommonMark specification.
 
 ## 7.4.0
 
