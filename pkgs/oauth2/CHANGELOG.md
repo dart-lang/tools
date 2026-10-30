@@ -1,3 +1,10 @@
+## 2.1.0
+
+* Add support for RFC 8414 (Authorization Server Metadata Discovery) and RFC 9728 (Protected Resource Metadata Discovery).
+* Add support for RFC 7591 (Dynamic Client Registration).
+* Add support for RFC 8707 (Resource Indicators) via `resources` parameter in grants and credentials refresh.
+* Add support for custom client authenticators via `customAuth` parameter in `AuthorizationCodeGrant` and `ClientCredentialsGrant`.
+
 ## 2.0.5
 
 * Make underlying HTTP client non-nullable to inherit its close behavior.
