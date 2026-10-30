@@ -89,3 +89,13 @@ links [are](<http://example.com> "title\") awesome
 
 <<<
 <p>links [are](<a href="http://example.com">http://example.com</a> &quot;title&quot;) awesome</p>
+>>> not an inline link: unescaped ( in a parenthesized title
+[a](b (c(d))
+
+<<<
+<p>[a](b (c(d))</p>
+>>> inline link with an escaped ( in a parenthesized title
+[a](b (c\(d))
+
+<<<
+<p><a href="b" title="c(d">a</a></p>
