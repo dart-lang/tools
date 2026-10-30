@@ -54,6 +54,8 @@
   characters through.
 * Reference links whose label has more than 999 characters are no longer
   resolved, per the CommonMark limit on link labels.
+* Bare inline link destinations may contain at most 32 levels of nested
+  parentheses, matching `cmark`.
 
 ## 7.4.0
 
