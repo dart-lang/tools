@@ -384,6 +384,10 @@ class _PlainTextSyntax extends TextSyntax {
   @override
   bool tryMatch(InlineParser parser, [int? startMatchPos]) {
     final pos = startMatchPos ?? parser.pos;
+    // A run that matches here would also have matched one character earlier
+    // if that character belongs to the run, and `InlineParser.parse` already
+    // tried every position since `parser.start`, so there is nothing to find
+    // in the rest of a run that failed at its start.
     if (pos > parser.start) {
       final prev = parser.charAt(pos - 1);
       if (_isAlphaNum(prev) ||
