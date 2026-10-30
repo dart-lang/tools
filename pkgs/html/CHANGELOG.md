@@ -7,6 +7,7 @@
 - Fix `querySelector` and `querySelectorAll` throwing a null-check `TypeError` instead of `FormatException` on empty `:not()` selectors.
 - Fix `TreeBuilder` not updating `Text.sourceSpan` when merging consecutive foster-parented text nodes before a `<table>`.
 - Fix `ParseError.message` throwing a null-check `TypeError` on `unexpected-EOF-after-attribute-value` tokenizer errors, and align tokenizer error codes `this-closing-flag-on-end-tag` -> `self-closing-flag-on-end-tag` and `expected-end-of-tag-but-got-eof` -> `expected-end-of-tag-name-but-got-eof` with `errorMessages`.
+- Fix the `:empty` and `:blank` selectors not matching elements without child nodes, and matching elements that have a child element next to a comment.
 
 ## 0.15.7
 
