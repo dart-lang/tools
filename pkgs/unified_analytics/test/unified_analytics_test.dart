@@ -10,6 +10,7 @@ import 'dart:math';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
+import 'package:file/local.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/constants.dart';
@@ -878,6 +879,61 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       );
     },
   );
+
+  test('getSessionId falls back when the session file cannot be created', () {
+    // A missing session file in a read-only directory must not throw.
+    // https://github.com/dart-lang/tools/issues/2646
+    // A real read-only directory is the faithful fixture; memory file
+    // systems do not enforce POSIX permissions. Skip when the platform
+    // does not enforce them (for example running as root).
+    final localFs = const LocalFileSystem();
+    final dir = localFs.systemTempDirectory.createTempSync('ro_session');
+    addTearDown(() {
+      try {
+        io.Process.runSync('chmod', ['-R', 'u+w', dir.path]);
+      } on Object {
+        // Best effort; deletion may still fail on exotic platforms.
+      }
+      try {
+        dir.deleteSync(recursive: true);
+      } on Object {
+        // Best effort cleanup.
+      }
+    });
+    try {
+      io.Process.runSync('chmod', ['-R', 'a-w', dir.path]);
+    } on io.ProcessException {
+      markTestSkipped('chmod is unavailable on this platform');
+    }
+
+    var deniesWrites = false;
+    try {
+      dir.childFile('probe').writeAsStringSync('x');
+    } on io.FileSystemException {
+      deniesWrites = true;
+    }
+    if (!deniesWrites) {
+      markTestSkipped(
+        'read-only directories are not enforced on this platform',
+      );
+    }
+
+    final userProperty = UserProperty(
+      flutterChannel: flutterChannel,
+      host: 'macos',
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      tool: initialTool.label,
+      hostOsVersion: '14.0',
+      locale: 'en',
+      clientIde: null,
+      aiAgent: null,
+      sessionFile: dir.childFile('session.json'),
+    );
+    int? sessionId;
+    expect(() => sessionId = userProperty.getSessionId(), returnsNormally);
+    expect(sessionId, isNotNull);
+  });
 
   test('When isExternal is false, config and message behavior is bypassed', () {
     final secondAnalytics = Analytics.fake(

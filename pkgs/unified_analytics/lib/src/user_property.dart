@@ -61,20 +61,28 @@ class UserProperty {
   /// Note, the file will always be updated when calling this method
   /// because the last ping variable will always need to be persisted.
   int? getSessionId() {
-    _refreshSessionData();
-    final now = clock.now();
+    try {
+      _refreshSessionData();
+      final now = clock.now();
 
-    // Convert the epoch time from the last ping into datetime and check if we
-    // are within the kSessionDurationMinutes.
-    final lastPingDateTime = sessionFile.lastModifiedSync();
-    if (now.difference(lastPingDateTime).inMinutes > kSessionDurationMinutes) {
-      // Update the session file with the latest session id
-      _sessionId = now.millisecondsSinceEpoch;
-      writeSessionContents(sessionFile: sessionFile);
-    } else {
-      // Update the last modified timestamp with the current timestamp so that
-      // we can use it for the next _lastPing calculation
-      sessionFile.setLastModifiedSync(now);
+      // Convert the epoch time from the last ping into datetime and check if we
+      // are within the kSessionDurationMinutes.
+      final lastPingDateTime = sessionFile.lastModifiedSync();
+      if (now.difference(lastPingDateTime).inMinutes >
+          kSessionDurationMinutes) {
+        // Update the session file with the latest session id
+        _sessionId = now.millisecondsSinceEpoch;
+        writeSessionContents(sessionFile: sessionFile);
+      } else {
+        // Update the last modified timestamp with the current timestamp so that
+        // we can use it for the next _lastPing calculation
+        sessionFile.setLastModifiedSync(now);
+      }
+    } on FileSystemException {
+      // The session file cannot be read, created, or updated (for example a
+      // read-only home directory); fall back to a timestamp session id
+      // instead of throwing, mirroring the existing fallbacks above.
+      _sessionId ??= clock.now().millisecondsSinceEpoch;
     }
 
     return _sessionId;
