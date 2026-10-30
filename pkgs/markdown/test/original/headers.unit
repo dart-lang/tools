@@ -53,3 +53,8 @@
 
 <<<
 <h3>Heading  mid  text</h3>
+>>> header with closing "#" after U+2028
+# a  #
+
+<<<
+<h1>a</h1>
