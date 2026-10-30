@@ -39,6 +39,8 @@
   inside an indented code block.
 * `tablePattern` no longer backtracks exponentially on table delimiter rows
   containing many spaces.
+* `headerPattern` no longer backtracks quadratically on ATX headings with many
+  spaces before the text, and ATX headings may contain `U+2028` and `U+2029`.
 
 ## 7.4.0
 
