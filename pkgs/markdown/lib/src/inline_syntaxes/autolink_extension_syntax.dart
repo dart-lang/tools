@@ -136,23 +136,19 @@ class AutolinkExtensionSyntax extends InlineSyntax {
     // When an autolink ends in `)`, see
     // https://github.github.com/gfm/#example-625.
     if (text.endsWith(')')) {
-      final match = RegExp(r'(\(.*)?(\)+)$').firstMatch(text)!;
-
-      if (match[1] == null) {
-        excludedLength = match[2]!.length;
-      } else {
-        var parenCount = 0;
-        for (var i = 0; i < text.length; i++) {
-          final char = text.codeUnitAt(i);
-          if (char == $lparen) {
-            parenCount++;
-          } else if (char == $rparen) {
-            parenCount--;
-          }
+      var parenCount = 0;
+      for (var i = 0; i < text.length; i++) {
+        final char = text.codeUnitAt(i);
+        if (char == $lparen) {
+          parenCount++;
+        } else if (char == $rparen) {
+          parenCount--;
         }
-        if (parenCount < 0) {
-          excludedLength = parenCount.abs();
-        }
+      }
+      while (parenCount < 0 &&
+          text.codeUnitAt(text.length - 1 - excludedLength) == $rparen) {
+        excludedLength++;
+        parenCount++;
       }
     }
     // If an autolink ends in a semicolon `;`, see
