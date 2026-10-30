@@ -43,6 +43,8 @@
   CommonMark definition of an absolute URI.
 * `headerPattern` no longer backtracks quadratically on ATX headings with many
   spaces before the text, and ATX headings may contain `U+2028` and `U+2029`.
+* Bare inline link destinations may contain at most 32 levels of nested
+  parentheses, matching `cmark`.
 
 ## 7.4.0
 

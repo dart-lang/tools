@@ -89,3 +89,13 @@ links [are](<http://example.com> "title\") awesome
 
 <<<
 <p>links [are](<a href="http://example.com">http://example.com</a> &quot;title&quot;) awesome</p>
+>>> inline link destination with 32 nested parentheses
+[a](((((((((((((((((((((((((((((((((u)))))))))))))))))))))))))))))))))
+
+<<<
+<p><a href="((((((((((((((((((((((((((((((((u))))))))))))))))))))))))))))))))">a</a></p>
+>>> not an inline link: destination with 33 nested parentheses
+[a]((((((((((((((((((((((((((((((((((u))))))))))))))))))))))))))))))))))
+
+<<<
+<p>[a]((((((((((((((((((((((((((((((((((u))))))))))))))))))))))))))))))))))</p>
