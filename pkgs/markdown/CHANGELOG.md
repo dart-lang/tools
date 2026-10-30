@@ -58,6 +58,9 @@
   parentheses, matching `cmark`.
 * A parenthesized inline link title (`(...)`) may no longer contain an
   unescaped `(`, per the CommonMark specification.
+* Trailing `)` are stripped from extended autolinks one at a time while they
+  are unmatched, per the GFM path validation rule; previously
+  `www.example.com/a))b(c)` lost the `c`.
 
 ## 7.4.0
 
