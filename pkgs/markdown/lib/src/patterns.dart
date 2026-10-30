@@ -11,7 +11,7 @@ final setextPattern = RegExp(r'^[ ]{0,3}(=+|-+)\s*$');
 /// Leading (and trailing) `#` define atx-style headers.
 ///
 /// Starts with 1-6 unescaped `#` characters which must not be followed by a
-/// non-space character. Line may end with any number of `#` characters,.
+/// non-space character. Line may end with any number of `#` characters.
 final headerPattern = RegExp(
   r'^ {0,3}(#{1,6})(?:[ \x09\x0b\x0c].*?)?(?:\s(#+)\s*)?$',
   // `.` must also match U+2028 and U+2029, which `LineSplitter` leaves in a
