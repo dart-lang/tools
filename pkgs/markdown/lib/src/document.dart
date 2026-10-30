@@ -23,6 +23,9 @@ class Document {
   /// They are case-insensitive and added by ref syntax.
   final footnoteLabels = <String>[];
 
+  Map<String, String>? _footnoteKeyByLower;
+  final _footnoteLabelIndex = <String, int>{};
+
   final LinkBuilder? linkBuilder;
   final LinkBuilder? imageLinkBuilder;
   final bool encodeHtml;
@@ -95,6 +98,7 @@ class Document {
   /// Parses the given [lines] of [Line] to a series of AST nodes.
   List<Node> parseLineList(List<Line> lines) {
     final nodes = BlockParser(lines, this).parseLines();
+    _footnoteKeyByLower = null;
     _parseInlineContent(nodes);
     // Do filter after parsing inline as we need ref count.
     return _filterFootnotes(nodes);
@@ -232,4 +236,31 @@ class LinkReference {
   /// If the parsed link reference definition does not include a title, use
   /// `null` for the [title] parameter.
   LinkReference(this.label, this.destination, this.title);
+}
+
+/// Footnote lookups used by `FootnoteRefSyntax`, cached on the [Document] so
+/// that each reference costs O(1) instead of a scan over all definitions.
+extension DocumentFootnotes on Document {
+  /// Finds the footnote definition label whose lower-cased form is [key].
+  ///
+  /// When several definitions share a lower-cased label, the first one wins.
+  String? findFootnoteLabel(String key) {
+    var byLower = _footnoteKeyByLower;
+    if (byLower == null) {
+      byLower = <String, String>{};
+      for (final k in footnoteReferences.keys) {
+        byLower[k.toLowerCase()] ??= k;
+      }
+      _footnoteKeyByLower = byLower;
+    }
+    return byLower[key];
+  }
+
+  /// The 0-based position of [key] in [footnoteLabels], adding it if absent.
+  int footnoteLabelOrdinal(String key) =>
+      _footnoteLabelIndex.putIfAbsent(key, () {
+        final index = footnoteLabels.length;
+        footnoteLabels.add(key);
+        return index;
+      });
 }

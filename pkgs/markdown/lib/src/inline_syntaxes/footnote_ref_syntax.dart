@@ -3,6 +3,7 @@ library;
 
 import '../ast.dart' show Element, Node, Text;
 import '../charcode.dart';
+import '../document.dart' show DocumentFootnotes;
 import 'link_syntax.dart' show LinkContext;
 
 /// The spec of GFM about footnotes is
@@ -40,13 +41,12 @@ class FootnoteRefSyntax {
       return null;
     }
     // `label` is what footnoteReferences stored, it is case sensitive.
-    final label = refs.keys.firstWhere(
-      (k) => k.toLowerCase() == key,
-      orElse: () => '',
-    );
+    final label = parser.document.findFootnoteLabel(key);
+    if (label == null) {
+      return null;
+    }
     // `count != null` means footnote was valid.
     var count = refs[label];
-    // And then check if footnote was matched.
     if (count == null) {
       return null;
     }
@@ -56,12 +56,7 @@ class FootnoteRefSyntax {
       result.add(Text('!'));
     }
     refs[label] = ++count;
-    final labels = parser.document.footnoteLabels;
-    var pos = labels.indexOf(key);
-    if (pos < 0) {
-      pos = labels.length;
-      labels.add(key);
-    }
+    final pos = parser.document.footnoteLabelOrdinal(key);
 
     // `children` are text segments after '[^' before ']'.
     final children = context.getChildren();
