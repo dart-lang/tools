@@ -10,11 +10,29 @@ import 'mime_shared.dart';
 
 /// Bytes for `()<>@,;:\\"/[]?={} \t`.
 const _separators = {
-  40, 41, 60, 62, 64, 44, 59, 58, 92, 34, 47, 91, 93, 63, 61, 123, 125, 32, 9 //
+  char_code.lparen,
+  char_code.rparen,
+  char_code.lt,
+  char_code.gt,
+  char_code.at,
+  char_code.comma,
+  char_code.semicolon,
+  char_code.colon,
+  char_code.backslash,
+  char_code.quot,
+  char_code.slash,
+  char_code.lbracket,
+  char_code.rbracket,
+  char_code.question,
+  char_code.equal,
+  char_code.lbrace,
+  char_code.rbrace,
+  char_code.sp,
+  char_code.ht,
 };
 
 bool _isTokenChar(int byte) =>
-    byte > 31 && byte < 128 && !_separators.contains(byte);
+    byte > 31 && byte < 127 && !_separators.contains(byte);
 
 int _toLowerCase(int byte) {
   const delta = char_code.lowerA - char_code.upperA;
@@ -123,15 +141,40 @@ class BoundMultipartStream {
           _subscription.pause();
           _buffer = data;
           _index = 0;
-          _parse();
+          try {
+            _parse();
+          } on MimeMultipartException catch (error, stackTrace) {
+            _fail(error, stackTrace);
+          }
         }, onDone: () {
           if (_state != _doneCode) {
-            _controller
-                .addError(const MimeMultipartException('Bad multipart ending'));
+            _fail(const MimeMultipartException('Bad multipart ending'));
+            return;
+          }
+          if (_multipartController case final controller?) {
+            _multipartController = null;
+            controller.close();
           }
           _controller.close();
-        }, onError: _controller.addError);
+        }, onError: _fail);
       };
+  }
+
+  void _fail(Object error, [StackTrace? stackTrace]) {
+    _state = _failCode;
+    _buffer = _placeholderBuffer;
+    _index = 0;
+    _controller.addError(error, stackTrace);
+    if (_multipartController case final controller?) {
+      _multipartController = null;
+      controller
+        ..addError(error, stackTrace)
+        ..close();
+    }
+    _subscription
+        .cancel()
+        .catchError(_controller.addError)
+        .whenComplete(_controller.close);
   }
 
   void _resumeStream() {
@@ -223,11 +266,6 @@ class BoundMultipartStream {
 
         case _boundaryEndCode:
           _expectByteValue(byte, char_code.lf);
-          _multipartController?.close();
-          if (_multipartController != null) {
-            _multipartController = null;
-            _tryPropagateControllerState();
-          }
           _state = _headerStartCode;
 
         case _headerStartCode:
@@ -236,6 +274,9 @@ class BoundMultipartStream {
             _state = _headerEndingCode;
           } else {
             // Start of new header field.
+            if (!_isTokenChar(byte)) {
+              throw const MimeMultipartException('Invalid header field name');
+            }
             _headerField.add(_toLowerCase(byte));
             _state = _headerFieldCode;
           }
@@ -274,15 +315,24 @@ class BoundMultipartStream {
           if (byte == char_code.sp || byte == char_code.ht) {
             _state = _headerValueStartCode;
           } else {
-            final headerField = utf8.decode(_headerField);
-            final headerValue = utf8.decode(_headerValue);
-            _headers![headerField.toLowerCase()] = headerValue;
+            final headerField = ascii.decode(_headerField);
+            final String headerValue;
+            try {
+              headerValue = utf8.decode(_headerValue);
+            } on FormatException catch (e) {
+              throw MimeMultipartException(
+                  'Failed to parse multipart mime header: ${e.message}');
+            }
+            _headers![headerField] = headerValue;
             _headerField.clear();
             _headerValue.clear();
             if (byte == char_code.cr) {
               _state = _headerEndingCode;
             } else {
               // Start of new header field.
+              if (!_isTokenChar(byte)) {
+                throw const MimeMultipartException('Invalid header field name');
+              }
               _headerField.add(_toLowerCase(byte));
               _state = _headerFieldCode;
             }
@@ -338,11 +388,6 @@ class BoundMultipartStream {
 
         case _lastBoundaryEndCode:
           _expectByteValue(byte, char_code.lf);
-          _multipartController?.close();
-          if (_multipartController != null) {
-            _multipartController = null;
-            _tryPropagateControllerState();
-          }
           _state = _doneCode;
 
         default:
@@ -359,12 +404,9 @@ class BoundMultipartStream {
       reportData();
     }
 
-    // Resume if at end.
-    if (_index == _buffer.length) {
-      _buffer = _placeholderBuffer;
-      _index = 0;
-      _subscription.resume();
-    }
+    _buffer = _placeholderBuffer;
+    _index = 0;
+    _subscription.resume();
   }
 }
 
