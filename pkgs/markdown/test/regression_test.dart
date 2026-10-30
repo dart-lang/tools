@@ -370,6 +370,12 @@ a <!--
       expect(markdownToHtml(input), isNotEmpty);
     }
   });
+
+  test('container block nesting depth is capped at 128', () {
+    final html = markdownToHtml('${'> ' * 129}a');
+    expect('<blockquote>'.allMatches(html).length, 128);
+    expect(html, contains('<blockquote>&gt; a\n</blockquote>'));
+  });
 }
 
 class _CountingLine extends Line {

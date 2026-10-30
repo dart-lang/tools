@@ -70,6 +70,8 @@
 * Emphasis after an earlier emphasis span that contained an unmatched
   delimiter is now resolved, per the CommonMark specification; previously
   `_*_ *a*` rendered the trailing `*a*` literally.
+* Container blocks nest at most 128 levels deep; deeper content is rendered as
+  plain text instead of overflowing the call stack.
 
 ## 7.4.0
 
