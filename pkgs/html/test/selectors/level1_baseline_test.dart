@@ -1,9 +1,9 @@
 // Copyright (c) project authors. All rights reserved.
-// Licensed under the MIT license.
+// Licensed under the BSD-3-Clause license.
 // See LICENSE file in the project root for details.
 
-/// Test for the Selectors API ported from
-/// <https://github.com/w3c/web-platform-tests/tree/master/selectors-api>
+/// Selectors API tests adapted from web-platform-tests:
+/// <https://github.com/web-platform-tests/wpt/tree/96c61ac7c21f7f37526d1c03c4c6087734524130/selectors-api>
 ///
 /// Note, unlike the original we don't operate in-browser on a DOM loaded into
 /// an iframe, but instead operate over a parsed DOM.
