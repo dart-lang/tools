@@ -392,6 +392,12 @@ class LinkSyntax extends DelimiterSyntax {
 
         case $lparen:
           parenCount++;
+          // Like cmark, allow at most 32 levels of nested parentheses, so an
+          // unclosed destination such as `[a]((((` does not rescan the rest
+          // of the line at every `]`.
+          if (parenCount > 33) {
+            return null;
+          }
           buffer.writeCharCode(char);
           break;
 
