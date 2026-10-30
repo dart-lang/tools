@@ -254,7 +254,9 @@ a <!--
   });
 
   test('container block nesting depth is capped at 100', () {
-    expect(markdownToHtml('${'> ' * 101}a'), isNotEmpty);
+    final html = markdownToHtml('${'> ' * 101}a');
+    expect('<blockquote>'.allMatches(html).length, 100);
+    expect(html, contains('<p>&gt; a</p>'));
   });
 }
 
