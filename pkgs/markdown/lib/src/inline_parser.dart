@@ -319,24 +319,24 @@ class InlineParser {
   // Combine any remaining adjacent Text nodes. This is important to produce
   // correct output across newlines, where whitespace is sometimes compressed.
   void _combineAdjacentText(List<Node> nodes) {
-    for (var i = 0; i < nodes.length - 1; i++) {
-      final node = nodes[i];
+    var writeIndex = 0;
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
       if (node is Element && node.children != null) {
         _combineAdjacentText(node.children!);
-        continue;
+      } else if (node is Text && i + 1 < nodes.length && nodes[i + 1] is Text) {
+        final buffer = StringBuffer(node.textContent);
+        do {
+          i++;
+          buffer.write(nodes[i].textContent);
+        } while (i + 1 < nodes.length && nodes[i + 1] is Text);
+        node = Text(buffer.toString());
       }
-      if (node is Text && nodes[i + 1] is Text) {
-        final buffer = StringBuffer(
-          '${node.textContent}${nodes[i + 1].textContent}',
-        );
-        var j = i + 2;
-        while (j < nodes.length && nodes[j] is Text) {
-          buffer.write(nodes[j].textContent);
-          j++;
-        }
-        nodes[i] = Text(buffer.toString());
-        nodes.removeRange(i + 1, j);
-      }
+      if (writeIndex != i) nodes[writeIndex] = node;
+      writeIndex++;
+    }
+    if (writeIndex != nodes.length) {
+      nodes.length = writeIndex;
     }
   }
 
