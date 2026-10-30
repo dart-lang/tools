@@ -432,6 +432,95 @@ void main() {
     );
   });
 
+  test('logFileStats returns null without reading the file when it exceeds '
+      'kMaxLogFileSize', () async {
+    var readAsLinesSyncCalled = false;
+    var deleted = false;
+    var created = false;
+    final logFile = _FakeFile('log.txt')
+      .._statSyncImpl = (() => _FakeFileStat(kMaxLogFileSize + 1))
+      .._deleteSyncImpl = (() => deleted = true)
+      .._createSyncImpl = (() => created = true)
+      .._readAsLinesSyncImpl = (() {
+        readAsLinesSyncCalled = true;
+        return <String>[];
+      });
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      readAsLinesSyncCalled,
+      isFalse,
+      reason:
+          'The file should not be read into memory when it exceeds '
+          'kMaxLogFileSize, to avoid OOM on abnormally large log files',
+    );
+    expect(
+      deleted && created,
+      isTrue,
+      reason:
+          'The oversized file should be replaced with an empty one, '
+          'otherwise it would stay too large to ever collect stats from',
+    );
+  });
+
+  test('logFileStats returns null without reading the file when it '
+      "doesn't exist", () async {
+    var readAsLinesSyncCalled = false;
+    final logFile = _FakeFile('log.txt')
+      // A nonexistent file reports a size of -1.
+      .._statSyncImpl = (() => _FakeFileStat(-1))
+      .._readAsLinesSyncImpl = (() {
+        readAsLinesSyncCalled = true;
+        return <String>[];
+      });
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      readAsLinesSyncCalled,
+      isFalse,
+      reason:
+          'A missing log file is an expected state (e.g. before any events '
+          'have been logged) and should not be treated as an error',
+    );
+    expect(
+      logHandler.errorSet,
+      isEmpty,
+      reason: 'A missing log file should not be reported as an exception',
+    );
+  });
+
+  test('logFileStats returns null and records an analyticsException when '
+      'reading the log file throws a FileSystemException', () async {
+    var deleted = false;
+    var created = false;
+    final logFile = _FakeFile('log.txt')
+      .._statSyncImpl = (() => _FakeFileStat(0))
+      .._deleteSyncImpl = (() => deleted = true)
+      .._createSyncImpl = (() => created = true)
+      .._readAsLinesSyncImpl = () {
+        throw const FileSystemException(
+          "Failed to decode data using encoding 'utf-8'",
+          'log.txt',
+        );
+      };
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      logHandler.errorSet,
+      contains(
+        Event.analyticsException(
+          workflow: 'LogHandler.logFileStats',
+          error: 'FileSystemException',
+          description: "message: Failed to decode data using encoding 'utf-8'",
+        ),
+      ),
+    );
+    expect(deleted && created, isTrue, reason: 'The unreadable file is reset');
+  });
+
   test('truncateStringToLength returns same string when '
       'max length greater than string length', () {
     final testString = 'Version 14.1 (Build 23B74)';
@@ -510,6 +599,9 @@ class _FakeFile extends Fake implements File {
 
   @override
   FileStat statSync() => _statSyncImpl!();
+
+  @override
+  bool existsSync() => true;
 
   void Function()? _deleteSyncImpl;
 

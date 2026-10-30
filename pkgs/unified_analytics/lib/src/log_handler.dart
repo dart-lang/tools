@@ -180,11 +180,52 @@ class LogHandler {
   /// Note that some developers may only be Dart
   /// developers and will not have any data for flutter
   /// related metrics.
+  ///
+  /// Returns `null` if there are no records to report, including when the
+  /// log file doesn't exist yet, is abnormally large, or couldn't be read.
+  /// A log file that is abnormally large or couldn't be read is deleted and
+  /// replaced with an empty one.
   LogFileStats? logFileStats() {
+    List<String> lines;
+    try {
+      // Avoid reading abnormally large (or corrupted) log files into
+      // memory, which can exhaust the heap; see
+      // https://github.com/dart-lang/tools/issues/275.
+      //
+      // A negative size (e.g. -1) means the file doesn't exist, which is a
+      // common and expected state (for example, before any events have been
+      // logged); treat that the same as "nothing to report" instead of
+      // falling through to a FileSystemException.
+      final size = logFile.statSync().size;
+      if (size < 0) return null;
+      if (size > kMaxLogFileSize) {
+        // Discard the file, as `save` does. Otherwise it would stay too large
+        // to read and no stats could be collected from it again.
+        _resetLogFile();
+        return null;
+      }
+
+      lines = logFile.readAsLinesSync();
+    } on FileSystemException catch (err) {
+      errorSet.add(
+        Event.analyticsException(
+          workflow: 'LogHandler.logFileStats',
+          error: err.runtimeType.toString(),
+          // Deliberately omit `err.path`: it can contain PII or proprietary
+          // information (e.g. parts of the user's file system layout).
+          description: 'message: ${err.message}',
+        ),
+      );
+      // A log file that can't be read (e.g. it has invalid UTF-8) would keep
+      // failing, so discard it.
+      _resetLogFile();
+
+      return null;
+    }
+
     // Parse each line of the log file through [LogItem],
     // some returned records may be null if malformed, they will be
     // removed later through `whereType<LogItem>`
-    final lines = logFile.readAsLinesSync();
     final records = lines
         .skip(max(0, lines.length - kLogFileLength))
         .map((String e) {
@@ -306,6 +347,16 @@ class LogHandler {
         logFile.deleteSync();
       }
       logFile.createSync();
+    }
+  }
+
+  /// Replaces the log file with an empty one, ignoring any failure.
+  void _resetLogFile() {
+    try {
+      if (logFile.existsSync()) logFile.deleteSync();
+      logFile.createSync();
+    } on Object {
+      // Best effort; `save` resets the file again if it's still unusable.
     }
   }
 
