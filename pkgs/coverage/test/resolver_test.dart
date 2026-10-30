@@ -187,6 +187,76 @@ void main() {
 
       expect(resolver.resolve(p.toUri(outsideFile.path).toString()), null);
     });
+
+    test('does not resolve package URIs outside every known root', () async {
+      final resolver = await Resolver.create(
+        packagesPath: p.join(
+          d.sandbox,
+          'foo',
+          '.dart_tool',
+          'package_config.json',
+        ),
+      );
+      File(
+        p.join(d.sandbox, 'outside.txt'),
+      ).writeAsStringSync('should not leak');
+
+      expect(resolver.resolve('package:foo/..%2f..%2foutside.txt'), null);
+    });
+
+    test('does not resolve dart URIs outside every known root', () async {
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+        sdkRoot: p.join(d.sandbox, 'sdk'),
+      );
+      File(
+        p.join(d.sandbox, 'outside.txt'),
+      ).writeAsStringSync('should not leak');
+
+      expect(resolver.resolve('dart:io/..%2f..%2foutside.txt'), null);
+    });
+
+    test('resolves package URIs through a symlinked root', () async {
+      final sandboxUriPath = p.toUri(d.sandbox).toString();
+      await d.dir('real_pkg', [
+        d.dir('lib', [d.file('real.dart', 'final real = true;')]),
+      ]).create();
+      Link(
+        p.join(d.sandbox, 'link_pkg'),
+      ).createSync(p.join(d.sandbox, 'real_pkg'));
+      await d.dir('linked', [
+        d.dir('.dart_tool', [
+          d.file('package_config.json', '''
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "linked",
+      "rootUri": "$sandboxUriPath/link_pkg",
+      "packageUri": "lib/"
+    }
+  ]
+}
+'''),
+        ]),
+      ]).create();
+
+      final resolver = await Resolver.create(
+        packagesPath: p.join(
+          d.sandbox,
+          'linked',
+          '.dart_tool',
+          'package_config.json',
+        ),
+      );
+
+      expect(
+        resolver.resolve('package:linked/real.dart'),
+        File(
+          p.join(d.sandbox, 'real_pkg', 'lib', 'real.dart'),
+        ).resolveSymbolicLinksSync(),
+      );
+    });
   });
 
   group('Bazel resolver', () {
