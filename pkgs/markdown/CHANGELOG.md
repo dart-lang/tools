@@ -43,6 +43,9 @@
   CommonMark definition of an absolute URI.
 * `headerPattern` no longer backtracks quadratically on ATX headings with many
   spaces before the text, and ATX headings may contain `U+2028` and `U+2029`.
+* Container blocks (block quotes, lists, alerts, footnote definitions) nest at
+  most 100 levels deep; deeper markers are parsed as text instead of overflowing
+  the call stack.
 
 ## 7.4.0
 

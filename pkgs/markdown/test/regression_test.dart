@@ -252,6 +252,12 @@ a <!--
     expect(renderer.render(nodes), expected);
     expect(renderer.render(nodes), expected);
   });
+
+  test('container block nesting depth is capped at 100', () {
+    final html = markdownToHtml('${'> ' * 101}a');
+    expect('<blockquote>'.allMatches(html).length, 100);
+    expect(html, contains('<p>&gt; a</p>'));
+  });
 }
 
 class _CountingLine extends Line {

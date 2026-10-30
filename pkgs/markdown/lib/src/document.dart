@@ -25,6 +25,7 @@ class Document {
 
   Map<String, String>? _footnoteKeyByLower;
   final _footnoteLabelIndex = <String, int>{};
+  int _containerBlockNesting = 0;
 
   final LinkBuilder? linkBuilder;
   final LinkBuilder? imageLinkBuilder;
@@ -263,4 +264,12 @@ extension DocumentFootnotes on Document {
         footnoteLabels.add(key);
         return index;
       });
+}
+
+/// The container block nesting depth of the [BlockParser] currently running,
+/// kept on the [Document] so that nested parsers can cap it without exposing
+/// a mutable counter on the public API.
+extension DocumentContainerNesting on Document {
+  int get containerBlockNesting => _containerBlockNesting;
+  set containerBlockNesting(int value) => _containerBlockNesting = value;
 }
