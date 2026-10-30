@@ -43,6 +43,10 @@
   CommonMark definition of an absolute URI.
 * `headerPattern` no longer backtracks quadratically on ATX headings with many
   spaces before the text, and ATX headings may contain `U+2028` and `U+2029`.
+* Reference link labels over 999 characters are no longer parsed, inline and
+  container block nesting depths are capped, and unclosed link destinations,
+  link titles, inline HTML tags, code spans, extended autolinks, and delimiter
+  runs are parsed in linear time without overflowing the call stack.
 
 ## 7.4.0
 

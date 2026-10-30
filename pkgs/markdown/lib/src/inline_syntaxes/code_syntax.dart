@@ -20,7 +20,7 @@ class CodeSyntax extends InlineSyntax {
   //
   // This conforms to the delimiters of inline code, both in Markdown.pl, and
   // CommonMark.
-  static const _pattern = r'(`+(?!`))((?:.|\n)*?[^`])\1(?!`)';
+  static const _pattern = r'(`+(?!`))([^]*?[^`])\1(?!`)';
 
   CodeSyntax() : super(_pattern);
 
@@ -35,6 +35,7 @@ class CodeSyntax extends InlineSyntax {
       //             ^--parser.pos
       return false;
     }
+    if (!_hasCloser(parser)) return false;
 
     final match = pattern.matchAsPrefix(parser.source, parser.pos);
     if (match == null) {
@@ -43,6 +44,17 @@ class CodeSyntax extends InlineSyntax {
     parser.writeText();
     if (onMatch(parser, match)) parser.consume(match.match.length);
     return true;
+  }
+
+  bool _hasCloser(InlineParser parser) {
+    final source = parser.source;
+    var openEnd = parser.pos;
+    while (openEnd < source.length &&
+        source.codeUnitAt(openEnd) == $backquote) {
+      openEnd++;
+    }
+    final lastStart = parser.lastBacktickRun[openEnd - parser.pos];
+    return lastStart != null && lastStart >= openEnd;
   }
 
   @override

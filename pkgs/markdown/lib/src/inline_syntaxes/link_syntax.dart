@@ -56,14 +56,14 @@ class LinkSyntax extends DelimiterSyntax {
     required List<Node> Function() getChildren,
   }) {
     final context = LinkContext(parser, opener, getChildren);
-    final text = parser.source.substring(opener.endPos, parser.pos);
+    final textEnd = parser.pos;
     // The current character is the `]` that closed the link text. Examine the
     // next character, to determine what type of link we might have (a '('
     // means a possible inline link; otherwise a possible reference link).
     if (parser.pos + 1 >= parser.source.length) {
       // The `]` is at the end of the document, but this may still be a valid
       // shortcut reference link.
-      return _tryCreateReferenceLink(context, text, null);
+      return _tryCreateShortcutReferenceLink(context, textEnd);
     }
 
     // Peek at the next character; don't advance, so as to avoid later stepping
@@ -91,7 +91,7 @@ class LinkSyntax extends DelimiterSyntax {
       // Reset the parser position.
       parser.pos = leftParenIndex;
       parser.advanceBy(-1);
-      return _tryCreateReferenceLink(context, text, null);
+      return _tryCreateShortcutReferenceLink(context, textEnd);
     }
 
     if (char == $lbracket) {
@@ -103,10 +103,13 @@ class LinkSyntax extends DelimiterSyntax {
         // That opening `[` is not actually part of the link. Maybe a
         // *shortcut* reference link (followed by a `[`).
         parser.advanceBy(1);
-        return _tryCreateReferenceLink(context, text, null);
+        return _tryCreateShortcutReferenceLink(context, textEnd);
       }
       final label = _parseReferenceLinkLabel(parser);
       if (label != null) {
+        final text = linkBuilder == _noBuilder
+            ? null
+            : parser.source.substring(opener.endPos, textEnd);
         return _tryCreateReferenceLink(context, label, text, secondary: true);
       }
       return null;
@@ -114,6 +117,21 @@ class LinkSyntax extends DelimiterSyntax {
 
     // The link text (inside `[...]`) was not followed with a opening `(` nor
     // an opening `[`. Perhaps just a simple shortcut reference link (`[...]`).
+    return _tryCreateShortcutReferenceLink(context, textEnd);
+  }
+
+  Iterable<Node>? _tryCreateShortcutReferenceLink(
+    LinkContext context,
+    int textEnd,
+  ) {
+    final parser = context.parser;
+    final opener = context.opener;
+    // A link label can have at most 999 characters inside the square brackets.
+    // See https://spec.commonmark.org/0.30/#link-label.
+    if (textEnd - opener.endPos > 999) {
+      return null;
+    }
+    final text = parser.source.substring(opener.endPos, textEnd);
     return _tryCreateReferenceLink(context, text, null);
   }
 
@@ -137,30 +155,34 @@ class LinkSyntax extends DelimiterSyntax {
     Map<String, LinkReference> linkReferences, {
     required List<Node> Function() getChildren,
   }) {
-    final linkReference = linkReferences[normalizeLinkLabel(label)];
-    if (linkReference != null) {
-      return [
-        createNode(
-          linkReference.destination,
-          linkReference.title,
-          getChildren: getChildren,
-        ),
-      ];
-    } else {
-      // This link has no reference definition. But we allow users of the
-      // library to specify a custom resolver function ([linkResolver]) that
-      // may choose to handle this. Otherwise, it's just treated as plain
-      // text.
-
-      // Normally, label text does not get parsed as inline Markdown. However,
-      // for the benefit of the link resolver, we need to at least escape
-      // brackets, so that, e.g. a link resolver can receive `[\[\]]` as `[]`.
-      final sanitizedLabel = label
-          .replaceAll(r'\\', r'\')
-          .replaceAll(r'\[', '[')
-          .replaceAll(r'\]', ']');
-      return linkBuilder(sanitizedLabel, title, getChildren);
+    if (linkReferences.isNotEmpty) {
+      final linkReference = linkReferences[normalizeLinkLabel(label)];
+      if (linkReference != null) {
+        return [
+          createNode(
+            linkReference.destination,
+            linkReference.title,
+            getChildren: getChildren,
+          ),
+        ];
+      }
     }
+    if (linkBuilder == _noBuilder) {
+      return null;
+    }
+    // This link has no reference definition. But we allow users of the
+    // library to specify a custom resolver function ([linkResolver]) that
+    // may choose to handle this. Otherwise, it's just treated as plain
+    // text.
+
+    // Normally, label text does not get parsed as inline Markdown. However,
+    // for the benefit of the link resolver, we need to at least escape
+    // brackets, so that, e.g. a link resolver can receive `[\[\]]` as `[]`.
+    final sanitizedLabel = label
+        .replaceAll(r'\\', r'\')
+        .replaceAll(r'\[', '[')
+        .replaceAll(r'\]', ']');
+    return linkBuilder(sanitizedLabel, title, getChildren);
   }
 
   /// Create the node represented by a Markdown link.
@@ -220,8 +242,14 @@ class LinkSyntax extends DelimiterSyntax {
     parser.advanceBy(1);
     if (parser.isDone) return null;
 
+    // A link label can have at most 999 characters inside the square brackets.
+    // See https://spec.commonmark.org/0.30/#link-label.
+    final start = parser.pos;
     final buffer = StringBuffer();
     while (true) {
+      if (parser.pos - start > 999) {
+        return null;
+      }
       final char = parser.charAt(parser.pos);
       if (char == $backslash) {
         parser.advanceBy(1);
@@ -240,7 +268,6 @@ class LinkSyntax extends DelimiterSyntax {
       }
       parser.advanceBy(1);
       if (parser.isDone) return null;
-      // TODO(srawlins): only check 999 characters, for performance reasons?
     }
 
     final label = buffer.toString();
@@ -299,8 +326,8 @@ class LinkSyntax extends DelimiterSyntax {
           buffer.writeCharCode(char);
         }
         buffer.writeCharCode(next);
-      } else if (char == $lf || char == $cr || char == $ff) {
-        // Not a link (no line breaks allowed within `<...>`).
+      } else if (char == $lf || char == $cr || char == $ff || char == $lt) {
+        // Not a link (no line breaks or unescaped `<` allowed within `<...>`).
         return null;
       } else if (char == $space) {
         buffer.write('%20');
@@ -373,6 +400,9 @@ class LinkSyntax extends DelimiterSyntax {
         case $lf:
         case $cr:
         case $ff:
+          if (parenCount != 1) {
+            return null;
+          }
           final destination = buffer.toString();
           final title = _parseTitle(parser);
           if (title == null &&
@@ -381,17 +411,16 @@ class LinkSyntax extends DelimiterSyntax {
             // followed by mystery characters; no longer a link.
             return null;
           }
-          // [_parseTitle] made sure the title was follwed by a closing `)`
-          // (but it's up to the code here to examine the balance of
-          // parentheses).
-          parenCount--;
-          if (parenCount == 0) {
-            return InlineLink(destination, title: title);
-          }
-          break;
+          return InlineLink(destination, title: title);
 
         case $lparen:
           parenCount++;
+          // Limit parentheses nesting to avoid quadratic scans on unclosed
+          // bare link destinations (see
+          // https://spec.commonmark.org/0.31.2/#link-destination).
+          if (parenCount > 33) {
+            return null;
+          }
           buffer.writeCharCode(char);
           break;
 
@@ -463,6 +492,8 @@ class LinkSyntax extends DelimiterSyntax {
         buffer.writeCharCode(next);
       } else if (char == closeDelimiter) {
         break;
+      } else if (delimiter == $lparen && char == $lparen) {
+        return null;
       } else {
         buffer.writeCharCode(char);
       }

@@ -241,6 +241,20 @@ a <!--
       ),
       '<p>hello <a>a</a></p>\n',
     );
+    expect(
+      markdownToHtml(
+        'hello [*a] b*',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>*a</a> b*</p>\n',
+    );
+    expect(
+      markdownToHtml(
+        'hello [*a*]',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>*a*</a></p>\n',
+    );
   });
 
   test('reusing HtmlRenderer resets duplicate heading ID suffixes', () {
@@ -251,6 +265,145 @@ a <!--
         '<h1 id="a">a</h1>\n<h1 id="a-2">a</h1>\n<h1 id="a-3">a</h1>';
     expect(renderer.render(nodes), expected);
     expect(renderer.render(nodes), expected);
+  });
+
+  test('reference link labels over 999 characters are not resolved', () {
+    final label999 = 'a' * 999;
+    final label1000 = 'a' * 1000;
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[text][$label999]'),
+      '<p><a href="/url">text</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[$label999]'),
+      '<p><a href="/url">$label999</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[$label1000]'),
+      '<p>[$label1000]</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[$label999][]'),
+      '<p><a href="/url">$label999</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[$label1000][]'),
+      '<p>[$label1000][]</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[text][$label999]'),
+      '<p><a href="/url">text</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[text][$label1000]'),
+      '<p>[text][$label1000]</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]', linkResolver: (name, [_]) => Text(name)),
+      '<p>$label999</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label1000]', linkResolver: (name, [_]) => Text(name)),
+      '<p>[$label1000]</p>\n',
+    );
+    expect(
+      markdownToHtml(
+        '[$label1000][ref]',
+        linkResolver: (name, [title]) => Text('$name:${title?.length}'),
+      ),
+      '<p>ref:1000</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label1000]: /url\n\n[a]'),
+      '<p>[$label1000]: /url</p>\n<p>[a]</p>\n',
+    );
+    final escaped999 = '${'a' * 997}\\[';
+    final escaped1000 = '${'a' * 998}\\[';
+    expect(
+      markdownToHtml('[$escaped999]: /url\n\n[text][$escaped999]'),
+      '<p><a href="/url">text</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$escaped1000]: /url\n\n[text][$escaped1000]'),
+      '<p>[${'a' * 998}[]: /url</p>\n<p>[text][${'a' * 998}[]</p>\n',
+    );
+    expect(
+      markdownToHtml(
+        '[text][$escaped1000]',
+        linkResolver: (name, [_]) => Text(name),
+      ),
+      '<p>[text][${'a' * 998}[]</p>\n',
+    );
+  });
+
+  test('bare inline link destinations allow at most 32 nested parentheses', () {
+    final parens32 = '${'(' * 32}u${')' * 32}';
+    final parens33 = '${'(' * 33}u${')' * 33}';
+    expect(
+      markdownToHtml('[a]($parens32)'),
+      '<p><a href="$parens32">a</a></p>\n',
+    );
+    expect(markdownToHtml('[a]($parens33)'), '<p>[a]($parens33)</p>\n');
+  });
+
+  test('inline nesting depth is capped at 128', () {
+    expect(markdownToHtml('${'*a **a ' * 100}b${' a** a*' * 100}'), isNotEmpty);
+    expect(markdownToHtml('${'**' * 200}a${'**' * 200}'), isNotEmpty);
+    final imgHtml = markdownToHtml('${'![x' * 130}${'](/u)' * 130}');
+    expect(imgHtml, contains('alt="${'x' * 128}"'));
+  });
+
+  test('container block nesting depth is capped at 100', () {
+    expect(markdownToHtml('${'> ' * 101}a'), isNotEmpty);
+  });
+
+  test(
+    'unclosed inline link destinations and titles do not take quadratic time',
+    () {
+      const count = 8000;
+      final unclosedBare = '[a]((' * count;
+      final unclosedBracketed = '[a](<' * count;
+      final unclosedParenTitle = '[a](b (' * count;
+      final unbalancedBeforeTitle = '[a](b( "t")' * count;
+
+      final time = Stopwatch()..start();
+      expect(markdownToHtml(unclosedBare), '<p>$unclosedBare</p>\n');
+      expect(
+        markdownToHtml(unclosedBracketed),
+        '<p>${'[a](&lt;' * count}</p>\n',
+      );
+      expect(
+        markdownToHtml(unclosedParenTitle),
+        '<p>$unclosedParenTitle</p>\n',
+      );
+      expect(
+        markdownToHtml(unbalancedBeforeTitle),
+        '<p>${'[a](b( &quot;t&quot;)' * count}</p>\n',
+      );
+      expect(time.elapsedMilliseconds, lessThan(10000));
+    },
+  );
+
+  test('many inline delimiters on a line do not take quadratic time', () {
+    const count = 16000;
+    final emphasis = '*a* ' * count;
+    final links = '[a](/u) ' * count;
+    final imagesAndLinks = '${'![ ' * 4000}${'[a](/u) ' * 4000}';
+
+    final time = Stopwatch()..start();
+    expect(
+      markdownToHtml(emphasis),
+      '<p>${'<em>a</em> ' * (count - 1)}<em>a</em></p>\n',
+    );
+    expect(
+      markdownToHtml(links),
+      '<p>${'<a href="/u">a</a> ' * (count - 1)}<a href="/u">a</a></p>\n',
+    );
+    expect(
+      markdownToHtml(imagesAndLinks),
+      '<p>${'![ ' * 4000}${'<a href="/u">a</a> ' * 3999}<a href="/u">a</a></p>\n',
+    );
+    expect(time.elapsedMilliseconds, lessThan(10000));
   });
 }
 
