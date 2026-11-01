@@ -9,13 +9,13 @@
 const releaseRepository = 'dart-lang/tools';
 
 /// The tag of the release with the prebuilt libraries.
-const releaseTag = 'boring-binaries-20261023-069d3bb9e6ef';
+const releaseTag = 'boring-binaries-20261101-33e9e69722af';
 
 /// The commit of this repository that the libraries were built from, or empty
 /// if they were built elsewhere. The `analyze` job of
 /// .github/workflows/boring.yaml checks that the native sources haven't
 /// changed since.
-const sourceCommit = '069d3bb9e6ef9aa6e08f2166f80a18e333d51139';
+const sourceCommit = '33e9e69722af43dd38f716a13fb72ee9addcede8';
 
 /// Mapping from release asset name (see `releaseAssetName`) to
 /// SHA-256 hash.
@@ -35,15 +35,15 @@ const fileHashes = <String, String>{
   'boring-ios-arm64-iphoneos-libbssl_dart.dylib':
       'cc24a6eca23faf606eba5850a04508b24d4722de908fc16e3056f73c7bc91a4c',
   'boring-ios-arm64-iphoneos-libbssl_dart_static.a':
-      'b8214d6312bf06091fe631c63d3f83f89ffc2aeab3030aff20175a4ac3c760e4',
+      '79e79b86f425b3fb3146355e27ccb45ccfcfb47072b4d156fc1ad5c9afd07bdd',
   'boring-ios-arm64-iphonesimulator-libbssl_dart.dylib':
       '1de979fd1bd57683f279f0f70f583d262fe284a0e3aea9075ebe4bde5c121425',
   'boring-ios-arm64-iphonesimulator-libbssl_dart_static.a':
-      'b8ce63a5dc69f211af852b534220794eb98c542d9c76a0114dc368469643ef83',
+      '48cbcd5d3a7dd441a507d3621a74cc0a5d2aad4729d2f067276e8339d5ca37c7',
   'boring-ios-x64-iphonesimulator-libbssl_dart.dylib':
       '876e88aa3888470a1ea9f20dbc0cb3986bf30d5587d3df2724190ca7f39a093f',
   'boring-ios-x64-iphonesimulator-libbssl_dart_static.a':
-      '25d67c2837a8690d1474bbff749498484d6aad0c0c9e2c85b8d1314a014d4d1b',
+      '21c86dc14ae8916c07d23f21cc89b72c94e5f6af377c9d63424aca1d565c1c2b',
   'boring-linux-arm64-libbssl_dart.so':
       '4070f309c279a295ddfe99b675c99897203430031371409b7e72f718eb98b350',
   'boring-linux-arm64-libbssl_dart_static.a':
@@ -55,13 +55,13 @@ const fileHashes = <String, String>{
   'boring-macos-arm64-libbssl_dart.dylib':
       'c7b12d4e5cdf494a3118d88be9eb6b4e39caa533f8e9ad2cdc27083c42f7fc2a',
   'boring-macos-arm64-libbssl_dart_static.a':
-      '5f4503b5efa39ed15fa97be9cc96f237a3cb0bc725f33e227da11857a9f82375',
+      '68b44423669c3299c388f18711de8b9ecb0ad0af998a674eef1c39b79e4a99a7',
   'boring-macos-x64-libbssl_dart.dylib':
       '24e3af75f2a824caf2d78140108dda905e9b40743142a389801f7f6cf2dc09a7',
   'boring-macos-x64-libbssl_dart_static.a':
-      '38d623e8927a64480bc2f5ed67d5e60e48eca5599a002fcb8401c6cf56a99ad8',
+      '65d0ff0997b1023be43d178317dc1ae2446c0760c3be49f2de0647dc3c13d53b',
   'boring-windows-x64-bssl_dart.dll':
-      '6231f547571a74f71a104ac0b6d6be2ba5dbe2943cfa44d60adc6d6485435588',
+      '52621a2c8cda17223a8fd9a70fa04461272a6e8dc10f654293b43d6f6f73eb42',
   'boring-windows-x64-bssl_dart_static.lib':
-      '0e7f88eb0a8bb7cd3bb94dbd2f01f76bf789652351b5028cb8c8be0d16817e1f',
+      '30df2961b44d53cfd8ed097273930873b8efc54be7469ab6bcc9617d14c031cf',
 };
