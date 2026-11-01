@@ -1487,9 +1487,11 @@ external int ASN1_TIME_to_time_t(
   ffi.Pointer<time_t> out,
 );
 
-/// ASN1_TYPE_cmp returns zero if `a` and `b` are equal and some non-zero value
-/// otherwise. Note this function can only be used for equality checks, not an
-/// ordering.
+/// ASN1_TYPE_cmp compares `a` and `b`. It returns zero if they are equal, and a
+/// negative or positive value if `a` sorts before or after `b`, respectively.
+/// NULL sorts before any non-NULL value. Otherwise, values are ordered first by
+/// type, then by contents. The order is arbitrary but suitable for sorting.
+/// Callers should not rely on the exact order.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<ASN1_TYPE>, ffi.Pointer<ASN1_TYPE>)>(
   symbol: 'bssl_dart_ASN1_TYPE_cmp',
@@ -4214,7 +4216,8 @@ external int BN_bn2cbb_padded(
 
 /// BN_bn2dec returns an allocated string that contains a NUL-terminated,
 /// decimal representation of `bn`. If `bn` is negative, the first char in the
-/// resulting string will be '-'. Returns NULL on allocation failure.
+/// resulting string will be '-'. Returns NULL on allocation failure. The
+/// resulting string must be freed with `OPENSSL_free`.
 ///
 /// Converting an arbitrarily large integer to decimal is quadratic in the bit
 /// length of `a`. This function assumes the caller has capped the input within
@@ -4229,7 +4232,8 @@ external ffi.Pointer<ffi.Char> BN_bn2dec(
 
 /// BN_bn2hex returns an allocated string that contains a NUL-terminated, hex
 /// representation of `bn`. If `bn` is negative, the first char in the resulting
-/// string will be '-'. Returns NULL on allocation failure.
+/// string will be '-'. Returns NULL on allocation failure. The resulting string
+/// must be freed with `OPENSSL_free`.
 @meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Char> Function(ffi.Pointer<BIGNUM>)>(
   symbol: 'bssl_dart_BN_bn2hex',
@@ -16697,6 +16701,26 @@ external ffi.Pointer<EVP_PKEY_ALG> EVP_pkey_rsa_pss_sha384();
 )
 external ffi.Pointer<EVP_PKEY_ALG> EVP_pkey_rsa_pss_sha512();
 
+/// EVP_pkey_slh_dsa_* implement SLH-DSA and HashSLH-DSA keys, encoded as in
+/// RFC 9909. The `EVP_PKEY_id` values are `EVP_PKEY_SLH_DSA_*`.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_PKEY_ALG> Function()>(
+  symbol: 'bssl_dart_EVP_pkey_slh_dsa_sha2_128s',
+)
+external ffi.Pointer<EVP_PKEY_ALG> EVP_pkey_slh_dsa_sha2_128s();
+
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_PKEY_ALG> Function()>(
+  symbol: 'bssl_dart_EVP_pkey_slh_dsa_sha2_128s_with_sha256',
+)
+external ffi.Pointer<EVP_PKEY_ALG> EVP_pkey_slh_dsa_sha2_128s_with_sha256();
+
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_PKEY_ALG> Function()>(
+  symbol: 'bssl_dart_EVP_pkey_slh_dsa_shake_256f',
+)
+external ffi.Pointer<EVP_PKEY_ALG> EVP_pkey_slh_dsa_shake_256f();
+
 /// EVP_pkey_x25519 implements X25519 keys (RFC 7748), encoded as in RFC 8410.
 /// The `EVP_PKEY_id` value is `EVP_PKEY_X25519`.
 @meta.RecordUse()
@@ -21816,23 +21840,6 @@ external int RSA_verify_raw(
   int padding,
 );
 
-/// SHA1 writes the digest of `len` bytes from `data` to `out` and returns
-/// `out`. There must be at least `SHA_DIGEST_LENGTH` bytes of space in
-/// `out`.
-@meta.RecordUse()
-@ffi.Native<
-  ffi.Pointer<ffi.Uint8> Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'bssl_dart_SHA1')
-external ffi.Pointer<ffi.Uint8> SHA1(
-  ffi.Pointer<ffi.Uint8> data,
-  int len,
-  ffi.Pointer<ffi.Uint8> out,
-);
-
 /// SHA1_Final adds the final padding to `sha` and writes the resulting digest to
 /// `out`, which must have at least `SHA_DIGEST_LENGTH` bytes of space. It
 /// returns one.
@@ -21877,26 +21884,11 @@ external int SHA1_Update(
   int len,
 );
 
-/// SHA224 writes the digest of `len` bytes from `data` to `out` and returns
-/// `out`. There must be at least `SHA224_DIGEST_LENGTH` bytes of space in
-/// `out`.
-@meta.RecordUse()
-@ffi.Native<
-  ffi.Pointer<ffi.Uint8> Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'bssl_dart_SHA224')
-external ffi.Pointer<ffi.Uint8> SHA224(
-  ffi.Pointer<ffi.Uint8> data,
-  int len,
-  ffi.Pointer<ffi.Uint8> out,
-);
-
 /// SHA224_Final adds the final padding to `sha` and writes the resulting digest
 /// to `out`, which must have at least `SHA224_DIGEST_LENGTH` bytes of space. It
 /// returns 1.
+///
+/// `sha` must have been initialised for SHA-224.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<SHA256_CTX>)>(
   symbol: 'bssl_dart_SHA224_Final',
@@ -21906,7 +21898,7 @@ external int SHA224_Final(
   ffi.Pointer<SHA256_CTX> sha,
 );
 
-/// SHA224_Init initialises `sha` and returns 1.
+/// SHA224_Init initialises `sha` for SHA-224 and returns 1.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<SHA256_CTX>)>(
   symbol: 'bssl_dart_SHA224_Init',
@@ -21916,6 +21908,8 @@ external int SHA224_Init(
 );
 
 /// SHA224_Update adds `len` bytes from `data` to `sha` and returns 1.
+///
+/// `sha` must have been initialised for SHA-224.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<SHA256_CTX>, ffi.Pointer<ffi.Void>, ffi.Size)
@@ -21926,26 +21920,11 @@ external int SHA224_Update(
   int len,
 );
 
-/// SHA256 writes the digest of `len` bytes from `data` to `out` and returns
-/// `out`. There must be at least `SHA256_DIGEST_LENGTH` bytes of space in
-/// `out`.
-@meta.RecordUse()
-@ffi.Native<
-  ffi.Pointer<ffi.Uint8> Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'bssl_dart_SHA256')
-external ffi.Pointer<ffi.Uint8> SHA256(
-  ffi.Pointer<ffi.Uint8> data,
-  int len,
-  ffi.Pointer<ffi.Uint8> out,
-);
-
 /// SHA256_Final adds the final padding to `sha` and writes the resulting digest
 /// to `out`, which must have at least `SHA256_DIGEST_LENGTH` bytes of space. It
 /// returns one on success and zero on programmer error.
+///
+/// `sha` must have been initialised for SHA-256.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<SHA256_CTX>)>(
   symbol: 'bssl_dart_SHA256_Final',
@@ -21955,7 +21934,7 @@ external int SHA256_Final(
   ffi.Pointer<SHA256_CTX> sha,
 );
 
-/// SHA256_Init initialises `sha` and returns 1.
+/// SHA256_Init initialises `sha` for SHA-256 and returns 1.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<SHA256_CTX>)>(
   symbol: 'bssl_dart_SHA256_Init',
@@ -21991,6 +21970,8 @@ external void SHA256_TransformBlocks(
 );
 
 /// SHA256_Update adds `len` bytes from `data` to `sha` and returns 1.
+///
+/// `sha` must have been initialised for SHA-256.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<SHA256_CTX>, ffi.Pointer<ffi.Void>, ffi.Size)
@@ -22001,26 +21982,11 @@ external int SHA256_Update(
   int len,
 );
 
-/// SHA384 writes the digest of `len` bytes from `data` to `out` and returns
-/// `out`. There must be at least `SHA384_DIGEST_LENGTH` bytes of space in
-/// `out`.
-@meta.RecordUse()
-@ffi.Native<
-  ffi.Pointer<ffi.Uint8> Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'bssl_dart_SHA384')
-external ffi.Pointer<ffi.Uint8> SHA384(
-  ffi.Pointer<ffi.Uint8> data,
-  int len,
-  ffi.Pointer<ffi.Uint8> out,
-);
-
 /// SHA384_Final adds the final padding to `sha` and writes the resulting digest
 /// to `out`, which must have at least `SHA384_DIGEST_LENGTH` bytes of space. It
 /// returns one on success and zero on programmer error.
+///
+/// `sha` must have been initialised for SHA-384.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<SHA512_CTX>)>(
   symbol: 'bssl_dart_SHA384_Final',
@@ -22030,7 +21996,7 @@ external int SHA384_Final(
   ffi.Pointer<SHA512_CTX> sha,
 );
 
-/// SHA384_Init initialises `sha` and returns 1.
+/// SHA384_Init initialises `sha` for SHA-384 and returns 1.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<SHA512_CTX>)>(
   symbol: 'bssl_dart_SHA384_Init',
@@ -22040,6 +22006,8 @@ external int SHA384_Init(
 );
 
 /// SHA384_Update adds `len` bytes from `data` to `sha` and returns 1.
+///
+/// `sha` must have been initialised for SHA-384.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<SHA512_CTX>, ffi.Pointer<ffi.Void>, ffi.Size)
@@ -22050,43 +22018,11 @@ external int SHA384_Update(
   int len,
 );
 
-/// SHA512 writes the digest of `len` bytes from `data` to `out` and returns
-/// `out`. There must be at least `SHA512_DIGEST_LENGTH` bytes of space in
-/// `out`.
-@meta.RecordUse()
-@ffi.Native<
-  ffi.Pointer<ffi.Uint8> Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'bssl_dart_SHA512')
-external ffi.Pointer<ffi.Uint8> SHA512(
-  ffi.Pointer<ffi.Uint8> data,
-  int len,
-  ffi.Pointer<ffi.Uint8> out,
-);
-
-/// SHA512_256 writes the digest of `len` bytes from `data` to `out` and returns
-/// `out`. There must be at least `SHA512_256_DIGEST_LENGTH` bytes of space in
-/// `out`.
-@meta.RecordUse()
-@ffi.Native<
-  ffi.Pointer<ffi.Uint8> Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.Size,
-    ffi.Pointer<ffi.Uint8>,
-  )
->(symbol: 'bssl_dart_SHA512_256')
-external ffi.Pointer<ffi.Uint8> SHA512_256(
-  ffi.Pointer<ffi.Uint8> data,
-  int len,
-  ffi.Pointer<ffi.Uint8> out,
-);
-
 /// SHA512_256_Final adds the final padding to `sha` and writes the resulting
 /// digest to `out`, which must have at least `SHA512_256_DIGEST_LENGTH` bytes of
 /// space. It returns one on success and zero on programmer error.
+///
+/// `sha` must have been initialised for SHA-512/256.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<SHA512_CTX>)>(
   symbol: 'bssl_dart_SHA512_256_Final',
@@ -22096,7 +22032,7 @@ external int SHA512_256_Final(
   ffi.Pointer<SHA512_CTX> sha,
 );
 
-/// SHA512_256_Init initialises `sha` and returns 1.
+/// SHA512_256_Init initialises `sha` for SHA-512/256 and returns 1.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<SHA512_CTX>)>(
   symbol: 'bssl_dart_SHA512_256_Init',
@@ -22106,6 +22042,8 @@ external int SHA512_256_Init(
 );
 
 /// SHA512_256_Update adds `len` bytes from `data` to `sha` and returns 1.
+///
+/// `sha` must have been initialised for SHA-512/256.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<SHA512_CTX>, ffi.Pointer<ffi.Void>, ffi.Size)
@@ -22119,6 +22057,8 @@ external int SHA512_256_Update(
 /// SHA512_Final adds the final padding to `sha` and writes the resulting digest
 /// to `out`, which must have at least `SHA512_DIGEST_LENGTH` bytes of space. It
 /// returns one on success and zero on programmer error.
+///
+/// `sha` must have been initialised for SHA-512.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<SHA512_CTX>)>(
   symbol: 'bssl_dart_SHA512_Final',
@@ -22150,6 +22090,8 @@ external void SHA512_Transform(
 );
 
 /// SHA512_Update adds `len` bytes from `data` to `sha` and returns 1.
+///
+/// `sha` must have been initialised for SHA-512.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<SHA512_CTX>, ffi.Pointer<ffi.Void>, ffi.Size)
@@ -22778,9 +22720,11 @@ external void X509V3_set_nconf(
   ffi.Pointer<CONF> conf,
 );
 
-/// X509_ALGOR_cmp returns zero if `a` and `b` are equal, and some non-zero value
-/// otherwise. Note this function can only be used for equality checks, not an
-/// ordering.
+/// X509_ALGOR_cmp compares `a` and `b`. It returns zero if they are equal, and a
+/// negative or positive value if `a` sorts before or after `b`, respectively.
+/// Values are ordered first by algorithm, then by parameter, with an absent
+/// parameter sorting before a present one. The order is arbitrary but suitable
+/// for sorting. Callers should not rely on the exact order.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<X509_ALGOR>, ffi.Pointer<X509_ALGOR>)>(
   symbol: 'bssl_dart_X509_ALGOR_cmp',
@@ -33062,6 +33006,12 @@ const int EVP_PKEY_RSA = 6;
 const int EVP_PKEY_RSA2 = 19;
 
 const int EVP_PKEY_RSA_PSS = 912;
+
+const int EVP_PKEY_SLH_DSA_SHA2_128S = 973;
+
+const int EVP_PKEY_SLH_DSA_SHA2_128S_WITH_SHA256 = 975;
+
+const int EVP_PKEY_SLH_DSA_SHAKE_256F = 974;
 
 const int EVP_PKEY_X25519 = 948;
 
