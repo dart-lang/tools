@@ -835,14 +835,13 @@ String _applySgr(String activeStyle, String sequence) =>
 /// Truncates [line] so its visible length (excluding ANSI SGR sequences) is at
 /// most [limit].
 ///
-/// If [line] exceeds [limit] visible characters, or if [forceEllipsis] is
-/// `true`, the returned string ends with `'...'` (and [_ansiReset] if [line]
-/// contained ANSI escape codes) while remaining within [limit] visible
-/// characters.
-String _truncateLine(String line, int limit, {bool forceEllipsis = false}) {
+/// If [line] exceeds [limit] visible characters, the returned string ends with
+/// `'...'` (and [_ansiReset] if [line] contained ANSI escape codes) while
+/// remaining within [limit] visible characters.
+String _truncateLine(String line, int limit) {
   final hasAnsi = _ansiSgrRegex.hasMatch(line);
   final visibleLen = _visibleLength(line);
-  if (!forceEllipsis && visibleLen <= limit) {
+  if (visibleLen <= limit) {
     if (hasAnsi &&
         !line.endsWith(_ansiReset) &&
         !line.endsWith(_ansiResetShort)) {
