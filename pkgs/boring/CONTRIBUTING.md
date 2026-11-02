@@ -34,3 +34,26 @@ and regenerate the FFI bindings (`tool/ffigen.dart`). The `generated` job in
 [`boring.yaml`](../../.github/workflows/boring.yaml) runs on `ubuntu-24.04` and
 verifies that all generated files and [`hashes.dart`](lib/src/hook_helpers/hashes.dart)
 are up to date.
+
+The `refresh` job in the same workflow runs the script weekly against the
+latest BoringSSL revision and opens a pull request with the result.
+
+### X.509 conformance
+
+[`test/conformance/x509_limbo_test.dart`](test/conformance/x509_limbo_test.dart)
+runs the [x509-limbo](https://x509-limbo.com) path validation suite against the
+vendored BoringSSL, and
+[`x509_limbo_expected_failures.txt`](test/conformance/x509_limbo_expected_failures.txt)
+records the testcases BoringSSL is known to disagree with. The `x509-limbo` job
+fails on a divergence that the list does not record, and on a listed testcase
+that started agreeing, so the list cannot go stale.
+
+BoringSSL's X.509 behavior changes between revisions. After updating it, run
+
+```sh
+X509_LIMBO_REGENERATE=1 ./tool/run_x509_limbo_tests.sh
+```
+
+to regenerate the list, and read the diff to see the change in behavior. The
+`refresh` job does this for its pull requests, so a change to the list there is
+part of what to review.

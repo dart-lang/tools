@@ -18,6 +18,18 @@ void main() {
       );
     });
 
+    test('combines adjacent Text nodes inside the last element', () {
+      final result = Document().parseInline('a [b] *c [d] e*');
+      expect(result, hasLength(2));
+      expect(result[0], isA<Text>().having((e) => e.text, 'text', 'a [b] '));
+      final em = result[1] as Element;
+      expect(em.tag, 'em');
+      expect(
+        em.children!.single,
+        isA<Text>().having((e) => e.text, 'text', 'c [d] e'),
+      );
+    });
+
     group('with encodeHtml enabled', () {
       final document = Document();
 
@@ -124,6 +136,19 @@ void main() {
           const TypeMatcher<Text>().having((e) => e.text, 'text', '>"< Hello'),
         );
       });
+    });
+
+    test('reusing Document resolves newly added footnote definitions', () {
+      final document = Document(extensionSet: ExtensionSet.gitHubWeb);
+      final first = HtmlRenderer().render(
+        document.parseLines(['Text[^a]', '', '[^a]: first']),
+      );
+      expect(first, contains('href="#fn-a"'));
+
+      final second = HtmlRenderer().render(
+        document.parseLines(['Text[^b]', '', '[^b]: second']),
+      );
+      expect(second, contains('href="#fn-b"'));
     });
   });
 }

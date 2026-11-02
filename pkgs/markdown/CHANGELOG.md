@@ -25,6 +25,24 @@
   were flattened. `AlertBlockSyntax` stripped all whitespace following the
   `>` marker instead of at most one space, discarding the indentation that
   marks a list item as nested.
+* `HtmlBlockSyntax.parseChildLines` no longer recurses for each consecutive
+  HTML block, which overflowed the stack on many consecutive HTML blocks.
+* `ImageSyntax` no longer re-escapes the `alt` text of nested images at every
+  nesting level.
+* `Document` no longer recurses when parsing the inline content of deeply
+  nested blocks.
+* `HtmlRenderer.uniquifyId` no longer probes every previously used suffix for
+  each duplicate heading ID.
+* `FootnoteRefSyntax` no longer scans footnote definitions for brackets that
+  cannot be footnote references.
+* `CodeBlockSyntax` no longer rescans the following lines at every blank line
+  inside an indented code block.
+* `tablePattern` no longer backtracks exponentially on table delimiter rows
+  containing many spaces.
+* `AutolinkSyntax` no longer accepts `<` inside `<...>` autolinks, per the
+  CommonMark definition of an absolute URI.
+* `headerPattern` no longer backtracks quadratically on ATX headings with many
+  spaces before the text, and ATX headings may contain `U+2028` and `U+2029`.
 
 ## 7.4.0
 

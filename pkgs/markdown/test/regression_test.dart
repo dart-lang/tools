@@ -232,6 +232,26 @@ a <!--
       );
     });
   });
+
+  test('linkBuilder that does not call getChildren discards inner nodes', () {
+    expect(
+      markdownToHtml(
+        'hello [a]',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>a</a></p>\n',
+    );
+  });
+
+  test('reusing HtmlRenderer resets duplicate heading ID suffixes', () {
+    final doc = Document(extensionSet: ExtensionSet.gitHubWeb);
+    final nodes = doc.parseLines(['# a', '# a', '# a']);
+    final renderer = HtmlRenderer();
+    const expected =
+        '<h1 id="a">a</h1>\n<h1 id="a-2">a</h1>\n<h1 id="a-3">a</h1>';
+    expect(renderer.render(nodes), expected);
+    expect(renderer.render(nodes), expected);
+  });
 }
 
 class _CountingLine extends Line {

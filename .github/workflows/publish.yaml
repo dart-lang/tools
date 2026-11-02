@@ -14,7 +14,7 @@ on:
 jobs:
   publish:
     if: ${{ github.repository_owner == 'dart-lang' }}
-    uses: dart-lang/ecosystem/.github/workflows/publish.yaml@e1d4a04b8d1cff6214a7861c59140aad0d93636b
+    uses: dart-lang/ecosystem/.github/workflows/publish.yaml@27c2fc841818cce349e1f424af51cca9ea381f47
     with:
       write-comments: false
     permissions:

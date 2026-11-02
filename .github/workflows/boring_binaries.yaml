@@ -293,7 +293,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: dart run tool/regenerate_hashes.dart --repository "$GH_REPO" --source-commit "$COMMIT" --assets "$GITHUB_WORKSPACE/release-assets" "$TAG"
       - name: Create pull request
-        uses: peter-evans/create-pull-request@bd09a93810788ce61d2d5fb7d6b221b9b4a4aab7
+        uses: peter-evans/create-pull-request@86c87cfdd87dd582eb8b8f226cfec4e09d825326
         with:
           token: ${{ steps.generate-token.outputs.token }}
           committer: dart-ecosystem-bot <dart-ecosystem-bot@google.com>
