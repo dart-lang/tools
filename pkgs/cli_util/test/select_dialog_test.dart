@@ -1005,6 +1005,32 @@ $descIndent${'world'}${maybeLegend()}''');
             expect(await future, multiSelect ? {0} : 0);
           });
 
+          test(r'handles short resets (`\x1b[m`) in labels', () async {
+            final future = renderer([
+              '\x1b[31mred\x1b[m plain',
+              '\x1b[34mblue\x1b[m',
+            ], inputController.stream);
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+>$uBox red plain
+ $uBox blue${maybeLegend()}''');
+            final rawLines = initialRawLines();
+            // Bold is re-applied after the short reset, so the whole hovered
+            // row stays bold.
+            expect(
+              rawLines[0],
+              '\x1b[1m>$uBox \x1b[31mred\x1b[m\x1b[1m'
+              ' plain\x1b[0m\x1b[1m\x1b[0m',
+            );
+            // A label that already ends with a short reset doesn't get another
+            // reset added.
+            expect(rawLines[1], ' $uBox \x1b[34mblue\x1b[m');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
           test(
             'renders scrollbar spanning items and description lines',
             () async {

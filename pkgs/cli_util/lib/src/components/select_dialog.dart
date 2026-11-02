@@ -534,10 +534,9 @@ int _render(
 
   // Bold the hovered item, re-applying bold after any resets within it.
   final hovered = cursor - start;
-  final boldLine = lines[hovered].replaceAll(
-    _ansiReset,
-    '$_ansiReset$_ansiBold',
-  );
+  final boldLine = lines[hovered]
+      .replaceAll(_ansiReset, '$_ansiReset$_ansiBold')
+      .replaceAll(_ansiResetShort, '$_ansiResetShort$_ansiBold');
   lines[hovered] = '$_ansiBold$boldLine$_ansiReset';
 
   if (multiSelect) lines.add('$_ansiDim$multiSelectLegend$_ansiReset');
@@ -844,7 +843,9 @@ String _truncateLine(String line, int limit, {bool forceEllipsis = false}) {
   final hasAnsi = _ansiSgrRegex.hasMatch(line);
   final visibleLen = _visibleLength(line);
   if (!forceEllipsis && visibleLen <= limit) {
-    if (hasAnsi && !line.endsWith(_ansiReset)) {
+    if (hasAnsi &&
+        !line.endsWith(_ansiReset) &&
+        !line.endsWith(_ansiResetShort)) {
       return '$line$_ansiReset';
     }
     return line;
