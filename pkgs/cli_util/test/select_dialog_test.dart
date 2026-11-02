@@ -1031,6 +1031,58 @@ $descIndent${'world'}${maybeLegend()}''');
             expect(await future, multiSelect ? {0} : 0);
           });
 
+          test('closes and re-opens styles across wrapped description lines '
+              'and paragraphs', () async {
+            mockStdout.terminalColumns = 20 + uBox.length;
+            final future = renderer(
+              [
+                const SelectOption(
+                  '\x1b[33mwarn\x1b[0m label',
+                  description:
+                      '\x1b[32mthe green text\nkeeps going\x1b[0m done',
+                ),
+                'b',
+                'c',
+                'd',
+                'e',
+              ],
+              inputController.stream,
+              sizing: SelectComponentSizing.fixed(
+                totalHeight: 6 + (multiSelect ? 1 : 0),
+              ),
+            );
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+>$uBox warn label       █
+$descIndent${'the green'}        █
+$descIndent${'text'}             │
+$descIndent${'keeps going'}      │
+$descIndent${'done'}             │
+ $uBox b                │${maybeLegend()}''');
+            final rawLines = initialRawLines();
+            // Bold is re-applied after each reset in the hovered label, so the
+            // whole row (including the scrollbar) stays bold.
+            expect(
+              rawLines[0],
+              '\x1b[1m>$uBox \x1b[33mwarn\x1b[0m\x1b[1m'
+              ' label\x1b[0m\x1b[1m       █\x1b[0m',
+            );
+            // Each description line resets the green style before the padding
+            // and scrollbar, and re-applies it at the start of the next line,
+            // including across the paragraph break, until the description's
+            // own reset.
+            expect(rawLines.sublist(1, 5), [
+              '$descIndent\x1b[32mthe green\x1b[0m        █',
+              '$descIndent\x1b[32mtext\x1b[0m             │',
+              '$descIndent\x1b[32mkeeps going\x1b[0m      │',
+              '${descIndent}done             │',
+            ]);
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
           test(
             'renders scrollbar spanning items and description lines',
             () async {
