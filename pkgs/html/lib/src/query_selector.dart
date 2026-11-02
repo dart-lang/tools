@@ -114,7 +114,8 @@ class SelectorEvaluator extends Visitor {
         case TokenKind.COMBINATOR_NONE:
           break;
         default:
-          throw _unsupported(node);
+          result = false;
+          break;
       }
 
       if (_element == null) {
@@ -126,14 +127,6 @@ class SelectorEvaluator extends Visitor {
     _element = old;
     return result;
   }
-
-  UnimplementedError _unimplemented(SimpleSelector selector) =>
-      UnimplementedError(
-          "'${selector.span?.text ?? selector}' selector of type "
-          '${selector.runtimeType} is not implemented');
-
-  FormatException _unsupported(TreeNode selector) => FormatException(
-      "'${selector.span?.text ?? selector}' is not a valid selector");
 
   @override
   bool visitPseudoClassSelector(PseudoClassSelector node) {
@@ -182,16 +175,11 @@ class SelectorEvaluator extends Visitor {
     // :before, :after, :first-letter/line can't match DOM elements.
     if (_isLegacyPseudoClass(node.name)) return false;
 
-    throw _unimplemented(node);
+    return false;
   }
 
   @override
-  bool visitPseudoElementSelector(PseudoElementSelector node) {
-    // :before, :after, :first-letter/line can't match DOM elements.
-    if (_isLegacyPseudoClass(node.name)) return false;
-
-    throw _unimplemented(node);
-  }
+  bool visitPseudoElementSelector(PseudoElementSelector node) => false;
 
   static bool _isLegacyPseudoClass(String name) {
     switch (name) {
@@ -207,7 +195,7 @@ class SelectorEvaluator extends Visitor {
 
   @override
   bool visitPseudoElementFunctionSelector(PseudoElementFunctionSelector node) =>
-      throw _unimplemented(node);
+      false;
 
   @override
   bool visitPseudoClassFunctionSelector(PseudoClassFunctionSelector node) {
@@ -243,7 +231,8 @@ class SelectorEvaluator extends Visitor {
         // TODO(jmesserly): implement wildcards in level 4
         return lang != null && lang.startsWith(toMatch);
     }
-    throw _unimplemented(node);
+
+    return false;
   }
 
   static String? _getInheritedLanguage(Node? node) {
@@ -258,7 +247,7 @@ class SelectorEvaluator extends Visitor {
   @override
   bool visitNamespaceSelector(NamespaceSelector node) {
     final nameSelector = node.nameAsSimpleSelector;
-    if (nameSelector == null) throw _unsupported(node);
+    if (nameSelector == null) return false;
     // Match element tag name
     if (!(nameSelector.visit(this) as bool)) return false;
 
@@ -266,7 +255,7 @@ class SelectorEvaluator extends Visitor {
 
     if (node.namespace == '') return _element!.namespaceUri == null;
 
-    throw _unimplemented(node);
+    return false;
   }
 
   @override
@@ -286,7 +275,7 @@ class SelectorEvaluator extends Visitor {
   @override
   bool visitNegationSelector(NegationSelector node) {
     final negationArg = node.negationArg;
-    if (negationArg == null) throw _unsupported(node);
+    if (negationArg == null) return false;
     return !(negationArg.visit(this) as bool);
   }
 
@@ -308,7 +297,7 @@ class SelectorEvaluator extends Visitor {
       TokenKind.PREFIX_MATCH => value.startsWith(select),
       TokenKind.SUFFIX_MATCH => value.endsWith(select),
       TokenKind.SUBSTRING_MATCH => value.contains(select),
-      _ => throw _unsupported(node)
+      _ => false
     };
   }
 }
