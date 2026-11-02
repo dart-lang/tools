@@ -744,8 +744,8 @@ List<String> _wordWrapDescription(String description, int limit, int maxLines) {
 /// overflows [maxVisibleChars], and preserving ANSI SGR styling sequences.
 ///
 /// The returned `line` starts by re-applying [activeStyle], and ends with
-/// [_ansiReset] if a style is still active. The returned `nextIndex` skips any
-/// spaces at the line break.
+/// [_ansiReset] if a style is still active at its end. The returned
+/// `nextIndex` skips any spaces at the line break.
 ({String line, int nextIndex, String activeStyle}) _consumeLine(
   String paragraph,
   int startIndex,
@@ -791,10 +791,11 @@ List<String> _wordWrapDescription(String description, int limit, int maxLines) {
     rawIndex = lastSpace.rawIndex;
     activeStyle = lastSpace.activeStyle;
   }
+  // Reset any style that is still active at the end of the line.
+  final reset = activeStyle.isEmpty ? '' : _ansiReset;
   // Skip any spaces at the line break, so the next line doesn't start with
   // them.
   final next = _skipSpaces(paragraph, rawIndex, activeStyle);
-  final reset = next.activeStyle.isEmpty ? '' : _ansiReset;
   return (
     line: visibleCount == 0 ? '' : '$line$reset',
     nextIndex: next.index,

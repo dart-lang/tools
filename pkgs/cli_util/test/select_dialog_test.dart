@@ -749,6 +749,11 @@ $multiSelectLegend''');
           final renderer =
               multiSelect ? showMultiSelectDialog : showSingleSelectDialog;
           String maybeLegend() => multiSelect ? '\n$multiSelectLegend' : '';
+          // The raw lines of the initial render, including the ANSI SGR
+          // sequences that `FakeTerminal` strips. Only valid before any input
+          // is sent.
+          List<String> initialRawLines() =>
+              mockStdout.buffer.skip(1).join().split('\n');
 
           test(
             'renders hovered descriptions dynamically without dead space',
@@ -969,6 +974,32 @@ $descIndent${'hij'}${maybeLegend()}''');
 >$uBox a
 $descIndent${'ab cdef'}
 $descIndent${'hij'}${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
+          test('resets the style at the end of a description line when the '
+              'reset comes after the line break', () async {
+            mockStdout.terminalColumns = '> abcdefg'.length + uBox.length;
+            final future = renderer([
+              const SelectOption(
+                'a',
+                description: '\x1b[32mhello \x1b[0mworld',
+              ),
+            ], inputController.stream);
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+>$uBox a
+$descIndent${'hello'}
+$descIndent${'world'}${maybeLegend()}''');
+            // Green is still active at the end of the first line, so it has to
+            // be reset there, even though the description's own reset only
+            // comes after the line break.
+            final rawLines = initialRawLines();
+            expect(rawLines[1], '$descIndent\x1b[32mhello\x1b[0m');
+            expect(rawLines[2], '${descIndent}world');
 
             inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
             expect(await future, multiSelect ? {0} : 0);
