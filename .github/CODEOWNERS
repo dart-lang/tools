@@ -6,6 +6,7 @@
 # Global owners
 *                               @dart-lang/dart-ecosystem-team
 
+third_party/wpt-selectors       @dart-lang/dart-ecosystem-team
 third_party/yaml-test-suite     @dart-lang/dart-pub-team
 tool/update-yaml-test-suite.sh  @dart-lang/dart-pub-team
 
