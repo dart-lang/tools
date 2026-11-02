@@ -827,6 +827,28 @@ $descIndent${'Line 2'}${maybeLegend()}''');
             expect(await future, multiSelect ? {1} : 1);
           });
 
+          test('does not truncate the last description line if the rest of '
+              'the description fits', () async {
+            mockStdout.terminalColumns = '> '.length + 20 + uBox.length;
+            final future = renderer(
+              [const SelectOption('a', description: 'hello world123456789')],
+              inputController.stream,
+              sizing: const SelectComponentSizing.fixed(
+                maxDescriptionHeight: 1,
+              ),
+            );
+            await pumpEventQueue();
+
+            // The description exactly fills the 20 available chars, so no room
+            // needs to be left for an ellipsis.
+            expect(mockStdout.terminal.content, '''
+>$uBox a
+$descIndent${'hello world123456789'}${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
           test('truncates descriptions exceeding maxDescriptionHeight with '
               'ellipsis', () async {
             final future = renderer(

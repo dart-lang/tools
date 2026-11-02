@@ -695,9 +695,9 @@ List<List<String>> _wrapDescriptions(
 /// characters, while preserving explicit newlines (`\n` or `\r\n`) and ANSI
 /// SGR styling sequences across wrapped lines.
 ///
-/// Returns at most [maxLines] lines. If the description exceeds [maxLines],
-/// the last line is wrapped to `limit - 3` visible characters and suffixed
-/// with `'...'`.
+/// Returns at most [maxLines] lines. If the rest of the description doesn't
+/// fit on the last line, that line is wrapped to `limit - 3` visible characters
+/// and suffixed with `'...'`.
 List<String> _wordWrapDescription(String description, int limit, int maxLines) {
   final paragraphs = description.split(_newlineRegex);
   final wrapped = <String>[];
@@ -715,10 +715,16 @@ List<String> _wordWrapDescription(String description, int limit, int maxLines) {
 
     do {
       final isLastLine = wrapped.length == maxLines - 1;
+      // On the last line, leave room for an ellipsis unless the rest of the
+      // description fits.
+      final reserveEllipsis =
+          isLastLine &&
+          (hasMoreParagraphs ||
+              _visibleLength(paragraph.substring(rawIndex)) > limit);
       final (:line, :nextIndex, activeStyle: nextStyle) = _consumeLine(
         paragraph,
         rawIndex,
-        isLastLine ? math.max(0, limit - 3) : limit,
+        reserveEllipsis ? math.max(0, limit - 3) : limit,
         activeStyle: activeStyle,
       );
       final ellipsis =
