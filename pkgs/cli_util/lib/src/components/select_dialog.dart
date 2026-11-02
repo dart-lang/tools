@@ -782,10 +782,11 @@ List<String> _wordWrapDescription(String description, int limit, int maxLines) {
     visibleCount++;
   }
 
-  // If the line overflowed, rewind to the last space if one was seen on this
-  // line, otherwise hard-break here.
+  // If the line overflowed in the middle of a word, rewind to the last space
+  // if one was seen on this line, otherwise hard-break here.
   var line = buffer.toString();
-  if (rawIndex < paragraph.length && lastSpace != null) {
+  final midWord = rawIndex < paragraph.length && paragraph[rawIndex] != ' ';
+  if (midWord && lastSpace != null) {
     line = line.substring(0, lastSpace.bufferLength);
     rawIndex = lastSpace.rawIndex;
     activeStyle = lastSpace.activeStyle;

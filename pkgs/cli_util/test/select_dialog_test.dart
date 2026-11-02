@@ -955,6 +955,25 @@ $descIndent${'hij'}${maybeLegend()}''');
             expect(await future, multiSelect ? {0} : 0);
           });
 
+          test('does not break a line at an earlier space when it already ends '
+              'at a word boundary', () async {
+            mockStdout.terminalColumns = '> abcdefg'.length + uBox.length;
+            final future = renderer([
+              const SelectOption('a', description: 'ab cdef hij'),
+            ], inputController.stream);
+            await pumpEventQueue();
+
+            // 'ab cdef' exactly fills the 7 available chars and is followed by
+            // a space, so the whole thing fits on the first line.
+            expect(mockStdout.terminal.content, '''
+>$uBox a
+$descIndent${'ab cdef'}
+$descIndent${'hij'}${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
           test(
             'renders scrollbar spanning items and description lines',
             () async {
