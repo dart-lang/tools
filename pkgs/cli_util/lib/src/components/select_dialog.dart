@@ -24,7 +24,7 @@ final class SelectOption {
   /// is hovered.
   ///
   /// May contain newlines (`\n` or `\r\n`) and ANSI SGR styling sequences
-  /// (e.g. `\x1b[...m`).
+  /// (e.g. `\x1b[...m`). Trailing newlines are ignored.
   final String? description;
 
   const SelectOption(this.label, {this.description});
@@ -411,6 +411,7 @@ _DialogLayout? _layoutDialog(
 
 final _ansiSgrRegex = RegExp(r'\x1b\[[0-9;]*m');
 final _newlineRegex = RegExp(r'\r?\n');
+final _trailingNewlinesRegex = RegExp(r'(\r?\n)+$');
 
 /// Parses [options] into [SelectOption]s and validates their characters.
 List<SelectOption> _parseAndValidateOptions(
@@ -677,16 +678,17 @@ int _maxLineLength(int terminalWidth, bool multiSelect, bool isScrollable) {
 }
 
 /// Word-wraps the description of each of [options] to at most [maxLines] lines
-/// of at most [limit] visible characters.
+/// of at most [limit] visible characters, ignoring any trailing newlines.
 List<List<String>> _wrapDescriptions(
   List<SelectOption> options,
   int limit,
   int maxLines,
 ) => [
-  for (final SelectOption(:description) in options)
-    description == null || description.isEmpty
-        ? const <String>[]
-        : _wordWrapDescription(description, limit, maxLines),
+  for (final option in options)
+    switch (option.description?.replaceFirst(_trailingNewlinesRegex, '')) {
+      null || '' => const <String>[],
+      final description => _wordWrapDescription(description, limit, maxLines),
+    },
 ];
 
 /// Word-wraps [description] so each line has at most [limit] visible

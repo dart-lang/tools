@@ -791,6 +791,42 @@ $descIndent${'Line 3'}
             },
           );
 
+          test('ignores trailing newlines in descriptions', () async {
+            final future = renderer(
+              [
+                const SelectOption('apple', description: 'A crisp red fruit\n'),
+                const SelectOption(
+                  'banana',
+                  description: 'Line 1\r\nLine 2\r\n',
+                ),
+              ],
+              inputController.stream,
+              sizing: const SelectComponentSizing.fixed(
+                maxDescriptionHeight: 2,
+              ),
+            );
+            await pumpEventQueue();
+
+            // No blank line is rendered for the trailing newline.
+            expect(mockStdout.terminal.content, '''
+>$uBox apple
+$descIndent${'A crisp red fruit'}
+ $uBox banana${maybeLegend()}''');
+
+            inputController.addKey(KeyVariants.down);
+            await pumpEventQueue();
+            // The trailing newline isn't more description text, so no ellipsis
+            // is added even though the description fills maxDescriptionHeight.
+            expect(mockStdout.terminal.content, '''
+ $uBox apple
+>$uBox banana
+$descIndent${'Line 1'}
+$descIndent${'Line 2'}${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {1} : 1);
+          });
+
           test('truncates descriptions exceeding maxDescriptionHeight with '
               'ellipsis', () async {
             final future = renderer(
