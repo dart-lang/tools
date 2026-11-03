@@ -1,5 +1,9 @@
 ## 0.6.1-wip
 
+- Add optional `platform` (`package:platform`) and `pathContext`
+  (`package:path`) parameters to `BaseDirectories` to support hermetic
+  cross-platform testing.
+
 ## 0.6.0
 
 - **Breaking Change**: `sdkPath` now returns `String?` (returning `null` if no

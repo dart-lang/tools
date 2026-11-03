@@ -2,9 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:io' show Platform;
+// ignore_for_file: deprecated_member_use
 
 import 'package:path/path.dart' as path;
+import 'package:platform/platform.dart';
 
 import '../cli_util.dart';
 
@@ -38,12 +39,33 @@ final class BaseDirectories {
   /// Defaults to [Platform.environment].
   final Map<String, String> _environment;
 
+  final Platform _platform;
+
+  final path.Context _pathContext;
+
   /// Constructs a [BaseDirectories] instance for the given [tool] name.
   ///
   /// The [environment] map, if provided, is used to determine the base
   /// directories. If omitted, it defaults to using [Platform.environment].
-  BaseDirectories(this.tool, {Map<String, String>? environment})
-    : _environment = environment ?? Platform.environment;
+  ///
+  /// If [platform] is provided, it is used to determine the operating system
+  /// and default environment variables.
+  ///
+  /// If [pathContext] is provided, it is used to join path segments. Otherwise,
+  /// [path.windows] or [path.posix] is chosen based on [platform].
+  BaseDirectories(
+    this.tool, {
+    Map<String, String>? environment,
+    Platform? platform,
+    path.Context? pathContext,
+  }) : _platform = platform ?? const LocalPlatform(),
+       _environment =
+           environment ?? (platform ?? const LocalPlatform()).environment,
+       _pathContext =
+           pathContext ??
+           ((platform ?? const LocalPlatform()).isWindows
+               ? path.windows
+               : path.posix);
 
   /// Path of the directory where the tool will place its caches.
   ///
@@ -71,7 +93,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  late final String cacheHome = path.join(
+  late final String cacheHome = _pathContext.join(
     _baseDirectory(_XdgBaseDirectoryKind.cache)!,
     tool,
   );
@@ -101,7 +123,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  late final String configHome = path.join(
+  late final String configHome = _pathContext.join(
     _baseDirectory(_XdgBaseDirectoryKind.config)!,
     tool,
   );
@@ -131,7 +153,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  late final String dataHome = path.join(
+  late final String dataHome = _pathContext.join(
     _baseDirectory(_XdgBaseDirectoryKind.data)!,
     tool,
   );
@@ -197,22 +219,24 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  late final String stateHome = path.join(
+  late final String stateHome = _pathContext.join(
     _baseDirectory(_XdgBaseDirectoryKind.state)!,
     tool,
   );
 
   String? _baseDirectory(_XdgBaseDirectoryKind directoryKind) {
-    if (Platform.isWindows) {
+    if (_platform.isWindows) {
       return _baseDirectoryWindows(directoryKind);
     }
-    if (Platform.isMacOS) {
+    if (_platform.isMacOS) {
       return _baseDirectoryMacOs(directoryKind);
     }
-    if (Platform.isLinux) {
+    if (_platform.isLinux) {
       return _baseDirectoryLinux(directoryKind);
     }
-    throw UnsupportedError('Unsupported platform: ${Platform.operatingSystem}');
+    throw UnsupportedError(
+      'Unsupported platform: ${_platform.operatingSystem}',
+    );
   }
 
   String _baseDirectoryWindows(_XdgBaseDirectoryKind dir) => switch (dir) {
@@ -229,15 +253,19 @@ final class BaseDirectories {
     // `Application Support` instead.
     _XdgBaseDirectoryKind.data ||
     _XdgBaseDirectoryKind
-        .state => path.join(_home, 'Library', 'Application Support'),
-    _XdgBaseDirectoryKind.cache => path.join(_home, 'Library', 'Caches'),
+        .state => _pathContext.join(_home, 'Library', 'Application Support'),
+    _XdgBaseDirectoryKind.cache => _pathContext.join(
+      _home,
+      'Library',
+      'Caches',
+    ),
     _XdgBaseDirectoryKind.runtime =>
     // https://stackoverflow.com/a/76799489
-    path.join(_home, 'Library', 'Caches', 'TemporaryItems'),
+    _pathContext.join(_home, 'Library', 'Caches', 'TemporaryItems'),
   };
 
   String? _baseDirectoryLinux(_XdgBaseDirectoryKind dir) {
-    if (Platform.isLinux) {
+    if (_platform.isLinux) {
       final xdgEnv = switch (dir) {
         _XdgBaseDirectoryKind.config => 'XDG_CONFIG_HOME',
         _XdgBaseDirectoryKind.data => 'XDG_DATA_HOME',
@@ -256,14 +284,21 @@ final class BaseDirectories {
         // Applications should choose a different directory and print a warning.
         return null;
       case _XdgBaseDirectoryKind.cache:
-        return path.join(_home, '.cache');
+        return _pathContext.join(_home, '.cache');
       case _XdgBaseDirectoryKind.config:
-        return path.join(_home, '.config');
+        return _pathContext.join(_home, '.config');
       case _XdgBaseDirectoryKind.data:
-        return path.join(_home, '.local', 'share');
+        return _pathContext.join(_home, '.local', 'share');
       case _XdgBaseDirectoryKind.state:
-        return path.join(_home, '.local', 'state');
+        return _pathContext.join(_home, '.local', 'state');
     }
+  }
+
+  String? _join(String? part1, String? part2) {
+    if (part1 == null || part2 == null) {
+      return null;
+    }
+    return _pathContext.join(part1, part2);
   }
 
   String get _home => _requireEnv('HOME');
@@ -283,11 +318,4 @@ enum _XdgBaseDirectoryKind {
   // well defined of locations on Windows and MacOS.
   runtime,
   state,
-}
-
-String? _join(String? part1, String? part2) {
-  if (part1 == null || part2 == null) {
-    return null;
-  }
-  return path.join(part1, part2);
 }
