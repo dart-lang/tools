@@ -56,6 +56,8 @@
   resolved, per the CommonMark limit on link labels.
 * Bare inline link destinations may contain at most 32 levels of nested
   parentheses, matching `cmark`.
+* A parenthesized inline link title (`(...)`) may no longer contain an
+  unescaped `(`, per the CommonMark specification.
 
 ## 7.4.0
 
