@@ -275,7 +275,12 @@ void main() {
 
     test('Analytics.fake follows the real process environment when passed '
         'Platform.environment', () {
-      final analytics = createAnalytics(io.Platform.environment);
+      // `dart test` runs under dartdev, which sets DASH__TOOL=dart-tool. Drop
+      // it so the root tool stays the onboarded flutter-tool and this test
+      // only exercises DASH__SUPPRESS_ANALYTICS.
+      final environment = {...io.Platform.environment}
+        ..remove(DashEnvVar.tool.name);
+      final analytics = createAnalytics(environment);
 
       expect(analytics.okToSend, !areAnalyticsSuppressed());
     });
