@@ -98,3 +98,18 @@ bar][].
 <<<
 <p>Text <a href="http://bar.com">foo
 bar</a>.</p>
+>>> not a link reference definition: unescaped ( in a parenthesized title
+[a]: /u (c(d)
+
+[a]
+
+<<<
+<p>[a]: /u (c(d)</p>
+<p>[a]</p>
+>>> link reference definition with an escaped ( in a parenthesized title
+[a]: /u (c\(d)
+
+[a]
+
+<<<
+<p><a href="/u" title="c(d">a</a></p>
