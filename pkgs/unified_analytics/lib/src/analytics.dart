@@ -47,6 +47,10 @@ abstract class Analytics {
   /// "Cursor", or "Copilot". If omitted, defaults to
   /// `AiAgent.detectAgentName(io.Platform.environment)`.
   ///
+  /// [tool] is the leaf tool: the logical tool sending the events, which can
+  /// be a top-level tool or a shared component. It's recorded as the
+  /// `leaf_tool` user property.
+  ///
   /// [fallbackRootTool] is used as the root tool, the user's entry point, when
   /// the `DASH__TOOL` environment variable doesn't name a valid tool. Pass it
   /// only if the tool can work out its entry point another way, for example
@@ -57,8 +61,7 @@ abstract class Analytics {
   /// The root tool decides opt-in status and which consent message is shown.
   /// If no root tool resolves, which can only happen for a shared component,
   /// analytics are disabled for the session and this returns a
-  /// [NoOpAnalytics] without touching the file system. Internal builds don't
-  /// use consent, so they keep sending events without a root tool.
+  /// [NoOpAnalytics] without touching the file system.
   ///
   /// [fallbackRootTool] only applies to this instance. It isn't passed on to
   /// child processes through [getEnvironment], so a child started by a shared
@@ -78,7 +81,7 @@ abstract class Analytics {
       tool: tool,
       fallbackRootTool: fallbackRootTool,
     );
-    if (rootTool == null && ie.isExternal) return const NoOpAnalytics();
+    if (rootTool == null) return const NoOpAnalytics();
 
     // Create the instance of the file system so clients don't need
     // resolve on their own
@@ -149,6 +152,10 @@ abstract class Analytics {
   /// "Cursor", or "Copilot". If omitted, defaults to
   /// `AiAgent.detectAgentName(io.Platform.environment)`.
   ///
+  /// [tool] is the leaf tool: the logical tool sending the events, which can
+  /// be a top-level tool or a shared component. It's recorded as the
+  /// `leaf_tool` user property.
+  ///
   /// [fallbackRootTool] is used as the root tool, the user's entry point, when
   /// the `DASH__TOOL` environment variable doesn't name a valid tool. Pass it
   /// only if the tool can work out its entry point another way, for example
@@ -159,8 +166,7 @@ abstract class Analytics {
   /// The root tool decides opt-in status and which consent message is shown.
   /// If no root tool resolves, which can only happen for a shared component,
   /// analytics are disabled for the session and this returns a
-  /// [NoOpAnalytics] without touching the file system. Internal builds don't
-  /// use consent, so they keep sending events without a root tool.
+  /// [NoOpAnalytics] without touching the file system.
   ///
   /// [fallbackRootTool] only applies to this instance. It isn't passed on to
   /// child processes through [getEnvironment], so a child started by a shared
@@ -180,7 +186,7 @@ abstract class Analytics {
       tool: tool,
       fallbackRootTool: fallbackRootTool,
     );
-    if (rootTool == null && ie.isExternal) return const NoOpAnalytics();
+    if (rootTool == null) return const NoOpAnalytics();
 
     // Create the instance of the file system so clients don't need
     // resolve on their own
@@ -288,8 +294,8 @@ abstract class Analytics {
   /// file contents.
   ///
   /// Instances created by the [Analytics] factories return `false` when the
-  /// `DASH__SUPPRESS_ANALYTICS` environment variable is `true`, or, in external
-  /// builds, when no root tool could be resolved.
+  /// `DASH__SUPPRESS_ANALYTICS` environment variable is `true`, or when no
+  /// root tool could be resolved.
   bool get okToSend;
 
   /// Boolean indicating whether this instance is configured for an external
@@ -468,7 +474,8 @@ abstract class Analytics {
 }
 
 class AnalyticsImpl implements Analytics {
-  /// The logical tool that sends events, which can be a shared component.
+  /// The leaf tool: the logical tool that sends events, which can be a shared
+  /// component.
   final DashTool tool;
 
   /// The root tool, the user's entry point, or `null` if none could be
@@ -561,8 +568,9 @@ class AnalyticsImpl implements Analytics {
          host: platform.label,
          flutterVersion: flutterVersion,
          dartVersion: dartVersion,
-         tool: tool.label,
+         tool: legacyToolValue(tool: tool, rootTool: rootTool),
          rootTool: rootTool?.label,
+         leafTool: tool.label,
          // We truncate this to a maximum of 36 characters since this can
          // a very long string for some operating systems
          hostOsVersion: truncateStringToLength(
@@ -666,12 +674,12 @@ class AnalyticsImpl implements Analytics {
   /// as indicated by [_firstRun].
   ///
   /// Events are never sent when the `DASH__SUPPRESS_ANALYTICS` environment
-  /// variable is set to `true`, or, in external builds, when no [rootTool]
-  /// could be resolved, regardless of the other checks. Internal builds don't
-  /// use consent, so they don't need a root tool.
+  /// variable is set to `true`, or when no [rootTool] could be resolved,
+  /// regardless of the other checks. Consent belongs to the root tool, so
+  /// without one there is nothing to send under, even in internal builds.
   @override
   bool get okToSend =>
-      (rootTool != null || !isExternal) &&
+      rootTool != null &&
       !_envSuppressed &&
       telemetryEnabled &&
       !_showMessage &&

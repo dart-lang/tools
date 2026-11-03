@@ -44,14 +44,19 @@ class LogFileStats {
   /// ```
   final Map<String, int> flutterChannelCount;
 
-  /// The map containing all of the tools that have sent events
-  /// and how many events were sent by each tool.
+  /// The map containing all of the leaf tools that have sent events
+  /// and how many events were sent by each one.
+  ///
+  /// The leaf tool is the logical tool that sent an event, which can be a
+  /// shared component. It's read from the `leaf_tool` user property, falling
+  /// back to the legacy `tool` property for records written before
+  /// `leaf_tool` existed.
   ///
   /// ```
   /// {
   ///   'flutter-tool': 500,
   ///   'dart-tool': 45,
-  ///   'vscode-plugins': 321,
+  ///   'analysis-server': 321,
   /// }
   /// ```
   final Map<String, int> toolCount;
@@ -234,7 +239,7 @@ class LogHandler {
     final toolCount = <String, int>{};
     for (final record in records) {
       counter['sessions']!.add(record.sessionId);
-      counter['tool']!.add(record.tool);
+      counter['tool']!.add(record.leafTool);
       if (record.flutterChannel != null) {
         counter['flutter_channel']!.add(record.flutterChannel!);
       }
@@ -247,10 +252,10 @@ class LogHandler {
       eventCount[record.eventName] = eventCount[record.eventName]! + 1;
 
       // Counting how many events were recorded for each tool
-      if (!toolCount.containsKey(record.tool)) {
-        toolCount[record.tool] = 0;
+      if (!toolCount.containsKey(record.leafTool)) {
+        toolCount[record.leafTool] = 0;
       }
-      toolCount[record.tool] = toolCount[record.tool]! + 1;
+      toolCount[record.leafTool] = toolCount[record.leafTool]! + 1;
 
       // Necessary to perform a null check for flutter channel because
       // not all events will have information about flutter
@@ -359,7 +364,10 @@ class LogItem {
   final String host;
   final String? flutterVersion;
   final String dartVersion;
-  final String tool;
+
+  /// The leaf tool that sent the event, from `leaf_tool`, or from the legacy
+  /// `tool` property for older records.
+  final String leafTool;
   final DateTime localTime;
   final String hostOsVersion;
   final String locale;
@@ -372,7 +380,7 @@ class LogItem {
     required this.host,
     this.flutterVersion,
     required this.dartVersion,
-    required this.tool,
+    required this.leafTool,
     required this.localTime,
     required this.hostOsVersion,
     required this.locale,
@@ -469,8 +477,12 @@ class LogItem {
     final dartVersion =
         (userProps['dart_version']! as Map<String, Object?>)['value']
             as String?;
-    final tool =
-        (userProps['tool']! as Map<String, Object?>)['value'] as String?;
+    // Prefer `leaf_tool`. Records written before it existed only have the
+    // legacy `tool` property, which is also scheduled for removal.
+    final leafTool =
+        ((userProps['leaf_tool'] ?? userProps['tool'])
+                as Map<String, Object?>?)?['value']
+            as String?;
     final localTimeString =
         (userProps['local_time']! as Map<String, Object?>)['value'] as String?;
     final hostOsVersion =
@@ -492,7 +504,7 @@ class LogItem {
       sessionId,
       host,
       dartVersion,
-      tool,
+      leafTool,
       localTimeString,
       hostOsVersion,
       locale,
@@ -511,7 +523,7 @@ class LogItem {
       host: host!,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion!,
-      tool: tool!,
+      leafTool: leafTool!,
       localTime: localTime,
       hostOsVersion: hostOsVersion!,
       locale: locale!,

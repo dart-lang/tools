@@ -398,6 +398,15 @@ DashTool? resolveRootTool({
   fallbackRootTool: fallbackRootTool,
 );
 
+/// Returns the value for the deprecated `tool` user property.
+///
+/// Keeps the value tools sent before `root_tool` and `leaf_tool` existed, so
+/// existing dashboards keep working: a top-level [tool] reports itself, and a
+/// shared component reports its [rootTool]. Falls back to [tool] when there's
+/// no root tool, in which case analytics are disabled and nothing is sent.
+String legacyToolValue({required DashTool tool, required DashTool? rootTool}) =>
+    (tool.canBeRootTool ? tool : rootTool ?? tool).label;
+
 /// Resolves the root tool for events sent by [tool], reading `DASH__TOOL`
 /// from [environment].
 ///

@@ -148,6 +148,30 @@ void main() {
   group('Analytics root tool', () {
     Object? rootToolProperty(Analytics analytics) =>
         analytics.userPropertyMap['root_tool']?['value'];
+    Object? leafToolProperty(Analytics analytics) =>
+        analytics.userPropertyMap['leaf_tool']?['value'];
+    Object? toolProperty(Analytics analytics) =>
+        analytics.userPropertyMap['tool']?['value'];
+
+    test('the deprecated tool property keeps today\'s value', () {
+      // A top-level tool reports itself, even when started from an IDE.
+      final flutterFromVsCode = createAnalytics(
+        environment: {envVar: 'vscode-plugins'},
+      );
+      expect(rootToolProperty(flutterFromVsCode), 'vscode-plugins');
+      expect(leafToolProperty(flutterFromVsCode), 'flutter-tool');
+      expect(toolProperty(flutterFromVsCode), 'flutter-tool');
+
+      // A shared component reports its root tool, including one that comes
+      // from fallbackRootTool.
+      final serverWithFallback = createAnalytics(
+        tool: DashTool.analysisServer,
+        fallbackRootTool: DashTool.intellijPlugins,
+      );
+      expect(rootToolProperty(serverWithFallback), 'intellij-plugins');
+      expect(leafToolProperty(serverWithFallback), 'analysis-server');
+      expect(toolProperty(serverWithFallback), 'intellij-plugins');
+    });
 
     test('defaults to the tool for a top-level tool', () {
       final analytics = createAnalytics(tool: DashTool.dartTool);
@@ -162,8 +186,11 @@ void main() {
       );
       expect(analytics.tool, DashTool.analysisServer);
       expect(analytics.rootTool, DashTool.vscodePlugins);
-      expect(analytics.userPropertyMap['tool']?['value'], 'analysis-server');
       expect(rootToolProperty(analytics), 'vscode-plugins');
+      expect(leafToolProperty(analytics), 'analysis-server');
+      // The deprecated `tool` keeps today's value: the root tool for a
+      // shared component.
+      expect(toolProperty(analytics), 'vscode-plugins');
     });
 
     test('uses fallbackRootTool when DASH__TOOL is unset', () {
@@ -200,50 +227,58 @@ void main() {
       expect(rootToolProperty(analytics), 'android-studio-plugins');
     });
 
-    test('every event carries both tool and root_tool', () async {
-      final environment = {envVar: 'vscode-plugins'};
-      createAnalytics(
-        tool: DashTool.analysisServer,
-        environment: environment,
-      ).clientShowedMessage();
+    test(
+      'every event carries root_tool, leaf_tool and the legacy tool',
+      () async {
+        final environment = {envVar: 'vscode-plugins'};
+        createAnalytics(
+          tool: DashTool.analysisServer,
+          environment: environment,
+        ).clientShowedMessage();
 
-      final gaClient = _RecordingGAClient();
-      final analytics = createAnalytics(
-        tool: DashTool.analysisServer,
-        environment: environment,
-        gaClient: gaClient,
-      );
-      expect(analytics.okToSend, isTrue);
+        final gaClient = _RecordingGAClient();
+        final analytics = createAnalytics(
+          tool: DashTool.analysisServer,
+          environment: environment,
+          gaClient: gaClient,
+        );
+        expect(analytics.okToSend, isTrue);
 
-      // Events sent through `send`, which are logged locally.
-      final events = [
-        Event.hotReloadTime(timeMs: 50),
-        Event.analyticsException(workflow: 'workflow', error: 'error'),
-        Event.commandUsageValues(workflow: 'analyze', commandHasTerminal: true),
-      ];
-      events.forEach(analytics.send);
-      expect(analytics.sentEvents, events);
+        // Events sent through `send`, which are logged locally.
+        final events = [
+          Event.hotReloadTime(timeMs: 50),
+          Event.analyticsException(workflow: 'workflow', error: 'error'),
+          Event.commandUsageValues(
+            workflow: 'analyze',
+            commandHasTerminal: true,
+          ),
+        ];
+        events.forEach(analytics.send);
+        expect(analytics.sentEvents, events);
 
-      final logRecords = home
-          .childDirectory(kDartToolDirectoryName)
-          .childFile(kLogFileName)
-          .readAsLinesSync()
-          .where((line) => line.isNotEmpty)
-          .map((line) => jsonDecode(line) as Map<String, Object?>)
-          .toList();
-      expect(logRecords, hasLength(events.length));
+        final logRecords = home
+            .childDirectory(kDartToolDirectoryName)
+            .childFile(kLogFileName)
+            .readAsLinesSync()
+            .where((line) => line.isNotEmpty)
+            .map((line) => jsonDecode(line) as Map<String, Object?>)
+            .toList();
+        expect(logRecords, hasLength(events.length));
 
-      // The opt-out event, which `setTelemetry` sends directly to GA without
-      // going through `send`.
-      await analytics.setTelemetry(false);
-      expect(gaClient.sentBodies, hasLength(1));
+        // The opt-out event, which `setTelemetry` sends directly to GA without
+        // going through `send`.
+        await analytics.setTelemetry(false);
+        expect(gaClient.sentBodies, hasLength(1));
 
-      for (final body in [...logRecords, ...gaClient.sentBodies]) {
-        final userProperties = body['user_properties'] as Map<String, Object?>;
-        expect(userProperties['tool'], {'value': 'analysis-server'});
-        expect(userProperties['root_tool'], {'value': 'vscode-plugins'});
-      }
-    });
+        for (final body in [...logRecords, ...gaClient.sentBodies]) {
+          final userProperties =
+              body['user_properties'] as Map<String, Object?>;
+          expect(userProperties['root_tool'], {'value': 'vscode-plugins'});
+          expect(userProperties['leaf_tool'], {'value': 'analysis-server'});
+          expect(userProperties['tool'], {'value': 'vscode-plugins'});
+        }
+      },
+    );
 
     test('sent events carry both tool and root_tool', () {
       final environment = {envVar: 'intellij-plugins'};
@@ -265,8 +300,9 @@ void main() {
           (jsonDecode(logLines.single)
                   as Map<String, Object?>)['user_properties']
               as Map<String, Object?>;
-      expect(userProperties['tool'], {'value': 'flutter-tool'});
       expect(userProperties['root_tool'], {'value': 'intellij-plugins'});
+      expect(userProperties['leaf_tool'], {'value': 'flutter-tool'});
+      expect(userProperties['tool'], {'value': 'flutter-tool'});
     });
   });
 
@@ -383,16 +419,15 @@ void main() {
         expect(analytics.sentEvents, isEmpty);
       });
 
-      test('internal builds keep sending without a root tool', () {
+      test('disables analytics for internal builds too', () {
+        // Consent belongs to the root tool, so without one nothing is sent,
+        // even though internal builds otherwise skip consent.
         final analytics = createRootless(isExternal: false);
         expect(analytics.rootTool, isNull);
-        expect(analytics.okToSend, isTrue);
-        expect(analytics.shouldShowMessage, isFalse);
+        expect(analytics.okToSend, isFalse);
 
         analytics.send(Event.hotReloadTime(timeMs: 50));
-        expect(analytics.sentEvents, hasLength(1));
-        expect(analytics.userPropertyMap['tool']?['value'], 'dart-mcp-server');
-        expect(analytics.userPropertyMap['root_tool']?['value'], isNull);
+        expect(analytics.sentEvents, isEmpty);
       });
 
       test('shows no consent message', () {
