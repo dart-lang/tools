@@ -252,6 +252,19 @@ a <!--
     expect(renderer.render(nodes), expected);
     expect(renderer.render(nodes), expected);
   });
+
+  test('reference link labels over 999 characters are not resolved', () {
+    final label999 = 'a' * 999;
+    final label1000 = 'a' * 1000;
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[text][$label999]'),
+      '<p><a href="/url">text</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[text][$label1000]'),
+      '<p>[text][$label1000]</p>\n',
+    );
+  });
 }
 
 class _CountingLine extends Line {
