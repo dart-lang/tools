@@ -183,9 +183,8 @@ class LinkParser {
 
     // A link label can have at most 999 characters inside the square brackets.
     // See https://spec.commonmark.org/0.30/#link-label.
-    var maxLoop = 999;
     while (true) {
-      if (maxLoop-- < 0) {
+      if (pos - start > 999) {
         return false;
       }
       if (isDone && !_tryAdvanceLine()) {
