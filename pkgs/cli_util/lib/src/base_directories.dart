@@ -56,16 +56,12 @@ final class BaseDirectories {
   BaseDirectories(
     this.tool, {
     Map<String, String>? environment,
-    Platform? platform,
+    Platform platform = const LocalPlatform(),
     path.Context? pathContext,
-  }) : _platform = platform ?? const LocalPlatform(),
-       _environment =
-           environment ?? (platform ?? const LocalPlatform()).environment,
+  }) : _platform = platform,
+       _environment = environment ?? platform.environment,
        _pathContext =
-           pathContext ??
-           ((platform ?? const LocalPlatform()).isWindows
-               ? path.windows
-               : path.posix);
+           pathContext ?? (platform.isWindows ? path.windows : path.posix);
 
   /// Path of the directory where the tool will place its caches.
   ///
