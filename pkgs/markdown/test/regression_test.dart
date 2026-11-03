@@ -243,6 +243,31 @@ a <!--
     );
   });
 
+  test('link reference definitions with labels over 999 characters are not '
+      'definitions', () {
+    final label999 = 'a' * 999;
+    final label1000 = 'a' * 1000;
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[text][$label999]'),
+      '<p><a href="/url">text</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label1000]: /url\n\n[a]'),
+      '<p>[$label1000]: /url</p>\n<p>[a]</p>\n',
+    );
+    // A backslash escape counts as two characters.
+    final escaped999 = '${'a' * 997}\\[';
+    final escaped1000 = '${'a' * 998}\\[';
+    expect(
+      markdownToHtml('[$escaped999]: /url\n\n[text][$escaped999]'),
+      '<p><a href="/url">text</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$escaped1000]: /url\n\n[a]'),
+      '<p>[${'a' * 998}[]: /url</p>\n<p>[a]</p>\n',
+    );
+  });
+
   test('reusing HtmlRenderer resets duplicate heading ID suffixes', () {
     final doc = Document(extensionSet: ExtensionSet.gitHubWeb);
     final nodes = doc.parseLines(['# a', '# a', '# a']);
