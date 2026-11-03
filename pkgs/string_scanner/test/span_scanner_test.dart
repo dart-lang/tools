@@ -153,6 +153,17 @@ void main() {
       expect(eofScanner.readChar, throwsFormatException);
     });
 
+    test('.error() throws a RangeError when length reaches past the span', () {
+      final file = SourceFile.fromString('before: foo :after', url: 'source');
+      final subScanner = SpanScanner.within(file.span(8, 11));
+      subScanner.expect('foo');
+      expect(() => subScanner.error('x', length: 5), throwsRangeError);
+
+      final foreignMatch = '0123456789'.matchAsPrefix('0123456789')!;
+      expect(
+          () => subScanner.error('x', match: foreignMatch), throwsRangeError);
+    });
+
     test('.isDone returns true at the end of the span', () {
       scanner.expect('foo\nbar\nbaz');
       expect(scanner.isDone, isTrue);
@@ -182,6 +193,22 @@ void testForImplementation(
       expect(span.start.sourceUrl, equals(Uri.parse('source')));
 
       expect(span.text, equals('o\nba'));
+    });
+
+    test('clears lastSpan when the position changes without a match', () {
+      scanner.scan('foo');
+      expect(scanner.lastSpan, isNotNull);
+
+      scanner.readChar();
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.lastSpan, isNull);
+
+      scanner.scan('bar');
+      expect(scanner.lastSpan, isNotNull);
+
+      scanner.position = scanner.position;
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.lastSpan, isNull);
     });
 
     test('.spanFrom() returns a span from a previous state', () {

@@ -25,7 +25,10 @@ class AutolinkExtensionSyntax extends InlineSyntax {
       // be at least one period, and no underscores may be present in the last
       // two segments of the domain. See
       // https://github.github.com/gfm/#valid-domain.
-      r'(?:[-_a-z0-9]+\.)*(?:[-a-z0-9]+\.[-a-z0-9]+)'
+      // Segments are limited to 63 characters and domains to 127 segments (the
+      // DNS limits), which bounds the work done for each candidate so that
+      // input such as `www._a.www._a.` repeated is parsed in linear time.
+      r'(?:[-_a-z0-9]{1,63}\.){0,125}(?:[-a-z0-9]{1,63}\.[-a-z0-9]{1,63})'
       // After a valid domain, zero or more non-space non-< characters may
       // follow.
       r'[^\s<]*'

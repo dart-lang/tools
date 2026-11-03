@@ -176,13 +176,13 @@ class Visitor implements VisitorBase {
 
   @override
   dynamic visitSupportsDirective(SupportsDirective node) {
-    node.condition!.visit(this);
+    node.condition?.visit(this);
     _visitNodeList(node.groupRuleBody);
   }
 
   @override
   dynamic visitSupportsConditionInParens(SupportsConditionInParens node) {
-    node.condition!.visit(this);
+    node.condition?.visit(this);
   }
 
   @override
@@ -239,7 +239,7 @@ class Visitor implements VisitorBase {
 
   @override
   dynamic visitKeyFrameDirective(KeyFrameDirective node) {
-    visitIdentifier(node.name!);
+    if (node.name != null) visitIdentifier(node.name!);
     _visitNodeList(node._blocks);
   }
 
@@ -295,7 +295,7 @@ class Visitor implements VisitorBase {
 
   @override
   dynamic visitRuleSet(RuleSet node) {
-    visitSelectorGroup(node.selectorGroup!);
+    if (node.selectorGroup != null) visitSelectorGroup(node.selectorGroup!);
     visitDeclarationGroup(node.declarationGroup);
   }
 
@@ -309,13 +309,13 @@ class Visitor implements VisitorBase {
 
   @override
   dynamic visitDeclaration(Declaration node) {
-    visitIdentifier(node._property!);
+    if (node._property != null) visitIdentifier(node._property!);
     if (node.expression != null) node.expression!.visit(this);
   }
 
   @override
   dynamic visitVarDefinition(VarDefinition node) {
-    visitIdentifier(node._property!);
+    if (node._property != null) visitIdentifier(node._property!);
     if (node.expression != null) node.expression!.visit(this);
   }
 
