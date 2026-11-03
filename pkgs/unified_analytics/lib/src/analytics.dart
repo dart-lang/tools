@@ -481,7 +481,7 @@ class AnalyticsImpl implements Analytics {
   /// The root tool, the user's entry point, or `null` if none could be
   /// resolved.
   ///
-  /// Only a [DashTool] that [DashTool.canBeRootTool] can be the root tool.
+  /// Only a [DashTool] for which [DashTool.canBeRootTool] returns true.
   final DashTool? rootTool;
   final FileSystem fs;
   final int toolsMessageVersion;
