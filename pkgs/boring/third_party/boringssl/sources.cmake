@@ -116,6 +116,7 @@ set(crypto_sources
   ${BORINGSSL_ROOT}src/crypto/evp/p_mldsa.cc
   ${BORINGSSL_ROOT}src/crypto/evp/p_mlkem.cc
   ${BORINGSSL_ROOT}src/crypto/evp/p_rsa.cc
+  ${BORINGSSL_ROOT}src/crypto/evp/p_slhdsa.cc
   ${BORINGSSL_ROOT}src/crypto/evp/p_x25519.cc
   ${BORINGSSL_ROOT}src/crypto/evp/p_xwing.cc
   ${BORINGSSL_ROOT}src/crypto/evp/pbkdf.cc

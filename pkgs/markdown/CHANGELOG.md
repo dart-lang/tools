@@ -45,6 +45,13 @@
   spaces before the text, and ATX headings may contain `U+2028` and `U+2029`.
 * A bare inline link destination must have balanced parentheses before a
   title; `[a](b( "t"))` is no longer a link, per the CommonMark specification.
+* Inline link destinations in angle brackets (`<...>`) may no longer contain
+  an unescaped `<`, per the CommonMark specification.
+* Link reference definitions whose label has more than 999 characters are no
+  longer recognized; previously backslash escapes let labels of up to 1998
+  characters through.
+* Reference links whose label has more than 999 characters are no longer
+  resolved, per the CommonMark limit on link labels.
 
 ## 7.4.0
 
