@@ -79,7 +79,7 @@ export 'src/block_syntaxes/setext_header_with_id_syntax.dart';
 export 'src/block_syntaxes/table_syntax.dart';
 export 'src/block_syntaxes/unordered_list_syntax.dart';
 export 'src/block_syntaxes/unordered_list_with_checkbox_syntax.dart';
-export 'src/document.dart';
+export 'src/document.dart' show Document, LinkReference;
 export 'src/emojis.dart';
 export 'src/extension_set.dart';
 export 'src/html_renderer.dart';

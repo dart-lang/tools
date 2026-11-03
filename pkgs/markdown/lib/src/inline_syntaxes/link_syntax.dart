@@ -220,8 +220,14 @@ class LinkSyntax extends DelimiterSyntax {
     parser.advanceBy(1);
     if (parser.isDone) return null;
 
+    // A link label can have at most 999 characters inside the square brackets.
+    // See https://spec.commonmark.org/0.30/#link-label.
+    final start = parser.pos;
     final buffer = StringBuffer();
     while (true) {
+      if (parser.pos - start > 999) {
+        return null;
+      }
       final char = parser.charAt(parser.pos);
       if (char == $backslash) {
         parser.advanceBy(1);
@@ -240,7 +246,6 @@ class LinkSyntax extends DelimiterSyntax {
       }
       parser.advanceBy(1);
       if (parser.isDone) return null;
-      // TODO(srawlins): only check 999 characters, for performance reasons?
     }
 
     final label = buffer.toString();
@@ -299,8 +304,8 @@ class LinkSyntax extends DelimiterSyntax {
           buffer.writeCharCode(char);
         }
         buffer.writeCharCode(next);
-      } else if (char == $lf || char == $cr || char == $ff) {
-        // Not a link (no line breaks allowed within `<...>`).
+      } else if (char == $lf || char == $cr || char == $ff || char == $lt) {
+        // Not a link (no line breaks or unescaped `<` allowed within `<...>`).
         return null;
       } else if (char == $space) {
         buffer.write('%20');
@@ -373,6 +378,9 @@ class LinkSyntax extends DelimiterSyntax {
         case $lf:
         case $cr:
         case $ff:
+          if (parenCount != 1) {
+            return null;
+          }
           final destination = buffer.toString();
           final title = _parseTitle(parser);
           if (title == null &&
@@ -381,17 +389,16 @@ class LinkSyntax extends DelimiterSyntax {
             // followed by mystery characters; no longer a link.
             return null;
           }
-          // [_parseTitle] made sure the title was follwed by a closing `)`
-          // (but it's up to the code here to examine the balance of
-          // parentheses).
-          parenCount--;
-          if (parenCount == 0) {
-            return InlineLink(destination, title: title);
-          }
-          break;
+          return InlineLink(destination, title: title);
 
         case $lparen:
           parenCount++;
+          // Like cmark, allow at most 32 levels of nested parentheses, so an
+          // unclosed destination such as `[a]((((` does not rescan the rest
+          // of the line at every `]`.
+          if (parenCount > 33) {
+            return null;
+          }
           buffer.writeCharCode(char);
           break;
 
@@ -463,6 +470,8 @@ class LinkSyntax extends DelimiterSyntax {
         buffer.writeCharCode(next);
       } else if (char == closeDelimiter) {
         break;
+      } else if (delimiter == $lparen && char == $lparen) {
+        return null;
       } else {
         buffer.writeCharCode(char);
       }

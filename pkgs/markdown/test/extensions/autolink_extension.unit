@@ -8,3 +8,7 @@ http://www.foo.com
 <<<
 <p>m
 <a href="http://www.foo.com">http://www.foo.com</a></p>
+>>> invalid domain run with underscores and repeated www.
+www._www._a
+<<<
+<p>www._www._a</p>

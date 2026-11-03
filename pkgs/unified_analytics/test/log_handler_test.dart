@@ -203,6 +203,90 @@ void main() {
     expect(logFileStats!.recordCount, 2);
   });
 
+  group('toolCount reads the leaf tool', () {
+    String record({String? tool, String? leafTool}) => jsonEncode({
+      'client_id': 'ffcea97b-db5e-4c66-98c2-3942de4fac40',
+      'events': [
+        {
+          'name': 'hot_reload_time',
+          'params': {'timeMs': 136},
+        },
+      ],
+      'user_properties': {
+        'session_id': {'value': 1699385899950},
+        'flutter_channel': {'value': null},
+        'host': {'value': 'macOS'},
+        'flutter_version': {'value': null},
+        'dart_version': {'value': 'Dart 3.10.0'},
+        'analytics_pkg_version': {'value': '8.4.0'},
+        'tool': ?(tool == null ? null : {'value': tool}),
+        'root_tool': {'value': 'vscode-plugins'},
+        'leaf_tool': ?(leafTool == null ? null : {'value': leafTool}),
+        'local_time': {'value': '2026-11-03 10:00:00.000000 -0800'},
+        'host_os_version': {'value': 'Version 26.0'},
+        'locale': {'value': 'en'},
+        'client_ide': {'value': null},
+      },
+    });
+
+    test('from leaf_tool, ignoring the legacy tool value', () {
+      logFile.writeAsStringSync(
+        '${record(tool: 'vscode-plugins', leafTool: 'analysis-server')}\n',
+      );
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 1);
+      expect(logFileStats.toolCount, {'analysis-server': 1});
+    });
+
+    test('from the legacy tool property for older records', () {
+      logFile.writeAsStringSync(
+        '${record(tool: 'vscode-plugins', leafTool: 'analysis-server')}\n'
+        '${record(tool: 'flutter-tool')}\n',
+      );
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 2);
+      expect(logFileStats.toolCount, {'analysis-server': 1, 'flutter-tool': 1});
+    });
+
+    test('from leaf_tool once the legacy tool property is removed', () {
+      logFile.writeAsStringSync('${record(leafTool: 'dart-tool')}\n');
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 1);
+      expect(logFileStats.toolCount, {'dart-tool': 1});
+    });
+
+    test('treats a record with neither as malformed', () {
+      logFile.writeAsStringSync(
+        '${record()}\n${record(leafTool: 'dart-tool')}\n',
+      );
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 1);
+      expect(logFileStats.toolCount, {'dart-tool': 1});
+    });
+
+    test('for events sent through Analytics', () async {
+      final serverAnalytics = Analytics.fake(
+        tool: DashTool.analysisServer,
+        homeDirectory: homeDirectory,
+        dartVersion: 'dartVersion',
+        fs: fs,
+        platform: DevicePlatform.macos,
+        rootTool: DashTool.flutterTool,
+      );
+      serverAnalytics.send(testEvent);
+      analytics.send(testEvent);
+
+      expect(analytics.logFileStats()!.toolCount, {
+        'analysis-server': 1,
+        'flutter-tool': 1,
+      });
+    });
+  });
+
   test('Malformed record gets phased out after several events', () async {
     // Write invalid json for the only log record
     logFile.writeAsStringSync('{{\n');

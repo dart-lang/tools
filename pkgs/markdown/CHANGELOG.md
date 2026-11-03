@@ -1,5 +1,9 @@
 ## 7.4.1-wip
 
+* Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
+  `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
+  position cannot start a match. This makes inline parsing faster, mostly on
+  text with many spaces, punctuation marks, or CJK characters.
 * Fix quadratic parsing time on blocks of consecutive link reference
   definitions by only consuming lines from `BlockParser` as needed for a
   single definition rather than joining and re-splitting the remainder of the
@@ -8,6 +12,52 @@
   example a single very long word). The plain-text accelerator regex required
   a trailing whitespace, so a run reaching the end of a line without one
   backtracked across the whole run at every position.
+* Fix `RangeError` in `LinkParser` when a link reference definition ends with a
+  trailing backslash (`\`) or an unclosed `<` destination at EOF.
+* Reject unbalanced parentheses and allow characters after balanced parentheses
+  in bare link reference destinations (`LinkParser`).
+* Fix `AssertionError('BlockParser.parseLines is not advancing')` when multiple
+  `BlockSyntax` rules (such as `TableSyntax` and `LinkReferenceDefinitionSyntax`)
+  match `canParse` on the same line and retreat without advancing.
+* Fix `TypeError` in `Document` when appending footnote backreferences to a
+  footnote definition that ends with a list block (`<ul>` or `<ol>`).
+* Fix a bug where nested lists inside a GitHub alert block (`> [!NOTE]`, etc.)
+  were flattened. `AlertBlockSyntax` stripped all whitespace following the
+  `>` marker instead of at most one space, discarding the indentation that
+  marks a list item as nested.
+* `HtmlBlockSyntax.parseChildLines` no longer recurses for each consecutive
+  HTML block, which overflowed the stack on many consecutive HTML blocks.
+* `ImageSyntax` no longer re-escapes the `alt` text of nested images at every
+  nesting level.
+* `Document` no longer recurses when parsing the inline content of deeply
+  nested blocks.
+* `HtmlRenderer.uniquifyId` no longer probes every previously used suffix for
+  each duplicate heading ID.
+* `FootnoteRefSyntax` no longer scans footnote definitions for brackets that
+  cannot be footnote references.
+* `CodeBlockSyntax` no longer rescans the following lines at every blank line
+  inside an indented code block.
+* `tablePattern` no longer backtracks exponentially on table delimiter rows
+  containing many spaces.
+* `AutolinkSyntax` no longer accepts `<` inside `<...>` autolinks, per the
+  CommonMark definition of an absolute URI.
+* `headerPattern` no longer backtracks quadratically on ATX headings with many
+  spaces before the text, and ATX headings may contain `U+2028` and `U+2029`.
+* A parenthesized link reference definition title (`(...)`) may no longer
+  contain an unescaped `(`, per the CommonMark specification.
+* A bare inline link destination must have balanced parentheses before a
+  title; `[a](b( "t"))` is no longer a link, per the CommonMark specification.
+* Inline link destinations in angle brackets (`<...>`) may no longer contain
+  an unescaped `<`, per the CommonMark specification.
+* Link reference definitions whose label has more than 999 characters are no
+  longer recognized; previously backslash escapes let labels of up to 1998
+  characters through.
+* Reference links whose label has more than 999 characters are no longer
+  resolved, per the CommonMark limit on link labels.
+* Bare inline link destinations may contain at most 32 levels of nested
+  parentheses, matching `cmark`.
+* A parenthesized inline link title (`(...)`) may no longer contain an
+  unescaped `(`, per the CommonMark specification.
 
 ## 7.4.0
 

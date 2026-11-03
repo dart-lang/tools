@@ -286,3 +286,17 @@ b</a></p>
 [^image]: image footnote
 <<<
 <p><img src="example.png" alt="^image" /></p>
+>>> case-insensitive duplicate footnote definition uses first definition
+Text[^a].
+
+[^A]: first definition
+[^a]: second definition
+<<<
+<p>Text<sup class="footnote-ref"><a href="#fn-A" id="fnref-A">1</a></sup>.</p>
+<section class="footnotes">
+<ol>
+<li id="fn-A">
+<p>first definition <a href="#fnref-A" class="footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

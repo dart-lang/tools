@@ -450,6 +450,15 @@ void main() {
       expect(scanner.line, equals(1));
       expect(scanner.column, equals(3));
     });
+
+    test('to the current position clears lastMatch', () {
+      scanner.expect('foo');
+      expect(scanner.lastMatch, isNotNull);
+      scanner.position = scanner.position;
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(3));
+    });
   });
 
   test('state= restores the line, column, and position', () {

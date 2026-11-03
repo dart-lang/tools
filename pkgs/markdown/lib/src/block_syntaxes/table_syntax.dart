@@ -44,21 +44,16 @@ class TableSyntax extends BlockSyntax {
     // Advance past the divider of hyphens.
     parser.advance();
 
-    final rows = <Element>[];
+    final rows = <Node>[];
     while (!parser.isDone && !BlockSyntax.isAtBlockEnd(parser)) {
       final row = _parseRow(parser, alignments, 'td');
-      final children = row.children;
-      if (children != null) {
-        while (children.length < columnCount) {
-          // Insert synthetic empty cells.
-          children.add(Element('td', []));
-        }
-        while (children.length > columnCount) {
-          children.removeLast();
-        }
+      final children = row.children!;
+      while (children.length < columnCount) {
+        // Insert synthetic empty cells.
+        children.add(Element('td', []));
       }
-      while (row.children!.length > columnCount) {
-        row.children!.removeLast();
+      while (children.length > columnCount) {
+        children.removeLast();
       }
       rows.add(row);
     }
@@ -183,7 +178,7 @@ class TableSyntax extends BlockSyntax {
       row[i].attributes['align'] = '${alignments[i]}';
     }
 
-    return Element('tr', row);
+    return Element('tr', <Node>[...row]);
   }
 
   /// Walks past whitespace in [line] starting at [index].

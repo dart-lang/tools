@@ -22,3 +22,11 @@ word ~~past ~~word
 **~~first~~** ~~**second**~~
 <<<
 <p><strong><del>first</del></strong> <del><strong>second</strong></del></p>
+>>> single tilde
+~Hi~ there.
+<<<
+<p><del>Hi</del> there.</p>
+>>> single tilde with double tilde
+~Hi~~ there.
+<<<
+<p><del>Hi</del>~ there.</p>

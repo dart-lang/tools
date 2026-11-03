@@ -74,12 +74,9 @@ class InlineParser {
     // of the line, then backtracks one character at a time, and the parser
     // retries from the next position, giving quadratic behavior on long
     // unbroken runs. Allowing the run to end at `$` makes it match in one step.
-    if (document.hasCustomInlineSyntaxes) {
-      // We should be less aggressive in blowing past "words".
-      syntaxes.add(TextSyntax(r'[A-Za-z0-9]+(?=\s|$)'));
-    } else {
-      syntaxes.add(TextSyntax(r'[ \tA-Za-z0-9]*[A-Za-z0-9](?=\s|$)'));
-    }
+    syntaxes.add(
+      _PlainTextSyntax(allowSpaces: !document.hasCustomInlineSyntaxes),
+    );
 
     if (document.withDefaultInlineSyntaxes) {
       // Custom link resolvers go after the generic text syntax.
@@ -319,24 +316,24 @@ class InlineParser {
   // Combine any remaining adjacent Text nodes. This is important to produce
   // correct output across newlines, where whitespace is sometimes compressed.
   void _combineAdjacentText(List<Node> nodes) {
-    for (var i = 0; i < nodes.length - 1; i++) {
-      final node = nodes[i];
+    var writeIndex = 0;
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
       if (node is Element && node.children != null) {
         _combineAdjacentText(node.children!);
-        continue;
+      } else if (node is Text && i + 1 < nodes.length && nodes[i + 1] is Text) {
+        final buffer = StringBuffer(node.textContent);
+        do {
+          i++;
+          buffer.write(nodes[i].textContent);
+        } while (i + 1 < nodes.length && nodes[i + 1] is Text);
+        node = Text(buffer.toString());
       }
-      if (node is Text && nodes[i + 1] is Text) {
-        final buffer = StringBuffer(
-          '${node.textContent}${nodes[i + 1].textContent}',
-        );
-        var j = i + 2;
-        while (j < nodes.length && nodes[j] is Text) {
-          buffer.write(nodes[j].textContent);
-          j++;
-        }
-        nodes[i] = Text(buffer.toString());
-        nodes.removeRange(i + 1, j);
-      }
+      if (writeIndex != i) nodes[writeIndex] = node;
+      writeIndex++;
+    }
+    if (writeIndex != nodes.length) {
+      nodes.length = writeIndex;
     }
   }
 
@@ -359,7 +356,7 @@ class InlineParser {
   /// Push [delimiter] onto the stack of [Delimiter]s.
   void pushDelimiter(Delimiter delimiter) => _delimiterStack.add(delimiter);
 
-  bool get isDone => pos == source.length;
+  bool get isDone => pos >= source.length;
 
   void advanceBy(int length) {
     pos += length;
@@ -371,4 +368,38 @@ class InlineParser {
   }
 
   bool get encodeHtml => document.encodeHtml;
+}
+
+class _PlainTextSyntax extends TextSyntax {
+  final bool _allowSpaces;
+
+  _PlainTextSyntax({required bool allowSpaces})
+    : _allowSpaces = allowSpaces,
+      super(
+        allowSpaces
+            ? r'[ \tA-Za-z0-9]*[A-Za-z0-9](?=\s|$)'
+            : r'[A-Za-z0-9]+(?=\s|$)',
+      );
+
+  @override
+  bool tryMatch(InlineParser parser, [int? startMatchPos]) {
+    final pos = startMatchPos ?? parser.pos;
+    // A run that matches here would also have matched one character earlier
+    // if that character belongs to the run, and `InlineParser.parse` already
+    // tried every position since `parser.start`, so there is nothing to find
+    // in the rest of a run that failed at its start.
+    if (pos > parser.start) {
+      final prev = parser.charAt(pos - 1);
+      if (_isAlphaNum(prev) ||
+          (_allowSpaces && (prev == $space || prev == $tab))) {
+        return false;
+      }
+    }
+    return super.tryMatch(parser, startMatchPos);
+  }
+
+  static bool _isAlphaNum(int char) =>
+      (char >= 0x30 && char <= 0x39) ||
+      (char >= 0x41 && char <= 0x5A) ||
+      (char >= 0x61 && char <= 0x7A);
 }

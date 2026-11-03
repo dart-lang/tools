@@ -183,9 +183,8 @@ class LinkParser {
 
     // A link label can have at most 999 characters inside the square brackets.
     // See https://spec.commonmark.org/0.30/#link-label.
-    var maxLoop = 999;
     while (true) {
-      if (maxLoop-- < 0) {
+      if (pos - start > 999) {
         return false;
       }
       if (isDone && !_tryAdvanceLine()) {
@@ -299,9 +298,8 @@ class LinkParser {
         parenCount++;
       } else if (char == $rparen) {
         parenCount--;
-        if (parenCount == 0) {
-          advance();
-          break;
+        if (parenCount < 0) {
+          return false;
         }
       }
       advance();
@@ -311,6 +309,10 @@ class LinkParser {
       if (isDone) {
         break;
       }
+    }
+
+    if (parenCount != 0) {
+      return false;
     }
 
     _destination = substring(start, pos);
@@ -346,6 +348,8 @@ class LinkParser {
         }
       } else if (char == closeDelimiter) {
         break;
+      } else if (delimiter == $lparen && char == $lparen) {
+        return false;
       }
       advance();
     }

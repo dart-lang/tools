@@ -2,6 +2,7 @@
 
 - Fix `HitMap.parseFiles` to allow empty `{}` coverage files written by
   `dart test --coverage` for skipped test suites.
+- `Resolver.resolve` rejects `package:` and `dart:` URIs outside known roots.
 
 ## 1.16.0
 

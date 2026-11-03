@@ -73,7 +73,7 @@ extern "C" {
 // A consumer may use this symbol in the preprocessor to temporarily build
 // against multiple revisions of BoringSSL at the same time. It is not
 // recommended to do so for longer than is necessary.
-#define BORINGSSL_API_VERSION 43
+#define BORINGSSL_API_VERSION 44
 
 #if defined(BORINGSSL_SHARED_LIBRARY)
 
@@ -380,6 +380,7 @@ typedef void *OPENSSL_BLOCK;
 #define BORINGSSL_NO_CXX
 #endif
 
+// clang-format off
 #if defined(BORINGSSL_PREFIX)
 #define BSSL_NAMESPACE_BEGIN \
   namespace bssl {           \
@@ -391,11 +392,12 @@ typedef void *OPENSSL_BLOCK;
 #define BSSL_NAMESPACE_BEGIN namespace bssl {
 #define BSSL_NAMESPACE_END }
 #endif
+// clang-format on
 
 #if defined(BORINGSSL_NO_CXX)
 
 #define BORINGSSL_MAKE_DELETER(type, deleter)
-#define BORINGSSL_MAKE_UP_REF(type, up_ref_func)
+#define BORINGSSL_MAKE_UP_REF(type, dup_ref_func)
 #define BORINGSSL_MAKE_STACK_TRAITS(type, init_func, cleanup_func)
 #define BORINGSSL_MAKE_STACK_TRAITS_MOVABLE(type, init_func, cleanup_func, \
                                             move_func)
@@ -495,30 +497,36 @@ class StackAllocatedMovable {
 
 #define BORINGSSL_MAKE_DELETER(type, deleter)     \
   namespace internal {                            \
+                                                  \
   template <>                                     \
   struct DeleterImpl<type> {                      \
     static void Free(type *ptr) { deleter(ptr); } \
   };                                              \
+                                                  \
   }
 
 #define BORINGSSL_MAKE_STACK_TRAITS(type, init_func, cleanup_func) \
   namespace internal {                                             \
+                                                                   \
   template <>                                                      \
   struct StackAllocatedTraits<type> {                              \
     static void Init(type *ptr) { init_func(ptr); }                \
     static void Cleanup(type *ptr) { cleanup_func(ptr); }          \
   };                                                               \
+                                                                   \
   }
 
 #define BORINGSSL_MAKE_STACK_TRAITS_MOVABLE(type, init_func, cleanup_func, \
                                             move_func)                     \
   namespace internal {                                                     \
+                                                                           \
   template <>                                                              \
   struct StackAllocatedMovableTraits<type> {                               \
     static void Init(type *ptr) { init_func(ptr); }                        \
     static void Cleanup(type *ptr) { cleanup_func(ptr); }                  \
     static void Move(type *out, type *in) { move_func(out, in); }          \
   };                                                                       \
+                                                                           \
   }
 
 // Holds ownership of heap-allocated BoringSSL structures. Sample usage:
@@ -527,12 +535,9 @@ class StackAllocatedMovable {
 template <typename T>
 using UniquePtr = std::unique_ptr<T, internal::Deleter>;
 
-#define BORINGSSL_MAKE_UP_REF(type, up_ref_func)             \
-  inline UniquePtr<type> UpRef(type *v) {                    \
-    if (v != nullptr) {                                      \
-      up_ref_func(v);                                        \
-    }                                                        \
-    return UniquePtr<type>(v);                               \
+#define BORINGSSL_MAKE_UP_REF(type, dup_ref_func)            \
+  inline UniquePtr<type> UpRef(const type *v) {              \
+    return UniquePtr<type>(dup_ref_func(v));                 \
   }                                                          \
                                                              \
   inline UniquePtr<type> UpRef(const UniquePtr<type> &ptr) { \

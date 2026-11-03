@@ -58,6 +58,7 @@ void testFile(
   String file, {
   Iterable<BlockSyntax> blockSyntaxes = const [],
   Iterable<InlineSyntax> inlineSyntaxes = const [],
+  bool enableTagfilter = false,
 }) {
   for (final dataCase in dataCasesInFile(
     path: p.join(p.current, 'test', file),
@@ -70,6 +71,7 @@ void testFile(
       dataCase.expectedOutput,
       blockSyntaxes: blockSyntaxes,
       inlineSyntaxes: inlineSyntaxes,
+      enableTagfilter: enableTagfilter,
     );
   }
 }

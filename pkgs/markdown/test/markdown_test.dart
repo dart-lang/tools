@@ -60,6 +60,7 @@ void main() async {
     'extensions/footnote_block.unit',
     blockSyntaxes: [const FootnoteDefSyntax()],
   );
+  testFile('extensions/disallowed_raw_html.unit', enableTagfilter: true);
 
   testDirectory('common_mark');
   testDirectory('gfm');
@@ -170,6 +171,12 @@ void main() async {
       '![foo <a> bar](bad)',
       '<p><img src="bad" alt="foo &lt;a&gt; bar" /></p>\n',
       inlineSyntaxes: [InlineHtmlSyntax()],
+    );
+
+    validateCore(
+      'Image alt attribute of nested images is escaped once',
+      '![a "b" ![c <d>](x) & e](y)',
+      '<p><img src="y" alt="a &quot;b&quot; c &lt;d&gt; &amp; e" /></p>\n',
     );
 
     validateCore(
