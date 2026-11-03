@@ -46,6 +46,8 @@
 * Link reference definitions whose label has more than 999 characters are no
   longer recognized; previously backslash escapes let labels of up to 1998
   characters through.
+* Reference links whose label has more than 999 characters are no longer
+  resolved, per the CommonMark limit on link labels.
 
 ## 7.4.0
 
