@@ -209,11 +209,10 @@ jobs:
         with:
           subject-path: pkgs/boring/bin/*
 
-  # Closes any open pin pull request from an earlier commit as soon as a new
-  # build starts on main, so a stale pull request can't be merged while
-  # `precompile` is still running.
+  # Closes an open pin pull request as soon as a new build starts on main, so a
+  # stale pull request can't be merged while `precompile` is still running.
   close-stale-pin:
-    name: Close superseded pin pull requests
+    name: Close superseded pin pull request
     if: >-
       github.repository_owner == 'dart-lang' &&
       github.event_name != 'pull_request' &&
@@ -221,29 +220,17 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # To delete the closed pull request's branch.
-      pull-requests: write # To comment on and close superseded pull requests.
+      pull-requests: write # To comment on and close the pull request.
     steps:
-      - name: Close open pin pull requests from earlier commits
+      - name: Close open pin pull request
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          COMMIT: ${{ github.sha }}
         run: |
-          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          prs="$(gh pr list --state open --author app/dart-ecosystem-bot --limit 100 \
-            --json number,headRefName,body | jq -r --arg marker "built from $COMMIT" '
-              .[]
-              | select(
-                  (.headRefName == "boring-pin-binaries" or (.headRefName | startswith("boring-pin-binaries-")))
-                  and (((.body // "") | contains($marker)) | not)
-                )
-              | .number
-            ')"
-          for pr in $prs; do
-            echo "Closing superseded pull request #$pr..."
+          for pr in $(gh pr list --head boring-pin-binaries --json number --jq '.[].number'); do
             gh pr close "$pr" --delete-branch \
-              --comment "Superseded by $COMMIT. [A new \`boring_binaries.yaml\` run]($run_url) is building updated prebuilt libraries and will open a replacement pull request."
+              --comment "Superseded by $GITHUB_SHA, which triggered $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID."
           done
 
   release:
