@@ -209,6 +209,43 @@ jobs:
         with:
           subject-path: pkgs/boring/bin/*
 
+  # Closes any open pin pull request from an earlier commit as soon as a new
+  # build starts on main, so a stale pull request can't be merged while
+  # `precompile` is still running.
+  close-stale-pin:
+    name: Close superseded pin pull requests
+    if: >-
+      github.repository_owner == 'dart-lang' &&
+      github.event_name != 'pull_request' &&
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # To delete the closed pull request's branch.
+      pull-requests: write # To comment on and close superseded pull requests.
+    steps:
+      - name: Close open pin pull requests from earlier commits
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          prs="$(gh pr list --state open --author app/dart-ecosystem-bot --limit 100 \
+            --json number,headRefName,body | jq -r --arg marker "built from $COMMIT" '
+              .[]
+              | select(
+                  (.headRefName == "boring-pin-binaries" or (.headRefName | startswith("boring-pin-binaries-")))
+                  and (((.body // "") | contains($marker)) | not)
+                )
+              | .number
+            ')"
+          for pr in $prs; do
+            echo "Closing superseded pull request #$pr..."
+            gh pr close "$pr" --delete-branch \
+              --comment "Superseded by $COMMIT. [A new \`boring_binaries.yaml\` run]($run_url) is building updated prebuilt libraries and will open a replacement pull request."
+          done
+
   release:
     name: Attach the binaries to a GitHub release
     needs: precompile
@@ -218,7 +255,6 @@ jobs:
       contents: write # To create the release and upload its assets.
     outputs:
       tag: ${{ steps.release.outputs.tag }}
-      id: ${{ steps.release.outputs.id }}
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
@@ -231,9 +267,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           COMMIT: ${{ github.sha }}
         run: |
-          id="$(date -u +%Y%m%d)-${COMMIT::12}"
-          tag="boring-binaries-$id"
-          echo "id=$id" >> "$GITHUB_OUTPUT"
+          tag="boring-binaries-$(date -u +%Y%m%d)-${COMMIT::12}"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           if ! gh release view "$tag" > /dev/null 2>&1; then
             gh release create "$tag" --prerelease --target "$COMMIT" \
@@ -255,7 +289,7 @@ jobs:
   # tree-shaking tests download them in the `fetch` build mode.
   pin:
     name: Open the pull request that pins the binaries
-    needs: release
+    needs: [release, close-stale-pin]
     if: github.repository_owner == 'dart-lang'
     runs-on: ubuntu-latest
     permissions:
@@ -301,17 +335,18 @@ jobs:
           base: main
           add-paths: pkgs/boring/lib/src/hook_helpers/hashes.dart
           commit-message: "[boring] Pin the prebuilt binaries of ${{ needs.release.outputs.tag }}"
-          branch: "boring-pin-binaries-${{ needs.release.outputs.id }}"
+          branch: "boring-pin-binaries"
           title: "[boring] Pin the prebuilt binaries of ${{ needs.release.outputs.tag }}"
-          body: >-
-            Pins the SHA-256 hashes of the prebuilt libraries of
-            [`${{ needs.release.outputs.tag }}`](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.release.outputs.tag }}),
-            built from ${{ github.sha }} by
-            [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            of `boring_binaries.yaml`.
+          body: |
+            > [!WARNING]
+            > **Merge order:** Do **not** merge this pull request if a `[boring] Update BoringSSL` pull request (or another change to `pkgs/boring`'s native sources) is open and ready to merge.
+            >
+            > - **Merge `[boring] Update BoringSSL` first.** Landing it on `main` will automatically close this pull request, build new prebuilt libraries for the updated sources, and open a replacement pin pull request (~7 minutes later).
+            > - **Never merge an older pin pull request after a newer BoringSSL/native update**, as that reverts `hashes.dart` to stale prebuilt binaries.
+            > - Merge the latest pin pull request **before** releasing `package:boring`.
 
+            Pins the SHA-256 hashes of the prebuilt libraries of [`${{ needs.release.outputs.tag }}`](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.release.outputs.tag }}), built from ${{ github.sha }} by [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) of `boring_binaries.yaml`.
 
-            The `generated` job re-hashes the release assets, and the
-            tree-shaking tests download them in the `fetch` build mode.
+            The `generated` job re-hashes the release assets, and the tree-shaking tests download them in the `fetch` build mode.
           labels: skip-changelog-check
           delete-branch: true
