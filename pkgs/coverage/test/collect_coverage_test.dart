@@ -186,6 +186,23 @@ void main() {
     }
   });
 
+  test(
+    'HitMap.parseFiles ignores empty JSON file from skipped test suite',
+    () async {
+      final tempDir = await Directory.systemTemp.createTemp('coverage.test.');
+
+      try {
+        final outputFile = File(p.join(tempDir.path, 'coverage.json'));
+        await outputFile.writeAsString('{}', flush: true);
+
+        final parsedResult = await HitMap.parseFiles([outputFile]);
+        expect(parsedResult, isEmpty);
+      } finally {
+        await tempDir.delete(recursive: true);
+      }
+    },
+  );
+
   test('HitMap.parseFiles with packagesPath and checkIgnoredLines', () async {
     final tempDir = await Directory.systemTemp.createTemp('coverage.test.');
 
