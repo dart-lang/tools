@@ -31,10 +31,10 @@ extension TakeUntil<T> on Stream<T> {
   /// If the returned stream is a single-subscription stream, an error from
   /// [trigger] will be buffered until the stream is listened to.
   Stream<T> takeUntil(Future<void> trigger) {
-    const int stateUnlistened = 0;
-    const int stateActive = 1;
-    const int stateCancelling = 2;
-    const int stateDone = 3;
+    const stateUnlistened = 0;
+    const stateActive = 1;
+    const stateCancelling = 2;
+    const stateDone = 3;
 
     var controller = isBroadcast
         ? StreamController<T>.broadcast(sync: true)
