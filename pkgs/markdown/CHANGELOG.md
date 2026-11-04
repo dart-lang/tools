@@ -64,6 +64,9 @@
 * Trailing `)` are stripped from extended autolinks one at a time while they
   are unmatched, per the GFM path validation rule; previously
   `www.example.com/a))b(c)` lost the `c`.
+* An extended email autolink is now recognized at a position where a URL
+  autolink is not allowed to start; previously `/www.a.b@c.d` linked only
+  `ww.a.b@c.d`.
 
 ## 7.4.0
 
