@@ -61,6 +61,9 @@
 * Shortcut and collapsed reference links (`[label]`, `[label][]`) whose label
   has more than 999 characters are no longer resolved, per the CommonMark limit
   on link labels; `linkResolver`/`linkBuilder` are no longer invoked for them.
+* Trailing `)` are stripped from extended autolinks one at a time while they
+  are unmatched, per the GFM path validation rule; previously
+  `www.example.com/a))b(c)` lost the `c`.
 
 ## 7.4.0
 

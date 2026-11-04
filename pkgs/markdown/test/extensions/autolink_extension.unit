@@ -12,3 +12,7 @@ http://www.foo.com
 www._www._a
 <<<
 <p>www._www._a</p>
+>>> unmatched interior closing parentheses before trailing parenthesis
+www.example.com/a)b) and www.example.com/a))b(c)
+<<<
+<p><a href="http://www.example.com/a)b">www.example.com/a)b</a>) and <a href="http://www.example.com/a))b(c">www.example.com/a))b(c</a>)</p>

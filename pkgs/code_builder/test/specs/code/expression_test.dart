@@ -354,6 +354,66 @@ void main() {
     expect(refer('foo').cascade('bar'), equalsDart('foo..bar'));
   });
 
+  for (final nullAware in [false, true]) {
+    final operator = nullAware ? '?..' : '..';
+
+    for (final entry in {
+      'property access': refer('foo').property('bar'),
+      'index access': refer('foo').index(literalNum(0)),
+    }.entries) {
+      test(
+        'should preserve raw cascade spacing after ${entry.key} ($operator)',
+        () {
+          final receiver = entry.value;
+          final expression = nullAware
+              ? receiver.nullSafeCascade('baz')
+              : receiver.cascade('baz');
+          final rawReceiver = receiver.accept(DartEmitter()).toString();
+          expect(
+            expression.accept(DartEmitter()).toString(),
+            '$rawReceiver${operator}baz',
+          );
+        },
+      );
+    }
+
+    test(
+      'should separate a property cascade after a nullable cast ($operator)',
+      () {
+        final first = nullAware
+            ? refer('foo').nullSafeCascade('a')
+            : refer('foo').cascade('a');
+        expect(
+          first
+              .assign(const CodeExpression(Code("json['a'] as int?")))
+              .cascade('b')
+              .assign(literalNum(1))
+              .statement,
+          equalsDart("foo${operator}a = json['a'] as int? ..b = 1;"),
+        );
+      },
+    );
+
+    test(
+      'should separate an index cascade after a nullable cast ($operator)',
+      () {
+        final first = nullAware
+            ? refer('foo').nullSafeCascadeIndex(literalString('a'))
+            : refer('foo').cascadeIndex(literalString('a'));
+        expect(
+          first
+              .assign(const CodeExpression(Code("json['a'] as List<int>?")))
+              .cascadeIndex(literalString('b'))
+              .assign(literalNum(1))
+              .statement,
+          equalsDart(
+            "foo$operator['a'] = json['a'] as List<int>? ..['b'] = 1;",
+          ),
+        );
+      },
+    );
+  }
+
   test('should emit invoking a null safe property accessor', () {
     expect(refer('foo').nullSafeProperty('bar'), equalsDart('foo?.bar'));
   });
