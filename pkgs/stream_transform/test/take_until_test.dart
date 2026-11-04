@@ -129,8 +129,7 @@ void main() {
             expect(isDone, true);
           });
 
-          test(
-              'forwards trigger error before cancelling', () async {
+          test('forwards trigger error before cancelling', () async {
             var cancelDone = Completer<void>();
             values.onCancel = () => cancelDone.future;
             closeTrigger.completeError('sad');
@@ -164,7 +163,7 @@ void main() {
             await expectLater(cancelFuture, throwsA('cancel failed'));
           });
         }
-        
+
         if (streamType == 'broadcast') {
           test('multiple listeners all get values', () async {
             var otherValues = <Object>[];
@@ -255,4 +254,3 @@ void main() {
     });
   }
 }
-

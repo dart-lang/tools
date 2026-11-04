@@ -86,7 +86,7 @@ extension TakeUntil<T> on Stream<T> {
     }
 
     trigger.then(finish, onError: finish);
-    
+
     void onDone() {
       if (state == stateDone) return;
       subscription = null;
@@ -118,7 +118,7 @@ extension TakeUntil<T> on Stream<T> {
       assert(subscription == null);
       var activeSubscription =
           listen(controller.add, onError: controller.addError, onDone: onDone);
-      subscription = activeSubscription;          
+      subscription = activeSubscription;
       if (!isBroadcast) {
         // The activeSubscription will be the only subscription.
         controller
