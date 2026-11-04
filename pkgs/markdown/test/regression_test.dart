@@ -286,8 +286,43 @@ a <!--
       '<p><a href="/url">text</a></p>\n',
     );
     expect(
+      markdownToHtml('[$label999]: /url\n\n[$label999]'),
+      '<p><a href="/url">$label999</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[$label1000]'),
+      '<p>[$label1000]</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[$label999][]'),
+      '<p><a href="/url">$label999</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[$label1000][]'),
+      '<p>[$label1000][]</p>\n',
+    );
+    expect(
       markdownToHtml('[$label999]: /url\n\n[text][$label1000]'),
       '<p>[text][$label1000]</p>\n',
+    );
+    expect(
+      markdownToHtml('[a b]: /url\n\n[a${' ' * 1000}b]'),
+      '<p>[a${' ' * 1000}b]</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]', linkResolver: (name, [_]) => Text(name)),
+      '<p>$label999</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label1000]', linkResolver: (name, [_]) => Text(name)),
+      '<p>[$label1000]</p>\n',
+    );
+    expect(
+      markdownToHtml(
+        '[$label1000][ref]',
+        linkResolver: (name, [title]) => Text('$name:${title?.length}'),
+      ),
+      '<p>ref:1000</p>\n',
     );
   });
 }
