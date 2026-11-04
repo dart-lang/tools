@@ -208,7 +208,6 @@ void main() {
       '{"coverage": null}',
       '{"coverage": {}}',
       '{"coverage": "nope"}',
-      '{}',
       '"a string"',
       '42',
       'null',
@@ -234,6 +233,21 @@ void main() {
       });
     }
   });
+
+  test(
+    'HitMap.parseFiles ignores empty JSON file from skipped test suite',
+    () async {
+      final tempDir = Directory.systemTemp.createTempSync('hitmap_empty_');
+      final tempFile = File('${tempDir.path}/empty.json')
+        ..writeAsStringSync('{}');
+      try {
+        final hitmap = await HitMap.parseFiles([tempFile]);
+        expect(hitmap, isEmpty);
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    },
+  );
 
   group('HitMap scopeOutput and ScopedOutput', () {
     late Directory tempDir;

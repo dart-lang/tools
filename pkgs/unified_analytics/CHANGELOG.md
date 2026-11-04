@@ -1,3 +1,45 @@
+## 8.4.0
+
+- Added `DashToolKind` and `DashTool.kind` to distinguish top-level tools from
+  shared components, plus `DashTool.canBeRootTool`.
+- Added shared-component `DashTool` values: `analysisServer`
+  (`analysis-server`), `dartMcpServer` (`dart-mcp-server`), and `skillsCli`
+  (`skills-cli`).
+- `topLevelTool()` now ignores a `DASH__TOOL` value that names a shared
+  component and falls back to the current tool.
+- Deprecated `topLevelTool()`. Tools no longer need to read `DASH__TOOL`
+  themselves: pass your own tool to `Analytics`, which resolves the root tool,
+  and use `getEnvironment()` for child processes.
+- `Analytics` now resolves the root tool (the user's entry point) from
+  `DASH__TOOL`, then an optional new `fallbackRootTool` parameter on
+  `Analytics` and `Analytics.development`, then the tool itself. Only tools,
+  never shared components, can be the root tool.
+- Every event now carries two new user properties: `root_tool`, the resolved
+  root tool, and `leaf_tool`, the logical tool passed as `tool` to `Analytics`
+  (a top-level tool or a shared component).
+- The `tool` user property keeps its current value, the tool itself for a
+  top-level tool and the root tool for a shared component, so existing
+  dashboards keep working. It's deprecated and will be removed in a future
+  release.
+- `LogFileStats.toolCount` now counts events by leaf tool, falling back to
+  `tool` for log records written before `leaf_tool` existed.
+- Added `fallbackRootTool` and `rootTool` (a test-only override) parameters to
+  `Analytics.fake`, which resolves `DASH__TOOL` from its `environment`.
+- Opt-in status, the first-run and consent-message-version checks,
+  `clientShowedMessage()`, and `getConsentMessage` are now keyed on the root
+  tool instead of the tool. A shared component never shows its own consent
+  message or gets its own line in the config file.
+- If no root tool resolves, which can only happen for a shared component,
+  analytics are disabled for the session, in internal builds too: the
+  `Analytics` factories return a `NoOpAnalytics`, and other instances report
+  `okToSend == false`, show no consent message, and never write to the config
+  file.
+- Fixed `getEnvironment()` to set `DASH__TOOL` to the tool's label (for
+  example `vscode-plugins`) instead of its Dart enum name (`vscodePlugins`),
+  which `DashTool.fromLabel` rejected. It now passes on the resolved root
+  tool, so a shared component never passes on itself, and leaves out
+  `DASH__TOOL` when no root tool resolves.
+
 ## 8.3.0
 
 - Exported `areAnalyticsSuppressedIn`, which reads `DASH__SUPPRESS_ANALYTICS`

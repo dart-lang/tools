@@ -43,6 +43,21 @@
   CommonMark definition of an absolute URI.
 * `headerPattern` no longer backtracks quadratically on ATX headings with many
   spaces before the text, and ATX headings may contain `U+2028` and `U+2029`.
+* A parenthesized link reference definition title (`(...)`) may no longer
+  contain an unescaped `(`, per the CommonMark specification.
+* A bare inline link destination must have balanced parentheses before a
+  title; `[a](b( "t"))` is no longer a link, per the CommonMark specification.
+* Inline link destinations in angle brackets (`<...>`) may no longer contain
+  an unescaped `<`, per the CommonMark specification.
+* Link reference definitions whose label has more than 999 characters are no
+  longer recognized; previously backslash escapes let labels of up to 1998
+  characters through.
+* Reference links whose label has more than 999 characters are no longer
+  resolved, per the CommonMark limit on link labels.
+* Bare inline link destinations may contain at most 32 levels of nested
+  parentheses, matching `cmark`.
+* A parenthesized inline link title (`(...)`) may no longer contain an
+  unescaped `(`, per the CommonMark specification.
 
 ## 7.4.0
 

@@ -89,3 +89,28 @@ links [are](<http://example.com> "title\") awesome
 
 <<<
 <p>links [are](<a href="http://example.com">http://example.com</a> &quot;title&quot;) awesome</p>
+>>> not an inline link: unbalanced parenthesis in the destination before a title
+[a](b( "t"))
+
+<<<
+<p>[a](b( &quot;t&quot;))</p>
+>>> inline link destination with 32 nested parentheses
+[a](((((((((((((((((((((((((((((((((u)))))))))))))))))))))))))))))))))
+
+<<<
+<p><a href="((((((((((((((((((((((((((((((((u))))))))))))))))))))))))))))))))">a</a></p>
+>>> not an inline link: destination with 33 nested parentheses
+[a]((((((((((((((((((((((((((((((((((u))))))))))))))))))))))))))))))))))
+
+<<<
+<p>[a]((((((((((((((((((((((((((((((((((u))))))))))))))))))))))))))))))))))</p>
+>>> not an inline link: unescaped ( in a parenthesized title
+[a](b (c(d))
+
+<<<
+<p>[a](b (c(d))</p>
+>>> inline link with an escaped ( in a parenthesized title
+[a](b (c\(d))
+
+<<<
+<p><a href="b" title="c(d">a</a></p>
