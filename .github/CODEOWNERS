@@ -30,7 +30,7 @@ pkgs/graphs                     @natebosch
 pkgs/html                       @dart-lang/dart-ecosystem-team
 pkgs/io                         @dart-lang/dart-ecosystem-team
 pkgs/json_rpc_2                 @dart-lang/dart-ecosystem-team
-pkgs/markdown                   @srawlins
+pkgs/markdown                   @dart-lang/dart-ecosystem-team
 pkgs/mime                       @lrhn
 pkgs/oauth2                     @dart-lang/dart-pub-team
 pkgs/package_config             @dart-lang/dart-ecosystem-team
