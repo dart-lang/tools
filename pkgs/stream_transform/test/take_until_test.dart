@@ -222,8 +222,8 @@ void main() {
         test('trigger before listen, no trigger error', () async {
           // Stream is never listened to and never cancelled.
           values
-            ..onCancel = () =>
-                Future<void>.error('cancel failed')..addError('error event');
+            ..onCancel = (() => Future<void>.error('cancel failed'))
+            ..addError('error event');
 
           closeTrigger.complete();
           await Future(() {});
@@ -239,8 +239,8 @@ void main() {
         test('trigger before listen, trigger error', () async {
           // Stream is never listened to and never cancelled.
           values
-            ..onCancel = () =>
-                Future<void>.error('cancel failed')..addError('error event');
+            ..onCancel = (() => Future<void>.error('cancel failed'))
+            ..addError('error event');
 
           closeTrigger.completeError('trigger error');
           await Future(() {});
