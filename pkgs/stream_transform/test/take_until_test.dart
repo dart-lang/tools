@@ -153,7 +153,7 @@ void main() {
           test('cancel during trigger cancel gets error', () async {
             var cancelCompleter = Completer<void>();
             values.onCancel = () => cancelCompleter.future;
-            closeTrigger.complete('done');
+            closeTrigger.complete(null);
             await Future(() {});
             expect(isDone, false);
             var cancelFuture = subscription.cancel()..ignore();
@@ -221,8 +221,9 @@ void main() {
       } else {
         test('trigger before listen, no trigger error', () async {
           // Stream is never listened to and never cancelled.
-          values.onCancel = () => Future<void>.error('cancel failed');
-          values.addError('error event');
+          values
+            ..onCancel = () =>
+                Future<void>.error('cancel failed')..addError('error event');
 
           closeTrigger.complete();
           await Future(() {});
@@ -237,8 +238,9 @@ void main() {
 
         test('trigger before listen, trigger error', () async {
           // Stream is never listened to and never cancelled.
-          values.onCancel = () => Future<void>.error('cancel failed');
-          values.addError('error event');
+          values
+            ..onCancel = () =>
+                Future<void>.error('cancel failed')..addError('error event');
 
           closeTrigger.completeError('trigger error');
           await Future(() {});
