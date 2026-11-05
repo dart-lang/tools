@@ -1,3 +1,8 @@
+## 1.7.1-wip
+
+- Omit a missing hosted dependency URL from `HostedDetails.toJson()` so that
+  dependencies round-trip without turning a missing URL into the string `null`.
+
 ## 1.7.0
 
 - Added `tagPattern` and `version` fields to `GitDependency`, to support the
