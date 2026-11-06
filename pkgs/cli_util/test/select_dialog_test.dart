@@ -935,6 +935,43 @@ $descIndent${'Second...'}${maybeLegend()}''');
             expect(await future, multiSelect ? {0} : 0);
           });
 
+          test(
+            'never shows descriptions with maxDescriptionHeight 0',
+            () async {
+              final future = renderer(
+                [
+                  const SelectOption('a', description: 'desc a'),
+                  const SelectOption('b', description: 'desc b\nmore'),
+                  'c',
+                  'd',
+                ],
+                inputController.stream,
+                sizing: SelectComponentSizing.fixed(
+                  totalHeight: 3 + (multiSelect ? 1 : 0),
+                  maxDescriptionHeight: 0,
+                ),
+              );
+              await pumpEventQueue();
+
+              expect(mockStdout.terminal.content, '''
+>$uBox a      █
+ $uBox b      █
+ $uBox c      │${maybeLegend()}''');
+
+              // Hovering an item with a description doesn't shrink the window
+              // either.
+              inputController.addKey(KeyVariants.down);
+              await pumpEventQueue();
+              expect(mockStdout.terminal.content, '''
+ $uBox a      █
+>$uBox b      █
+ $uBox c      │${maybeLegend()}''');
+
+              inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+              expect(await future, multiSelect ? {1} : 1);
+            },
+          );
+
           test('word-wraps long description lines, respects newlines, and adds '
               'ellipsis when exceeding maxDescriptionHeight', () async {
             mockStdout.terminalColumns = 15 + uBox.length;
@@ -1180,6 +1217,70 @@ $descIndent${'desc 2'}           █
               expect(await future, multiSelect ? {5} : 5);
             },
           );
+
+          test('pages by the number of items visible while hovering a '
+              'multi-line description', () async {
+            final future = renderer(
+              [
+                const SelectOption('a', description: 'a1\na2'),
+                'b',
+                'c',
+                'd',
+                'e',
+                'f',
+                'g',
+                const SelectOption('h', description: 'h1\nh2'),
+              ],
+              inputController.stream,
+              sizing: SelectComponentSizing.fixed(
+                totalHeight: 5 + (multiSelect ? 1 : 0),
+              ),
+            );
+            await pumpEventQueue();
+
+            expect(mockStdout.terminal.content, '''
+>$uBox a       █
+$descIndent${'a1'}      █
+$descIndent${'a2'}      │
+ $uBox b       │
+ $uBox c       │${maybeLegend()}''');
+
+            // Only 3 items are visible while 'a' shows its description, so
+            // PageDown moves down 3 items.
+            inputController.addKey(KeyVariants.pageDown);
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox b       │
+ $uBox c       █
+>$uBox d       █
+ $uBox e       █
+ $uBox f       │${maybeLegend()}''');
+
+            // 'd' has no description, so 5 items are visible and PageDown
+            // moves down 5 items (clamped to the last one).
+            inputController.addKey(KeyVariants.pageDown);
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox f       │
+ $uBox g       │
+>$uBox h       │
+$descIndent${'h1'}      █
+$descIndent${'h2'}      █${maybeLegend()}''');
+
+            // Only 3 items are visible while 'h' shows its description, so
+            // PageUp moves up 3 items.
+            inputController.addKey(KeyVariants.pageUp);
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox c       │
+ $uBox d       █
+>$uBox e       █
+ $uBox f       █
+ $uBox g       │${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {4} : 4);
+          });
 
           test('deprecated maxVisibleItems computes maxTotalHeight by adding '
               'max description height', () async {
