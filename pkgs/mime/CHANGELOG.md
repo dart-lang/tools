@@ -1,5 +1,8 @@
 ## 2.1.1-wip
 
+* Fix incorrect magic numbers for `application/postscript` (`%!`, not `%Q`),
+  `audio/ogg` (`OggS`, not `Opu`) and `model/gltf-binary` (`glTF`, not `FTlg`)
+  so real files of these types are detected by `headerBytes`.
 * Forward mid-stream multipart parse errors and invalid UTF-8 header bytes to
   the output stream as `MimeMultipartException` instead of throwing uncaught
   synchronous errors or raw `FormatException`s.
