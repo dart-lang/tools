@@ -979,6 +979,26 @@ $descIndent${'hij'}${maybeLegend()}''');
             expect(await future, multiSelect ? {0} : 0);
           });
 
+          test('does not break a line inside its leading '
+              'indentation', () async {
+            mockStdout.terminalColumns = '> abcdefg'.length + uBox.length;
+            final future = renderer([
+              const SelectOption('a', description: '  longidentifier'),
+            ], inputController.stream);
+            await pumpEventQueue();
+
+            // The indented word doesn't fit in the 7 available chars, so it is
+            // hard-broken rather than leaving a line with just the indentation.
+            expect(mockStdout.terminal.content, '''
+>$uBox a
+$descIndent${'  longi'}
+$descIndent${'dentifi'}
+$descIndent${'er'}${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {0} : 0);
+          });
+
           test('resets the style at the end of a description line when the '
               'reset comes after the line break', () async {
             mockStdout.terminalColumns = '> abcdefg'.length + uBox.length;

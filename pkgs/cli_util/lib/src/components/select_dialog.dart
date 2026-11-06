@@ -754,6 +754,9 @@ List<String> _wordWrapDescription(String description, int limit, int maxLines) {
   final buffer = StringBuffer(activeStyle);
   var rawIndex = startIndex;
   var visibleCount = 0;
+  // Whether a visible non-space character has been seen on this line. Spaces
+  // before it are indentation, which the line can't break inside of.
+  var seenNonSpace = false;
   // The buffer length, index, and style just after the last space on this
   // line, which is where we break the line if it overflows.
   ({int bufferLength, int rawIndex, String activeStyle})? lastSpace;
@@ -770,7 +773,9 @@ List<String> _wordWrapDescription(String description, int limit, int maxLines) {
     if (visibleCount == maxVisibleChars) break;
 
     final char = paragraph[rawIndex++];
-    if (char == ' ' && visibleCount > 0) {
+    if (char != ' ') {
+      seenNonSpace = true;
+    } else if (seenNonSpace) {
       lastSpace = (
         bufferLength: buffer.length,
         rawIndex: rawIndex,
