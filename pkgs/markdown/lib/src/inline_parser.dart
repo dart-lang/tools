@@ -60,7 +60,7 @@ class InlineParser {
   int _nextDelimiterPos = 0;
 
   /// The tree of parsed HTML nodes.
-  final _tree = <Node>[];
+  final _tree = LinkedList<_TreeNode>();
 
   HtmlClosers? _htmlClosers;
 
@@ -127,8 +127,9 @@ class InlineParser {
     // Write any trailing text content to a Text node.
     writeText();
     _processDelimiterRun(null);
-    _combineAdjacentText(_tree);
-    return _tree;
+    final result = [for (final treeNode in _tree) treeNode.node];
+    _combineAdjacentText(result);
+    return result;
   }
 
   /// Look back through the delimiter stack to see if we've found a link or
@@ -160,7 +161,7 @@ class InlineParser {
     }
     final syntax = delimiter.syntax;
     if (syntax is LinkSyntax && syntaxes.any((e) => e is LinkSyntax)) {
-      final nodeIndex = _tree.lastIndexWhere((n) => n == delimiter.node);
+      final delimiterTreeNode = bracketNode.treeNode!;
       final linkNodes = syntax.close(
         this,
         delimiter,
@@ -169,8 +170,11 @@ class InlineParser {
           _processDelimiterRun(bracketNode);
           // All of the nodes which lie past [bracketNode] are children of this
           // link/image.
-          final children = _tree.sublist(nodeIndex + 1, _tree.length);
-          _tree.removeRange(nodeIndex + 1, _tree.length);
+          final children = <Node>[];
+          while (delimiterTreeNode.next != null) {
+            children.add(delimiterTreeNode.next!.node);
+            delimiterTreeNode.next!.unlink();
+          }
           return children;
         },
       );
@@ -184,7 +188,13 @@ class InlineParser {
             if (d.delimiter.char == $lbracket) d.delimiter.isActive = false;
           }
         }
-        _tree.replaceRange(nodeIndex, _tree.length, linkNodes);
+        while (delimiterTreeNode.next != null) {
+          delimiterTreeNode.next!.unlink();
+        }
+        delimiterTreeNode.unlink();
+        for (final node in linkNodes) {
+          _tree.add(_TreeNode(node));
+        }
         advanceBy(1);
         start = pos;
       } else {
@@ -259,26 +269,34 @@ class InlineParser {
         final matchedTag = opener.tags[matchedTagIndex];
         final indicatorLength = matchedTag.indicatorLength;
         final openerTextNode = opener.node;
-        final openerTextNodeIndex = _tree.indexOf(openerTextNode);
+        final openerTreeNode = openerNode.treeNode!;
         final closerTextNode = closer.node;
-        var closerTextNodeIndex = _tree.indexOf(closerTextNode);
+        final closerTreeNode = current.treeNode!;
         final nodes = opener.syntax.close(
           this,
           opener,
           closer,
           tag: matchedTag.tag,
-          getChildren: () =>
-              _tree.sublist(openerTextNodeIndex + 1, closerTextNodeIndex),
+          getChildren: () {
+            final children = <Node>[];
+            for (
+              var t = openerTreeNode.next;
+              t != null && t != closerTreeNode;
+              t = t.next
+            ) {
+              children.add(t.node);
+            }
+            return children;
+          },
         );
         // Replace all of the nodes between the opener and the closer (which
         // are now the new emphasis node's children) with the emphasis node.
-        _tree.replaceRange(
-          openerTextNodeIndex + 1,
-          closerTextNodeIndex,
-          nodes!,
-        );
-        // Slide [closerTextNodeIndex] back accordingly.
-        closerTextNodeIndex = openerTextNodeIndex + 2;
+        while (openerTreeNode.next != closerTreeNode) {
+          openerTreeNode.next!.unlink();
+        }
+        for (final node in nodes!) {
+          closerTreeNode.insertBefore(_TreeNode(node));
+        }
 
         while (openerNode.next != current) {
           openerNode.next!.unlink();
@@ -287,26 +305,24 @@ class InlineParser {
         // Remove delimiter characters, possibly removing nodes from the tree
         // and Delimiters from the delimiter stack.
         if (opener.length == indicatorLength) {
-          _tree.removeAt(openerTextNodeIndex);
+          openerTreeNode.unlink();
           openerNode.unlink();
-          // Slide [closerTextNodeIndex] back accordingly.
-          closerTextNodeIndex--;
         } else {
           final newOpenerTextNode = Text(
             openerTextNode.text.substring(indicatorLength),
           );
-          _tree[openerTextNodeIndex] = newOpenerTextNode;
+          openerTreeNode.node = newOpenerTextNode;
           opener.node = newOpenerTextNode;
         }
 
         if (closer.length == indicatorLength) {
-          _tree.removeAt(closerTextNodeIndex);
+          closerTreeNode.unlink();
           current.unlink();
         } else {
           final newCloserTextNode = Text(
             closerTextNode.text.substring(indicatorLength),
           );
-          _tree[closerTextNodeIndex] = newCloserTextNode;
+          closerTreeNode.node = newCloserTextNode;
           closer.node = newCloserTextNode;
           // [current] needs to be considered again; leave it.
           next = current;
@@ -357,18 +373,28 @@ class InlineParser {
       return;
     }
     final text = source.substring(start, pos);
-    _tree.add(Text(text));
+    _tree.add(_TreeNode(Text(text)));
     start = pos;
   }
 
   /// Add [node] to the current tree.
   void addNode(Node node) {
-    _tree.add(node);
+    final treeNode = _TreeNode(node);
+    _tree.add(treeNode);
+    if (_delimiterStack.isNotEmpty &&
+        _delimiterStack.last.delimiter.node == node) {
+      _delimiterStack.last.treeNode = treeNode;
+    }
   }
 
   /// Push [delimiter] onto the stack of [Delimiter]s.
-  void pushDelimiter(Delimiter delimiter) =>
-      _delimiterStack.add(_DelimiterNode(delimiter, _nextDelimiterPos++));
+  void pushDelimiter(Delimiter delimiter) {
+    final node = _DelimiterNode(delimiter, _nextDelimiterPos++);
+    if (_tree.isNotEmpty && _tree.last.node == delimiter.node) {
+      node.treeNode = _tree.last;
+    }
+    _delimiterStack.add(node);
+  }
 
   bool get isDone => pos >= source.length;
 
@@ -441,9 +467,16 @@ class HtmlClosers {
   HtmlClosers(this._source);
 }
 
+final class _TreeNode extends LinkedListEntry<_TreeNode> {
+  Node node;
+
+  _TreeNode(this.node);
+}
+
 final class _DelimiterNode extends LinkedListEntry<_DelimiterNode> {
   final Delimiter delimiter;
   final int pos;
+  _TreeNode? treeNode;
 
   _DelimiterNode(this.delimiter, this.pos);
 }
