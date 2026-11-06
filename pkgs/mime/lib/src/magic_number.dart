@@ -30,7 +30,7 @@ class MagicNumber {
 
 const List<MagicNumber> initialMagicNumbers = [
   MagicNumber('application/pdf', '\x25\x50\x44\x46'),
-  MagicNumber('application/postscript', '\x25\x51'),
+  MagicNumber('application/postscript', '\x25\x21'),
 
   /// AIFF is based on the EA IFF 85 Standard for Interchange Format Files.
   /// -> 4 bytes have the ASCII characters 'F' 'O' 'R' 'M'.
@@ -68,7 +68,7 @@ const List<MagicNumber> initialMagicNumbers = [
   MagicNumber('audio/weba', '\x1A\x45\xDF\xA3'),
   MagicNumber('audio/mpeg', '\x49\x44\x33'),
   MagicNumber('audio/mpeg', '\xFF\xFB'),
-  MagicNumber('audio/ogg', '\x4F\x70\x75'),
+  MagicNumber('audio/ogg', '\x4F\x67\x67\x53'),
   MagicNumber(
     'video/3gpp',
     '\x00\x00\x00\x00\x66\x74\x79\x70\x33\x67\x70\x35',
@@ -99,7 +99,7 @@ const List<MagicNumber> initialMagicNumbers = [
     '\x00\x00\x00\x00\x66\x74\x79\x70\x6D\x70\x34\x32',
     '\x00\x00\x00\x00\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF',
   ),
-  MagicNumber('model/gltf-binary', '\x46\x54\x6C\x67'),
+  MagicNumber('model/gltf-binary', '\x67\x6C\x54\x46'),
 
   /// The WebP file format is based on the RIFF document format.
   /// -> 4 bytes have the ASCII characters 'R' 'I' 'F' 'F'.
