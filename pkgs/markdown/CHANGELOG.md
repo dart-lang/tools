@@ -72,6 +72,8 @@
   `_*_ *a*` rendered the trailing `*a*` literally.
 * Container blocks nest at most 128 levels deep; deeper content is rendered as
   plain text instead of overflowing the call stack.
+* Duplicate footnote definitions with identical case are ignored after the
+  first definition, matching case-insensitive duplicates.
 
 ## 7.4.0
 

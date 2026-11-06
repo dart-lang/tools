@@ -140,6 +140,7 @@ class Document {
         final label = node.footnoteLabel;
         var count = 0;
         if (label != null && (count = footnoteReferences[label] ?? 0) > 0) {
+          footnoteReferences[label] = 0;
           footnotes.add(node);
           final children = node.children;
           if (children != null) {
