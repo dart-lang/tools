@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 import 'client.dart';
+import 'client_authenticator.dart';
 import 'handle_access_token_response.dart';
 import 'utils.dart';
 
@@ -38,13 +39,22 @@ import 'utils.dart';
 ///
 /// This function is passed the `Content-Type` header of the response as well as
 /// its body as a UTF-8-decoded string. It should return a map in the same
-/// format as the [standard JSON response](https://tools.ietf.org/html/rfc6749#section-5.1)
+/// format as the [standard JSON response](https://tools.ietf.org/html/rfc6749#section-5.1).
+///
+/// [customAuth] is an optional callback to add additional client
+/// authentication headers or body parameters to a token request for advanced
+/// scenarios, such as when using a JWT Bearer token for client authentication
+/// per [RFC 7523](https://tools.ietf.org/html/rfc7523#section-2.2). When
+/// provided, it replaces the default `basicAuth` credentials integration in
+/// token requests.
 Future<Client> clientCredentialsGrant(
     Uri authorizationEndpoint, String? identifier, String? secret,
     {Iterable<String>? scopes,
     bool basicAuth = true,
     http.Client? httpClient,
     String? delimiter,
+    ClientAuthenticator? customAuth,
+    Iterable<Uri>? resources,
     Map<String, dynamic> Function(MediaType? contentType, String body)?
         getParameters}) async {
   delimiter ??= ' ';
@@ -54,7 +64,10 @@ Future<Client> clientCredentialsGrant(
 
   var headers = <String, String>{};
 
-  if (identifier != null) {
+  if (customAuth != null) {
+    if (identifier != null) body['client_id'] = identifier;
+    await customAuth(headers, body);
+  } else if (identifier != null) {
     if (basicAuth) {
       headers['Authorization'] = basicAuthHeader(identifier, secret!);
     } else {
@@ -67,6 +80,34 @@ Future<Client> clientCredentialsGrant(
     body['scope'] = scopes.join(delimiter);
   }
 
+  if (resources != null && resources.isNotEmpty) {
+    // http.post doesn't support Map<String, Iterable> for x-www-form-urlencoded
+    // bodies, so we construct the body string manually to allow
+    // multiple 'resource' parameters per RFC 8707.
+    final encodedBody = body.entries
+        .map((e) => '${Uri.encodeQueryComponent(e.key)}='
+            '${Uri.encodeQueryComponent(e.value)}')
+        .toList();
+    for (final r in resources) {
+      encodedBody.add('resource=${Uri.encodeQueryComponent(r.toString())}');
+    }
+
+    httpClient ??= http.Client();
+    var response = await httpClient.post(authorizationEndpoint,
+        headers: headers
+          ..['content-type'] = 'application/x-www-form-urlencoded',
+        body: encodedBody.join('&'));
+
+    var credentials = handleAccessTokenResponse(response, authorizationEndpoint,
+        startTime, scopes?.toList() ?? [], delimiter,
+        getParameters: getParameters);
+    return Client(credentials,
+        identifier: identifier,
+        secret: secret,
+        httpClient: httpClient,
+        customAuth: customAuth);
+  }
+
   httpClient ??= http.Client();
   var response = await httpClient.post(authorizationEndpoint,
       headers: headers, body: body);
@@ -75,5 +116,8 @@ Future<Client> clientCredentialsGrant(
       startTime, scopes?.toList() ?? [], delimiter,
       getParameters: getParameters);
   return Client(credentials,
-      identifier: identifier, secret: secret, httpClient: httpClient);
+      identifier: identifier,
+      secret: secret,
+      httpClient: httpClient,
+      customAuth: customAuth);
 }
