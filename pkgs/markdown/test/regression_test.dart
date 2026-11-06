@@ -241,6 +241,32 @@ a <!--
       ),
       '<p>hello <a>a</a></p>\n',
     );
+    expect(
+      markdownToHtml(
+        'hello [*a] b*',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>*a</a> b*</p>\n',
+    );
+    expect(
+      markdownToHtml(
+        'hello [*a*]',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>*a*</a></p>\n',
+    );
+  });
+
+  test('emphasis after a span containing an unmatched delimiter', () {
+    expect(markdownToHtml('_*_ *a*'), '<p><em>*</em> <em>a</em></p>\n');
+    expect(
+      markdownToHtml(
+        '*~~__a__~~* ~~*__b__*~~',
+        extensionSet: ExtensionSet.gitHubWeb,
+      ),
+      '<p><em><del><strong>a</strong></del></em> '
+      '<del><em><strong>b</strong></em></del></p>\n',
+    );
   });
 
   test('link reference definitions with labels over 999 characters are not '
