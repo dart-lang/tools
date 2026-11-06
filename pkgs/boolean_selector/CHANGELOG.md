@@ -1,3 +1,8 @@
+## 2.1.3-wip
+
+* Fix `toString()` printing `&&` instead of `||` for the union of a selector
+  with a custom `BooleanSelector` implementation.
+
 ## 2.1.2
 
 * Increase the SDK minimum to `3.1.0`.

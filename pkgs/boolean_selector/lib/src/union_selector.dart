@@ -34,7 +34,7 @@ class UnionSelector implements BooleanSelector {
   }
 
   @override
-  String toString() => '($_selector1) && ($_selector2)';
+  String toString() => '($_selector1) || ($_selector2)';
 
   @override
   bool operator ==(Object other) =>
