@@ -337,7 +337,6 @@ class Pool {
           Chain.current());
     }
     _requestedResources.clear();
-    _timer = null;
   }
 }
 

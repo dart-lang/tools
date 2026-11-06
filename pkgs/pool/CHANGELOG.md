@@ -1,3 +1,8 @@
+## 1.5.4-wip
+
+* Fix `Pool` timeout so that pending requests continue to time out after an
+  earlier batch of requests has already timed out.
+
 ## 1.5.3
 
 * Fix `Pool.forEach` to ensure all workers complete before the stream is closed, even on error or cancellation.
