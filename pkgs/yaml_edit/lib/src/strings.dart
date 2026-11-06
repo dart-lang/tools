@@ -319,9 +319,11 @@ String yamlEncodeBlock(
         lineEnding,
       );
 
-      /// Empty collections are always encoded in flow-style, so new-line must
-      /// be avoided
-      if (isCollection(value) && !isEmpty(value)) {
+      /// Empty collections and flow collections are always encoded inline,
+      /// so new-line must be avoided
+      if (isCollection(value) &&
+          !isFlowYamlCollectionNode(value) &&
+          !isEmpty(value)) {
         return '$formattedKey:$lineEnding$formattedValue';
       }
 
