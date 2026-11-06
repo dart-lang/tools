@@ -120,9 +120,13 @@ class Glob implements Pattern {
   /// [followLinks] works the same as for [Directory.list].
   Stream<FileSystemEntity> listFileSystem(FileSystem fileSystem,
       {String? root, bool followLinks = true}) {
-    if (context.style != p.style) {
-      throw StateError("Can't list glob \"$this\"; it matches "
-          '${context.style} paths, but this platform uses ${p.style} paths.');
+    if (context.style != fileSystem.path.style) {
+      throw ArgumentError.value(
+          fileSystem,
+          'fileSystem',
+          '''Can't list using glob \"$this\"; it matches '''
+              '${context.style} paths, but the file system uses '
+              '${fileSystem.path.style} paths.');
     }
 
     return _listTreeForFileSystem(fileSystem)
@@ -142,9 +146,13 @@ class Glob implements Pattern {
   /// [followLinks] works the same as for [Directory.list].
   List<FileSystemEntity> listFileSystemSync(FileSystem fileSystem,
       {String? root, bool followLinks = true}) {
-    if (context.style != p.style) {
-      throw StateError("Can't list glob \"$this\"; it matches "
-          '${context.style} paths, but this platform uses ${p.style} paths.');
+    if (context.style != fileSystem.path.style) {
+      throw ArgumentError.value(
+          fileSystem,
+          'fileSystem',
+          '''Can't list using glob \"$this\"; it matches '''
+              '${context.style} paths, but the file system uses '
+              '${fileSystem.path.style} paths.');
     }
 
     return _listTreeForFileSystem(fileSystem)
@@ -189,6 +197,7 @@ class Glob implements Pattern {
 
   /// Handles getting a possibly cached [ListTree] for a [fileSystem].
   ListTree _listTreeForFileSystem(FileSystem fileSystem) {
+    assert(context.style == fileSystem.path.style);
     // Don't use cached trees for in memory file systems to avoid memory leaks.
     if (fileSystem is MemoryFileSystem) return ListTree(_ast, fileSystem);
 
