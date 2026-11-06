@@ -59,6 +59,60 @@ void main() async {
 }
 ```
 
+## Package attestations (`package:sigstore/provenance.dart`)
+
+`package:sigstore/provenance.dart` is a pure-Dart library (no native bindings, usable on every platform) with the pieces that `pub` and `pub.dev` share to bind a verified Sigstore bundle to the package it is served for:
+
+- `GitHubRepository` and `GitHubWorkflowIdentity` parse the repository URLs found in `pubspec.yaml` and in SLSA provenance, and the `job_workflow_ref` identities that `verifiedIdentity()` reports for bundles signed from GitHub Actions.
+- `BuildProvenance.parseBundle` reads the SLSA v1 build provenance statement from the DSSE envelope of a bundle: the repository, ref and commit the build ran at, its subjects, the self-reported builder, and GitHub's immutable repository ids.
+- `TransparencyLogEntry.tryParseBundle` reads the Rekor log index and integration time.
+- `checkProvenancePolicy` checks a *verified* attestation against the policy: who signed (a trusted reusable workflow), what was signed (the archive digest) and where it was built (the `repository:` of the package).
+
+Parsing never validates signatures. Verify the bundle with `SigstoreClient.verify` first, and parse the very same JSON string:
+
+```dart
+import 'package:sigstore/provenance.dart';
+import 'package:sigstore/sigstore.dart';
+
+List<String> verifyPackageAttestation({
+  required String packageName,
+  required String packageVersion,
+  required List<int> archiveSha256, // 32 bytes
+  required String bundleJson,
+  required String? pubspecRepository, // `repository:` inside the archive
+}) {
+  final client = SigstoreClient.create();
+  final policy = SigstoreVerificationPolicy.create(
+    '', // any identity: the signer is checked by the provenance policy below
+    githubActionsOidcIssuer,
+    true,
+    false,
+    '',
+    '',
+  );
+  // Throws a `SigstoreError` if the bundle does not verify over the digest.
+  final result = client.verify(
+    archiveSha256,
+    true,
+    SigstoreBundle.fromJson(bundleJson),
+    policy,
+  );
+
+  final signer = GitHubWorkflowIdentity.tryParse(result.verifiedIdentity());
+  if (signer == null) return ['Not signed from GitHub Actions.'];
+  return checkProvenancePolicy(
+    packageName: packageName,
+    packageVersion: packageVersion,
+    archiveSha256: archiveSha256.map((b) => b.toRadixString(16).padLeft(2, '0')).join(),
+    provenance: BuildProvenance.parseBundle(bundleJson),
+    signer: signer,
+    trustedSignerWorkflows: {'dart-lang/setup-dart/.github/workflows/publish.yml'},
+    oidcIssuer: result.verifiedIssuer(),
+    expectedRepository: pubspecRepository,
+  );
+}
+```
+
 ## Development & Tooling
 
 ### Generating Dart Bindings
