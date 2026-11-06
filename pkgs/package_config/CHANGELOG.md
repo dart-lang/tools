@@ -1,4 +1,7 @@
-## 3.0.1-wip
+## 3.1.0-wip
+
+- Adds `Package.experiments` and parses/writes the optional `"experiments"`
+  list of strings on package entries in `package_config.json`.
 
 ## 3.0.0
 
