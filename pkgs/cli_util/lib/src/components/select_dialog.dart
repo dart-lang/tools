@@ -522,7 +522,15 @@ int _render(
 
   // Add the scrollbar (if any) to the right of each row.
   final scrollbar =
-      isScrollable ? _scrollbar(start, end, items.length, rows.length) : null;
+      isScrollable
+          ? _scrollbar(
+            itemCount: items.length,
+            start: start,
+            end: end,
+            cursor: cursor,
+            trackHeight: rows.length,
+          )
+          : null;
   final scrollbarColumn = prefixWidth + maxItemLength + _scrollbarLeftMargin;
   String addScrollbar(String row, int index) {
     if (scrollbar == null) return row;
@@ -563,11 +571,18 @@ int _render(
 
 /// Returns the scrollbar glyph for each of the [trackHeight] rows of a dialog
 /// that shows the items from [start] (inclusive) to [end] (exclusive) out of
-/// [itemCount] items: `█` for the thumb, and `│` for the rest of the track.
+/// [itemCount] items, with the [cursor] on one of them: `█` for the thumb, and
+/// `│` for the rest of the track.
 ///
 /// The thumb only reaches the top/bottom of the track when the list is
 /// actually scrolled to the top/bottom, while moving consistently in between.
-List<String> _scrollbar(int start, int end, int itemCount, int trackHeight) {
+List<String> _scrollbar({
+  required int itemCount,
+  required int start,
+  required int end,
+  required int cursor,
+  required int trackHeight,
+}) {
   final visibleCount = end - start;
   // If all the items are visible, the thumb fills the whole track.
   if (visibleCount == itemCount) return List.filled(trackHeight, '█');
@@ -596,9 +611,8 @@ List<String> _scrollbar(int start, int end, int itemCount, int trackHeight) {
     // Actual bottom of scroll range.
     thumbStart = maxThumbStart;
   } else if (maxThumbStart <= 1) {
-    // Very small lists, only one of two positions available. The window isn't
-    // at either end of the list here, so the cursor is centered in it.
-    final cursor = start + visibleCount ~/ 2;
+    // Very small lists, only one of two positions available, so use the one
+    // on the same half of the list as the cursor.
     thumbStart = cursor > itemCount / 2 ? maxThumbStart : 0;
   } else {
     // Map from 1..maxThumbStart-1 linearly
@@ -682,13 +696,17 @@ List<List<String>> _wrapDescriptions(
   List<SelectOption> options,
   int limit,
   int maxLines,
-) => [
-  for (final option in options)
-    switch (option.description?.replaceFirst(_trailingNewlinesRegex, '')) {
-      null || '' => const <String>[],
-      final description => _wordWrapDescription(description, limit, maxLines),
-    },
-];
+) {
+  // Skip the work if no description lines are shown at all.
+  if (maxLines <= 0) return List.filled(options.length, const <String>[]);
+  return [
+    for (final option in options)
+      switch (option.description?.replaceFirst(_trailingNewlinesRegex, '')) {
+        null || '' => const <String>[],
+        final description => _wordWrapDescription(description, limit, maxLines),
+      },
+  ];
+}
 
 /// Word-wraps [description] so each line has at most [limit] visible
 /// characters, while preserving explicit newlines (`\n` or `\r\n`) and ANSI

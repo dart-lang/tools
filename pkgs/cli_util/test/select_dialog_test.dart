@@ -467,6 +467,34 @@ void main() {
             expect(await future, multiSelect ? <int>{} : 4);
           });
 
+          test('renders scrollbar correctly for very small windows', () async {
+            final future = renderer(
+              List.generate(6, (i) => '$i'),
+              inputController.stream,
+              sizing: SelectComponentSizing.fixed(
+                totalHeight: 2 + (multiSelect ? 1 : 0),
+              ),
+            );
+            await pumpEventQueue();
+
+            // With 2 visible items the thumb only has two positions, so in the
+            // middle of the list it is on the same half as the cursor.
+            inputController.addKeys(List.filled(3, KeyVariants.down));
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox 2      █
+>$uBox 3      │${maybeLegend()}''');
+
+            inputController.addKey(KeyVariants.down);
+            await pumpEventQueue();
+            expect(mockStdout.terminal.content, '''
+ $uBox 3      │
+>$uBox 4      █${maybeLegend()}''');
+
+            inputController.addKeys([KeyVariants.space, KeyVariants.enter]);
+            expect(await future, multiSelect ? {4} : 4);
+          });
+
           test('does not truncate exactly sized items', () async {
             mockStdout.terminalColumns = '> abcdefg'.length + uBox.length;
             final future = renderer([
