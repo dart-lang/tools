@@ -4,6 +4,8 @@
 
 // ignore_for_file: deprecated_member_use_from_same_package
 
+import 'dart:convert';
+
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:test/test.dart';
@@ -132,6 +134,50 @@ void main() {
   });
 
   group('Pubspec round trip tests', () {
+    group('hosted dependencies', () {
+      final hostedCases = <String, Object>{
+        'without URL': {'name': 'hosted_name'},
+        'without name or URL': <String, Object?>{},
+        'with name and URL': {
+          'name': 'hosted_name',
+          'url': 'https://example.com/path?query=value',
+        },
+        'with inferred name': {'url': 'https://example.com'},
+        'with URL shorthand': 'https://example.com',
+        'with an empty URL': {'url': ''},
+      };
+
+      for (final section in [
+        'dependencies',
+        'dev_dependencies',
+        'dependency_overrides',
+      ]) {
+        for (final entry in hostedCases.entries) {
+          test('$section ${entry.key}', () {
+            final original = Pubspec.fromJson({
+              'name': 'sample',
+              section: {
+                'dep': {'version': '^1.0.0', 'hosted': entry.value},
+              },
+            });
+
+            final jsonValue = original.toJson();
+            expect((jsonValue[section] as Map)['dep'], {
+              'version': '^1.0.0',
+              'hosted': entry.value is String
+                  ? {'url': entry.value}
+                  : entry.value,
+            });
+
+            final roundTrip = Pubspec.parse(jsonEncode(jsonValue));
+            expect(roundTrip.dependencies, original.dependencies);
+            expect(roundTrip.devDependencies, original.devDependencies);
+            expect(roundTrip.dependencyOverrides, original.dependencyOverrides);
+          });
+        }
+      }
+    });
+
     test('minimal set values', () async {
       final value = await parse(defaultPubspec);
       final jsonValue = value.toJson();
