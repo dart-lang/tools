@@ -1,5 +1,9 @@
 ## 0.6.1-wip
 
+- Fix the `keys` stream throwing a `RangeError` when a chunk of input ends
+  right after an `esc [` escape sequence prefix. The prefix is now completed
+  by the next chunk.
+
 ## 0.6.0
 
 - **Breaking Change**: `sdkPath` now returns `String?` (returning `null` if no
