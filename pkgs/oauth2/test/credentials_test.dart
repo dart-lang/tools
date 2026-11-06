@@ -286,6 +286,26 @@ void main() {
       expect(reloaded.expiration, equals(credentials.expiration));
     });
 
+    test('should load credentials without scopes', () {
+      var credentials = fromMap({'accessToken': 'foo'});
+
+      expect(credentials.accessToken, equals('foo'));
+      expect(credentials.scopes, isEmpty);
+    });
+
+    test('should load credentials with null scopes', () {
+      var credentials = fromMap({'accessToken': 'foo', 'scopes': null});
+
+      expect(credentials.accessToken, equals('foo'));
+      expect(credentials.scopes, isEmpty);
+    });
+
+    test('should load credentials with empty scopes', () {
+      var credentials = fromMap({'accessToken': 'foo', 'scopes': <String>[]});
+
+      expect(credentials.scopes, isEmpty);
+    });
+
     test('should throw a FormatException for invalid JSON', () {
       expect(
           () => oauth2.Credentials.fromJson('foo bar'), throwsFormatException);
