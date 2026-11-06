@@ -1,0 +1,6 @@
+# Tests invalid flow mapping value at col 0
+foo:
+  {
+    a:
+b
+  }

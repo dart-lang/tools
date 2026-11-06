@@ -1,0 +1,8 @@
+# Tests invalid comma at same indent as parent block mapping
+a:
+  foo:
+    [
+      b
+  ,
+      c
+    ]

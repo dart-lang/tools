@@ -1,0 +1,5 @@
+# Flow map brackets indented more than parent block sequence item
+-
+ {
+  a: b
+ }

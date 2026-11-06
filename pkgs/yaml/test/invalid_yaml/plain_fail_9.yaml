@@ -1,0 +1,7 @@
+# Integer inside nested flow collection at <= indent (2 <= 2) (invalid)
+block:
+  key: [
+   [
+  1
+   ]
+  ]

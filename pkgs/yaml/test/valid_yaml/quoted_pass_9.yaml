@@ -1,0 +1,6 @@
+# Valid single quoted string in flow collection
+key:
+  {
+    k: 'line1
+       line2'
+  }

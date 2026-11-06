@@ -1,0 +1,5 @@
+# Plain scalar at exact column + 1 (3 > 2) (valid)
+block:
+  key: [
+   1
+  ]

@@ -1,0 +1,5 @@
+# Tests valid flow mapping brace indentation
+foo:
+  {
+    a: b
+  }

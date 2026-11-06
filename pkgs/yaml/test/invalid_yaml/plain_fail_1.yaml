@@ -1,0 +1,5 @@
+# Multi-line plain scalar with second line at column 0 <= 0 (invalid)
+key: [
+ plain
+scalar
+]
