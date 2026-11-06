@@ -294,6 +294,22 @@ a <!--
     );
   });
 
+  test(
+    'link reference definition labels may span lines up to 999 characters',
+    () {
+      final label999 = '${'x' * 500}\n${'y' * 498}';
+      final label1000 = '${'x' * 500}\n${'y' * 499}';
+      expect(
+        markdownToHtml('[$label999]: /u\n\n[${'x' * 500} ${'y' * 498}]'),
+        '<p><a href="/u">${'x' * 500} ${'y' * 498}</a></p>\n',
+      );
+      expect(
+        markdownToHtml('[$label1000]: /u\n\n[${'x' * 500} ${'y' * 499}]'),
+        '<p>[$label1000]: /u</p>\n<p>[${'x' * 500} ${'y' * 499}]</p>\n',
+      );
+    },
+  );
+
   test('reusing HtmlRenderer resets duplicate heading ID suffixes', () {
     final doc = Document(extensionSet: ExtensionSet.gitHubWeb);
     final nodes = doc.parseLines(['# a', '# a', '# a']);
