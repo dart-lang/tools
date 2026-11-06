@@ -62,11 +62,12 @@ extension IterableIterableExtension on Iterable<Iterable<Object?>> {
 }
 
 extension UriExtension on Uri {
-  bool isIn(String packageName) => switch (this) {
-    Uri(scheme: 'package', pathSegments: [final pkg, ...]) =>
-      pkg == packageName,
-    _ => false,
+  String? get packageName => switch (this) {
+    Uri(scheme: 'package', pathSegments: [final pkg, ...]) => pkg,
+    _ => null,
   };
+
+  bool isIn(String packageName) => this.packageName == packageName;
 
   bool isInPublicLibOf(String packageName) => switch (this) {
     Uri(scheme: 'package', pathSegments: [final pkg, final topDir, ...]) =>
