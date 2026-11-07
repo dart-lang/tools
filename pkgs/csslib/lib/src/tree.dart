@@ -267,7 +267,7 @@ class AttributeSelector extends SimpleSelector {
       if (value is Identifier) {
         return value.toString();
       } else {
-        return '"$value"';
+        return '"${value.toString().replaceAll('"', r'\"')}"';
       }
     } else {
       return '';

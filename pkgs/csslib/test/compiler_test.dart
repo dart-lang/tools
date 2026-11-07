@@ -680,6 +680,45 @@ a {
 }''');
 }
 
+void testEscapedQuoteInString() {
+  var errors = <Message>[];
+
+  // A backslash-escaped quote of the same kind must not terminate the string.
+  var stylesheet = parseCss(
+    r'a { content: "a\"b"; }',
+    errors: errors,
+    opts: simpleOptions,
+  );
+  expect(errors.isEmpty, true, reason: errors.toString());
+  expect(prettyPrint(stylesheet), r'''
+a {
+  content: "a\"b";
+}''');
+
+  stylesheet = parseCss(
+    "a { content: 'a\\'b'; }",
+    errors: errors..clear(),
+    opts: simpleOptions,
+  );
+  expect(errors.isEmpty, true, reason: errors.toString());
+  expect(prettyPrint(stylesheet), '''
+a {
+  content: 'a\\'b';
+}''');
+
+  // Same for strings inside attribute selectors.
+  stylesheet = parseCss(
+    r'a[title="a\"b"] { x: y; }',
+    errors: errors..clear(),
+    opts: simpleOptions,
+  );
+  expect(errors.isEmpty, true, reason: errors.toString());
+  expect(prettyPrint(stylesheet), r'''
+a[title="a\"b"] {
+  x: y;
+}''');
+}
+
 // TODO(terry): Move to emitter_test.dart when real emitter exist.
 void testEmitter() {
   var errors = <Message>[];
@@ -744,6 +783,7 @@ void main() {
   test('Negation', testNegation);
   test('@host', testHost);
   test('stringEscape', testStringEscape);
+  test('escapedQuoteInString', testEscapedQuoteInString);
   test('Parse List<int> as input', testArrayOfChars);
   test('Simple Emitter', testEmitter);
   test('Expression parsing', testExpressionParsing);
