@@ -118,7 +118,7 @@ Credentials handleAccessTokenResponse(http.Response response, Uri tokenEndpoint,
 void _handleErrorResponse(
     http.Response response, Uri tokenEndpoint, GetParameters getParameters) {
   // OAuth2 mandates a 400 or 401 response code for access token error
-  // responses. If it's not a 400 reponse, the server is either broken or
+  // responses. If it's not a 400 response, the server is either broken or
   // off-spec.
   if (response.statusCode != 400 && response.statusCode != 401) {
     var reason = '';
