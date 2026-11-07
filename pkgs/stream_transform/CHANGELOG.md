@@ -1,3 +1,9 @@
+## 2.1.3-wip
+
+- Fix `takeUntil` not cancelling the source subscription when the trigger
+  future completes with an error, which left the source subscription active
+  and let later source events reach the already-closed controller.
+
 ## 2.1.2
 
 - Fix an exception when a subscription to a `combineLatest` stream is canceled

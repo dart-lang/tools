@@ -89,6 +89,20 @@ void main() {
         expect(valuesCanceled, true);
       });
 
+      test('cancels value subscription when trigger completes with error',
+          () async {
+        closeTrigger.completeError('sad');
+        await Future(() {});
+        expect(errors, ['sad']);
+        expect(isDone, true);
+        expect(valuesCanceled, true);
+        // Later source events after the subscription was cancelled must not
+        // reach the closed controller.
+        values.add(1);
+        await Future(() {});
+        expect(emittedValues, isEmpty);
+      });
+
       if (streamType == 'broadcast') {
         test('multiple listeners all get values', () async {
           var otherValues = <Object>[];

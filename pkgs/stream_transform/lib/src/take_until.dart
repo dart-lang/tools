@@ -34,6 +34,7 @@ extension TakeUntil<T> on Stream<T> {
     }, onError: (Object error, StackTrace stackTrace) {
       if (isDone) return;
       isDone = true;
+      subscription?.cancel();
       controller
         ..addError(error, stackTrace)
         ..close();
