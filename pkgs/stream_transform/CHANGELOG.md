@@ -1,3 +1,13 @@
+## 2.1.3-wip
+
+- Cancel the source subscription in `takeUntil` when the `trigger` future
+  completes with an error, matching the behavior when it completes with a
+  value. Previously later source events were added to the closed result stream
+  and threw.
+- Wait for the source subscription cancel to complete in `takeUntil` before
+  forwarding the trigger error and closing the result stream. Errors from the
+  cancel are forwarded to the result stream.
+
 ## 2.1.2
 
 - Fix an exception when a subscription to a `combineLatest` stream is canceled
