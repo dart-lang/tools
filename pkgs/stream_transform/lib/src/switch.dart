@@ -36,6 +36,13 @@ extension Switch<T> on Stream<T> {
   ///  * If [convert] returns a single subscription stream it may be listened to
   /// and never canceled.
   ///
+  /// Canceling a subscription to the result stream cancels the subscription
+  /// to the source stream and to the current sub stream. If either can't
+  /// reach a safe point to be canceled (for instance, an `async*` function
+  /// suspended on an unrelated `await` rather than paused at a `yield`), that
+  /// cancellation will never complete, and neither will anything that waits
+  /// for it, such as [Stream.first], [Stream.toList], or [Stream.drain].
+  ///
   /// See also:
   /// - [concurrentAsyncExpand], which emits events from all sub streams
   ///   concurrently instead of cancelling subscriptions to previous subs
@@ -55,6 +62,13 @@ extension SwitchLatest<T> on Stream<Stream<T>> {
   /// Whether the source stream is a single-subscription stream or a
   /// broadcast stream, the result stream will be the same kind of stream,
   /// regardless of the types of streams emitted.
+  ///
+  /// Canceling a subscription to the result stream cancels the subscription
+  /// to the source stream and to the current sub stream. If either can't
+  /// reach a safe point to be canceled (for instance, an `async*` function
+  /// suspended on an unrelated `await` rather than paused at a `yield`), that
+  /// cancellation will never complete, and neither will anything that waits
+  /// for it, such as [Stream.first], [Stream.toList], or [Stream.drain].
   Stream<T> switchLatest() {
     var controller = isBroadcast
         ? StreamController<T>.broadcast(sync: true)
