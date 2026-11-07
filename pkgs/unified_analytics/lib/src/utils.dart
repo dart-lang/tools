@@ -126,15 +126,23 @@ Map<String, Object?> generateRequestBody({
 /// root tool, never itself. If no root tool resolves, `DASH__TOOL` is left out,
 /// even if this process inherited a value for it.
 ///
-/// The root tool is resolved from `DASH__TOOL` and [currentTool] only. A
-/// `fallbackRootTool` passed to the `Analytics` factories isn't used here, so
-/// a shared component that relies on one passes on no `DASH__TOOL`.
+/// [fallbackRootTool] is used as the root tool when `DASH__TOOL` doesn't name
+/// a valid one, resolved the same way as in the `Analytics` factories and
+/// [resolveRootTool]: `DASH__TOOL`, then [fallbackRootTool], then
+/// [currentTool]. A shared component can't be a root tool and is ignored.
+///
+/// Unlike the `Analytics` factories, passing a shared component as
+/// [fallbackRootTool] is not an error here and does not assert: building the
+/// environment for a child process must not fail, so the fallback is simply
+/// ignored and the root resolves from `DASH__TOOL` or [currentTool] instead.
 Map<String, String> getEnvironment({
   required DashTool currentTool,
+  DashTool? fallbackRootTool,
   bool suppressAnalytics = false,
 }) => getEnvironmentIn(
   io.Platform.environment,
   currentTool: currentTool,
+  fallbackRootTool: fallbackRootTool,
   suppressAnalytics: suppressAnalytics,
 );
 
@@ -148,9 +156,20 @@ Map<String, String> getEnvironment({
 Map<String, String> getEnvironmentIn(
   Map<String, String> environment, {
   required DashTool currentTool,
+  DashTool? fallbackRootTool,
   bool suppressAnalytics = false,
 }) {
-  final rootTool = resolveRootToolIn(environment, tool: currentTool);
+  final rootTool = resolveRootToolIn(
+    environment,
+    tool: currentTool,
+    // A shared component can't be a root tool; ignore such a fallback rather
+    // than letting it trip the contract assert in resolveRootToolIn. This is
+    // deliberately more permissive than the Analytics factories: producing
+    // the child process environment must not fail (see getEnvironment).
+    fallbackRootTool: fallbackRootTool != null && fallbackRootTool.canBeRootTool
+        ? fallbackRootTool
+        : null,
+  );
   final result = {
     ...environment,
     DashEnvVar.suppressAnalytics.name: areAnalyticsSuppressedIn(
