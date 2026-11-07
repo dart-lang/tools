@@ -36,7 +36,7 @@ class TreeVisitor {
   }
 
   /// The fallback handler if the more specific visit method hasn't been
-  /// overriden. Only use this from a subclass of [TreeVisitor], otherwise
+  /// overridden. Only use this from a subclass of [TreeVisitor], otherwise
   /// call [visit] instead.
   void visitNodeFallback(Node node) => visitChildren(node);
 

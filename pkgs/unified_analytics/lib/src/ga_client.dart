@@ -52,7 +52,7 @@ class GAClient {
   /// The [http.Response] returned from this method can be
   /// checked to ensure that events have been sent. A response
   /// status code of `2xx` indicates a successful send event.
-  /// A response status code of `500` indicates an error occured on the send
+  /// A response status code of `500` indicates an error occurred on the send
   /// can the error message can be found in the [http.Response.body].
   Future<http.Response> sendData(Map<String, Object?> body) async {
     final uri = Uri.parse(postUrl);
