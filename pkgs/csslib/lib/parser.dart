@@ -362,10 +362,13 @@ class _Parser {
     var mediaQueries = <MediaQuery>[];
 
     do {
+      var pos = _peekToken.span;
       var mediaQuery = processMediaQuery();
       if (mediaQuery != null) {
         mediaQueries.add(mediaQuery);
-      } else if (_mediaQueryListBoundary()) {
+      } else if (_mediaQueryListBoundary() &&
+          _peekToken.span.start.offset == pos.start.offset) {
+        // The query list ended cleanly (no partial query was consumed).
         break;
       } else {
         // A media query that doesn't match the grammar must be replaced by
@@ -395,7 +398,7 @@ class _Parser {
   /// Whether the next token can't be part of a media query, and so ends the
   /// list or a malformed query being skipped: the next query (`,`), the rule
   /// body (`{`), the enclosing block (`}`), the end of a statement (`;`), a
-  /// new `@`-directive, or the end of input.
+  /// new `@`-directive or the `@` of an unrecognized one, or the end of input.
   bool _mediaQueryListBoundary() {
     var kind = _peek();
     return kind == TokenKind.COMMA ||
@@ -403,6 +406,7 @@ class _Parser {
         kind == TokenKind.RBRACE ||
         kind == TokenKind.SEMICOLON ||
         kind == TokenKind.END_OF_FILE ||
+        kind == TokenKind.AT ||
         (kind > TokenKind.DIRECTIVE_NONE && kind < TokenKind.MEDIA_OP_ONLY);
   }
 
