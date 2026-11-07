@@ -365,12 +365,45 @@ class _Parser {
       var mediaQuery = processMediaQuery();
       if (mediaQuery != null) {
         mediaQueries.add(mediaQuery);
-      } else {
+      } else if (_mediaQueryListBoundary()) {
         break;
+      } else {
+        // A media query that doesn't match the grammar must be replaced by
+        // "not all" during parsing, and the rest of the style sheet still
+        // parses; see Media Queries Level 4, section 3.2. Skip the malformed
+        // query up to the next query, the rule body, or the start of the
+        // following construct.
+        var start = _peekToken.span;
+        if (isChecked) {
+          _warning(
+              'Malformed media query replaced by "not all"', _makeSpan(start));
+        }
+        while (!_mediaQueryListBoundary()) {
+          _next();
+        }
+        mediaQueries.add(MediaQuery(
+            TokenKind.MEDIA_OP_NOT,
+            Identifier('all', _makeSpan(start)),
+            <MediaExpression>[],
+            _makeSpan(start)));
       }
     } while (_maybeEat(TokenKind.COMMA));
 
     return mediaQueries;
+  }
+
+  /// Whether the next token can't be part of a media query, and so ends the
+  /// list or a malformed query being skipped: the next query (`,`), the rule
+  /// body (`{`), the enclosing block (`}`), the end of a statement (`;`), a
+  /// new `@`-directive, or the end of input.
+  bool _mediaQueryListBoundary() {
+    var kind = _peek();
+    return kind == TokenKind.COMMA ||
+        kind == TokenKind.LBRACE ||
+        kind == TokenKind.RBRACE ||
+        kind == TokenKind.SEMICOLON ||
+        kind == TokenKind.END_OF_FILE ||
+        (kind > TokenKind.DIRECTIVE_NONE && kind < TokenKind.MEDIA_OP_ONLY);
   }
 
   MediaQuery? processMediaQuery() {
@@ -415,7 +448,13 @@ class _Parser {
       }
 
       var expr = processMediaExpression(andOp);
-      if (expr == null) break;
+      if (expr == null) {
+        // An AND operator was consumed but no expression followed, so the
+        // whole query is malformed. Bail out so the caller can replace it
+        // with "not all" instead of keeping a partial query.
+        if (andOp) return null;
+        break;
+      }
 
       exprs.add(expr);
     }

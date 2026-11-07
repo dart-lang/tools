@@ -524,6 +524,74 @@ void testMediaQueries() {
   expectCss(input, generated);
 }
 
+void testMediaQueryRecovery() {
+  var errors = <Message>[];
+
+  // A media query that doesn't match the grammar is replaced by "not all"
+  // (Media Queries L4 §3.2); the rule body and the rest of the sheet must
+  // still parse.
+  var input = '''
+.a { color: red; }
+@media (width <= 480px) { .b { color: green; } }
+.c { color: blue; }''';
+  var generated = '''
+.a {
+  color: #f00;
+}
+@media NOT all {
+  .b {
+    color: #008000;
+  }
+}
+.c {
+  color: #00f;
+}''';
+
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
+  expect(errors.isEmpty, true, reason: errors.toString());
+  expect(prettyPrint(stylesheet), generated);
+
+  var topLevels = stylesheet.topLevels;
+  expect(topLevels.length, 3);
+  var media = topLevels[1];
+  expect(media, isA<MediaDirective>());
+  media as MediaDirective;
+  expect(media.rules.length, 1);
+  expect(media.mediaQueries.single.hasUnary, isTrue);
+  expect(media.mediaQueries.single.unary, 'NOT');
+  expect(media.mediaQueries.single.mediaType, 'all');
+
+  // Other unsupported preludes recover the same way.
+  input = '''
+@media (400px < width < 700px) { .b { color: green; } }
+.c { color: blue; }''';
+  generated = '''
+@media NOT all {
+  .b {
+    color: #008000;
+  }
+}
+.c {
+  color: #00f;
+}''';
+  expectCss(input, generated);
+
+  // Only the malformed query is replaced; later queries still parse.
+  input = '''
+@media screen and (width <= 1), print { .b { color: green; } }
+.c { color: blue; }''';
+  generated = '''
+@media NOT all, print {
+  .b {
+    color: #008000;
+  }
+}
+.c {
+  color: #00f;
+}''';
+  expectCss(input, generated);
+}
+
 void testMozDocument() {
   var errors = <Message>[];
   // Test empty url-prefix, commonly used for browser detection.
@@ -1466,6 +1534,7 @@ void main() {
   test('Unicode', testUnicode);
   test('Newer CSS', testNewerCss);
   test('Media Queries', testMediaQueries);
+  test('Media Query Recovery', testMediaQueryRecovery);
   test('Document', testMozDocument);
   test('Supports', testSupports);
   test('Viewport', testViewport);
