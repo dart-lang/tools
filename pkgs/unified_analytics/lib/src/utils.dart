@@ -130,6 +130,11 @@ Map<String, Object?> generateRequestBody({
 /// a valid one, resolved the same way as in the `Analytics` factories and
 /// [resolveRootTool]: `DASH__TOOL`, then [fallbackRootTool], then
 /// [currentTool]. A shared component can't be a root tool and is ignored.
+///
+/// Unlike the `Analytics` factories, passing a shared component as
+/// [fallbackRootTool] is not an error here and does not assert: building the
+/// environment for a child process must not fail, so the fallback is simply
+/// ignored and the root resolves from `DASH__TOOL` or [currentTool] instead.
 Map<String, String> getEnvironment({
   required DashTool currentTool,
   DashTool? fallbackRootTool,
@@ -158,7 +163,9 @@ Map<String, String> getEnvironmentIn(
     environment,
     tool: currentTool,
     // A shared component can't be a root tool; ignore such a fallback rather
-    // than letting it trip the contract assert in resolveRootToolIn.
+    // than letting it trip the contract assert in resolveRootToolIn. This is
+    // deliberately more permissive than the Analytics factories: producing
+    // the child process environment must not fail (see getEnvironment).
     fallbackRootTool: fallbackRootTool != null && fallbackRootTool.canBeRootTool
         ? fallbackRootTool
         : null,
