@@ -72,6 +72,10 @@
   `_*_ *a*` rendered the trailing `*a*` literally.
 * Container blocks nest at most 128 levels deep; deeper content is rendered as
   plain text instead of overflowing the call stack.
+* Fixes header id generation (from `HeaderWithIdSyntax` and
+  `SetextHeaderWithIdSyntax`) to use each header's fully inline-parsed text,
+  so that a header containing a link uses the link's text instead of its
+  target, and a header containing an image omits it entirely.
 
 ## 7.4.0
 
