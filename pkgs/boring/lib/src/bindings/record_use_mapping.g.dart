@@ -532,6 +532,7 @@ const recordUseMapping = {
   'CBS_is_valid_asn1_integer': 'bssl_dart_CBS_is_valid_asn1_integer',
   'CBS_is_valid_asn1_oid': 'bssl_dart_CBS_is_valid_asn1_oid',
   'CBS_is_valid_asn1_relative_oid': 'bssl_dart_CBS_is_valid_asn1_relative_oid',
+  'CBS_is_valid_asn1_set_of': 'bssl_dart_CBS_is_valid_asn1_set_of',
   'CBS_mem_equal': 'bssl_dart_CBS_mem_equal',
   'CBS_parse_generalized_time': 'bssl_dart_CBS_parse_generalized_time',
   'CBS_parse_utc_time': 'bssl_dart_CBS_parse_utc_time',
@@ -1221,6 +1222,8 @@ const recordUseMapping = {
       'bssl_dart_EVP_marshal_digest_algorithm_no_params',
   'EVP_marshal_private_key': 'bssl_dart_EVP_marshal_private_key',
   'EVP_marshal_public_key': 'bssl_dart_EVP_marshal_public_key',
+  'EVP_marshal_public_key_with_ec_point_format':
+      'bssl_dart_EVP_marshal_public_key_with_ec_point_format',
   'EVP_md4': 'bssl_dart_EVP_md4',
   'EVP_md5': 'bssl_dart_EVP_md5',
   'EVP_md5_sha1': 'bssl_dart_EVP_md5_sha1',
