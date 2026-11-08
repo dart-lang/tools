@@ -1,5 +1,8 @@
 ## 0.6.1-wip
 
+- Fix the README: the prefixes for expected-to-fail and skipped tests are
+  `fail_test_` and `skip_test_`, not `fail_` and `skip_`.
+
 ## 0.6.0
 
 - Test classes and suites with `name`s are now registered with `package:test`s
