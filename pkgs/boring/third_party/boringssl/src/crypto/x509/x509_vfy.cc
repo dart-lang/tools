@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
+
 #include <limits.h>
 #include <string.h>
 #include <time.h>
@@ -99,6 +101,19 @@ int call_verify_cb_at_depth(int ok, X509_STORE_CTX *ctx, int depth) {
   ctx->current_cert = sk_X509_value(ctx->chain, depth);
   ctx->error_depth = depth;
   return call_verify_cb(ok, ctx);
+}
+
+static bool sig_nid_allowed(const X509_STORE_CTX *ctx, int sig_nid) {
+  // TODO(crbug.com/579959247): This check duplicates some logic from
+  // `x509_digest_verify_init` and makes assumptions about what algorithms it
+  // supports. Unify this.
+  int digest_nid, pkey_nid;
+  if (OBJ_find_sigid_algs(sig_nid, &digest_nid, &pkey_nid) &&
+      digest_nid == NID_sha1 &&
+      (ctx->param->flags & X509_V_FLAG_ALLOW_SHA1) == 0) {
+    return false;
+  }
+  return true;
 }
 
 // Given a certificate try and find an exact match in the store
@@ -535,13 +550,37 @@ int idp_check_dp(const DIST_POINT_NAME *dp_cert,
   // Check that the CRL's distributionPoint has some name in common with the
   // certificate's. A CA might shard across multiple CRLs. This check ensures we
   // are looking at the right shard.
-  //
-  // TODO(crbug.com/565047760): This should not be an O(N^2) comparison.
-  for (const GENERAL_NAME *gen_cert : dp_cert->name.fullname) {
-    for (const GENERAL_NAME *gen_crl : dp_crl->name.fullname) {
-      if (GENERAL_NAME_cmp(gen_cert, gen_crl) == 0) {
-        return 1;
-      }
+  const size_t crl_names_count = sk_GENERAL_NAME_num(dp_crl->name.fullname);
+  if (crl_names_count == 0) {
+    return 0;
+  }
+  const size_t cert_names_count = sk_GENERAL_NAME_num(dp_cert->name.fullname);
+  if (cert_names_count == 0) {
+    return 0;
+  }
+
+  const GENERAL_NAMES *longer = crl_names_count >= cert_names_count
+                              ? dp_crl->name.fullname
+                              : dp_cert->name.fullname;
+  const GENERAL_NAMES *shorter = crl_names_count < cert_names_count
+                               ? dp_crl->name.fullname
+                               : dp_cert->name.fullname;
+  bssl::Array<const GENERAL_NAME *> sorted;
+  if (!sorted.InitForOverwrite(sk_GENERAL_NAME_num(shorter))) {
+    return 0;
+  }
+  size_t i = 0;
+  for (const GENERAL_NAME *s : shorter) {
+    sorted[i++] = s;
+  }
+
+  auto cmp_func = [](const GENERAL_NAME *a, const GENERAL_NAME *b) {
+    return GENERAL_NAME_cmp(a, b) < 0;
+  };
+  std::sort(sorted.begin(), sorted.end(), cmp_func);
+  for (const GENERAL_NAME *name : longer) {
+    if (std::binary_search(sorted.begin(), sorted.end(), name, cmp_func)) {
+      return 1;
     }
   }
   return 0;
@@ -726,7 +765,8 @@ int check_crl(X509_STORE_CTX *ctx, const CRLInfo &crl_info, int depth) {
     }
   } else {
     // Verify CRL signature
-    if (X509_CRL_verify(crl, ikey) <= 0) {
+    if (!sig_nid_allowed(ctx, X509_CRL_get_signature_nid(crl)) ||
+        X509_CRL_verify(crl, ikey) <= 0) {
       ctx->error = X509_V_ERR_CRL_SIGNATURE_FAILURE;
       if (!call_verify_cb_at_depth(0, ctx, depth)) {
         return 0;
@@ -873,7 +913,8 @@ int verify_signature(X509_STORE_CTX *ctx, const X509 *x509,
       x509_is_merkle_tree_ca(issuer)) {
     ret = x509_verify_mtc(x509, pkey, issuer);
   } else {
-    ret = X509_verify(x509, pkey);
+    ret = sig_nid_allowed(ctx, X509_get_signature_nid(x509)) &&
+          X509_verify(x509, pkey);
   }
   return ret ? X509_V_OK : X509_V_ERR_CERT_SIGNATURE_FAILURE;
 }

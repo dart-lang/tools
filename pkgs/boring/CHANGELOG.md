@@ -1,5 +1,6 @@
 ## 0.4.3-wip
 - Update BoringSSL to ed9209cf.
+- Update BoringSSL to 0131ae9d.
 
 ## 0.4.2
 
