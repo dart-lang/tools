@@ -387,6 +387,13 @@ a <!--
     }
   });
 
+  test('reference link expansion is limited to max(input, 100000)', () {
+    final url = '/${'u' * 999}';
+    final html = markdownToHtml('${'[a] ' * 300}\n\n[a]: $url\n');
+    expect('<a href="$url">a</a>'.allMatches(html).length, lessThan(200));
+    expect(html, endsWith('[a]</p>\n'));
+  });
+
   test('container block nesting depth is capped at 128', () {
     final html = markdownToHtml('${'> ' * 129}a');
     expect('<blockquote>'.allMatches(html).length, 128);
