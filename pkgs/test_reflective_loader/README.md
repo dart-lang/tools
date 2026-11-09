@@ -75,8 +75,8 @@ so tests are isolated from each other.
 The loader discovers tests in a few ways:
 
 * Methods whose names start with `test_` are treated as tests.
-* Methods whose names start with `fail_` are treated as tests that are expected to fail.
-* Methods whose names start with `skip_` are skipped.
+* Methods whose names start with `fail_test_` are treated as tests that are expected to fail.
+* Methods whose names start with `skip_test_` are skipped.
 
 ### Annotations
 
