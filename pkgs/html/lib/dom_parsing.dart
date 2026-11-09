@@ -151,8 +151,12 @@ bool isVoidElement(String? tagName) {
   return false;
 }
 
-/// Serialize text node according to:
-/// <http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#html-fragment-serialization-algorithm>
+/// Serializes [node] according to the
+/// [HTML fragment serialization algorithm][1].
+///
+/// {@macro html_serialization_warning}
+///
+/// [1]: https://html.spec.whatwg.org/multipage/parsing.html#serializing-html-fragments
 void writeTextNodeAsHtml(StringBuffer str, Text node) {
   // Don't escape text for certain elements, notably <script>.
   final parent = node.parentNode;

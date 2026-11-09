@@ -81,6 +81,22 @@ final _testCases = [
     name: 'template attribute mutation leak',
     html: '<template><html a="b"></template>',
   ),
+  (
+    name: 'foreign content breakout on </p>',
+    html: '<svg></p><g></g></svg>',
+  ),
+  (
+    name: 'foreign content breakout on </br>',
+    html: '<svg></br><g></g></svg>',
+  ),
+  (
+    name: 'foreign content </p> stops at HTML integration point',
+    html: '<svg><foreignObject><g></p><b>x</b></foreignObject></svg>',
+  ),
+  (
+    name: 'foreign content </p> stops at MathML text integration point',
+    html: '<math><mtext><mi></p><b>x</b></mi></mtext></math>',
+  ),
 ];
 
 final _knownIssues = {
