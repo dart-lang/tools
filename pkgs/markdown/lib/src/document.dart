@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:math';
+
 import 'ast.dart';
 import 'block_parser.dart';
 import 'block_syntaxes/block_syntax.dart';
@@ -25,6 +27,15 @@ class Document {
 
   Map<String, String>? _footnoteKeyByLower;
   final _footnoteLabelIndex = <String, int>{};
+
+  /// Characters of destination and title text that reference links and
+  /// images may still copy out of [linkReferences].
+  ///
+  /// Like cmark, the total is limited to the larger of the input size and
+  /// 100,000 characters, so a definition referenced many times cannot make the
+  /// output superlinear in the input.
+  int _referenceExpansionBudget = _minReferenceExpansion;
+  static const _minReferenceExpansion = 100000;
 
   final LinkBuilder? linkBuilder;
   final LinkBuilder? imageLinkBuilder;
@@ -97,6 +108,11 @@ class Document {
 
   /// Parses the given [lines] of [Line] to a series of AST nodes.
   List<Node> parseLineList(List<Line> lines) {
+    var length = 0;
+    for (final line in lines) {
+      length += line.content.length + 1;
+    }
+    _referenceExpansionBudget = max(length, _minReferenceExpansion);
     final nodes = BlockParser(lines, this).parseLines();
     _footnoteKeyByLower = null;
     _parseInlineContent(nodes);
@@ -237,6 +253,22 @@ class LinkReference {
   /// If the parsed link reference definition does not include a title, use
   /// `null` for the [title] parameter.
   LinkReference(this.label, this.destination, this.title);
+}
+
+/// Reference expansion accounting used by `LinkSyntax`, kept on the
+/// [Document] because the limit applies to the document as a whole.
+extension DocumentLinkReferences on Document {
+  /// Charges the destination and title of [reference] to this document's
+  /// reference expansion limit.
+  ///
+  /// Returns `false`, without charging, if that would exceed the limit.
+  bool expandReference(LinkReference reference) {
+    final length =
+        reference.destination.length + (reference.title?.length ?? 0);
+    if (length > _referenceExpansionBudget) return false;
+    _referenceExpansionBudget -= length;
+    return true;
+  }
 }
 
 /// Footnote lookups used by `FootnoteRefSyntax`, cached on the [Document] so
