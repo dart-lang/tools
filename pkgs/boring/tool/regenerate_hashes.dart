@@ -509,7 +509,11 @@ Future<List<int>?> _fetchWithRetry(
 }) async {
   for (var attempt = 1; ; attempt++) {
     try {
-      final response = await _sendGet(client, url);
+      final response = await _sendGet(
+        client,
+        url,
+        retryTooManyRequests: true,
+      );
       if (response.statusCode == HttpStatus.notFound) {
         stdout.writeln('  Missing: $url');
         return null;
@@ -532,10 +536,15 @@ Future<List<int>?> _fetchWithRetry(
   }
 }
 
+/// Sends an HTTP GET request and retries transient transport or server errors.
+///
+/// Leave [retryTooManyRequests] `false` for GitHub REST API metadata lookups so
+/// hourly quota `429` responses fall back immediately to asset downloads.
 Future<({int statusCode, List<int> bytes})> _sendGet(
   HttpClient client,
   Uri url, {
   Map<String, String> headers = const {},
+  bool retryTooManyRequests = false,
 }) async {
   try {
     final request = await client.getUrl(url).timeout(_connectionTimeout);
@@ -546,6 +555,7 @@ Future<({int statusCode, List<int> bytes})> _sendGet(
     final statusCode = response.statusCode;
     final retryable =
         statusCode == HttpStatus.requestTimeout ||
+        (retryTooManyRequests && statusCode == HttpStatus.tooManyRequests) ||
         (statusCode >= 500 && statusCode < 600);
     if (retryable) {
       await response.drain<void>().timeout(_connectionTimeout);
