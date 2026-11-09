@@ -56,6 +56,24 @@ line 7, column 10: message
     );
   });
 
+  group('empty block node spans', () {
+    test('mapping value starts after the value indicator', () {
+      final yaml = loadYaml('key:\n') as YamlMap;
+      final span = yaml.nodes['key']!.span;
+
+      expect(span.start.offset, 4);
+      expect(span.end.offset, 4);
+    });
+
+    test('sequence item starts after the entry indicator', () {
+      final yaml = loadYaml('- \n') as YamlList;
+      final span = yaml.nodes.first.span;
+
+      expect(span.start.offset, 1);
+      expect(span.end.offset, 1);
+    });
+  });
+
   group('nested', () {
     late YamlMap nestedMap;
 
@@ -149,24 +167,24 @@ line 12, column 3: message
 
     test('null nodes span', () {
       _expectSpan(nestedList.nodes[1].span, r'''
-line 4, column 3: message
+line 4, column 4: message
   ╷
 4 │   - 
-  │   ^
+  │    ^
   ╵''');
 
       _expectSpan(nestedList.nodes[3].span, r'''
-line 6, column 3: message
+line 6, column 4: message
   ╷
 6 │   - 
-  │   ^
+  │    ^
   ╵''');
 
       _expectSpan(nestedList.nodes[5].span, r'''
-line 8, column 3: message
+line 8, column 4: message
   ╷
 8 │   -
-  │   ^
+  │    ^
   ╵''');
     });
   });

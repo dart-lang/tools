@@ -356,7 +356,7 @@ class Parser {
     var token = _scanner.peek()!;
 
     if (token.type == TokenType.blockEntry) {
-      var start = token.span.start;
+      var start = token.span.end;
       token = _scanner.advance()!;
 
       if (token.type == TokenType.blockEntry ||
@@ -406,7 +406,7 @@ class Parser {
       return Event(EventType.sequenceEnd, token.span.start.pointSpan());
     }
 
-    var start = token.span.start;
+    var start = token.span.end;
     token = _scanner.advance()!;
 
     if (token.type == TokenType.blockEntry ||
@@ -434,7 +434,7 @@ class Parser {
   Event _parseBlockMappingKey() {
     var token = _scanner.peek()!;
     if (token.type == TokenType.key) {
-      var start = token.span.start;
+      var start = token.span.end;
       token = _scanner.advance()!;
 
       if (token.type == TokenType.key ||
@@ -489,7 +489,7 @@ class Parser {
       return _processEmptyScalar(token.span.start);
     }
 
-    var start = token.span.start;
+    var start = token.span.end;
     token = _scanner.advance()!;
     if (token.type == TokenType.key ||
         token.type == TokenType.value ||
