@@ -1,4 +1,4 @@
-## 0.15.8-wip
+## 0.15.8
 
 - `</br>` and `</p>` end tags in foreign content (`<svg>`, `<math>`) now exit foreign content before reprocessing in HTML mode, matching the WHATWG HTML standard.
 - `<` and `>` are now escaped as `&lt;` and `&gt;` when serializing attribute values in `htmlSerializeEscape`, `innerHtml`, and `outerHtml`, matching the WHATWG HTML standard.
