@@ -1,5 +1,6 @@
 ## 0.15.8-wip
 
+- `</br>` and `</p>` end tags in foreign content (`<svg>`, `<math>`) now exit foreign content before reprocessing in HTML mode, matching the WHATWG HTML standard.
 - Fix `Node.attributeSpans` and `Node.attributeValueSpans` throwing a `TypeError` when a start tag emits tokenizer parse errors, and preserve the first occurrence's span on duplicate attributes.
 - Fix `HtmlInputStream` throwing a `FormatException` on malformed UTF-8 or invalid ASCII byte sequences, and ignore `<meta charset>` declarations that resolve to unsupported Dart codecs.
 - Fix `HtmlTokenizer.consumeNumberEntity` throwing a `FormatException` when a numeric character reference overflows a 64-bit integer.

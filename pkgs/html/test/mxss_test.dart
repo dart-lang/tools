@@ -29,5 +29,19 @@ void main() {
     verifySafeSerialization('math', 'style');
     verifySafeSerialization('math', 'iframe');
     verifySafeSerialization('math', 'xmp');
+
+    for (final outerTag in ['svg', 'math']) {
+      for (final endTag in ['</p>', '</br>']) {
+        test('$endTag exits <$outerTag> before subsequent <style>', () {
+          final input =
+              '<$outerTag>$endTag<style><!--</style><img src=x onerror=alert(1)>--></style></$outerTag>';
+          final doc = parse(input);
+          // Initial parse already breaks out of foreign content, matching
+          // browsers so <img> is exposed on the first parse rather than only
+          // appearing after innerHtml re-serialization.
+          expect(doc.querySelectorAll('img'), hasLength(1));
+        });
+      }
+    }
   });
 }
