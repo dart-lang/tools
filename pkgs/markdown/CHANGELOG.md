@@ -74,6 +74,8 @@
   plain text instead of overflowing the call stack.
 * Duplicate footnote definitions with identical case are ignored after the
   first definition, matching case-insensitive duplicates.
+* Tables pad at most `0x40000` (262,144) synthetic empty `<td>` cells across
+  short body rows before ending the table, matching `pulldown-cmark`.
 
 ## 7.4.0
 
