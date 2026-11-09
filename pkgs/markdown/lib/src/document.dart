@@ -124,20 +124,29 @@ class Document {
   List<Node> parseInline(String text) => InlineParser(text, this).parse();
 
   void _parseInlineContent(List<Node> nodes) {
-    final stack = <(List<Node>, int)>[(nodes, 0)];
+    final stack = <({List<Node> source, List<Node> target, int index})>[
+      (source: [...nodes], target: nodes..clear(), index: 0),
+    ];
     while (stack.isNotEmpty) {
-      final (currentNodes, index) = stack.removeLast();
-      for (var i = index; i < currentNodes.length; i++) {
-        final node = currentNodes[i];
+      final (:source, :target, :index) = stack.removeLast();
+      for (var i = index; i < source.length; i++) {
+        final node = source[i];
         if (node is UnparsedContent) {
-          final inlineNodes = parseInline(node.textContent);
-          currentNodes.removeAt(i);
-          currentNodes.insertAll(i, inlineNodes);
-          i += inlineNodes.length - 1;
-        } else if (node is Element && node.children != null) {
-          stack.add((currentNodes, i + 1));
-          stack.add((node.children!, 0));
-          break;
+          target.addAll(parseInline(node.textContent));
+        } else {
+          target.add(node);
+          if (node is Element) {
+            final children = node.children;
+            if (children != null && children.isNotEmpty) {
+              stack.add((source: source, target: target, index: i + 1));
+              stack.add((
+                source: [...children],
+                target: children..clear(),
+                index: 0,
+              ));
+              break;
+            }
+          }
         }
       }
     }
