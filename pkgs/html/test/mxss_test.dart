@@ -29,5 +29,19 @@ void main() {
     verifySafeSerialization('math', 'style');
     verifySafeSerialization('math', 'iframe');
     verifySafeSerialization('math', 'xmp');
+
+    test('Escapes < and > in attribute values', () {
+      final doc = parse(
+        '<svg><style><a id="</style><img src=x onerror=alert(1)>"></svg>',
+      );
+      final output = doc.body!.innerHtml;
+      expect(
+        output,
+        '<svg><style>'
+        '<a id="&lt;/style&gt;&lt;img src=x onerror=alert(1)&gt;"></a>'
+        '</style></svg>',
+      );
+      expect(parse(output).querySelector('img'), isNull);
+    });
   });
 }
