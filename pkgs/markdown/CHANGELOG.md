@@ -74,6 +74,10 @@
   plain text instead of overflowing the call stack.
 * Duplicate footnote definitions with identical case are ignored after the
   first definition, matching case-insensitive duplicates.
+* The destination and title text that reference links and images copy from
+  link reference definitions is limited to the larger of the input size and
+  100,000 characters per document, matching cmark; further reference links are
+  rendered as text.
 
 ## 7.4.0
 
