@@ -285,22 +285,23 @@ abstract class ListSyntax extends BlockSyntax {
         final isTaskList = item.attributes['class'] == taskListClass;
         final children = item.children;
         if (children != null) {
+          final expandedChildren = <Node>[];
           Node? lastNode;
-          for (var i = 0; i < children.length; i++) {
-            final child = children[i];
+          for (final child in children) {
             if (child is Element && child.tag == 'p') {
-              final childContent = child.children!;
               if (lastNode is Element && !isTaskList) {
-                childContent.insert(0, Text('\n'));
+                expandedChildren.add(Text('\n'));
               }
-
-              children
-                ..removeAt(i)
-                ..insertAll(i, childContent);
+              expandedChildren.addAll(child.children ?? const []);
+            } else {
+              expandedChildren.add(child);
             }
 
             lastNode = child;
           }
+          children
+            ..clear()
+            ..addAll(expandedChildren);
         }
       }
     }
