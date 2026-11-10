@@ -9,6 +9,7 @@
   scalars.
 * Speed up scanning deeply nested flow collections: the scanner no longer
   walks every open flow level for each token.
+* Avoid potential exponential time for comparing composite keys.
 
 ## 3.1.4
 

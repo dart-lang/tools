@@ -21,11 +21,33 @@ Map<K, V> deepEqualsMap<K, V>() =>
 /// structures, and considers [YamlScalar]s to be equal to their values.
 bool deepEquals(Object? obj1, Object? obj2) => _DeepEquals().equals(obj1, obj2);
 
+/// Pair of values with pairwise identity equality.
+///
+/// Cannot use `(Object?, Object?)` since that has undefined identity.
+final class _IdPair {
+  final Object? value1;
+  final Object? value2;
+  _IdPair(this.value1, this.value2);
+
+  @override
+  bool operator ==(Object other) =>
+      other is _IdPair &&
+      identical(value1, other.value1) &&
+      identical(value2, other.value2);
+
+  @override
+  int get hashCode =>
+      Object.hash(identityHashCode(value1), identityHashCode(value2));
+}
+
 /// A class that provides access to the list of parent objects used for loop
 /// detection.
 class _DeepEquals {
-  final _parents1 = <Object?>[];
-  final _parents2 = <Object?>[];
+  // Alternating first and second operand.
+  final _parents = <Object?>[];
+
+  // Used to avoid repeated traversal of the same values.
+  final _seen = HashSet<_IdPair>();
 
   /// Returns whether [obj1] and [obj2] are structurally equivalent.
   bool equals(Object? obj1, Object? obj2) {
@@ -33,31 +55,30 @@ class _DeepEquals {
     if (obj2 is YamlScalar) obj2 = obj2.value;
 
     // _parents1 and _parents2 are guaranteed to be the same size.
-    for (var i = 0; i < _parents1.length; i++) {
-      var loop1 = identical(obj1, _parents1[i]);
-      var loop2 = identical(obj2, _parents2[i]);
+    for (var i = 0; i < _parents.length; i += 2) {
+      var loop1 = identical(obj1, _parents[i]);
+      var loop2 = identical(obj2, _parents[i + 1]);
       // If both structures loop in the same place, they're equal at that point
       // in the structure. If one loops and the other doesn't, they're not
       // equal.
-      if (loop1 && loop2) return true;
-      if (loop1 || loop2) return false;
+      if (loop1 || loop2) return loop1 && loop2;
     }
 
-    _parents1.add(obj1);
-    _parents2.add(obj2);
+    _parents
+      ..add(obj1)
+      ..add(obj2);
     try {
       if (obj1 is List && obj2 is List) {
-        return _listEquals(obj1, obj2);
+        return (!_seen.add(_IdPair(obj1, obj2))) || _listEquals(obj1, obj2);
       } else if (obj1 is Map && obj2 is Map) {
-        return _mapEquals(obj1, obj2);
+        return (!_seen.add(_IdPair(obj1, obj2))) || _mapEquals(obj1, obj2);
       } else if (obj1 is num && obj2 is num) {
         return _numEquals(obj1, obj2);
       } else {
         return obj1 == obj2;
       }
     } finally {
-      _parents1.removeLast();
-      _parents2.removeLast();
+      _parents.length -= 2;
     }
   }
 
@@ -101,18 +122,23 @@ class _DeepEquals {
 /// self-referential structures, and returns the same hash code for
 /// [YamlScalar]s and their values.
 int deepHashCode(Object? obj) {
+  // Used for detecting cyclic objects.
   final parents = Set<Object?>.identity();
+  // Used to avoid recursive
+  final seen = Map<Object, int>.identity();
 
   int deepHashCodeInner(Object? value) {
     if (!parents.add(value)) return -1;
     try {
       if (value is Map) {
-        var equality = const UnorderedIterableEquality<Object?>();
-        return equality.hash(value.keys.map(deepHashCodeInner)) ^
-            equality.hash(value.values.map(deepHashCodeInner));
+        const equality = UnorderedIterableEquality<Object?>();
+        return seen[value] ??= Object.hash(
+            equality.hash(value.keys.map(deepHashCodeInner)),
+            equality.hash(value.values.map(deepHashCodeInner)));
       } else if (value is Iterable) {
-        return const IterableEquality<Object?>()
-            .hash(value.map(deepHashCodeInner));
+        return seen[value] ??= const IterableEquality<Object?>().hash(
+          value.map(deepHashCodeInner),
+        );
       } else if (value is YamlScalar) {
         return (value.value as Object?).hashCode;
       } else {
