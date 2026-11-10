@@ -259,7 +259,7 @@ class TokenKind {
     },
     {'type': TokenKind.MARGIN_DIRECTIVE_LEFTTOP, 'value': 'left-top'},
     {'type': TokenKind.MARGIN_DIRECTIVE_LEFTMIDDLE, 'value': 'left-middle'},
-    {'type': TokenKind.MARGIN_DIRECTIVE_LEFTBOTTOM, 'value': 'right-bottom'},
+    {'type': TokenKind.MARGIN_DIRECTIVE_LEFTBOTTOM, 'value': 'left-bottom'},
     {'type': TokenKind.MARGIN_DIRECTIVE_RIGHTTOP, 'value': 'right-top'},
     {'type': TokenKind.MARGIN_DIRECTIVE_RIGHTMIDDLE, 'value': 'right-middle'},
     {'type': TokenKind.MARGIN_DIRECTIVE_RIGHTBOTTOM, 'value': 'right-bottom'},
