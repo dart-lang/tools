@@ -241,6 +241,32 @@ a <!--
       ),
       '<p>hello <a>a</a></p>\n',
     );
+    expect(
+      markdownToHtml(
+        'hello [*a] b*',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>*a</a> b*</p>\n',
+    );
+    expect(
+      markdownToHtml(
+        'hello [*a*]',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>*a*</a></p>\n',
+    );
+  });
+
+  test('emphasis after a span containing an unmatched delimiter', () {
+    expect(markdownToHtml('_*_ *a*'), '<p><em>*</em> <em>a</em></p>\n');
+    expect(
+      markdownToHtml(
+        '*~~__a__~~* ~~*__b__*~~',
+        extensionSet: ExtensionSet.gitHubWeb,
+      ),
+      '<p><em><del><strong>a</strong></del></em> '
+      '<del><em><strong>b</strong></em></del></p>\n',
+    );
   });
 
   test('link reference definitions with labels over 999 characters are not '
@@ -267,6 +293,22 @@ a <!--
       '<p>[${'a' * 998}[]: /url</p>\n<p>[a]</p>\n',
     );
   });
+
+  test(
+    'link reference definition labels may span lines up to 999 characters',
+    () {
+      final label999 = '${'x' * 500}\n${'y' * 498}';
+      final label1000 = '${'x' * 500}\n${'y' * 499}';
+      expect(
+        markdownToHtml('[$label999]: /u\n\n[${'x' * 500} ${'y' * 498}]'),
+        '<p><a href="/u">${'x' * 500} ${'y' * 498}</a></p>\n',
+      );
+      expect(
+        markdownToHtml('[$label1000]: /u\n\n[${'x' * 500} ${'y' * 499}]'),
+        '<p>[$label1000]: /u</p>\n<p>[${'x' * 500} ${'y' * 499}]</p>\n',
+      );
+    },
+  );
 
   test('reusing HtmlRenderer resets duplicate heading ID suffixes', () {
     final doc = Document(extensionSet: ExtensionSet.gitHubWeb);
@@ -324,6 +366,38 @@ a <!--
       ),
       '<p>ref:1000</p>\n',
     );
+  });
+
+  test('inline nesting depth is capped at 128', () {
+    expect(markdownToHtml('${'*a **a ' * 100}b${' a** a*' * 100}'), isNotEmpty);
+    expect(markdownToHtml('${'**' * 200}a${'**' * 200}'), isNotEmpty);
+    final imgHtml = markdownToHtml('${'![x' * 130}${'](/u)' * 130}');
+    expect(imgHtml, contains('alt="${'x' * 128}"'));
+  });
+
+  test('deeply nested inline emphasis does not overflow the stack', () {
+    const n = 32000;
+    for (final input in [
+      '${'*a **a ' * n}b${' a** a*' * n}',
+      '${'*a **a ' * n}b${' a** a*' * n} x',
+      '${'**' * n}a${'**' * n}',
+      '![${'*a **a ' * n}b${' a** a*' * n}](/u)',
+    ]) {
+      expect(markdownToHtml(input), isNotEmpty);
+    }
+  });
+
+  test('reference link expansion is limited to max(input, 100000)', () {
+    final url = '/${'u' * 999}';
+    final html = markdownToHtml('${'[a] ' * 300}\n\n[a]: $url\n');
+    expect('<a href="$url">a</a>'.allMatches(html).length, lessThan(200));
+    expect(html, endsWith('[a]</p>\n'));
+  });
+
+  test('container block nesting depth is capped at 128', () {
+    final html = markdownToHtml('${'> ' * 129}a');
+    expect('<blockquote>'.allMatches(html).length, 128);
+    expect(html, contains('<blockquote>&gt; a\n</blockquote>'));
   });
 }
 

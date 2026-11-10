@@ -113,3 +113,12 @@ bar</a>.</p>
 
 <<<
 <p><a href="/u" title="c(d">a</a></p>
+>>> title with a backslash at the end of a line
+[a]: /u "x\
+y"
+
+[a]
+
+<<<
+<p><a href="/u" title="x\
+y">a</a></p>

@@ -338,12 +338,14 @@ class Document extends Node
 
   Element? get body => documentElement?.querySelector('body');
 
-  /// Returns a fragment of HTML or XML that represents the element and its
-  /// contents.
   // TODO(jmesserly): this API is not specified in:
   // <http://domparsing.spec.whatwg.org/> nor is it in dart:html, instead
   // only Element has outerHtml. However it is quite useful. Should we move it
   // to dom_parsing, where we keep other custom APIs?
+  /// Returns a fragment of HTML or XML that represents the document's
+  /// contents.
+  ///
+  /// {@macro html_serialization_warning}
   String get outerHtml => _outerHtml;
 
   @override
@@ -375,12 +377,14 @@ class DocumentFragment extends Node with _ParentNode, _NonElementParentNode {
   @override
   int get nodeType => Node.DOCUMENT_FRAGMENT_NODE;
 
-  /// Returns a fragment of HTML or XML that represents the element and its
-  /// contents.
   // TODO(jmesserly): this API is not specified in:
   // <http://domparsing.spec.whatwg.org/> nor is it in dart:html, instead
   // only Element has outerHtml. However it is quite useful. Should we move it
   // to dom_parsing, where we keep other custom APIs?
+  /// Returns a fragment of HTML or XML that represents the fragment's
+  /// contents.
+  ///
+  /// {@macro html_serialization_warning}
   String get outerHtml => _outerHtml;
 
   @override
@@ -588,11 +592,30 @@ class Element extends Node with _ParentNode, _ElementAndDocument {
 
   /// Returns a fragment of HTML or XML that represents the element and its
   /// contents.
+  ///
+  /// {@template html_serialization_warning}
+  /// > [!WARNING]
+  /// > Per the [WHATWG HTML specification][whatwg-serialize] (and matching
+  /// > browsers such as Chrome), the output of [Element.innerHtml] and
+  /// > [Element.outerHtml], if parsed with an HTML parser, may not return the
+  /// > original tree structure—even for trees produced by the HTML parser
+  /// > itself.
+  /// >
+  /// > Do not use [Element.innerHtml] or [Element.outerHtml] for HTML
+  /// > sanitization, as this can lead to mutation XSS (mXSS). Consider using
+  /// > [`package:sanitize_html`][sanitize_html] instead.
+  ///
+  /// [whatwg-serialize]: https://html.spec.whatwg.org/multipage/parsing.html#serializing-html-fragments
+  /// [sanitize_html]: https://pub.dev/packages/sanitize_html
+  /// {@endtemplate}
   String get outerHtml => _outerHtml;
 
   /// Returns a fragment of HTML or XML that represents the element's contents.
+  ///
   /// Can be set, to replace the contents of the element with nodes parsed from
   /// the given string.
+  ///
+  /// {@macro html_serialization_warning}
   String get innerHtml => _innerHtml;
 
   // TODO(jmesserly): deprecate in favor of:

@@ -7189,6 +7189,18 @@ external int CBS_is_valid_asn1_relative_oid(
   ffi.Pointer<CBS> cbs,
 );
 
+/// CBS_is_valid_asn1_set_of returns one if `cbs` is an ASN.1 SET OF contents
+/// (not including the element framing) with members sorted in nondescending
+/// order according to DER rules, and zero otherwise. This function does not
+/// parse the members and does not check that they are of any particular type.
+@meta.RecordUse()
+@ffi.Native<ffi.Int Function(ffi.Pointer<CBS>)>(
+  symbol: 'bssl_dart_CBS_is_valid_asn1_set_of',
+)
+external int CBS_is_valid_asn1_set_of(
+  ffi.Pointer<CBS> cbs,
+);
+
 /// CBS_mem_equal compares the current contents of `cbs` with the `len` bytes
 /// starting at `data`. If they're equal, it returns one, otherwise zero. If the
 /// lengths match, it uses a constant-time comparison.
@@ -16417,6 +16429,20 @@ external int EVP_marshal_private_key(
 external int EVP_marshal_public_key(
   ffi.Pointer<CBB> cbb,
   ffi.Pointer<EVP_PKEY> key,
+);
+
+/// EVP_marshal_public_key_with_ec_point_format marshals key as a DER-encoded
+/// `SubjectPublicKeyInfo` structure (RFC 5280) and appends the result to `cbb`.
+/// `key` must be an EC key, and the EC point will be serialized in the format
+/// specified by `format`. It returns one on success and zero on error.
+@meta.RecordUse()
+@ffi.Native<
+  ffi.Int Function(ffi.Pointer<CBB>, ffi.Pointer<EVP_PKEY>, ffi.UnsignedInt)
+>(symbol: 'bssl_dart_EVP_marshal_public_key_with_ec_point_format')
+external int EVP_marshal_public_key_with_ec_point_format(
+  ffi.Pointer<CBB> cbb,
+  ffi.Pointer<EVP_PKEY> key,
+  int format,
 );
 
 /// Hash algorithms.
@@ -28775,9 +28801,6 @@ external ffi.Pointer<ASN1_T61STRING> d2i_ASN1_T61STRING(
 
 /// d2i_ASN1_TIME parses up to `len` bytes from `*inp` as a DER-encoded X.509
 /// Time (RFC 5280), as described in `d2i_SAMPLE`.
-///
-/// TODO(https://crbug.com/boringssl/354): This function currently also accepts
-/// BER, but this will be removed in the future.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ASN1_TIME> Function(
@@ -28830,9 +28853,6 @@ external ffi.Pointer<ASN1_UNIVERSALSTRING> d2i_ASN1_UNIVERSALSTRING(
 
 /// d2i_ASN1_UTCTIME parses up to `len` bytes from `*inp` as a DER-encoded
 /// ASN.1 UTCTime, as described in `d2i_SAMPLE`.
-///
-/// TODO(https://crbug.com/boringssl/354): This function currently also accepts
-/// BER, but this will be removed in the future.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ASN1_UTCTIME> Function(
@@ -36327,6 +36347,8 @@ const int X509_V_ERR_UNSUPPORTED_EXTENSION_FEATURE = 45;
 const int X509_V_ERR_UNSUPPORTED_NAME_SYNTAX = 53;
 
 const int X509_V_FLAG_ALLOW_PROXY_CERTS = 64;
+
+const int X509_V_FLAG_ALLOW_SHA1 = 33554432;
 
 const int X509_V_FLAG_ALLOW_TIMEZONE_OFFSET = 16777216;
 
