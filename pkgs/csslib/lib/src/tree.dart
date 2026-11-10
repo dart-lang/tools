@@ -1040,9 +1040,17 @@ class Declaration extends TreeNode {
   SourceSpan get span => super.span!;
 
   @override
-  Declaration clone() =>
-      Declaration(_property?.clone(), expression?.clone(), dartStyle, span,
-          important: important);
+  Declaration clone() {
+    final style = dartStyle?.clone() as DartStyleExpression?;
+    return Declaration(
+      _property?.clone(),
+      expression?.clone(),
+      style,
+      span,
+      important: important,
+      ie7: isIE7,
+    );
+  }
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitDeclaration(this);
@@ -1597,13 +1605,18 @@ class FontExpression extends DartStyleExpression {
         super(DartStyleExpression.fontStyle, span);
 
   @override
-  FontExpression clone() => FontExpression(span,
+  FontExpression clone() {
+    final result = FontExpression(
+      span,
       size: font.size,
-      family: font.family,
+      family: font.family?.toList(),
       weight: font.weight,
       style: font.style,
       variant: font.variant,
-      lineHeight: font.lineHeight);
+      lineHeight: font.lineHeight,
+    );
+    return result..priority = priority;
+  }
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitFontExpression(this);
@@ -1661,8 +1674,17 @@ class MarginExpression extends BoxExpression {
       : super(x._styleType, span, BoxEdge.merge(x.box, y.box));
 
   @override
-  MarginExpression clone() => MarginExpression(span,
-      top: box!.top, right: box!.right, bottom: box!.bottom, left: box!.left);
+  MarginExpression clone() {
+    final edge = box!;
+    final result = MarginExpression(
+      span,
+      top: edge.top,
+      right: edge.right,
+      bottom: edge.bottom,
+      left: edge.left,
+    );
+    return result..priority = priority;
+  }
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitMarginExpression(this);
@@ -1697,8 +1719,17 @@ class BorderExpression extends BoxExpression {
             DartStyleExpression.borderStyle, span, BoxEdge.merge(x.box, y.box));
 
   @override
-  BorderExpression clone() => BorderExpression(span,
-      top: box!.top, right: box!.right, bottom: box!.bottom, left: box!.left);
+  BorderExpression clone() {
+    final edge = box!;
+    final result = BorderExpression(
+      span,
+      top: edge.top,
+      right: edge.right,
+      bottom: edge.bottom,
+      left: edge.left,
+    );
+    return result..priority = priority;
+  }
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitBorderExpression(this);
@@ -1720,7 +1751,11 @@ class HeightExpression extends DartStyleExpression {
   }
 
   @override
-  HeightExpression clone() => HeightExpression(span, height);
+  HeightExpression clone() {
+    final result = HeightExpression(span, height);
+    return result..priority = priority;
+  }
+
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitHeightExpression(this);
 }
@@ -1741,7 +1776,11 @@ class WidthExpression extends DartStyleExpression {
   }
 
   @override
-  WidthExpression clone() => WidthExpression(span, width);
+  WidthExpression clone() {
+    final result = WidthExpression(span, width);
+    return result..priority = priority;
+  }
+
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitWidthExpression(this);
 }
@@ -1777,8 +1816,18 @@ class PaddingExpression extends BoxExpression {
             BoxEdge.merge(x.box, y.box));
 
   @override
-  PaddingExpression clone() => PaddingExpression(span,
-      top: box!.top, right: box!.right, bottom: box!.bottom, left: box!.left);
+  PaddingExpression clone() {
+    final edge = box!;
+    final result = PaddingExpression(
+      span,
+      top: edge.top,
+      right: edge.right,
+      bottom: edge.bottom,
+      left: edge.left,
+    );
+    return result..priority = priority;
+  }
+
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitPaddingExpression(this);
 }

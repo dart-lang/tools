@@ -209,6 +209,20 @@ div {
 }''');
 }
 
+void declMixinIE7Hack() {
+  compileAndValidate(r'''
+@mixin legacy-color {
+  *color: red;
+}
+div {
+  @include legacy-color;
+}
+''', r'''
+div {
+  *color: #f00;
+}''');
+}
+
 void declMixinTwoIncludes() {
   compileAndValidate(r'''
 @mixin div-border {
@@ -624,6 +638,7 @@ void main() {
 
   group('Declaration mixin', () {
     test('simple', declSimpleMixin);
+    test('keeps IE7 property hack', declMixinIE7Hack);
     test('with two @includes', declMixinTwoIncludes);
     test('with includes', declMixinNestedIncludes);
     test('with deeper nesting', declMixinDeeperNestedIncludes);
