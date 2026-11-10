@@ -1,5 +1,54 @@
 ## 1.0.3-wip
 
+- Correct `Font.hashCode` for partial/empty font styles and distribute hashes
+  across font families and other properties, avoiding hash-table collisions.
+- Preserve fixed/relative line heights and independent font-family lists
+  when scaling fonts.
+- `Font.scale` keeps the line height (scaling pixel heights and keeping
+  relative ratios), copies the font-family list, and no longer throws when
+  the font size is unspecified.
+- Serialize partial font styles without bogus `ul` family names or trailing
+  spaces, and join font family lists directly.
+- Serialize partial font styles without bogus family names or trailing
+  spaces; preserve explicit line heights without font weight.
+- Serialize partial font styles without bogus family names, `nullpx` sizes or
+  trailing spaces; preserve explicit line heights without font weight and
+  keep the `px` unit on pixel line heights (a unitless value is a multiplier).
+- Fix `Rgba.fromArgbValue`, `Rgba.argbValue` and `Hsla.color`, preserve alpha
+  for grayscale colors in `Hsla.fromRgba`, and keep the exact 8-bit alpha in
+  `Color.rgba`, `Color.hsla` and `Hsla.fromArgbValue` instead of rounding it to
+  two digits. `Rgba.fromString` and `Hsla.fromString` parse the CSS color once,
+  and `Color.css` throws a `FormatException` for unsupported colors.
+- Correct CSS namespace URI serialization in pretty-printed stylesheets while
+  preserving compact `url()` representation.
+- Fix fractional alpha in the numeric `Color` constructor and normalize CSS
+  short and eight-digit hex colors, with validation of malformed input and
+  unknown color names.
+  `Color.css` also accepts named colors and `transparent`, and
+  `Rgba.fromString`/`Hsla.fromString` now parse their argument only once.
+- `Color.css` now reads the `hsl()`/`hsla()` hue as a CSS angle (degrees by
+  default, or `deg`, `grad`, `rad` and `turn`) instead of a 0..1 fraction, and
+  accepts percentages for saturation, lightness, RGB channels and alpha.
+  Functional colors with the wrong number of components or invalid or
+  non-finite values now throw a `FormatException` whose source is the color.
+- Correctly parse unit-like type selectors (`rem`, `vw`, `dpi`, etc.) at the
+  start of `selector()` and `parseSelectorGroup()` input and of style rules.
+- Use native integer hexadecimal formatting for named CSS colors, reducing
+  temporary allocations and avoiding hangs on negative conversion inputs.
+- Speed up named CSS color lookups by indexing the color table.
+- Recognize the `@left-bottom` page-margin directive, and stop parsing
+  `@right-bottom` as `@left-bottom`.
+- Recognize the `rebeccapurple` color keyword and add `Color.rebeccaPurple`.
+- Reduce repeated CSS unit, directive, and media keyword scans by indexing
+  keyword tables by length while retaining allocation-free token matching.
+- Reduce allocations when tokenizing ordinary CSS identifiers; add a parsing
+  benchmark and regression coverage for Unicode and escaped identifiers.
+- Flatten nested top-level selectors with a single ordered pass instead of
+  repeated linear searches and list insertions on large stylesheets.
+- Avoid recursive tokenizer calls when skipping CSS comments and whitespace,
+  preventing stack overflow on comment-heavy stylesheets.
+- End HTML comments at the first `-->` even when more dashes precede it, and
+  don't end comments at a NUL character.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,

@@ -1025,16 +1025,20 @@ class Font implements _StyleProperty {
   /// values are missing the default value is used.
   @override
   String get cssExpression {
-    // TODO(jimhug): include variant, style, other options
-    if (weight != null) {
-      // TODO(jacobr): is this really correct for lineHeight?
-      if (lineHeight != null) {
-        return '$weight ${size}px/$lineHeightInPixels $_fontsAsString';
-      }
-      return '$weight ${size}px $_fontsAsString';
-    }
-
-    return '${size}px $_fontsAsString';
+    // Partial fonts omit absent parts. A unitless line height is a multiplier,
+    // so pixel heights need their unit.
+    final families = _fontsAsString;
+    final height = lineHeight;
+    final sizePart = size == null
+        ? null
+        : height == null
+            ? '${size}px'
+            : '${size}px/${height.height}${height.inPixels ? 'px' : ''}';
+    return [
+      if (weight != null) '$weight',
+      if (sizePart != null) sizePart,
+      if (families.isNotEmpty) families,
+    ].join(' ');
   }
 
   Font scale(num ratio) => Font(
@@ -1079,13 +1083,8 @@ class Font implements _StyleProperty {
         other.variant == variant;
   }
 
-  // TODO(terry): This is fragile should probably just iterate through the list
-  //              of fonts construction the font-family string.
-  /// Return fonts as a comma seperated list sans the square brackets.
-  String get _fontsAsString {
-    var fonts = family.toString();
-    return fonts.length > 2 ? fonts.substring(1, fonts.length - 1) : '';
-  }
+  /// Return font family names as a comma-separated list.
+  String get _fontsAsString => family?.join(', ') ?? '';
 }
 
 /// This class stores the sizes of the box edges in the CSS [box model][]. Each
