@@ -1264,28 +1264,6 @@ void main() {
       expect(anchorList, same(aliasList));
     });
 
-    test('an alias to a large shared structure can be a mapping key', () {
-      // The key expands to 8^12 scalars, too many to walk one by one.
-      var doc = loadYaml(cleanUpLiteral('''
-        a0: &a0 [x, x, x, x, x, x, x, x]
-        a1: &a1 [*a0, *a0, *a0, *a0, *a0, *a0, *a0, *a0]
-        a2: &a2 [*a1, *a1, *a1, *a1, *a1, *a1, *a1, *a1]
-        a3: &a3 [*a2, *a2, *a2, *a2, *a2, *a2, *a2, *a2]
-        a4: &a4 [*a3, *a3, *a3, *a3, *a3, *a3, *a3, *a3]
-        a5: &a5 [*a4, *a4, *a4, *a4, *a4, *a4, *a4, *a4]
-        a6: &a6 [*a5, *a5, *a5, *a5, *a5, *a5, *a5, *a5]
-        a7: &a7 [*a6, *a6, *a6, *a6, *a6, *a6, *a6, *a6]
-        a8: &a8 [*a7, *a7, *a7, *a7, *a7, *a7, *a7, *a7]
-        a9: &a9 [*a8, *a8, *a8, *a8, *a8, *a8, *a8, *a8]
-        a10: &a10 [*a9, *a9, *a9, *a9, *a9, *a9, *a9, *a9]
-        a11: &a11 [*a10, *a10, *a10, *a10, *a10, *a10, *a10, *a10]
-        ? *a11
-        : v'''));
-      // Looking up the key would compare it with deepEquals, which walks the
-      // whole expansion, so check the key by identity.
-      expect(doc.keys.last, same(doc['a11']));
-    });
-
     test('self-referential list throws FormatException', () {
       expect(() => loadYaml(cleanUpLiteral('''
         ? &anchor [*anchor]

@@ -100,44 +100,61 @@ class _DeepEquals {
 /// This supports deep equality for maps and lists, including those with
 /// self-referential structures, and returns the same hash code for
 /// [YamlScalar]s and their values.
-int deepHashCode(Object? obj) {
-  final parents = Set<Object?>.identity();
-  // Hashes of collections that contain no loop, so shared nodes such as
-  // aliases are hashed once.
-  final hashes = Map<Object?, int>.identity();
+int deepHashCode(Object? obj) => _DeepHashCode().hash(obj);
 
-  /// Returns the hash of [value] and whether [value] loops back to a
-  /// collection that is still being hashed.
-  (int, bool) deepHashCodeInner(Object? value) {
-    if (value is YamlScalar) return ((value.value as Object?).hashCode, false);
-    if (value is! Map && value is! Iterable) return (value.hashCode, false);
+/// A class that provides access to the parent objects used for loop detection
+/// and the hash codes already computed for shared collections.
+class _DeepHashCode {
+  final _parents = Set<Object?>.identity();
 
-    final cached = hashes[value];
-    if (cached != null) return (cached, false);
-    if (!parents.add(value)) return (-1, true);
+  /// Hash codes of collections that have already been hashed.
+  ///
+  /// Only filled while no loop has been seen, since the hash code of a
+  /// collection containing a loop depends on where the traversal started.
+  final _hashes = Map<Object?, int>.identity();
+
+  /// Whether a loop has been seen.
+  var _sawLoop = false;
+
+  /// Returns a hash code for [value].
+  int hash(Object? value) {
+    if (value is YamlScalar) {
+      return (value.value as Object?).hashCode;
+    }
+    if (value is! Map && value is! Iterable) {
+      return value.hashCode;
+    }
+
+    var cached = _hashes[value];
+    if (cached != null) {
+      return cached;
+    }
+
+    // A loop back to a parent hashes as a fixed value. Equal structures loop
+    // at the same places, so they still hash alike; [deepEquals] tells apart
+    // any unequal structures that collide.
+    if (!_parents.add(value)) {
+      _sawLoop = true;
+      return -1;
+    }
     try {
-      var loops = false;
-      int childHash(Object? child) {
-        final (hash, childLoops) = deepHashCodeInner(child);
-        loops |= childLoops;
-        return hash;
+      var result = _collectionHash(value);
+      if (!_sawLoop) {
+        _hashes[value] = result;
       }
-
-      final int hash;
-      if (value is Map) {
-        var equality = const UnorderedIterableEquality<Object?>();
-        hash = equality.hash(value.keys.map(childHash)) ^
-            equality.hash(value.values.map(childHash));
-      } else {
-        hash = const IterableEquality<Object?>()
-            .hash((value as Iterable).map(childHash));
-      }
-      if (!loops) hashes[value] = hash;
-      return (hash, loops);
+      return result;
     } finally {
-      parents.remove(value);
+      _parents.remove(value);
     }
   }
 
-  return deepHashCodeInner(obj).$1;
+  int _collectionHash(Object? value) {
+    if (value is Map) {
+      var equality = const UnorderedIterableEquality<Object?>();
+      return equality.hash(value.keys.map(hash)) ^
+          equality.hash(value.values.map(hash));
+    }
+    return const IterableEquality<Object?>()
+        .hash((value as Iterable).map(hash));
+  }
 }
