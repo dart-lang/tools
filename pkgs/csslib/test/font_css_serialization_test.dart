@@ -60,4 +60,17 @@ void main() {
       '',
     );
   });
+
+  test('font CSS includes style and variant in shorthand order', () {
+    expect(
+      const Font(
+        size: 16,
+        weight: FontWeight.bold,
+        style: FontStyle.italic,
+        variant: FontVariant.smallCaps,
+        family: ['Alef'],
+      ).cssExpression,
+      'italic small-caps 700 16px Alef',
+    );
+  });
 }

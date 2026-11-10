@@ -1035,6 +1035,8 @@ class Font implements _StyleProperty {
             ? '${size}px'
             : '${size}px/${height.height}${height.inPixels ? 'px' : ''}';
     return [
+      if (style != null) style,
+      if (variant != null) variant,
       if (weight != null) '$weight',
       if (sizePart != null) sizePart,
       if (families.isNotEmpty) families,
