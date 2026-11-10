@@ -1,5 +1,7 @@
 ## 1.0.3-wip
 
+- Correctly parse unit-like type selectors (`rem`, `vw`, `dpi`, etc.) at the
+  start of `selector()` and `parseSelectorGroup()` input and of style rules.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
