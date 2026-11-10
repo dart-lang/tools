@@ -549,28 +549,34 @@ class TokenKind {
     return '<BAD UNIT>'; // Not a unit token.
   }
 
-  /// Match color name, case insensitive match and return the associated color
-  /// entry from _EXTENDED_COLOR_NAMES list, return `null` if not found.
-  static Map<String, Object>? matchColorName(String text) {
-    var name = text.toLowerCase();
-    for (var color in _EXTENDED_COLOR_NAMES) {
-      if (color['name'] == name) return color;
-    }
-    return null;
-  }
+  // Keep the existing color entry objects for callers, but avoid scanning the
+  // entire CSS color-name table for every parsed identifier.
+  static final Map<String, Map<String, Object>> _colorNamesByName = {
+    for (final entry in _EXTENDED_COLOR_NAMES) entry['name'] as String: entry,
+  };
+
+  /// Match a CSS color keyword case-insensitively.
+  static Map<String, Object>? matchColorName(String text) =>
+      _colorNamesByName[text.toLowerCase()];
 
   /// Return RGB value as [int] from a color entry in _EXTENDED_COLOR_NAMES.
   static int colorValue(Map<String, Object> entry) => entry['value'] as int;
 
-  static String? hexToColorName(Object hexValue) {
+  // Match the old linear scan's first-name-wins behavior for aliases such as
+  // aqua/cyan and fuchsia/magenta, while avoiding a scan for every print.
+  static final Map<int, String> _colorNamesByValue = () {
+    final colors = <int, String>{};
     for (final entry in _EXTENDED_COLOR_NAMES) {
-      if (entry['value'] == hexValue) {
-        return entry['name'] as String?;
-      }
+      colors.putIfAbsent(
+        entry['value'] as int,
+        () => entry['name'] as String,
+      );
     }
+    return colors;
+  }();
 
-    return null;
-  }
+  static String? hexToColorName(Object hexValue) =>
+      _colorNamesByValue[hexValue];
 
   static String decimalToHex(int number, [int minDigits = 1]) {
     final hexDigits = '0123456789abcdef';
