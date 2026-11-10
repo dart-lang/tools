@@ -421,6 +421,7 @@ class TokenKind {
     {'name': 'plum', 'value': 0xDDA0DD},
     {'name': 'powderblue', 'value': 0xB0E0E6},
     {'name': 'purple', 'value': 0x800080},
+    {'name': 'rebeccapurple', 'value': 0x663399},
     {'name': 'red', 'value': 0xFF0000},
     {'name': 'rosybrown', 'value': 0xBC8F8F},
     {'name': 'royalblue', 'value': 0x4169E1},
