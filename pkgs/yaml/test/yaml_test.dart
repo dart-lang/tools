@@ -1265,19 +1265,25 @@ void main() {
     });
 
     test('an alias to a large shared structure can be a mapping key', () {
-      // Each anchor holds the one before it 10 times, so the key expands to
-      // 10^12 scalars. Hashing the key must not walk that expansion.
-      const levels = 12;
-      final buffer = StringBuffer('a0: &a0 [x,x,x,x,x,x,x,x,x,x]\n');
-      for (var i = 1; i < levels; i++) {
-        buffer
-            .writeln('a$i: &a$i [${List.filled(10, '*a${i - 1}').join(',')}]');
-      }
-      buffer.writeln('? *a${levels - 1}\n: v');
-      final doc = loadYaml(buffer.toString()) as Map;
-      // Looking up the key compares it deeply with deepEquals, which still
-      // walks the expansion, so check the key by identity.
-      expect(doc.keys.last, same(doc['a${levels - 1}']));
+      // The key expands to 8^12 scalars, too many to walk one by one.
+      var doc = loadYaml(cleanUpLiteral('''
+        a0: &a0 [x, x, x, x, x, x, x, x]
+        a1: &a1 [*a0, *a0, *a0, *a0, *a0, *a0, *a0, *a0]
+        a2: &a2 [*a1, *a1, *a1, *a1, *a1, *a1, *a1, *a1]
+        a3: &a3 [*a2, *a2, *a2, *a2, *a2, *a2, *a2, *a2]
+        a4: &a4 [*a3, *a3, *a3, *a3, *a3, *a3, *a3, *a3]
+        a5: &a5 [*a4, *a4, *a4, *a4, *a4, *a4, *a4, *a4]
+        a6: &a6 [*a5, *a5, *a5, *a5, *a5, *a5, *a5, *a5]
+        a7: &a7 [*a6, *a6, *a6, *a6, *a6, *a6, *a6, *a6]
+        a8: &a8 [*a7, *a7, *a7, *a7, *a7, *a7, *a7, *a7]
+        a9: &a9 [*a8, *a8, *a8, *a8, *a8, *a8, *a8, *a8]
+        a10: &a10 [*a9, *a9, *a9, *a9, *a9, *a9, *a9, *a9]
+        a11: &a11 [*a10, *a10, *a10, *a10, *a10, *a10, *a10, *a10]
+        ? *a11
+        : v'''));
+      // Looking up the key would compare it with deepEquals, which walks the
+      // whole expansion, so check the key by identity.
+      expect(doc.keys.last, same(doc['a11']));
     });
 
     test('self-referential list throws FormatException', () {

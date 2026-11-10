@@ -102,43 +102,42 @@ class _DeepEquals {
 /// [YamlScalar]s and their values.
 int deepHashCode(Object? obj) {
   final parents = Set<Object?>.identity();
-
-  // Hashes of nodes already visited in this call, so a node that appears many
-  // times (such as a YAML alias) is walked once. A hash is cached only when no
-  // loop was found under the node, because a loop back to an ancestor hashes as
-  // -1 and so depends on the path the node was reached by. Shared nodes that
-  // contain a loop are still walked each time they appear.
+  // Hashes of collections that contain no loop, so shared nodes such as
+  // aliases are hashed once.
   final hashes = Map<Object?, int>.identity();
-  var loops = 0;
 
-  int deepHashCodeInner(Object? value) {
+  /// Returns the hash of [value] and whether [value] loops back to a
+  /// collection that is still being hashed.
+  (int, bool) deepHashCodeInner(Object? value) {
+    if (value is YamlScalar) return ((value.value as Object?).hashCode, false);
+    if (value is! Map && value is! Iterable) return (value.hashCode, false);
+
     final cached = hashes[value];
-    if (cached != null) return cached;
-    if (!parents.add(value)) {
-      loops++;
-      return -1;
-    }
-    final loopsBefore = loops;
+    if (cached != null) return (cached, false);
+    if (!parents.add(value)) return (-1, true);
     try {
+      var loops = false;
+      int childHash(Object? child) {
+        final (hash, childLoops) = deepHashCodeInner(child);
+        loops |= childLoops;
+        return hash;
+      }
+
       final int hash;
       if (value is Map) {
         var equality = const UnorderedIterableEquality<Object?>();
-        hash = equality.hash(value.keys.map(deepHashCodeInner)) ^
-            equality.hash(value.values.map(deepHashCodeInner));
-      } else if (value is Iterable) {
-        hash = const IterableEquality<Object?>()
-            .hash(value.map(deepHashCodeInner));
-      } else if (value is YamlScalar) {
-        return (value.value as Object?).hashCode;
+        hash = equality.hash(value.keys.map(childHash)) ^
+            equality.hash(value.values.map(childHash));
       } else {
-        return value.hashCode;
+        hash = const IterableEquality<Object?>()
+            .hash((value as Iterable).map(childHash));
       }
-      if (loops == loopsBefore) hashes[value] = hash;
-      return hash;
+      if (!loops) hashes[value] = hash;
+      return (hash, loops);
     } finally {
       parents.remove(value);
     }
   }
 
-  return deepHashCodeInner(obj);
+  return deepHashCodeInner(obj).$1;
 }
