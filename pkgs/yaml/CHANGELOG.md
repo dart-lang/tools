@@ -9,6 +9,8 @@
   scalars.
 * Speed up scanning deeply nested flow collections: the scanner no longer
   walks every open flow level for each token.
+* Fix exponential load time when an alias is used as a mapping key: each
+  shared node is now hashed once.
 
 ## 3.1.4
 

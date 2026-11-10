@@ -103,21 +103,37 @@ class _DeepEquals {
 int deepHashCode(Object? obj) {
   final parents = Set<Object?>.identity();
 
+  // Hashes of nodes already visited in this call, so a node that appears many
+  // times (such as a YAML alias) is walked once. A hash is cached only when no
+  // loop was found under the node, because a loop back to an ancestor hashes as
+  // -1 and so depends on the path the node was reached by.
+  final hashes = Map<Object?, int>.identity();
+  var loops = 0;
+
   int deepHashCodeInner(Object? value) {
-    if (!parents.add(value)) return -1;
+    final cached = hashes[value];
+    if (cached != null) return cached;
+    if (!parents.add(value)) {
+      loops++;
+      return -1;
+    }
+    final loopsBefore = loops;
     try {
+      final int hash;
       if (value is Map) {
         var equality = const UnorderedIterableEquality<Object?>();
-        return equality.hash(value.keys.map(deepHashCodeInner)) ^
+        hash = equality.hash(value.keys.map(deepHashCodeInner)) ^
             equality.hash(value.values.map(deepHashCodeInner));
       } else if (value is Iterable) {
-        return const IterableEquality<Object?>()
+        hash = const IterableEquality<Object?>()
             .hash(value.map(deepHashCodeInner));
       } else if (value is YamlScalar) {
         return (value.value as Object?).hashCode;
       } else {
         return value.hashCode;
       }
+      if (loops == loopsBefore) hashes[value] = hash;
+      return hash;
     } finally {
       parents.remove(value);
     }

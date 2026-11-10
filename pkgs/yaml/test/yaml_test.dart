@@ -1264,6 +1264,22 @@ void main() {
       expect(anchorList, same(aliasList));
     });
 
+    test('an alias to a large shared structure can be a mapping key', () {
+      // Each anchor holds the one before it 10 times, so the key expands to
+      // 10^12 scalars. Hashing the key must not walk that expansion.
+      const levels = 12;
+      final buffer = StringBuffer('a0: &a0 [x,x,x,x,x,x,x,x,x,x]\n');
+      for (var i = 1; i < levels; i++) {
+        buffer
+            .writeln('a$i: &a$i [${List.filled(10, '*a${i - 1}').join(',')}]');
+      }
+      buffer.writeln('? *a${levels - 1}\n: v');
+      final doc = loadYaml(buffer.toString()) as Map;
+      // Looking up the key compares it deeply with deepEquals, which still
+      // walks the expansion, so check the key by identity.
+      expect(doc.keys.last, same(doc['a${levels - 1}']));
+    });
+
     test('self-referential list throws FormatException', () {
       expect(() => loadYaml(cleanUpLiteral('''
         ? &anchor [*anchor]
