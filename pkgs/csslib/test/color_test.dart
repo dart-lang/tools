@@ -56,6 +56,10 @@ void main() {
       expect(() => Color.css('#-12345'), throwsFormatException);
       expect(() => Color.css('# 12345'), throwsFormatException);
     });
+
+    test('unknown color names throw a FormatException', () {
+      expect(() => Color.css('notacolor'), throwsFormatException);
+    });
   });
 
   group('named colors', () {

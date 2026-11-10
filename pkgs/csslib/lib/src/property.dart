@@ -71,7 +71,11 @@ class Color implements _StyleProperty, ColorBase {
 
   /// Creates a new color from a CSS color string. For more information, see
   /// <https://developer.mozilla.org/en/CSS/color>.
-  Color.css(String color) : _argb = Color._convertCssToArgb(color)!;
+  ///
+  /// Throws a [FormatException] if [color] is not a supported CSS color.
+  Color.css(String color)
+      : _argb = Color._convertCssToArgb(color) ??
+            (throw FormatException('Unsupported CSS color', color));
 
   // TODO(jmesserly): I found the use of percents a bit suprising.
   /// HSL takes three values.  The [hueDegree] degree on the color wheel; '0' is
