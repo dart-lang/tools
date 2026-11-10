@@ -95,12 +95,9 @@ class EncodingBytes {
     if (_bytes.length < p + bytes.length) {
       return false;
     }
-    final data = _bytes.substring(p, p + bytes.length);
-    if (data == bytes) {
-      _position += bytes.length;
-      return true;
-    }
-    return false;
+    if (!_bytes.startsWith(bytes, p)) return false;
+    _position += bytes.length;
+    return true;
   }
 
   /// Look for the next sequence of bytes matching a given sequence. If

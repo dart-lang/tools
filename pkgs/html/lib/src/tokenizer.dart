@@ -168,18 +168,17 @@ class HtmlTokenizer implements Iterator<Token> {
       radix = 16;
     }
 
-    final charStack = <String?>[];
-
     // Consume all the characters that are in range while making sure we
     // don't hit an EOF.
+    final digits = StringBuffer();
     var c = stream.char();
     while (allowed(c) && c != eof) {
-      charStack.add(c);
+      digits.write(c);
       c = stream.char();
     }
 
-    // Convert the set of characters consumed to an int.
-    final charAsInt = int.tryParse(charStack.join(), radix: radix) ?? 0x110000;
+    // Convert the characters consumed to an int; overflow becomes U+FFFD.
+    final charAsInt = int.tryParse(digits.toString(), radix: radix) ?? 0x110000;
 
     // Certain characters get replaced with others
     var char = replacementCharacters[charAsInt];
@@ -299,10 +298,11 @@ class HtmlTokenizer implements Iterator<Token> {
       String? entityName;
 
       // Try to find the longest entity the string will match to take care
-      // of &noti for instance.
+      // of &noti for instance. All but the last char matched the ASCII trie.
+      final consumed = charStack.join();
       int entityLen;
       for (entityLen = charStack.length - 1; entityLen > 1; entityLen--) {
-        final possibleEntityName = charStack.sublist(0, entityLen).join();
+        final possibleEntityName = consumed.substring(0, entityLen);
         if (entities.containsKey(possibleEntityName)) {
           entityName = possibleEntityName;
           break;
