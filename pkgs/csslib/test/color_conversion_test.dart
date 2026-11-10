@@ -22,10 +22,17 @@ void main() {
     expect(Rgba(0xff, 0, 0, 1).argbValue, 0xffff0000);
   });
 
-  test('ARGB round-trips retain each alpha byte, including 0x7f', () {
-    expect(const Color.hex('7f112233').rgba.toHexArgbString(), '7f112233');
-    expect(Hsla.fromArgbValue(0x7f808080).toHexArgbString(), '7f808080');
-  });
+  test(
+    'ARGB round-trips retain each alpha byte, including 0x7f and >= 0x80',
+    () {
+      expect(const Color.hex('7f112233').rgba.toHexArgbString(), '7f112233');
+      expect(Hsla.fromArgbValue(0x7f808080).toHexArgbString(), '7f808080');
+      expect(Hsla.fromArgbValue(0x80808080).toHexArgbString(), '80808080');
+      expect(Hsla.fromArgbValue(0xff808080).toHexArgbString(), 'ff808080');
+      expect(Rgba.fromArgbValue(0xff808080).argbValue, 0xff808080);
+      expect(Rgba.fromArgbValue(0x80808080).argbValue, 0x80808080);
+    },
+  );
 
   test('color string factories decode CSS colors only once', () {
     expect(Rgba.fromString('rgba(255,0,0,0.5)').toHexArgbString(), '80ff0000');
