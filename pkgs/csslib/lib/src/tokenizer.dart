@@ -281,12 +281,13 @@ class Tokenizer extends TokenizerBase {
 
       // Decode CSS escapes without changing the raw source span.
       if (ch == 92 /*\*/ && _inString) {
-        decoded ??= StringBuffer()..write(_text.substring(_startIndex, _index));
+        decoded ??= StringBuffer(_text.substring(_startIndex, _index));
         final startHex = ++_index;
         eatHexDigits(startHex + 6);
         if (_index != startHex) {
           final hexVal =
-              int.tryParse('0x${_text.substring(startHex, _index)}') ?? 0xFFFD;
+              int.tryParse(_text.substring(startHex, _index), radix: 16) ??
+                  0xFFFD;
           decoded.writeCharCode(hexVal <= 0x10FFFF ? hexVal : 0xFFFD);
 
           if (_index == _text.length) break;
