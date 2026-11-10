@@ -1065,8 +1065,7 @@ class Font implements _StyleProperty {
 
   @override
   int get hashCode =>
-      // TODO(jimhug): Lot's of potential collisions here. List of fonts, etc.
-      size!.toInt() % family![0].hashCode;
+      Object.hash(size, family, weight, lineHeight, style, variant);
 
   @override
   bool operator ==(Object other) {
