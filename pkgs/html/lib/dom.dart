@@ -1135,19 +1135,14 @@ class FilteredElementList extends IterableBase<Element>
   }
 
   @override
-  bool get isEmpty => !_childNodes.any((node) => node is Element);
+  bool get isEmpty => _childNodes.whereType<Element>().isEmpty;
 
   @override
-  int get length {
-    var count = 0;
-    for (final node in _childNodes) {
-      if (node is Element) count++;
-    }
-    return count;
-  }
+  int get length => _childNodes.whereType<Element>().length;
 
   @override
   Element operator [](int index) {
+    if (index < 0) throw RangeError.index(index, this);
     var position = 0;
     for (final node in _childNodes) {
       if (node is Element) {
