@@ -1,7 +1,8 @@
 ## 1.0.3-wip
 
 - Fix fractional alpha in the numeric `Color` constructor and normalize CSS
-  short and eight-digit hex colors, with validation of malformed input.
+  short and eight-digit hex colors, with validation of malformed input and
+  unknown color names.
   `Color.css` also accepts named colors and `transparent`, and
   `Rgba.fromString`/`Hsla.fromString` now parse their argument only once.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
