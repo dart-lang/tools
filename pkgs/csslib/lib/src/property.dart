@@ -201,18 +201,13 @@ class Color implements _StyleProperty, ColorBase {
   // Conversion routines:
 
   static String _rgbToArgbString(int rgba, num? alpha) {
-    num? a;
-    // If alpha is defined then adjust from 0..1 to 0..255 value, if not set
-    // then a is left as undefined and passed to convertToHexString.
-    if (alpha != null) {
-      a = (Color._clamp(alpha, 0, 1) * 255).round();
-    }
-
+    // convertToHexString already takes alpha in the range 0..1 and converts it
+    // to an 8-bit channel. Multiplying here made every nonzero alpha opaque.
     var r = (rgba & 0xff0000) >> 0x10;
     var g = (rgba & 0xff00) >> 8;
     var b = rgba & 0xff;
 
-    return Color.convertToHexString(r, g, b, a);
+    return Color.convertToHexString(r, g, b, alpha);
   }
 
   static const int _rgbCss = 1;
@@ -220,17 +215,39 @@ class Color implements _StyleProperty, ColorBase {
   static const int _hslCss = 3;
   static const int _hslaCss = 4;
 
+  static final _hexDigits = RegExp(r'^[0-9a-fA-F]+$');
+
   /// Parse CSS expressions of the from #rgb, rgb(r,g,b), rgba(r,g,b,a),
   /// hsl(h,s,l), hsla(h,s,l,a) and SVG colors (e.g., darkSlateblue, etc.) and
   /// convert to argb.
   static String? _convertCssToArgb(String value) {
     // TODO(terry): Better parser/regex for converting CSS properties.
-    var color = value.trim().replaceAll('\\s', '');
-    if (color[0] == '#') {
-      var v = color.substring(1);
-      Color.hexToInt(v); // Valid hexadecimal, throws if not.
-      return v;
-    } else if (color.isNotEmpty && color[color.length - 1] == ')') {
+    var color = value.trim();
+    if (color.isEmpty) {
+      throw FormatException('Empty CSS color', value);
+    }
+    if (color.startsWith('#')) {
+      var digits = color.substring(1);
+      if (digits.length == 3 || digits.length == 4) {
+        final expanded = StringBuffer();
+        for (var i = 0; i < digits.length; i++) {
+          expanded
+            ..write(digits[i])
+            ..write(digits[i]);
+        }
+        digits = expanded.toString();
+      }
+      // int.parse also accepts a sign and surrounding whitespace.
+      if ((digits.length != 6 && digits.length != 8) ||
+          !_hexDigits.hasMatch(digits)) {
+        throw FormatException('Invalid CSS hexadecimal color', value);
+      }
+      if (digits.length == 8) {
+        // CSS #rrggbbaa is stored internally as aarrggbb.
+        return (digits.substring(6) + digits.substring(0, 6)).toLowerCase();
+      }
+      return digits.toLowerCase();
+    } else if (color.endsWith(')')) {
       int type;
       if (color.indexOf('rgb(') == 0 || color.indexOf('RGB(') == 0) {
         color = color.substring(4);
@@ -272,7 +289,14 @@ class Color implements _StyleProperty, ColorBase {
           break;
       }
     }
-    return null;
+
+    // Color.css should accept the same standard named colors as the CSS
+    // parser, including the transparent keyword with zero alpha.
+    if (color.toLowerCase() == 'transparent') return '00000000';
+    final named = TokenKind.matchColorName(color);
+    return named == null
+        ? null
+        : TokenKind.decimalToHex(TokenKind.colorValue(named), 6);
   }
 
   static int hexToInt(String hex) => int.parse(hex, radix: 16);
@@ -499,8 +523,7 @@ class Rgba implements _StyleProperty, ColorBase {
         b = Color._clamp(blue, 0, 255),
         a = (alpha != null) ? Color._clamp(alpha, 0, 1) : alpha;
 
-  factory Rgba.fromString(String hexValue) =>
-      Color.css('#${Color._convertCssToArgb(hexValue)}').rgba;
+  factory Rgba.fromString(String cssColor) => Color.css(cssColor).rgba;
 
   factory Rgba.fromColor(Color color) => color.rgba;
 
@@ -628,8 +651,8 @@ class Hsla implements _StyleProperty, ColorBase {
         _l = Color._clamp(lightness, 0, 1),
         _a = (alpha != null) ? Color._clamp(alpha, 0, 1) : alpha;
 
-  factory Hsla.fromString(String hexValue) {
-    var rgba = Color.css('#${Color._convertCssToArgb(hexValue)}').rgba;
+  factory Hsla.fromString(String cssColor) {
+    final rgba = Color.css(cssColor).rgba;
     return _createFromRgba(rgba.r, rgba.g, rgba.b, rgba.a);
   }
 
