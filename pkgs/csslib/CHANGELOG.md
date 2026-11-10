@@ -1,5 +1,9 @@
 ## 1.0.3-wip
 
+- Avoid recursive tokenizer calls when skipping CSS comments and whitespace,
+  preventing stack overflow on comment-heavy stylesheets.
+- End HTML comments at the first `-->` even when more dashes precede it, and
+  don't end comments at a NUL character.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
