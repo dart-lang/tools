@@ -454,6 +454,7 @@ class Color implements _StyleProperty, ColorBase {
   static final Color plum = const Color.hex('dda0dd');
   static final Color powderBlue = const Color.hex('b0e0e6');
   static final Color purple = const Color.hex('800080');
+  static final Color rebeccaPurple = const Color.hex('663399');
   static final Color red = const Color.hex('ff0000');
   static final Color rosyBrown = const Color.hex('bc8f8f');
   static final Color royalBlue = const Color.hex('4169e1');
