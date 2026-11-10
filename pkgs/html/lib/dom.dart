@@ -1178,12 +1178,10 @@ String _getText(Node node, {bool convertBRsToNewlines = false}) {
     final child = cursor.current;
     if (child is Text) {
       result.write(child.data);
-    } else if (child is Element) {
-      if (convertBRsToNewlines && _isElementBr(child)) {
-        result.write('\n');
-      } else if (child.nodes.isNotEmpty) {
-        stack.add(child.nodes.iterator);
-      }
+    } else if (convertBRsToNewlines &&
+        child is Element &&
+        _isElementBr(child)) {
+      result.write('\n');
     } else if (child.nodes.isNotEmpty) {
       stack.add(child.nodes.iterator);
     }
