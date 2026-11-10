@@ -44,4 +44,12 @@ void main() {
     expect(() => Color.css('rgba(10,20,30)'), throwsFormatException);
     expect(() => Color.css('rgb(NaN,20,30)'), throwsFormatException);
   });
+
+  test('component errors report the whole color as their source', () {
+    expect(
+      () => Color.css('rgb(1x,20,30)'),
+      throwsA(isA<FormatException>()
+          .having((e) => e.source, 'source', 'rgb(1x,20,30)')),
+    );
+  });
 }

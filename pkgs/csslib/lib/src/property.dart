@@ -257,9 +257,9 @@ class Color implements _StyleProperty, ColorBase {
       }
 
       double parseNumber(String text) {
-        final number = double.parse(text.trim());
-        if (!number.isFinite) {
-          throw FormatException('Non-finite CSS color component', value);
+        final number = double.tryParse(text.trim());
+        if (number == null || !number.isFinite) {
+          throw FormatException('Invalid CSS color component', value);
         }
         return number;
       }
