@@ -102,18 +102,18 @@ class _DeepEquals {
 /// [YamlScalar]s and their values.
 int deepHashCode(Object? obj) => _DeepHashCode().hash(obj);
 
-/// A class that provides access to the parent objects used for loop detection
+/// Computes [deepHashCode], tracking the parent objects used for loop detection
 /// and the hash codes already computed for shared collections.
 class _DeepHashCode {
   final _parents = Set<Object?>.identity();
 
   /// Hash codes of collections that have already been hashed.
   ///
-  /// Only filled while no loop has been seen, since the hash code of a
-  /// collection containing a loop depends on where the traversal started.
+  /// A collection containing a loop is not cached, since its hash code depends
+  /// on the path it was reached by.
   final _hashes = Map<Object?, int>.identity();
 
-  /// Whether a loop has been seen.
+  /// Whether a loop has been seen inside the collection being hashed.
   var _sawLoop = false;
 
   /// Returns a hash code for [value].
@@ -137,24 +137,29 @@ class _DeepHashCode {
       _sawLoop = true;
       return -1;
     }
+    var parentSawLoop = _sawLoop;
+    _sawLoop = false;
     try {
-      var result = _collectionHash(value);
+      var result =
+          value is Map ? _mapHash(value) : _iterableHash(value as Iterable);
       if (!_sawLoop) {
         _hashes[value] = result;
       }
       return result;
     } finally {
       _parents.remove(value);
+      _sawLoop = _sawLoop || parentSawLoop;
     }
   }
 
-  int _collectionHash(Object? value) {
-    if (value is Map) {
-      var equality = const UnorderedIterableEquality<Object?>();
-      return equality.hash(value.keys.map(hash)) ^
-          equality.hash(value.values.map(hash));
-    }
-    return const IterableEquality<Object?>()
-        .hash((value as Iterable).map(hash));
+  /// Returns a hash code for [map] that ignores the order of its entries.
+  int _mapHash(Map map) {
+    var equality = const UnorderedIterableEquality<Object?>();
+    return equality.hash(map.keys.map(hash)) ^
+        equality.hash(map.values.map(hash));
   }
+
+  /// Returns a hash code for [iterable].
+  int _iterableHash(Iterable iterable) =>
+      const IterableEquality<Object?>().hash(iterable.map(hash));
 }

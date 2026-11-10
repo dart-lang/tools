@@ -85,6 +85,19 @@ void main() {
       expect(deepEquals(shared, unshared), isTrue);
       expect(deepHashCode(shared), deepHashCode(unshared));
     });
+
+    test('keeps caching shared nodes next to a loop', () {
+      final leaf = _CountingLeaf();
+      Object node = leaf;
+      for (var i = 0; i < 20; i++) {
+        node = [node, node];
+      }
+      final loop = <Object?>[];
+      loop.add(loop);
+      deepHashCode([loop, node]);
+      // Only lists are cached, so the innermost list reads both of its leaves.
+      expect(leaf.reads, 2);
+    });
   });
 }
 

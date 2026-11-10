@@ -38,7 +38,7 @@ void main() {
     // isolate that is killed if it takes too long.
     final results = ReceivePort();
     final isolate = await Isolate.spawn(_loadKey, (results.sendPort, yaml),
-        onError: results.sendPort);
+        onError: results.sendPort, onExit: results.sendPort);
     try {
       final result = await results.first.timeout(const Duration(seconds: 10));
       expect(result, isTrue, reason: 'Loading failed: $result');
