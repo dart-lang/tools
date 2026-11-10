@@ -106,7 +106,8 @@ int deepHashCode(Object? obj) {
   // Hashes of nodes already visited in this call, so a node that appears many
   // times (such as a YAML alias) is walked once. A hash is cached only when no
   // loop was found under the node, because a loop back to an ancestor hashes as
-  // -1 and so depends on the path the node was reached by.
+  // -1 and so depends on the path the node was reached by. Shared nodes that
+  // contain a loop are still walked each time they appear.
   final hashes = Map<Object?, int>.identity();
   var loops = 0;
 
