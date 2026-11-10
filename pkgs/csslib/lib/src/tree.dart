@@ -1042,7 +1042,7 @@ class Declaration extends TreeNode {
   @override
   Declaration clone() =>
       Declaration(_property?.clone(), expression?.clone(), dartStyle, span,
-          important: important);
+          important: important, ie7: isIE7);
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitDeclaration(this);
@@ -1064,7 +1064,8 @@ class VarDefinition extends Declaration {
 
   @override
   VarDefinition clone() =>
-      VarDefinition(_property?.clone(), expression?.clone(), span);
+      VarDefinition(_property?.clone(), expression?.clone(), span)
+        ..badUsage = badUsage;
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitVarDefinition(this);
@@ -1460,7 +1461,14 @@ class GroupTerm extends Expression {
   }
 
   @override
-  GroupTerm clone() => GroupTerm(span);
+  GroupTerm clone() {
+    final copy = GroupTerm(span);
+    for (final term in _terms) {
+      copy.add(term.clone());
+    }
+    return copy;
+  }
+
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitGroupTerm(this);
 }
