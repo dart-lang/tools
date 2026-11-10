@@ -134,10 +134,13 @@ class HtmlInputStream {
         c = Charcode.lineFeed;
       }
 
-      if (c != rawChars[i] && identical(chars, rawChars)) {
-        chars = List<int>.of(rawChars, growable: true);
-      }
-      if (!identical(chars, rawChars)) {
+      if (c != rawChars[i]) {
+        if (identical(chars, rawChars)) {
+          chars = List<int>.of(rawChars, growable: true);
+        }
+        chars[i - deletedChars] = c;
+      } else if (deletedChars > 0) {
+        // The copy already holds unchanged code units at their own index.
         chars[i - deletedChars] = c;
       }
     }
