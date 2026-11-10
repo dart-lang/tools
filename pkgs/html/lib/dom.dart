@@ -269,8 +269,9 @@ abstract class Node {
   /// This is needed so that trees that don't store text as nodes move the
   /// text in the correct way.
   void reparentChildren(Node newParent) {
+    if (identical(this, newParent)) return;
+    // NodeList.addAll detaches source children in one pass.
     newParent.nodes.addAll(nodes);
-    nodes.clear();
   }
 
   bool hasChildNodes() => nodes.isNotEmpty;
@@ -765,6 +766,14 @@ class NodeList extends ListProxy<Node> {
   }
 
   @override
+  bool remove(Object? element) {
+    final index = indexOf(element);
+    if (index < 0) return false;
+    removeAt(index);
+    return true;
+  }
+
+  @override
   void add(Node element) {
     if (element is DocumentFragment) {
       addAll(element.nodes);
@@ -777,13 +786,20 @@ class NodeList extends ListProxy<Node> {
 
   @override
   void addAll(Iterable<Node> iterable) {
-    // Note: we need to be careful if collection is another NodeList.
-    // In particular:
-    //   1. we need to copy the items before updating their parent pointers,
-    //     _flattenDocFragments does a copy internally.
-    //   2. we should update parent pointers in reverse order. That way they
-    //      are removed from the original NodeList (if any) from the end, which
-    //      is faster.
+    // Moving an entire node list is a common fragment insertion operation.
+    // Detach its children in one pass instead of repeatedly searching and
+    // removing from the source list (quadratic for large fragments).
+    if (iterable is NodeList && !identical(iterable, this)) {
+      final moving = iterable.toList(growable: false);
+      iterable.clear();
+      for (final node in moving) {
+        node.parentNode = _parent;
+      }
+      super.addAll(moving);
+      return;
+    }
+
+    // Snapshot the iterable, flatten fragments and detach in reverse order.
     final list = _flattenDocFragments(iterable);
     for (var node in list.reversed) {
       _setParent(node);
@@ -793,9 +809,13 @@ class NodeList extends ListProxy<Node> {
 
   @override
   void insert(int index, Node element) {
+    RangeError.checkValueInInterval(index, 0, length, 'index');
     if (element is DocumentFragment) {
       insertAll(index, element.nodes);
     } else {
+      if (identical(element.parentNode, _parent) && indexOf(element) < index) {
+        index--;
+      }
       super.insert(index, _setParent(element));
     }
   }
@@ -820,8 +840,15 @@ class NodeList extends ListProxy<Node> {
       removeAt(index);
       insertAll(index, value.nodes);
     } else {
+      if (identical(this[index], value)) return;
+      // Removing a sibling before the target shifts its index. Detach first,
+      // then replace the node at the adjusted position.
+      if (identical(value.parentNode, _parent) && indexOf(value) < index) {
+        index--;
+      }
+      value.remove();
       this[index].parentNode = null;
-      super[index] = _setParent(value);
+      super[index] = value..parentNode = _parent;
     }
   }
 
@@ -874,9 +901,22 @@ class NodeList extends ListProxy<Node> {
 
   @override
   void insertAll(int index, Iterable<Node> iterable) {
-    // Note: we need to be careful how we copy nodes. See note in addAll.
+    RangeError.checkValueInInterval(index, 0, length, 'index');
+    if (iterable is NodeList && !identical(iterable, this)) {
+      final moving = iterable.toList(growable: false);
+      iterable.clear();
+      for (final node in moving) {
+        node.parentNode = _parent;
+      }
+      super.insertAll(index, moving);
+      return;
+    }
+
     final list = _flattenDocFragments(iterable);
     for (var node in list.reversed) {
+      if (identical(node.parentNode, _parent) && indexOf(node) < index) {
+        index--;
+      }
       _setParent(node);
     }
     super.insertAll(index, list);
@@ -925,6 +965,7 @@ class FilteredElementList extends IterableBase<Element>
 
   @override
   void forEach(void Function(Element) action) {
+    // Preserve snapshot iteration when callbacks mutate the DOM.
     _filtered.forEach(action);
   }
 
@@ -946,7 +987,8 @@ class FilteredElementList extends IterableBase<Element>
   }
 
   @override
-  String join([String separator = '']) => _filtered.join(separator);
+  String join([String separator = '']) =>
+      _childNodes.whereType<Element>().join(separator);
 
   @override
   void add(Element element) {
@@ -1093,13 +1135,28 @@ class FilteredElementList extends IterableBase<Element>
   }
 
   @override
-  bool get isEmpty => _filtered.isEmpty;
+  bool get isEmpty => !_childNodes.any((node) => node is Element);
 
   @override
-  int get length => _filtered.length;
+  int get length {
+    var count = 0;
+    for (final node in _childNodes) {
+      if (node is Element) count++;
+    }
+    return count;
+  }
 
   @override
-  Element operator [](int index) => _filtered[index];
+  Element operator [](int index) {
+    var position = 0;
+    for (final node in _childNodes) {
+      if (node is Element) {
+        if (position == index) return node;
+        position++;
+      }
+    }
+    throw RangeError.index(index, this);
+  }
 
   @override
   Iterator<Element> get iterator => _filtered.iterator;
@@ -1124,13 +1181,13 @@ class FilteredElementList extends IterableBase<Element>
   }
 
   @override
-  Element get first => _filtered.first;
+  Element get first => _childNodes.whereType<Element>().first;
 
   @override
-  Element get last => _filtered.last;
+  Element get last => _childNodes.whereType<Element>().last;
 
   @override
-  Element get single => _filtered.single;
+  Element get single => _childNodes.whereType<Element>().single;
 }
 
 // http://dom.spec.whatwg.org/#dom-node-textcontent

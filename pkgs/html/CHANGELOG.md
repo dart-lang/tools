@@ -9,6 +9,7 @@
 - Fix `querySelector` and `querySelectorAll` throwing a null-check `TypeError` instead of `FormatException` on empty `:not()` selectors.
 - Fix `TreeBuilder` not updating `Text.sourceSpan` when merging consecutive foster-parented text nodes before a `<table>`.
 - Fix `ParseError.message` throwing a null-check `TypeError` on `unexpected-EOF-after-attribute-value` tokenizer errors, and align tokenizer error codes `this-closing-flag-on-end-tag` -> `self-closing-flag-on-end-tag` and `expected-end-of-tag-but-got-eof` -> `expected-end-of-tag-name-but-got-eof` with `errorMessages`.
+- Fix `Node.remove` and `NodeList.remove` leaving a stale `parentNode`, `Node.insertBefore`, `NodeList.insert`, `insertAll` and `operator []=` using a shifted index when moving an earlier sibling, and `reparentChildren` emptying a node reparented to itself. Moving all children of another node (`append` of a `DocumentFragment`, `reparentChildren`, `innerHtml`) now runs in linear time.
 
 ## 0.15.7
 
