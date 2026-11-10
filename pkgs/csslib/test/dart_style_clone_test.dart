@@ -66,4 +66,14 @@ void main() {
       expect(style.priority, 42);
     }
   });
+
+  test('margin and padding clones keep a missing box edge', () {
+    final span = SourceFile.fromString('margin').span(0, 6);
+    final margin = MarginExpression.boxEdge(span, null)..priority = 3;
+    final padding = PaddingExpression.boxEdge(span, null)..priority = 4;
+    expect(margin.clone().box, isNull);
+    expect(margin.clone().priority, 3);
+    expect(padding.clone().box, isNull);
+    expect(padding.clone().priority, 4);
+  });
 }

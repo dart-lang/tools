@@ -1673,18 +1673,10 @@ class MarginExpression extends BoxExpression {
       MarginExpression x, MarginExpression y, SourceSpan? span)
       : super(x._styleType, span, BoxEdge.merge(x.box, y.box));
 
+  // BoxEdge is immutable, so the clone can share it (including a null box).
   @override
-  MarginExpression clone() {
-    final edge = box!;
-    final result = MarginExpression(
-      span,
-      top: edge.top,
-      right: edge.right,
-      bottom: edge.bottom,
-      left: edge.left,
-    );
-    return result..priority = priority;
-  }
+  MarginExpression clone() =>
+      MarginExpression.boxEdge(span, box)..priority = priority;
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitMarginExpression(this);
@@ -1815,18 +1807,10 @@ class PaddingExpression extends BoxExpression {
       : super(DartStyleExpression.paddingStyle, span,
             BoxEdge.merge(x.box, y.box));
 
+  // BoxEdge is immutable, so the clone can share it (including a null box).
   @override
-  PaddingExpression clone() {
-    final edge = box!;
-    final result = PaddingExpression(
-      span,
-      top: edge.top,
-      right: edge.right,
-      bottom: edge.bottom,
-      left: edge.left,
-    );
-    return result..priority = priority;
-  }
+  PaddingExpression clone() =>
+      PaddingExpression.boxEdge(span, box)..priority = priority;
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitPaddingExpression(this);
