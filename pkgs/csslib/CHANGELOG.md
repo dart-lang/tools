@@ -1,5 +1,7 @@
 ## 1.0.3-wip
 
+- Reduce allocations when tokenizing ordinary CSS identifiers; add a parsing
+  benchmark and regression coverage for Unicode and escaped identifiers.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
