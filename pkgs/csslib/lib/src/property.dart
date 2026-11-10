@@ -71,7 +71,11 @@ class Color implements _StyleProperty, ColorBase {
 
   /// Creates a new color from a CSS color string. For more information, see
   /// <https://developer.mozilla.org/en/CSS/color>.
-  Color.css(String color) : _argb = Color._convertCssToArgb(color)!;
+  ///
+  /// Throws a [FormatException] if [color] is not a supported CSS color.
+  Color.css(String color)
+      : _argb = Color._convertCssToArgb(color) ??
+            (throw FormatException('Unsupported CSS color', color));
 
   // TODO(jmesserly): I found the use of percents a bit suprising.
   /// HSL takes three values.  The [hueDegree] degree on the color wheel; '0' is
@@ -148,7 +152,7 @@ class Color implements _StyleProperty, ColorBase {
       // Get alpha blending value 0..255
       var alpha = Color.hexToInt(_argb.substring(nextIndex, nextIndex + 2));
       // Convert to value from 0..1
-      a = double.parse((alpha / 255).toStringAsPrecision(2));
+      a = alpha / 255;
       nextIndex += 2;
     }
     var r = Color.hexToInt(_argb.substring(nextIndex, nextIndex + 2));
@@ -499,17 +503,19 @@ class Rgba implements _StyleProperty, ColorBase {
         b = Color._clamp(blue, 0, 255),
         a = (alpha != null) ? Color._clamp(alpha, 0, 1) : alpha;
 
-  factory Rgba.fromString(String hexValue) =>
-      Color.css('#${Color._convertCssToArgb(hexValue)}').rgba;
+  factory Rgba.fromString(String cssColor) => Color.css(cssColor).rgba;
 
   factory Rgba.fromColor(Color color) => color.rgba;
 
-  factory Rgba.fromArgbValue(num value) => Rgba(
-        (value.toInt() & 0xff000000) >> 0x18, // a
-        (value.toInt() & 0xff0000) >> 0x10, // r
-        (value.toInt() & 0xff00) >> 8, // g
-        value.toInt() & 0xff,
-      ); // b
+  factory Rgba.fromArgbValue(num value) {
+    final argb = value.toInt();
+    return Rgba(
+      (argb >> 16) & 0xff,
+      (argb >> 8) & 0xff,
+      argb & 0xff,
+      ((argb >> 24) & 0xff) / 255,
+    );
+  }
 
   factory Rgba.fromHsla(Hsla hsla) {
     // Convert to Rgba.
@@ -587,16 +593,8 @@ class Rgba implements _StyleProperty, ColorBase {
   String toHexArgbString() => Color.convertToHexString(r, g, b, a);
 
   @override
-  int get argbValue {
-    var value = 0;
-    if (a != null) {
-      value = a!.toInt() << 0x18;
-    }
-    value += r << 0x10;
-    value += g << 0x08;
-    value += b;
-    return value;
-  }
+  int get argbValue =>
+      ((a == null ? 0 : (a! * 255).round()) << 24) | (r << 16) | (g << 8) | b;
 
   Color get color => Color.createRgba(r, g, b, a);
   Hsla get hsla => Hsla.fromRgba(this);
@@ -628,8 +626,8 @@ class Hsla implements _StyleProperty, ColorBase {
         _l = Color._clamp(lightness, 0, 1),
         _a = (alpha != null) ? Color._clamp(alpha, 0, 1) : alpha;
 
-  factory Hsla.fromString(String hexValue) {
-    var rgba = Color.css('#${Color._convertCssToArgb(hexValue)}').rgba;
+  factory Hsla.fromString(String cssColor) {
+    final rgba = Color.css(cssColor).rgba;
     return _createFromRgba(rgba.r, rgba.g, rgba.b, rgba.a);
   }
 
@@ -644,8 +642,8 @@ class Hsla implements _StyleProperty, ColorBase {
     var g = (value.toInt() & 0xff00) >> 8;
     var b = value.toInt() & 0xff;
 
-    // Convert alpha to 0..1 from (0..255).
-    a = double.parse((a / 255).toStringAsPrecision(2));
+    // Keep the full 8-bit alpha precision for lossless ARGB round-trips.
+    a /= 255;
 
     return _createFromRgba(r, g, b, a);
   }
@@ -670,7 +668,7 @@ class Hsla implements _StyleProperty, ColorBase {
     var maxRgb = math.max(r, math.max(g, b));
     l = (maxRgb + minRgb) / 2;
     if (l <= 0) {
-      return Hsla(0, 0, l); // Black;
+      return Hsla(0, 0, l, a); // Black;
     }
 
     var vm = maxRgb - minRgb;
@@ -678,7 +676,7 @@ class Hsla implements _StyleProperty, ColorBase {
     if (s > 0) {
       s /= (l < 0.5) ? (maxRgb + minRgb) : (2 - maxRgb - minRgb);
     } else {
-      return Hsla(0, 0, l); // White
+      return Hsla(0, 0, l, a); // White
     }
 
     num r2, g2, b2;
@@ -732,7 +730,7 @@ class Hsla implements _StyleProperty, ColorBase {
   @override
   int get argbValue => Color.hexToInt(toHexArgbString());
 
-  Color get color => Color.createHsla(_h, _s, _l, _a);
+  Color get color => Rgba.fromHsla(this).color;
   Rgba get rgba => Rgba.fromHsla(this);
 
   Hsla darker(num amount) => Hsla.fromRgba(Rgba.fromHsla(this).darker(amount));
