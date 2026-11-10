@@ -1,5 +1,7 @@
 ## 1.0.3-wip
 
+- Flatten nested top-level selectors with a single ordered pass instead of
+  repeated linear searches and list insertions on large stylesheets.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,

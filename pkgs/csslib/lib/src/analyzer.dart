@@ -410,16 +410,34 @@ class ExpandNestedSelectors extends Visitor {
   /// Replace the rule set that contains nested rules with the flatten rule
   /// sets.
   void flatten(StyleSheet styleSheet) {
-    // TODO(terry): Iterate over topLevels instead of _expansions it's already
-    //              a map (this maybe quadratic).
-    _expansions.forEach((RuleSet ruleSet, List<RuleSet> newRules) {
-      var index = styleSheet.topLevels.indexOf(ruleSet);
-      if (index == -1) {
-        // Check any @media directives for nested rules and replace them.
-        _MediaRulesReplacer.replace(styleSheet, ruleSet, newRules);
-      } else {
-        styleSheet.topLevels.insertAll(index + 1, newRules);
+    if (_expansions.isEmpty) return;
+
+    // Each indexOf + insertAll shifted the top-level list, making a sheet
+    // with many nested rules quadratic. Build the expanded order in one pass.
+    final topLevels = styleSheet.topLevels;
+    List<TreeNode>? expanded;
+    for (var index = 0; index < topLevels.length; index++) {
+      final rule = topLevels[index];
+      final generated = rule is RuleSet ? _expansions.remove(rule) : null;
+      if (generated == null) {
+        expanded?.add(rule);
+        continue;
       }
+
+      expanded ??= topLevels.sublist(0, index);
+      expanded
+        ..add(rule)
+        ..addAll(generated);
+    }
+    if (expanded != null) {
+      topLevels
+        ..clear()
+        ..addAll(expanded);
+    }
+
+    // Remaining entries occur inside @media or other nested at-rules.
+    _expansions.forEach((ruleSet, rules) {
+      _MediaRulesReplacer.replace(styleSheet, ruleSet, rules);
     });
     _expansions.clear();
   }
