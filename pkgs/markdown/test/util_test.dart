@@ -60,6 +60,24 @@ void main() {
       expect('  \tfoo'.indentation(), 4);
     });
   });
+
+  group('HTML escaping fast paths', () {
+    test('escapes special characters when requested', () {
+      expect(escapeHtml('<a>&'), '&lt;a&gt;&amp;');
+      expect(escapeHtml('"\''), '&quot;&#39;');
+      expect(escapeHtml('"\'', escapeApos: false), "&quot;'");
+      expect(escapeHtml("'", escapeApos: false), "'");
+    });
+
+    test('skips character-reference decoding without ampersands', () {
+      expect(
+        decodeHtmlCharacters('plain text \u05e9\u05dc\u05d5\u05dd'),
+        'plain text \u05e9\u05dc\u05d5\u05dd',
+      );
+      expect(decodeHtmlCharacters('&amp;'), '&');
+      expect(decodeHtmlCharacters('&#65;'), 'A');
+    });
+  });
 }
 
 extension on Line {

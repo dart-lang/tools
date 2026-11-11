@@ -1,5 +1,7 @@
 ## 7.4.1-wip
 
+* Reuse the HTML escape converters and skip HTML entity decoding for strings
+  without ampersands.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on
