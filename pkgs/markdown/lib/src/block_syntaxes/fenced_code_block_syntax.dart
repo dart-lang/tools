@@ -4,7 +4,7 @@
 
 import '../ast.dart';
 import '../block_parser.dart';
-import '../charcode.dart' show $space;
+import '../charcode.dart' show $space, $tab;
 import '../line.dart';
 import '../patterns.dart';
 import '../util.dart';
@@ -176,15 +176,20 @@ class _FenceMatch {
     }
 
     // We assume the info string is trimmed already.
-    final firstSpaceIndex = info.indexOf(' ');
-    if (firstSpaceIndex == -1) {
-      // If there is no space, the whole string is the language.
+    var separatorIndex = -1;
+    for (var i = 0; i < info.length; i++) {
+      final char = info.codeUnitAt(i);
+      if (char == $space || char == $tab) {
+        separatorIndex = i;
+        break;
+      }
+    }
+    if (separatorIndex == -1) {
       return (info, null);
     }
-
     return (
-      info.substring(0, firstSpaceIndex),
-      info.substring(firstSpaceIndex + 1),
+      info.substring(0, separatorIndex),
+      info.substring(separatorIndex + 1),
     );
   }
 
