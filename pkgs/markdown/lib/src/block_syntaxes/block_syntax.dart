@@ -7,6 +7,8 @@ import '../block_parser.dart';
 import '../line.dart';
 
 abstract class BlockSyntax {
+  static final _invalidAnchorChars = RegExp('[^a-z0-9 _-]');
+  static final _anchorWhitespace = RegExp(r'\s');
   const BlockSyntax();
 
   /// Gets the regex used to identify the beginning of this block, if any.
@@ -62,6 +64,6 @@ abstract class BlockSyntax {
       .textContent
       .toLowerCase()
       .trim()
-      .replaceAll(RegExp('[^a-z0-9 _-]'), '')
-      .replaceAll(RegExp(r'\s'), '-');
+      .replaceAll(_invalidAnchorChars, '')
+      .replaceAll(_anchorWhitespace, '-');
 }

@@ -48,6 +48,8 @@ class AutolinkExtensionSyntax extends InlineSyntax {
   AutolinkExtensionSyntax()
     : super('($_linkPattern)|($_emailPattern)', caseSensitive: false);
 
+  static final _trailingEntityPattern = RegExp(r'&[0-9a-z]+;$');
+
   static final _emailOnly = RegExp(
     _emailPattern,
     multiLine: true,
@@ -153,7 +155,7 @@ class AutolinkExtensionSyntax extends InlineSyntax {
     // If an autolink ends in a semicolon `;`, see
     // https://github.github.com/gfm/#example-627
     else if (text.endsWith(';')) {
-      final match = RegExp(r'&[0-9a-z]+;$').firstMatch(text);
+      final match = _trailingEntityPattern.firstMatch(text);
       if (match != null) {
         excludedLength = match.match.length;
       }

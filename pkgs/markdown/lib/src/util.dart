@@ -12,6 +12,7 @@ import 'patterns.dart';
 
 /// One or more whitespace, for compressing.
 final _oneOrMoreWhitespacePattern = RegExp('[ \n\r\t]+');
+final _percentEscapePattern = RegExp('%[0-9A-Fa-f]{2}');
 
 /// Escapes (`"`), (`<`), (`>`) and (`&`) characters.
 /// Escapes (`'`) if [escapeApos] is `true`.
@@ -59,10 +60,8 @@ String normalizeLinkDestination(String destination) {
   // URL-escaping should be left alone inside the destination
   // Refer: https://spec.commonmark.org/0.30/#example-502.
 
-  final regex = RegExp('%[0-9A-Fa-f]{2}');
-
   return destination.splitMapJoin(
-    regex,
+    _percentEscapePattern,
     onMatch: (m) => m.match,
     onNonMatch: (e) {
       try {

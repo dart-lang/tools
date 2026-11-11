@@ -1,5 +1,8 @@
 ## 7.4.1-wip
 
+* Reuse the regular expressions for task-list markers, heading anchors,
+  percent-encoded link destinations, and autolink entity suffixes instead of
+  creating them on every call, and match each task-list marker only once.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on

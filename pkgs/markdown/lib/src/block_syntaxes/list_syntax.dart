@@ -61,6 +61,8 @@ abstract class ListSyntax extends BlockSyntax {
 
   const ListSyntax();
 
+  static final _taskListItemPattern = RegExp(r'^ {0,3}\[([ xX])\][ \t]');
+
   /// A list of patterns that can start a valid block within a list item.
   static final blocksInList = [
     blockquotePattern,
@@ -90,20 +92,17 @@ abstract class ListSyntax extends BlockSyntax {
     }
 
     String parseTaskListItem(String text) {
-      final pattern = RegExp(r'^ {0,3}\[([ xX])\][ \t]');
-
-      if (taskListParserEnabled && pattern.hasMatch(text)) {
-        return text.replaceFirstMapped(pattern, (match) {
-          taskListItemState = match[1] == ' '
-              ? TaskListItemState.unchecked
-              : TaskListItemState.checked;
-
-          return '';
-        });
-      } else {
+      final match = taskListParserEnabled
+          ? _taskListItemPattern.firstMatch(text)
+          : null;
+      if (match == null) {
         taskListItemState = null;
         return text;
       }
+      taskListItemState = match[1] == ' '
+          ? TaskListItemState.unchecked
+          : TaskListItemState.checked;
+      return text.substring(match.end);
     }
 
     late Match? possibleMatch;
