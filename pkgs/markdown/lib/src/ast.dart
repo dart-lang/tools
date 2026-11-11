@@ -99,9 +99,27 @@ class Element implements Node {
   @override
   String get textContent {
     final children = this.children;
-    return children == null
-        ? ''
-        : children.map((child) => child.textContent).join();
+    if (children == null) return '';
+
+    final text = StringBuffer();
+    final stack = <Iterator<Node>>[children.iterator];
+    while (stack.isNotEmpty) {
+      final iterator = stack.last;
+      if (!iterator.moveNext()) {
+        stack.removeLast();
+        continue;
+      }
+      final child = iterator.current;
+      if (child is Element && child.runtimeType == Element) {
+        // Flatten ordinary nested elements without recursively materializing
+        // the text of every parent. Honor overridden getters on subclasses.
+        final nested = child.children;
+        if (nested != null) stack.add(nested.iterator);
+      } else {
+        text.write(child.textContent);
+      }
+    }
+    return text.toString();
   }
 }
 

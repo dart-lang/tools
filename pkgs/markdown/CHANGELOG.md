@@ -1,5 +1,9 @@
 ## 7.4.1-wip
 
+* Compute `Element.textContent` iteratively into a single buffer, so deeply
+  nested ASTs no longer overflow the stack and nested text is not copied at
+  every level. Overridden `textContent` getters on `Element` subclasses are
+  still used.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on
