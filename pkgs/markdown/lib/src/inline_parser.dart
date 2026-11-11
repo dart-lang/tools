@@ -118,10 +118,14 @@ class InlineParser {
     }
   }
 
+  static final Set<InlineSyntax> _builtInSyntaxes = {
+    ...ExtensionSet.gitHubWeb.inlineSyntaxes,
+    ...ExtensionSet.gitHubFlavored.inlineSyntaxes,
+    ...ExtensionSet.commonMark.inlineSyntaxes,
+  };
+
   static bool _isBuiltInExtension(InlineSyntax syntax) =>
-      ExtensionSet.gitHubWeb.inlineSyntaxes.contains(syntax) ||
-      ExtensionSet.gitHubFlavored.inlineSyntaxes.contains(syntax) ||
-      ExtensionSet.commonMark.inlineSyntaxes.contains(syntax);
+      _builtInSyntaxes.contains(syntax);
 
   List<Node> parse() {
     while (!isDone) {
@@ -484,7 +488,19 @@ class _PlainTextSyntax extends TextSyntax {
   final bool _allowSpaces;
   final bool _includeHebrew;
 
-  _PlainTextSyntax({required bool allowSpaces, required bool includeHebrew})
+  // The syntax is stateless, so one instance per configuration is shared to
+  // avoid compiling its pattern for every parser.
+  static final _instances = <(bool, bool), _PlainTextSyntax>{};
+
+  factory _PlainTextSyntax({
+    required bool allowSpaces,
+    required bool includeHebrew,
+  }) => _instances.putIfAbsent((
+    allowSpaces,
+    includeHebrew,
+  ), () => _PlainTextSyntax._(allowSpaces, includeHebrew));
+
+  _PlainTextSyntax._(bool allowSpaces, bool includeHebrew)
     : _allowSpaces = allowSpaces,
       _includeHebrew = includeHebrew,
       super(_plainTextPattern(allowSpaces, includeHebrew));
