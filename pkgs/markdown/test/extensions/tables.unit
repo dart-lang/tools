@@ -376,3 +376,32 @@ baz | bim
 </tr>
 </tbody>
 </table>
+>>> excess body cells are discarded, including escapes
+| a | b |
+|:--|--:|
+| 1 | 2 | 3 \| `4|5` | 6\
+| 7 |
+| 8 | 9 | |
+<<<
+<table>
+<thead>
+<tr>
+<th align="left">a</th>
+<th align="right">b</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">1</td>
+<td align="right">2</td>
+</tr>
+<tr>
+<td align="left">7</td>
+<td></td>
+</tr>
+<tr>
+<td align="left">8</td>
+<td align="right">9</td>
+</tr>
+</tbody>
+</table>

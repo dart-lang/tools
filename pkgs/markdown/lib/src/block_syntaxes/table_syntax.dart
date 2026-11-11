@@ -46,14 +46,11 @@ class TableSyntax extends BlockSyntax {
 
     final rows = <Node>[];
     while (!parser.isDone && !BlockSyntax.isAtBlockEnd(parser)) {
-      final row = _parseRow(parser, alignments, 'td');
+      final row = _parseRow(parser, alignments, 'td', maxCells: columnCount);
       final children = row.children!;
       while (children.length < columnCount) {
         // Insert synthetic empty cells.
         children.add(Element('td', []));
-      }
-      while (children.length > columnCount) {
-        children.removeLast();
       }
       rows.add(row);
     }
@@ -113,18 +110,36 @@ class TableSyntax extends BlockSyntax {
   Element _parseRow(
     BlockParser parser,
     List<String?> alignments,
-    String cellType,
-  ) {
+    String cellType, {
+    int? maxCells,
+  }) {
     final line = parser.current;
-    final cells = <String>[];
+    final row = <Node>[];
     var index = _walkPastOpeningPipe(line.content);
     final cellBuffer = StringBuffer();
+
+    void addCell() {
+      // Body cells beyond the delimiter row's width are discarded by GFM.
+      // Do not allocate text, AST nodes or extra lists for discarded cells.
+      if (maxCells != null && row.length >= maxCells) {
+        cellBuffer.clear();
+        return;
+      }
+      final cell = Element(cellType, [
+        UnparsedContent(cellBuffer.toString().trimRight()),
+      ]);
+      if (row.length < alignments.length) {
+        final alignment = alignments[row.length];
+        if (alignment != null) cell.attributes['align'] = alignment;
+      }
+      row.add(cell);
+      cellBuffer.clear();
+    }
 
     while (true) {
       if (index >= line.content.length) {
         // This row ended without a trailing pipe, which is fine.
-        cells.add(cellBuffer.toString().trimRight());
-        cellBuffer.clear();
+        addCell();
         break;
       }
       final ch = line.content.codeUnitAt(index);
@@ -134,8 +149,7 @@ class TableSyntax extends BlockSyntax {
           // looks like GitHub just allows the character as part of the text of
           // the last cell.
           cellBuffer.writeCharCode(ch);
-          cells.add(cellBuffer.toString().trimRight());
-          cellBuffer.clear();
+          addCell();
           break;
         }
         final escaped = line.content.codeUnitAt(index + 1);
@@ -154,8 +168,11 @@ class TableSyntax extends BlockSyntax {
         }
         index += 2;
       } else if (ch == $pipe) {
-        cells.add(cellBuffer.toString().trimRight());
-        cellBuffer.clear();
+        addCell();
+        if (maxCells != null && row.length >= maxCells) {
+          // Remaining cells cannot affect output, so skip them entirely.
+          break;
+        }
         // Walk forward past any whitespace which leads the next cell.
         index++;
         index = _walkPastWhitespace(line.content, index);
@@ -169,16 +186,7 @@ class TableSyntax extends BlockSyntax {
       }
     }
     parser.advance();
-    final row = [
-      for (final cell in cells) Element(cellType, [UnparsedContent(cell)]),
-    ];
-
-    for (var i = 0; i < row.length && i < alignments.length; i++) {
-      if (alignments[i] == null) continue;
-      row[i].attributes['align'] = '${alignments[i]}';
-    }
-
-    return Element('tr', <Node>[...row]);
+    return Element('tr', row);
   }
 
   /// Walks past whitespace in [line] starting at [index].
