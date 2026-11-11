@@ -22,8 +22,27 @@ void main() {
   late WebDriver webdriver;
   late SseHandler handler;
   late Process chromeDriver;
+  late Directory compiledJsDir;
 
   setUpAll(() async {
+    // Compile the web worker from the current package source so the test
+    // never runs against stale JavaScript.
+    compiledJsDir = await Directory.systemTemp.createTemp('sse_test_');
+    var compileResult = await Process.run(Platform.resolvedExecutable, [
+      'compile',
+      'js',
+      '--no-source-maps',
+      '-o',
+      '${compiledJsDir.path}/worker.dart.js',
+      'test/web/worker.dart',
+    ]);
+    if (compileResult.exitCode != 0) {
+      throw StateError(
+        'Failed to compile test/web/worker.dart:\n'
+        '${compileResult.stdout}\n${compileResult.stderr}',
+      );
+    }
+
     try {
       chromeDriver = await Process.start('chromedriver', [
         '--port=4444',
@@ -36,8 +55,9 @@ void main() {
     }
   });
 
-  tearDownAll(() {
+  tearDownAll(() async {
     chromeDriver.kill();
+    await compiledJsDir.delete(recursive: true);
   });
 
   group('SSE', () {
@@ -53,7 +73,8 @@ void main() {
               listDirectories: true,
               defaultDocument: 'index.html',
             ),
-          );
+          )
+          .add(createStaticHandler(compiledJsDir.path));
 
       server = await io.serve(cascade.handler, 'localhost', 0);
       var capabilities = Capabilities.chrome
@@ -72,6 +93,15 @@ void main() {
 
     test('can round trip messages', () async {
       await webdriver.get('http://localhost:${server.port}');
+      var connection = await handler.connections.next;
+      connection.sink.add('blah');
+      expect(await connection.stream.first, 'blah');
+    });
+
+    test('can round trip messages from a web worker', () async {
+      // Workers have no `window`, so this checks that the client doesn't
+      // depend on one (for example to send messages with fetch).
+      await webdriver.get('http://localhost:${server.port}/worker.html');
       var connection = await handler.connections.next;
       connection.sink.add('blah');
       expect(await connection.stream.first, 'blah');
