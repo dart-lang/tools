@@ -6,6 +6,7 @@
 
 import 'package:test/test.dart';
 import 'package:yaml/src/equality.dart';
+import 'package:yaml/yaml.dart';
 
 /// A leaf value that counts how many times its hash code is read.
 class _CountingLeaf {
@@ -23,6 +24,37 @@ class _CountingLeaf {
 
 void main() {
   group('deepHashCode', () {
+    test('hashes primitives and scalars', () {
+      expect(deepHashCode(null), null.hashCode);
+      expect(deepHashCode(123), 123.hashCode);
+      expect(deepHashCode('foo'), 'foo'.hashCode);
+      expect(deepHashCode(true), true.hashCode);
+
+      final scalar = loadYamlNode('hello') as YamlScalar;
+      expect(deepHashCode(scalar), 'hello'.hashCode);
+    });
+
+    test('hashes simple maps and lists', () {
+      final list1 = [1, 'two', 3.0];
+      final list2 = [1, 'two', 3.0];
+      expect(deepHashCode(list1), deepHashCode(list2));
+      expect(deepEquals(list1, list2), isTrue);
+
+      final map1 = {'a': 1, 'b': 2};
+      final map2 = {'b': 2, 'a': 1}; // Order should not matter for maps
+      expect(deepHashCode(map1), deepHashCode(map2));
+      expect(deepEquals(map1, map2), isTrue);
+    });
+
+    test('deepEqualsMap creates a working map', () {
+      final map = deepEqualsMap<Object, String>();
+      final key1 = ['a', 'b'];
+      final key2 = ['a', 'b'];
+      map[key1] = 'value';
+      expect(map[key2], 'value');
+      expect(map.containsKey(key2), isTrue);
+    });
+
     test('hashes a node shared many times only once', () {
       final leaf = _CountingLeaf();
       // Each level holds the level below twice, so the fully expanded

@@ -104,6 +104,10 @@ int deepHashCode(Object? obj) => _DeepHashCode().hash(obj);
 
 /// Computes [deepHashCode], tracking the parent objects used for loop detection
 /// and the hash codes already computed for shared collections.
+///
+/// While this works on generic Dart objects, it is specifically optimized for
+/// efficient hashing of parsed YAML structures where aliases produce shared
+/// subgraphs.
 class _DeepHashCode {
   final _parents = Set<Object?>.identity();
 
@@ -113,8 +117,8 @@ class _DeepHashCode {
   /// on the path it was reached by.
   final _hashes = Map<Object?, int>.identity();
 
-  /// Whether a loop has been seen inside the collection being hashed.
-  var _sawLoop = false;
+  /// Whether a loop has been detected inside the collection being hashed.
+  var _hasLoop = false;
 
   /// Returns a hash code for [value].
   int hash(Object? value) {
@@ -134,21 +138,21 @@ class _DeepHashCode {
     // at the same places, so they still hash alike; [deepEquals] tells apart
     // any unequal structures that collide.
     if (!_parents.add(value)) {
-      _sawLoop = true;
+      _hasLoop = true;
       return -1;
     }
-    var parentSawLoop = _sawLoop;
-    _sawLoop = false;
+    var parentHasLoop = _hasLoop;
+    _hasLoop = false;
     try {
       var result =
           value is Map ? _mapHash(value) : _iterableHash(value as Iterable);
-      if (!_sawLoop) {
+      if (!_hasLoop) {
         _hashes[value] = result;
       }
       return result;
     } finally {
       _parents.remove(value);
-      _sawLoop = _sawLoop || parentSawLoop;
+      _hasLoop = _hasLoop || parentHasLoop;
     }
   }
 
