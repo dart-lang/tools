@@ -166,35 +166,37 @@ extension StringExtensions on String {
   /// Removes up to [length] characters of leading whitespace.
   // The way of handling tabs: https://spec.commonmark.org/0.30/#tabs
   DedentedText dedent([int length = 4]) {
-    final whitespaceMatch = RegExp('^[ \t]{0,$length}').firstMatch(this);
-    const tabSize = 4;
+    // At most [length] characters are scanned; a tab may still count for up to
+    // four columns.
+    var whitespaceEnd = 0;
+    while (whitespaceEnd < length && whitespaceEnd < this.length) {
+      final char = codeUnitAt(whitespaceEnd);
+      if (char != $space && char != $tab) break;
+      whitespaceEnd++;
+    }
 
+    const tabSize = 4;
     int? tabRemaining;
     var start = 0;
-    final whitespaces = whitespaceMatch?[0];
-    if (whitespaces != null) {
-      var indentLength = 0;
-      for (; start < whitespaces.length; start++) {
-        final isTab = whitespaces[start] == '\t';
-        if (isTab) {
-          indentLength += tabSize;
-          tabRemaining = 4;
-        } else {
-          indentLength += 1;
-        }
-        if (indentLength >= length) {
-          if (tabRemaining != null) {
-            tabRemaining = indentLength - length;
-          }
-          if (indentLength == length || isTab) {
-            start += 1;
-          }
-          break;
-        }
-        if (tabRemaining != null) {
-          tabRemaining = 0;
-        }
+    var indentLength = 0;
+    for (; start < whitespaceEnd; start++) {
+      final isTab = codeUnitAt(start) == $tab;
+      if (isTab) {
+        indentLength += tabSize;
+        tabRemaining = 4;
+      } else {
+        indentLength += 1;
       }
+      if (indentLength >= length) {
+        if (tabRemaining != null) {
+          tabRemaining = indentLength - length;
+        }
+        if (indentLength == length || isTab) {
+          start++;
+        }
+        break;
+      }
+      if (tabRemaining != null) tabRemaining = 0;
     }
     return DedentedText(substring(start), tabRemaining);
   }
