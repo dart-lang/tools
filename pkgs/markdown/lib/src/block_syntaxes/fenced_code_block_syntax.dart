@@ -4,7 +4,7 @@
 
 import '../ast.dart';
 import '../block_parser.dart';
-import '../charcode.dart' show $space, $tab;
+import '../charcode.dart' show $space;
 import '../line.dart';
 import '../patterns.dart';
 import '../util.dart';
@@ -176,13 +176,10 @@ class _FenceMatch {
     }
 
     // We assume the info string is trimmed already.
-    var separatorIndex = -1;
-    for (var i = 0; i < info.length; i++) {
-      final char = info.codeUnitAt(i);
-      if (char == $space || char == $tab) {
-        separatorIndex = i;
-        break;
-      }
+    var separatorIndex = info.indexOf(' ');
+    final tabIndex = info.indexOf('\t');
+    if (separatorIndex == -1 || (tabIndex != -1 && tabIndex < separatorIndex)) {
+      separatorIndex = tabIndex;
     }
     if (separatorIndex == -1) {
       return (info, null);
