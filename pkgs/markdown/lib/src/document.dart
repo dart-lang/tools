@@ -171,13 +171,13 @@ class Document {
     if (footnotes.isNotEmpty) {
       // Sort footnotes by appearing order.
       final ordinal = {
-        for (var i = 0; i < footnoteLabels.length; i++)
-          'fn-${footnoteLabels[i]}': i,
+        for (var i = 0; i < footnoteLabels.length; i++) footnoteLabels[i]: i,
       };
       footnotes.sort((l, r) {
-        final idl = l.attributes['id']?.toLowerCase() ?? '';
-        final idr = r.attributes['id']?.toLowerCase() ?? '';
-        return (ordinal[idl] ?? 0) - (ordinal[idr] ?? 0);
+        // HTML IDs are URI-encoded, but the reference order uses raw labels.
+        final labelL = l.footnoteLabel?.toLowerCase();
+        final labelR = r.footnoteLabel?.toLowerCase();
+        return (ordinal[labelL] ?? 0) - (ordinal[labelR] ?? 0);
       });
       final list = Element('ol', <Node>[...footnotes]);
 

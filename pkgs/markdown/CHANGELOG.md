@@ -1,5 +1,8 @@
 ## 7.4.1-wip
 
+* Sort footnote definitions by their case-insensitive labels rather than
+  their URI-encoded HTML IDs, so Unicode and escaped labels keep
+  first-reference order.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on
