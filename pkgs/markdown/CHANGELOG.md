@@ -1,5 +1,9 @@
 ## 7.4.1-wip
 
+* Reduce allocations when rendering single-line text nodes in `HtmlRenderer`.
+* Fix a reused `HtmlRenderer` trimming the leading whitespace of the first
+  text node of a new render after a previous render ended with `p`, `li` or
+  `br`.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on

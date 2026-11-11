@@ -55,7 +55,7 @@ String markdownToHtml(
 String renderToHtml(List<Node> nodes, {bool enableTagfilter = false}) =>
     HtmlRenderer(enableTagfilter: enableTagfilter).render(nodes);
 
-const _blockTags = [
+const _blockTags = {
   'blockquote',
   'h1',
   'h2',
@@ -91,7 +91,7 @@ const _blockTags = [
   'th',
   'tr',
   'td',
-];
+};
 
 /// Translates a parsed AST to HTML.
 class HtmlRenderer implements NodeVisitor {
@@ -109,6 +109,8 @@ class HtmlRenderer implements NodeVisitor {
     buffer = StringBuffer();
     uniqueIds = <String>{};
     _lastSuffix.clear();
+    _elementStack.clear();
+    _lastVisitedTag = null;
 
     for (final node in nodes) {
       node.accept(this);
@@ -124,13 +126,19 @@ class HtmlRenderer implements NodeVisitor {
     if (_tagfilterEnabled) {
       content = _filterTags(content);
     }
-    if (const ['br', 'p', 'li'].contains(_lastVisitedTag)) {
-      final lines = LineSplitter.split(content);
-      content = content.contains('<pre>')
-          ? lines.join('\n')
-          : lines.map((line) => line.trimLeft()).join('\n');
-      if (text.textContent.endsWith('\n')) {
-        content = '$content\n';
+    if (const {'br', 'p', 'li'}.contains(_lastVisitedTag)) {
+      if (!content.contains('\n') && !content.contains('\r')) {
+        // Most text nodes are a single line. Avoid splitting, mapping and
+        // joining an iterable for the common case.
+        if (!content.contains('<pre>')) content = content.trimLeft();
+      } else {
+        final lines = LineSplitter.split(content);
+        content = content.contains('<pre>')
+            ? lines.join('\n')
+            : lines.map((line) => line.trimLeft()).join('\n');
+        if (text.textContent.endsWith('\n')) {
+          content = '$content\n';
+        }
       }
     }
     buffer.write(content);
