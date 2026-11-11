@@ -1,5 +1,8 @@
 ## 7.4.1-wip
 
+* Speed up parsing of plain Hebrew text (including niqqud and cantillation)
+  when only built-in inline syntaxes are in use, and avoid a predicate
+  callback on each inline parsing step.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on

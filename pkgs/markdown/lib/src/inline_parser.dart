@@ -7,6 +7,7 @@ import 'dart:collection';
 import 'ast.dart';
 import 'charcode.dart';
 import 'document.dart';
+import 'extension_set.dart';
 import 'inline_syntaxes/autolink_syntax.dart';
 import 'inline_syntaxes/code_syntax.dart';
 import 'inline_syntaxes/decode_html_syntax.dart';
@@ -87,7 +88,12 @@ class InlineParser {
     // retries from the next position, giving quadratic behavior on long
     // unbroken runs. Allowing the run to end at `$` makes it match in one step.
     syntaxes.add(
-      _PlainTextSyntax(allowSpaces: !document.hasCustomInlineSyntaxes),
+      _PlainTextSyntax(
+        allowSpaces: !document.hasCustomInlineSyntaxes,
+        // The built-in syntaxes never start at a Hebrew character, but a
+        // custom one might, so it must still be tried at each of them.
+        includeHebrew: document.inlineSyntaxes.every(_isBuiltInExtension),
+      ),
     );
 
     if (document.withDefaultInlineSyntaxes) {
@@ -112,6 +118,11 @@ class InlineParser {
     }
   }
 
+  static bool _isBuiltInExtension(InlineSyntax syntax) =>
+      ExtensionSet.gitHubWeb.inlineSyntaxes.contains(syntax) ||
+      ExtensionSet.gitHubFlavored.inlineSyntaxes.contains(syntax) ||
+      ExtensionSet.commonMark.inlineSyntaxes.contains(syntax);
+
   List<Node> parse() {
     while (!isDone) {
       // A right bracket (']') is special. Hitting this character triggers the
@@ -123,11 +134,16 @@ class InlineParser {
         continue;
       }
 
-      // See if the current text matches any defined Markdown syntax.
-      if (syntaxes.any((syntax) => syntax.tryMatch(this))) continue;
-
-      // If we got here, it's just text.
-      advanceBy(1);
+      // See if the current text matches any defined Markdown syntax. Avoid
+      // allocating a predicate closure for every ordinary text character.
+      var matched = false;
+      for (final syntax in syntaxes) {
+        if (syntax.tryMatch(this)) {
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) advanceBy(1);
     }
 
     // Write any trailing text content to a Text node.
@@ -452,15 +468,26 @@ class InlineParser {
 }
 
 class _PlainTextSyntax extends TextSyntax {
-  final bool _allowSpaces;
+  static const _hebrewWithSpaces =
+      r'[ \tA-Za-z0-9\u0590-\u05FF]*[A-Za-z0-9\u0590-\u05FF](?=\s|$)';
+  static const _hebrewWithoutSpaces = r'[A-Za-z0-9\u0590-\u05FF]+(?=\s|$)';
+  static const _asciiWithSpaces = r'[ \tA-Za-z0-9]*[A-Za-z0-9](?=\s|$)';
+  static const _asciiWithoutSpaces = r'[A-Za-z0-9]+(?=\s|$)';
 
-  _PlainTextSyntax({required bool allowSpaces})
+  static String _plainTextPattern(bool allowSpaces, bool includeHebrew) {
+    if (includeHebrew) {
+      return allowSpaces ? _hebrewWithSpaces : _hebrewWithoutSpaces;
+    }
+    return allowSpaces ? _asciiWithSpaces : _asciiWithoutSpaces;
+  }
+
+  final bool _allowSpaces;
+  final bool _includeHebrew;
+
+  _PlainTextSyntax({required bool allowSpaces, required bool includeHebrew})
     : _allowSpaces = allowSpaces,
-      super(
-        allowSpaces
-            ? r'[ \tA-Za-z0-9]*[A-Za-z0-9](?=\s|$)'
-            : r'[A-Za-z0-9]+(?=\s|$)',
-      );
+      _includeHebrew = includeHebrew,
+      super(_plainTextPattern(allowSpaces, includeHebrew));
 
   @override
   bool tryMatch(InlineParser parser, [int? startMatchPos]) {
@@ -472,6 +499,7 @@ class _PlainTextSyntax extends TextSyntax {
     if (pos > parser.start) {
       final prev = parser.charAt(pos - 1);
       if (_isAlphaNum(prev) ||
+          (_includeHebrew && prev >= 0x0590 && prev <= 0x05FF) ||
           (_allowSpaces && (prev == $space || prev == $tab))) {
         return false;
       }

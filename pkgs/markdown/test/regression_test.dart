@@ -399,6 +399,44 @@ a <!--
     expect('<blockquote>'.allMatches(html).length, 128);
     expect(html, contains('<blockquote>&gt; a\n</blockquote>'));
   });
+
+  group('Hebrew plain-text accelerator', () {
+    test('preserves nikud, punctuation and nested inline markup', () {
+      expect(
+        markdownToHtml('שלום **עוֹלָם** ו-*בדיקה*'),
+        '<p>שלום <strong>עוֹלָם</strong> ו-<em>בדיקה</em></p>\n',
+      );
+    });
+
+    test('handles long Hebrew text without losing characters', () {
+      final run = 'אבגדהוזחטיכלמנסעפצקרשת' * 1000;
+      expect(markdownToHtml('$run\n'), '<p>$run</p>\n');
+    });
+
+    test('GitHubWeb accelerates Hebrew using built-in syntaxes', () {
+      final html = markdownToHtml(
+        'שלום **עולם** :smile: וגם <https://example.com>',
+        extensionSet: ExtensionSet.gitHubWeb,
+      );
+      expect(html, contains('שלום <strong>עולם</strong>'));
+      expect(html, contains('https://example.com'));
+    });
+
+    test('unknown extension sets do not bypass custom Hebrew triggers', () {
+      final customSet = ExtensionSet([], [_InlineHebrewMarker()]);
+      expect(
+        markdownToHtml('אבג', extensionSet: customSet),
+        '<p>א<strong>ב</strong>ג</p>\n',
+      );
+    });
+
+    test('custom syntax inside Hebrew word is still evaluated', () {
+      expect(
+        markdownToHtml('אבג', inlineSyntaxes: [_InlineHebrewMarker()]),
+        '<p>א<strong>ב</strong>ג</p>\n',
+      );
+    });
+  });
 }
 
 class _CountingLine extends Line {
@@ -410,5 +448,15 @@ class _CountingLine extends Line {
   String get content {
     reads++;
     return super.content;
+  }
+}
+
+class _InlineHebrewMarker extends InlineSyntax {
+  _InlineHebrewMarker() : super('ב');
+
+  @override
+  bool onMatch(InlineParser parser, Match match) {
+    parser.addNode(Element.text('strong', 'ב'));
+    return true;
   }
 }
