@@ -400,6 +400,75 @@ void main() {
         'true',
       );
     });
+
+    test('an existing DASH__TOOL wins over fallbackRootTool', () {
+      expect(
+        getEnvironmentIn(
+          {envVar: 'flutter-tool'},
+          currentTool: DashTool.dartTool,
+          fallbackRootTool: DashTool.intellijPlugins,
+        )[envVar],
+        'flutter-tool',
+      );
+    });
+
+    test('uses fallbackRootTool when DASH__TOOL is unset', () {
+      expect(
+        getEnvironmentIn(
+          {},
+          currentTool: DashTool.analysisServer,
+          fallbackRootTool: DashTool.intellijPlugins,
+        )[envVar],
+        'intellij-plugins',
+      );
+    });
+
+    test('uses fallbackRootTool when DASH__TOOL names a shared component', () {
+      expect(
+        getEnvironmentIn(
+          {envVar: 'analysis-server'},
+          currentTool: DashTool.analysisServer,
+          fallbackRootTool: DashTool.intellijPlugins,
+        )[envVar],
+        'intellij-plugins',
+      );
+    });
+
+    test('ignores a shared-component fallbackRootTool', () {
+      // A shared component can't be a root tool, so the fallback is ignored
+      // and the tool's own root resolution applies.
+      expect(
+        getEnvironmentIn(
+          {},
+          currentTool: DashTool.dartTool,
+          fallbackRootTool: DashTool.analysisServer,
+        )[envVar],
+        'dart-tool',
+      );
+      // With no root tool anywhere, DASH__TOOL is left out.
+      expect(
+        getEnvironmentIn(
+          {},
+          currentTool: DashTool.dartMcpServer,
+          fallbackRootTool: DashTool.analysisServer,
+        ).containsKey(envVar),
+        isFalse,
+      );
+    });
+
+    test('resolves as before when no fallbackRootTool is given', () {
+      expect(
+        getEnvironmentIn({}, currentTool: DashTool.dartTool)[envVar],
+        'dart-tool',
+      );
+      expect(
+        getEnvironmentIn(
+          {},
+          currentTool: DashTool.dartMcpServer,
+        ).containsKey(envVar),
+        isFalse,
+      );
+    });
   });
 
   group('Consent keyed on root tool', () {
