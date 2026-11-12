@@ -165,6 +165,70 @@ void main() {
         async.elapse(const Duration(seconds: 6));
       });
     });
+
+    test('times out repeatedly while requests remain deadlocked', () {
+      FakeAsync().run((async) {
+        var pool = Pool(50, timeout: const Duration(seconds: 5));
+        for (var i = 0; i < 50; i++) {
+          expect(pool.request(), completes);
+        }
+
+        // Each new pending request must time out again
+        // (https://github.com/dart-lang/tools/issues/2739).
+        for (var i = 0; i < 3; i++) {
+          var timedOut = false;
+          unawaited(pool.request().then<void>((_) {
+            fail('request unexpectedly allocated');
+          }, onError: (Object error, StackTrace stack) {
+            expect(error, isA<TimeoutException>());
+            timedOut = true;
+          }));
+
+          async.elapse(const Duration(seconds: 6));
+          expect(timedOut, isTrue);
+        }
+      });
+    });
+
+    test('a pending request can be allocated after an earlier timeout', () {
+      FakeAsync().run((async) {
+        var pool = Pool(50, timeout: const Duration(seconds: 5));
+        var resources = <PoolResource>[];
+        for (var i = 0; i < 50; i++) {
+          pool.request().then(resources.add);
+        }
+
+        // The first deadlocked pending request times out.
+        var timedOut = false;
+        unawaited(pool.request().then<void>((_) {
+          fail('request unexpectedly allocated');
+        }, onError: (Object error, StackTrace stack) {
+          expect(error, isA<TimeoutException>());
+          timedOut = true;
+        }));
+
+        async.elapse(const Duration(seconds: 6));
+        expect(timedOut, isTrue);
+
+        // A later pending request is still governed by the timer, but is
+        // allocated normally once a resource is released.
+        var allocated = false;
+        unawaited(pool.request().then<void>((_) {
+          allocated = true;
+        }, onError: (Object error, StackTrace stack) {
+          fail('request unexpectedly errored: $error');
+        }));
+
+        async.elapse(const Duration(seconds: 3));
+        expect(allocated, isFalse);
+
+        Future<void>.delayed(const Duration(seconds: 1))
+            .then((_) => resources.first.release());
+
+        async.elapse(const Duration(seconds: 3));
+        expect(allocated, isTrue);
+      });
+    });
   });
 
   group('allowRelease()', () {
