@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'patterns.dart';
-
 /// A [Line] is a sequence of zero or more characters other than line feed
 /// (`U+000A`) or carriage return (`U+000D`), followed by a line ending or by
 /// the end of file.
@@ -40,6 +38,13 @@ class Line {
   // https://spec.commonmark.org/0.30/#blank-line
   final bool isBlankLine;
 
-  Line(this.content, {this.tabRemaining})
-    : isBlankLine = emptyPattern.hasMatch(content);
+  Line(this.content, {this.tabRemaining}) : isBlankLine = _isBlank(content);
+
+  static bool _isBlank(String content) {
+    for (var i = 0; i < content.length; i++) {
+      final char = content.codeUnitAt(i);
+      if (char != 0x20 && char != 0x09) return false;
+    }
+    return true;
+  }
 }
