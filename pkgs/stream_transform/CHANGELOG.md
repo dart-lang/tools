@@ -1,11 +1,11 @@
-## 2.1.3-wip
+## 2.2.0-wip
 
-- Fix `startWith` dropping events emitted by a broadcast stream between
-  listening to the result and delivery of the initial value. On a broadcast
-  stream the result is now a broadcast stream where every listener receives the
-  initial value followed by the source's events from the time it listened.
-  A listener which cancels and listens again receives the initial value again.
-  `startWithMany`, `startWithStream` and `followedBy` are unchanged.
+- Fix `startWith` and `startWithMany` dropping events emitted by a broadcast
+  stream between listening to the result and delivery of the initial values.
+  On a broadcast stream the result is now a broadcast stream where every
+  listener receives the initial values followed by the source's events from the
+  time it listened. A listener which cancels and listens again receives the
+  initial values again. `startWithStream` and `followedBy` are unchanged.
 
 ## 2.1.2
 
