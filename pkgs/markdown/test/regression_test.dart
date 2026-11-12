@@ -422,6 +422,15 @@ a <!--
     expect('<blockquote>'.allMatches(html).length, 128);
     expect(html, contains('<blockquote>&gt; a\n</blockquote>'));
   });
+
+  test('table synthetic empty cells are capped at 0x40000', () {
+    final html = markdownToHtml(
+      '${'h|' * 1000}\n${'-|' * 1000}\n${'x\n' * 1000}',
+      extensionSet: ExtensionSet.gitHubFlavored,
+    );
+    expect('<td>'.allMatches(html).length, lessThan(300000));
+    expect(html, endsWith('x</p>\n'));
+  });
 }
 
 class _CountingLine extends Line {
