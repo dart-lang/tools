@@ -1,3 +1,8 @@
+## 2.0.6-wip
+
+* Fix `Credentials.fromJson` throwing a `TypeError` when `scopes` is missing or
+  `null`.
+
 ## 2.0.5
 
 * Make underlying HTTP client non-nullable to inherit its close behavior.
