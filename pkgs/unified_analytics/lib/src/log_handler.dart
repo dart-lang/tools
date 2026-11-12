@@ -62,7 +62,7 @@ class LogFileStats {
   final Map<String, int> toolCount;
 
   /// The map containing all of the events in the file along with
-  /// how many times they have occured.
+  /// how many times they have occurred.
   ///
   /// ```
   /// {
