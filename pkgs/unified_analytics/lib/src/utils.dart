@@ -128,7 +128,7 @@ Map<String, Object?> generateRequestBody({
 ///
 /// [fallbackRootTool] is used as the root tool when `DASH__TOOL` doesn't name
 /// a valid one, resolved the same way as in the `Analytics` factories and
-/// [resolveRootTool]: `DASH__TOOL`, then [fallbackRootTool], then
+/// `resolveRootTool`: `DASH__TOOL`, then [fallbackRootTool], then
 /// [currentTool]. A shared component can't be a root tool and is ignored.
 ///
 /// Unlike the `Analytics` factories, passing a shared component as

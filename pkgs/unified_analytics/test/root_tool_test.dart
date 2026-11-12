@@ -423,10 +423,10 @@ void main() {
       );
     });
 
-    test('uses fallbackRootTool when DASH__TOOL is invalid', () {
+    test('uses fallbackRootTool when DASH__TOOL names a shared component', () {
       expect(
         getEnvironmentIn(
-          {envVar: 'not-a-tool'},
+          {envVar: 'analysis-server'},
           currentTool: DashTool.analysisServer,
           fallbackRootTool: DashTool.intellijPlugins,
         )[envVar],

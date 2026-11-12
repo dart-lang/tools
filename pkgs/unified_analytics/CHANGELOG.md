@@ -1,3 +1,9 @@
+## 8.5.0-wip
+
+- Added a `fallbackRootTool` parameter to `getEnvironment()` so callers can
+  pass a root tool to fall back on (for example the IDE that spawned the
+  process) instead of setting `DASH__TOOL` themselves.
+
 ## 8.4.0
 
 - Added `DashToolKind` and `DashTool.kind` to distinguish top-level tools from
@@ -10,9 +16,6 @@
 - Deprecated `topLevelTool()`. Tools no longer need to read `DASH__TOOL`
   themselves: pass your own tool to `Analytics`, which resolves the root tool,
   and use `getEnvironment()` for child processes.
-- Added a `fallbackRootTool` parameter to `getEnvironment()` so callers can
-  pass a root tool to fall back on (for example the IDE that spawned the
-  process) instead of setting `DASH__TOOL` themselves.
 - `Analytics` now resolves the root tool (the user's entry point) from
   `DASH__TOOL`, then an optional new `fallbackRootTool` parameter on
   `Analytics` and `Analytics.development`, then the tool itself. Only tools,
