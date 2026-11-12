@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@TestOn('vm')
+library;
+
 import 'dart:io';
 
 import 'package:boring/src/hook_helpers/build_options.dart';
@@ -167,6 +170,111 @@ void main() {
         ),
       );
     });
+  });
+
+  group('downloadBytes', () {
+    test(
+      'retries transient 5xx and connection drops before succeeding',
+      () async {
+        var requests = 0;
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        addTearDown(() => server.close(force: true));
+        server.listen((request) async {
+          requests++;
+          switch (requests) {
+            case 1:
+              request.response.statusCode = HttpStatus.gatewayTimeout;
+              await request.response.close();
+            case 2:
+              final socket = await request.response.detachSocket(
+                writeHeaders: false,
+              );
+              socket.destroy();
+            default:
+              request.response.add(const [1, 2, 3, 4]);
+              await request.response.close();
+          }
+        });
+
+        final delays = <Duration>[];
+        final bytes = await downloadBytes(
+          Uri.parse('http://${server.address.host}:${server.port}/asset.bin'),
+          delay: (duration) async => delays.add(duration),
+        );
+
+        expect(bytes, [1, 2, 3, 4]);
+        expect(requests, 3);
+        expect(delays, [
+          const Duration(seconds: 1),
+          const Duration(seconds: 2),
+        ]);
+      },
+    );
+
+    test('does not retry permanent 404 responses', () async {
+      var requests = 0;
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() => server.close(force: true));
+      server.listen((request) async {
+        requests++;
+        request.response.statusCode = HttpStatus.notFound;
+        await request.response.close();
+      });
+
+      final delays = <Duration>[];
+      await expectLater(
+        () => downloadBytes(
+          Uri.parse('http://${server.address.host}:${server.port}/missing.bin'),
+          delay: (duration) async => delays.add(duration),
+        ),
+        throwsA(
+          isA<BuildError>().having(
+            (e) => e.message,
+            'message',
+            contains('HTTP 404'),
+          ),
+        ),
+      );
+
+      expect(requests, 1);
+      expect(delays, isEmpty);
+    });
+
+    test(
+      'throws BuildError after exhausting retries on persistent 504',
+      () async {
+        var requests = 0;
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        addTearDown(() => server.close(force: true));
+        server.listen((request) async {
+          requests++;
+          request.response.statusCode = HttpStatus.gatewayTimeout;
+          await request.response.close();
+        });
+
+        final delays = <Duration>[];
+        await expectLater(
+          () => downloadBytes(
+            Uri.parse('http://${server.address.host}:${server.port}/flaky.bin'),
+            maxAttempts: 3,
+            delay: (duration) async => delays.add(duration),
+          ),
+          throwsA(
+            isA<BuildError>().having(
+              (e) => e.message,
+              'message',
+              allOf(contains('HTTP 504'), contains('buildMode: checkout')),
+            ),
+          ),
+        );
+
+        expect(requests, 3);
+        expect(delays, [
+          const Duration(seconds: 1),
+          const Duration(seconds: 2),
+        ]);
+      },
+    );
   });
 }
 

@@ -9,6 +9,7 @@ import 'dart:typed_data' show BytesBuilder;
 import 'package:code_assets/code_assets.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:hooks/hooks.dart';
+import 'package:meta/meta.dart' show visibleForTesting;
 
 import 'hashes.dart' show fileHashes, releaseRepository, releaseTag;
 import 'targets.dart'
@@ -19,6 +20,9 @@ const _connectionTimeout = Duration(seconds: 30);
 
 /// How long to wait for the whole library to download.
 const _downloadTimeout = Duration(minutes: 5);
+
+/// Default number of attempts (initial try + retries) for transient failures.
+const _defaultMaxAttempts = 4;
 
 const _checkoutHint =
     'To build boring locally from source instead, set '
@@ -83,7 +87,7 @@ Future<Uri> fetchPrebuiltLibrary(
   );
   stdout.writeln('boring: fetching prebuilt binary from $binaryUrl...');
 
-  final bytes = await _download(binaryUrl);
+  final bytes = await downloadBytes(binaryUrl);
   final actualHash = sha256.convert(bytes).toString();
 
   if (actualHash != expectedHash) {
@@ -103,42 +107,87 @@ Future<Uri> fetchPrebuiltLibrary(
   return cachedFile.uri;
 }
 
-/// Downloads [url], or throws a [BuildError] if the download fails.
+/// Downloads [url] with exponential-backoff retries on transient HTTP (`408`,
+/// `429`, `5xx`), network, or timeout errors, or throws a [BuildError] if the
+/// download fails.
 ///
 /// Honors the `HTTPS_PROXY` family of environment variables, which the hooks
 /// runner passes through to hooks, and gives up on a connection that hangs.
-Future<List<int>> _download(Uri url) async {
+@visibleForTesting
+Future<List<int>> downloadBytes(
+  Uri url, {
+  int maxAttempts = _defaultMaxAttempts,
+  Future<void> Function(Duration) delay = Future<void>.delayed,
+}) async {
+  assert(maxAttempts >= 1, 'maxAttempts must be at least 1.');
   final client = HttpClient()
     ..connectionTimeout = _connectionTimeout
     ..findProxy = HttpClient.findProxyFromEnvironment;
   try {
+    for (var attempt = 1; ; attempt++) {
+      try {
+        return await _downloadOnce(client, url);
+      } on _RetryableDownloadFailure catch (failure) {
+        if (attempt >= maxAttempts) {
+          throw BuildError(message: '${failure.message}\n$_checkoutHint');
+        }
+        final backoff = Duration(seconds: 1 << (attempt - 1));
+        stdout.writeln(
+          'boring: ${failure.summary}; retrying in ${backoff.inSeconds}s '
+          '(attempt ${attempt + 1} of $maxAttempts)...',
+        );
+        await delay(backoff);
+      }
+    }
+  } finally {
+    client.close(force: true);
+  }
+}
+
+Future<List<int>> _downloadOnce(HttpClient client, Uri url) async {
+  try {
     final request = await client.getUrl(url).timeout(_connectionTimeout);
     final response = await request.close().timeout(_connectionTimeout);
-    if (response.statusCode != HttpStatus.ok) {
-      await response.drain<void>();
-      throw BuildError(
-        message:
-            'Failed to download prebuilt boring binary from $url '
-            '(HTTP ${response.statusCode}).\n'
-            '$_checkoutHint',
-      );
+    final statusCode = response.statusCode;
+    if (statusCode != HttpStatus.ok) {
+      await response.drain<void>().timeout(_connectionTimeout);
+      final message =
+          'Failed to download prebuilt boring binary from $url '
+          '(HTTP $statusCode).';
+      final retryable =
+          statusCode == HttpStatus.requestTimeout ||
+          statusCode == HttpStatus.tooManyRequests ||
+          (statusCode >= 500 && statusCode < 600);
+      if (retryable) {
+        throw _RetryableDownloadFailure(
+          message: message,
+          summary: 'HTTP $statusCode from $url',
+        );
+      }
+      throw BuildError(message: '$message\n$_checkoutHint');
     }
     final builder = BytesBuilder(copy: false);
     await response.forEach(builder.add).timeout(_downloadTimeout);
     return builder.takeBytes();
   } on IOException catch (e) {
-    throw BuildError(
-      message:
-          'Network error downloading prebuilt boring binary from $url: $e\n'
-          '$_checkoutHint',
+    throw _RetryableDownloadFailure(
+      message: 'Network error downloading prebuilt boring binary from $url: $e',
+      summary: 'network error from $url ($e)',
     );
   } on TimeoutException catch (e) {
-    throw BuildError(
-      message:
-          'Timed out downloading prebuilt boring binary from $url: $e\n'
-          '$_checkoutHint',
+    throw _RetryableDownloadFailure(
+      message: 'Timed out downloading prebuilt boring binary from $url: $e',
+      summary: 'timeout from $url',
     );
-  } finally {
-    client.close(force: true);
   }
+}
+
+final class _RetryableDownloadFailure implements Exception {
+  final String message;
+  final String summary;
+
+  const _RetryableDownloadFailure({
+    required this.message,
+    required this.summary,
+  });
 }
