@@ -19,36 +19,32 @@
 /// [1]: https://html.spec.whatwg.org/multipage/parsing.html#serializing-html-fragments
 /// [2]: https://html.spec.whatwg.org/multipage/parsing.html#escapingString
 String htmlSerializeEscape(String text, {bool attributeMode = false}) {
-  // TODO(jmesserly): is it faster to build up a list of codepoints?
-  // StringBuffer seems cleaner assuming Dart can unbox 1-char strings.
+  // Copy unchanged runs at once instead of one-character strings.
   StringBuffer? result;
+  var last = 0;
   for (var i = 0; i < text.length; i++) {
-    final ch = text[i];
-    String? replace;
-    switch (ch) {
-      case '&':
-        replace = '&amp;';
-        break;
-      case '\u00A0' /*NO-BREAK SPACE*/ :
-        replace = '&nbsp;';
-        break;
-      case '"':
-        if (attributeMode) replace = '&quot;';
-        break;
-      case '<':
-        replace = '&lt;';
-        break;
-      case '>':
-        replace = '&gt;';
-        break;
+    String? replacement;
+    switch (text.codeUnitAt(i)) {
+      case 0x26: // &
+        replacement = '&amp;';
+      case 0xA0: // NO-BREAK SPACE
+        replacement = '&nbsp;';
+      case 0x22: // "
+        if (attributeMode) replacement = '&quot;';
+      case 0x3C: // <
+        replacement = '&lt;';
+      case 0x3E: // >
+        replacement = '&gt;';
     }
-    if (replace != null) {
-      result ??= StringBuffer(text.substring(0, i));
-      result.write(replace);
-    } else if (result != null) {
-      result.write(ch);
+    if (replacement != null) {
+      result ??= StringBuffer();
+      result.write(text.substring(last, i));
+      result.write(replacement);
+      last = i + 1;
     }
   }
 
-  return result != null ? result.toString() : text;
+  if (result == null) return text;
+  result.write(text.substring(last));
+  return result.toString();
 }
