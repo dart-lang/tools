@@ -82,104 +82,33 @@ extension Concatenate<T> on Stream<T> {
   /// Emits [initial] before any values or errors from the this stream.
   ///
   /// If this stream is a broadcast stream the result will be as well.
-  /// If this stream is a broadcast stream, it is listened to as soon as the
-  /// result is listened to. Events it emits before [initial] has been emitted
-  /// are held back and emitted after [initial].
-  /// [initial] is emitted once, to the listeners of the result at the time it
-  /// is due. A listener added later, or one which listens again after
-  /// canceling, does not receive it.
+  /// Every listener of the result receives [initial], followed by the events
+  /// this stream emits from the moment that listener started listening. A
+  /// listener which cancels and listens again receives [initial] again.
   Stream<T> startWith(T initial) => isBroadcast
-      ? _startWithBroadcast([initial])
+      ? Stream<T>.multi((controller) {
+          controller.add(initial);
+          final subscription = listen(controller.addSync,
+              onError: controller.addErrorSync, onDone: controller.closeSync);
+          controller.onCancel = subscription.cancel;
+        }, isBroadcast: true)
       : startWithStream(Future.value(initial).asStream());
 
   /// Emits all values in [initial] before any values or errors from this
   /// stream.
   ///
   /// If this stream is a broadcast stream the result will be as well.
-  /// If this stream is a broadcast stream, it is listened to as soon as the
-  /// result is listened to. Events it emits before all of [initial] has been
-  /// emitted are held back and emitted after [initial].
-  /// The values of [initial] are emitted once, to the listeners of the result
-  /// at the time they are due. A listener added later, or one which listens
-  /// again after canceling, does not receive them.
-  Stream<T> startWithMany(Iterable<T> initial) => isBroadcast
-      ? _startWithBroadcast(initial)
-      : startWithStream(Stream.fromIterable(initial));
-
-  Stream<T> _startWithBroadcast(Iterable<T> initial) {
-    final controller = StreamController<T>.broadcast(sync: true);
-    StreamSubscription<T>? subscription;
-    var initialPending = true;
-    var deliveryScheduled = false;
-    // Whether `subscription` has been paused yet. The source is listened to
-    // and paused back-to-back, but if the source's own `onListen` emits or
-    // closes synchronously it does so before `pause` has had a chance to run
-    // and take effect, so those events need to be held back separately.
-    var sourcePaused = false;
-    final beforePause = <void Function()>[];
-
-    void deliverInitial() {
-      deliveryScheduled = false;
-      // Mark the initial values as delivered as soon as delivery is due,
-      // even if there's no listener to receive them. Otherwise a listener
-      // added later could incorrectly receive them.
-      initialPending = false;
-      if (!controller.hasListener) return;
-      for (var value in initial) {
-        if (!controller.hasListener) break;
-        controller.add(value);
-      }
-      final held = beforePause.toList();
-      beforePause.clear();
-      for (var deliver in held) {
-        if (!controller.hasListener) break;
-        deliver();
-      }
-      if (sourcePaused) subscription?.resume();
-    }
-
-    void forward(void Function() deliver) {
-      if (initialPending && !sourcePaused) {
-        beforePause.add(deliver);
-      } else {
-        deliver();
-      }
-    }
-
-    controller.onListen = () {
-      sourcePaused = false;
-      final sub = subscription = listen(
-          (value) => forward(() => controller.add(value)),
-          onError: (Object error, StackTrace stackTrace) =>
-              forward(() => controller.addError(error, stackTrace)),
-          onDone: () {
-            subscription = null;
-            forward(controller.close);
-          });
-      if (initialPending) {
-        sub.pause();
-        sourcePaused = true;
-        if (!deliveryScheduled) {
-          deliveryScheduled = true;
-          scheduleMicrotask(deliverInitial);
-        }
-      }
-    };
-    controller.onCancel = () {
-      final toCancel = subscription;
-      subscription = null;
-      return toCancel?.cancel();
-    };
-    return controller.stream;
-  }
+  /// If this stream is a broadcast stream it will miss any events which
+  /// occur before the initial values are all emitted.
+  Stream<T> startWithMany(Iterable<T> initial) =>
+      startWithStream(Stream.fromIterable(initial));
 
   /// Emits all values and errors in [initial] before any values or errors from
   /// this stream.
   ///
   /// If this stream is a broadcast stream the result will be as well.
-  /// Unlike [startWith] and [startWithMany], this stream is not listened to
-  /// until [initial] closes. If this stream is a broadcast stream it will miss
-  /// any events which occur before then.
+  /// If this stream is a broadcast stream it will miss any events which occur
+  /// before [initial] closes.
   Stream<T> startWithStream(Stream<T> initial) {
     if (isBroadcast && !initial.isBroadcast) {
       initial = initial.asBroadcastStream();

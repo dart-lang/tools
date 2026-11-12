@@ -1,11 +1,11 @@
 ## 2.1.3-wip
 
-- Fix `startWith` and `startWithMany` dropping events emitted by a broadcast
-  stream between listening to the result and delivery of the initial values.
-  The broadcast stream is now listened to immediately, and its events are held
-  back until the initial values have been emitted. As a result its `onListen`
-  callback now runs synchronously when the result is listened to.
-  `startWithStream` and `followedBy` are unchanged.
+- Fix `startWith` dropping events emitted by a broadcast stream between
+  listening to the result and delivery of the initial value. On a broadcast
+  stream the result is now a broadcast stream where every listener receives the
+  initial value followed by the source's events from the time it listened.
+  A listener which cancels and listens again receives the initial value again.
+  `startWithMany`, `startWithStream` and `followedBy` are unchanged.
 
 ## 2.1.2
 
