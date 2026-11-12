@@ -5,88 +5,56 @@
 import 'dart:io';
 
 import 'package:boring/src/hook_helpers/build_options.dart';
-import 'package:boring/src/hook_helpers/fetch.dart';
-import 'package:boring/src/hook_helpers/hashes.dart';
+import 'package:boring/src/hook_helpers/prebuilt.dart';
 import 'package:boring/src/hook_helpers/targets.dart';
 import 'package:code_assets/code_assets.dart';
 import 'package:hooks/hooks.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('hashes.dart', () {
-    // If the asset naming and the hashes file drift apart, `fetch` finds no
-    // hash and fails for every user.
-    test('pins exactly the assets of the prebuilt targets', () {
-      final expected = {
-        for (final (os, arch, iosSdk) in prebuiltTargets)
-          for (final static in [false, true])
-            releaseAssetName(os, arch, iosSdk: iosSdk, static: static),
-      };
-      if (sourceCommit.isEmpty) {
-        // A release built elsewhere may predate some of the prebuilt targets.
-        expect(fileHashes, isNotEmpty);
-        expect(expected, containsAll(fileHashes.keys));
-      } else {
-        expect(fileHashes.keys, unorderedEquals(expected));
-      }
-    });
-
-    test('has SHA-256 hashes', () {
-      for (final MapEntry(key: asset, value: hash) in fileHashes.entries) {
-        expect(hash, matches(RegExp(r'^[0-9a-f]{64}$')), reason: asset);
-      }
-    });
-
-    test('pins a release', () {
-      expect(releaseRepository, matches(RegExp(r'^[\w.-]+/[\w.-]+$')));
-      expect(releaseTag, isNotEmpty);
-      expect(sourceCommit, anyOf(isEmpty, matches(RegExp(r'^[0-9a-f]{40}$'))));
-      expect(
-        releaseAssetUrl(
-          repository: releaseRepository,
-          tag: releaseTag,
-          assetName: 'boring-linux-x64-libbssl_dart.so',
-        ).toString(),
-        'https://github.com/$releaseRepository/releases/download/$releaseTag/'
-        'boring-linux-x64-libbssl_dart.so',
-      );
-    });
-  });
-
-  group('releaseAssetName', () {
+  group('prebuiltLibraryPath', () {
     test('uses the platform library names', () {
       expect(
-        releaseAssetName(OS.linux, Architecture.x64, static: false),
-        'boring-linux-x64-libbssl_dart.so',
+        prebuiltLibraryPath(OS.linux, Architecture.x64, static: false),
+        'linux-x64/libbssl_dart.so',
       );
       expect(
-        releaseAssetName(OS.linux, Architecture.arm64, static: true),
-        'boring-linux-arm64-libbssl_dart_static.a',
+        prebuiltLibraryPath(OS.linux, Architecture.arm64, static: true),
+        'linux-arm64/libbssl_dart_static.a',
       );
       expect(
-        releaseAssetName(OS.macOS, Architecture.arm64, static: false),
-        'boring-macos-arm64-libbssl_dart.dylib',
+        prebuiltLibraryPath(OS.macOS, Architecture.arm64, static: false),
+        'macos-arm64/libbssl_dart.dylib',
       );
       expect(
-        releaseAssetName(OS.windows, Architecture.x64, static: false),
-        'boring-windows-x64-bssl_dart.dll',
+        prebuiltLibraryPath(OS.windows, Architecture.x64, static: false),
+        'windows-x64/bssl_dart.dll',
       );
       expect(
-        releaseAssetName(OS.windows, Architecture.x64, static: true),
-        'boring-windows-x64-bssl_dart_static.lib',
+        prebuiltLibraryPath(OS.windows, Architecture.x64, static: true),
+        'windows-x64/bssl_dart_static.lib',
       );
     });
 
     test('distinguishes the iOS SDKs', () {
       expect(
-        releaseAssetName(
+        prebuiltLibraryPath(
           OS.iOS,
           Architecture.arm64,
           iosSdk: IOSSdk.iPhoneSimulator,
           static: true,
         ),
-        'boring-ios-arm64-iphonesimulator-libbssl_dart_static.a',
+        'ios-arm64-iphonesimulator/libbssl_dart_static.a',
       );
+    });
+
+    test('gives every prebuilt library its own path', () {
+      final paths = [
+        for (final (os, arch, iosSdk) in prebuiltTargets)
+          for (final static in [false, true])
+            prebuiltLibraryPath(os, arch, iosSdk: iosSdk, static: static),
+      ];
+      expect(paths.toSet(), hasLength(paths.length));
     });
   });
 
@@ -136,25 +104,57 @@ void main() {
     });
   });
 
-  group('fetchPrebuiltLibrary', () {
-    test('throws a BuildError when no prebuilt binary exists for target', () {
-      final builder = BuildInputBuilder()
-        ..setupShared(
-          packageRoot: _basePath,
-          packageName: 'boring',
-          outputDirectoryShared: _basePath.resolve('.dart_tool/shared/'),
-          outputFile: _basePath.resolve('.dart_tool/output.json'),
-        )
-        ..config.setupBuild(linkingEnabled: false)
-        ..addExtension(
-          CodeAssetExtension(
-            targetOS: OS.linux,
-            targetArchitecture: Architecture.riscv64,
-            linkModePreference: LinkModePreference.dynamic,
-          ),
-        );
+  group('prebuiltLibrary', () {
+    late Directory packageRoot;
+
+    setUp(() async {
+      packageRoot = await Directory.systemTemp.createTemp('boring_package_');
+      addTearDown(() => packageRoot.delete(recursive: true));
+    });
+
+    test('returns the library in the prebuilt directory', () async {
+      final library = File.fromUri(
+        packageRoot.uri.resolve('prebuilt/linux-x64/libbssl_dart_static.a'),
+      );
+      await library.create(recursive: true);
       expect(
-        () => fetchPrebuiltLibrary(builder.build(), static: false),
+        prebuiltLibrary(
+          _buildInput(packageRoot.uri, OS.linux, Architecture.x64),
+          static: true,
+        ),
+        library.uri,
+      );
+    });
+
+    test('throws a BuildError if the package has no prebuilt libraries', () {
+      final library = packageRoot.uri.resolve(
+        'prebuilt/linux-x64/libbssl_dart.so',
+      );
+      expect(
+        () => prebuiltLibrary(
+          _buildInput(packageRoot.uri, OS.linux, Architecture.x64),
+          static: false,
+        ),
+        throwsA(
+          isA<BuildError>().having(
+            (e) => e.message,
+            'message',
+            allOf(
+              contains(library.toFilePath()),
+              contains('git or path dependency'),
+              contains('buildMode: checkout'),
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('throws a BuildError when no prebuilt binary exists for target', () {
+      expect(
+        () => prebuiltLibrary(
+          _buildInput(packageRoot.uri, OS.linux, Architecture.riscv64),
+          static: false,
+        ),
         throwsA(
           isA<BuildError>().having(
             (e) => e.message,
@@ -171,6 +171,27 @@ void main() {
 }
 
 final _basePath = Directory.current.uri;
+
+/// The input of hook/build.dart for [os] and [arch] in a package at
+/// [packageRoot].
+BuildInput _buildInput(Uri packageRoot, OS os, Architecture arch) {
+  final builder = BuildInputBuilder()
+    ..setupShared(
+      packageRoot: packageRoot,
+      packageName: 'boring',
+      outputDirectoryShared: packageRoot.resolve('.dart_tool/shared/'),
+      outputFile: packageRoot.resolve('.dart_tool/output.json'),
+    )
+    ..config.setupBuild(linkingEnabled: false)
+    ..addExtension(
+      CodeAssetExtension(
+        targetOS: os,
+        targetArchitecture: arch,
+        linkModePreference: LinkModePreference.dynamic,
+      ),
+    );
+  return builder.build();
+}
 
 /// The user-defines of a root package whose pubspec.yaml has [defines] under
 /// `hooks.user_defines.boring`.

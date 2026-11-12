@@ -8,8 +8,11 @@ on:
   pull_request:
     branches: [ main ]
   push:
-    # Match <package-name>-v<version> publish tags
-    tags: [ '[A-z0-9]+-v[0-9]+.[0-9]+.[0-9]+' ]
+    # Match <package-name>-v<version> publish tags, except package:boring's,
+    # which boring_binaries.yaml publishes with its prebuilt libraries.
+    tags:
+      - '[A-z0-9]+-v[0-9]+.[0-9]+.[0-9]+'
+      - '!boring-v*'
 
 jobs:
   publish:

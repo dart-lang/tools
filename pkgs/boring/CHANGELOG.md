@@ -1,5 +1,9 @@
 ## 0.4.3-wip
 - Update BoringSSL to [0131ae9d](https://boringssl.googlesource.com/boringssl/+/0131ae9d78e42fcc2c1811315e62410ad96d8230).
+- The prebuilt libraries come with the published package instead of being
+  downloaded from GitHub Releases during the build, so the default `fetch`
+  build mode no longer needs network access. A git or path dependency on the
+  repository has no prebuilt libraries and requires `buildMode: checkout`.
 
 ## 0.4.2
 

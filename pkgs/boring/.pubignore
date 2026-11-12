@@ -1,0 +1,12 @@
+# pub reads this file instead of .gitignore in this directory. It ignores the
+# same files, except the prebuilt libraries in prebuilt/, which
+# .github/workflows/boring_binaries.yaml adds to the package it publishes.
+.dart_tool/
+.packages
+build/
+*.dylib
+*.so
+*.dll
+*.a
+!/prebuilt/**
+pubspec.lock
