@@ -17,7 +17,10 @@ import 'provenance.dart';
 ///   [oidcIssuer] - if known - must be [githubActionsOidcIssuer]. With
 ///   [requireTaggedSignerRef] the signing workflow must additionally have run
 ///   at a tag (`refs/tags/...`) rather than a branch. If [provenance] names a
-///   builder, it must agree with [signer].
+///   builder, it must agree with [signer]. With [requireGitHubHostedRunner]
+///   [BuildProvenance.runnerEnvironment] must be
+///   [githubHostedRunnerEnvironment], rejecting workflows routed to a
+///   self-hosted runner (e.g. via a custom `ubuntu-latest` runner label).
 /// * *What was signed?* A subject of [provenance] must be named
 ///   `<packageName>-<packageVersion>.tar.gz` or `package.tar.gz`, and its
 ///   digest must be [archiveSha256]. If the `pubspec.yaml` inside the archive
@@ -55,6 +58,7 @@ List<String> checkProvenancePolicy({
   String? configuredRepository,
   bool requireRepository = true,
   bool requireTaggedSignerRef = false,
+  bool requireGitHubHostedRunner = true,
 }) {
   final errors = <String>[];
 
@@ -95,6 +99,24 @@ List<String> checkProvenancePolicy({
       'Attestation states it was built by "${builder.workflow}" but was '
       'signed by "${signer.workflow}".',
     );
+  }
+  // TODO(https://github.com/dart-lang/pub/issues/4942): Also check the
+  // `Runner Environment` certificate extension (`1.3.6.1.4.1.57264.1.11`) once
+  // `package:sigstore` exposes certificate extensions: a compromised
+  // self-hosted runner could alter the provenance statement it signs.
+  if (requireGitHubHostedRunner) {
+    final runnerEnvironment = provenance.runnerEnvironment;
+    if (runnerEnvironment == null) {
+      errors.add(
+        'Attestation does not state the runner environment it was built in, '
+        'expected "$githubHostedRunnerEnvironment".',
+      );
+    } else if (runnerEnvironment != githubHostedRunnerEnvironment) {
+      errors.add(
+        'Attestation was built on a "$runnerEnvironment" runner, '
+        'expected "$githubHostedRunnerEnvironment".',
+      );
+    }
   }
 
   // What was signed? Without this an attestation for one package could be
