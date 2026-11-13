@@ -12,15 +12,90 @@ import 'package:logging/logging.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:stream_channel/stream_channel.dart';
 
+const _acceptHeader = 'accept';
+const _eventStreamMimeType = 'text/event-stream';
+const _originHeader = 'origin';
+const _allowCredentialsHeader = 'access-control-allow-credentials';
+const _allowOriginHeader = 'access-control-allow-origin';
+const _varyHeader = 'vary';
+const _httpScheme = 'http';
+const _httpsScheme = 'https';
+const _loopbackHosts = <String>{'localhost', '127.0.0.1', '::1'};
+
 // RFC 2616 requires carriage return delimiters.
-String _sseHeaders(String? origin) =>
-    'HTTP/1.1 200 OK\r\n'
-    'Content-Type: text/event-stream\r\n'
-    'Cache-Control: no-cache\r\n'
-    'Connection: keep-alive\r\n'
-    'Access-Control-Allow-Credentials: true\r\n'
-    "${origin != null ? 'Access-Control-Allow-Origin: $origin\r\n' : ''}"
-    '\r\n\r\n';
+String _sseHeaders(String? origin) {
+  final corsHeaders = origin == null
+      ? ''
+      : 'Access-Control-Allow-Credentials: true\r\n'
+            'Access-Control-Allow-Origin: $origin\r\n'
+            'Vary: Origin\r\n';
+  return 'HTTP/1.1 200 OK\r\n'
+      'Content-Type: text/event-stream\r\n'
+      'Cache-Control: no-cache\r\n'
+      'Connection: keep-alive\r\n'
+      '$corsHeaders'
+      '\r\n\r\n';
+}
+
+Uri? _parseOrigin(String origin, {bool allowTrailingSlash = false}) {
+  if (origin.contains('\r') || origin.contains('\n')) {
+    return null;
+  }
+  final uri = Uri.tryParse(origin);
+  if (uri == null ||
+      !uri.hasScheme ||
+      !uri.hasAuthority ||
+      uri.host.isEmpty ||
+      uri.userInfo.isNotEmpty ||
+      uri.hasQuery ||
+      uri.hasFragment) {
+    return null;
+  }
+  final validPath = allowTrailingSlash
+      ? (uri.path.isEmpty || uri.path == '/')
+      : uri.path.isEmpty;
+  if (!validPath) {
+    return null;
+  }
+  return uri;
+}
+
+String _normalizeOriginUri(Uri uri) {
+  if (_isHttpScheme(uri.scheme)) {
+    return uri.origin;
+  }
+  final host = uri.host.contains(':') ? '[${uri.host}]' : uri.host;
+  final portSuffix = uri.hasPort ? ':${uri.port}' : '';
+  return '${uri.scheme}://$host$portSuffix';
+}
+
+Set<String>? _normalizeAllowedOrigins(Iterable<String>? allowedOrigins) {
+  if (allowedOrigins == null) return null;
+  final normalized = <String>{};
+  for (final origin in allowedOrigins) {
+    final parsed = _parseOrigin(origin, allowTrailingSlash: true);
+    if (parsed == null) {
+      throw ArgumentError.value(
+        origin,
+        'allowedOrigins',
+        'Must be a valid origin with scheme and host '
+            '(for example, "https://example.com").',
+      );
+    }
+    normalized.add(_normalizeOriginUri(parsed));
+  }
+  return normalized;
+}
+
+bool _isHttpScheme(String scheme) =>
+    scheme == _httpScheme || scheme == _httpsScheme;
+
+bool _isLoopbackHost(String host) => _loopbackHosts.contains(host);
+
+bool _isSameOrigin(Uri originUri, Uri requestedUri) =>
+    originUri.scheme == requestedUri.scheme &&
+    originUri.host == requestedUri.host &&
+    originUri.port == requestedUri.port;
 
 class _SseMessage {
   final int id;
@@ -242,9 +317,11 @@ class SseHandler {
   final _logger = Logger('SseHandler');
   final Uri _uri;
   final Duration? _keepAlive;
+  final Duration? _ignoreDisconnect;
+  final Set<String>? _allowedOrigins;
+  final bool Function(String origin)? _originCheck;
   final _connections = <String?, SseConnection>{};
   final _connectionController = StreamController<SseConnection>();
-  final Duration? _ignoreDisconnect;
 
   StreamQueue<SseConnection>? _connectionsStream;
 
@@ -262,9 +339,37 @@ class SseHandler {
   /// If [ignoreDisconnect] is supplied, it will be passed on to the
   /// [SseConnection]. The SseHandler will also use it as a signal to reuse
   /// open SSE connections that are not in a keep alive period.
-  SseHandler(this._uri, {Duration? keepAlive, Duration? ignoreDisconnect})
-    : _keepAlive = keepAlive,
-      _ignoreDisconnect = ignoreDisconnect;
+  ///
+  /// Cross-origin requests carrying an `Origin` header are validated before
+  /// establishing SSE streams or accepting incoming messages:
+  /// - When neither [allowedOrigins] nor [originCheck] is provided, same-origin
+  ///   requests and HTTP(S) loopback origins (`localhost`, `127.0.0.1`, `::1`)
+  ///   targeting a loopback host are allowed.
+  /// - When [allowedOrigins] or [originCheck] is provided, cross-origin
+  ///   requests are only allowed if the normalized origin is contained in
+  ///   [allowedOrigins] or [originCheck] returns `true` for the normalized
+  ///   origin. Pass an empty [allowedOrigins] collection to allow only
+  ///   same-origin requests.
+  /// - Requests without an `Origin` header (such as non-browser clients or
+  ///   same-origin `EventSource` connections) are allowed without emitting CORS
+  ///   headers.
+  ///
+  /// Servers behind reverse proxies that terminate TLS or rewrite `Host`, as
+  /// well as servers accepting connections from browser extensions
+  /// (`chrome-extension://`), must configure [allowedOrigins] or [originCheck].
+  /// `Origin` validation protects against cross-origin browser requests;
+  /// protecting loopback servers against DNS rebinding still requires
+  /// `Host`-header validation middleware on the embedding HTTP server.
+  SseHandler(
+    this._uri, {
+    Iterable<String>? allowedOrigins,
+    Duration? ignoreDisconnect,
+    Duration? keepAlive,
+    bool Function(String origin)? originCheck,
+  }) : _allowedOrigins = _normalizeAllowedOrigins(allowedOrigins),
+       _ignoreDisconnect = ignoreDisconnect,
+       _keepAlive = keepAlive,
+       _originCheck = originCheck;
 
   StreamQueue<SseConnection> get connections =>
       _connectionsStream ??= StreamQueue(_connectionController.stream);
@@ -273,10 +378,39 @@ class SseHandler {
 
   int get numberOfClients => _connections.length;
 
+  bool _isAllowedRequestOrigin(shelf.Request req) {
+    final rawOrigin = req.headers[_originHeader];
+    if (rawOrigin == null) {
+      return true;
+    }
+    final originUri = _parseOrigin(rawOrigin);
+    if (originUri == null) {
+      return false;
+    }
+    if (_isSameOrigin(originUri, req.requestedUri)) {
+      return true;
+    }
+    final allowedOrigins = _allowedOrigins;
+    final originCheck = _originCheck;
+    if (allowedOrigins == null && originCheck == null) {
+      return _isHttpScheme(originUri.scheme) &&
+          _isLoopbackHost(originUri.host) &&
+          _isLoopbackHost(req.requestedUri.host);
+    }
+    final normalizedOrigin = _normalizeOriginUri(originUri);
+    if (allowedOrigins != null && allowedOrigins.contains(normalizedOrigin)) {
+      return true;
+    }
+    if (originCheck != null && originCheck(normalizedOrigin)) {
+      return true;
+    }
+    return false;
+  }
+
   shelf.Response _createSseConnection(shelf.Request req, String path) {
     req.hijack((channel) async {
       var sink = utf8.encoder.startChunkedConversion(channel.sink);
-      sink.add(_sseHeaders(req.headers['origin']));
+      sink.add(_sseHeaders(req.headers[_originHeader]));
       var clientId = req.url.queryParameters['sseClientId'];
 
       // Check if we already have a connection for this ID that is either:
@@ -324,11 +458,19 @@ class SseHandler {
       return shelf.Response.notFound('');
     }
 
-    if (req.headers['accept'] == 'text/event-stream' && req.method == 'GET') {
+    if (req.headers[_acceptHeader] == _eventStreamMimeType &&
+        req.method == 'GET') {
+      if (!_isAllowedRequestOrigin(req)) {
+        return shelf.Response.forbidden('Forbidden origin');
+      }
       return _createSseConnection(req, path);
     }
 
-    if (req.headers['accept'] != 'text/event-stream' && req.method == 'POST') {
+    if (req.headers[_acceptHeader] != _eventStreamMimeType &&
+        req.method == 'POST') {
+      if (!_isAllowedRequestOrigin(req)) {
+        return shelf.Response.forbidden('Forbidden origin');
+      }
       return _handleIncomingMessage(req, path);
     }
 
@@ -349,19 +491,18 @@ class SseHandler {
     } catch (e, st) {
       _logger.fine('[$clientId] Failed to handle incoming message. $e $st');
     }
+    final origin = req.headers[_originHeader];
     return shelf.Response.ok(
       '',
-      headers: {
-        'access-control-allow-credentials': 'true',
-        'access-control-allow-origin': _originFor(req),
-      },
+      headers: origin == null
+          ? null
+          : {
+              _allowCredentialsHeader: 'true',
+              _allowOriginHeader: origin,
+              _varyHeader: 'Origin',
+            },
     );
   }
-
-  String _originFor(shelf.Request req) =>
-      // Firefox does not set header "origin".
-      // https://bugzilla.mozilla.org/show_bug.cgi?id=1508661
-      req.headers['origin'] ?? req.headers['host']!;
 
   /// Immediately close all connections, ignoring any keepAlive periods.
   void shutdown() {

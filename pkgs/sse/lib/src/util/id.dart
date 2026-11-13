@@ -2,21 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert' show base64Url;
 import 'dart:math' show Random;
 
-/// Generates a pseudo-random ID string with 32 bits of entropy.
-String generateId() {
-  final chars = List<int>.filled(6, 0);
-  final random = Random();
-  var bits = random.nextInt(0x100000000);
-  for (var i = 0; i < 6; i++) {
-    chars[i] = _base64Chars.codeUnitAt(bits & 0x3F);
-    bits >>>= 6;
-  }
-  return String.fromCharCodes(chars);
-}
+const _idByteLength = 24;
+const _maxByteValue = 256;
 
-// A standard encoding of 6 bits per character, without any non-ASCII,
-// non-printable or disallowed characters.
-const _base64Chars =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+final _secureRandom = Random.secure();
+
+/// Generates a URL-safe cryptographically random ID string with 192 bits of
+/// entropy.
+String generateId() => base64Url.encode(
+  List<int>.generate(
+    _idByteLength,
+    (_) => _secureRandom.nextInt(_maxByteValue),
+  ),
+);
