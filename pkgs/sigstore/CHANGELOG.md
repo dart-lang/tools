@@ -7,7 +7,7 @@
   bindings) with the SLSA build provenance parsing and the package attestation
   policy shared by `pub` and `pub.dev`: `GitHubRepository`,
   `GitHubWorkflowIdentity`, `BuildProvenance`, `TransparencyLogEntry` and
-  `checkProvenancePolicy`.
+  `checkProvenancePolicy` (including requiring `github-hosted` runners).
 
 ## 0.2.4
 
