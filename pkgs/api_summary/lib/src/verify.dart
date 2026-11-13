@@ -132,8 +132,10 @@ Future<void> expectApiSummaryClean({
             'The package exposes the following non-public types in its API '
             'signatures. These types are either from "lib/src/" or unexported '
             'libraries, making them unusable by callers:\n'
-            '${nonPublics.map((e) => '  - ${e.name} (${e.locationUri})').join('\n')}\n'
-            'Ensure all types used in public signatures are exported by the package.',
+            '${nonPublics.map((e) => '  - ${e.name} '
+                '(${e.locationUri})').join('\n')}\n'
+            'Ensure all types used in public signatures are exported '
+            'by the package.',
         goldenFilePath: effectiveGoldenPath,
         actual: format.format(summary),
       );
