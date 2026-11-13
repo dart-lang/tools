@@ -6,7 +6,8 @@ import 'package:hooks/hooks.dart' show BuildError, HookInputUserDefines;
 
 /// How `hook/build.dart` obtains the BoringSSL library, see the README.
 enum BuildModeEnum {
-  /// Downloads the prebuilt library of the pinned release.
+  /// Uses the prebuilt library that comes with the package published on
+  /// pub.dev.
   fetch,
 
   /// Compiles BoringSSL from the vendored source with CMake.
@@ -25,7 +26,7 @@ class BuildOptions {
   BuildOptions({required this.buildMode, this.localPath});
 
   /// Throws a [BuildError] if `buildMode` is not one of [BuildModeEnum], so a
-  /// typo doesn't silently download prebuilt binaries instead of building from
+  /// typo doesn't silently use the prebuilt libraries instead of building from
   /// source.
   factory BuildOptions.fromDefines(HookInputUserDefines defines) =>
       BuildOptions(

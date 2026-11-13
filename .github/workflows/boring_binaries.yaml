@@ -1,17 +1,19 @@
-# Builds the prebuilt libraries that hook/build.dart downloads in the `fetch`
-# build mode, attaches them to a `boring-binaries-<date>-<commit>` GitHub
-# pre-release, and opens a pull request that pins their SHA-256 hashes in
-# lib/src/hook_helpers/hashes.dart.
+# Builds the prebuilt libraries that hook/build.dart uses in the `fetch` build
+# mode, adds them to the prebuilt/ directory of package:boring, and tests the
+# package archive with them. On a `boring-v<version>` tag, it then calls
+# `dart-lang/setup-dart/.github/workflows/publish.yml` (`bundled-files`,
+# `attest: true`) to stage the libraries into an isolated checkout, attest the
+# package archive's SLSA Build L3 provenance, and publish it to pub.dev, so the
+# libraries come with the package instead of being downloaded. publish.yaml
+# skips these tags, as it would publish the package without them.
 #
-# Runs when a change to the native sources (src/, the vendored BoringSSL, or
-# this pipeline) lands on main, for example the weekly BoringSSL update, and on
-# `workflow_dispatch` on main. The `analyze` job of boring.yaml checks that the
-# pinned libraries were built from the current native sources, so a release of
-# package:boring can't ship stale ones: merge the pin pull request first.
+# The libraries are built from the tagged commit, so they match the vendored
+# BoringSSL that the `checkout` build mode compiles.
 #
-# Pull requests that change the pipeline or the native build only run the
-# `precompile` job, as does `workflow_dispatch` on other branches, and upload
-# workflow artifacts without creating a release.
+# Also runs, without publishing, on pull requests that change the native build,
+# the hooks, or this pipeline, when a change to the native sources (src/, the
+# vendored BoringSSL, or this pipeline) lands on main, for example the weekly
+# BoringSSL update, and on `workflow_dispatch`.
 name: package:boring binaries
 permissions:
   contents: read
@@ -19,7 +21,10 @@ permissions:
 on:
   push:
     branches: [ main ]
+    # Path filters don't apply to tags.
+    tags: [ 'boring-v[0-9]+.[0-9]+.[0-9]+*' ]
     paths:
+      - '.github/actions/setup-nasm/**'
       - '.github/workflows/boring_binaries.yaml'
       - 'pkgs/boring/src/**'
       - 'pkgs/boring/third_party/boringssl/**'
@@ -28,25 +33,30 @@ on:
   pull_request:
     branches: [ main ]
     paths:
+      - '.github/actions/setup-nasm/**'
       - '.github/workflows/boring_binaries.yaml'
+      - 'pkgs/boring/.pubignore'
+      - 'pkgs/boring/hook/**'
+      - 'pkgs/boring/lib/src/hook_helpers/**'
+      - 'pkgs/boring/pubspec.yaml'
       - 'pkgs/boring/src/**'
+      - 'pkgs/boring/test/prebuilt_test.dart'
       - 'pkgs/boring/tool/precompile_binaries.dart'
   workflow_dispatch:
 
-# Releases are named after the commit, so builds of the same ref run one after
-# the other instead of racing for the release.
+# Cancels the superseded runs of a pull request, but never a publishing run.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Runs compilers and other build tools, so it only gets `contents: read` and
+  # cannot mint OIDC tokens.
   precompile:
     name: Precompile (${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }})
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
-      id-token: write # To sign the provenance attestations of the libraries.
-      attestations: write # To store the attestations with the repository.
     defaults:
       run:
         working-directory: pkgs/boring/
@@ -116,12 +126,13 @@ jobs:
           sdk: stable
       - name: Setup NASM
         if: matrix.target-os == 'windows'
-        uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b
+        uses: ./.github/actions/setup-nasm
       - name: Install dependencies
         run: dart pub get
       # Builds the dynamic library, which is bundled when linking is disabled,
       # and the static library, which hook/link.dart links into a dynamic
-      # library with only the functions an application uses.
+      # library with only the functions an application uses, in
+      # prebuilt/<target>/.
       - name: Precompile the libraries
         env:
           TARGET_OS: ${{ matrix.target-os }}
@@ -132,7 +143,7 @@ jobs:
             ${IOS_SDK:+--ios-sdk="$IOS_SDK"} \
             ${ANDROID_NDK_LATEST_HOME:+--android-ndk="$ANDROID_NDK_LATEST_HOME"}
       - name: List the libraries
-        run: ls -l bin
+        run: ls -lR prebuilt
       # The dynamic library is bundled as is, so it must run on every OS version
       # that Dart and Flutter support, not only on the build machine's.
       - name: Check the ABI floor of the dynamic library (Linux)
@@ -140,7 +151,7 @@ jobs:
         env:
           MAX_GLIBC: ${{ matrix.max-glibc }}
         run: |
-          glibc="$(objdump -T bin/*.so | grep -oE 'GLIBC_[0-9.]+' | sed 's/GLIBC_//' | sort -Vu | tail -1)"
+          glibc="$(objdump -T prebuilt/*/*.so | grep -oE 'GLIBC_[0-9.]+' | sed 's/GLIBC_//' | sort -Vu | tail -1)"
           echo "Newest glibc symbol version: $glibc (allowed: $MAX_GLIBC)"
           if [ "$(printf '%s\n%s\n' "$glibc" "$MAX_GLIBC" | sort -V | tail -1)" != "$MAX_GLIBC" ]; then
             echo "::error::The library requires glibc $glibc, newer than $MAX_GLIBC. Build on an older runner."
@@ -152,7 +163,7 @@ jobs:
           MIN_OS: ${{ matrix.min-os }}
           TARGET_OS: ${{ matrix.target-os }}
         run: |
-          minos="$(otool -l bin/*.dylib | awk '/minos/ {print $2}' | sort -u)"
+          minos="$(otool -l prebuilt/*/*.dylib | awk '/minos/ {print $2}' | sort -u)"
           echo "Minimum $TARGET_OS version: $minos (expected: $MIN_OS)"
           if [ "$minos" != "$MIN_OS" ]; then
             echo "::error::The library requires $TARGET_OS '$minos' instead of $MIN_OS. Check the deployment targets in tool/precompile_binaries.dart."
@@ -170,11 +181,11 @@ jobs:
             arm|ia32) expected_alignment=0x1000 ;;
             *) expected_alignment=0x4000 ;;
           esac
-          alignments="$(readelf -lW bin/*.so | awk '$1 == "LOAD" {print $NF}' | sort -u)"
-          needed="$(readelf -d bin/*.so | awk '/NEEDED/ {print $NF}' | tr -d '[]' | sort -u | tr '\n' ' ')"
+          alignments="$(readelf -lW prebuilt/*/*.so | awk '$1 == "LOAD" {print $NF}' | sort -u)"
+          needed="$(readelf -d prebuilt/*/*.so | awk '/NEEDED/ {print $NF}' | tr -d '[]' | sort -u | tr '\n' ' ')"
           echo "LOAD segment alignment: $alignments (expected: $expected_alignment)"
           echo "Needed libraries: $needed"
-          readelf -n bin/*.so | grep -A2 'Android' || true
+          readelf -n prebuilt/*/*.so | grep -A2 'Android' || true
           if [ "$alignments" != "$expected_alignment" ]; then
             echo "::error::The LOAD segments are aligned to $alignments instead of $expected_alignment. Use NDK r28 or newer, or ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES."
             exit 1
@@ -190,128 +201,196 @@ jobs:
         run: |
           # The C runtime is linked statically (see src/CMakeLists.txt), so the
           # DLL must not import the Visual C++ Redistributable's DLLs.
-          imports="$(grep -a -o -i -E '(vcruntime|msvcp|msvcr)[0-9_]*\.dll|api-ms-win-crt-[a-z0-9-]*\.dll' bin/*.dll | sort -u || true)"
+          imports="$(grep -a -o -i -E '(vcruntime|msvcp|msvcr)[0-9_]*\.dll|api-ms-win-crt-[a-z0-9-]*\.dll' prebuilt/*/*.dll | sort -u || true)"
           if [ -n "$imports" ]; then
             echo "$imports"
             echo "::error::The DLL imports the C runtime dynamically. Check CMAKE_MSVC_RUNTIME_LIBRARY in src/CMakeLists.txt."
             exit 1
           fi
           echo "The DLL doesn't import the C runtime dynamically."
+      - name: Stage prebuilt libraries
+        run: |
+          mkdir -p "$RUNNER_TEMP/bundled-files"
+          cp -r prebuilt "$RUNNER_TEMP/bundled-files/"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: binaries-${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }}
-          path: pkgs/boring/bin/*
+          name: bundled-files-${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }}
+          path: ${{ runner.temp }}/bundled-files/
           if-no-files-found: error
-      # Verify with `gh attestation verify <file> --repo dart-lang/tools`.
-      - name: Attest the provenance of the release libraries
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
-        with:
-          subject-path: pkgs/boring/bin/*
 
-  release:
-    name: Attach the binaries to a GitHub release
+  # Adds the libraries of all targets to prebuilt/, where hook/build.dart looks
+  # for them, and creates a package archive for `test` (including on fork PRs,
+  # where `publish` cannot run because OIDC tokens are unavailable).
+  # pkgs/boring/.pubignore, unlike .gitignore, doesn't ignore prebuilt/.
+  package:
+    name: Create the test package archive
     needs: precompile
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # To create the release and upload its assets.
-    outputs:
-      tag: ${{ steps.release.outputs.tag }}
-      id: ${{ steps.release.outputs.id }}
+    defaults:
+      run:
+        working-directory: pkgs/boring/
     steps:
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
-        with:
-          path: release-assets
-          merge-multiple: true
-      - name: Create the GitHub release
-        id: release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          COMMIT: ${{ github.sha }}
-        run: |
-          id="$(date -u +%Y%m%d)-${COMMIT::12}"
-          tag="boring-binaries-$id"
-          echo "id=$id" >> "$GITHUB_OUTPUT"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          if ! gh release view "$tag" > /dev/null 2>&1; then
-            gh release create "$tag" --prerelease --target "$COMMIT" \
-              --title "package:boring binaries $tag" \
-              --notes "The prebuilt BoringSSL libraries for package:boring, built from $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$COMMIT by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Verify a library with \`gh attestation verify <file> --repo $GITHUB_REPOSITORY\`."
-          fi
-          # lib/src/hook_helpers/hashes.dart pins the hashes of the assets, so
-          # never replace them. Delete a failed release to rebuild a commit.
-          if [ "$(gh release view "$tag" --json assets --jq '.assets | length')" -ne 0 ]; then
-            echo "::error::Release $tag already has assets. Delete the release to upload new ones."
-            exit 1
-          fi
-          gh release upload "$tag" release-assets/*
-          echo "Created $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$tag"
-
-  # Pins the hashes of the release in hashes.dart, like the refresh job of
-  # boring.yaml updates BoringSSL. The Dart Bot token is needed so that the
-  # PR's CI runs: its `generated` job re-hashes the release assets, and the
-  # tree-shaking tests download them in the `fetch` build mode.
-  pin:
-    name: Open the pull request that pins the binaries
-    needs: release
-    if: github.repository_owner == 'dart-lang'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # To push the branch of the pull request.
-      pull-requests: write # To open the pull request.
-    steps:
-      - name: Generate Dart Bot token
-        id: generate-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510
-        with:
-          client-id: ${{ vars.ECOSYSTEM_BOT_CLIENT_ID }}
-          private-key: ${{ secrets.ECOSYSTEM_BOT_PRIVATE_KEY }}
-          permission-contents: write
-          permission-pull-requests: write
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
-          token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: false
       - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
         with:
           sdk: stable
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          path: release-assets
+          pattern: bundled-files-*
+          path: pkgs/boring
           merge-multiple: true
       - name: Install dependencies
-        working-directory: pkgs/boring/
         run: dart pub get
-      - name: Pin the hashes
-        working-directory: pkgs/boring/
-        env:
-          TAG: ${{ needs.release.outputs.tag }}
-          COMMIT: ${{ github.sha }}
-          GH_REPO: ${{ github.repository }}
-        run: dart run tool/regenerate_hashes.dart --repository "$GH_REPO" --source-commit "$COMMIT" --assets "$GITHUB_WORKSPACE/release-assets" "$TAG"
-      - name: Create pull request
-        uses: peter-evans/create-pull-request@86c87cfdd87dd582eb8b8f226cfec4e09d825326
+      - name: Validate the package
+        run: dart pub publish --dry-run
+      - name: Create the package archive
+        run: dart pub publish --to-archive="$RUNNER_TEMP/package.tar.gz"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          token: ${{ steps.generate-token.outputs.token }}
-          committer: dart-ecosystem-bot <dart-ecosystem-bot@google.com>
-          author: dart-ecosystem-bot <dart-ecosystem-bot@google.com>
-          base: main
-          add-paths: pkgs/boring/lib/src/hook_helpers/hashes.dart
-          commit-message: "[boring] Pin the prebuilt binaries of ${{ needs.release.outputs.tag }}"
-          branch: "boring-pin-binaries-${{ needs.release.outputs.id }}"
-          title: "[boring] Pin the prebuilt binaries of ${{ needs.release.outputs.tag }}"
-          body: >-
-            Pins the SHA-256 hashes of the prebuilt libraries of
-            [`${{ needs.release.outputs.tag }}`](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.release.outputs.tag }}),
-            built from ${{ github.sha }} by
-            [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            of `boring_binaries.yaml`.
+          name: test-package-archive
+          path: ${{ runner.temp }}/package.tar.gz
+          if-no-files-found: error
 
+  # Builds the example against the package archive like an app that depends on
+  # package:boring from pub.dev, in the default `fetch` build mode, see
+  # test/prebuilt_test.dart. On each desktop OS, cross-compiles to Linux with
+  # and without a cross-toolchain (hook/link.dart uses different linker flags
+  # on each).
+  test:
+    name: Test the package archive (${{ matrix.os }})
+    needs: package
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: pkgs/boring/
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
+        with:
+          sdk: stable
+      # `dart test` builds this package from source, see pubspec.yaml.
+      - name: Setup NASM
+        if: runner.os == 'Windows'
+        uses: ./.github/actions/setup-nasm
+      - name: Install Linux cross toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+      - name: Install Linux cross toolchain (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          case "$(uname -m)" in
+            arm64)
+              url="https://github.com/messense/homebrew-macos-cross-toolchains/releases/download/v15.2.0/aarch64-unknown-linux-gnu-aarch64-darwin.tar.gz"
+              expected="0f224db36d8572489f09ed5bce39f189eee998f9ab4f8ea07f510d6c7078caa3"
+              ;;
+            x86_64)
+              url="https://github.com/messense/homebrew-macos-cross-toolchains/releases/download/v15.2.0/aarch64-unknown-linux-gnu-x86_64-darwin.tar.gz"
+              expected="7fa485313b7049d57c5de56bf876d5c4648ebfd736f86a8f4739596218523127"
+              ;;
+            *)
+              echo "::error::Unsupported macOS architecture: $(uname -m)"
+              exit 1
+              ;;
+          esac
+          curl -fSL -o "$RUNNER_TEMP/aarch64-linux-gnu.tar.gz" "$url"
+          actual="$(shasum -a 256 < "$RUNNER_TEMP/aarch64-linux-gnu.tar.gz" | cut -d' ' -f1)"
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::Expected SHA-256 $expected for $url, got $actual."
+            exit 1
+          fi
+          tar -xzf "$RUNNER_TEMP/aarch64-linux-gnu.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/aarch64-unknown-linux-gnu/bin" >> "$GITHUB_PATH"
+      - name: Install Linux cross toolchain (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          TOOLCHAIN_URL: https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-mingw-w64-x86_64-aarch64-none-linux-gnu.zip
+          # From the .sha256asc file published next to the zip.
+          TOOLCHAIN_SHA256: 9428b2039923916418ec7037025be8cec3202926d65db9452519977834ad2a89
+        run: |
+          curl -fSL -o "$RUNNER_TEMP/arm-gnu-toolchain.zip" "$TOOLCHAIN_URL"
+          actual="$(sha256sum < "$RUNNER_TEMP/arm-gnu-toolchain.zip" | cut -d' ' -f1)"
+          if [ "$actual" != "$TOOLCHAIN_SHA256" ]; then
+            echo "::error::Expected SHA-256 $TOOLCHAIN_SHA256 for $TOOLCHAIN_URL, got $actual."
+            exit 1
+          fi
+          7z x "$RUNNER_TEMP/arm-gnu-toolchain.zip" -o"$RUNNER_TEMP/arm-gnu-toolchain" -y >/dev/null
+          BIN_DIR="$RUNNER_TEMP/arm-gnu-toolchain/bin"
+          for f in "$BIN_DIR"/aarch64-none-linux-gnu-*.exe; do
+            cp "$f" "${f/aarch64-none-linux-gnu-/aarch64-linux-gnu-}"
+          done
+          cygpath -w "$BIN_DIR" >> "$GITHUB_PATH"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: test-package-archive
+          path: ${{ runner.temp }}
+      - name: Extract the package archive
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: mkdir boring && tar -xzf package.tar.gz -C boring
+      - name: Install dependencies
+        run: dart pub get
+      - name: Run tests
+        env:
+          BORING_PACKAGE_DIR: ${{ runner.temp }}/boring
+        run: dart test test/prebuilt_test.dart
 
-            The `generated` job re-hashes the release assets, and the
-            tree-shaking tests download them in the `fetch` build mode.
-          labels: skip-changelog-check
-          delete-branch: true
+  # Stages `bundled-files-*` into an isolated checkout via setup-dart's reusable
+  # publishing workflow, generates SLSA Build L3 provenance (`attest: true`),
+  # and publishes on `boring-v<version>` tags (running in `test-run` mode on
+  # non-tag runs from this repository).
+  publish:
+    name: Publish to pub.dev
+    needs: [precompile, test]
+    if: >-
+      !cancelled() &&
+      github.repository_owner == 'dart-lang' &&
+      needs.precompile.result == 'success' &&
+      (
+        (github.event_name == 'push' && github.ref_type == 'tag' && needs.test.result == 'success') ||
+        (github.ref_type != 'tag' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository))
+      )
+    permissions:
+      id-token: write # To authenticate with pub.dev and sign the attestation.
+      attestations: write # To store the package attestation.
+    # TODO(mosuem): Repin to `main` / `@v1` once dart-lang/setup-dart#210, #212,
+    # and #213 land.
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@05f6f8a1c44c614ffa21021a13d34089858e5e8e # publish-bundled-files
+    with:
+      working-directory: pkgs/boring
+      use-flutter: false
+      attest: true
+      test-run: ${{ github.event_name != 'push' || github.ref_type != 'tag' }}
+      # Keep in sync with `prebuiltTargets` in lib/src/hook_helpers/targets.dart.
+      bundled-files: |
+        prebuilt/android-arm/libbssl_dart.so
+        prebuilt/android-arm/libbssl_dart_static.a
+        prebuilt/android-arm64/libbssl_dart.so
+        prebuilt/android-arm64/libbssl_dart_static.a
+        prebuilt/android-x64/libbssl_dart.so
+        prebuilt/android-x64/libbssl_dart_static.a
+        prebuilt/ios-arm64-iphoneos/libbssl_dart.dylib
+        prebuilt/ios-arm64-iphoneos/libbssl_dart_static.a
+        prebuilt/ios-arm64-iphonesimulator/libbssl_dart.dylib
+        prebuilt/ios-arm64-iphonesimulator/libbssl_dart_static.a
+        prebuilt/ios-x64-iphonesimulator/libbssl_dart.dylib
+        prebuilt/ios-x64-iphonesimulator/libbssl_dart_static.a
+        prebuilt/linux-arm64/libbssl_dart.so
+        prebuilt/linux-arm64/libbssl_dart_static.a
+        prebuilt/linux-x64/libbssl_dart.so
+        prebuilt/linux-x64/libbssl_dart_static.a
+        prebuilt/macos-arm64/libbssl_dart.dylib
+        prebuilt/macos-arm64/libbssl_dart_static.a
+        prebuilt/macos-x64/libbssl_dart.dylib
+        prebuilt/macos-x64/libbssl_dart_static.a
+        prebuilt/windows-x64/bssl_dart.dll
+        prebuilt/windows-x64/bssl_dart_static.lib
