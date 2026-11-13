@@ -36,8 +36,7 @@ final _skipWithoutPackage = _packageDir == null
           '.github/workflows/boring_binaries.yaml.'
     : null;
 
-Uri get _package =>
-    Directory.current.uri.resolveUri(Uri.directory(_packageDir!));
+Uri get _package => Directory(_packageDir!).absolute.uri;
 
 void main() {
   test(
@@ -228,8 +227,8 @@ dependencies:
 
   final binDir = Directory.fromUri(appDir.uri.resolve('bin/'));
   await binDir.create(recursive: true);
-  await File(
-    'example/boring_example.dart',
+  await File.fromUri(
+    _package.resolve('example/boring_example.dart'),
   ).copy(binDir.uri.resolve('boring_example.dart').toFilePath());
 
   final pubGet = await Process.run(
