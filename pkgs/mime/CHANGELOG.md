@@ -9,6 +9,8 @@
   characters and reject ASCII DEL (`0x7F`) in header field names.
 * Fix a stream hang and buffer assertion failure when trailing epilogue bytes
   follow the final `--boundary--\r\n` delimiter.
+* Limit the total size of a multipart header. Default is 65536 bytes.
+  A larger limit can be set when creating a `MimeMultipartTransformer`.
 
 ## 2.1.0
 
