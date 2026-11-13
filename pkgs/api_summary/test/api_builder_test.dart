@@ -301,22 +301,26 @@ class PrivateInterface {}
   }
 
   Future<void> test_nonPublicSkeletonIncludedByDefault() async {
-    final summary = await _build({
+    final files = {
       '$testPackageLibPath/file.dart': '''
 import 'package:foo/foo.dart';
 import 'src/private.dart';
 
 class MyClass extends Foo {
-  void use(PrivateInterface p) {}
+  void use(PrivateInterface p, HiddenExtType e) {}
 }
 ''',
       '$testPackageLibPath/src/private.dart': '''
-class PrivateInterface {
+class _TransitiveBase {}
+abstract interface class _TransitiveContract {}
+class PrivateInterface extends _TransitiveBase implements _TransitiveContract {
   void hiddenMember() {}
 }
+extension type HiddenExtType(int value) {}
 ''',
-    });
+    };
 
+    final summary = await _build(files);
     final decodedMap = jsonDecode(summary) as Map<String, dynamic>;
     final rehydrated = ApiSummary.fromJson(decodedMap);
 
@@ -335,8 +339,41 @@ class PrivateInterface {
     final privateClass = privateLib.classes.single;
     expect(privateClass.name, 'PrivateInterface');
     expect(privateClass.status, ApiDeclarationStatus.nonPublic);
+    expect(privateClass.supertype, isNull);
+    expect(privateClass.interfaces, isEmpty);
     expect(privateClass.constructors, isEmpty);
     expect(privateClass.methods, isEmpty);
+
+    final hiddenExt = privateLib.extensionTypes.single;
+    expect(hiddenExt.name, 'HiddenExtType');
+    expect(hiddenExt.status, ApiDeclarationStatus.nonPublic);
+    expect(hiddenExt.constructors, isEmpty);
+    expect(hiddenExt.methods, isEmpty);
+
+    expect(
+      rehydrated.toString(),
+      allOf(
+        contains('  HiddenExtType (non-public)\n'),
+        contains('  PrivateInterface (non-public)\n'),
+        isNot(contains('_TransitiveBase')),
+        isNot(contains('_TransitiveContract')),
+        isNot(contains('dart:core:')),
+      ),
+    );
+
+    final detailedSummary = await _build(
+      files,
+      customizer: const ApiSummaryCustomizer(
+        includeImplicitNonPublicMembers: true,
+      ),
+    );
+    final detailedRehydrated = ApiSummary.fromJson(
+      jsonDecode(detailedSummary) as Map<String, dynamic>,
+    );
+    expect(
+      detailedRehydrated.toString(),
+      contains('HiddenExtType (extension type, non-public):'),
+    );
   }
 
   Future<void> test_constMembers() async {

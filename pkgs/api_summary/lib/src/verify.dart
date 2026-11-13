@@ -310,13 +310,12 @@ List<String> _findUnexportedPrimaryBarrelLines(
   ).expand(_declarationTypes).expand(_nestedInterfaceTypes);
   for (final type in referencedTypes) {
     final libraryUri = type.libraryUri;
-    if (libraryUri == null || !Uri.parse(libraryUri).isIn(summary.name)) {
-      continue;
-    }
+    if (libraryUri == null) continue;
     final key = '$libraryUri#${type.name}';
-    if (primaryExportedKeys.contains(key) ||
+    if (!seenKeys.add(key) ||
+        primaryExportedKeys.contains(key) ||
         excludedKeys.contains(key) ||
-        !seenKeys.add(key)) {
+        !Uri.parse(libraryUri).isIn(summary.name)) {
       continue;
     }
     lines.add(
@@ -349,10 +348,9 @@ String _formatUnexportedBarrelType(
   String libraryUri,
   List<String>? siblings,
 ) {
-  if (siblings != null &&
-      siblings.isNotEmpty &&
-      !(siblings.length == 1 && siblings.single == libraryUri)) {
-    return '  - $name ($libraryUri, exported by ${siblings.join(', ')})';
+  final otherExports = siblings?.where((s) => s != libraryUri).toList();
+  if (otherExports != null && otherExports.isNotEmpty) {
+    return '  - $name ($libraryUri, exported by ${otherExports.join(', ')})';
   }
   return '  - $name ($libraryUri)';
 }
@@ -378,11 +376,11 @@ Iterable<ApiType> _declarationTypes(ApiDeclaration declaration) sync* {
       yield* declaration.interfaces;
       yield* declaration.mixins;
       yield* declaration.superclassConstraints;
-      for (final member in [
-        ...declaration.constructors,
-        ...declaration.methods,
-      ]) {
-        yield* _declarationTypes(member);
+      for (final constructor in declaration.constructors) {
+        yield* _declarationTypes(constructor);
+      }
+      for (final method in declaration.methods) {
+        yield* _declarationTypes(method);
       }
     case ApiExtension():
       yield* declaration.typeParameters.values.nonNulls;
@@ -392,13 +390,12 @@ Iterable<ApiType> _declarationTypes(ApiDeclaration declaration) sync* {
       }
     case ApiExtensionType():
       yield* declaration.typeParameters.values.nonNulls;
-      yield declaration.representationType;
       yield* declaration.interfaces;
-      for (final member in [
-        ...declaration.constructors,
-        ...declaration.methods,
-      ]) {
-        yield* _declarationTypes(member);
+      for (final constructor in declaration.constructors) {
+        yield* _declarationTypes(constructor);
+      }
+      for (final method in declaration.methods) {
+        yield* _declarationTypes(method);
       }
     case ApiExecutable():
       yield* declaration.typeParameters.values.nonNulls;

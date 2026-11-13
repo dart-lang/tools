@@ -56,7 +56,8 @@ dart run api_summary
 * `-w, --write`: Write the summary to the default golden file (`api.txt`,
   `api.json`, or `api.yaml`, based on `--format`) in the package directory.
 * `-c, --check`: Verify that the golden file (`api.txt`, `api.json`, or
-  `api.yaml`) matches the current public API, exiting with code `1` on mismatch.
+  `api.yaml`) matches the current public API and exposes no non-public or
+  unexported primary-barrel types, exiting with code `1` on failure.
 * `-h, --help`: Prints usage instructions.
 
 Note: `--output`, `--write`, and `--check` are mutually exclusive.
@@ -173,4 +174,8 @@ void main() {
 
 If a developer introduces a breaking change or adds a new public API element,
 `expectApiSummaryClean` fails the test with a compact line diff and instructs
-them to run `dart run api_summary --write` to update `api.txt`.
+them to run `dart run api_summary --write` to update `api.txt`. By default,
+`expectApiSummaryClean` also fails if public API signatures reference
+non-public `lib/src/` types or package-owned types not exported by the primary
+`package:<pkg>/<pkg>.dart` barrel; pass
+`ApiSummaryCustomizer(allowNonPublicTypes: true)` to opt out on legacy packages.

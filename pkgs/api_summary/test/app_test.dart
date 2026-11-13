@@ -300,6 +300,111 @@ PacketOk send(ByteWriter writer) => PacketOk();
     );
   });
 
+  test(
+    'expectApiSummaryClean allows opaque extension types and part files, and '
+    'flags exposed representation types across formats',
+    () async {
+      final samplePkgDir = await _createSandboxPackage(
+        libFiles: {
+          'src/internal.dart': 'class InternalRep {}\n',
+          'src/part_impl.dart': '''
+part of '../sample_pkg.dart';
+
+class PartDefined {}
+''',
+          'protocol.dart': '''
+class SiblingRep {}
+class LeakySiblingRep {}
+''',
+          'protocol_extra.dart':
+              "export 'protocol.dart' show LeakySiblingRep;\n",
+          'sample_pkg.dart': '''
+import 'protocol.dart';
+import 'src/internal.dart';
+
+part 'src/part_impl.dart';
+
+extension type SafeInternal._(InternalRep _rep) {
+  factory SafeInternal.create() => SafeInternal._(InternalRep());
+  int get id => 0;
+}
+
+extension type SafeSibling._(SiblingRep _rep) {
+  factory SafeSibling.create() => SafeSibling._(SiblingRep());
+  PartDefined get fromPart => PartDefined();
+}
+''',
+        },
+      );
+
+      final writeJson = await runCli([
+        '-p',
+        samplePkgDir,
+        '--write',
+        '--format=json',
+      ]);
+      expect(writeJson.exitCode, equals(0), reason: '${writeJson.stderr}');
+      await expectApiSummaryClean(
+        packagePath: samplePkgDir,
+        format: ApiSummaryFormat.json,
+      );
+
+      File(p.join(samplePkgDir, 'lib', 'sample_pkg.dart')).writeAsStringSync('''
+import 'protocol.dart';
+import 'src/internal.dart';
+
+part 'src/part_impl.dart';
+
+extension type SafeInternal._(InternalRep _rep) {
+  int get id => 0;
+}
+
+extension type LeakyHandle(LeakySiblingRep rep) {}
+''');
+
+      await expectLater(
+        expectApiSummaryClean(
+          packagePath: samplePkgDir,
+          format: ApiSummaryFormat.json,
+        ),
+        throwsA(
+          isA<ApiSummaryVerificationException>().having(
+            (e) => e.message,
+            'message',
+            allOf([
+              contains(
+                'LeakySiblingRep (package:sample_pkg/protocol.dart, '
+                'exported by package:sample_pkg/protocol_extra.dart)',
+              ),
+              isNot(contains('InternalRep')),
+              isNot(contains('PartDefined')),
+            ]),
+          ),
+        ),
+      );
+    },
+  );
+
+  test(
+    'packages without a primary barrel allow cross-entrypoint types',
+    () async {
+      final samplePkgDir = await _createSandboxPackage(
+        libFiles: {
+          'core.dart': 'class CoreType {}\n',
+          'io.dart': '''
+import 'core.dart';
+
+void serve(CoreType value) {}
+''',
+        },
+      );
+
+      final writeRes = await runCli(['-p', samplePkgDir, '--write']);
+      expect(writeRes.exitCode, equals(0), reason: '${writeRes.stderr}');
+      await expectApiSummaryClean(packagePath: samplePkgDir);
+    },
+  );
+
   test('CLI --write and --check round-trip in sandbox package', () async {
     final samplePkgDir = await _createSandboxPackage();
 

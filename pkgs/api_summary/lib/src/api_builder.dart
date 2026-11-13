@@ -106,6 +106,8 @@ final class _ApiBuilder {
           status != ApiDeclarationStatus.nonPublic) {
         continue;
       }
+      final includeHierarchy =
+          showDetails || _customizer.includeReferencedTypes;
 
       final libraries =
           _elementToLibraries[element] ??
@@ -114,16 +116,19 @@ final class _ApiBuilder {
       final apiElement = switch (element) {
         EnumElement() => _buildClass(
           element,
+          includeHierarchy: includeHierarchy,
           includeMembers: showDetails,
           status: status,
         ),
         MixinElement() => _buildClass(
           element,
+          includeHierarchy: includeHierarchy,
           includeMembers: showDetails,
           status: status,
         ),
         ClassElement() => _buildClass(
           element,
+          includeHierarchy: includeHierarchy,
           includeMembers: showDetails,
           status: status,
         ),
@@ -134,6 +139,7 @@ final class _ApiBuilder {
         ),
         ExtensionTypeElement() => _buildExtensionType(
           element,
+          includeHierarchy: includeHierarchy,
           includeMembers: showDetails,
           status: status,
         ),
@@ -242,7 +248,7 @@ final class _ApiBuilder {
     ),
   };
 
-  ApiType _describeType(DartType type) {
+  ApiType _describeType(DartType type, {bool enqueue = true}) {
     final isNullable = _isNullable(type.nullabilitySuffix);
     switch (type) {
       case DynamicType():
@@ -257,7 +263,7 @@ final class _ApiBuilder {
           apiParameters.add(
             ApiParameter(
               name: p.name ?? '',
-              type: _describeType(p.type),
+              type: _describeType(p.type, enqueue: enqueue),
               isRequired: p.isRequired,
               isNamed: p.isNamed,
               isOptionalPositional: p.isOptionalPositional,
@@ -267,30 +273,35 @@ final class _ApiBuilder {
         }
 
         return ApiFunctionType(
-          returnType: _describeType(returnType),
-          typeParameters: _extractTypeParameters(typeParameters),
+          returnType: _describeType(returnType, enqueue: enqueue),
+          typeParameters: _extractTypeParameters(
+            typeParameters,
+            enqueue: enqueue,
+          ),
           parameters: apiParameters,
           isNullable: isNullable,
         );
       case InterfaceType(:final element, :final typeArguments):
-        _maybeAddPending(element);
+        if (enqueue) _maybeAddPending(element);
         return ApiInterfaceType(
           name: element.name ?? '',
           libraryUri: element.library.uri.toString(),
-          typeArguments: typeArguments.map(_describeType).toList(),
+          typeArguments: typeArguments
+              .map((t) => _describeType(t, enqueue: enqueue))
+              .toList(),
           isNullable: isNullable,
         );
       case RecordType(:final positionalFields, :final namedFields):
         return ApiRecordType(
           positionalFields: positionalFields
-              .map((f) => _describeType(f.type))
+              .map((f) => _describeType(f.type, enqueue: enqueue))
               .toList(),
           namedFields: namedFields
               .sortedBy((f) => f.name)
               .map(
                 (f) => ApiRecordNamedField(
                   name: f.name,
-                  type: _describeType(f.type),
+                  type: _describeType(f.type, enqueue: enqueue),
                 ),
               )
               .toList(),
@@ -325,12 +336,15 @@ final class _ApiBuilder {
   }
 
   Map<String, ApiType?> _extractTypeParameters(
-    List<TypeParameterElement> elements,
-  ) {
+    List<TypeParameterElement> elements, {
+    bool enqueue = true,
+  }) {
     final result = <String, ApiType?>{};
     for (final e in elements) {
       if (e.name != null) {
-        result[e.name!] = e.bound != null ? _describeType(e.bound!) : null;
+        result[e.name!] = e.bound != null
+            ? _describeType(e.bound!, enqueue: enqueue)
+            : null;
       }
     }
     return result;
@@ -366,9 +380,25 @@ final class _ApiBuilder {
 
   ApiClass _buildClass(
     InterfaceElement element, {
+    required bool includeHierarchy,
     required bool includeMembers,
     required ApiDeclarationStatus status,
   }) {
+    if (!includeHierarchy) {
+      return ApiClass(
+        name: element.name ?? '',
+        locationUri: element.library.uri.toString(),
+        status: status,
+        typeParameters: const {},
+        interfaces: const [],
+        mixins: const [],
+        modifiers: const [],
+        immediateSubtypes: const [],
+        constructors: const [],
+        methods: const [],
+      );
+    }
+
     final constructors = <ApiExecutable>[];
     final methods = <ApiExecutable>[];
 
@@ -468,9 +498,23 @@ final class _ApiBuilder {
 
   ApiExtensionType _buildExtensionType(
     ExtensionTypeElement element, {
+    required bool includeHierarchy,
     required bool includeMembers,
     required ApiDeclarationStatus status,
   }) {
+    if (!includeHierarchy) {
+      return ApiExtensionType(
+        name: element.name ?? '',
+        locationUri: element.library.uri.toString(),
+        status: status,
+        representationType: const ApiDynamicType(),
+        typeParameters: const {},
+        interfaces: const [],
+        constructors: const [],
+        methods: const [],
+      );
+    }
+
     final constructors = <ApiExecutable>[];
     final methods = <ApiExecutable>[];
     if (includeMembers) {
@@ -484,11 +528,16 @@ final class _ApiBuilder {
         }
       }
     }
+    final hasPublicRepresentation =
+        !(element.representation.name?.startsWith('_') ?? false);
     return ApiExtensionType(
       name: element.name ?? '',
       locationUri: element.library.uri.toString(),
       status: status,
-      representationType: _describeType(element.representation.type),
+      representationType: _describeType(
+        element.representation.type,
+        enqueue: hasPublicRepresentation,
+      ),
       typeParameters: _extractTypeParameters(element.typeParameters),
       interfaces: element.interfaces.map(_describeType).toList(),
       constructors: constructors,
