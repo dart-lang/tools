@@ -300,6 +300,45 @@ class PrivateInterface {}
     expect(objectClass.constructors, isEmpty);
   }
 
+  Future<void> test_nonPublicSkeletonIncludedByDefault() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+import 'package:foo/foo.dart';
+import 'src/private.dart';
+
+class MyClass extends Foo {
+  void use(PrivateInterface p) {}
+}
+''',
+      '$testPackageLibPath/src/private.dart': '''
+class PrivateInterface {
+  void hiddenMember() {}
+}
+''',
+    });
+
+    final decodedMap = jsonDecode(summary) as Map<String, dynamic>;
+    final rehydrated = ApiSummary.fromJson(decodedMap);
+
+    expect(
+      rehydrated.libraries.map((l) => l.uri),
+      unorderedEquals([
+        'package:test/file.dart',
+        'package:test/src/private.dart',
+      ]),
+    );
+
+    final privateLib = rehydrated.libraries.firstWhere(
+      (l) => l.uri == 'package:test/src/private.dart',
+    );
+    expect(privateLib.isPublicEntryPoint, isFalse);
+    final privateClass = privateLib.classes.single;
+    expect(privateClass.name, 'PrivateInterface');
+    expect(privateClass.status, ApiDeclarationStatus.nonPublic);
+    expect(privateClass.constructors, isEmpty);
+    expect(privateClass.methods, isEmpty);
+  }
+
   Future<void> test_constMembers() async {
     final summary = await _build({
       '$testPackageLibPath/file.dart': '''

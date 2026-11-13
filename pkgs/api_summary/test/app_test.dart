@@ -127,6 +127,179 @@ void main() {
     );
   });
 
+  test('expectApiSummaryClean and --check fail on lib/src/ non-public types '
+      'unless allowNonPublicTypes is true', () async {
+    final samplePkgDir = await _createSandboxPackage(
+      libFiles: {
+        'src/internal.dart': 'class HiddenType {}\n',
+        'sample_pkg.dart': '''
+import 'src/internal.dart';
+
+HiddenType leak() => HiddenType();
+''',
+      },
+    );
+
+    final writeRes = await runCli(['-p', samplePkgDir, '--write']);
+    expect(writeRes.exitCode, equals(0), reason: '${writeRes.stderr}');
+
+    await expectLater(
+      expectApiSummaryClean(packagePath: samplePkgDir),
+      throwsA(
+        isA<ApiSummaryVerificationException>().having(
+          (e) => e.message,
+          'message',
+          allOf(
+            contains('HiddenType'),
+            contains('package:sample_pkg/src/internal.dart'),
+          ),
+        ),
+      ),
+    );
+
+    final checkRes = await runCli(['-p', samplePkgDir, '--check']);
+    expect(checkRes.exitCode, equals(1));
+    expect(checkRes.stderr, contains('HiddenType'));
+
+    await expectApiSummaryClean(
+      packagePath: samplePkgDir,
+      customizer: const ApiSummaryCustomizer(allowNonPublicTypes: true),
+    );
+  });
+
+  test('expectApiSummaryClean and --check fail when primary barrel references '
+      'types only exported by sibling libraries', () async {
+    final samplePkgDir = await _createSandboxPackage(
+      libFiles: {
+        'src/shared_a.dart': 'class SameName {}\n',
+        'src/shared_b.dart': 'class SameName {}\n',
+        'protocol.dart': '''
+export 'src/shared_a.dart';
+
+class ProtocolPacket {}
+enum ColumnType { text, integer }
+class CallbackArg {}
+class RecordFieldType {}
+class BoundType {}
+class AliasTarget {}
+class ExtendedTarget {}
+''',
+        'sample_pkg.dart': '''
+import 'protocol.dart' as proto;
+import 'src/shared_b.dart';
+
+export 'src/shared_b.dart';
+
+class ResultSet<T extends proto.BoundType> {
+  ResultSet({required proto.ProtocolPacket packet});
+  List<proto.ColumnType> get columns => const [];
+  (int, {proto.RecordFieldType meta}) readRow(
+    void Function(proto.CallbackArg) onItem,
+  ) => throw UnimplementedError();
+  proto.SameName get wrongSameName => throw UnimplementedError();
+  SameName get rightSameName => throw UnimplementedError();
+}
+
+typedef LeakedAlias = proto.AliasTarget;
+
+extension LeakedExt on proto.ExtendedTarget {
+  int get size => 0;
+}
+''',
+      },
+    );
+
+    final writeRes = await runCli(['-p', samplePkgDir, '--write']);
+    expect(writeRes.exitCode, equals(0), reason: '${writeRes.stderr}');
+
+    await expectLater(
+      expectApiSummaryClean(packagePath: samplePkgDir),
+      throwsA(
+        isA<ApiSummaryVerificationException>().having(
+          (e) => e.message,
+          'message',
+          allOf([
+            contains('package:sample_pkg/sample_pkg.dart'),
+            contains('AliasTarget'),
+            contains('BoundType'),
+            contains('CallbackArg'),
+            contains('ColumnType'),
+            contains('ExtendedTarget'),
+            contains('ProtocolPacket'),
+            contains('RecordFieldType'),
+            contains('SameName (package:sample_pkg/src/shared_a.dart'),
+            contains('package:sample_pkg/protocol.dart'),
+            isNot(contains('package:sample_pkg/src/shared_b.dart')),
+          ]),
+        ),
+      ),
+    );
+
+    final checkRes = await runCli(['-p', samplePkgDir, '--check']);
+    expect(checkRes.exitCode, equals(1));
+    expect(checkRes.stderr, contains('ProtocolPacket'));
+
+    await expectApiSummaryClean(
+      packagePath: samplePkgDir,
+      customizer: const ApiSummaryCustomizer(allowNonPublicTypes: true),
+    );
+  });
+
+  test('expectApiSummaryClean and --check allow secondary entrypoints to '
+      'reference primary barrel types', () async {
+    final samplePkgDir = await _createSandboxPackage(
+      libFiles: {
+        'sample_pkg.dart': '''
+class Request {}
+typedef Handler = void Function(Request);
+''',
+        'sample_pkg_io.dart': '''
+import 'sample_pkg.dart';
+
+void serve(Handler handler, Request initial) {}
+''',
+      },
+    );
+
+    final writeRes = await runCli(['-p', samplePkgDir, '--write']);
+    expect(writeRes.exitCode, equals(0), reason: '${writeRes.stderr}');
+
+    await expectApiSummaryClean(packagePath: samplePkgDir);
+
+    final checkRes = await runCli(['-p', samplePkgDir, '--check']);
+    expect(checkRes.exitCode, equals(0), reason: '${checkRes.stderr}');
+  });
+
+  test('expectApiSummaryClean reports both non-public types and unexported '
+      'primary-barrel sibling types in one pass', () async {
+    final samplePkgDir = await _createSandboxPackage(
+      libFiles: {
+        'src/private_writer.dart': 'class ByteWriter {}\n',
+        'protocol.dart': 'class PacketOk {}\n',
+        'sample_pkg.dart': '''
+import 'protocol.dart';
+import 'src/private_writer.dart';
+
+PacketOk send(ByteWriter writer) => PacketOk();
+''',
+      },
+    );
+
+    final writeRes = await runCli(['-p', samplePkgDir, '--write']);
+    expect(writeRes.exitCode, equals(0), reason: '${writeRes.stderr}');
+
+    await expectLater(
+      expectApiSummaryClean(packagePath: samplePkgDir),
+      throwsA(
+        isA<ApiSummaryVerificationException>().having(
+          (e) => e.message,
+          'message',
+          allOf(contains('ByteWriter'), contains('PacketOk')),
+        ),
+      ),
+    );
+  });
+
   test('CLI --write and --check round-trip in sandbox package', () async {
     final samplePkgDir = await _createSandboxPackage();
 
@@ -221,7 +394,12 @@ void main() {
   );
 }
 
-Future<String> _createSandboxPackage() async {
+Future<String> _createSandboxPackage({
+  Map<String, String> libFiles = const {
+    'sample_pkg.dart': 'int add(int a, int b) => a + b;\n',
+  },
+}) async {
+  final pkgDir = p.join(d.sandbox, 'pkg');
   await d.dir('pkg', [
     d.file('pubspec.yaml', 'name: sample_pkg\nenvironment:\n  sdk: ^3.12.0\n'),
     d.dir('.dart_tool', [
@@ -240,11 +418,13 @@ Future<String> _createSandboxPackage() async {
         }),
       ),
     ]),
-    d.dir('lib', [
-      d.file('sample_pkg.dart', 'int add(int a, int b) => a + b;\n'),
-    ]),
   ]).create();
-  return p.join(d.sandbox, 'pkg');
+  for (final MapEntry(:key, :value) in libFiles.entries) {
+    final file = File(p.join(pkgDir, 'lib', key));
+    file.parent.createSync(recursive: true);
+    file.writeAsStringSync(value);
+  }
+  return pkgDir;
 }
 
 // Dynamically locate the api_summary package root

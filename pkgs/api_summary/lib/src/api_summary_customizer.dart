@@ -55,11 +55,12 @@ base class ApiSummaryCustomizer {
   /// [ApiDeclarationStatus.referenced] and without their members.
   final bool includeReferencedTypes;
 
-  /// Whether to allow [ApiDeclarationStatus.nonPublic] declarations to appear
-  /// in the public API without failing validation.
+  /// Whether to allow [ApiDeclarationStatus.nonPublic] declarations or
+  /// package-owned types unexported by the primary `package:<pkg>/<pkg>.dart`
+  /// barrel to appear in public API signatures without failing validation.
   ///
   /// This can be used as an opt-out for legacy packages that intentionally
-  /// expose non-public types.
+  /// expose non-public or secondary-entrypoint types.
   final bool allowNonPublicTypes;
 
   const ApiSummaryCustomizer({
