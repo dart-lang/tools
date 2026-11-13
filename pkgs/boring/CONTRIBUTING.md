@@ -28,18 +28,21 @@ change to the native sources (`src/`, `third_party/boringssl/`, or
 
 To release, push a `boring-v<version>` tag, for example by creating a GitHub
 release with it. The workflow then builds the libraries from the tagged commit,
-attests their provenance
-(`gh attestation verify <file> --repo dart-lang/tools`), and publishes the
-tested archive to pub.dev. [`publish.yaml`](../../.github/workflows/publish.yaml),
-which publishes the other packages of this repository, skips these tags. As the
-libraries are built from the tagged commit, the `fetch` and `checkout` build
-modes produce the same BoringSSL.
+tests the archive across Linux, macOS, and Windows, and calls
+`dart-lang/setup-dart/.github/workflows/publish.yml` (`bundled-files`,
+`attest: true`) to stage the libraries into an isolated checkout, attest the
+package archive's SLSA Build L3 provenance, and publish it to pub.dev.
+[`publish.yaml`](../../.github/workflows/publish.yaml), which publishes the
+other packages of this repository, skips these tags. As the libraries are built
+from the tagged commit, the `fetch` and `checkout` build modes produce the same
+BoringSSL.
 
 `dart run tool/precompile_binaries.dart` writes the libraries for the current
 OS to `prebuilt/`, so that a path dependency on a checkout can use the `fetch`
 build mode. To run `test/prebuilt_test.dart` locally, download the
-`package-archive` artifact of a workflow run, extract the `package.tar.gz` in
-it, and set `BORING_PACKAGE_DIR` to the extracted directory.
+`test-package-archive` (or `package-archive`) artifact of a workflow run,
+extract the `package.tar.gz` in it, and set `BORING_PACKAGE_DIR` to the
+extracted directory.
 
 ## Updating BoringSSL and Regenerating Bindings
 

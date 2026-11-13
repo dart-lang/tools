@@ -1,9 +1,11 @@
 # Builds the prebuilt libraries that hook/build.dart uses in the `fetch` build
 # mode, adds them to the prebuilt/ directory of package:boring, and tests the
-# package archive with them. On a `boring-v<version>` tag, it then publishes
-# that archive to pub.dev, so the libraries come with the package instead of
-# being downloaded. publish.yaml skips these tags, as it would publish the
-# package without them.
+# package archive with them. On a `boring-v<version>` tag, it then calls
+# `dart-lang/setup-dart/.github/workflows/publish.yml` (`bundled-files`,
+# `attest: true`) to stage the libraries into an isolated checkout, attest the
+# package archive's SLSA Build L3 provenance, and publish it to pub.dev, so the
+# libraries come with the package instead of being downloaded. publish.yaml
+# skips these tags, as it would publish the package without them.
 #
 # The libraries are built from the tagged commit, so they match the vendored
 # BoringSSL that the `checkout` build mode compiles.
@@ -48,9 +50,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # Runs compilers and other tools, so it must not be able to mint OIDC
-  # tokens, which pub.dev would accept for a tag push: the `attest` job attests
-  # the libraries instead.
+  # Runs compilers and other build tools, so it only gets `contents: read` and
+  # cannot mint OIDC tokens.
   precompile:
     name: Precompile (${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }})
     runs-on: ${{ matrix.os }}
@@ -207,44 +208,22 @@ jobs:
             exit 1
           fi
           echo "The DLL doesn't import the C runtime dynamically."
+      - name: Stage prebuilt libraries
+        run: |
+          mkdir -p "$RUNNER_TEMP/bundled-files"
+          cp -r prebuilt "$RUNNER_TEMP/bundled-files/"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: prebuilt-${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }}
-          path: pkgs/boring/prebuilt/
+          name: bundled-files-${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }}
+          path: ${{ runner.temp }}/bundled-files/
           if-no-files-found: error
 
-  # Attests the provenance of the libraries that a tag publishes, in a job that
-  # only downloads and attests them.
-  attest:
-    name: Attest the provenance of the libraries
-    needs: precompile
-    if: github.event_name == 'push' && github.ref_type == 'tag'
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write # To sign the provenance attestations of the libraries.
-      attestations: write # To store the attestations with the repository.
-    steps:
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
-        with:
-          pattern: prebuilt-*
-          path: prebuilt
-          merge-multiple: true
-      # Names each library by its path in prebuilt/, as the libraries of the
-      # targets share file names.
-      - name: Hash the libraries
-        working-directory: prebuilt
-        run: sha256sum -- */* | tee "$RUNNER_TEMP/checksums.txt"
-      # Verify a library of the published package with
-      # `gh attestation verify <file> --repo dart-lang/tools`.
-      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
-        with:
-          subject-checksums: ${{ runner.temp }}/checksums.txt
-
   # Adds the libraries of all targets to prebuilt/, where hook/build.dart looks
-  # for them, and creates the package archive. pkgs/boring/.pubignore, unlike
-  # .gitignore, doesn't ignore them.
+  # for them, and creates a package archive for `test` (including on fork PRs,
+  # where `publish` cannot run because OIDC tokens are unavailable).
+  # pkgs/boring/.pubignore, unlike .gitignore, doesn't ignore prebuilt/.
   package:
-    name: Create the package archive
+    name: Create the test package archive
     needs: precompile
     runs-on: ubuntu-latest
     defaults:
@@ -259,8 +238,8 @@ jobs:
           sdk: stable
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          pattern: prebuilt-*
-          path: pkgs/boring/prebuilt
+          pattern: bundled-files-*
+          path: pkgs/boring
           merge-multiple: true
       - name: Install dependencies
         run: dart pub get
@@ -270,7 +249,7 @@ jobs:
         run: dart pub publish --to-archive="$RUNNER_TEMP/package.tar.gz"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: package-archive
+          name: test-package-archive
           path: ${{ runner.temp }}/package.tar.gz
           if-no-files-found: error
 
@@ -304,12 +283,32 @@ jobs:
       - name: Install Linux cross toolchain (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-      # A third-party tap, which Homebrew can't pin, unlike the Windows download
-      # below. It only links the test's cross-compiled example, never anything
-      # that is released.
       - name: Install Linux cross toolchain (macOS)
         if: runner.os == 'macOS'
-        run: brew install messense/macos-cross-toolchains/aarch64-unknown-linux-gnu
+        shell: bash
+        run: |
+          case "$(uname -m)" in
+            arm64)
+              url="https://github.com/messense/homebrew-macos-cross-toolchains/releases/download/v15.2.0/aarch64-unknown-linux-gnu-aarch64-darwin.tar.gz"
+              expected="0f224db36d8572489f09ed5bce39f189eee998f9ab4f8ea07f510d6c7078caa3"
+              ;;
+            x86_64)
+              url="https://github.com/messense/homebrew-macos-cross-toolchains/releases/download/v15.2.0/aarch64-unknown-linux-gnu-x86_64-darwin.tar.gz"
+              expected="7fa485313b7049d57c5de56bf876d5c4648ebfd736f86a8f4739596218523127"
+              ;;
+            *)
+              echo "::error::Unsupported macOS architecture: $(uname -m)"
+              exit 1
+              ;;
+          esac
+          curl -fSL -o "$RUNNER_TEMP/aarch64-linux-gnu.tar.gz" "$url"
+          actual="$(shasum -a 256 < "$RUNNER_TEMP/aarch64-linux-gnu.tar.gz" | cut -d' ' -f1)"
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::Expected SHA-256 $expected for $url, got $actual."
+            exit 1
+          fi
+          tar -xzf "$RUNNER_TEMP/aarch64-linux-gnu.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/aarch64-unknown-linux-gnu/bin" >> "$GITHUB_PATH"
       - name: Install Linux cross toolchain (Windows)
         if: runner.os == 'Windows'
         shell: bash
@@ -332,7 +331,7 @@ jobs:
           cygpath -w "$BIN_DIR" >> "$GITHUB_PATH"
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          name: package-archive
+          name: test-package-archive
           path: ${{ runner.temp }}
       - name: Extract the package archive
         shell: bash
@@ -345,25 +344,53 @@ jobs:
           BORING_PACKAGE_DIR: ${{ runner.temp }}/boring
         run: dart test test/prebuilt_test.dart
 
-  # Publishes the tested package archive. pub.dev accepts it from the push of a
-  # tag that matches the tag pattern of its automated publishing settings for
-  # package:boring.
+  # Stages `bundled-files-*` into an isolated checkout via setup-dart's reusable
+  # publishing workflow, generates SLSA Build L3 provenance (`attest: true`),
+  # and publishes on `boring-v<version>` tags (running in `test-run` mode on
+  # non-tag runs from this repository).
   publish:
     name: Publish to pub.dev
-    needs: [package, test, attest]
+    needs: [precompile, test]
     if: >-
+      !cancelled() &&
       github.repository_owner == 'dart-lang' &&
-      github.event_name == 'push' && github.ref_type == 'tag'
-    runs-on: ubuntu-latest
+      needs.precompile.result == 'success' &&
+      (
+        (github.event_name == 'push' && github.ref_type == 'tag' && needs.test.result == 'success') ||
+        (github.ref_type != 'tag' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository))
+      )
     permissions:
-      id-token: write # To authenticate with pub.dev.
-    steps:
-      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
-        with:
-          sdk: stable
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
-        with:
-          name: package-archive
-          path: ${{ runner.temp }}
-      - name: Publish the package archive
-        run: dart pub publish --from-archive="$RUNNER_TEMP/package.tar.gz" --force
+      id-token: write # To authenticate with pub.dev and sign the attestation.
+      attestations: write # To store the package attestation.
+    # TODO(mosuem): Repin to `main` / `@v1` once dart-lang/setup-dart#210, #212,
+    # and #213 land.
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@05f6f8a1c44c614ffa21021a13d34089858e5e8e # publish-bundled-files
+    with:
+      working-directory: pkgs/boring
+      use-flutter: false
+      attest: true
+      test-run: ${{ github.event_name != 'push' || github.ref_type != 'tag' }}
+      # Keep in sync with `prebuiltTargets` in lib/src/hook_helpers/targets.dart.
+      bundled-files: |
+        prebuilt/android-arm/libbssl_dart.so
+        prebuilt/android-arm/libbssl_dart_static.a
+        prebuilt/android-arm64/libbssl_dart.so
+        prebuilt/android-arm64/libbssl_dart_static.a
+        prebuilt/android-x64/libbssl_dart.so
+        prebuilt/android-x64/libbssl_dart_static.a
+        prebuilt/ios-arm64-iphoneos/libbssl_dart.dylib
+        prebuilt/ios-arm64-iphoneos/libbssl_dart_static.a
+        prebuilt/ios-arm64-iphonesimulator/libbssl_dart.dylib
+        prebuilt/ios-arm64-iphonesimulator/libbssl_dart_static.a
+        prebuilt/ios-x64-iphonesimulator/libbssl_dart.dylib
+        prebuilt/ios-x64-iphonesimulator/libbssl_dart_static.a
+        prebuilt/linux-arm64/libbssl_dart.so
+        prebuilt/linux-arm64/libbssl_dart_static.a
+        prebuilt/linux-x64/libbssl_dart.so
+        prebuilt/linux-x64/libbssl_dart_static.a
+        prebuilt/macos-arm64/libbssl_dart.dylib
+        prebuilt/macos-arm64/libbssl_dart_static.a
+        prebuilt/macos-x64/libbssl_dart.dylib
+        prebuilt/macos-x64/libbssl_dart_static.a
+        prebuilt/windows-x64/bssl_dart.dll
+        prebuilt/windows-x64/bssl_dart_static.lib
