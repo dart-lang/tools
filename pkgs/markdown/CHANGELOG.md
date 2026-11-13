@@ -1,5 +1,9 @@
 ## 7.4.1-wip
 
+* Split a fenced code block info string at the first space or tab, so a
+  tab no longer ends up inside the `language-` class (matching cmark and
+  commonmark.js). Also return early from `escapePunctuation` when the input
+  has no backslash.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on
