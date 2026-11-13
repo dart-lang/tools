@@ -211,6 +211,8 @@ final class _ApiTextRenderer {
 
       if (!_renderedTopLevelElements.add(key)) {
         childNode.text.add(' (see above)');
+      } else if (_isMinimalNonPublicSkeleton(element)) {
+        childNode.text.add(' (non-public)');
       } else {
         switch (element) {
           case ApiClass():
@@ -384,6 +386,12 @@ final class _ApiTextRenderer {
       );
     }
     parentheticals.add(instanceDescription);
+
+    if (element.status == ApiDeclarationStatus.referenced) {
+      parentheticals.add(['referenced']);
+    } else if (element.status == ApiDeclarationStatus.nonPublic) {
+      parentheticals.add(['non-public']);
+    }
 
     _renderParentheticals(
       parentheticals: parentheticals,
@@ -714,3 +722,30 @@ MemberSortKey _computeSortKeyForDangling(ApiInterfaceType type) =>
       name: type.name,
       isSetter: false,
     );
+
+bool _isMinimalNonPublicSkeleton(ApiDeclaration element) {
+  if (element.status != .nonPublic ||
+      element.isDeprecated ||
+      element.facets.isNotEmpty) {
+    return false;
+  }
+  return switch (element) {
+    ApiClass() =>
+      element.supertype == null &&
+          element.typeParameters.isEmpty &&
+          element.interfaces.isEmpty &&
+          element.mixins.isEmpty &&
+          element.superclassConstraints.isEmpty &&
+          element.modifiers.isEmpty &&
+          element.immediateSubtypes.isEmpty &&
+          element.constructors.isEmpty &&
+          element.methods.isEmpty,
+    ApiExtensionType() =>
+      element.representationType is ApiDynamicType &&
+          element.typeParameters.isEmpty &&
+          element.interfaces.isEmpty &&
+          element.constructors.isEmpty &&
+          element.methods.isEmpty,
+    _ => false,
+  };
+}
