@@ -196,9 +196,18 @@ extension ResolverPackageUri on Resolver {
 /// Bazel URI resolver.
 class BazelResolver extends Resolver {
   /// Creates a Bazel resolver with the specified workspace path, if any.
-  BazelResolver({this.workspacePath = ''});
+  BazelResolver({this.workspacePath = ''})
+    : _workspace = _normalizeWorkspace(workspacePath);
 
   final String workspacePath;
+  final String _workspace;
+
+  static String _normalizeWorkspace(String workspacePath) {
+    final parts = p.posix
+        .split(workspacePath)
+        .where((s) => s.isNotEmpty && s != '.' && s != '/');
+    return parts.isEmpty ? '.' : p.posix.joinAll(parts);
+  }
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
@@ -214,22 +223,28 @@ class BazelResolver extends Resolver {
       return _resolveBazelPackage(uri.pathSegments);
     }
     if (uri.scheme == 'file') {
-      final runfilesPathSegment = '.runfiles/$workspacePath'.replaceAll(
-        RegExp(r'/*$'),
-        '/',
-      );
-      final runfilesPos = uri.path.indexOf(runfilesPathSegment);
-      if (runfilesPos >= 0) {
-        final pathStart = runfilesPos + runfilesPathSegment.length;
-        return uri.path.substring(pathStart);
-      }
-      return null;
+      return _extractFilePath(uri);
     }
     if (uri.scheme == 'https' || uri.scheme == 'http') {
       return _extractHttpPath(uri);
     }
     // We cannot deal with anything else.
     failed.add('$uri');
+    return null;
+  }
+
+  String? _extractFilePath(Uri uri) {
+    final segments = [
+      for (final s in uri.pathSegments)
+        if (s.isNotEmpty) s,
+    ];
+    for (var i = 0; i < segments.length; i++) {
+      if (!segments[i].endsWith('.runfiles')) continue;
+      final after = p.posix.joinAll(segments.skip(i + 1));
+      if (after.isNotEmpty && p.posix.isWithin(_workspace, after)) {
+        return p.posix.relative(after, from: _workspace);
+      }
+    }
     return null;
   }
 

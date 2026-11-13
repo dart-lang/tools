@@ -302,6 +302,101 @@ void main() {
         ),
         'foo/bar/lib/src/baz.dart',
       );
+      expect(resolver.resolve('file://x/y/z/foo/bar/lib/baz.dart'), isNull);
+    });
+
+    test('resolves file URIs when workspacePath is slash-padded', () {
+      for (final padded in ['$workspace/', '$workspace///', '/$workspace/']) {
+        final slashResolver = BazelResolver(workspacePath: padded);
+        expect(
+          slashResolver.resolve(
+            'file://x/y/z.runfiles/$workspace/foo/bar/lib/baz.dart',
+          ),
+          'foo/bar/lib/baz.dart',
+          reason: 'workspacePath="$padded" (2-slash file URI)',
+        );
+        expect(
+          slashResolver.resolve(
+            'file:///x/y/z.runfiles/$workspace/foo/bar/lib/src/baz.dart',
+          ),
+          'foo/bar/lib/src/baz.dart',
+          reason: 'workspacePath="$padded" (3-slash file URI)',
+        );
+      }
+    });
+
+    test('resolves file URIs when workspacePath is empty', () {
+      final defaultResolver = BazelResolver();
+      expect(
+        defaultResolver.resolve('file://x/y/z.runfiles/foo/bar/lib/baz.dart'),
+        'foo/bar/lib/baz.dart',
+      );
+      expect(
+        BazelResolver(
+          workspacePath: '',
+        ).resolve('file:///x/y/z.runfiles/foo/bar/lib/src/baz.dart'),
+        'foo/bar/lib/src/baz.dart',
+      );
+    });
+
+    test('resolves file URIs with multi-segment workspacePath', () {
+      final multiResolver = BazelResolver(workspacePath: 'a/b');
+      expect(
+        multiResolver.resolve('file:///x/y/z.runfiles/a/b/lib/baz.dart'),
+        'lib/baz.dart',
+      );
+    });
+
+    test('decodes percent-encoded segments in file URIs', () {
+      expect(
+        resolver.resolve('file:///x/y/z.runfiles/$workspace/my%20dir/baz.dart'),
+        'my dir/baz.dart',
+      );
+    });
+
+    test('resolves Windows drive-letter file URIs', () {
+      expect(
+        resolver.resolve(
+          'file:///C:/b/execroot/z.runfiles/$workspace/foo/bar/lib/baz.dart',
+        ),
+        'foo/bar/lib/baz.dart',
+      );
+    });
+
+    test('resolves nested .runfiles segments matching workspacePath', () {
+      expect(
+        resolver.resolve(
+          'file:///x/outer.runfiles/other_ws/inner.runfiles/$workspace/lib/baz.dart',
+        ),
+        'lib/baz.dart',
+      );
+    });
+
+    test('rejects workspace prefix collisions and directory-only URIs', () {
+      expect(
+        resolver.resolve(
+          'file:///x/y/z.runfiles/${workspace}_other/lib/baz.dart',
+        ),
+        isNull,
+      );
+      expect(resolver.resolve('file:///x/y/z.runfiles/$workspace/'), isNull);
+      expect(resolver.resolve('file:///x/y/z.runfiles/$workspace'), isNull);
+      expect(BazelResolver().resolve('file:///x/y/z.runfiles/'), isNull);
+    });
+
+    test('rejects .. escapes while normalizing internal .. segments', () {
+      expect(
+        resolver.resolve('file:///x/y/z.runfiles/$workspace/../etc/passwd'),
+        isNull,
+      );
+      expect(
+        BazelResolver().resolve('file:///x/y/z.runfiles/../etc/passwd'),
+        isNull,
+      );
+      expect(
+        resolver.resolve('file:///x/y/z.runfiles/$workspace/foo/../bar.dart'),
+        'bar.dart',
+      );
     });
 
     test('resolves HTTPS URIs containing /packages/', () {
