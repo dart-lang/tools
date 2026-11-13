@@ -150,7 +150,6 @@ class BoundMultipartStream {
             _parse();
           } on MimeMultipartException catch (error, stackTrace) {
             _fail(error, stackTrace);
-            return;
           }
         }, onDone: () {
           if (_state != _doneCode) {
