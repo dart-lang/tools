@@ -217,6 +217,14 @@ void main() {
       expect('foo/baz', isNot(contains(glob)));
       expect('foo/bar/bang', isNot(contains(glob)));
     });
+
+    test('an empty option does not throw', () {
+      var glob = Glob('{**/,}foo.dart');
+      expect('foo.dart', contains(glob));
+      expect('a/foo.dart', contains(glob));
+      expect('a/b/foo.dart', contains(glob));
+      expect('a/foo.txt', isNot(contains(glob)));
+    });
   });
 
   group('normalization', () {
