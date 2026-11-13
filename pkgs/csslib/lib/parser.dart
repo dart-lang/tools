@@ -2575,7 +2575,30 @@ class _Parser {
     // Gobble up everything until we hit our stop token.
     var stringValue = StringBuffer();
     while (_peek() != stopToken && _peek() != TokenKind.END_OF_FILE) {
-      stringValue.write(_next().text);
+      var token = _next();
+      var text = token.text;
+
+      // A backslash escapes the next character, so a token ending in an odd
+      // number of backslashes means the following token is escaped content
+      // and can't terminate the string (e.g. \" inside "..." is a literal
+      // quote, not the end of the string).
+      var trailingBackslashes = 0;
+      for (var i = text.length - 1; i >= 0 && text.codeUnitAt(i) == 92; i--) {
+        trailingBackslashes++;
+      }
+      if (trailingBackslashes.isOdd && _peek() != TokenKind.END_OF_FILE) {
+        var escaped = _next();
+        if (escaped.kind == stopToken) {
+          // The closing quote is escaped; keep it as string content without
+          // the escaping backslash. Other escapes keep their raw text.
+          stringValue.write(text.substring(0, text.length - 1));
+        } else {
+          stringValue.write(text);
+        }
+        stringValue.write(escaped.text);
+      } else {
+        stringValue.write(text);
+      }
     }
 
     tokenizer._inString = inString;

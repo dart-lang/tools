@@ -1,5 +1,8 @@
 ## 1.0.3-wip
 
+- Fix a backslash-escaped quote of the same kind (`\"` inside `"..."`, `\'`
+  inside `'...'`) prematurely terminating a string, which dropped the rest of
+  the declaration and produced parse errors.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
