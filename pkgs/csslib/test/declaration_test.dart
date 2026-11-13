@@ -524,6 +524,142 @@ void testMediaQueries() {
   expectCss(input, generated);
 }
 
+void testMediaQueryRecovery() {
+  var errors = <Message>[];
+
+  // A media query that doesn't match the grammar is replaced by "not all"
+  // (Media Queries L4 §3.2); the rule body and the rest of the sheet must
+  // still parse.
+  var input = '''
+.a { color: red; }
+@media (width <= 480px) { .b { color: green; } }
+.c { color: blue; }''';
+  var generated = '''
+.a {
+  color: #f00;
+}
+@media NOT all {
+  .b {
+    color: #008000;
+  }
+}
+.c {
+  color: #00f;
+}''';
+
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
+  expect(errors.isEmpty, true, reason: errors.toString());
+  expect(prettyPrint(stylesheet), generated);
+
+  var topLevels = stylesheet.topLevels;
+  expect(topLevels.length, 3);
+  var media = topLevels[1];
+  expect(media, isA<MediaDirective>());
+  media as MediaDirective;
+  expect(media.rules.length, 1);
+  expect(media.mediaQueries.single.hasUnary, isTrue);
+  expect(media.mediaQueries.single.unary, 'NOT');
+  expect(media.mediaQueries.single.mediaType, 'all');
+
+  // Other unsupported preludes recover the same way.
+  input = '''
+@media (400px < width < 700px) { .b { color: green; } }
+.c { color: blue; }''';
+  generated = '''
+@media NOT all {
+  .b {
+    color: #008000;
+  }
+}
+.c {
+  color: #00f;
+}''';
+  expectCss(input, generated);
+
+  // Only the malformed query is replaced; later queries still parse.
+  input = '''
+@media screen and (width <= 1), print { .b { color: green; } }
+.c { color: blue; }''';
+  generated = '''
+@media NOT all, print {
+  .b {
+    color: #008000;
+  }
+}
+.c {
+  color: #00f;
+}''';
+  expectCss(input, generated);
+
+  // Recovery must stop before a following @-rule, whether it's a known
+  // directive or an unknown one (which tokenizes as '@' + name).
+  input = '''
+@media (width <= 480px) { .b { color: green; } }
+@import 'simple.css';
+.unknown { top: 1px; }''';
+  generated = '''
+@media NOT all {
+  .b {
+    color: #008000;
+  }
+}
+@import "simple.css";
+.unknown {
+  top: 1px;
+}''';
+  expectCss(input, generated);
+
+  input = '''
+@media (width <= 480px) { .b { color: green; } }
+@media print { .d { color: black; } }''';
+  generated = '''
+@media NOT all {
+  .b {
+    color: #008000;
+  }
+}
+@media print {
+  .d {
+    color: #000;
+  }
+}''';
+  expectCss(input, generated);
+
+  // An unrecognized @-rule (tokenized as '@' + name, not a directive token)
+  // must also end the resync so it gets normal unknown-directive handling
+  // instead of being swallowed into the media rule.
+  errors = <Message>[];
+  input = '''
+@media screen and garbage @unknown { .x { color: purple; } }''';
+  stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
+
+  // Same top-level shape as the directive on its own: the media rule, then
+  // the unknown directive (a var definition in default options), then .x.
+  topLevels = stylesheet.topLevels;
+  expect(topLevels.length, 3);
+  var mediaDirective = topLevels[0];
+  expect(mediaDirective, isA<MediaDirective>());
+  mediaDirective as MediaDirective;
+  expect(mediaDirective.mediaQueries.single.mediaType, 'all');
+  expect(topLevels[1], isA<VarDefinitionDirective>());
+  expect(topLevels[2], isA<RuleSet>());
+  expect(prettyPrint(stylesheet), '''
+@media NOT all {
+}
+var-unknown: ;
+.x {
+  color: #800080;
+}''');
+
+  // Without the @ boundary the resync also ran past 'and'-terminated queries.
+  input = '''
+@media screen and @unknown { .x { color: purple; } }''';
+  stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
+  mediaDirective = stylesheet.topLevels[0] as MediaDirective;
+  expect(mediaDirective.mediaQueries.single.mediaType, 'all');
+  expect(stylesheet.topLevels.length, 3);
+}
+
 void testMozDocument() {
   var errors = <Message>[];
   // Test empty url-prefix, commonly used for browser detection.
@@ -1466,6 +1602,7 @@ void main() {
   test('Unicode', testUnicode);
   test('Newer CSS', testNewerCss);
   test('Media Queries', testMediaQueries);
+  test('Media Query Recovery', testMediaQueryRecovery);
   test('Document', testMozDocument);
   test('Supports', testSupports);
   test('Viewport', testViewport);

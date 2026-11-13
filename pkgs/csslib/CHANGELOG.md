@@ -1,5 +1,10 @@
 ## 1.0.3-wip
 
+- Fix error recovery for media queries that don't match the grammar (for
+  example the Media Queries Level 4 range syntax `(width <= 480px)`, which is
+  not yet supported): the query is replaced by `not all` per section 3.2, so
+  the `@media` block and the rest of the style sheet still parse instead of
+  being dropped.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
