@@ -82,20 +82,36 @@ extension Concatenate<T> on Stream<T> {
   /// Emits [initial] before any values or errors from the this stream.
   ///
   /// If this stream is a broadcast stream the result will be as well.
-  /// If this stream is a broadcast stream, the returned stream will only
-  /// contain events of this stream that are emitted after the [initial] value
-  /// has been emitted on the returned stream.
-  Stream<T> startWith(T initial) =>
-      startWithStream(Future.value(initial).asStream());
+  /// Every listener of the result receives [initial], followed by the events
+  /// this stream emits from the moment that listener started listening. A
+  /// listener which cancels and listens again receives [initial] again.
+  Stream<T> startWith(T initial) => isBroadcast
+      ? _startWithBroadcast([initial])
+      : startWithStream(Future.value(initial).asStream());
 
   /// Emits all values in [initial] before any values or errors from this
   /// stream.
   ///
   /// If this stream is a broadcast stream the result will be as well.
-  /// If this stream is a broadcast stream it will miss any events which
-  /// occur before the initial values are all emitted.
-  Stream<T> startWithMany(Iterable<T> initial) =>
-      startWithStream(Stream.fromIterable(initial));
+  /// Every listener of the result receives the values of [initial], followed by
+  /// the events this stream emits from the moment that listener started
+  /// listening. A listener which cancels and listens again receives the values
+  /// of [initial] again. [initial] is iterated once for each listener.
+  Stream<T> startWithMany(Iterable<T> initial) => isBroadcast
+      ? _startWithBroadcast(initial)
+      : startWithStream(Stream.fromIterable(initial));
+
+  Stream<T> _startWithBroadcast(Iterable<T> initial) =>
+      Stream<T>.multi((controller) {
+        // `add` delivers asynchronously, so source events delivered with
+        // `addSync` below stay queued behind the initial values.
+        for (var value in initial) {
+          controller.add(value);
+        }
+        final subscription = listen(controller.addSync,
+            onError: controller.addErrorSync, onDone: controller.closeSync);
+        controller.onCancel = subscription.cancel;
+      }, isBroadcast: true);
 
   /// Emits all values and errors in [initial] before any values or errors from
   /// this stream.
