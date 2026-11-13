@@ -1,0 +1,33 @@
+# Copyright (c) 2026, the Dart project authors. Please see the AUTHORS file
+# for details. All rights reserved. Use of this source code is governed by a
+# BSD-style license that can be found in the LICENSE file.
+
+name: Set up NASM
+description: >-
+  Installs NASM on Windows, which assembles the x86-64 assembly of the BoringSSL
+  that pkgs/boring vendors. Downloads the release from nasm.us and checks it
+  against a pinned SHA-256, instead of trusting a third-party action and its
+  mirror.
+
+runs:
+  using: composite
+  steps:
+    - name: Install NASM
+      shell: bash
+      env:
+        NASM_VERSION: 2.16.01
+        # nasm.us doesn't publish checksums. This is the SHA-256 of
+        # nasm-2.16.01-win64.zip from nasm.us, which matches the hash in Scoop's
+        # manifest of NASM 2.16.01.
+        NASM_SHA256: 029eed31faf0d2c5f95783294432cbea6c15bf633430f254bb3c1f195c67ca3a
+      run: |
+        url="https://www.nasm.us/pub/nasm/releasebuilds/$NASM_VERSION/win64/nasm-$NASM_VERSION-win64.zip"
+        curl -fsSL -o "$RUNNER_TEMP/nasm.zip" "$url"
+        actual="$(sha256sum < "$RUNNER_TEMP/nasm.zip" | cut -d' ' -f1)"
+        if [ "$actual" != "$NASM_SHA256" ]; then
+          echo "::error::Expected SHA-256 $NASM_SHA256 for $url, got $actual."
+          exit 1
+        fi
+        7z x "$RUNNER_TEMP/nasm.zip" -o"$RUNNER_TEMP" -y > /dev/null
+        "$RUNNER_TEMP/nasm-$NASM_VERSION/nasm.exe" -v
+        cygpath -w "$RUNNER_TEMP/nasm-$NASM_VERSION" >> "$GITHUB_PATH"

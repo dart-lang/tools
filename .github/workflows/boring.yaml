@@ -7,11 +7,13 @@ on:
   push:
     branches: [ main ]
     paths:
+      - '.github/actions/setup-nasm/**'
       - '.github/workflows/boring.yaml'
       - 'pkgs/boring/**'
   pull_request:
     branches: [ main ]
     paths:
+      - '.github/actions/setup-nasm/**'
       - '.github/workflows/boring.yaml'
       - 'pkgs/boring/**'
   schedule:
@@ -70,7 +72,7 @@ jobs:
           sdk: ${{ matrix.sdk }}
       - name: Setup NASM
         if: runner.os == 'Windows'
-        uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b
+        uses: ./.github/actions/setup-nasm
       - id: install
         name: Install dependencies
         run: dart pub get
