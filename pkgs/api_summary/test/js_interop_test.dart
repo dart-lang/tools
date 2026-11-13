@@ -29,7 +29,13 @@ class JsInteropTest extends ApiSummaryTest {
     final context = contextCollection.contextFor(
       convertPath(testPackageLibPath),
     );
-    return buildApiPackage('test', context, const ApiSummaryCustomizer());
+    final package = await buildApiPackage(
+      'test',
+      context,
+      const ApiSummaryCustomizer(),
+    );
+    verifySummaryRoundTrip(package);
+    return package;
   }
 
   Future<void> test_js_interop_members_and_extension_types() async {

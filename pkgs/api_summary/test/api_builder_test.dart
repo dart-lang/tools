@@ -521,6 +521,7 @@ class TransitiveLeak {
     );
     final resolvedCustomizer = customizer ?? const ApiSummaryCustomizer();
     final package = await buildApiPackage('test', context, resolvedCustomizer);
+    verifySummaryRoundTrip(package);
     return jsonEncode(package.toJson());
   }
 }

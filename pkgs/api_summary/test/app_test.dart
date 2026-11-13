@@ -11,6 +11,9 @@ import 'package:api_summary/api_summary.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:yaml/yaml.dart';
+
+import 'test_utils.dart';
 
 void main() {
   late Directory tempKernelDir;
@@ -68,15 +71,29 @@ void main() {
     () => expectApiSummaryClean(format: ApiSummaryFormat.yaml),
   );
 
-  test('rehydrated json renders identical text summary', () async {
-    final apiPackage = await apiSummary(_pkgDir());
-    final jsonSummary = ApiSummaryFormat.json.format(apiPackage);
-    final textSummary = ApiSummaryFormat.text.format(apiPackage);
-    final parsed = jsonDecode(jsonSummary) as Map<String, dynamic>;
-    final rehydrated = ApiSummary.fromJson(parsed);
+  test(
+    'checked-in api.json and api.yaml rehydrate to identical api.txt',
+    () async {
+      final pkgDir = _pkgDir();
+      final expectedText = File(p.join(pkgDir, 'api.txt')).readAsStringSync();
+      final jsonRaw = File(p.join(pkgDir, 'api.json')).readAsStringSync();
+      final yamlRaw = File(p.join(pkgDir, 'api.yaml')).readAsStringSync();
 
-    expect(rehydrated.toString(), equals(textSummary));
-  });
+      final fromJson = ApiSummary.fromJson(
+        jsonDecode(jsonRaw) as Map<String, dynamic>,
+      );
+      final fromYaml = ApiSummary.fromJson(
+        jsonDecode(jsonEncode(loadYaml(yamlRaw))) as Map<String, dynamic>,
+      );
+
+      expect(fromJson.toString(), equals(expectedText));
+      expect(fromYaml.toString(), equals(expectedText));
+      expect(fromYaml.toJson(), equals(fromJson.toJson()));
+
+      final livePackage = await apiSummary(pkgDir);
+      verifySummaryRoundTrip(livePackage);
+    },
+  );
 
   test('expectApiSummaryClean throws when golden file is missing', () async {
     final samplePkgDir = await _createSandboxPackage();
