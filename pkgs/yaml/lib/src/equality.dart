@@ -100,28 +100,70 @@ class _DeepEquals {
 /// This supports deep equality for maps and lists, including those with
 /// self-referential structures, and returns the same hash code for
 /// [YamlScalar]s and their values.
-int deepHashCode(Object? obj) {
-  final parents = Set<Object?>.identity();
+int deepHashCode(Object? obj) => _DeepHashCode().hash(obj);
 
-  int deepHashCodeInner(Object? value) {
-    if (!parents.add(value)) return -1;
+/// Computes [deepHashCode], tracking the parent objects used for loop detection
+/// and the hash codes already computed for shared collections.
+///
+/// While this works on generic Dart objects, it is specifically optimized for
+/// efficient hashing of parsed YAML structures where aliases produce shared
+/// subgraphs.
+class _DeepHashCode {
+  final _parents = Set<Object?>.identity();
+
+  /// Hash codes of collections that have already been hashed.
+  ///
+  /// A collection containing a loop is not cached, since its hash code depends
+  /// on the path it was reached by.
+  final _hashes = Map<Object?, int>.identity();
+
+  /// Whether a loop has been detected inside the collection being hashed.
+  var _hasLoop = false;
+
+  /// Returns a hash code for [value].
+  int hash(Object? value) {
+    if (value is YamlScalar) {
+      return (value.value as Object?).hashCode;
+    }
+    if (value is! Map && value is! Iterable) {
+      return value.hashCode;
+    }
+
+    var cached = _hashes[value];
+    if (cached != null) {
+      return cached;
+    }
+
+    // A loop back to a parent hashes as a fixed value. Equal structures loop
+    // at the same places, so they still hash alike; [deepEquals] tells apart
+    // any unequal structures that collide.
+    if (!_parents.add(value)) {
+      _hasLoop = true;
+      return -1;
+    }
+    var parentHasLoop = _hasLoop;
+    _hasLoop = false;
     try {
-      if (value is Map) {
-        var equality = const UnorderedIterableEquality<Object?>();
-        return equality.hash(value.keys.map(deepHashCodeInner)) ^
-            equality.hash(value.values.map(deepHashCodeInner));
-      } else if (value is Iterable) {
-        return const IterableEquality<Object?>()
-            .hash(value.map(deepHashCodeInner));
-      } else if (value is YamlScalar) {
-        return (value.value as Object?).hashCode;
-      } else {
-        return value.hashCode;
+      var result =
+          value is Map ? _mapHash(value) : _iterableHash(value as Iterable);
+      if (!_hasLoop) {
+        _hashes[value] = result;
       }
+      return result;
     } finally {
-      parents.remove(value);
+      _parents.remove(value);
+      _hasLoop = _hasLoop || parentHasLoop;
     }
   }
 
-  return deepHashCodeInner(obj);
+  /// Returns a hash code for [map] that ignores the order of its entries.
+  int _mapHash(Map map) {
+    var equality = const UnorderedIterableEquality<Object?>();
+    return equality.hash(map.keys.map(hash)) ^
+        equality.hash(map.values.map(hash));
+  }
+
+  /// Returns a hash code for [iterable].
+  int _iterableHash(Iterable iterable) =>
+      const IterableEquality<Object?>().hash(iterable.map(hash));
 }
