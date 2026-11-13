@@ -1,5 +1,13 @@
 ## 1.3.0-wip
 
+- Include `ApiDeclarationStatus.nonPublic` skeleton declarations in `ApiSummary.libraries`
+  unconditionally so `api.json` and `api.yaml` match `api.txt`.
+- Fail `expectApiSummaryClean` and `api_summary --check` by default when non-public
+  types leak into the public API signatures (including types originating from
+  `lib/src/` or package-owned types reachable from the primary barrel that are
+  not exported by it).
+- Add `allowNonPublicTypes` optional named constructor parameter to
+  `ApiSummaryCustomizer`.
 - Add `includeImplicitNonPublicMembers` and `includeReferencedTypes` optional
   named constructor parameters to `ApiSummaryCustomizer`.
 
