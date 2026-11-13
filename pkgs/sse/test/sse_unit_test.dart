@@ -77,6 +77,12 @@ const _varyHeader = 'vary';
 const _expectedGeneratedIdLength = 32;
 const _expectedGeneratedIdBytes = 24;
 
+/// Opens a raw TCP connection to [port] and sends an `EventSource`-style SSE
+/// `GET` request.
+///
+/// Using a raw [Socket] (rather than [HttpClient]) lets tests inspect the exact
+/// hijacked HTTP/1.1 header block written by `SseHandler` and read subsequent
+/// streamed `data:` frames without blocking on an open keep-alive stream.
 Future<(Socket, Stream<List<int>>)> _openRawSseGet(
   int port, {
   required String clientId,
@@ -98,6 +104,8 @@ Future<(Socket, Stream<List<int>>)> _openRawSseGet(
   return (socket, socket.asBroadcastStream());
 }
 
+/// Reads UTF-8 chunks from [bytes] until the end of the HTTP header block
+/// (`\r\n\r\n`) is reached.
 Future<String> _readHttpHeaders(Stream<List<int>> bytes) async {
   final buffer = StringBuffer();
   await for (final chunk in bytes) {

@@ -24,7 +24,19 @@ const _httpScheme = 'http';
 const _httpsScheme = 'https';
 const _loopbackHosts = <String>{'localhost', '127.0.0.1', '::1'};
 
-// RFC 2616 requires carriage return delimiters.
+/// Builds the raw HTTP/1.1 SSE response preamble written to a hijacked socket.
+///
+/// RFC 2616 requires CRLF (`\r\n`) header delimiters.
+///
+/// Because `SseClient` connects with `EventSourceInit(withCredentials: true)`,
+/// cross-origin browsers reject wildcard `*` `Access-Control-Allow-Origin`
+/// headers and require the exact allowed [origin] alongside
+/// `Access-Control-Allow-Credentials: true`. `Vary: Origin` prevents caches
+/// from serving a response reflecting one allowed origin to another.
+///
+/// Callers must validate [origin] with `SseHandler._isAllowedOrigin` before
+/// invoking this helper. When [origin] is `null` (non-browser clients or
+/// same-origin `EventSource` connections), CORS headers are omitted.
 String _sseHeaders(String? origin) {
   final corsHeaders = origin == null
       ? ''
@@ -285,14 +297,24 @@ class SseHandler {
   /// Incoming requests are validated before establishing SSE streams or
   /// accepting `POST` messages:
   /// - Same-origin requests and HTTP(S) loopback origins (`localhost`,
-  ///   `127.0.0.1`, `::1`) targeting a loopback host are allowed.
+  ///   `127.0.0.1`, `::1`) targeting a loopback host are allowed by default.
   /// - Additional cross-origin callers may be permitted via [allowedOrigins]
-  ///   (exact origin strings without trailing slashes, such as
-  ///   `'https://example.com'`) or [originCheck] (invoked with the lowercased
-  ///   `Origin` header value).
+  ///   (case-insensitive exact origin strings without paths or trailing
+  ///   slashes, such as `'https://example.com'`, matching
+  ///   `package:shelf_web_socket`) or [originCheck] (invoked with the
+  ///   lowercased `Origin` header value after basic URI syntax validation).
   /// - Requests without an `Origin` header (such as non-browser clients or
   ///   same-origin `EventSource` connections) are allowed unless
   ///   `Sec-Fetch-Site` is `'cross-site'`, and do not emit CORS headers.
+  ///
+  /// Example configuring explicit cross-origin callers:
+  /// ```dart
+  /// final handler = SseHandler(
+  ///   Uri.parse('/sse'),
+  ///   allowedOrigins: {'https://app.example.com'},
+  ///   originCheck: (origin) => origin.startsWith('chrome-extension://'),
+  /// );
+  /// ```
   ///
   /// Servers behind reverse proxies that terminate TLS or rewrite `Host`, as
   /// well as servers accepting connections from browser extensions
@@ -313,21 +335,45 @@ class SseHandler {
        _keepAlive = keepAlive,
        _originCheck = originCheck;
 
+  /// Queue of newly established client [SseConnection]s; transparent
+  /// keep-alive or [SseHandler.new] `ignoreDisconnect` reconnections reuse the
+  /// existing [SseConnection] and are not re-emitted.
   StreamQueue<SseConnection> get connections =>
       _connectionsStream ??= StreamQueue(_connectionController.stream);
 
+  /// Shelf [shelf.Handler] that accepts SSE `GET` streams and `POST` messages
+  /// on the configured path, returning `404` for other paths or methods so it
+  /// can be composed in a [shelf.Cascade].
   shelf.Handler get handler => _handle;
 
+  /// Number of currently active (including keep-alive) client connections.
   int get numberOfClients => _connections.length;
 
+  /// Returns whether [req] is permitted to establish an SSE connection or
+  /// deliver an incoming `POST` message.
   bool _isAllowedOrigin(shelf.Request req) {
     final origin = req.headers[_originHeader];
     if (origin == null) {
+      // Non-browser clients omit both `Origin` and `Sec-Fetch-Site`, and
+      // browsers omit `Origin` on same-origin `EventSource` GET requests
+      // (`Sec-Fetch-Site: same-origin`). However, a cross-site page can also
+      // issue `fetch(url, {mode: 'no-cors', headers: {'Accept':
+      // 'text/event-stream'}})` because `Accept` is a CORS-safelisted request
+      // header; browsers omit `Origin` on `no-cors` GETs and tag them with
+      // `Sec-Fetch-Site: cross-site`. Reject `cross-site` before hijacking or
+      // touching connection state (note that `same-site` `no-cors` GETs from
+      // sibling subdomains are not rejected here).
       return req.headers[_secFetchSiteHeader] != _crossSiteFetchValue;
     }
+    // Reject CR/LF characters up front so `origin` can never split raw HTTP
+    // headers when echoed in `_sseHeaders`.
     if (origin.contains('\r') || origin.contains('\n')) {
       return false;
     }
+    // Valid browser `Origin` headers are serialized as `<scheme>://<host>[:port]`
+    // with no userinfo, path, query, or fragment. This also rejects opaque
+    // `'null'` origins (from sandboxed iframes, `data:` URLs, or `no-referrer`
+    // redirects) and comma-joined duplicate headers before `_originCheck` runs.
     final uri = Uri.tryParse(origin);
     if (uri == null ||
         !uri.hasScheme ||
@@ -339,17 +385,25 @@ class SseHandler {
         uri.hasFragment) {
       return false;
     }
+    // Same-origin requests are always allowed (`Uri.port` normalizes default
+    // ports such as 80 for HTTP and 443 for HTTPS).
     final requestedUri = req.requestedUri;
     if (uri.scheme == requestedUri.scheme &&
         uri.host == requestedUri.host &&
         uri.port == requestedUri.port) {
       return true;
     }
+    // Allow cross-port and cross-alias (`localhost` <-> `127.0.0.1` <-> `::1`)
+    // loopback connections for local development servers, but only when the
+    // request target itself is also a loopback host so remote deployments do
+    // not implicitly trust `localhost` origins.
     if ((uri.scheme == _httpScheme || uri.scheme == _httpsScheme) &&
         _loopbackHosts.contains(uri.host) &&
         _loopbackHosts.contains(requestedUri.host)) {
       return true;
     }
+    // `allowedOrigins` and `originCheck` are additive on top of same-origin
+    // and loopback.
     final normalized = origin.toLowerCase();
     return (_allowedOrigins?.contains(normalized) ?? false) ||
         (_originCheck?.call(normalized) ?? false);
@@ -401,11 +455,18 @@ class SseHandler {
   String _getOriginalPath(shelf.Request req) => req.requestedUri.path;
 
   Future<shelf.Response> _handle(shelf.Request req) async {
+    // Return 404 for non-matching paths or non-SSE requests so `SseHandler`
+    // falls through cleanly when mounted in a `shelf.Cascade`.
     var path = _getOriginalPath(req);
     if (_uri.path != path) {
       return shelf.Response.notFound('');
     }
 
+    // Validate `Origin` / `Sec-Fetch-Site` before hijacking the socket or
+    // reading `POST` bodies: cross-origin `EventSource` GETs and `text/plain`
+    // `fetch` POSTs are sent without a CORS preflight, so omitting response
+    // CORS headers alone would not prevent server-side side effects (such as
+    // message injection or `_acceptReconnection` sink replacement).
     if (req.headers[_acceptHeader] == _eventStreamMimeType &&
         req.method == 'GET') {
       if (!_isAllowedOrigin(req)) {
@@ -439,6 +500,9 @@ class SseHandler {
     } catch (e, st) {
       _logger.fine('[$clientId] Failed to handle incoming message. $e $st');
     }
+    // Only emit CORS headers when an `Origin` header was present (and already
+    // validated by `_isAllowedOrigin`). Same-origin requests without `Origin`
+    // and non-browser clients do not check CORS response headers.
     final origin = req.headers[_originHeader];
     return shelf.Response.ok(
       '',
