@@ -515,6 +515,14 @@ c: 3
         expectYamlBuilderValue(doc, [1, 2, 3]);
       });
 
+      test('empty entry at end of document', () {
+        final doc = YamlEditor('- 1\n-');
+        doc.update([1], 2);
+
+        expect(doc.toString(), equals('- 1\n- 2'));
+        expectYamlBuilderValue(doc, [1, 2]);
+      });
+
       test('nested (1)', () {
         final doc = YamlEditor("- YAML Ain't Markup Language");
         doc.update([0], [1, 2]);
