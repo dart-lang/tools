@@ -12,7 +12,7 @@ import 'inline_syntax.dart';
 class AutolinkSyntax extends InlineSyntax {
   AutolinkSyntax()
     : super(
-        r'<(([a-zA-Z][a-zA-Z\-\+\.]+):(?://)?[^\s>]*)>',
+        r'<(([a-zA-Z][a-zA-Z\-\+\.]+):(?://)?[^\s<>]*)>',
         startCharacter: $lt,
       );
 

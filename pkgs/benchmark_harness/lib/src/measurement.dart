@@ -8,6 +8,7 @@ import 'dart:math' as math;
 /// to reach [minimumMillis].
 ///
 /// [f] will be run a minimum of 2 times.
+@pragma('vm:align-loops')
 Measurement measureForImpl(void Function() f, int minimumMillis) {
   final minimumMicros = minimumMillis * 1000;
   // If running a long measurement permit some amount of measurement jitter

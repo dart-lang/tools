@@ -5,6 +5,7 @@
 # Only imported by the hooks, which run when a package depending on boring is
 # built, so they have to be regular dependencies.
 ignore:
-  - code_assets
-  - hooks
+  - logging
+  - native_toolchain_c
   - native_toolchain_cmake
+  - record_use

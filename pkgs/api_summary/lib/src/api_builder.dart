@@ -20,7 +20,6 @@ import 'constant_renderer.dart';
 import 'extensions.dart';
 import 'js_facet.dart';
 import 'meta_facet.dart';
-import 'uri_sorting.dart';
 
 /// Traverses the public libraries of [packageName] within [context] to build
 /// a canonical [ApiSummary] representation.
@@ -179,9 +178,7 @@ final class _ApiBuilder {
       }
     }
 
-    final libraries = _libraryBuilders.values
-        .map((e) => e.build())
-        .sortedByUri(_pkgName);
+    final libraries = _libraryBuilders.values.map((e) => e.build()).toList();
 
     return ApiSummary(
       name: _pkgName,
@@ -283,7 +280,6 @@ final class _ApiBuilder {
               .map((f) => _describeType(f.type))
               .toList(),
           namedFields: namedFields
-              .sortedBy((f) => f.name)
               .map(
                 (f) => ApiRecordNamedField(
                   name: f.name,
@@ -370,7 +366,7 @@ final class _ApiBuilder {
     final methods = <ApiExecutable>[];
 
     if (includeMembers) {
-      for (final member in element.children.sortedBy((m) => m.name ?? '')) {
+      for (final member in element.children) {
         if (member.name?.startsWith('_') ?? false) continue;
 
         switch (member) {
@@ -400,7 +396,6 @@ final class _ApiBuilder {
         )[element];
         if (subinterfaces != null) {
           immediateSubtypes = subinterfaces.map((e) => e.name ?? '').toList();
-          immediateSubtypes.sort();
         }
       } else {
         if (element.isAbstract) modifiers.add(ApiClassModifier.isAbstract);
@@ -443,7 +438,7 @@ final class _ApiBuilder {
   }) {
     final methods = <ApiExecutable>[];
     if (includeMembers) {
-      for (final member in element.children.sortedBy((m) => m.name ?? '')) {
+      for (final member in element.children) {
         if (member.name?.startsWith('_') ?? false) continue;
         if (member is FieldElement) continue;
         if (member is ExecutableElement) {
@@ -471,7 +466,7 @@ final class _ApiBuilder {
     final constructors = <ApiExecutable>[];
     final methods = <ApiExecutable>[];
     if (includeMembers) {
-      for (final member in element.children.sortedBy((m) => m.name ?? '')) {
+      for (final member in element.children) {
         if (member.name?.startsWith('_') ?? false) continue;
         if (member is FieldElement) continue;
         if (member is ConstructorElement) {
@@ -593,25 +588,16 @@ final class _ApiLibraryBuilder {
     this.facets = const [],
   });
 
-  ApiLibrary build() {
-    classes.sortBy((e) => e.name);
-    enums.sortBy((e) => e.name);
-    mixins.sortBy((e) => e.name);
-    extensions.sortBy((e) => e.name);
-    extensionTypes.sortBy((e) => e.name);
-    functions.sortBy((e) => e.name);
-    typeAliases.sortBy((e) => e.name);
-    return ApiLibrary(
-      uri: uri,
-      isPublicEntryPoint: isPublicEntryPoint,
-      classes: classes,
-      enums: enums,
-      mixins: mixins,
-      extensions: extensions,
-      extensionTypes: extensionTypes,
-      functions: functions,
-      typeAliases: typeAliases,
-      facets: facets,
-    );
-  }
+  ApiLibrary build() => ApiLibrary(
+    uri: uri,
+    isPublicEntryPoint: isPublicEntryPoint,
+    classes: classes,
+    enums: enums,
+    mixins: mixins,
+    extensions: extensions,
+    extensionTypes: extensionTypes,
+    functions: functions,
+    typeAliases: typeAliases,
+    facets: facets,
+  );
 }

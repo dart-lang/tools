@@ -25,7 +25,7 @@ class FakeTerminal {
   void write(String text) {
     // Regex for the specific escape sequences used in select_dialog.dart
     final seqRegex = RegExp(
-      r'(\x1b\[\d*A|\x1b\[2K|\x1b\[1m|\x1b\[2m|\x1b\[0m|\x1b\[\?25[lh])',
+      r'(\x1b\[\d*A|\x1b\[2K|\r|\x1b\[[0-9;]*m|\x1b\[\?25[lh])',
     );
 
     var lastEnd = 0;
@@ -38,8 +38,16 @@ class FakeTerminal {
       if (seq.endsWith('A')) {
         final n = int.tryParse(seq.substring(2, seq.length - 1)) ?? 1;
         _cursorRow = math.max(0, _cursorRow - n);
+        // Trim any trailing lines that were cleared (`\x1b[2K`) below the new
+        // cursor position when the dialog shrinks between renders.
+        while (_lines.length > _cursorRow + 1 && _lines.last.isEmpty) {
+          _lines.removeLast();
+        }
       } else if (seq == '\x1b[2K') {
         _lines[_cursorRow] = '';
+        _cursorCol = 0;
+      } else if (seq == '\r') {
+        _cursorCol = 0;
       } else {
         // Ignore style and cursor visibility sequences
       }

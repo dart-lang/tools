@@ -25,6 +25,7 @@ class BenchmarkBase {
   }
 
   /// Exercises the benchmark. By default invokes [run] 10 times.
+  @pragma('vm:align-loops')
   void exercise() {
     for (var i = 0; i < 10; i++) {
       run();

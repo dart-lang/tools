@@ -25,7 +25,10 @@ class AutolinkExtensionSyntax extends InlineSyntax {
       // be at least one period, and no underscores may be present in the last
       // two segments of the domain. See
       // https://github.github.com/gfm/#valid-domain.
-      r'(?:[-_a-z0-9]+\.)*(?:[-a-z0-9]+\.[-a-z0-9]+)'
+      // Segments are limited to 63 characters and domains to 127 segments (the
+      // DNS limits), which bounds the work done for each candidate so that
+      // input such as `www._a.www._a.` repeated is parsed in linear time.
+      r'(?:[-_a-z0-9]{1,63}\.){0,125}(?:[-a-z0-9]{1,63}\.[-a-z0-9]{1,63})'
       // After a valid domain, zero or more non-space non-< characters may
       // follow.
       r'[^\s<]*'
@@ -45,28 +48,44 @@ class AutolinkExtensionSyntax extends InlineSyntax {
   AutolinkExtensionSyntax()
     : super('($_linkPattern)|($_emailPattern)', caseSensitive: false);
 
+  static final _emailOnly = RegExp(
+    _emailPattern,
+    multiLine: true,
+    caseSensitive: false,
+  );
+
+  static const _validPrecedingChars = {
+    $lf,
+    $space,
+    $asterisk,
+    $underscore,
+    $tilde,
+    $lparen,
+    $gt,
+  };
+
   @override
   bool tryMatch(InlineParser parser, [int? startMatchPos]) {
     startMatchPos ??= parser.pos;
-    final startMatch = pattern.matchAsPrefix(parser.source, startMatchPos);
+    // When it is a link and it is not at the beginning of a line, or preceded
+    // by whitespace, `*`, `_`, `~`, `(`, or `>`, it is invalid. See
+    // https://github.github.com/gfm/#autolinks-extension-.
+    final validLinkStart =
+        startMatchPos == 0 ||
+        _validPrecedingChars.contains(parser.charAt(startMatchPos - 1));
+
+    final startMatch = (validLinkStart ? pattern : _emailOnly).matchAsPrefix(
+      parser.source,
+      startMatchPos,
+    );
     if (startMatch == null) {
       return false;
     }
 
-    // When it is a link and it is not at the beginning of a line, or preceded
-    // by whitespace, `*`, `_`, `~`, `(`, or `>`, it is invalid. See
-    // https://github.github.com/gfm/#autolinks-extension-.
-    if (startMatch[1] != null && parser.pos > 0) {
-      final precededBy = String.fromCharCode(parser.charAt(parser.pos - 1));
-      const validPrecedingChars = {'\n', ' ', '*', '_', '~', '(', '>'};
-      if (!validPrecedingChars.contains(precededBy)) {
-        return false;
-      }
-    }
-
     // When it is an email link and followed by `_` or `-`, it is invalid. See
     // https://github.github.com/gfm/#example-633
-    if (startMatch[2] != null && parser.source.length > startMatch.end) {
+    final isEmailLink = !validLinkStart || startMatch[2] != null;
+    if (isEmailLink && parser.source.length > startMatch.end) {
       final followedBy = String.fromCharCode(parser.charAt(startMatch.end));
       const invalidFollowingChars = {'_', '-'};
       if (invalidFollowingChars.contains(followedBy)) {
@@ -82,7 +101,7 @@ class AutolinkExtensionSyntax extends InlineSyntax {
   bool onMatch(InlineParser parser, Match match) {
     int consumeLength;
 
-    final isEmailLink = match[2] != null;
+    final isEmailLink = match.pattern == _emailOnly || match[2] != null;
     if (isEmailLink) {
       consumeLength = match.match.length;
     } else {
@@ -116,23 +135,19 @@ class AutolinkExtensionSyntax extends InlineSyntax {
     // When an autolink ends in `)`, see
     // https://github.github.com/gfm/#example-625.
     if (text.endsWith(')')) {
-      final match = RegExp(r'(\(.*)?(\)+)$').firstMatch(text)!;
-
-      if (match[1] == null) {
-        excludedLength = match[2]!.length;
-      } else {
-        var parenCount = 0;
-        for (var i = 0; i < text.length; i++) {
-          final char = text.codeUnitAt(i);
-          if (char == $lparen) {
-            parenCount++;
-          } else if (char == $rparen) {
-            parenCount--;
-          }
+      var parenCount = 0;
+      for (var i = 0; i < text.length; i++) {
+        final char = text.codeUnitAt(i);
+        if (char == $lparen) {
+          parenCount++;
+        } else if (char == $rparen) {
+          parenCount--;
         }
-        if (parenCount < 0) {
-          excludedLength = parenCount.abs();
-        }
+      }
+      while (parenCount < 0 &&
+          text.codeUnitAt(text.length - 1 - excludedLength) == $rparen) {
+        excludedLength++;
+        parenCount++;
       }
     }
     // If an autolink ends in a semicolon `;`, see

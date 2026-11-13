@@ -34,6 +34,38 @@ File getStatsFile(String prefix) =>
 File getTestsFile(String prefix) =>
     File(p.join(toolDir, '${prefix}_tests.json'));
 
+File get divergencesFile => File(p.join(toolDir, 'divergences.json'));
+
+/// An intentional, documented difference between this package's output and
+/// the spec's expected output for a single example.
+///
+/// The example is scored [CompareLevel.diverged] only while the actual output
+/// equals [html]; any other output is scored as usual.
+class Divergence {
+  final String reason;
+  final String link;
+  final String html;
+
+  Divergence({required this.reason, required this.link, required this.html});
+
+  factory Divergence.fromJson(Map<String, dynamic> json) => Divergence(
+    reason: json['reason'] as String,
+    link: json['link'] as String,
+    html: json['html'] as String,
+  );
+}
+
+/// Loads the [Divergence]s for [prefix], keyed by spec example number.
+Map<int, Divergence> loadDivergences(String prefix) {
+  final json =
+      jsonDecode(divergencesFile.readAsStringSync()) as Map<String, dynamic>;
+  final entries = json[prefix] as Map<String, dynamic>? ?? const {};
+  return {
+    for (final MapEntry(:key, :value) in entries.entries)
+      int.parse(key): Divergence.fromJson(value as Map<String, dynamic>),
+  };
+}
+
 final _exampleStartFence = RegExp(r'^`{32} example(.*)$');
 final _exampleEndFence = RegExp(r'^`{32}$');
 final _headerPrefix = RegExp('^#+ ');
@@ -152,6 +184,8 @@ class Config {
   final String githubRepo;
   final String specFilePath;
 
+  late final Map<int, Divergence> divergences = loadDivergences(prefix);
+
   Config._(this.prefix, this.baseUrl, this.githubRepo, this.specFilePath);
 }
 
@@ -202,7 +236,17 @@ class CommonMarkTestCase {
   String toString() => '$section - $example';
 }
 
-enum CompareLevel { strict, loose, fail, error }
+enum CompareLevel {
+  strict,
+  loose,
+
+  /// Output intentionally differs from the spec; see `tool/divergences.json`.
+  ///
+  /// Counted as neither passing nor failing.
+  diverged,
+  fail,
+  error,
+}
 
 class CompareResult {
   final CompareLevel compareLevel;
@@ -270,6 +314,10 @@ CompareResult compareResult(
 
   if (testCase.html == output) {
     return CompareResult(testCase, output, CompareLevel.strict);
+  }
+
+  if (config.divergences[testCase.example]?.html == output) {
+    return CompareResult(testCase, output, CompareLevel.diverged);
   }
 
   final expectedParsed = parseFragment(testCase.html);

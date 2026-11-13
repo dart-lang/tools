@@ -174,6 +174,12 @@ void main() async {
     );
 
     validateCore(
+      'Image alt attribute of nested images is escaped once',
+      '![a "b" ![c <d>](x) & e](y)',
+      '<p><img src="y" alt="a &quot;b&quot; c &lt;d&gt; &amp; e" /></p>\n',
+    );
+
+    validateCore(
       'Unicode ellipsis as punctuation',
       '''
 "Connecting dot **A** to **B.**…"

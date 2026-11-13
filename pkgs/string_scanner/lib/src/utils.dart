@@ -4,30 +4,33 @@
 
 import 'string_scanner.dart';
 
-/// Validates the arguments passed to [StringScanner.error].
-void validateErrorArgs(
-    String string, Match? match, int? position, int? length) {
+/// Validates and resolves the arguments passed to [StringScanner.error].
+(int, int) resolveErrorArgs(String string, Match? match, int? position,
+    int? length, int defaultPosition) {
   if (match != null && (position != null || length != null)) {
     throw ArgumentError("Can't pass both match and position/length.");
   }
 
-  if (position != null) {
-    if (position < 0) {
-      throw RangeError('position must be greater than or equal to 0.');
-    } else if (position > string.length) {
-      throw RangeError('position must be less than or equal to the '
-          'string length.');
-    }
+  position ??= match == null ? defaultPosition : match.start;
+  length ??= match == null ? 0 : match.end - match.start;
+
+  if (position < 0) {
+    throw RangeError('position must be greater than or equal to 0.');
+  } else if (position > string.length) {
+    throw RangeError('position must be less than or equal to the '
+        'string length.');
   }
 
-  if (length != null && length < 0) {
+  if (length < 0) {
     throw RangeError('length must be greater than or equal to 0.');
   }
 
-  if (position != null && length != null && position + length > string.length) {
+  if (position + length > string.length) {
     throw RangeError('position plus length must not go beyond the end of '
         'the string.');
   }
+
+  return (position, length);
 }
 
 // See https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF

@@ -2,7 +2,8 @@
 # for details. All rights reserved. Use of this source code is governed by a
 # BSD-style license that can be found in the LICENSE file.
 
-cmake_minimum_required(VERSION 3.14.0)
+# 3.15 for CMAKE_MSVC_RUNTIME_LIBRARY (policy CMP0091).
+cmake_minimum_required(VERSION 3.15.0)
 project(bssl_dart LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -15,8 +16,8 @@ include(../third_party/boringssl/sources.cmake)
 # Symbol prefixing: all BoringSSL symbols become bssl_dart_<symbol>
 add_definitions(-DBORINGSSL_PREFIX=bssl_dart)
 # Keep BoringSSL free of C++ runtime symbols (such as operator delete from
-# virtual destructors), since CMake links the library with the C compiler
-# driver.
+# virtual destructors), since CMake and hook/link.dart (CLinker) link the
+# library with the C compiler driver.
 add_definitions(-DBORINGSSL_TEMPORARY_NO_CXX_RUNTIME)
 
 # Architecture and platform detection.
@@ -82,17 +83,38 @@ endif()
 
 if(MSVC)
   set(MSVC_DISABLED_WARNINGS_STR " -wd4100 -wd4127 -wd4132 -wd4244 -wd4267 -wd4706 -wd4141 -wd4201")
-  # BoringSSL doesn't use RTTI (-GR-).
-  set(CMAKE_C_FLAGS "-utf-8 -W4 -WX ${MSVC_DISABLED_WARNINGS_STR}")
-  set(CMAKE_CXX_FLAGS "-utf-8 -W4 -WX -GR- ${MSVC_DISABLED_WARNINGS_STR}")
+  # -Gy and -Gw put each function and variable in its own COMDAT, so the link
+  # hook can drop the unused ones. BoringSSL doesn't use RTTI (-GR-).
+  set(CMAKE_C_FLAGS "-utf-8 -W4 -WX -Gy -Gw ${MSVC_DISABLED_WARNINGS_STR}")
+  set(CMAKE_CXX_FLAGS "-utf-8 -W4 -WX -Gy -Gw -GR- ${MSVC_DISABLED_WARNINGS_STR}")
+  # Link the C runtime statically (-MT), like the Dart SDK does, so that the
+  # libraries don't need the Visual C++ Redistributable (vcruntime140.dll) on
+  # the machines that run them. The objects carry the choice as a default
+  # library directive, so hook/link.dart's DLL inherits it. BoringSSL frees
+  # its allocations itself (OPENSSL_free), so the library's own heap is fine.
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_BINARY_DIR}>)
 else()
   # BoringSSL doesn't need the C++ runtime (see BORINGSSL_ALLOW_CXX_RUNTIME
-  # upstream), so the library doesn't depend on it. Also clear CMake's implicit
+  # upstream), so the libraries don't depend on it. Also clear CMake's implicit
   # C++ link libraries so CMake does not pass -lc++ (e.g. libc++_shared.so on
   # Android) or -lstdc++ when linking CXX object files with LINKER_LANGUAGE C.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
   set(CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "")
+  # With exceptions disabled, libc++'s throw helpers, which for example
+  # std::string_view::substr uses, call std::__libcpp_verbose_abort, a function
+  # in libc++'s library. Abort directly instead, which libc++ lets users
+  # configure with this macro, so that the objects don't reference libc++: the
+  # C compiler driver doesn't link it, and Android's linker rejects the
+  # undefined reference. (A compile option rather than a compile definition,
+  # which can't be function-like.)
+  add_compile_options("-D_LIBCPP_VERBOSE_ABORT(...)=__builtin_abort()")
+  if(NOT APPLE)
+    # One section per function and variable, so the link hook can drop the
+    # unused ones. Mach-O linkers already do this per symbol.
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections")
+  endif()
 endif()
 
 if(WIN32)
@@ -104,9 +126,13 @@ if(WIN32)
   add_definitions(-DBORINGSSL_UNSAFE_DETERMINISTIC_MODE=0)
 endif()
 
-# The sources are compiled in an object library, so that LINKER_LANGUAGE C
-# below only affects linking. On a target with the sources, the Visual Studio
-# generator would compile them without CMAKE_CXX_STANDARD.
+# The sources are compiled once, and linked into both libraries:
+#  * bssl_dart, a dynamic library with all of BoringSSL, bundled as is when
+#    linking is disabled (for example in `dart run` and `dart test`).
+#  * bssl_dart_static, a static library, from which `hook/link.dart` links a
+#    dynamic library with only the functions the application uses.
+# LINKER_LANGUAGE C is only set on the libraries: on a target with the sources,
+# the Visual Studio generator would compile them without CMAKE_CXX_STANDARD.
 add_library(
   bssl_dart_objects
   OBJECT
@@ -131,16 +157,23 @@ set_target_properties(
 )
 
 add_library(bssl_dart SHARED $<TARGET_OBJECTS:bssl_dart_objects>)
+add_library(bssl_dart_static STATIC $<TARGET_OBJECTS:bssl_dart_objects>)
+
+set_target_properties(
+  bssl_dart
+  bssl_dart_static
+  PROPERTIES
+  LINKER_LANGUAGE C
+)
 
 set_target_properties(
   bssl_dart
   PROPERTIES
-  LINKER_LANGUAGE C
   WINDOWS_EXPORT_ALL_SYMBOLS TRUE
 )
 
 install(
-  TARGETS bssl_dart
+  TARGETS bssl_dart bssl_dart_static
   RUNTIME DESTINATION .
   LIBRARY DESTINATION .
   ARCHIVE DESTINATION .

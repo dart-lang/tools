@@ -7,7 +7,9 @@ import 'package:collection/collection.dart';
 import 'api_facet.dart';
 import 'api_type.dart';
 import 'json_utils.dart';
+import 'member_sorting.dart';
 import 'text_renderer.dart';
+import 'uri_sorting.dart';
 
 /// The exposure status of an API declaration within the summarized package.
 enum ApiDeclarationStatus {
@@ -65,9 +67,12 @@ final class ApiSummary {
     required this.name,
     Map<String, String>? environment,
     Map<String, String?>? executables,
-    required this.libraries,
+    required List<ApiLibrary> libraries,
   }) : environment = _sortedUnmodifiableMap(environment),
-       executables = _sortedUnmodifiableMap(executables);
+       executables = _sortedUnmodifiableMap(executables),
+       libraries = libraries.isEmpty
+           ? const []
+           : List.unmodifiable(libraries.sortedByUri(name));
 
   factory ApiSummary.fromJson(Map<String, dynamic> json) => ApiSummary(
     name: json['name'] as String,
@@ -100,6 +105,25 @@ Map<String, V> _sortedUnmodifiableMap<V>(Map<String, V>? source) =>
         ),
       );
 
+List<T> _sortedDeclarationsByName<T extends ApiDeclaration>(List<T> items) =>
+    items.isEmpty ? const [] : List.unmodifiable(items.sortedBy((e) => e.name));
+
+List<ApiExecutable> _sortedExecutables(
+  List<ApiExecutable> items, {
+  bool isInstance = false,
+  bool isTopLevel = false,
+}) => items.isEmpty
+    ? const []
+    : List.unmodifiable(
+        items.sortedBy(
+          (e) => MemberSortKey.fromDeclaration(
+            e,
+            isInstance: isInstance,
+            isTopLevel: isTopLevel,
+          ),
+        ),
+      );
+
 /// A summary of the declarations exposed by a single library within a package.
 final class ApiLibrary {
   final String uri;
@@ -116,15 +140,22 @@ final class ApiLibrary {
   ApiLibrary({
     required this.uri,
     required this.isPublicEntryPoint,
-    required this.classes,
-    required this.enums,
-    required this.mixins,
-    required this.extensions,
-    required this.extensionTypes,
-    required this.functions,
-    required this.typeAliases,
+    required List<ApiClass> classes,
+    required List<ApiClass> enums,
+    required List<ApiClass> mixins,
+    required List<ApiExtension> extensions,
+    required List<ApiExtensionType> extensionTypes,
+    required List<ApiExecutable> functions,
+    required List<ApiTypeAlias> typeAliases,
     Iterable<ApiFacet> facets = const [],
-  }) : facets = facets.isEmpty ? const {} : Set.unmodifiable(facets.sorted());
+  }) : classes = _sortedDeclarationsByName(classes),
+       enums = _sortedDeclarationsByName(enums),
+       mixins = _sortedDeclarationsByName(mixins),
+       extensions = _sortedDeclarationsByName(extensions),
+       extensionTypes = _sortedDeclarationsByName(extensionTypes),
+       functions = _sortedExecutables(functions, isTopLevel: true),
+       typeAliases = _sortedDeclarationsByName(typeAliases),
+       facets = facets.isEmpty ? const {} : Set.unmodifiable(facets.sorted());
 
   factory ApiLibrary.fromJson(Map<String, dynamic> json) => ApiLibrary(
     uri: json['uri'] as String,
@@ -204,12 +235,16 @@ final class ApiClass extends ApiDeclaration {
     required this.mixins,
     this.superclassConstraints = const [],
     required this.modifiers,
-    required this.immediateSubtypes,
-    required this.constructors,
-    required this.methods,
+    required List<String> immediateSubtypes,
+    required List<ApiExecutable> constructors,
+    required List<ApiExecutable> methods,
     super.isDeprecated,
     super.facets,
-  });
+  }) : immediateSubtypes = immediateSubtypes.isEmpty
+           ? const []
+           : List.unmodifiable(immediateSubtypes.sorted()),
+       constructors = _sortedExecutables(constructors, isInstance: true),
+       methods = _sortedExecutables(methods, isInstance: true);
 
   factory ApiClass.fromJson(Map<String, dynamic> json) => ApiClass(
     name: json['name'] as String,
@@ -279,10 +314,10 @@ final class ApiExtension extends ApiDeclaration {
     super.status,
     required this.typeParameters,
     required this.extendedType,
-    required this.methods,
+    required List<ApiExecutable> methods,
     super.isDeprecated,
     super.facets,
-  });
+  }) : methods = _sortedExecutables(methods, isInstance: true);
 
   factory ApiExtension.fromJson(Map<String, dynamic> json) => ApiExtension(
     name: json['name'] as String,
@@ -330,11 +365,12 @@ final class ApiExtensionType extends ApiDeclaration {
     required this.typeParameters,
     required this.representationType,
     required this.interfaces,
-    required this.constructors,
-    required this.methods,
+    required List<ApiExecutable> constructors,
+    required List<ApiExecutable> methods,
     super.isDeprecated,
     super.facets,
-  });
+  }) : constructors = _sortedExecutables(constructors, isInstance: true),
+       methods = _sortedExecutables(methods, isInstance: true);
 
   factory ApiExtensionType.fromJson(Map<String, dynamic> json) =>
       ApiExtensionType(
@@ -403,14 +439,14 @@ final class ApiExecutable extends ApiDeclaration {
     required this.kind,
     required this.typeParameters,
     required this.returnType,
-    required this.parameters,
+    required List<ApiParameter> parameters,
     required this.isStatic,
     this.isConst = false,
     this.isEnumConstant = false,
     this.constantValue,
     super.isDeprecated,
     super.facets,
-  });
+  }) : parameters = canonicalizeParameters(parameters);
 
   factory ApiExecutable.fromJson(Map<String, dynamic> json) => ApiExecutable(
     name: json['name'] as String,

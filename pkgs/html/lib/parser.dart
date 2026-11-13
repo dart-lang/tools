@@ -3590,6 +3590,24 @@ class InForeignContentPhase extends Phase {
 
   @override
   Token? processEndTag(EndTagToken token) {
+    if (token.name == 'br' || token.name == 'p') {
+      parser.parseError(token.span,
+          'unexpected-html-element-in-foreign-content', {'name': token.name});
+      while (tree.openElements.last.namespaceUri != tree.defaultNamespace &&
+          !parser.isHTMLIntegrationPoint(tree.openElements.last) &&
+          !parser.isMathMLTextIntegrationPoint(tree.openElements.last)) {
+        tree.openElements.removeLast();
+      }
+      // Reprocess in the current HTML insertion mode directly rather than
+      // returning `token` to `mainLoop()`, since `inForeignContent` returns
+      // `true` for end tags at integration points.
+      var newToken = parser.phase.processEndTag(token);
+      while (newToken != null) {
+        newToken = parser.phase.processEndTag(newToken as EndTagToken);
+      }
+      return null;
+    }
+
     var nodeIndex = tree.openElements.length - 1;
     var node = tree.openElements.last;
     if (node.localName?.toAsciiLowerCase() != token.name) {

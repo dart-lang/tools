@@ -45,7 +45,24 @@ extension SourceSpanWithContextExtension on SourceSpanWithContext {
     if (start == 0 && (end == null || end == length)) return this;
 
     final locations = subspanLocations(this, start, end);
-    return SourceSpanWithContext(
-        locations[0], locations[1], text.substring(start, end), context);
+    final subspanText = text.substring(start, end);
+    final parentContextStart = switch (this) {
+      SubspanWithContext(:final contextStart) => contextStart,
+      _ => switch (findSpanLineStart(this)) {
+          final match? => match.lineStart + this.start.column,
+          null => null,
+        },
+    };
+    if (parentContextStart == null) {
+      return SourceSpanWithContext(
+          locations[0], locations[1], subspanText, context);
+    }
+    return SubspanWithContext(
+      locations[0],
+      locations[1],
+      subspanText,
+      context,
+      parentContextStart + start,
+    );
   }
 }

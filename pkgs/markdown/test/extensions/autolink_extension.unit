@@ -8,3 +8,19 @@ http://www.foo.com
 <<<
 <p>m
 <a href="http://www.foo.com">http://www.foo.com</a></p>
+>>> invalid domain run with underscores and repeated www.
+www._www._a
+<<<
+<p>www._www._a</p>
+>>> unmatched interior closing parentheses before trailing parenthesis
+www.example.com/a)b) and www.example.com/a))b(c)
+<<<
+<p><a href="http://www.example.com/a)b">www.example.com/a)b</a>) and <a href="http://www.example.com/a))b(c">www.example.com/a))b(c</a>)</p>
+>>> url schemes, www boundary, and email with special characters
+https://example.com and ftp://example.com and awww.example.com and foo+bar-baz.qux@example.com
+<<<
+<p><a href="https://example.com">https://example.com</a> and <a href="ftp://example.com">ftp://example.com</a> and awww.example.com and <a href="mailto:foo+bar-baz.qux@example.com">foo+bar-baz.qux@example.com</a></p>
+>>> email autolink where a URL autolink cannot start
+/www.a.b@c.d and /foo@bar.com and xhttp://a.b
+<<<
+<p>/<a href="mailto:www.a.b@c.d">www.a.b@c.d</a> and /<a href="mailto:foo@bar.com">foo@bar.com</a> and xhttp://a.b</p>

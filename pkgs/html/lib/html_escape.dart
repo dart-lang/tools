@@ -13,12 +13,11 @@
 ///   string `&nbsp;`.
 /// - If the algorithm was invoked in [attributeMode], replace any occurrences
 ///   of the `"` character by the string `&quot;`.
-/// - If the algorithm was not invoked in [attributeMode], replace any
-///   occurrences of the `<` character by the string `&lt;`, and any occurrences
-///   of the `>` character by the string `&gt;`.
+/// - Replace any occurrences of the `<` character by the string `&lt;`.
+/// - Replace any occurrences of the `>` character by the string `&gt;`.
 ///
-/// [1]: http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#serializing-html-fragments
-/// [2]: http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#escapingString
+/// [1]: https://html.spec.whatwg.org/multipage/parsing.html#serializing-html-fragments
+/// [2]: https://html.spec.whatwg.org/multipage/parsing.html#escapingString
 String htmlSerializeEscape(String text, {bool attributeMode = false}) {
   // TODO(jmesserly): is it faster to build up a list of codepoints?
   // StringBuffer seems cleaner assuming Dart can unbox 1-char strings.
@@ -37,10 +36,10 @@ String htmlSerializeEscape(String text, {bool attributeMode = false}) {
         if (attributeMode) replace = '&quot;';
         break;
       case '<':
-        if (!attributeMode) replace = '&lt;';
+        replace = '&lt;';
         break;
       case '>':
-        if (!attributeMode) replace = '&gt;';
+        replace = '&gt;';
         break;
     }
     if (replace != null) {

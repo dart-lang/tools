@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:math';
+
 import 'ast.dart';
 import 'block_parser.dart';
 import 'block_syntaxes/block_syntax.dart';
@@ -22,6 +24,18 @@ class Document {
   ///
   /// They are case-insensitive and added by ref syntax.
   final footnoteLabels = <String>[];
+
+  Map<String, String>? _footnoteKeyByLower;
+  final _footnoteLabelIndex = <String, int>{};
+
+  /// Characters of destination and title text that reference links and
+  /// images may still copy out of [linkReferences].
+  ///
+  /// Like cmark, the total is limited to the larger of the input size and
+  /// 100,000 characters, so a definition referenced many times cannot make the
+  /// output superlinear in the input.
+  int _referenceExpansionBudget = _minReferenceExpansion;
+  static const _minReferenceExpansion = 100000;
 
   final LinkBuilder? linkBuilder;
   final LinkBuilder? imageLinkBuilder;
@@ -94,7 +108,13 @@ class Document {
 
   /// Parses the given [lines] of [Line] to a series of AST nodes.
   List<Node> parseLineList(List<Line> lines) {
+    var length = 0;
+    for (final line in lines) {
+      length += line.content.length + 1;
+    }
+    _referenceExpansionBudget = max(length, _minReferenceExpansion);
     final nodes = BlockParser(lines, this).parseLines();
+    _footnoteKeyByLower = null;
     _parseInlineContent(nodes);
     // Do filter after parsing inline as we need ref count.
     return _filterFootnotes(nodes);
@@ -104,15 +124,21 @@ class Document {
   List<Node> parseInline(String text) => InlineParser(text, this).parse();
 
   void _parseInlineContent(List<Node> nodes) {
-    for (var i = 0; i < nodes.length; i++) {
-      final node = nodes[i];
-      if (node is UnparsedContent) {
-        final inlineNodes = parseInline(node.textContent);
-        nodes.removeAt(i);
-        nodes.insertAll(i, inlineNodes);
-        i += inlineNodes.length - 1;
-      } else if (node is Element && node.children != null) {
-        _parseInlineContent(node.children!);
+    final stack = <(List<Node>, int)>[(nodes, 0)];
+    while (stack.isNotEmpty) {
+      final (currentNodes, index) = stack.removeLast();
+      for (var i = index; i < currentNodes.length; i++) {
+        final node = currentNodes[i];
+        if (node is UnparsedContent) {
+          final inlineNodes = parseInline(node.textContent);
+          currentNodes.removeAt(i);
+          currentNodes.insertAll(i, inlineNodes);
+          i += inlineNodes.length - 1;
+        } else if (node is Element && node.children != null) {
+          stack.add((currentNodes, i + 1));
+          stack.add((node.children!, 0));
+          break;
+        }
       }
     }
   }
@@ -130,6 +156,7 @@ class Document {
         final label = node.footnoteLabel;
         var count = 0;
         if (label != null && (count = footnoteReferences[label] ?? 0) > 0) {
+          footnoteReferences[label] = 0;
           footnotes.add(node);
           final children = node.children;
           if (children != null) {
@@ -226,4 +253,47 @@ class LinkReference {
   /// If the parsed link reference definition does not include a title, use
   /// `null` for the [title] parameter.
   LinkReference(this.label, this.destination, this.title);
+}
+
+/// Reference expansion accounting used by `LinkSyntax`, kept on the
+/// [Document] because the limit applies to the document as a whole.
+extension DocumentLinkReferences on Document {
+  /// Charges the destination and title of [reference] to this document's
+  /// reference expansion limit.
+  ///
+  /// Returns `false`, without charging, if that would exceed the limit.
+  bool expandReference(LinkReference reference) {
+    final length =
+        reference.destination.length + (reference.title?.length ?? 0);
+    if (length > _referenceExpansionBudget) return false;
+    _referenceExpansionBudget -= length;
+    return true;
+  }
+}
+
+/// Footnote lookups used by `FootnoteRefSyntax`, cached on the [Document] so
+/// that each reference costs O(1) instead of a scan over all definitions.
+extension DocumentFootnotes on Document {
+  /// Finds the footnote definition label whose lower-cased form is [key].
+  ///
+  /// When several definitions share a lower-cased label, the first one wins.
+  String? findFootnoteLabel(String key) {
+    var byLower = _footnoteKeyByLower;
+    if (byLower == null) {
+      byLower = <String, String>{};
+      for (final k in footnoteReferences.keys) {
+        byLower[k.toLowerCase()] ??= k;
+      }
+      _footnoteKeyByLower = byLower;
+    }
+    return byLower[key];
+  }
+
+  /// The 0-based position of [key] in [footnoteLabels], adding it if absent.
+  int footnoteLabelOrdinal(String key) =>
+      _footnoteLabelIndex.putIfAbsent(key, () {
+        final index = footnoteLabels.length;
+        footnoteLabels.add(key);
+        return index;
+      });
 }

@@ -2,6 +2,10 @@
 
 - Add `includeImplicitNonPublicMembers` and `includeReferencedTypes` optional
   named constructor parameters to `ApiSummaryCustomizer`.
+- Canonicalize the sort order of libraries, declarations, constructors,
+  members, named parameters, and named record fields in the `ApiSummary` model
+  (`api.json` and `api.yaml`) to match `api.txt`, and sort getter/setter pairs
+  ahead of suffixed names (such as `a`, `a=`, `a9`, `a9=`).
 - Track parameter `defaultValue` on `ApiParameter` (including inherited `super.`
   defaults) and render non-null public default values in text, JSON, and YAML
   summaries ([#2461](https://github.com/dart-lang/tools/issues/2461)).

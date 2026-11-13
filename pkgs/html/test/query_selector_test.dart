@@ -24,5 +24,17 @@ void main() {
     test('descendant of type and class', () {
       expect(el.querySelector('div.a div')?.id, 'b');
     });
+
+    test('empty :not() throws FormatException', () {
+      final isInvalidNotSelector = throwsA(
+        isA<FormatException>().having(
+          (e) => e.message,
+          'message',
+          "':not()' is not a valid selector",
+        ),
+      );
+      expect(() => el.querySelector(':not()'), isInvalidNotSelector);
+      expect(() => el.querySelectorAll(':not()'), isInvalidNotSelector);
+    });
   });
 }
