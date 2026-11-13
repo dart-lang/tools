@@ -358,7 +358,13 @@ class LogHandler {
   /// Replaces the log file with an empty one, ignoring any failure.
   void _resetLogFile() {
     try {
-      if (logFile.existsSync()) logFile.deleteSync();
+      // Delete without checking for existence first, since the file could be
+      // created or deleted by another process in between.
+      logFile.deleteSync();
+    } on FileSystemException {
+      // The file is already gone or can't be deleted; try to create it anyway.
+    }
+    try {
       logFile.createSync();
     } on Object {
       // Best effort; `save` resets the file again if it's still unusable.
