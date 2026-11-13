@@ -15,6 +15,8 @@ import 'package:stream_channel/stream_channel.dart';
 const _acceptHeader = 'accept';
 const _eventStreamMimeType = 'text/event-stream';
 const _originHeader = 'origin';
+const _secFetchSiteHeader = 'sec-fetch-site';
+const _crossSiteFetchValue = 'cross-site';
 const _allowCredentialsHeader = 'access-control-allow-credentials';
 const _allowOriginHeader = 'access-control-allow-origin';
 const _varyHeader = 'vary';
@@ -36,66 +38,6 @@ String _sseHeaders(String? origin) {
       '$corsHeaders'
       '\r\n\r\n';
 }
-
-Uri? _parseOrigin(String origin, {bool allowTrailingSlash = false}) {
-  if (origin.contains('\r') || origin.contains('\n')) {
-    return null;
-  }
-  final uri = Uri.tryParse(origin);
-  if (uri == null ||
-      !uri.hasScheme ||
-      !uri.hasAuthority ||
-      uri.host.isEmpty ||
-      uri.userInfo.isNotEmpty ||
-      uri.hasQuery ||
-      uri.hasFragment) {
-    return null;
-  }
-  final validPath = allowTrailingSlash
-      ? (uri.path.isEmpty || uri.path == '/')
-      : uri.path.isEmpty;
-  if (!validPath) {
-    return null;
-  }
-  return uri;
-}
-
-String _normalizeOriginUri(Uri uri) {
-  if (_isHttpScheme(uri.scheme)) {
-    return uri.origin;
-  }
-  final host = uri.host.contains(':') ? '[${uri.host}]' : uri.host;
-  final portSuffix = uri.hasPort ? ':${uri.port}' : '';
-  return '${uri.scheme}://$host$portSuffix';
-}
-
-Set<String>? _normalizeAllowedOrigins(Iterable<String>? allowedOrigins) {
-  if (allowedOrigins == null) return null;
-  final normalized = <String>{};
-  for (final origin in allowedOrigins) {
-    final parsed = _parseOrigin(origin, allowTrailingSlash: true);
-    if (parsed == null) {
-      throw ArgumentError.value(
-        origin,
-        'allowedOrigins',
-        'Must be a valid origin with scheme and host '
-            '(for example, "https://example.com").',
-      );
-    }
-    normalized.add(_normalizeOriginUri(parsed));
-  }
-  return normalized;
-}
-
-bool _isHttpScheme(String scheme) =>
-    scheme == _httpScheme || scheme == _httpsScheme;
-
-bool _isLoopbackHost(String host) => _loopbackHosts.contains(host);
-
-bool _isSameOrigin(Uri originUri, Uri requestedUri) =>
-    originUri.scheme == requestedUri.scheme &&
-    originUri.host == requestedUri.host &&
-    originUri.port == requestedUri.port;
 
 class _SseMessage {
   final int id;
@@ -340,19 +282,17 @@ class SseHandler {
   /// [SseConnection]. The SseHandler will also use it as a signal to reuse
   /// open SSE connections that are not in a keep alive period.
   ///
-  /// Cross-origin requests carrying an `Origin` header are validated before
-  /// establishing SSE streams or accepting incoming messages:
-  /// - When neither [allowedOrigins] nor [originCheck] is provided, same-origin
-  ///   requests and HTTP(S) loopback origins (`localhost`, `127.0.0.1`, `::1`)
-  ///   targeting a loopback host are allowed.
-  /// - When [allowedOrigins] or [originCheck] is provided, cross-origin
-  ///   requests are only allowed if the normalized origin is contained in
-  ///   [allowedOrigins] or [originCheck] returns `true` for the normalized
-  ///   origin. Pass an empty [allowedOrigins] collection to allow only
-  ///   same-origin requests.
+  /// Incoming requests are validated before establishing SSE streams or
+  /// accepting `POST` messages:
+  /// - Same-origin requests and HTTP(S) loopback origins (`localhost`,
+  ///   `127.0.0.1`, `::1`) targeting a loopback host are allowed.
+  /// - Additional cross-origin callers may be permitted via [allowedOrigins]
+  ///   (exact origin strings without trailing slashes, such as
+  ///   `'https://example.com'`) or [originCheck] (invoked with the lowercased
+  ///   `Origin` header value).
   /// - Requests without an `Origin` header (such as non-browser clients or
-  ///   same-origin `EventSource` connections) are allowed without emitting CORS
-  ///   headers.
+  ///   same-origin `EventSource` connections) are allowed unless
+  ///   `Sec-Fetch-Site` is `'cross-site'`, and do not emit CORS headers.
   ///
   /// Servers behind reverse proxies that terminate TLS or rewrite `Host`, as
   /// well as servers accepting connections from browser extensions
@@ -366,7 +306,9 @@ class SseHandler {
     Duration? ignoreDisconnect,
     Duration? keepAlive,
     bool Function(String origin)? originCheck,
-  }) : _allowedOrigins = _normalizeAllowedOrigins(allowedOrigins),
+  }) : _allowedOrigins = allowedOrigins
+           ?.map((origin) => origin.toLowerCase())
+           .toSet(),
        _ignoreDisconnect = ignoreDisconnect,
        _keepAlive = keepAlive,
        _originCheck = originCheck;
@@ -378,33 +320,39 @@ class SseHandler {
 
   int get numberOfClients => _connections.length;
 
-  bool _isAllowedRequestOrigin(shelf.Request req) {
-    final rawOrigin = req.headers[_originHeader];
-    if (rawOrigin == null) {
-      return true;
+  bool _isAllowedOrigin(shelf.Request req) {
+    final origin = req.headers[_originHeader];
+    if (origin == null) {
+      return req.headers[_secFetchSiteHeader] != _crossSiteFetchValue;
     }
-    final originUri = _parseOrigin(rawOrigin);
-    if (originUri == null) {
+    if (origin.contains('\r') || origin.contains('\n')) {
       return false;
     }
-    if (_isSameOrigin(originUri, req.requestedUri)) {
+    final uri = Uri.tryParse(origin);
+    if (uri == null ||
+        !uri.hasScheme ||
+        !uri.hasAuthority ||
+        uri.host.isEmpty ||
+        uri.userInfo.isNotEmpty ||
+        uri.path.isNotEmpty ||
+        uri.hasQuery ||
+        uri.hasFragment) {
+      return false;
+    }
+    final requestedUri = req.requestedUri;
+    if (uri.scheme == requestedUri.scheme &&
+        uri.host == requestedUri.host &&
+        uri.port == requestedUri.port) {
       return true;
     }
-    final allowedOrigins = _allowedOrigins;
-    final originCheck = _originCheck;
-    if (allowedOrigins == null && originCheck == null) {
-      return _isHttpScheme(originUri.scheme) &&
-          _isLoopbackHost(originUri.host) &&
-          _isLoopbackHost(req.requestedUri.host);
-    }
-    final normalizedOrigin = _normalizeOriginUri(originUri);
-    if (allowedOrigins != null && allowedOrigins.contains(normalizedOrigin)) {
+    if ((uri.scheme == _httpScheme || uri.scheme == _httpsScheme) &&
+        _loopbackHosts.contains(uri.host) &&
+        _loopbackHosts.contains(requestedUri.host)) {
       return true;
     }
-    if (originCheck != null && originCheck(normalizedOrigin)) {
-      return true;
-    }
-    return false;
+    final normalized = origin.toLowerCase();
+    return (_allowedOrigins?.contains(normalized) ?? false) ||
+        (_originCheck?.call(normalized) ?? false);
   }
 
   shelf.Response _createSseConnection(shelf.Request req, String path) {
@@ -460,7 +408,7 @@ class SseHandler {
 
     if (req.headers[_acceptHeader] == _eventStreamMimeType &&
         req.method == 'GET') {
-      if (!_isAllowedRequestOrigin(req)) {
+      if (!_isAllowedOrigin(req)) {
         return shelf.Response.forbidden('Forbidden origin');
       }
       return _createSseConnection(req, path);
@@ -468,7 +416,7 @@ class SseHandler {
 
     if (req.headers[_acceptHeader] != _eventStreamMimeType &&
         req.method == 'POST') {
-      if (!_isAllowedRequestOrigin(req)) {
+      if (!_isAllowedOrigin(req)) {
         return shelf.Response.forbidden('Forbidden origin');
       }
       return _handleIncomingMessage(req, path);

@@ -1,13 +1,14 @@
-## 4.3.0-wip
+## 5.0.0-wip
 
 - Run `dart format`.
 - Update `fetch` requests so they can be sent from contexts where the `window` is
   not available.
-- Validate `Origin` headers in `SseHandler` before accepting SSE connections or
-  POST messages, and add `allowedOrigins` and `originCheck` parameters to
-  configure permitted cross-origin callers. Non-loopback cross-origin callers
-  (including TLS-terminating or `Host`-rewriting reverse proxies and browser
-  extensions) must now configure `allowedOrigins` or `originCheck`.
+- **Breaking**: Validate `Origin` and `Sec-Fetch-Site` headers in `SseHandler`
+  before accepting SSE connections or `POST` messages, and add `allowedOrigins`
+  and `originCheck` parameters to configure permitted cross-origin callers.
+  Non-loopback cross-origin callers (including TLS-terminating or
+  `Host`-rewriting reverse proxies and browser extensions) must now configure
+  `allowedOrigins` or `originCheck`.
 - Generate client IDs using `Random.secure()` with 192 bits of entropy.
 
 ## 4.2.0

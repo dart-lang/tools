@@ -418,6 +418,67 @@ void main() {
       expect(remoteResp.statusCode, HttpStatus.forbidden);
     });
 
+    test(
+      'rejects cross-site Sec-Fetch-Site when Origin header is absent',
+      () async {
+        final sseHandler = SseHandler(Uri.parse(_ssePath));
+        final server = await io.serve(
+          sseHandler.handler,
+          InternetAddress.loopbackIPv4,
+          0,
+        );
+        addTearDown(() async {
+          sseHandler.shutdown();
+          await server.close(force: true);
+        });
+
+        final client = HttpClient();
+        addTearDown(() => client.close(force: true));
+
+        final getReq = await client.getUrl(
+          Uri.parse('http://127.0.0.1:${server.port}$_ssePath?sseClientId=c1'),
+        );
+        getReq.headers
+          ..set(HttpHeaders.acceptHeader, 'text/event-stream')
+          ..set('sec-fetch-site', 'cross-site');
+        final getResp = await getReq.close();
+        expect(getResp.statusCode, HttpStatus.forbidden);
+        await getResp.drain<void>();
+        expect(sseHandler.numberOfClients, 0);
+
+        final postReq = await client.postUrl(
+          Uri.parse(
+            'http://127.0.0.1:${server.port}$_ssePath?sseClientId=c1&messageId=0',
+          ),
+        );
+        postReq.headers.set('sec-fetch-site', 'cross-site');
+        postReq.write('"blocked"');
+        final postResp = await postReq.close();
+        expect(postResp.statusCode, HttpStatus.forbidden);
+        await postResp.drain<void>();
+
+        // Same-origin Sec-Fetch-Site without Origin (standard same-origin
+        // EventSource GET) remains allowed.
+        final sameOriginGet = shelf.Request(
+          'GET',
+          Uri.parse('http://127.0.0.1:${server.port}$_ssePath?sseClientId=c2'),
+          headers: {
+            'accept': 'text/event-stream',
+            'sec-fetch-site': 'same-origin',
+          },
+          onHijack: (callback) {
+            final controller = StreamController<List<int>>();
+            callback(StreamChannel(controller.stream, controller));
+          },
+        );
+        await expectLater(
+          () => sseHandler.handler(sameOriginGet),
+          throwsA(isA<shelf.HijackException>()),
+        );
+        expect(sseHandler.numberOfClients, 1);
+      },
+    );
+
     test('returns 404 for non-SSE GET requests even with bad Origin', () async {
       final sseHandler = SseHandler(Uri.parse(_ssePath));
       final req = shelf.Request(
@@ -431,11 +492,11 @@ void main() {
   });
 
   group('Origin validation with allowedOrigins and originCheck', () {
-    test('allows configured origins and same-origin while rejecting unlisted '
-        'loopback and external origins', () async {
+    test('allows configured origins, same-origin, and loopback while rejecting '
+        'unlisted external origins', () async {
       final sseHandler = SseHandler(
         Uri.parse(_ssePath),
-        allowedOrigins: ['HTTPS://TRUSTED.EXAMPLE:443/'],
+        allowedOrigins: ['HTTPS://TRUSTED.EXAMPLE'],
       );
       final server = await io.serve(
         sseHandler.handler,
@@ -485,49 +546,47 @@ void main() {
       await trustedPostResp.drain<void>();
       expect(await queue.next, 'from-trusted');
 
-      // Same-origin still succeeds even when not listed in allowedOrigins.
-      final sameOrigin = 'http://127.0.0.1:${server.port}';
-      final sameOriginPost = await client.postUrl(
+      // Cross-port loopback remains allowed on loopback hosts even when
+      // allowedOrigins (including an empty list) is passed.
+      final crossPortPost = await client.postUrl(
         Uri.parse(
           'http://127.0.0.1:${server.port}$_ssePath?sseClientId=trusted&messageId=1',
         ),
       );
-      sameOriginPost.headers.set(_originHeader, sameOrigin);
-      sameOriginPost.write('"from-same-origin"');
-      final sameOriginResp = await sameOriginPost.close();
-      expect(sameOriginResp.statusCode, HttpStatus.ok);
-      await sameOriginResp.drain<void>();
-      expect(await queue.next, 'from-same-origin');
+      crossPortPost.headers.set(_originHeader, 'http://localhost:9999');
+      crossPortPost.write('"from-loopback"');
+      final crossPortResp = await crossPortPost.close();
+      expect(crossPortResp.statusCode, HttpStatus.ok);
+      await crossPortResp.drain<void>();
+      expect(await queue.next, 'from-loopback');
 
-      // Unlisted cross-port loopback is rejected when allowedOrigins is set.
-      final crossPortPost = await client.postUrl(
+      // Unlisted external origin is still rejected.
+      final evilPost = await client.postUrl(
         Uri.parse(
           'http://127.0.0.1:${server.port}$_ssePath?sseClientId=trusted&messageId=2',
         ),
       );
-      crossPortPost.headers.set(_originHeader, 'http://localhost:9999');
-      crossPortPost.write('"blocked"');
-      final crossPortResp = await crossPortPost.close();
-      expect(crossPortResp.statusCode, HttpStatus.forbidden);
-      expect(crossPortResp.headers.value(_allowOriginHeader), isNull);
-      await crossPortResp.drain<void>();
+      evilPost.headers.set(_originHeader, _evilOrigin);
+      evilPost.write('"blocked"');
+      final evilResp = await evilPost.close();
+      expect(evilResp.statusCode, HttpStatus.forbidden);
+      expect(evilResp.headers.value(_allowOriginHeader), isNull);
+      await evilResp.drain<void>();
 
-      // Empty allowedOrigins restricts strictly to same-origin.
-      final sameOriginOnly = SseHandler(
+      // Passing empty allowedOrigins keeps loopback working on loopback hosts.
+      final emptyAllowed = SseHandler(
         Uri.parse(_ssePath),
         allowedOrigins: const <String>[],
       );
-      final crossPortGet = shelf.Request(
-        'GET',
-        Uri.parse('http://localhost:8080$_ssePath?sseClientId=c1'),
-        headers: {
-          'accept': 'text/event-stream',
-          _originHeader: 'http://localhost:9090',
-        },
+      final loopbackPost = shelf.Request(
+        'POST',
+        Uri.parse('http://127.0.0.1:8080$_ssePath'),
+        headers: {_originHeader: 'http://localhost:9090'},
+        body: '"ok"',
       );
       expect(
-        (await sameOriginOnly.handler(crossPortGet)).statusCode,
-        HttpStatus.forbidden,
+        (await emptyAllowed.handler(loopbackPost)).statusCode,
+        HttpStatus.ok,
       );
     });
 
@@ -600,22 +659,6 @@ void main() {
         expect(resp.statusCode, HttpStatus.forbidden);
       }
       expect(checkedOrigins, [extOrigin, _evilOrigin]);
-    });
-
-    test('throws ArgumentError on invalid allowedOrigins entries', () {
-      for (final invalid in [
-        '*',
-        'null',
-        'example.com',
-        'https://example.com/subpath',
-        'https://example.com?query=1',
-        'https://example.com\r\nX-Injected: 1',
-      ]) {
-        expect(
-          () => SseHandler(Uri.parse(_ssePath), allowedOrigins: [invalid]),
-          throwsArgumentError,
-        );
-      }
     });
   });
 
