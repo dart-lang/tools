@@ -108,6 +108,38 @@ Future<void> expectApiSummaryClean({
     packageName: packageName,
     customizer: customizer,
   );
+
+  final allowNonPublic = customizer?.allowNonPublicTypes ?? false;
+  if (!allowNonPublic) {
+    final nonPublics = summary.libraries
+        .expand(
+          (l) => [
+            ...l.classes,
+            ...l.enums,
+            ...l.mixins,
+            ...l.extensions,
+            ...l.extensionTypes,
+            ...l.functions,
+            ...l.typeAliases,
+          ],
+        )
+        .where((d) => d.status == ApiDeclarationStatus.nonPublic)
+        .toList();
+
+    if (nonPublics.isNotEmpty) {
+      throw ApiSummaryVerificationException(
+        message:
+            'The package exposes the following non-public types in its API '
+            'signatures. These types are either from "lib/src/" or unexported '
+            'libraries, making them unusable by callers:\n'
+            '${nonPublics.map((e) => '  - ${e.name} (${e.locationUri})').join('\n')}\n'
+            'Ensure all types used in public signatures are exported by the package.',
+        goldenFilePath: effectiveGoldenPath,
+        actual: format.format(summary),
+      );
+    }
+  }
+
   final actualOutput = format.format(summary);
   final goldenFile = File(effectiveGoldenPath);
 

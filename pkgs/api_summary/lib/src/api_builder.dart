@@ -101,7 +101,11 @@ final class _ApiBuilder {
       }
 
       final showDetails = _customizer.shouldShowDetails(element, scanContext);
-      if (!showDetails && !_customizer.includeReferencedTypes) continue;
+      if (!showDetails &&
+          !_customizer.includeReferencedTypes &&
+          status != ApiDeclarationStatus.nonPublic) {
+        continue;
+      }
 
       final libraries =
           _elementToLibraries[element] ??

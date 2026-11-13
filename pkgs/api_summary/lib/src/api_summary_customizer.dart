@@ -55,9 +55,17 @@ base class ApiSummaryCustomizer {
   /// [ApiDeclarationStatus.referenced] and without their members.
   final bool includeReferencedTypes;
 
+  /// Whether to allow [ApiDeclarationStatus.nonPublic] declarations to appear
+  /// in the public API without failing validation.
+  ///
+  /// This can be used as an opt-out for legacy packages that intentionally
+  /// expose non-public types.
+  final bool allowNonPublicTypes;
+
   const ApiSummaryCustomizer({
     this.includeImplicitNonPublicMembers = false,
     this.includeReferencedTypes = false,
+    this.allowNonPublicTypes = false,
   });
 
   /// Called after [ApiSummaryContext.packageName] and
