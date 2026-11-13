@@ -72,6 +72,31 @@ line 7, column 10: message
       expect(span.start.offset, 1);
       expect(span.end.offset, 1);
     });
+
+    test('indentless sequence item starts after the entry indicator', () {
+      final yaml = loadYaml('a:\n- \n- x\n') as YamlMap;
+      final list = yaml.nodes['a'] as YamlList;
+      final span = list.nodes.first.span;
+
+      expect(span.start.offset, 4);
+      expect(span.end.offset, 4);
+    });
+
+    test('explicit mapping value starts after the value indicator', () {
+      final yaml = loadYaml('? a\n:\n') as YamlMap;
+      final span = yaml.nodes['a']!.span;
+
+      expect(span.start.offset, 5);
+      expect(span.end.offset, 5);
+    });
+
+    test('sequence item with CRLF starts after the entry indicator', () {
+      final yaml = loadYaml('- \r\n- x\r\n') as YamlList;
+      final span = yaml.nodes.first.span;
+
+      expect(span.start.offset, 1);
+      expect(span.end.offset, 1);
+    });
   });
 
   group('nested', () {
