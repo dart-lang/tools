@@ -3,6 +3,29 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:collection/collection.dart';
+
+import 'api_declaration.dart';
+import 'api_type.dart';
+
+/// Returns an unmodifiable parameter list preserving positional parameter order
+/// followed by named parameters sorted alphabetically by [ApiParameter.name].
+List<ApiParameter> canonicalizeParameters(List<ApiParameter> parameters) {
+  if (parameters.isEmpty) return const [];
+  final positional = <ApiParameter>[];
+  final named = <ApiParameter>[];
+  for (final param in parameters) {
+    if (param.isNamed) {
+      named.add(param);
+    } else {
+      positional.add(param);
+    }
+  }
+  if (named.length > 1) {
+    named.sortBy((p) => p.name);
+  }
+  return List.unmodifiable([...positional, ...named]);
+}
 
 /// Element categorization used by [MemberSortKey].
 enum MemberCategory {
@@ -27,6 +50,45 @@ final class MemberSortKey implements Comparable<MemberSortKey> {
     required this.name,
     required this.isSetter,
   });
+
+  /// Computes the canonical [MemberSortKey] for an [ApiDeclaration].
+  factory MemberSortKey.fromDeclaration(
+    ApiDeclaration element, {
+    bool isInstance = false,
+    bool isTopLevel = false,
+  }) => switch (element) {
+    ApiClass() || ApiExtensionType() => MemberSortKey(
+      isInstanceMember: isInstance,
+      category: MemberCategory.interface,
+      name: element.name,
+      isSetter: false,
+    ),
+    ApiExtension() => MemberSortKey(
+      isInstanceMember: isInstance,
+      category: MemberCategory.extension,
+      name: element.name,
+      isSetter: false,
+    ),
+    ApiExecutable(:final kind, :final isStatic, :final name) => MemberSortKey(
+      isInstanceMember: isInstance && !(isTopLevel || isStatic),
+      category: switch (kind) {
+        ApiExecutableKind.constructor => MemberCategory.constructor,
+        ApiExecutableKind.getter ||
+        ApiExecutableKind.setter => MemberCategory.propertyAccessor,
+        _ => MemberCategory.topLevelFunctionOrMethod,
+      },
+      name: kind == ApiExecutableKind.setter && name.endsWith('=')
+          ? name.substring(0, name.length - 1)
+          : name,
+      isSetter: kind == ApiExecutableKind.setter,
+    ),
+    ApiTypeAlias() => MemberSortKey(
+      isInstanceMember: isInstance,
+      category: MemberCategory.typeAlias,
+      name: element.name,
+      isSetter: false,
+    ),
+  };
 
   @override
   int compareTo(MemberSortKey other) {
