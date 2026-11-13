@@ -16,6 +16,7 @@ import 'api_declaration.dart';
 import 'api_facet.dart';
 import 'api_summary_customizer.dart';
 import 'api_type.dart';
+import 'constant_renderer.dart';
 import 'extensions.dart';
 import 'js_facet.dart';
 import 'meta_facet.dart';
@@ -541,11 +542,13 @@ final class _ApiBuilder {
               isNamed: e.isNamed,
               isOptionalPositional: e.isOptionalPositional,
               isDeprecated: e.isDeprecated,
+              defaultValue: extractParameterDefaultValue(e),
             ),
           )
           .toList(),
       isStatic: element.isStatic,
       isConst: isConst,
+      constantValue: extractGetterConstantValue(element),
       isDeprecated: _isDeprecated(element),
       isEnumConstant: isEnumConstant,
       facets: _extractFacets(element),

@@ -428,6 +428,8 @@ final class _ApiTextRenderer {
           parentheticals.add([
             '$maybeStatic${element.isConst ? 'const getter: ' : 'getter: '}',
             ..._describeType(element.returnType),
+            if (element.constantValue case final constantValue?)
+              ' = $constantValue',
           ]);
         }
       case ApiExecutableKind.setter:
@@ -521,17 +523,21 @@ final class _ApiTextRenderer {
     final namedParams = <List<Object?>>[];
 
     for (final param in parameters) {
+      final defaultSuffix = param.defaultValue;
       final described = <Object?>[
         if (param.isDeprecated) 'deprecated ',
         if (param.isNamed && param.isRequired) 'required ',
         ..._describeType(param.type),
+        if (param.isNamed) ' ${param.name}',
+        if (defaultSuffix != null) ' = $defaultSuffix',
       ];
-      if (param.isNamed) {
-        namedParams.add([...described, ' ${param.name}']);
-      } else if (param.isOptionalPositional) {
-        optionalParams.add(described);
-      } else {
-        params.add(described);
+      switch (param) {
+        case ApiParameter(isNamed: true):
+          namedParams.add(described);
+        case ApiParameter(isOptionalPositional: true):
+          optionalParams.add(described);
+        case ApiParameter():
+          params.add(described);
       }
     }
 
