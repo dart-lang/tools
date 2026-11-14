@@ -1,6 +1,6 @@
 ## 1.0.3-wip
 
-- Recognize the `rebeccapurple` color keyword and add `Color.rebeccaPurple`.
+- Recognize the `rebeccapurple` color keyword.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,

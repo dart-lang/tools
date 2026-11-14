@@ -11,6 +11,5 @@ void main() {
         0x663399);
     expect(TokenKind.colorValue(TokenKind.matchColorName('RebeccaPurple')!),
         0x663399);
-    expect(Color.rebeccaPurple.argbValue, 0x663399);
   });
 }
