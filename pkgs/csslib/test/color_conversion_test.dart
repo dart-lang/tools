@@ -22,32 +22,6 @@ void main() {
     expect(Rgba(0xff, 0, 0, 1).argbValue, 0xffff0000);
   });
 
-  test(
-    'ARGB round-trips retain each alpha byte, including 0x7f and >= 0x80',
-    () {
-      expect(const Color.hex('7f112233').rgba.toHexArgbString(), '7f112233');
-      expect(Hsla.fromArgbValue(0x7f808080).toHexArgbString(), '7f808080');
-      expect(Hsla.fromArgbValue(0x80808080).toHexArgbString(), '80808080');
-      expect(Hsla.fromArgbValue(0xff808080).toHexArgbString(), 'ff808080');
-      expect(Rgba.fromArgbValue(0xff808080).argbValue, 0xff808080);
-      expect(Rgba.fromArgbValue(0x80808080).argbValue, 0x80808080);
-    },
-  );
-
-  test('color string factories decode CSS colors only once', () {
-    expect(Rgba.fromString('rgba(255,0,0,0.5)').toHexArgbString(), '80ff0000');
-    expect(
-      Hsla.fromString('rgba(255,0,0,0.5)').color.toHexArgbString(),
-      '80ff0000',
-    );
-    expect(Rgba.fromString('rgb(255,0,0)').r, 255);
-  });
-
-  test('color string factories reject unsupported colors', () {
-    expect(() => Rgba.fromString('foo'), throwsFormatException);
-    expect(() => Hsla.fromString('foo'), throwsFormatException);
-  });
-
   test('HSL to Color preserves hue and saturation', () {
     expect(Hsla(0, 1, 0.5, 1).color.toHexArgbString(), 'ffff0000');
     expect(Hsla(1 / 3, 1, 0.5).color.toHexArgbString(), '00ff00');

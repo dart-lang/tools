@@ -1,10 +1,7 @@
 ## 1.0.3-wip
 
-- Fix `Rgba.fromArgbValue`, `Rgba.argbValue` and `Hsla.color`, preserve alpha
-  for grayscale colors in `Hsla.fromRgba`, and keep the exact 8-bit alpha in
-  `Color.rgba`, `Color.hsla` and `Hsla.fromArgbValue` instead of rounding it to
-  two digits. `Rgba.fromString` and `Hsla.fromString` parse the CSS color once,
-  and `Color.css` throws a `FormatException` for unsupported colors.
+- Fix `Rgba.fromArgbValue`, `Rgba.argbValue` and `Hsla.color`, and preserve
+  alpha for grayscale colors in `Hsla.fromRgba`.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,

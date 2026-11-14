@@ -71,11 +71,7 @@ class Color implements _StyleProperty, ColorBase {
 
   /// Creates a new color from a CSS color string. For more information, see
   /// <https://developer.mozilla.org/en/CSS/color>.
-  ///
-  /// Throws a [FormatException] if [color] is not a supported CSS color.
-  Color.css(String color)
-      : _argb = Color._convertCssToArgb(color) ??
-            (throw FormatException('Unsupported CSS color', color));
+  Color.css(String color) : _argb = Color._convertCssToArgb(color)!;
 
   // TODO(jmesserly): I found the use of percents a bit suprising.
   /// HSL takes three values.  The [hueDegree] degree on the color wheel; '0' is
@@ -152,7 +148,7 @@ class Color implements _StyleProperty, ColorBase {
       // Get alpha blending value 0..255
       var alpha = Color.hexToInt(_argb.substring(nextIndex, nextIndex + 2));
       // Convert to value from 0..1
-      a = alpha / 255;
+      a = double.parse((alpha / 255).toStringAsPrecision(2));
       nextIndex += 2;
     }
     var r = Color.hexToInt(_argb.substring(nextIndex, nextIndex + 2));
@@ -503,7 +499,8 @@ class Rgba implements _StyleProperty, ColorBase {
         b = Color._clamp(blue, 0, 255),
         a = (alpha != null) ? Color._clamp(alpha, 0, 1) : alpha;
 
-  factory Rgba.fromString(String cssColor) => Color.css(cssColor).rgba;
+  factory Rgba.fromString(String hexValue) =>
+      Color.css('#${Color._convertCssToArgb(hexValue)}').rgba;
 
   factory Rgba.fromColor(Color color) => color.rgba;
 
@@ -626,8 +623,8 @@ class Hsla implements _StyleProperty, ColorBase {
         _l = Color._clamp(lightness, 0, 1),
         _a = (alpha != null) ? Color._clamp(alpha, 0, 1) : alpha;
 
-  factory Hsla.fromString(String cssColor) {
-    final rgba = Color.css(cssColor).rgba;
+  factory Hsla.fromString(String hexValue) {
+    var rgba = Color.css('#${Color._convertCssToArgb(hexValue)}').rgba;
     return _createFromRgba(rgba.r, rgba.g, rgba.b, rgba.a);
   }
 
@@ -642,8 +639,8 @@ class Hsla implements _StyleProperty, ColorBase {
     var g = (value.toInt() & 0xff00) >> 8;
     var b = value.toInt() & 0xff;
 
-    // Keep the full 8-bit alpha precision for lossless ARGB round-trips.
-    a /= 255;
+    // Convert alpha to 0..1 from (0..255).
+    a = double.parse((a / 255).toStringAsPrecision(2));
 
     return _createFromRgba(r, g, b, a);
   }
