@@ -1,6 +1,6 @@
 ## 0.15.8-wip
 
-- `getElementById`, `getElementsByTagName` and `getElementsByClassName` no longer parse a CSS selector. IDs and class names that are not valid CSS identifiers (such as `a:b`, `a.b` or `1`) now match exactly instead of throwing or matching the wrong element, `getElementById('')` returns `null`, class names are split on HTML ASCII whitespace, and deeply nested documents no longer overflow the stack.
+- `getElementById`, `getElementsByTagName` and `getElementsByClassName` no longer parse a CSS selector. IDs and class names that are not valid CSS identifiers (such as `a:b`, `a.b` or `1`) now match exactly instead of throwing or matching the wrong element, `getElementById('')` returns `null`, class names are split on HTML ASCII whitespace, and deeply nested documents no longer overflow the stack. **Breaking:** `getElementsByTagName` now matches a single tag name, as in the DOM spec, so selector lists or combinators such as `'h1, h2'` return an empty list, and `''` returns an empty list instead of throwing.
 - `</br>` and `</p>` end tags in foreign content (`<svg>`, `<math>`) now exit foreign content before reprocessing in HTML mode, matching the WHATWG HTML standard.
 - `<` and `>` are now escaped as `&lt;` and `&gt;` when serializing attribute values in `htmlSerializeEscape`, `innerHtml`, and `outerHtml`, matching the WHATWG HTML standard.
 - Fix `Node.attributeSpans` and `Node.attributeValueSpans` throwing a `TypeError` when a start tag emits tokenizer parse errors, and preserve the first occurrence's span on duplicate attributes.
