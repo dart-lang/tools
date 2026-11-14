@@ -150,5 +150,22 @@ void main() {
       );
       expect(second, contains('href="#fn-b"'));
     });
+
+    test('orders escaped punctuation footnotes by first reference', () {
+      const firstLabel = 'one';
+      const secondLabel = r'\[';
+      final html = markdownToHtml(
+        'See[^$firstLabel] and[^$secondLabel].\n\n'
+        '[^$secondLabel]: second definition\n'
+        '[^$firstLabel]: first definition',
+        extensionSet: ExtensionSet.gitHubWeb,
+      );
+      final firstId = Uri.encodeComponent(firstLabel);
+      final secondId = Uri.encodeComponent(secondLabel);
+      final firstDefinition = html.indexOf('<li id="fn-$firstId">');
+      final secondDefinition = html.indexOf('<li id="fn-$secondId">');
+      expect(firstDefinition, greaterThanOrEqualTo(0));
+      expect(secondDefinition, greaterThan(firstDefinition));
+    });
   });
 }
