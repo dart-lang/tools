@@ -1,5 +1,7 @@
 ## 1.0.3-wip
 
+- Fix `@namespace` serialization: quote bare URIs in pretty output and stop
+  doubling already-quoted URIs.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
