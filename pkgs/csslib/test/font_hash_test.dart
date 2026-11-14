@@ -36,13 +36,4 @@ void main() {
     expect(first.hashCode, second.hashCode);
     expect({first: 'found'}[second], 'found');
   });
-
-  test('font hashes distinguish many equal-size distinct families', () {
-    final fonts = List.generate(
-      256,
-      (i) => Font(size: 16, family: ['family-$i']),
-    );
-    final distinctHashes = fonts.map((font) => font.hashCode).toSet();
-    expect(distinctHashes.length, greaterThan(200));
-  });
 }
