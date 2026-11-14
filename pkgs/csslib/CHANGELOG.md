@@ -1,7 +1,6 @@
 ## 1.0.3-wip
 
-- Use native integer hexadecimal formatting for named CSS colors, reducing
-  temporary allocations and avoiding hangs on negative conversion inputs.
+- Fix `TokenKind.decimalToHex` hanging on negative input.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
