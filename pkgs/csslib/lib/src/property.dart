@@ -1049,7 +1049,7 @@ class Font implements _StyleProperty {
           );
     return Font(
       size: size == null ? null : size! * ratio,
-      family: family?.toList(),
+      family: family,
       weight: weight,
       style: style,
       variant: variant,

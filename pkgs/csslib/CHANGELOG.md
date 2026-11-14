@@ -1,8 +1,7 @@
 ## 1.0.3-wip
 
 - `Font.scale` keeps the line height (scaling pixel heights and keeping
-  relative ratios), copies the font-family list, and no longer throws when
-  the font size is unspecified.
+  relative ratios) and no longer throws when the font size is unspecified.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,

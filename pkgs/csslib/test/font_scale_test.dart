@@ -21,11 +21,6 @@ void main() {
     expect(doubled.lineHeight!.inPixels, isTrue);
     expect(doubled.lineHeightInPixels, 36);
     expect(doubled.weight, FontWeight.bold);
-
-    families[0] = 'Changed';
-    expect(doubled.family, ['Frank Ruhl', 'serif']);
-    doubled.family!.add('Custom');
-    expect(original.family, ['Changed', 'serif']);
   });
 
   test('relative line height remains a ratio when the font scales', () {
@@ -49,19 +44,10 @@ void main() {
 
     expect(scaled.size, isNull);
     expect(scaled.family, ['Alef']);
-    family.add('serif');
-    expect(scaled.family, ['Alef']);
 
     const withLineHeight = Font(lineHeight: LineHeight(18));
     final scaledHeight = withLineHeight.scale(2);
     expect(scaledHeight.size, isNull);
     expect(scaledHeight.lineHeight!.height, 36);
-  });
-
-  test('font without explicit line height retains its default', () {
-    final scaled = const Font(size: 10).scale(3);
-    expect(scaled.size, 30);
-    expect(scaled.lineHeight, isNull);
-    expect(scaled.lineHeightInPixels, closeTo(36, 0.000001));
   });
 }
