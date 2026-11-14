@@ -106,10 +106,60 @@ mixin _ParentNode implements Node {
       query.querySelectorAll(this, selector);
 }
 
+// Shared traversal for DOM lookups that need no CSS selector parsing.
+// Descendants are visited in document order and deeply nested documents do not
+// consume the call stack.
+Iterable<Element> _descendantElements(Node root) sync* {
+  final stack = <Iterator<Node>>[root.nodes.iterator];
+  while (stack.isNotEmpty) {
+    final cursor = stack.last;
+    if (!cursor.moveNext()) {
+      stack.removeLast();
+      continue;
+    }
+    final child = cursor.current;
+    if (child is Element) {
+      yield child;
+      if (child.nodes.isNotEmpty) stack.add(child.nodes.iterator);
+    }
+  }
+}
+
+final RegExp _htmlClassWhitespace = RegExp(r'[ \t\n\f\r]+');
+
+bool _isHtmlClassWhitespace(int code) =>
+    code == 0x09 ||
+    code == 0x0A ||
+    code == 0x0C ||
+    code == 0x0D ||
+    code == 0x20;
+
+bool _hasHtmlClassToken(String source, String token) {
+  var start = 0;
+  for (var i = 0; i <= source.length; i++) {
+    final separator =
+        i == source.length || _isHtmlClassWhitespace(source.codeUnitAt(i));
+    if (!separator) continue;
+    if (i - start == token.length && source.startsWith(token, start)) {
+      return true;
+    }
+    start = i + 1;
+  }
+  return false;
+}
+
 // http://dom.spec.whatwg.org/#interface-nonelementparentnode
 mixin _NonElementParentNode implements _ParentNode {
-  // TODO(jmesserly): could be faster, should throw on invalid id.
-  Element? getElementById(String id) => querySelector('#$id');
+  /// Return the first descendant whose ID exactly matches [id].
+  ///
+  /// IDs need not be valid CSS identifiers, so don't parse them as selectors.
+  Element? getElementById(String id) {
+    if (id.isEmpty) return null;
+    for (final element in _descendantElements(this)) {
+      if (element.id == id) return element;
+    }
+    return null;
+  }
 }
 
 // This doesn't exist as an interface in the spec, but it's useful to merge
@@ -117,14 +167,29 @@ mixin _NonElementParentNode implements _ParentNode {
 // http://dom.spec.whatwg.org/#interface-document
 // http://dom.spec.whatwg.org/#element
 abstract mixin class _ElementAndDocument implements _ParentNode {
-  // TODO(jmesserly): could be faster, should throw on invalid tag/class names.
+  /// Return matching descendant elements without parsing a CSS selector.
+  List<Element> getElementsByTagName(String localName) {
+    final name = localName.toLowerCase();
+    return [
+      for (final element in _descendantElements(this))
+        if (name == '*' || element.localName == name) element,
+    ];
+  }
 
-  List<Element> getElementsByTagName(String localName) =>
-      querySelectorAll(localName);
-
-  List<Element> getElementsByClassName(String classNames) =>
-      querySelectorAll(classNames.splitMapJoin(' ',
-          onNonMatch: (m) => m.isNotEmpty ? '.$m' : m, onMatch: (m) => ''));
+  /// All whitespace-delimited class names must match on each element.
+  List<Element> getElementsByClassName(String classNames) {
+    final wanted = classNames
+        .split(_htmlClassWhitespace)
+        .where((name) => name.isNotEmpty)
+        .toSet();
+    if (wanted.isEmpty) return <Element>[];
+    return [
+      for (final element in _descendantElements(this))
+        if (wanted
+            .every((token) => _hasHtmlClassToken(element.className, token)))
+          element,
+    ];
+  }
 }
 
 /// Really basic implementation of a DOM-core like Node.
