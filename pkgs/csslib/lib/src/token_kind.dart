@@ -572,30 +572,16 @@ class TokenKind {
     return null;
   }
 
+  /// Converts [number] to lowercase hexadecimal, zero-padded to [minDigits].
+  ///
+  /// A negative [number] keeps its sign in front; only the digits are padded.
   static String decimalToHex(int number, [int minDigits = 1]) {
-    final hexDigits = '0123456789abcdef';
-
-    var result = <String>[];
-
-    var dividend = number >> 4;
-    var remain = number % 16;
-    result.add(hexDigits[remain]);
-    while (dividend != 0) {
-      remain = dividend % 16;
-      dividend >>= 4;
-      result.add(hexDigits[remain]);
+    final hex = number.toRadixString(16);
+    if (number < 0) {
+      // Pad the digits, not the sign.
+      return '-${hex.substring(1).padLeft(minDigits, '0')}';
     }
-
-    var invertResult = StringBuffer();
-    var paddings = minDigits - result.length;
-    while (paddings-- > 0) {
-      invertResult.write('0');
-    }
-    for (var i = result.length - 1; i >= 0; i--) {
-      invertResult.write(result[i]);
-    }
-
-    return invertResult.toString();
+    return hex.padLeft(minDigits, '0');
   }
 
   static String kindToString(int kind) => switch (kind) {
