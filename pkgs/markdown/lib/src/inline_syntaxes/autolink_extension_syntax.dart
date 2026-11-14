@@ -48,6 +48,8 @@ class AutolinkExtensionSyntax extends InlineSyntax {
   AutolinkExtensionSyntax()
     : super('($_linkPattern)|($_emailPattern)', caseSensitive: false);
 
+  static final _percentEscapePattern = RegExp('%[0-9A-Fa-f]{2}');
+
   static final _emailOnly = RegExp(
     _emailPattern,
     multiLine: true,
@@ -120,13 +122,23 @@ class AutolinkExtensionSyntax extends InlineSyntax {
     }
 
     final anchor = Element.text('a', text)
-      ..attributes['href'] = Uri.encodeFull(destination);
+      ..attributes['href'] = _encodeHref(destination);
 
     parser
       ..addNode(anchor)
       ..consume(consumeLength);
 
     return true;
+  }
+
+  /// Preserve existing percent escapes. Encoding the whole URI would turn
+  /// an already escaped percent sign into a double-encoded URL.
+  static String _encodeHref(String destination) {
+    return destination.splitMapJoin(
+      _percentEscapePattern,
+      onMatch: (match) => match.match,
+      onNonMatch: Uri.encodeFull,
+    );
   }
 
   int _getConsumeLength(String text) {

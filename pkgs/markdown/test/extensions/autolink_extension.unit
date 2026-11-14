@@ -24,3 +24,11 @@ https://example.com and ftp://example.com and awww.example.com and foo+bar-baz.q
 /www.a.b@c.d and /foo@bar.com and xhttp://a.b
 <<<
 <p>/<a href="mailto:www.a.b@c.d">www.a.b@c.d</a> and /<a href="mailto:foo@bar.com">foo@bar.com</a> and xhttp://a.b</p>
+>>> percent-encoded characters are not double-encoded
+https://example.com/%40foo?q=%26 and www.example.com/%e2%82%AC
+<<<
+<p><a href="https://example.com/%40foo?q=%26">https://example.com/%40foo?q=%26</a> and <a href="http://www.example.com/%e2%82%AC">www.example.com/%e2%82%AC</a></p>
+>>> invalid percent-encoding and other characters are still encoded
+https://example.com/%zz%4/%%41/fü
+<<<
+<p><a href="https://example.com/%25zz%254/%25%41/f%C3%BC">https://example.com/%zz%4/%%41/fü</a></p>
