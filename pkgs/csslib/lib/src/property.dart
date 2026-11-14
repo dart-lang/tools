@@ -272,30 +272,13 @@ class Color implements _StyleProperty, ColorBase {
         return parseNumber(trimmed);
       }
 
-      int parseRgbChannel(String text) {
-        final trimmed = text.trim();
-        if (trimmed.endsWith('%')) {
-          return (parseFraction(trimmed) * 255).round();
-        }
-        return parseNumber(trimmed).toInt();
-      }
+      int parseRgbChannel(String text) => parseNumber(text).toInt();
 
       double parseHue(String text) {
         final trimmed = text.trim().toLowerCase();
-        double degrees;
-        if (trimmed.endsWith('turn')) {
-          degrees = parseNumber(trimmed.substring(0, trimmed.length - 4)) * 360;
-        } else if (trimmed.endsWith('grad')) {
-          degrees = parseNumber(trimmed.substring(0, trimmed.length - 4)) * 0.9;
-        } else if (trimmed.endsWith('rad')) {
-          degrees = parseNumber(trimmed.substring(0, trimmed.length - 3)) *
-              180 /
-              math.pi;
-        } else if (trimmed.endsWith('deg')) {
-          degrees = parseNumber(trimmed.substring(0, trimmed.length - 3));
-        } else {
-          degrees = parseNumber(trimmed);
-        }
+        final degrees = trimmed.endsWith('deg')
+            ? parseNumber(trimmed.substring(0, trimmed.length - 3))
+            : parseNumber(trimmed);
         // CSS hue is an angle, not the 0..1 fraction expected by Hsla.
         // Dart's `%` is never negative here, so -120 wraps to 240 too.
         return degrees % 360 / 360;
