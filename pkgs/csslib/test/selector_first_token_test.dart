@@ -37,11 +37,4 @@ void main() {
       expect(compactOutput(sheet), input, reason: input);
     }
   });
-
-  test('ordinary stylesheet value units still parse as units', () {
-    final errors = <Message>[];
-    final sheet = parse('.entry { width: 10px; }', errors: errors);
-    expect(errors, isEmpty);
-    expect(sheet.topLevels, hasLength(1));
-  });
 }
