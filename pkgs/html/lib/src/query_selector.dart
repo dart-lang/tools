@@ -246,14 +246,20 @@ class SelectorEvaluator extends Visitor {
 
           final numericLiteral = literal.value as num;
           final parent = _element!.parentNode;
-          if (parent == null) return false;
-          var index = 1;
-          for (var e = _element!.previousElementSibling;
-              e != null;
-              e = e.previousElementSibling) {
-            index++;
+          // Reject impossible indices before scanning a potentially wide parent.
+          if (parent == null ||
+              !numericLiteral.isFinite ||
+              numericLiteral <= 0 ||
+              numericLiteral != numericLiteral.toInt()) {
+            return false;
           }
-          return index == numericLiteral;
+          var index = 0;
+          // previousElementSibling searches the child list on every access.
+          for (final sibling in parent.nodes) {
+            if (sibling is Element) index++;
+            if (identical(sibling, _element)) return index == numericLiteral;
+          }
+          return false;
         }
         break;
 
