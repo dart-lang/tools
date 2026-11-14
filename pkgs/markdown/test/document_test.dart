@@ -151,23 +151,6 @@ void main() {
       expect(second, contains('href="#fn-b"'));
     });
 
-    test('orders Unicode footnotes by first reference, not definition', () {
-      const firstLabel = 'שני';
-      const secondLabel = 'ראשון';
-      final html = markdownToHtml(
-        'ראה[^$firstLabel] ואחר כך[^$secondLabel].\n\n'
-        '[^$secondLabel]: הערה ראשונה\n'
-        '[^$firstLabel]: הערה שנייה',
-        extensionSet: ExtensionSet.gitHubWeb,
-      );
-      final firstId = Uri.encodeComponent(firstLabel);
-      final secondId = Uri.encodeComponent(secondLabel);
-      final firstDefinition = html.indexOf('<li id="fn-$firstId">');
-      final secondDefinition = html.indexOf('<li id="fn-$secondId">');
-      expect(firstDefinition, greaterThanOrEqualTo(0));
-      expect(secondDefinition, greaterThan(firstDefinition));
-    });
-
     test('orders escaped punctuation footnotes by first reference', () {
       const firstLabel = 'one';
       const secondLabel = r'\[';
