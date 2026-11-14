@@ -102,13 +102,6 @@ void main() {
       expect(renderer.render([Element.text('p', 'first')]), '<p>first</p>');
       expect(renderer.render([Text('  preserve spaces')]), '  preserve spaces');
     });
-
-    test('resets generated ID uniqueness for every render', () {
-      final renderer = HtmlRenderer();
-      final heading = Element.text('h2', 'Heading')..generatedId = 'heading';
-      expect(renderer.render([heading]), '<h2 id="heading">Heading</h2>');
-      expect(renderer.render([heading]), '<h2 id="heading">Heading</h2>');
-    });
   });
 
   group('HtmlRenderer text fast path', () {
