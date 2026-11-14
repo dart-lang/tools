@@ -1159,37 +1159,37 @@ bool _isElementBr(Element element) {
   return ns == null || ns == Namespaces.html;
 }
 
-// For Element and DocumentFragment (legacy helper)
-String _getText(Node node, {bool convertBRsToNewlines = false}) =>
-    (_ConcatTextVisitor(convertBRsToNewlines: convertBRsToNewlines)
-          ..visit(node))
-        .toString();
+// For Element and DocumentFragment (legacy helper).
+// Avoid a recursive TreeVisitor and its child-list snapshots at every level:
+// extracting text from deeply nested HTML must not overflow the call stack.
+String _getText(Node node, {bool convertBRsToNewlines = false}) {
+  if (convertBRsToNewlines && node is Element && _isElementBr(node)) {
+    return '\n';
+  }
+  final result = StringBuffer();
+  final stack = <Iterator<Node>>[node.nodes.iterator];
+  while (stack.isNotEmpty) {
+    final cursor = stack.last;
+    if (!cursor.moveNext()) {
+      stack.removeLast();
+      continue;
+    }
+
+    final child = cursor.current;
+    if (child is Text) {
+      result.write(child.data);
+    } else if (convertBRsToNewlines &&
+        child is Element &&
+        _isElementBr(child)) {
+      result.write('\n');
+    } else if (child.nodes.isNotEmpty) {
+      stack.add(child.nodes.iterator);
+    }
+  }
+  return result.toString();
+}
 
 void _setText(Node node, String? value) {
   node.nodes.clear();
   node.append(Text(value));
-}
-
-class _ConcatTextVisitor extends TreeVisitor {
-  final _str = StringBuffer();
-  final bool convertBRsToNewlines;
-
-  _ConcatTextVisitor({this.convertBRsToNewlines = false});
-
-  @override
-  String toString() => _str.toString();
-
-  @override
-  void visitText(Text node) {
-    _str.write(node.data);
-  }
-
-  @override
-  void visitElement(Element node) {
-    if (convertBRsToNewlines && _isElementBr(node)) {
-      _str.write('\n');
-      return;
-    }
-    super.visitElement(node);
-  }
 }

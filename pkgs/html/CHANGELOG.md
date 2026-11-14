@@ -1,5 +1,6 @@
 ## 0.15.8-wip
 
+- Fix `Element.text`, `DocumentFragment.text` and `Node.textContent` throwing a `StackOverflowError` on very deeply nested elements; text is now extracted iteratively.
 - `</br>` and `</p>` end tags in foreign content (`<svg>`, `<math>`) now exit foreign content before reprocessing in HTML mode, matching the WHATWG HTML standard.
 - `<` and `>` are now escaped as `&lt;` and `&gt;` when serializing attribute values in `htmlSerializeEscape`, `innerHtml`, and `outerHtml`, matching the WHATWG HTML standard.
 - Fix `Node.attributeSpans` and `Node.attributeValueSpans` throwing a `TypeError` when a start tag emits tokenizer parse errors, and preserve the first occurrence's span on duplicate attributes.
