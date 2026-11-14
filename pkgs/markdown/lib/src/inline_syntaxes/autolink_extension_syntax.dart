@@ -134,7 +134,6 @@ class AutolinkExtensionSyntax extends InlineSyntax {
   /// Preserve existing percent escapes. Encoding the whole URI would turn
   /// an already escaped percent sign into a double-encoded URL.
   static String _encodeHref(String destination) {
-    if (!destination.contains('%')) return Uri.encodeFull(destination);
     return destination.splitMapJoin(
       _percentEscapePattern,
       onMatch: (match) => match.match,
