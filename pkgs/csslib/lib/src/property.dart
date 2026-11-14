@@ -250,26 +250,67 @@ class Color implements _StyleProperty, ColorBase {
 
       color = color.substring(0, color.length - 1); // Strip close paren.
 
-      var args = <num>[];
-      var params = color.split(',');
-      for (var param in params) {
-        args.add(double.parse(param));
+      final params = color.split(',');
+      final hasAlpha = type == _rgbaCss || type == _hslaCss;
+      if (params.length != (hasAlpha ? 4 : 3)) {
+        throw FormatException('Invalid CSS color component count', value);
       }
+
+      double parseNumber(String text) {
+        final number = double.tryParse(text.trim());
+        if (number == null || !number.isFinite) {
+          throw FormatException('Invalid CSS color component', value);
+        }
+        return number;
+      }
+
+      double parseFraction(String text) {
+        final trimmed = text.trim();
+        if (trimmed.endsWith('%')) {
+          return parseNumber(trimmed.substring(0, trimmed.length - 1)) / 100;
+        }
+        return parseNumber(trimmed);
+      }
+
+      int parseRgbChannel(String text) => parseNumber(text).toInt();
+
+      double parseHue(String text) {
+        final trimmed = text.trim().toLowerCase();
+        final degrees = trimmed.endsWith('deg')
+            ? parseNumber(trimmed.substring(0, trimmed.length - 3))
+            : parseNumber(trimmed);
+        // CSS hue is an angle, not the 0..1 fraction expected by Hsla.
+        // Dart's `%` is never negative here, so -120 wraps to 240 too.
+        return degrees % 360 / 360;
+      }
+
       switch (type) {
         case _rgbCss:
           return Color.convertToHexString(
-              args[0].toInt(), args[1].toInt(), args[2].toInt());
+            parseRgbChannel(params[0]),
+            parseRgbChannel(params[1]),
+            parseRgbChannel(params[2]),
+          );
         case _rgbaCss:
           return Color.convertToHexString(
-              args[0].toInt(), args[1].toInt(), args[2].toInt(), args[3]);
+            parseRgbChannel(params[0]),
+            parseRgbChannel(params[1]),
+            parseRgbChannel(params[2]),
+            parseFraction(params[3]),
+          );
         case _hslCss:
-          return Hsla(args[0], args[1], args[2]).toHexArgbString();
+          return Hsla(
+            parseHue(params[0]),
+            parseFraction(params[1]),
+            parseFraction(params[2]),
+          ).toHexArgbString();
         case _hslaCss:
-          return Hsla(args[0], args[1], args[2], args[3]).toHexArgbString();
-        default:
-          // Type not defined UnsupportedOperationException should have thrown.
-          assert(false);
-          break;
+          return Hsla(
+            parseHue(params[0]),
+            parseFraction(params[1]),
+            parseFraction(params[2]),
+            parseFraction(params[3]),
+          ).toHexArgbString();
       }
     }
     return null;
