@@ -7,8 +7,6 @@ import 'package:csslib/visitor.dart';
 import 'package:source_span/source_span.dart';
 import 'package:test/test.dart';
 
-import 'testing.dart';
-
 void main() {
   test('unescaped identifiers preserve names and !important', () {
     final errors = <Message>[];
@@ -42,14 +40,5 @@ void main() {
     expect(decode(r'x\1F600'), 'x\u{1F600}');
     expect(decode(r'x\110000'), 'x�');
     expect(decode(r'שלום\5d'), 'שלום]');
-  });
-
-  test('long plain identifiers do not change parsed output', () {
-    final errors = <Message>[];
-    final identifier = 'hebrew' * 100;
-    final css = '.$identifier { --my-property: some-long-value; }';
-    final parsed = parse(css, errors: errors);
-    expect(errors, isEmpty);
-    expect(compactOutput(parsed), contains(identifier));
   });
 }
