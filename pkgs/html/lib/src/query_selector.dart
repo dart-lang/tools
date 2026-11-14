@@ -166,14 +166,13 @@ class SelectorEvaluator extends Visitor {
 
       // http://dev.w3.org/csswg/selectors-4/#the-empty-pseudo
       case 'empty':
-        return !_element!.nodes
-            .any((n) => n is Element || n is Text && n.data.isNotEmpty);
+        return _element!.nodes
+            .any((n) => !(n is Element || n is Text && n.text.isNotEmpty));
 
       // http://dev.w3.org/csswg/selectors-4/#the-blank-pseudo
       case 'blank':
-        return !_element!.nodes.any((n) =>
-            n is Element ||
-            n is Text && n.data.runes.any((r) => !isWhitespaceCC(r)));
+        return _element!.nodes.any((n) => !(n is Element ||
+            n is Text && n.text.runes.any((r) => !isWhitespaceCC(r))));
 
       // http://dev.w3.org/csswg/selectors-4/#the-first-child-pseudo
       case 'first-child':
@@ -247,22 +246,14 @@ class SelectorEvaluator extends Visitor {
 
           final numericLiteral = literal.value as num;
           final parent = _element!.parentNode;
-          if (parent == null ||
-              !numericLiteral.isFinite ||
-              numericLiteral <= 0 ||
-              numericLiteral != numericLiteral.toInt()) {
-            return false;
+          if (parent == null) return false;
+          var index = 1;
+          for (var e = _element!.previousElementSibling;
+              e != null;
+              e = e.previousElementSibling) {
+            index++;
           }
-          var index = 0;
-          for (final sibling in parent.nodes) {
-            if (sibling is Element) {
-              index++;
-              if (identical(sibling, _element)) {
-                return index == numericLiteral;
-              }
-            }
-          }
-          return false;
+          return index == numericLiteral;
         }
         break;
 
