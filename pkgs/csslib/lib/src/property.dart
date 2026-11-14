@@ -266,7 +266,7 @@ class Color implements _StyleProperty, ColorBase {
         type = _hslaCss;
         color = color.substring(5);
       } else {
-        throw UnsupportedError('CSS property not implemented');
+        throw FormatException('Unsupported CSS color', value);
       }
 
       color = color.substring(0, color.length - 1); // Strip close paren.

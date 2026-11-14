@@ -60,6 +60,10 @@ void main() {
     test('unknown color names throw a FormatException', () {
       expect(() => Color.css('notacolor'), throwsFormatException);
     });
+
+    test('unknown color functions throw a FormatException', () {
+      expect(() => Color.css('foo(1,2,3)'), throwsFormatException);
+    });
   });
 
   group('named colors', () {
