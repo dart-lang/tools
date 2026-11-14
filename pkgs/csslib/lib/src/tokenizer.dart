@@ -464,7 +464,6 @@ class Tokenizer extends TokenizerBase {
       return _finishToken(TokenKind.INCOMPLETE_COMMENT);
     }
     _index = end + 3;
-    if (_inString) return next();
     return _finishToken(TokenKind.HTML_COMMENT);
   }
 
@@ -476,7 +475,6 @@ class Tokenizer extends TokenizerBase {
       return _finishToken(TokenKind.INCOMPLETE_COMMENT);
     }
     _index = end + 2;
-    if (_inString) return next();
     return _finishToken(TokenKind.COMMENT);
   }
 }
