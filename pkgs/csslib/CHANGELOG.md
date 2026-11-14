@@ -1,5 +1,6 @@
 ## 1.0.3-wip
 
+- Speed up tokenizing by indexing unit and directive keywords by length.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,

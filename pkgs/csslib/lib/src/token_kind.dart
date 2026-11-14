@@ -506,21 +506,51 @@ class TokenKind {
     return -1; // Not a unit token.
   }
 
+  // Most identifiers are not units/directives. Indexing keywords by length
+  // avoids scanning every entry on every token without allocating a substring.
+  static Map<int, List<Map<String, Object>>> _groupByLength(
+    List<Map<String, Object>> entries,
+  ) {
+    final byLength = <int, List<Map<String, Object>>>{};
+    for (final entry in entries) {
+      final length = (entry['value'] as String).length;
+      (byLength[length] ??= <Map<String, Object>>[]).add(entry);
+    }
+    return byLength;
+  }
+
+  static final _unitsByLength = _groupByLength(_UNITS);
+  static final _directivesByLength = _groupByLength(_DIRECTIVES);
+  static final _marginDirectivesByLength = _groupByLength(MARGIN_DIRECTIVES);
+  static final _mediaOperatorsByLength = _groupByLength(MEDIA_OPERATORS);
+
+  static int _matchIndexed(
+    Map<int, List<Map<String, Object>>> groups,
+    String field,
+    String text,
+    int offset,
+    int length,
+  ) {
+    final group = groups[length];
+    if (group == null) return -1;
+    return matchList(group, field, text, offset, length);
+  }
+
   /// Return the token that matches the unit ident found.
   static int matchUnits(String text, int offset, int length) =>
-      matchList(_UNITS, 'unit', text, offset, length);
+      _matchIndexed(_unitsByLength, 'unit', text, offset, length);
 
   /// Return the token that matches the directive name found.
   static int matchDirectives(String text, int offset, int length) =>
-      matchList(_DIRECTIVES, 'type', text, offset, length);
+      _matchIndexed(_directivesByLength, 'type', text, offset, length);
 
   /// Return the token that matches the margin directive name found.
   static int matchMarginDirectives(String text, int offset, int length) =>
-      matchList(MARGIN_DIRECTIVES, 'type', text, offset, length);
+      _matchIndexed(_marginDirectivesByLength, 'type', text, offset, length);
 
   /// Return the token that matches the media operator found.
   static int matchMediaOperator(String text, int offset, int length) =>
-      matchList(MEDIA_OPERATORS, 'type', text, offset, length);
+      _matchIndexed(_mediaOperatorsByLength, 'type', text, offset, length);
 
   static String? idToValue(Iterable<Object?> identList, int tokenId) {
     for (var entry in identList) {
