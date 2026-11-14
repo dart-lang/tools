@@ -401,6 +401,94 @@ void main() {
     expect((mapping.extensions['x_bar'] as List).first, equals(3));
   });
 
+  group('ECMA-426 scopes, ranges, and ignoreList', () {
+    Map<String, dynamic> buildEcma426WasmMap() => <String, dynamic>{
+          'version': 3,
+          'file': 'out.wasm',
+          'sourceRoot': '',
+          'sources': ['sdk/core.dart', 'app/main.dart'],
+          'names': ['inlinedLeaf', 'caller', 'Class1'],
+          'mappings': 'AAAA,ECAA',
+          'ignoreList': [0],
+          'scopes': ['BAAA,CAAE', null],
+          'ranges': ['EAAA,IAAC,FAAK'],
+          'x_org_dartlang_dart2js': {
+            'minified_names': {'global': 'Class1,2', 'instance': ''},
+          },
+        };
+
+    test(
+        'preserves scopes, ranges, ignoreList, and x_ extensions on round-trip',
+        () {
+      var inputMap = buildEcma426WasmMap();
+      var mapping = parse(jsonEncode(inputMap)) as SingleMapping;
+
+      expect(mapping.ignoreList, equals([0]));
+      expect(mapping.scopes, equals(['BAAA,CAAE', null]));
+      expect(mapping.ranges, equals(['EAAA,IAAC,FAAK']));
+      expect(
+        mapping.extensions['x_org_dartlang_dart2js'],
+        equals({
+          'minified_names': {'global': 'Class1,2', 'instance': ''},
+        }),
+      );
+      expect(mapping.toJson(), equals(inputMap));
+    });
+
+    test('preserves ECMA-426 fields when rewriting sourceRoot and urls', () {
+      var inputMap = buildEcma426WasmMap();
+      var mapping = parseJson(inputMap) as SingleMapping;
+
+      mapping.sourceRoot = 'g3-root/';
+      mapping.urls[0] = 'dart/sdk/core.dart';
+      mapping.urls[1] = 'my_pkg/main.dart';
+
+      var encoded =
+          jsonDecode(jsonEncode(mapping.toJson())) as Map<String, dynamic>;
+      expect(encoded['sourceRoot'], equals('g3-root/'));
+      expect(encoded['sources'],
+          equals(['dart/sdk/core.dart', 'my_pkg/main.dart']));
+      expect(encoded['ignoreList'], equals([0]));
+      expect(encoded['scopes'], equals(['BAAA,CAAE', null]));
+      expect(encoded['ranges'], equals(['EAAA,IAAC,FAAK']));
+      expect(
+        encoded['x_org_dartlang_dart2js'],
+        equals(inputMap['x_org_dartlang_dart2js']),
+      );
+    });
+
+    test('preserves ECMA-426 fields across MappingBundle round-trip', () {
+      var map1 = buildEcma426WasmMap();
+      var map2 = <String, dynamic>{
+        ...buildEcma426WasmMap(),
+        'file': 'out_part1.wasm',
+        'scopes': [null, 'BAGA,CAAI'],
+        'ranges': ['EAIA,FAAM'],
+      };
+      var bundle = parseExtended(jsonEncode([map1, map2])) as MappingBundle;
+      expect(bundle.toJson(), equals([map1, map2]));
+    });
+
+    test('omits scopes, ranges, and ignoreList when null', () {
+      var fromJsonMap = parseJson(expectedMap) as SingleMapping;
+      expect(fromJsonMap.ignoreList, isNull);
+      expect(fromJsonMap.scopes, isNull);
+      expect(fromJsonMap.ranges, isNull);
+      expect(fromJsonMap.toJson().containsKey('ignoreList'), isFalse);
+      expect(fromJsonMap.toJson().containsKey('scopes'), isFalse);
+      expect(fromJsonMap.toJson().containsKey('ranges'), isFalse);
+
+      var fromEntriesMap = SingleMapping.fromEntries(
+        [Entry(inputVar1.start, outputVar1.start, 'var1')],
+        'output.dart',
+      );
+      expect(fromEntriesMap.ignoreList, isNull);
+      expect(fromEntriesMap.scopes, isNull);
+      expect(fromEntriesMap.ranges, isNull);
+      expect(fromEntriesMap.toJson().containsKey('scopes'), isFalse);
+    });
+  });
+
   group('source files', () {
     group('from fromEntries()', () {
       test('are null for non-FileLocations', () {

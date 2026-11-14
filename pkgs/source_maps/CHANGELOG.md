@@ -1,3 +1,8 @@
+## 0.10.15-wip
+
+* Preserve ECMA-426 `scopes`, `ranges`, and `ignoreList` top-level fields in
+  `SingleMapping.fromJson` and `SingleMapping.toJson`.
+
 ## 0.10.14
 
 * Fix `SingleMapping.spanFor` to use the entry from a previous line as specified
