@@ -109,7 +109,7 @@ StyleSheet selector(Object input, {List<Message>? errors}) {
   _createMessages(errors: errors);
 
   var file = SourceFile.fromString(source);
-  return (_Parser(file, source)..tokenizer.inSelector = true).parseSelector();
+  return _Parser(file, source, inSelector: true).parseSelector();
 }
 
 SelectorGroup? parseSelectorGroup(Object input, {List<Message>? errors}) {
@@ -118,12 +118,7 @@ SelectorGroup? parseSelectorGroup(Object input, {List<Message>? errors}) {
   _createMessages(errors: errors);
 
   var file = SourceFile.fromString(source);
-  return (_Parser(file, source)
-        // TODO(jmesserly): this fix should be applied to the parser. It's
-        // tricky because by the time the flag is set one token has already
-        // been fetched.
-        ..tokenizer.inSelector = true)
-      .processSelectorGroup();
+  return _Parser(file, source, inSelector: true).processSelectorGroup();
 }
 
 String _inputAsString(Object input) {
@@ -193,8 +188,11 @@ class _Parser {
   late Token _peekToken;
   int _supportsDepth = 0;
 
-  _Parser(this.file, String text, {int start = 0})
+  _Parser(this.file, String text, {int start = 0, bool inSelector = false})
       : tokenizer = Tokenizer(file, text, true, start) {
+    // Set selector mode before lexing the first token: unit-like element
+    // names such as "px" and "fr" are valid CSS selectors.
+    tokenizer.inSelector = inSelector;
     _peekToken = tokenizer.next();
   }
 
@@ -1346,6 +1344,14 @@ class _Parser {
     var start = _peekToken.span;
 
     tokenizer.inSelector = true;
+    // The lookahead was lexed before selector mode was set, so a unit-like
+    // type selector such as "rem" may have been classified as a unit.
+    final peek = _peekToken;
+    if (peek is IdentifierToken &&
+        peek.kind != TokenKind.IDENTIFIER &&
+        peek.kind != TokenKind.IMPORTANT) {
+      _peekToken = IdentifierToken(peek.text, TokenKind.IDENTIFIER, peek.span);
+    }
     do {
       var selector = processSelector();
       if (selector != null) {
