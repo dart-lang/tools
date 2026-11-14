@@ -7,9 +7,34 @@
 import 'dart:collection';
 
 import '../dom.dart';
+import 'constants.dart' show isWhitespaceCC;
+
+// Scans class tokens without creating an ElementCssClassSet or temporary set.
+// HTML's class separator is ASCII whitespace (not arbitrary Unicode space).
+bool hasHtmlClassToken(String classes, String value) {
+  if (value.isEmpty) return false;
+  var i = 0;
+  while (i < classes.length) {
+    while (i < classes.length && isWhitespaceCC(classes.codeUnitAt(i))) {
+      i++;
+    }
+    final start = i;
+    while (i < classes.length && !isWhitespaceCC(classes.codeUnitAt(i))) {
+      i++;
+    }
+    if (i - start == value.length && classes.startsWith(value, start)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 class ElementCssClassSet extends _CssClassSetImpl {
   final Element _element;
+
+  // HTML class tokens are separated by ASCII whitespace, not every Unicode
+  // whitespace character. Reuse the pattern when enumerating classes.
+  static final RegExp _classWhitespace = RegExp(r'[ \t\n\f\r]+');
 
   ElementCssClassSet(this._element);
 
@@ -18,11 +43,8 @@ class ElementCssClassSet extends _CssClassSetImpl {
     final s = LinkedHashSet<String>();
     final classname = _element.className;
 
-    for (var name in classname.split(' ')) {
-      final trimmed = name.trim();
-      if (trimmed.isNotEmpty) {
-        s.add(trimmed);
-      }
+    for (final name in classname.split(_classWhitespace)) {
+      if (name.isNotEmpty) s.add(name);
     }
     return s;
   }
