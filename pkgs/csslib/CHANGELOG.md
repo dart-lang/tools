@@ -1,7 +1,6 @@
 ## 1.0.3-wip
 
-- Reduce repeated CSS unit, directive, and media keyword scans by indexing
-  keyword tables by length while retaining allocation-free token matching.
+- Speed up tokenizing by indexing unit and directive keywords by length.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
