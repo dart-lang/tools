@@ -1,5 +1,7 @@
 ## 1.0.3-wip
 
+- Fix `Rgba.fromArgbValue`, `Rgba.argbValue` and `Hsla.color`, and preserve
+  alpha for grayscale colors in `Hsla.fromRgba`.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
