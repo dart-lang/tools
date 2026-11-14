@@ -251,50 +251,47 @@ class Tokenizer extends TokenizerBase {
 
   @override
   int getIdentifierKind() {
-    // Is the identifier a unit type?
-    var tokId = -1;
-
     // Don't match units in selectors or selector expressions.
+    var tokId = -1;
     if (!inSelectorExpression && !inSelector) {
       tokId = TokenKind.matchUnits(_text, _startIndex, _index - _startIndex);
     }
-    if (tokId == -1) {
-      tokId = (_text.substring(_startIndex, _index) == '!important')
-          ? TokenKind.IMPORTANT
-          : -1;
+
+    // Avoid allocating a substring just to check this uncommon keyword.
+    if (tokId == -1 &&
+        _index - _startIndex == 10 &&
+        _text.startsWith('!important', _startIndex)) {
+      tokId = TokenKind.IMPORTANT;
     }
 
     return tokId >= 0 ? tokId : TokenKind.IDENTIFIER;
   }
 
   Token finishIdentifier() {
-    // If we encounter an escape sequence, remember it so we can post-process
-    // to unescape.
-    var chars = <int>[];
+    // Ordinary CSS identifiers have no escapes. Only allocate a decoding
+    // buffer if a backslash is actually encountered.
+    StringBuffer? decoded;
 
-    // backup so we can start with the first character
-    var validateFrom = _index;
+    // Scan from the beginning of the token so the @directive lookahead and
+    // identifiers beginning with a consumed character behave as before.
+    final validateFrom = _index;
     _index = _startIndex;
     while (_index < _text.length) {
       var ch = _text.codeUnitAt(_index);
 
-      // If the previous character was "\" we need to escape. T
-      // http://www.w3.org/TR/CSS21/syndata.html#characters
-      // if followed by hexadecimal digits, create the appropriate character.
-      // otherwise, include the character in the identifier and don't treat it
-      // specially.
+      // Decode CSS escapes without changing the raw source span.
       if (ch == 92 /*\*/ && _inString) {
-        var startHex = ++_index;
+        decoded ??= StringBuffer(_text.substring(_startIndex, _index));
+        final startHex = ++_index;
         eatHexDigits(startHex + 6);
         if (_index != startHex) {
-          // Parse the hex digits and add that character.
-          var hexVal =
-              int.tryParse('0x${_text.substring(startHex, _index)}') ?? 0xFFFD;
-          chars.add(hexVal <= 0x10FFFF ? hexVal : 0xFFFD);
+          final hexVal =
+              int.tryParse(_text.substring(startHex, _index), radix: 16) ??
+                  0xFFFD;
+          decoded.writeCharCode(hexVal <= 0x10FFFF ? hexVal : 0xFFFD);
 
           if (_index == _text.length) break;
 
-          // if we stopped the hex because of a whitespace char, skip it
           ch = _text.codeUnitAt(_index);
           if (_index - startHex != 6 &&
               (ch == TokenChar.SPACE ||
@@ -304,25 +301,22 @@ class Tokenizer extends TokenizerBase {
             _index++;
           }
         } else {
-          // not a digit, just add the next character literally
           if (_index == _text.length) break;
-          chars.add(_text.codeUnitAt(_index++));
+          decoded.writeCharCode(_text.codeUnitAt(_index++));
         }
       } else if (_index < validateFrom ||
           (inSelectorExpression
               ? TokenizerHelpers.isIdentifierPartExpr(ch)
               : TokenizerHelpers.isIdentifierPart(ch))) {
-        chars.add(ch);
+        decoded?.writeCharCode(ch);
         _index++;
       } else {
-        // Not an identifier or escaped character.
         break;
       }
     }
 
-    var span = _file.span(_startIndex, _index);
-    var text = String.fromCharCodes(chars);
-
+    final span = _file.span(_startIndex, _index);
+    final text = decoded?.toString() ?? _text.substring(_startIndex, _index);
     return IdentifierToken(text, getIdentifierKind(), span);
   }
 
