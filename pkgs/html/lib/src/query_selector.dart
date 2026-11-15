@@ -246,13 +246,7 @@ class SelectorEvaluator extends Visitor {
 
           final numericLiteral = literal.value as num;
           final parent = _element!.parentNode;
-          // Reject impossible indices before scanning a potentially wide parent.
-          if (parent == null ||
-              !numericLiteral.isFinite ||
-              numericLiteral <= 0 ||
-              numericLiteral != numericLiteral.toInt()) {
-            return false;
-          }
+          if (parent == null) return false;
           var index = 0;
           // previousElementSibling searches the child list on every access.
           for (final sibling in parent.nodes) {

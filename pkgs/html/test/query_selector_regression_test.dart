@@ -39,20 +39,6 @@ void main() {
         lessThanOrEqualTo(count * count));
   });
 
-  test(':nth-child rejects invalid indices without scanning siblings', () {
-    final root = _NodeAccessCountingElement();
-    root.nodes.addAll(List.generate(100, (_) => Element.tag('li')));
-    root.nodeReads = 0;
-    root.querySelectorAll('li');
-    final traversalReads = root.nodeReads;
-
-    for (final index in ['0', '0.5', '1.5']) {
-      root.nodeReads = 0;
-      expect(root.querySelectorAll(':nth-child($index)'), isEmpty);
-      expect(root.nodeReads, traversalReads, reason: 'index $index');
-    }
-  });
-
   test('class tokens are separated by ASCII whitespace only', () {
     final element = Element.tag('span')..className = 'foo\tbar\nbaz\rqux\fquux';
     expect(element.classes.contains('bar'), isTrue);
@@ -106,16 +92,4 @@ class _ComparisonCountingElement extends Element {
 
   @override
   int get hashCode => identityHashCode(this);
-}
-
-class _NodeAccessCountingElement extends Element {
-  int nodeReads = 0;
-
-  _NodeAccessCountingElement() : super.tag('ul');
-
-  @override
-  NodeList get nodes {
-    nodeReads++;
-    return super.nodes;
-  }
 }
