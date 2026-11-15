@@ -15,6 +15,43 @@ import 'package:process/src/interface/common.dart';
 import 'package:test/test.dart';
 
 void main() {
+  group('escapeShellExecutable', () {
+    final windows = FakePlatform(operatingSystem: 'windows');
+    final linux = FakePlatform(operatingSystem: 'linux');
+
+    String escape(String executable, Platform platform) =>
+        escapeShellExecutable(executable, platform: platform);
+
+    test('escapes cmd.exe special characters on Windows', () {
+      expect(escape(r'C:\theP()ath\tool.exe', windows),
+          r'C:\theP^(^)ath\tool.exe');
+      expect(escape(r'C:\a&b\tool.exe', windows), r'C:\a^&b\tool.exe');
+      expect(escape(r'C:\a^b\tool.exe', windows), r'C:\a^^b\tool.exe');
+      expect(
+          escape(r'C:\a,b;c=d\tool.exe', windows), r'C:\a^,b^;c^=d\tool.exe');
+    });
+
+    test('leaves ordinary names alone on Windows', () {
+      expect(escape('tool', windows), 'tool');
+      expect(escape(r'C:\Program-Files\tool.exe', windows),
+          r'C:\Program-Files\tool.exe');
+    });
+
+    test('leaves names with whitespace alone, dart:io quotes them', () {
+      expect(escape(r'C:\the P()ath\tool.exe', windows),
+          r'C:\the P()ath\tool.exe');
+    });
+
+    test('leaves already quoted names alone', () {
+      expect(escape(r'"C:\theP()ath\tool.exe"', windows),
+          r'"C:\theP()ath\tool.exe"');
+    });
+
+    test('does nothing on other platforms', () {
+      expect(escape('/theP()ath/tool', linux), '/theP()ath/tool');
+    });
+  });
+
   group('getExecutablePath', () {
     late FileSystem fs;
     late Directory workingDir, dir1, dir2, dir3;
@@ -678,22 +715,16 @@ void main() {
         testCompileAndExecute(main);
       });
 
-      test(
-        'with parenthesis in the command name',
-        () async {
-          final dir = tmpDir.childDirectory('theP()ath');
-          final main = dir.childFile('main.dart')
-            ..createSync(recursive: true)
-            ..writeAsStringSync('''
+      test('with parenthesis in the command name', () async {
+        final dir = tmpDir.childDirectory('theP()ath');
+        final main = dir.childFile('main.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('''
 void main() {
   print('hello');
 }''');
-          testCompileAndExecute(main);
-        },
-        skip: io.Platform.isWindows
-            ? 'https://github.com/dart-lang/tools/issues/2139'
-            : null,
-      );
+        testCompileAndExecute(main);
+      });
 
       test('with spaces and parenthesis in the command name', () async {
         final dir = tmpDir.childDirectory('the P()ath');

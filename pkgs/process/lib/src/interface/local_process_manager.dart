@@ -131,7 +131,7 @@ String _getExecutable(
 ) {
   final String commandName = command.first.toString();
   if (runInShell) {
-    return commandName;
+    return escapeShellExecutable(commandName);
   }
   return getExecutablePath(
     commandName,

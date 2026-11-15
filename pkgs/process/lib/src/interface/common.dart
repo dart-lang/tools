@@ -20,6 +20,32 @@ const Map<String, String> _osToPathStyle = <String, String>{
   'windows': 'windows',
 };
 
+/// Characters that are legal in a Windows file name but that `cmd.exe` treats
+/// as syntax when they appear in an unquoted command name.
+final RegExp _cmdSpecialCharacters = RegExp(r'[&^(),;=]');
+
+/// Escapes [executable] so that `cmd.exe` runs it as a single command when it
+/// is launched with `runInShell: true` on Windows.
+///
+/// Without this, a path such as `C:\theP()ath\tool.exe` is cut off at the `(`
+/// and `cmd.exe` reports that `C:\theP` is not recognized as a command.
+///
+/// Names that contain whitespace are returned unchanged, because `dart:io`
+/// already wraps those in quotes. The same goes for names that are already
+/// quoted, and for every platform other than Windows.
+String escapeShellExecutable(
+  String executable, {
+  Platform platform = const LocalPlatform(),
+}) {
+  if (!platform.isWindows || executable.contains(RegExp(r'[\s"]'))) {
+    return executable;
+  }
+  return executable.replaceAllMapped(
+    _cmdSpecialCharacters,
+    (match) => '^${match[0]}',
+  );
+}
+
 /// Searches the `PATH` for the executable that [executable] is supposed to launch.
 ///
 /// This first builds a list of candidate paths where the executable may reside.
