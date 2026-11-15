@@ -1021,12 +1021,12 @@ class Font implements _StyleProperty {
   ///
   ///    font-style font-variant font-weight font-size/line-height font-family
   ///
-  /// The font-size and font-family values are required. If any of the other
-  /// values are missing the default value is used.
+  /// Only the parts that are set are printed, so a partial font (for example
+  /// one with only a weight, which prints `700`) is not a complete `font`
+  /// shorthand; that needs at least a size and a family.
   @override
   String get cssExpression {
-    // Partial fonts omit absent parts. A unitless line height is a multiplier,
-    // so pixel heights need their unit.
+    // A unitless line height is a multiplier, so pixel heights need their unit.
     final families = _fontsAsString;
     final height = lineHeight;
     final sizePart = size == null
