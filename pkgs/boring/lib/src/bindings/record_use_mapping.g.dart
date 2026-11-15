@@ -102,6 +102,7 @@ const recordUseMapping = {
   'ASN1_STRING_print_ex_fp': 'bssl_dart_ASN1_STRING_print_ex_fp',
   'ASN1_STRING_set': 'bssl_dart_ASN1_STRING_set',
   'ASN1_STRING_set0': 'bssl_dart_ASN1_STRING_set0',
+  'ASN1_STRING_set1_data': 'bssl_dart_ASN1_STRING_set1_data',
   'ASN1_STRING_set_by_NID': 'bssl_dart_ASN1_STRING_set_by_NID',
   'ASN1_STRING_set_default_mask': 'bssl_dart_ASN1_STRING_set_default_mask',
   'ASN1_STRING_set_default_mask_asc':
@@ -2058,6 +2059,7 @@ const recordUseMapping = {
   'X509_set_pubkey': 'bssl_dart_X509_set_pubkey',
   'X509_set_serialNumber': 'bssl_dart_X509_set_serialNumber',
   'X509_set_subject_name': 'bssl_dart_X509_set_subject_name',
+  'X509_set_unsigned': 'bssl_dart_X509_set_unsigned',
   'X509_set_version': 'bssl_dart_X509_set_version',
   'X509_sign': 'bssl_dart_X509_sign',
   'X509_sign_ctx': 'bssl_dart_X509_sign_ctx',
