@@ -1,5 +1,7 @@
 ## 1.0.3-wip
 
+- Recognize the `@left-bottom` page-margin directive, and stop parsing
+  `@right-bottom` as `@left-bottom`.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
