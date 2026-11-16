@@ -1,5 +1,8 @@
 ## 7.4.1-wip
 
+* Keep existing percent-encoded sequences in extended autolink destinations
+  instead of double-encoding their `%` signs. Invalid percent sequences are
+  still escaped.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on
