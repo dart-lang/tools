@@ -176,11 +176,7 @@ class _FenceMatch {
     }
 
     // We assume the info string is trimmed already.
-    var separatorIndex = info.indexOf(' ');
-    final tabIndex = info.indexOf('\t');
-    if (separatorIndex == -1 || (tabIndex != -1 && tabIndex < separatorIndex)) {
-      separatorIndex = tabIndex;
-    }
+    final separatorIndex = info.indexOf(RegExp(r'[ \t]'));
     if (separatorIndex == -1) {
       return (info, null);
     }

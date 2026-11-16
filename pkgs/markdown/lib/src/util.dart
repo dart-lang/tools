@@ -133,7 +133,6 @@ extension MatchExtensions on Match {
 
 /// Escapes the ASCII punctuation characters after backslash(`\`).
 String escapePunctuation(String input) {
-  if (!input.contains(r'\')) return input;
   final buffer = StringBuffer();
 
   for (var i = 0; i < input.length; i++) {
