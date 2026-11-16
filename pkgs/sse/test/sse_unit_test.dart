@@ -427,7 +427,7 @@ void main() {
     });
 
     test(
-      'rejects cross-site Sec-Fetch-Site when Origin header is absent',
+      'rejects cross-site and same-site Sec-Fetch-Site when Origin is absent',
       () async {
         final sseHandler = SseHandler(Uri.parse(_ssePath));
         final server = await io.serve(
@@ -443,47 +443,54 @@ void main() {
         final client = HttpClient();
         addTearDown(() => client.close(force: true));
 
-        final getReq = await client.getUrl(
-          Uri.parse('http://127.0.0.1:${server.port}$_ssePath?sseClientId=c1'),
-        );
-        getReq.headers
-          ..set(HttpHeaders.acceptHeader, 'text/event-stream')
-          ..set('sec-fetch-site', 'cross-site');
-        final getResp = await getReq.close();
-        expect(getResp.statusCode, HttpStatus.forbidden);
-        await getResp.drain<void>();
-        expect(sseHandler.numberOfClients, 0);
+        for (final disallowedSite in ['cross-site', 'same-site']) {
+          final getReq = await client.getUrl(
+            Uri.parse(
+              'http://127.0.0.1:${server.port}$_ssePath?sseClientId=c1',
+            ),
+          );
+          getReq.headers
+            ..set(HttpHeaders.acceptHeader, 'text/event-stream')
+            ..set('sec-fetch-site', disallowedSite);
+          final getResp = await getReq.close();
+          expect(getResp.statusCode, HttpStatus.forbidden);
+          await getResp.drain<void>();
+          expect(sseHandler.numberOfClients, 0);
 
-        final postReq = await client.postUrl(
-          Uri.parse(
-            'http://127.0.0.1:${server.port}$_ssePath?sseClientId=c1&messageId=0',
-          ),
-        );
-        postReq.headers.set('sec-fetch-site', 'cross-site');
-        postReq.write('"blocked"');
-        final postResp = await postReq.close();
-        expect(postResp.statusCode, HttpStatus.forbidden);
-        await postResp.drain<void>();
+          final postReq = await client.postUrl(
+            Uri.parse(
+              'http://127.0.0.1:${server.port}$_ssePath?sseClientId=c1&messageId=0',
+            ),
+          );
+          postReq.headers.set('sec-fetch-site', disallowedSite);
+          postReq.write('"blocked"');
+          final postResp = await postReq.close();
+          expect(postResp.statusCode, HttpStatus.forbidden);
+          await postResp.drain<void>();
+        }
 
-        // Same-origin Sec-Fetch-Site without Origin (standard same-origin
-        // EventSource GET) remains allowed.
-        final sameOriginGet = shelf.Request(
-          'GET',
-          Uri.parse('http://127.0.0.1:${server.port}$_ssePath?sseClientId=c2'),
-          headers: {
-            'accept': 'text/event-stream',
-            'sec-fetch-site': 'same-origin',
-          },
-          onHijack: (callback) {
-            final controller = StreamController<List<int>>();
-            callback(StreamChannel(controller.stream, controller));
-          },
-        );
-        await expectLater(
-          () => sseHandler.handler(sameOriginGet),
-          throwsA(isA<shelf.HijackException>()),
-        );
-        expect(sseHandler.numberOfClients, 1);
+        // `same-origin` and `none` without Origin remain allowed.
+        for (final (index, allowedSite) in ['same-origin', 'none'].indexed) {
+          final req = shelf.Request(
+            'GET',
+            Uri.parse(
+              'http://127.0.0.1:${server.port}$_ssePath?sseClientId=ok-$index',
+            ),
+            headers: {
+              'accept': 'text/event-stream',
+              'sec-fetch-site': allowedSite,
+            },
+            onHijack: (callback) {
+              final controller = StreamController<List<int>>();
+              callback(StreamChannel(controller.stream, controller));
+            },
+          );
+          await expectLater(
+            () => sseHandler.handler(req),
+            throwsA(isA<shelf.HijackException>()),
+          );
+        }
+        expect(sseHandler.numberOfClients, 2);
       },
     );
 
@@ -655,6 +662,10 @@ void main() {
         'https://user@evil.example',
         'https://evil.example?q=1',
         'https://evil.example#frag',
+        'https://evil.example .trusted.example',
+        'https://evil%20host.example',
+        'http://%6Cocalhost',
+        'chrome-extension://evil .good',
         'not-a-uri',
       ]) {
         final req = shelf.Request(
