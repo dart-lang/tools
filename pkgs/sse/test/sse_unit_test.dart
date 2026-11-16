@@ -177,6 +177,9 @@ void main() {
       final client = HttpClient();
       addTearDown(() => client.close(force: true));
 
+      // Cross-origin `EventSource` GETs are simple requests without preflight.
+      // Verify the server rejects them with 403 before hijacking the socket
+      // or registering a client.
       final getReq = await client.getUrl(
         Uri.parse('http://127.0.0.1:${server.port}$_ssePath?sseClientId=c1'),
       );
@@ -191,8 +194,9 @@ void main() {
       await getResp.drain<void>();
       expect(sseHandler.numberOfClients, 0);
 
-      // Establish a legitimate connection and verify cross-origin POST cannot
-      // inject messages or reflect CORS headers.
+      // Establish a legitimate loopback connection, then verify a cross-origin
+      // `text/plain` POST (also sent without preflight) is rejected before
+      // its payload reaches `connection.stream`.
       final (legitSocket, legitBytes) = await _openRawSseGet(
         server.port,
         clientId: 'legit',
@@ -227,6 +231,9 @@ void main() {
     });
 
     test('rejects null Origin header on GET and POST', () async {
+      // Sandboxed iframes, `data:` URLs, and cross-origin redirects (as well as
+      // some `Referrer-Policy: no-referrer` requests) serialize `Origin: null`;
+      // verify it is never treated as valid or trusted.
       final sseHandler = SseHandler(Uri.parse(_ssePath));
       final server = await io.serve(
         sseHandler.handler,
@@ -268,6 +275,9 @@ void main() {
     test(
       'blocks cross-origin reconnection hijack of an active session',
       () async {
+        // When `keepAlive` or `ignoreDisconnect` is active, a second SSE GET
+        // with an existing `sseClientId` replaces the session's outbound sink.
+        // Verify a cross-origin request cannot hijack an active victim ID.
         final sseHandler = SseHandler(
           Uri.parse(_ssePath),
           keepAlive: const Duration(seconds: 30),
@@ -295,6 +305,8 @@ void main() {
         final connection = await sseHandler.connections.next;
         expect(sseHandler.numberOfClients, 1);
 
+        // Attacker attempts to reconnect using the victim's `sseClientId` from
+        // an untrusted origin.
         final client = HttpClient();
         addTearDown(() => client.close(force: true));
         final evilReq = await client.getUrl(
@@ -309,6 +321,7 @@ void main() {
         expect(evilResp.statusCode, HttpStatus.forbidden);
         await evilResp.drain<void>();
 
+        // Server-to-client messages must still flow to the victim's socket.
         final victimReceived = Completer<String>();
         final sub = utf8.decoder.bind(victimBytes).listen((chunk) {
           if (chunk.contains('for-victim-only') &&
@@ -329,6 +342,9 @@ void main() {
     test(
       'allows requests without Origin header and omits CORS headers',
       () async {
+        // Non-browser clients and same-origin `EventSource` GETs omit `Origin`.
+        // Verify they still connect and post messages, without emitting CORS
+        // headers.
         final sseHandler = SseHandler(Uri.parse(_ssePath));
         final server = await io.serve(
           sseHandler.handler,
@@ -376,6 +392,8 @@ void main() {
 
     test('allows cross-port loopback origins on loopback hosts by default '
         'and rejects loopback origins on non-loopback hosts', () async {
+      // Local dev tools (such as DevTools and DDS) often connect across
+      // different loopback ports or aliases (`localhost`, `127.0.0.1`, `::1`).
       final sseHandler = SseHandler(Uri.parse(_ssePath));
       final server = await io.serve(
         sseHandler.handler,
@@ -429,6 +447,9 @@ void main() {
     test(
       'rejects cross-site and same-site Sec-Fetch-Site when Origin is absent',
       () async {
+        // Browsers omit `Origin` on `no-cors` GET requests (such as
+        // `fetch(..., {mode: 'no-cors', headers: {'Accept':
+        // 'text/event-stream'}})`), but tag them with `Sec-Fetch-Site`.
         final sseHandler = SseHandler(Uri.parse(_ssePath));
         final server = await io.serve(
           sseHandler.handler,
@@ -495,6 +516,8 @@ void main() {
     );
 
     test('returns 404 for non-SSE GET requests even with bad Origin', () async {
+      // Plain GETs without `Accept: text/event-stream` must still fall through
+      // to other handlers in a `shelf.Cascade` rather than returning 403.
       final sseHandler = SseHandler(Uri.parse(_ssePath));
       final req = shelf.Request(
         'GET',
@@ -523,7 +546,7 @@ void main() {
         await server.close(force: true);
       });
 
-      // Listed cross-origin succeeds on GET and POST.
+      // Listed cross-origin succeeds on GET and emits matching CORS headers.
       final (trustedSocket, trustedBytes) = await _openRawSseGet(
         server.port,
         clientId: 'trusted',
@@ -544,6 +567,8 @@ void main() {
       final connection = await sseHandler.connections.next;
       final queue = StreamQueue(connection.stream);
 
+      // `originCheck` receives the lowercased origin, while the response header
+      // preserves the exact incoming `Origin` string.
       final client = HttpClient();
       addTearDown(() => client.close(force: true));
       final trustedPost = await client.postUrl(
@@ -565,7 +590,7 @@ void main() {
       expect(await queue.next, 'from-trusted');
 
       // Cross-port loopback remains allowed on loopback hosts even when
-      // originCheck returns false for loopback.
+      // `originCheck` returns false for loopback.
       final crossPortPost = await client.postUrl(
         Uri.parse(
           'http://127.0.0.1:${server.port}$_ssePath?sseClientId=trusted&messageId=1',
@@ -612,6 +637,8 @@ void main() {
         await server.close(force: true);
       });
 
+      // Custom schemes such as `chrome-extension://` can be permitted via
+      // `originCheck`.
       const extOrigin = 'chrome-extension://abcdefghijklmnop';
       final (extSocket, extBytes) = await _openRawSseGet(
         server.port,
@@ -628,7 +655,7 @@ void main() {
       await sseHandler.connections.next;
       expect(checkedOrigins, [extOrigin]);
 
-      // Non-matching origin rejected when originCheck returns false.
+      // Non-matching origin rejected when `originCheck` returns false.
       final deniedPost = shelf.Request(
         'POST',
         Uri.parse('http://127.0.0.1:${server.port}$_ssePath'),
@@ -641,8 +668,9 @@ void main() {
       );
       expect(checkedOrigins, [extOrigin, _evilOrigin]);
 
-      // Malformed / null / path-bearing Origin headers are rejected before
-      // invoking originCheck.
+      // Malformed / null / whitespace / percent-encoded / path-bearing Origin
+      // headers are rejected before invoking `originCheck` so callbacks never
+      // need to re-validate URI syntax.
       for (final badOrigin in [
         _nullOrigin,
         'https://evil.example/with/path',
