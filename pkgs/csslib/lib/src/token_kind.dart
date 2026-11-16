@@ -259,7 +259,7 @@ class TokenKind {
     },
     {'type': TokenKind.MARGIN_DIRECTIVE_LEFTTOP, 'value': 'left-top'},
     {'type': TokenKind.MARGIN_DIRECTIVE_LEFTMIDDLE, 'value': 'left-middle'},
-    {'type': TokenKind.MARGIN_DIRECTIVE_LEFTBOTTOM, 'value': 'right-bottom'},
+    {'type': TokenKind.MARGIN_DIRECTIVE_LEFTBOTTOM, 'value': 'left-bottom'},
     {'type': TokenKind.MARGIN_DIRECTIVE_RIGHTTOP, 'value': 'right-top'},
     {'type': TokenKind.MARGIN_DIRECTIVE_RIGHTMIDDLE, 'value': 'right-middle'},
     {'type': TokenKind.MARGIN_DIRECTIVE_RIGHTBOTTOM, 'value': 'right-bottom'},
@@ -421,6 +421,7 @@ class TokenKind {
     {'name': 'plum', 'value': 0xDDA0DD},
     {'name': 'powderblue', 'value': 0xB0E0E6},
     {'name': 'purple', 'value': 0x800080},
+    {'name': 'rebeccapurple', 'value': 0x663399},
     {'name': 'red', 'value': 0xFF0000},
     {'name': 'rosybrown', 'value': 0xBC8F8F},
     {'name': 'royalblue', 'value': 0x4169E1},
@@ -506,21 +507,51 @@ class TokenKind {
     return -1; // Not a unit token.
   }
 
+  // Most identifiers are not units/directives. Indexing keywords by length
+  // avoids scanning every entry on every token without allocating a substring.
+  static Map<int, List<Map<String, Object>>> _groupByLength(
+    List<Map<String, Object>> entries,
+  ) {
+    final byLength = <int, List<Map<String, Object>>>{};
+    for (final entry in entries) {
+      final length = (entry['value'] as String).length;
+      (byLength[length] ??= <Map<String, Object>>[]).add(entry);
+    }
+    return byLength;
+  }
+
+  static final _unitsByLength = _groupByLength(_UNITS);
+  static final _directivesByLength = _groupByLength(_DIRECTIVES);
+  static final _marginDirectivesByLength = _groupByLength(MARGIN_DIRECTIVES);
+  static final _mediaOperatorsByLength = _groupByLength(MEDIA_OPERATORS);
+
+  static int _matchIndexed(
+    Map<int, List<Map<String, Object>>> groups,
+    String field,
+    String text,
+    int offset,
+    int length,
+  ) {
+    final group = groups[length];
+    if (group == null) return -1;
+    return matchList(group, field, text, offset, length);
+  }
+
   /// Return the token that matches the unit ident found.
   static int matchUnits(String text, int offset, int length) =>
-      matchList(_UNITS, 'unit', text, offset, length);
+      _matchIndexed(_unitsByLength, 'unit', text, offset, length);
 
   /// Return the token that matches the directive name found.
   static int matchDirectives(String text, int offset, int length) =>
-      matchList(_DIRECTIVES, 'type', text, offset, length);
+      _matchIndexed(_directivesByLength, 'type', text, offset, length);
 
   /// Return the token that matches the margin directive name found.
   static int matchMarginDirectives(String text, int offset, int length) =>
-      matchList(MARGIN_DIRECTIVES, 'type', text, offset, length);
+      _matchIndexed(_marginDirectivesByLength, 'type', text, offset, length);
 
   /// Return the token that matches the media operator found.
   static int matchMediaOperator(String text, int offset, int length) =>
-      matchList(MEDIA_OPERATORS, 'type', text, offset, length);
+      _matchIndexed(_mediaOperatorsByLength, 'type', text, offset, length);
 
   static String? idToValue(Iterable<Object?> identList, int tokenId) {
     for (var entry in identList) {
@@ -549,53 +580,45 @@ class TokenKind {
     return '<BAD UNIT>'; // Not a unit token.
   }
 
-  /// Match color name, case insensitive match and return the associated color
-  /// entry from _EXTENDED_COLOR_NAMES list, return `null` if not found.
-  static Map<String, Object>? matchColorName(String text) {
-    var name = text.toLowerCase();
-    for (var color in _EXTENDED_COLOR_NAMES) {
-      if (color['name'] == name) return color;
-    }
-    return null;
-  }
+  // Keep the existing color entry objects for callers, but avoid scanning the
+  // entire CSS color-name table for every parsed identifier.
+  static final Map<String, Map<String, Object>> _colorNamesByName = {
+    for (final entry in _EXTENDED_COLOR_NAMES) entry['name'] as String: entry,
+  };
+
+  /// Match a CSS color keyword case-insensitively.
+  static Map<String, Object>? matchColorName(String text) =>
+      _colorNamesByName[text.toLowerCase()];
 
   /// Return RGB value as [int] from a color entry in _EXTENDED_COLOR_NAMES.
   static int colorValue(Map<String, Object> entry) => entry['value'] as int;
 
-  static String? hexToColorName(Object hexValue) {
+  // Match the old linear scan's first-name-wins behavior for aliases such as
+  // aqua/cyan and fuchsia/magenta, while avoiding a scan for every print.
+  static final Map<int, String> _colorNamesByValue = () {
+    final colors = <int, String>{};
     for (final entry in _EXTENDED_COLOR_NAMES) {
-      if (entry['value'] == hexValue) {
-        return entry['name'] as String?;
-      }
+      colors.putIfAbsent(
+        entry['value'] as int,
+        () => entry['name'] as String,
+      );
     }
+    return colors;
+  }();
 
-    return null;
-  }
+  static String? hexToColorName(Object hexValue) =>
+      _colorNamesByValue[hexValue];
 
+  /// Converts [number] to lowercase hexadecimal, zero-padded to [minDigits].
+  ///
+  /// A negative [number] keeps its sign in front; only the digits are padded.
   static String decimalToHex(int number, [int minDigits = 1]) {
-    final hexDigits = '0123456789abcdef';
-
-    var result = <String>[];
-
-    var dividend = number >> 4;
-    var remain = number % 16;
-    result.add(hexDigits[remain]);
-    while (dividend != 0) {
-      remain = dividend % 16;
-      dividend >>= 4;
-      result.add(hexDigits[remain]);
+    final hex = number.toRadixString(16);
+    if (number < 0) {
+      // Pad the digits, not the sign.
+      return '-${hex.substring(1).padLeft(minDigits, '0')}';
     }
-
-    var invertResult = StringBuffer();
-    var paddings = minDigits - result.length;
-    while (paddings-- > 0) {
-      invertResult.write('0');
-    }
-    for (var i = result.length - 1; i >= 0; i--) {
-      invertResult.write(result[i]);
-    }
-
-    return invertResult.toString();
+    return hex.padLeft(minDigits, '0');
   }
 
   static String kindToString(int kind) => switch (kind) {
