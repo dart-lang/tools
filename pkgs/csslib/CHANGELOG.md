@@ -1,5 +1,6 @@
 ## 1.0.3-wip
 
+- Reduce allocations when tokenizing identifiers.
 - Avoid recursive tokenizer calls when skipping CSS comments and whitespace,
   preventing stack overflow on comment-heavy stylesheets.
 - End HTML comments at the first `-->` even when more dashes precede it, and
