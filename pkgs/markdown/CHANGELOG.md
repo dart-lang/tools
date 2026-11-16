@@ -4,6 +4,9 @@
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on
   text with many spaces, punctuation marks, or CJK characters.
+* Skip the regular expression in `AutolinkExtensionSyntax` and
+  `LineBreakSyntax` when the character at the current position cannot start a
+  match.
 * Fix quadratic parsing time on blocks of consecutive link reference
   definitions by only consuming lines from `BlockParser` as needed for a
   single definition rather than joining and re-splitting the remainder of the

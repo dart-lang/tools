@@ -41,8 +41,14 @@ const int $rparen = 0x29;
 /// Character `*`.
 const int $asterisk = 0x2A;
 
+/// Character `+`.
+const int $plus = 0x2B;
+
 /// Character `-`.
 const int $dash = 0x2D;
+
+/// Character `.`.
+const int $dot = 0x2E;
 
 /// Character `:`.
 const int $colon = 0x3A;
