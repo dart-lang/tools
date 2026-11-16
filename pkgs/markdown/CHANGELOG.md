@@ -1,5 +1,8 @@
 ## 7.4.1-wip
 
+* Avoid regular-expression work when classifying blank lines and dedenting
+  Markdown blocks; scan ASCII whitespace directly while keeping partial-tab
+  handling.
 * Reduce allocations when rendering single-line text nodes in `HtmlRenderer`.
 * Fix a reused `HtmlRenderer` trimming the leading whitespace of the first
   text node of a new render after a previous render ended with `p`, `li` or
