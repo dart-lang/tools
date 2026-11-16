@@ -106,10 +106,60 @@ mixin _ParentNode implements Node {
       query.querySelectorAll(this, selector);
 }
 
+// Shared traversal for DOM lookups that need no CSS selector parsing.
+// Descendants are visited in document order and deeply nested documents do not
+// consume the call stack.
+Iterable<Element> _descendantElements(Node root) sync* {
+  final stack = <Iterator<Node>>[root.nodes.iterator];
+  while (stack.isNotEmpty) {
+    final cursor = stack.last;
+    if (!cursor.moveNext()) {
+      stack.removeLast();
+      continue;
+    }
+    final child = cursor.current;
+    if (child is Element) {
+      yield child;
+      if (child.nodes.isNotEmpty) stack.add(child.nodes.iterator);
+    }
+  }
+}
+
+final RegExp _htmlClassWhitespace = RegExp(r'[ \t\n\f\r]+');
+
+bool _isHtmlClassWhitespace(int code) =>
+    code == 0x09 ||
+    code == 0x0A ||
+    code == 0x0C ||
+    code == 0x0D ||
+    code == 0x20;
+
+bool _hasHtmlClassToken(String source, String token) {
+  var start = 0;
+  for (var i = 0; i <= source.length; i++) {
+    final separator =
+        i == source.length || _isHtmlClassWhitespace(source.codeUnitAt(i));
+    if (!separator) continue;
+    if (i - start == token.length && source.startsWith(token, start)) {
+      return true;
+    }
+    start = i + 1;
+  }
+  return false;
+}
+
 // http://dom.spec.whatwg.org/#interface-nonelementparentnode
 mixin _NonElementParentNode implements _ParentNode {
-  // TODO(jmesserly): could be faster, should throw on invalid id.
-  Element? getElementById(String id) => querySelector('#$id');
+  /// Return the first descendant whose ID exactly matches [id].
+  ///
+  /// IDs need not be valid CSS identifiers, so don't parse them as selectors.
+  Element? getElementById(String id) {
+    if (id.isEmpty) return null;
+    for (final element in _descendantElements(this)) {
+      if (element.id == id) return element;
+    }
+    return null;
+  }
 }
 
 // This doesn't exist as an interface in the spec, but it's useful to merge
@@ -117,14 +167,29 @@ mixin _NonElementParentNode implements _ParentNode {
 // http://dom.spec.whatwg.org/#interface-document
 // http://dom.spec.whatwg.org/#element
 abstract mixin class _ElementAndDocument implements _ParentNode {
-  // TODO(jmesserly): could be faster, should throw on invalid tag/class names.
+  /// Return matching descendant elements without parsing a CSS selector.
+  List<Element> getElementsByTagName(String localName) {
+    final name = localName.toLowerCase();
+    return [
+      for (final element in _descendantElements(this))
+        if (name == '*' || element.localName == name) element,
+    ];
+  }
 
-  List<Element> getElementsByTagName(String localName) =>
-      querySelectorAll(localName);
-
-  List<Element> getElementsByClassName(String classNames) =>
-      querySelectorAll(classNames.splitMapJoin(' ',
-          onNonMatch: (m) => m.isNotEmpty ? '.$m' : m, onMatch: (m) => ''));
+  /// All whitespace-delimited class names must match on each element.
+  List<Element> getElementsByClassName(String classNames) {
+    final wanted = classNames
+        .split(_htmlClassWhitespace)
+        .where((name) => name.isNotEmpty)
+        .toSet();
+    if (wanted.isEmpty) return <Element>[];
+    return [
+      for (final element in _descendantElements(this))
+        if (wanted
+            .every((token) => _hasHtmlClassToken(element.className, token)))
+          element,
+    ];
+  }
 }
 
 /// Really basic implementation of a DOM-core like Node.
@@ -269,8 +334,9 @@ abstract class Node {
   /// This is needed so that trees that don't store text as nodes move the
   /// text in the correct way.
   void reparentChildren(Node newParent) {
+    if (identical(this, newParent)) return;
+    // NodeList.addAll detaches source children in one pass.
     newParent.nodes.addAll(nodes);
-    nodes.clear();
   }
 
   bool hasChildNodes() => nodes.isNotEmpty;
@@ -765,6 +831,14 @@ class NodeList extends ListProxy<Node> {
   }
 
   @override
+  bool remove(Object? element) {
+    final index = indexOf(element);
+    if (index < 0) return false;
+    removeAt(index);
+    return true;
+  }
+
+  @override
   void add(Node element) {
     if (element is DocumentFragment) {
       addAll(element.nodes);
@@ -777,13 +851,20 @@ class NodeList extends ListProxy<Node> {
 
   @override
   void addAll(Iterable<Node> iterable) {
-    // Note: we need to be careful if collection is another NodeList.
-    // In particular:
-    //   1. we need to copy the items before updating their parent pointers,
-    //     _flattenDocFragments does a copy internally.
-    //   2. we should update parent pointers in reverse order. That way they
-    //      are removed from the original NodeList (if any) from the end, which
-    //      is faster.
+    // Moving an entire node list is a common fragment insertion operation.
+    // Detach its children in one pass instead of repeatedly searching and
+    // removing from the source list (quadratic for large fragments).
+    if (iterable is NodeList && !identical(iterable, this)) {
+      final moving = iterable.toList(growable: false);
+      iterable.clear();
+      for (final node in moving) {
+        node.parentNode = _parent;
+      }
+      super.addAll(moving);
+      return;
+    }
+
+    // Snapshot the iterable, flatten fragments and detach in reverse order.
     final list = _flattenDocFragments(iterable);
     for (var node in list.reversed) {
       _setParent(node);
@@ -793,9 +874,13 @@ class NodeList extends ListProxy<Node> {
 
   @override
   void insert(int index, Node element) {
+    RangeError.checkValueInInterval(index, 0, length, 'index');
     if (element is DocumentFragment) {
       insertAll(index, element.nodes);
     } else {
+      if (identical(element.parentNode, _parent) && indexOf(element) < index) {
+        index--;
+      }
       super.insert(index, _setParent(element));
     }
   }
@@ -820,8 +905,15 @@ class NodeList extends ListProxy<Node> {
       removeAt(index);
       insertAll(index, value.nodes);
     } else {
+      if (identical(this[index], value)) return;
+      // Removing a sibling before the target shifts its index. Detach first,
+      // then replace the node at the adjusted position.
+      if (identical(value.parentNode, _parent) && indexOf(value) < index) {
+        index--;
+      }
+      value.remove();
       this[index].parentNode = null;
-      super[index] = _setParent(value);
+      super[index] = value..parentNode = _parent;
     }
   }
 
@@ -874,9 +966,22 @@ class NodeList extends ListProxy<Node> {
 
   @override
   void insertAll(int index, Iterable<Node> iterable) {
-    // Note: we need to be careful how we copy nodes. See note in addAll.
+    RangeError.checkValueInInterval(index, 0, length, 'index');
+    if (iterable is NodeList && !identical(iterable, this)) {
+      final moving = iterable.toList(growable: false);
+      iterable.clear();
+      for (final node in moving) {
+        node.parentNode = _parent;
+      }
+      super.insertAll(index, moving);
+      return;
+    }
+
     final list = _flattenDocFragments(iterable);
     for (var node in list.reversed) {
+      if (identical(node.parentNode, _parent) && indexOf(node) < index) {
+        index--;
+      }
       _setParent(node);
     }
     super.insertAll(index, list);
