@@ -3,6 +3,10 @@
 - Deep-clone selector groups, selector sequences, identifiers, functional
   pseudo-selector arguments, and legacy pseudo-element flags instead of
   sharing mutable AST nodes between the original and its clone.
+- Preserve nested group terms, IE7-prefixed declaration flags, and variable
+  usage state when cloning CSS expression/declaration nodes.
+- Recognize the `@left-bottom` page-margin directive, and stop parsing
+  `@right-bottom` as `@left-bottom`.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
