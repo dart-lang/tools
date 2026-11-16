@@ -1,5 +1,9 @@
 ## 7.4.1-wip
 
+* Reduce allocations when rendering single-line text nodes in `HtmlRenderer`.
+* Fix a reused `HtmlRenderer` trimming the leading whitespace of the first
+  text node of a new render after a previous render ended with `p`, `li` or
+  `br`.
 * Sort footnote definitions by their case-insensitive labels rather than
   their URI-encoded HTML IDs, so Unicode and escaped labels keep
   first-reference order.
