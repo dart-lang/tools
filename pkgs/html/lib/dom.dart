@@ -965,7 +965,6 @@ class FilteredElementList extends IterableBase<Element>
 
   @override
   void forEach(void Function(Element) action) {
-    // Preserve snapshot iteration when callbacks mutate the DOM.
     _filtered.forEach(action);
   }
 
@@ -987,8 +986,7 @@ class FilteredElementList extends IterableBase<Element>
   }
 
   @override
-  String join([String separator = '']) =>
-      _childNodes.whereType<Element>().join(separator);
+  String join([String separator = '']) => _filtered.join(separator);
 
   @override
   void add(Element element) {
@@ -1135,23 +1133,13 @@ class FilteredElementList extends IterableBase<Element>
   }
 
   @override
-  bool get isEmpty => _childNodes.whereType<Element>().isEmpty;
+  bool get isEmpty => _filtered.isEmpty;
 
   @override
-  int get length => _childNodes.whereType<Element>().length;
+  int get length => _filtered.length;
 
   @override
-  Element operator [](int index) {
-    if (index < 0) throw RangeError.index(index, this);
-    var position = 0;
-    for (final node in _childNodes) {
-      if (node is Element) {
-        if (position == index) return node;
-        position++;
-      }
-    }
-    throw RangeError.index(index, this);
-  }
+  Element operator [](int index) => _filtered[index];
 
   @override
   Iterator<Element> get iterator => _filtered.iterator;
@@ -1176,13 +1164,13 @@ class FilteredElementList extends IterableBase<Element>
   }
 
   @override
-  Element get first => _childNodes.whereType<Element>().first;
+  Element get first => _filtered.first;
 
   @override
-  Element get last => _childNodes.whereType<Element>().last;
+  Element get last => _filtered.last;
 
   @override
-  Element get single => _childNodes.whereType<Element>().single;
+  Element get single => _filtered.single;
 }
 
 // http://dom.spec.whatwg.org/#dom-node-textcontent

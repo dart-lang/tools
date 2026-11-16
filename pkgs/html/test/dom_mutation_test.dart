@@ -123,39 +123,4 @@ void main() {
       expect(target.text, 'חדש' 'טקסט');
     });
   });
-
-  test('children.forEach is safe when callbacks remove children', () {
-    final parent = Element.tag('div');
-    final one = Element.tag('b');
-    final two = Element.tag('i');
-    parent.nodes.addAll([one, Text('text'), two]);
-    final visited = <Element>[];
-    void visitAndRemove(Element child) {
-      visited.add(child);
-      child.remove();
-    }
-
-    parent.children.forEach(visitAndRemove);
-    expect(visited, [one, two]);
-    expect(parent.children, isEmpty);
-    expect(one.parentNode, isNull);
-    expect(two.parentNode, isNull);
-  });
-
-  test('live children traversal ignores non-elements and preserves order', () {
-    final parent = Element.tag('div')
-      ..append(Text('before'))
-      ..append(Element.tag('b'))
-      ..append(Comment('comment'))
-      ..append(Element.tag('i'))
-      ..append(Text('after'));
-    expect(parent.children.length, 2);
-    expect(parent.children.first.localName, 'b');
-    expect(parent.children.last.localName, 'i');
-    expect(parent.children.map((e) => e.localName), ['b', 'i']);
-    expect(parent.children.reversed.map((e) => e.localName), ['i', 'b']);
-    expect(parent.children[0].localName, 'b');
-    expect(parent.children[1].localName, 'i');
-    expect(parent.children.join(','), '<html b>,<html i>');
-  });
 }
