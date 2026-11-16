@@ -1,5 +1,9 @@
 ## 1.0.3-wip
 
+- `Color.css` now reads the `hsl()`/`hsla()` hue as degrees (optional `deg`)
+  instead of a 0..1 fraction, and accepts percentages for saturation, lightness
+  and alpha. Functional colors with the wrong number of components or invalid
+  or non-finite values now throw a `FormatException`.
 - Fix `Rgba.fromArgbValue`, `Rgba.argbValue` and `Hsla.color`, and preserve
   alpha for grayscale colors in `Hsla.fromRgba`.
 - Fix fractional alpha in the numeric `Color` constructor and normalize CSS
