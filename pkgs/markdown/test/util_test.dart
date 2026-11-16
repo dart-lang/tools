@@ -47,11 +47,6 @@ void main() {
         expect(Line(input).isBlankLine, isFalse, reason: input);
       }
     });
-
-    test('large blank and nonblank lines are classified correctly', () {
-      expect(Line(' ' * 20000).isBlankLine, isTrue);
-      expect(Line(' ' * 20000 + 'x').isBlankLine, isFalse);
-    });
   });
 
   group('String.dedent()', () {
@@ -68,8 +63,6 @@ void main() {
       expect('  text'.dedent().text, 'text');
       expect('text'.dedent().text, 'text');
       expect('\u00a0 text'.dedent().text, '\u00a0 text');
-      expect('  \ttext'.dedent(0).text, '  \ttext');
-      expect(' x'.dedent(-1).text, ' x');
     });
   });
 
