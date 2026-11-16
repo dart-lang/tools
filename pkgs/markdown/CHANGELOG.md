@@ -1,5 +1,8 @@
 ## 7.4.1-wip
 
+* Split a fenced code block info string at the first space or tab, so a
+  tab no longer ends up inside the `language-` class (matching cmark and
+  commonmark.js).
 * Avoid regular-expression work when classifying blank lines and dedenting
   Markdown blocks; scan ASCII whitespace directly while keeping partial-tab
   handling.
