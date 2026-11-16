@@ -1,5 +1,7 @@
 ## 1.0.3-wip
 
+- Correctly parse unit-like type selectors (`rem`, `vw`, `dpi`, etc.) at the
+  start of `selector()` and `parseSelectorGroup()` input and of style rules.
 - Fix `@namespace` serialization: quote bare URIs in pretty output and stop
   doubling already-quoted URIs.
 - Deep-clone selector groups, selector sequences, identifiers, functional
