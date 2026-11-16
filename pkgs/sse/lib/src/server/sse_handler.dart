@@ -261,7 +261,6 @@ class SseHandler {
   final Uri _uri;
   final Duration? _keepAlive;
   final Duration? _ignoreDisconnect;
-  final Set<String>? _allowedOrigins;
   final bool Function(String origin)? _originCheck;
   final _connections = <String?, SseConnection>{};
   final _connectionController = StreamController<SseConnection>();
@@ -287,11 +286,9 @@ class SseHandler {
   /// accepting `POST` messages:
   /// - Same-origin requests and HTTP(S) loopback origins (`localhost`,
   ///   `127.0.0.1`, `::1`) targeting a loopback host are allowed by default.
-  /// - Additional cross-origin callers may be permitted via [allowedOrigins]
-  ///   (case-insensitive exact origin strings without paths or trailing
-  ///   slashes, such as `'https://example.com'`, matching
-  ///   `package:shelf_web_socket`) or [originCheck] (invoked with the
-  ///   lowercased `Origin` header value after basic URI syntax validation).
+  /// - Additional cross-origin callers may be permitted via [originCheck],
+  ///   which is invoked with the lowercased `Origin` header value after basic
+  ///   URI syntax validation.
   /// - Requests without an `Origin` header (such as non-browser clients or
   ///   same-origin `EventSource` connections) are allowed only when
   ///   `Sec-Fetch-Site` is absent, `'same-origin'`, or `'none'`, and do not
@@ -301,42 +298,32 @@ class SseHandler {
   /// ```dart
   /// final handler = SseHandler(
   ///   Uri.parse('/sse'),
-  ///   allowedOrigins: {'https://app.example.com'},
-  ///   originCheck: (origin) => origin.startsWith('chrome-extension://'),
+  ///   originCheck: (origin) =>
+  ///       origin == 'https://app.example.com' ||
+  ///       origin.startsWith('chrome-extension://'),
   /// );
   /// ```
   ///
   /// Servers behind reverse proxies that terminate TLS or rewrite `Host`, as
   /// well as servers accepting connections from browser extensions
-  /// (`chrome-extension://`), must configure [allowedOrigins] or [originCheck].
+  /// (`chrome-extension://`), must configure [originCheck].
   /// `Origin` validation protects against cross-origin browser requests;
   /// protecting loopback servers against DNS rebinding still requires
   /// `Host`-header validation middleware on the embedding HTTP server.
   SseHandler(
     this._uri, {
-    Iterable<String>? allowedOrigins,
     Duration? ignoreDisconnect,
     Duration? keepAlive,
     bool Function(String origin)? originCheck,
-  }) : _allowedOrigins = allowedOrigins
-           ?.map((origin) => origin.toLowerCase())
-           .toSet(),
-       _ignoreDisconnect = ignoreDisconnect,
+  }) : _ignoreDisconnect = ignoreDisconnect,
        _keepAlive = keepAlive,
        _originCheck = originCheck;
 
-  /// Queue of newly established client [SseConnection]s; transparent
-  /// keep-alive or [SseHandler.new] `ignoreDisconnect` reconnections reuse the
-  /// existing [SseConnection] and are not re-emitted.
   StreamQueue<SseConnection> get connections =>
       _connectionsStream ??= StreamQueue(_connectionController.stream);
 
-  /// Shelf [shelf.Handler] that accepts SSE `GET` streams and `POST` messages
-  /// on the configured path, returning `404` for other paths or methods so it
-  /// can be composed in a [shelf.Cascade].
   shelf.Handler get handler => _handle;
 
-  /// Number of currently active (including keep-alive) client connections.
   int get numberOfClients => _connections.length;
 
   /// Returns whether [req] is permitted to establish an SSE connection or
@@ -386,9 +373,7 @@ class SseHandler {
         _loopbackHosts.contains(requestedUri.host)) {
       return true;
     }
-    final normalized = origin.toLowerCase();
-    return (_allowedOrigins?.contains(normalized) ?? false) ||
-        (_originCheck?.call(normalized) ?? false);
+    return _originCheck?.call(origin.toLowerCase()) ?? false;
   }
 
   shelf.Response _createSseConnection(shelf.Request req) {

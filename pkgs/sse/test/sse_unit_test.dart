@@ -506,12 +506,12 @@ void main() {
     });
   });
 
-  group('Origin validation with allowedOrigins and originCheck', () {
-    test('allows configured origins, same-origin, and loopback while rejecting '
-        'unlisted external origins', () async {
+  group('Origin validation with originCheck', () {
+    test('allows originCheck matches and loopback while rejecting unlisted '
+        'external origins', () async {
       final sseHandler = SseHandler(
         Uri.parse(_ssePath),
-        allowedOrigins: ['HTTPS://TRUSTED.EXAMPLE'],
+        originCheck: (origin) => origin == _trustedOrigin,
       );
       final server = await io.serve(
         sseHandler.handler,
@@ -551,18 +551,21 @@ void main() {
           'http://127.0.0.1:${server.port}$_ssePath?sseClientId=trusted&messageId=0',
         ),
       );
-      trustedPost.headers.set(_originHeader, _trustedOrigin);
+      trustedPost.headers.set(_originHeader, _trustedOrigin.toUpperCase());
       trustedPost.write('"from-trusted"');
       final trustedPostResp = await trustedPost.close();
       expect(trustedPostResp.statusCode, HttpStatus.ok);
-      expect(trustedPostResp.headers.value(_allowOriginHeader), _trustedOrigin);
+      expect(
+        trustedPostResp.headers.value(_allowOriginHeader),
+        _trustedOrigin.toUpperCase(),
+      );
       expect(trustedPostResp.headers.value(_allowCredentialsHeader), 'true');
       expect(trustedPostResp.headers.value(_varyHeader), 'Origin');
       await trustedPostResp.drain<void>();
       expect(await queue.next, 'from-trusted');
 
       // Cross-port loopback remains allowed on loopback hosts even when
-      // allowedOrigins (including an empty list) is passed.
+      // originCheck returns false for loopback.
       final crossPortPost = await client.postUrl(
         Uri.parse(
           'http://127.0.0.1:${server.port}$_ssePath?sseClientId=trusted&messageId=1',
@@ -587,22 +590,6 @@ void main() {
       expect(evilResp.statusCode, HttpStatus.forbidden);
       expect(evilResp.headers.value(_allowOriginHeader), isNull);
       await evilResp.drain<void>();
-
-      // Passing empty allowedOrigins keeps loopback working on loopback hosts.
-      final emptyAllowed = SseHandler(
-        Uri.parse(_ssePath),
-        allowedOrigins: const <String>[],
-      );
-      final loopbackPost = shelf.Request(
-        'POST',
-        Uri.parse('http://127.0.0.1:8080$_ssePath'),
-        headers: {_originHeader: 'http://localhost:9090'},
-        body: '"ok"',
-      );
-      expect(
-        (await emptyAllowed.handler(loopbackPost)).statusCode,
-        HttpStatus.ok,
-      );
     });
 
     test('supports custom originCheck and rejects malformed origins before '

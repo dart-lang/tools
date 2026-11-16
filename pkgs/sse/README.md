@@ -22,14 +22,14 @@ establishing SSE streams or accepting `POST` messages:
   `::1`) targeting a loopback server are allowed by default.
 - Non-loopback cross-origin callers (including servers behind TLS-terminating
   or `Host`-rewriting reverse proxies, separate frontend origins, and browser
-  extensions) must be explicitly permitted via `allowedOrigins` or
-  `originCheck`:
+  extensions) must be explicitly permitted via `originCheck`:
 
 ```dart
 final handler = SseHandler(
   Uri.parse('/sseHandler'),
-  allowedOrigins: {'https://app.example.com'},
-  originCheck: (origin) => origin.startsWith('chrome-extension://'),
+  originCheck: (origin) =>
+      origin == 'https://app.example.com' ||
+      origin.startsWith('chrome-extension://'),
 );
 ```
 
