@@ -1,5 +1,44 @@
 ## 1.0.3-wip
 
+- Speed up tokenizing by indexing unit and directive keywords by length.
+- Reduce allocations when tokenizing identifiers.
+- Avoid recursive tokenizer calls when skipping CSS comments and whitespace,
+  preventing stack overflow on comment-heavy stylesheets.
+- End HTML comments at the first `-->` even when more dashes precede it, and
+  don't end comments at a NUL character.
+- `Font.scale` keeps the line height (scaling pixel heights and keeping
+  relative ratios) and no longer throws when the font size is unspecified.
+- Fix `Font.cssExpression` output for partial fonts and line heights.
+- Correct `Font.hashCode` for partial/empty font styles.
+- `Color.css` now reads the `hsl()`/`hsla()` hue as degrees (optional `deg`)
+  instead of a 0..1 fraction, and accepts percentages for saturation, lightness
+  and alpha. Functional colors with the wrong number of components or invalid
+  or non-finite values now throw a `FormatException`.
+- Fix `Rgba.fromArgbValue`, `Rgba.argbValue` and `Hsla.color`, and preserve
+  alpha for grayscale colors in `Hsla.fromRgba`.
+- Fix fractional alpha in the numeric `Color` constructor and normalize CSS
+  short and eight-digit hex colors, with validation of malformed input and
+  unknown color names. Eight-digit hex colors are now read as `#rrggbbaa`
+  (CSS order), e.g. `Color.css('#ff000080')` is 50% red; previously the first
+  byte was treated as alpha.
+  `Color.css` also accepts named colors and `transparent`, throws a
+  `FormatException` instead of an `UnsupportedError` for unknown color
+  functions, and `Rgba.fromString`/`Hsla.fromString` now parse their argument
+  only once.
+- Fix `TokenKind.decimalToHex` hanging on negative input.
+- Speed up named CSS color lookups by indexing the color table.
+- Recognize the `rebeccapurple` color keyword.
+- Correctly parse unit-like type selectors (`rem`, `vw`, `dpi`, etc.) at the
+  start of `selector()` and `parseSelectorGroup()` input and of style rules.
+- Fix `@namespace` serialization: quote bare URIs in pretty output and stop
+  doubling already-quoted URIs.
+- Deep-clone selector groups, selector sequences, identifiers, functional
+  pseudo-selector arguments, and legacy pseudo-element flags instead of
+  sharing mutable AST nodes between the original and its clone.
+- Preserve nested group terms, IE7-prefixed declaration flags, and variable
+  usage state when cloning CSS expression/declaration nodes.
+- Recognize the `@left-bottom` page-margin directive, and stop parsing
+  `@right-bottom` as `@left-bottom`.
 - Fix the values of the `aliceblue` color keyword and the `Color.aliceBlue`,
   `Color.antiqueWhite` and `Color.peru` constants.
 - Fix unhandled exceptions (`RangeError`, `FormatException`, `StateError`,
