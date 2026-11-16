@@ -611,7 +611,7 @@ final class Event {
   /// Generic event for all dash tools to use when encountering an
   /// exception that we want to log.
   ///
-  /// * [exception] - string representation of the exception that occured.
+  /// * [exception] - string representation of the exception that occurred.
   /// * [data] - optional structured data to include with the exception event.
   Event.exception({
     required String exception,

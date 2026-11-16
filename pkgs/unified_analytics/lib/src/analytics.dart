@@ -773,7 +773,7 @@ class AnalyticsImpl implements Analytics {
       if (logFileStats != null) {
         for (final condition in survey.conditionList) {
           // Retrieve the value from the [LogFileStats] with
-          // the label provided in the condtion
+          // the label provided in the condition
           final logFileStatsValue = logFileStats.getValueByString(
             condition.field,
           );

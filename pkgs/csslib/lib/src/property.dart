@@ -1081,7 +1081,7 @@ class Font implements _StyleProperty {
 
   // TODO(terry): This is fragile should probably just iterate through the list
   //              of fonts construction the font-family string.
-  /// Return fonts as a comma seperated list sans the square brackets.
+  /// Return fonts as a comma separated list sans the square brackets.
   String get _fontsAsString {
     var fonts = family.toString();
     return fonts.length > 2 ? fonts.substring(1, fonts.length - 1) : '';

@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// Contains a builder object useful for creating source maps programatically.
+/// Contains a builder object useful for creating source maps programmatically.
 library;
 
 // TODO(sigmund): add a builder for multi-section mappings.
