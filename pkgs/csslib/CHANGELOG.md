@@ -1,5 +1,6 @@
 ## 1.0.3-wip
 
+- Speed up tokenizing by indexing unit and directive keywords by length.
 - Reduce allocations when tokenizing identifiers.
 - Avoid recursive tokenizer calls when skipping CSS comments and whitespace,
   preventing stack overflow on comment-heavy stylesheets.
