@@ -27,7 +27,62 @@ class Tokenizer extends TokenizerBase {
 
   @override
   Token next({bool unicodeRange = false}) {
-    // keep track of our starting position
+    // Skip whitespace, comments and CDATA markers in a loop rather than by
+    // recursing into next(), so long runs of them can't overflow the stack.
+    if (_inString) {
+      final skipStart = _index;
+      var trailingWhitespaceStart = -1;
+      while (_index < _text.length) {
+        final ch = _text.codeUnitAt(_index);
+        if (ch == TokenChar.NEWLINE ||
+            ch == TokenChar.RETURN ||
+            ch == TokenChar.SPACE ||
+            ch == TokenChar.TAB) {
+          trailingWhitespaceStart = _index;
+          _index++;
+          while (_index < _text.length) {
+            final next = _text.codeUnitAt(_index);
+            if (next != TokenChar.NEWLINE &&
+                next != TokenChar.RETURN &&
+                next != TokenChar.SPACE &&
+                next != TokenChar.TAB) {
+              break;
+            }
+            _index++;
+          }
+          continue;
+        }
+
+        if (ch == TokenChar.SLASH &&
+            _index + 1 < _text.length &&
+            _text.codeUnitAt(_index + 1) == TokenChar.ASTERISK) {
+          final end = _text.indexOf('*/', _index + 2);
+          if (end < 0) break; // Preserve incomplete-comment errors.
+          _index = end + 2;
+        } else if (ch == TokenChar.LESS && _text.startsWith('<!--', _index)) {
+          final end = _text.indexOf('-->', _index + 4);
+          if (end < 0) break;
+          _index = end + 3;
+        } else if (ch == TokenChar.LESS &&
+            _text.startsWith('<![CDATA[', _index)) {
+          _index += 9;
+        } else if (ch == TokenChar.RBRACK && _text.startsWith(']]>', _index)) {
+          _index += 3;
+        } else {
+          break;
+        }
+        trailingWhitespaceStart = -1;
+      }
+      if (_index == _text.length && trailingWhitespaceStart >= 0) {
+        // Preserve the historical EOF span after trailing whitespace.
+        _startIndex = trailingWhitespaceStart;
+        return _finishToken(TokenKind.END_OF_FILE);
+      }
+      // A unicode range can't span whitespace or comments.
+      if (_index != skipStart) unicodeRange = false;
+    }
+
+    // Keep track of our starting position.
     _startIndex = _index;
 
     int ch;
@@ -402,41 +457,25 @@ class Tokenizer extends TokenizerBase {
   }
 
   Token finishHtmlComment() {
-    while (true) {
-      var ch = _nextChar();
-      if (ch == 0) {
-        return _finishToken(TokenKind.INCOMPLETE_COMMENT);
-      } else if (ch == TokenChar.MINUS) {
-        /* Check if close part of Comment Definition --> (CDC). */
-        if (_maybeEatChar(TokenChar.MINUS)) {
-          if (_maybeEatChar(TokenChar.GREATER)) {
-            if (_inString) {
-              return next();
-            } else {
-              return _finishToken(TokenKind.HTML_COMMENT);
-            }
-          }
-        }
-      }
+    // The comment ends at the first `-->`, even if more dashes precede it.
+    final end = _text.indexOf('-->', _index);
+    if (end < 0) {
+      _index = _text.length;
+      return _finishToken(TokenKind.INCOMPLETE_COMMENT);
     }
+    _index = end + 3;
+    return _finishToken(TokenKind.HTML_COMMENT);
   }
 
   @override
   Token finishMultiLineComment() {
-    while (true) {
-      var ch = _nextChar();
-      if (ch == 0) {
-        return _finishToken(TokenKind.INCOMPLETE_COMMENT);
-      } else if (ch == 42 /*'*'*/) {
-        if (_maybeEatChar(47 /*'/'*/)) {
-          if (_inString) {
-            return next();
-          } else {
-            return _finishToken(TokenKind.COMMENT);
-          }
-        }
-      }
+    final end = _text.indexOf('*/', _index);
+    if (end < 0) {
+      _index = _text.length;
+      return _finishToken(TokenKind.INCOMPLETE_COMMENT);
     }
+    _index = end + 2;
+    return _finishToken(TokenKind.COMMENT);
   }
 }
 

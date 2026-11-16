@@ -1,5 +1,9 @@
 ## 1.0.3-wip
 
+- Avoid recursive tokenizer calls when skipping CSS comments and whitespace,
+  preventing stack overflow on comment-heavy stylesheets.
+- End HTML comments at the first `-->` even when more dashes precede it, and
+  don't end comments at a NUL character.
 - `Font.scale` keeps the line height (scaling pixel heights and keeping
   relative ratios) and no longer throws when the font size is unspecified.
 - Fix `Font.cssExpression` output for partial fonts and line heights.
