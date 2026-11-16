@@ -1,5 +1,6 @@
 ## 1.0.3-wip
 
+- Speed up named CSS color lookups by indexing the color table.
 - Recognize the `rebeccapurple` color keyword.
 - Correctly parse unit-like type selectors (`rem`, `vw`, `dpi`, etc.) at the
   start of `selector()` and `parseSelectorGroup()` input and of style rules.
