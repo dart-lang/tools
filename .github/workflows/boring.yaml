@@ -250,8 +250,11 @@ jobs:
           echo "$HOME/.local/state/Dart/install/bin" >> "$GITHUB_PATH"
       - name: Update changelog
         if: steps.check_changes.outputs.changed == 'true'
-        run: report changelog "Update BoringSSL to ${SHORT_REVISION}."
+        run: >-
+          report changelog --replace-pattern '^Update BoringSSL to '
+          "Update BoringSSL to [${SHORT_REVISION}](https://boringssl.googlesource.com/boringssl/+/${REVISION})."
         env:
+          REVISION: ${{ steps.refresh.outputs.revision }}
           SHORT_REVISION: ${{ steps.refresh.outputs.short_revision }}
       - name: Create pull request
         if: steps.check_changes.outputs.changed == 'true'
