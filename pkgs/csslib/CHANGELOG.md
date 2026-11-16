@@ -1,5 +1,7 @@
 ## 1.0.3-wip
 
+- Fix `Rgba.fromArgbValue`, `Rgba.argbValue` and `Hsla.color`, and preserve
+  alpha for grayscale colors in `Hsla.fromRgba`.
 - Fix fractional alpha in the numeric `Color` constructor and normalize CSS
   short and eight-digit hex colors, with validation of malformed input and
   unknown color names. Eight-digit hex colors are now read as `#rrggbbaa`
