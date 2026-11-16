@@ -1,5 +1,7 @@
 ## 1.0.3-wip
 
+- Fix `@namespace` serialization: quote bare URIs in pretty output and stop
+  doubling already-quoted URIs.
 - Deep-clone selector groups, selector sequences, identifiers, functional
   pseudo-selector arguments, and legacy pseudo-element flags instead of
   sharing mutable AST nodes between the original and its clone.
