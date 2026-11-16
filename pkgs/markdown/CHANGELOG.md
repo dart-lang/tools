@@ -1,5 +1,8 @@
 ## 7.4.1-wip
 
+* Sort footnote definitions by their case-insensitive labels rather than
+  their URI-encoded HTML IDs, so Unicode and escaped labels keep
+  first-reference order.
 * Keep existing percent-encoded sequences in extended autolink destinations
   instead of double-encoding their `%` signs. Invalid percent sequences are
   still escaped.
