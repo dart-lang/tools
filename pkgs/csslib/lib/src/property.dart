@@ -1084,20 +1084,26 @@ class Font implements _StyleProperty {
   ///
   ///    font-style font-variant font-weight font-size/line-height font-family
   ///
-  /// The font-size and font-family values are required. If any of the other
-  /// values are missing the default value is used.
+  /// Only the parts that are set are printed, so a partial font (for example
+  /// one with only a weight, which prints `700`) is not a complete `font`
+  /// shorthand; that needs at least a size and a family.
   @override
   String get cssExpression {
-    // TODO(jimhug): include variant, style, other options
-    if (weight != null) {
-      // TODO(jacobr): is this really correct for lineHeight?
-      if (lineHeight != null) {
-        return '$weight ${size}px/$lineHeightInPixels $_fontsAsString';
-      }
-      return '$weight ${size}px $_fontsAsString';
-    }
-
-    return '${size}px $_fontsAsString';
+    // A unitless line height is a multiplier, so pixel heights need their unit.
+    final families = _fontsAsString;
+    final height = lineHeight;
+    final sizePart = size == null
+        ? null
+        : height == null
+            ? '${size}px'
+            : '${size}px/${height.height}${height.inPixels ? 'px' : ''}';
+    return [
+      if (style != null) style,
+      if (variant != null) variant,
+      if (weight != null) '$weight',
+      if (sizePart != null) sizePart,
+      if (families.isNotEmpty) families,
+    ].join(' ');
   }
 
   Font scale(num ratio) => Font(
@@ -1141,13 +1147,8 @@ class Font implements _StyleProperty {
         other.variant == variant;
   }
 
-  // TODO(terry): This is fragile should probably just iterate through the list
-  //              of fonts construction the font-family string.
-  /// Return fonts as a comma seperated list sans the square brackets.
-  String get _fontsAsString {
-    var fonts = family.toString();
-    return fonts.length > 2 ? fonts.substring(1, fonts.length - 1) : '';
-  }
+  /// Return font family names as a comma-separated list.
+  String get _fontsAsString => family?.join(', ') ?? '';
 }
 
 /// This class stores the sizes of the box edges in the CSS [box model][]. Each

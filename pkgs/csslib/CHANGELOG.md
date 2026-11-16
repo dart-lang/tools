@@ -1,5 +1,6 @@
 ## 1.0.3-wip
 
+- Fix `Font.cssExpression` output for partial fonts and line heights.
 - Correct `Font.hashCode` for partial/empty font styles.
 - `Color.css` now reads the `hsl()`/`hsla()` hue as degrees (optional `deg`)
   instead of a 0..1 fraction, and accepts percentages for saturation, lightness
