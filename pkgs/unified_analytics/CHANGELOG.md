@@ -1,3 +1,14 @@
+## 8.5.0-wip
+
+- Added a `fallbackRootTool` parameter to `getEnvironment()` so callers can
+  pass a root tool to fall back on (for example the IDE that spawned the
+  process) instead of setting `DASH__TOOL` themselves.
+- `LogHandler.logFileStats` no longer reads the log file into memory when it
+  exceeds `kMaxLogFileSize`, and discards any `FileSystemException` thrown
+  while reading it, to avoid crashing or exhausting memory on an abnormally
+  large or corrupted log file. Such a file is also deleted and replaced with an
+  empty one, so that it doesn't keep stats from being collected.
+
 ## 8.4.0
 
 - Added `DashToolKind` and `DashTool.kind` to distinguish top-level tools from

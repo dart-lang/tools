@@ -71,7 +71,11 @@ class Color implements _StyleProperty, ColorBase {
 
   /// Creates a new color from a CSS color string. For more information, see
   /// <https://developer.mozilla.org/en/CSS/color>.
-  Color.css(String color) : _argb = Color._convertCssToArgb(color)!;
+  ///
+  /// Throws a [FormatException] if [color] is not a supported CSS color.
+  Color.css(String color)
+      : _argb = Color._convertCssToArgb(color) ??
+            (throw FormatException('Unsupported CSS color', color));
 
   // TODO(jmesserly): I found the use of percents a bit suprising.
   /// HSL takes three values.  The [hueDegree] degree on the color wheel; '0' is
@@ -201,18 +205,13 @@ class Color implements _StyleProperty, ColorBase {
   // Conversion routines:
 
   static String _rgbToArgbString(int rgba, num? alpha) {
-    num? a;
-    // If alpha is defined then adjust from 0..1 to 0..255 value, if not set
-    // then a is left as undefined and passed to convertToHexString.
-    if (alpha != null) {
-      a = (Color._clamp(alpha, 0, 1) * 255).round();
-    }
-
+    // convertToHexString already takes alpha in the range 0..1 and converts it
+    // to an 8-bit channel. Multiplying here made every nonzero alpha opaque.
     var r = (rgba & 0xff0000) >> 0x10;
     var g = (rgba & 0xff00) >> 8;
     var b = rgba & 0xff;
 
-    return Color.convertToHexString(r, g, b, a);
+    return Color.convertToHexString(r, g, b, alpha);
   }
 
   static const int _rgbCss = 1;
@@ -220,17 +219,39 @@ class Color implements _StyleProperty, ColorBase {
   static const int _hslCss = 3;
   static const int _hslaCss = 4;
 
+  static final _hexDigits = RegExp(r'^[0-9a-fA-F]+$');
+
   /// Parse CSS expressions of the from #rgb, rgb(r,g,b), rgba(r,g,b,a),
   /// hsl(h,s,l), hsla(h,s,l,a) and SVG colors (e.g., darkSlateblue, etc.) and
   /// convert to argb.
   static String? _convertCssToArgb(String value) {
     // TODO(terry): Better parser/regex for converting CSS properties.
-    var color = value.trim().replaceAll('\\s', '');
-    if (color[0] == '#') {
-      var v = color.substring(1);
-      Color.hexToInt(v); // Valid hexadecimal, throws if not.
-      return v;
-    } else if (color.isNotEmpty && color[color.length - 1] == ')') {
+    var color = value.trim();
+    if (color.isEmpty) {
+      throw FormatException('Empty CSS color', value);
+    }
+    if (color.startsWith('#')) {
+      var digits = color.substring(1);
+      if (digits.length == 3 || digits.length == 4) {
+        final expanded = StringBuffer();
+        for (var i = 0; i < digits.length; i++) {
+          expanded
+            ..write(digits[i])
+            ..write(digits[i]);
+        }
+        digits = expanded.toString();
+      }
+      // int.parse also accepts a sign and surrounding whitespace.
+      if ((digits.length != 6 && digits.length != 8) ||
+          !_hexDigits.hasMatch(digits)) {
+        throw FormatException('Invalid CSS hexadecimal color', value);
+      }
+      if (digits.length == 8) {
+        // CSS #rrggbbaa is stored internally as aarrggbb.
+        return (digits.substring(6) + digits.substring(0, 6)).toLowerCase();
+      }
+      return digits.toLowerCase();
+    } else if (color.endsWith(')')) {
       int type;
       if (color.indexOf('rgb(') == 0 || color.indexOf('RGB(') == 0) {
         color = color.substring(4);
@@ -245,34 +266,82 @@ class Color implements _StyleProperty, ColorBase {
         type = _hslaCss;
         color = color.substring(5);
       } else {
-        throw UnsupportedError('CSS property not implemented');
+        throw FormatException('Unsupported CSS color', value);
       }
 
       color = color.substring(0, color.length - 1); // Strip close paren.
 
-      var args = <num>[];
-      var params = color.split(',');
-      for (var param in params) {
-        args.add(double.parse(param));
+      final params = color.split(',');
+      final hasAlpha = type == _rgbaCss || type == _hslaCss;
+      if (params.length != (hasAlpha ? 4 : 3)) {
+        throw FormatException('Invalid CSS color component count', value);
       }
+
+      double parseNumber(String text) {
+        final number = double.tryParse(text.trim());
+        if (number == null || !number.isFinite) {
+          throw FormatException('Invalid CSS color component', value);
+        }
+        return number;
+      }
+
+      double parseFraction(String text) {
+        final trimmed = text.trim();
+        if (trimmed.endsWith('%')) {
+          return parseNumber(trimmed.substring(0, trimmed.length - 1)) / 100;
+        }
+        return parseNumber(trimmed);
+      }
+
+      int parseRgbChannel(String text) => parseNumber(text).toInt();
+
+      double parseHue(String text) {
+        final trimmed = text.trim().toLowerCase();
+        final degrees = trimmed.endsWith('deg')
+            ? parseNumber(trimmed.substring(0, trimmed.length - 3))
+            : parseNumber(trimmed);
+        // CSS hue is an angle, not the 0..1 fraction expected by Hsla.
+        // Dart's `%` is never negative here, so -120 wraps to 240 too.
+        return degrees % 360 / 360;
+      }
+
       switch (type) {
         case _rgbCss:
           return Color.convertToHexString(
-              args[0].toInt(), args[1].toInt(), args[2].toInt());
+            parseRgbChannel(params[0]),
+            parseRgbChannel(params[1]),
+            parseRgbChannel(params[2]),
+          );
         case _rgbaCss:
           return Color.convertToHexString(
-              args[0].toInt(), args[1].toInt(), args[2].toInt(), args[3]);
+            parseRgbChannel(params[0]),
+            parseRgbChannel(params[1]),
+            parseRgbChannel(params[2]),
+            parseFraction(params[3]),
+          );
         case _hslCss:
-          return Hsla(args[0], args[1], args[2]).toHexArgbString();
+          return Hsla(
+            parseHue(params[0]),
+            parseFraction(params[1]),
+            parseFraction(params[2]),
+          ).toHexArgbString();
         case _hslaCss:
-          return Hsla(args[0], args[1], args[2], args[3]).toHexArgbString();
-        default:
-          // Type not defined UnsupportedOperationException should have thrown.
-          assert(false);
-          break;
+          return Hsla(
+            parseHue(params[0]),
+            parseFraction(params[1]),
+            parseFraction(params[2]),
+            parseFraction(params[3]),
+          ).toHexArgbString();
       }
     }
-    return null;
+
+    // Color.css should accept the same standard named colors as the CSS
+    // parser, including the transparent keyword with zero alpha.
+    if (color.toLowerCase() == 'transparent') return '00000000';
+    final named = TokenKind.matchColorName(color);
+    return named == null
+        ? null
+        : TokenKind.decimalToHex(TokenKind.colorValue(named), 6);
   }
 
   static int hexToInt(String hex) => int.parse(hex, radix: 16);
@@ -499,17 +568,19 @@ class Rgba implements _StyleProperty, ColorBase {
         b = Color._clamp(blue, 0, 255),
         a = (alpha != null) ? Color._clamp(alpha, 0, 1) : alpha;
 
-  factory Rgba.fromString(String hexValue) =>
-      Color.css('#${Color._convertCssToArgb(hexValue)}').rgba;
+  factory Rgba.fromString(String cssColor) => Color.css(cssColor).rgba;
 
   factory Rgba.fromColor(Color color) => color.rgba;
 
-  factory Rgba.fromArgbValue(num value) => Rgba(
-        (value.toInt() & 0xff000000) >> 0x18, // a
-        (value.toInt() & 0xff0000) >> 0x10, // r
-        (value.toInt() & 0xff00) >> 8, // g
-        value.toInt() & 0xff,
-      ); // b
+  factory Rgba.fromArgbValue(num value) {
+    final argb = value.toInt();
+    return Rgba(
+      (argb >> 16) & 0xff,
+      (argb >> 8) & 0xff,
+      argb & 0xff,
+      ((argb >> 24) & 0xff) / 255,
+    );
+  }
 
   factory Rgba.fromHsla(Hsla hsla) {
     // Convert to Rgba.
@@ -587,16 +658,8 @@ class Rgba implements _StyleProperty, ColorBase {
   String toHexArgbString() => Color.convertToHexString(r, g, b, a);
 
   @override
-  int get argbValue {
-    var value = 0;
-    if (a != null) {
-      value = a!.toInt() << 0x18;
-    }
-    value += r << 0x10;
-    value += g << 0x08;
-    value += b;
-    return value;
-  }
+  int get argbValue =>
+      ((a == null ? 0 : (a! * 255).round()) << 24) | (r << 16) | (g << 8) | b;
 
   Color get color => Color.createRgba(r, g, b, a);
   Hsla get hsla => Hsla.fromRgba(this);
@@ -628,8 +691,8 @@ class Hsla implements _StyleProperty, ColorBase {
         _l = Color._clamp(lightness, 0, 1),
         _a = (alpha != null) ? Color._clamp(alpha, 0, 1) : alpha;
 
-  factory Hsla.fromString(String hexValue) {
-    var rgba = Color.css('#${Color._convertCssToArgb(hexValue)}').rgba;
+  factory Hsla.fromString(String cssColor) {
+    final rgba = Color.css(cssColor).rgba;
     return _createFromRgba(rgba.r, rgba.g, rgba.b, rgba.a);
   }
 
@@ -670,7 +733,7 @@ class Hsla implements _StyleProperty, ColorBase {
     var maxRgb = math.max(r, math.max(g, b));
     l = (maxRgb + minRgb) / 2;
     if (l <= 0) {
-      return Hsla(0, 0, l); // Black;
+      return Hsla(0, 0, l, a); // Black;
     }
 
     var vm = maxRgb - minRgb;
@@ -678,7 +741,7 @@ class Hsla implements _StyleProperty, ColorBase {
     if (s > 0) {
       s /= (l < 0.5) ? (maxRgb + minRgb) : (2 - maxRgb - minRgb);
     } else {
-      return Hsla(0, 0, l); // White
+      return Hsla(0, 0, l, a); // White
     }
 
     num r2, g2, b2;
@@ -732,7 +795,7 @@ class Hsla implements _StyleProperty, ColorBase {
   @override
   int get argbValue => Color.hexToInt(toHexArgbString());
 
-  Color get color => Color.createHsla(_h, _s, _l, _a);
+  Color get color => Rgba.fromHsla(this).color;
   Rgba get rgba => Rgba.fromHsla(this);
 
   Hsla darker(num amount) => Hsla.fromRgba(Rgba.fromHsla(this).darker(amount));
@@ -1021,20 +1084,26 @@ class Font implements _StyleProperty {
   ///
   ///    font-style font-variant font-weight font-size/line-height font-family
   ///
-  /// The font-size and font-family values are required. If any of the other
-  /// values are missing the default value is used.
+  /// Only the parts that are set are printed, so a partial font (for example
+  /// one with only a weight, which prints `700`) is not a complete `font`
+  /// shorthand; that needs at least a size and a family.
   @override
   String get cssExpression {
-    // TODO(jimhug): include variant, style, other options
-    if (weight != null) {
-      // TODO(jacobr): is this really correct for lineHeight?
-      if (lineHeight != null) {
-        return '$weight ${size}px/$lineHeightInPixels $_fontsAsString';
-      }
-      return '$weight ${size}px $_fontsAsString';
-    }
-
-    return '${size}px $_fontsAsString';
+    // A unitless line height is a multiplier, so pixel heights need their unit.
+    final families = _fontsAsString;
+    final height = lineHeight;
+    final sizePart = size == null
+        ? null
+        : height == null
+            ? '${size}px'
+            : '${size}px/${height.height}${height.inPixels ? 'px' : ''}';
+    return [
+      if (style != null) style,
+      if (variant != null) variant,
+      if (weight != null) '$weight',
+      if (sizePart != null) sizePart,
+      if (families.isNotEmpty) families,
+    ].join(' ');
   }
 
   Font scale(num ratio) {
@@ -1078,8 +1147,7 @@ class Font implements _StyleProperty {
 
   @override
   int get hashCode =>
-      // TODO(jimhug): Lot's of potential collisions here. List of fonts, etc.
-      size!.toInt() % family![0].hashCode;
+      Object.hash(size, family, weight, lineHeight, style, variant);
 
   @override
   bool operator ==(Object other) {
@@ -1092,13 +1160,8 @@ class Font implements _StyleProperty {
         other.variant == variant;
   }
 
-  // TODO(terry): This is fragile should probably just iterate through the list
-  //              of fonts construction the font-family string.
-  /// Return fonts as a comma seperated list sans the square brackets.
-  String get _fontsAsString {
-    var fonts = family.toString();
-    return fonts.length > 2 ? fonts.substring(1, fonts.length - 1) : '';
-  }
+  /// Return font family names as a comma-separated list.
+  String get _fontsAsString => family?.join(', ') ?? '';
 }
 
 /// This class stores the sizes of the box edges in the CSS [box model][]. Each

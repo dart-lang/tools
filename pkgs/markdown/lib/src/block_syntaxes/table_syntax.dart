@@ -10,6 +10,12 @@ import 'block_syntax.dart';
 
 /// Parses tables.
 class TableSyntax extends BlockSyntax {
+  /// Maximum number of synthetic empty `<td>` cells added to pad short body
+  /// rows in a single table before ending the table (matching
+  /// `pulldown-cmark`), preventing quadratic output expansion when a wide
+  /// header is followed by many short rows.
+  static const _maxAutocompletedCells = 0x40000;
+
   @override
   bool canEndBlock(BlockParser parser) => true;
 
@@ -44,13 +50,21 @@ class TableSyntax extends BlockSyntax {
     // Advance past the divider of hyphens.
     parser.advance();
 
+    var autocompletedCells = 0;
     final rows = <Node>[];
     while (!parser.isDone && !BlockSyntax.isAtBlockEnd(parser)) {
       final row = _parseRow(parser, alignments, 'td');
       final children = row.children!;
-      while (children.length < columnCount) {
-        // Insert synthetic empty cells.
-        children.add(Element('td', []));
+      if (children.length < columnCount) {
+        autocompletedCells += columnCount - children.length;
+        if (autocompletedCells > _maxAutocompletedCells) {
+          parser.retreat();
+          break;
+        }
+        while (children.length < columnCount) {
+          // Insert synthetic empty cells.
+          children.add(Element('td', []));
+        }
       }
       while (children.length > columnCount) {
         children.removeLast();
