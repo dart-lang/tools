@@ -1,6 +1,8 @@
 ## 4.2.1-wip
 
 - Run `dart format`.
+- Update `fetch` requests so they can be sent from contexts where the `window` is
+  not available.
 
 ## 4.2.0
 

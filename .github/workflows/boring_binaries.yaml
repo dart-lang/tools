@@ -70,29 +70,29 @@ jobs:
             target-os: linux
             target-arch: arm64
             max-glibc: '2.35'
-          - os: macos-14
+          - os: macos-15
             target-os: macos
             target-arch: arm64
             min-os: '11.0'
-          - os: macos-14
+          - os: macos-15
             target-os: macos
             target-arch: x64
             min-os: '10.15'
           - os: windows-latest
             target-os: windows
             target-arch: x64
-          - os: macos-14
+          - os: macos-15
             target-os: ios
             target-arch: arm64
             ios-sdk: iphoneos
             min-os: '12.0'
-          - os: macos-14
+          - os: macos-15
             target-os: ios
             target-arch: arm64
             ios-sdk: iphonesimulator
             # The arm64 simulator only exists since iOS 14.
             min-os: '14.0'
-          - os: macos-14
+          - os: macos-15
             target-os: ios
             target-arch: x64
             ios-sdk: iphonesimulator
