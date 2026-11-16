@@ -36,14 +36,17 @@ class HtmlInputStream {
 
   List<int>? _rawBytes;
 
-  /// Raw UTF-16 codes, used if a Dart String is passed in.
-  List<int>? _rawChars;
+  /// Decoded text, or the Dart String passed in.
+  String? _rawText;
 
   Queue<String> errors = Queue<String>();
 
   SourceFile? fileInfo;
 
   var _chars = <int>[];
+
+  /// The String whose code units are [_chars], if normalization kept them.
+  String? _text;
 
   var _offset = 0;
 
@@ -68,7 +71,7 @@ class HtmlInputStream {
       this.sourceUrl])
       : charEncodingName = codecName(encoding) {
     if (source is String) {
-      _rawChars = source.codeUnits;
+      _rawText = source;
       charEncodingName = 'utf-8';
       charEncodingCertain = true;
     } else if (source is List<int>) {
@@ -91,15 +94,16 @@ class HtmlInputStream {
 
     _offset = 0;
 
-    final rawChars = _rawChars ??= _decodeBytes(charEncodingName!, _rawBytes!);
+    final rawText = _rawText ??= _decodeBytes(charEncodingName!, _rawBytes!);
+    final rawChars = rawText.codeUnits;
 
-    // Optimistically allocate array, trim it later if there are changes
-    _chars = List.filled(rawChars.length, 0, growable: true);
+    // Most input needs no CR/CRLF or surrogate normalization, so keep the
+    // decoded String and copy its code units only when one of them changes.
+    var chars = rawChars;
     var skipNewline = false;
     var wasSurrogatePair = false;
     var deletedChars = 0;
 
-    /// CodeUnits.length is not free
     final charsLength = rawChars.length;
     for (var i = 0; i < charsLength; i++) {
       var c = rawChars[i];
@@ -130,15 +134,24 @@ class HtmlInputStream {
         c = Charcode.lineFeed;
       }
 
-      _chars[i - deletedChars] = c;
+      if (c != rawChars[i]) {
+        if (identical(chars, rawChars)) {
+          chars = List<int>.of(rawChars, growable: true);
+        }
+        chars[i - deletedChars] = c;
+      } else if (deletedChars > 0) {
+        // The copy already holds unchanged code units at their own index.
+        chars[i - deletedChars] = c;
+      }
     }
     if (deletedChars > 0) {
-      // Remove the null bytes from the end
-      _chars.removeRange(_chars.length - deletedChars, _chars.length);
+      chars.length -= deletedChars;
     }
+    _chars = chars;
+    _text = identical(chars, rawChars) ? rawText : null;
 
     // Free decoded characters if they aren't needed anymore.
-    if (_rawBytes != null) _rawChars = null;
+    if (_rawBytes != null) _rawText = null;
 
     if (generateSpans) {
       fileInfo = SourceFile.decoded(_chars, url: sourceUrl);
@@ -187,7 +200,7 @@ class HtmlInputStream {
     } else {
       charEncodingName = newEncoding;
       charEncodingCertain = true;
-      _rawChars = null;
+      _rawText = null;
       reset();
       throw ReparseException(
           'Encoding changed from $charEncodingName to $newEncoding');
@@ -279,7 +292,7 @@ class HtmlInputStream {
       _offset += 1;
     }
 
-    return String.fromCharCodes(_chars.sublist(start, _offset));
+    return _substring(start, _offset);
   }
 
   String charsUntil1(int charCode, [bool opposite = false]) {
@@ -289,7 +302,7 @@ class HtmlInputStream {
       _offset += 1;
     }
 
-    return String.fromCharCodes(_chars.sublist(start, _offset));
+    return _substring(start, _offset);
   }
 
   String charsUntil2(int charCode1, int charCode2, [bool opposite = false]) {
@@ -300,7 +313,7 @@ class HtmlInputStream {
       _offset += 1;
     }
 
-    return String.fromCharCodes(_chars.sublist(start, _offset));
+    return _substring(start, _offset);
   }
 
   String charsUntil3(int charCode1, int charCode2, int charCode3,
@@ -312,7 +325,7 @@ class HtmlInputStream {
       _offset += 1;
     }
 
-    return String.fromCharCodes(_chars.sublist(start, _offset));
+    return _substring(start, _offset);
   }
 
   String charsUntilAsciiLetter([bool opposite = false]) {
@@ -324,8 +337,13 @@ class HtmlInputStream {
             opposite) {
       _offset += 1;
     }
-    return String.fromCharCodes(_chars.sublist(start, _offset));
+    return _substring(start, _offset);
   }
+
+  // String.fromCharCodes copies a String's code units by iterating from the
+  // first one on the VM, so slice the String itself when it is available.
+  String _substring(int start, int end) =>
+      _text?.substring(start, end) ?? String.fromCharCodes(_chars, start, end);
 
   static bool _isSpaceCharacter(int c) =>
       c == Charcode.space ||
@@ -341,7 +359,7 @@ class HtmlInputStream {
       _offset += 1;
     }
 
-    return String.fromCharCodes(_chars.sublist(start, _offset));
+    return _substring(start, _offset);
   }
 
   void unget(String? ch) {
@@ -432,13 +450,13 @@ bool _isSupportedEncoding(String? encoding) =>
 
 /// Decodes the [bytes] with the provided [encoding] and returns a list for
 /// the codepoints. Supports ascii and utf-8 encodings.
-List<int> _decodeBytes(String encoding, List<int> bytes) {
+String _decodeBytes(String encoding, List<int> bytes) {
   return switch (encoding) {
-    'ascii' => ascii.decode(bytes, allowInvalid: true).codeUnits,
+    'ascii' => ascii.decode(bytes, allowInvalid: true),
     'utf-8' =>
       // NOTE: To match the behavior of the other decode functions, we eat the
       // UTF-8 BOM here. This is the default behavior of `utf8.decode`.
-      utf8.decode(bytes, allowMalformed: true).codeUnits,
+      utf8.decode(bytes, allowMalformed: true),
     _ => throw ArgumentError('Encoding $encoding not supported')
   };
 }

@@ -3,6 +3,16 @@
 * Avoid regular-expression work when classifying blank lines and dedenting
   Markdown blocks; scan ASCII whitespace directly while keeping partial-tab
   handling.
+* Reduce allocations when rendering single-line text nodes in `HtmlRenderer`.
+* Fix a reused `HtmlRenderer` trimming the leading whitespace of the first
+  text node of a new render after a previous render ended with `p`, `li` or
+  `br`.
+* Sort footnote definitions by their case-insensitive labels rather than
+  their URI-encoded HTML IDs, so Unicode and escaped labels keep
+  first-reference order.
+* Keep existing percent-encoded sequences in extended autolink destinations
+  instead of double-encoding their `%` signs. Invalid percent sequences are
+  still escaped.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on
@@ -77,6 +87,8 @@
   plain text instead of overflowing the call stack.
 * Duplicate footnote definitions with identical case are ignored after the
   first definition, matching case-insensitive duplicates.
+* Tables pad at most `0x40000` (262,144) synthetic empty `<td>` cells across
+  short body rows before ending the table, matching `pulldown-cmark`.
 * The destination and title text that reference links and images copy from
   link reference definitions is limited to the larger of the input size and
   100,000 characters per document, matching cmark; further reference links are

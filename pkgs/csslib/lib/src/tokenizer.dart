@@ -27,7 +27,62 @@ class Tokenizer extends TokenizerBase {
 
   @override
   Token next({bool unicodeRange = false}) {
-    // keep track of our starting position
+    // Skip whitespace, comments and CDATA markers in a loop rather than by
+    // recursing into next(), so long runs of them can't overflow the stack.
+    if (_inString) {
+      final skipStart = _index;
+      var trailingWhitespaceStart = -1;
+      while (_index < _text.length) {
+        final ch = _text.codeUnitAt(_index);
+        if (ch == TokenChar.NEWLINE ||
+            ch == TokenChar.RETURN ||
+            ch == TokenChar.SPACE ||
+            ch == TokenChar.TAB) {
+          trailingWhitespaceStart = _index;
+          _index++;
+          while (_index < _text.length) {
+            final next = _text.codeUnitAt(_index);
+            if (next != TokenChar.NEWLINE &&
+                next != TokenChar.RETURN &&
+                next != TokenChar.SPACE &&
+                next != TokenChar.TAB) {
+              break;
+            }
+            _index++;
+          }
+          continue;
+        }
+
+        if (ch == TokenChar.SLASH &&
+            _index + 1 < _text.length &&
+            _text.codeUnitAt(_index + 1) == TokenChar.ASTERISK) {
+          final end = _text.indexOf('*/', _index + 2);
+          if (end < 0) break; // Preserve incomplete-comment errors.
+          _index = end + 2;
+        } else if (ch == TokenChar.LESS && _text.startsWith('<!--', _index)) {
+          final end = _text.indexOf('-->', _index + 4);
+          if (end < 0) break;
+          _index = end + 3;
+        } else if (ch == TokenChar.LESS &&
+            _text.startsWith('<![CDATA[', _index)) {
+          _index += 9;
+        } else if (ch == TokenChar.RBRACK && _text.startsWith(']]>', _index)) {
+          _index += 3;
+        } else {
+          break;
+        }
+        trailingWhitespaceStart = -1;
+      }
+      if (_index == _text.length && trailingWhitespaceStart >= 0) {
+        // Preserve the historical EOF span after trailing whitespace.
+        _startIndex = trailingWhitespaceStart;
+        return _finishToken(TokenKind.END_OF_FILE);
+      }
+      // A unicode range can't span whitespace or comments.
+      if (_index != skipStart) unicodeRange = false;
+    }
+
+    // Keep track of our starting position.
     _startIndex = _index;
 
     int ch;
@@ -251,50 +306,47 @@ class Tokenizer extends TokenizerBase {
 
   @override
   int getIdentifierKind() {
-    // Is the identifier a unit type?
-    var tokId = -1;
-
     // Don't match units in selectors or selector expressions.
+    var tokId = -1;
     if (!inSelectorExpression && !inSelector) {
       tokId = TokenKind.matchUnits(_text, _startIndex, _index - _startIndex);
     }
-    if (tokId == -1) {
-      tokId = (_text.substring(_startIndex, _index) == '!important')
-          ? TokenKind.IMPORTANT
-          : -1;
+
+    // Avoid allocating a substring just to check this uncommon keyword.
+    if (tokId == -1 &&
+        _index - _startIndex == 10 &&
+        _text.startsWith('!important', _startIndex)) {
+      tokId = TokenKind.IMPORTANT;
     }
 
     return tokId >= 0 ? tokId : TokenKind.IDENTIFIER;
   }
 
   Token finishIdentifier() {
-    // If we encounter an escape sequence, remember it so we can post-process
-    // to unescape.
-    var chars = <int>[];
+    // Ordinary CSS identifiers have no escapes. Only allocate a decoding
+    // buffer if a backslash is actually encountered.
+    StringBuffer? decoded;
 
-    // backup so we can start with the first character
-    var validateFrom = _index;
+    // Scan from the beginning of the token so the @directive lookahead and
+    // identifiers beginning with a consumed character behave as before.
+    final validateFrom = _index;
     _index = _startIndex;
     while (_index < _text.length) {
       var ch = _text.codeUnitAt(_index);
 
-      // If the previous character was "\" we need to escape. T
-      // http://www.w3.org/TR/CSS21/syndata.html#characters
-      // if followed by hexadecimal digits, create the appropriate character.
-      // otherwise, include the character in the identifier and don't treat it
-      // specially.
+      // Decode CSS escapes without changing the raw source span.
       if (ch == 92 /*\*/ && _inString) {
-        var startHex = ++_index;
+        decoded ??= StringBuffer(_text.substring(_startIndex, _index));
+        final startHex = ++_index;
         eatHexDigits(startHex + 6);
         if (_index != startHex) {
-          // Parse the hex digits and add that character.
-          var hexVal =
-              int.tryParse('0x${_text.substring(startHex, _index)}') ?? 0xFFFD;
-          chars.add(hexVal <= 0x10FFFF ? hexVal : 0xFFFD);
+          final hexVal =
+              int.tryParse(_text.substring(startHex, _index), radix: 16) ??
+                  0xFFFD;
+          decoded.writeCharCode(hexVal <= 0x10FFFF ? hexVal : 0xFFFD);
 
           if (_index == _text.length) break;
 
-          // if we stopped the hex because of a whitespace char, skip it
           ch = _text.codeUnitAt(_index);
           if (_index - startHex != 6 &&
               (ch == TokenChar.SPACE ||
@@ -304,25 +356,22 @@ class Tokenizer extends TokenizerBase {
             _index++;
           }
         } else {
-          // not a digit, just add the next character literally
           if (_index == _text.length) break;
-          chars.add(_text.codeUnitAt(_index++));
+          decoded.writeCharCode(_text.codeUnitAt(_index++));
         }
       } else if (_index < validateFrom ||
           (inSelectorExpression
               ? TokenizerHelpers.isIdentifierPartExpr(ch)
               : TokenizerHelpers.isIdentifierPart(ch))) {
-        chars.add(ch);
+        decoded?.writeCharCode(ch);
         _index++;
       } else {
-        // Not an identifier or escaped character.
         break;
       }
     }
 
-    var span = _file.span(_startIndex, _index);
-    var text = String.fromCharCodes(chars);
-
+    final span = _file.span(_startIndex, _index);
+    final text = decoded?.toString() ?? _text.substring(_startIndex, _index);
     return IdentifierToken(text, getIdentifierKind(), span);
   }
 
@@ -402,41 +451,25 @@ class Tokenizer extends TokenizerBase {
   }
 
   Token finishHtmlComment() {
-    while (true) {
-      var ch = _nextChar();
-      if (ch == 0) {
-        return _finishToken(TokenKind.INCOMPLETE_COMMENT);
-      } else if (ch == TokenChar.MINUS) {
-        /* Check if close part of Comment Definition --> (CDC). */
-        if (_maybeEatChar(TokenChar.MINUS)) {
-          if (_maybeEatChar(TokenChar.GREATER)) {
-            if (_inString) {
-              return next();
-            } else {
-              return _finishToken(TokenKind.HTML_COMMENT);
-            }
-          }
-        }
-      }
+    // The comment ends at the first `-->`, even if more dashes precede it.
+    final end = _text.indexOf('-->', _index);
+    if (end < 0) {
+      _index = _text.length;
+      return _finishToken(TokenKind.INCOMPLETE_COMMENT);
     }
+    _index = end + 3;
+    return _finishToken(TokenKind.HTML_COMMENT);
   }
 
   @override
   Token finishMultiLineComment() {
-    while (true) {
-      var ch = _nextChar();
-      if (ch == 0) {
-        return _finishToken(TokenKind.INCOMPLETE_COMMENT);
-      } else if (ch == 42 /*'*'*/) {
-        if (_maybeEatChar(47 /*'/'*/)) {
-          if (_inString) {
-            return next();
-          } else {
-            return _finishToken(TokenKind.COMMENT);
-          }
-        }
-      }
+    final end = _text.indexOf('*/', _index);
+    if (end < 0) {
+      _index = _text.length;
+      return _finishToken(TokenKind.INCOMPLETE_COMMENT);
     }
+    _index = end + 2;
+    return _finishToken(TokenKind.COMMENT);
   }
 }
 

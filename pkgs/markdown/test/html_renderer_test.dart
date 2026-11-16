@@ -95,6 +95,34 @@ void main() {
       expect(result, equals('one <break /> two'));
     });
   });
+
+  group('HtmlRenderer reused across renders', () {
+    test('does not retain previous block-tag text handling', () {
+      final renderer = HtmlRenderer();
+      expect(renderer.render([Element.text('p', 'first')]), '<p>first</p>');
+      expect(renderer.render([Text('  preserve spaces')]), '  preserve spaces');
+    });
+  });
+
+  group('HtmlRenderer text fast path', () {
+    test('trims leading whitespace after paragraph starts', () {
+      expect(
+        HtmlRenderer().render([Element.text('p', '  first')]),
+        '<p>first</p>',
+      );
+    });
+
+    test('keeps preformatted raw HTML and normalizes CRLF', () {
+      expect(
+        HtmlRenderer().render([Element.text('p', '  <pre>raw</pre>')]),
+        '<p>  <pre>raw</pre></p>',
+      );
+      expect(
+        HtmlRenderer().render([Element.text('p', '  first\r\n  second')]),
+        '<p>first\nsecond</p>',
+      );
+    });
+  });
 }
 
 class _BreakSyntax extends InlineSyntax {
