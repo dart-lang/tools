@@ -1,5 +1,6 @@
 ## 0.15.8-wip
 
+- Fix `Element.text`, `DocumentFragment.text` and `Node.textContent` throwing a `StackOverflowError` on very deeply nested elements; text is now extracted iteratively.
 - Fix `Node.remove` and `NodeList.remove` leaving a stale `parentNode`, `Node.insertBefore`, `NodeList.insert`, `insertAll` and `operator []=` using a shifted index when moving an earlier sibling, and `reparentChildren` emptying a node reparented to itself. Moving all children of another node (`append` of a `DocumentFragment`, `reparentChildren`, `innerHtml`) now runs in linear time.
 - `getElementById`, `getElementsByTagName` and `getElementsByClassName` no longer parse a CSS selector. IDs and class names that are not valid CSS identifiers (such as `a:b`, `a.b` or `1`) now match exactly instead of throwing or matching the wrong element, `getElementById('')` returns `null`, class names are split on HTML ASCII whitespace, and deeply nested documents no longer overflow the stack. `getElementsByTagName` now matches a single tag name, as in the DOM spec, so selector lists or combinators such as `'h1, h2'` return an empty list, and `''` returns an empty list instead of throwing.
 - Fix `querySelector` and `querySelectorAll` matching of `:root` (now the
