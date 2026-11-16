@@ -259,7 +259,7 @@ class TokenKind {
     },
     {'type': TokenKind.MARGIN_DIRECTIVE_LEFTTOP, 'value': 'left-top'},
     {'type': TokenKind.MARGIN_DIRECTIVE_LEFTMIDDLE, 'value': 'left-middle'},
-    {'type': TokenKind.MARGIN_DIRECTIVE_LEFTBOTTOM, 'value': 'right-bottom'},
+    {'type': TokenKind.MARGIN_DIRECTIVE_LEFTBOTTOM, 'value': 'left-bottom'},
     {'type': TokenKind.MARGIN_DIRECTIVE_RIGHTTOP, 'value': 'right-top'},
     {'type': TokenKind.MARGIN_DIRECTIVE_RIGHTMIDDLE, 'value': 'right-middle'},
     {'type': TokenKind.MARGIN_DIRECTIVE_RIGHTBOTTOM, 'value': 'right-bottom'},
@@ -421,6 +421,7 @@ class TokenKind {
     {'name': 'plum', 'value': 0xDDA0DD},
     {'name': 'powderblue', 'value': 0xB0E0E6},
     {'name': 'purple', 'value': 0x800080},
+    {'name': 'rebeccapurple', 'value': 0x663399},
     {'name': 'red', 'value': 0xFF0000},
     {'name': 'rosybrown', 'value': 0xBC8F8F},
     {'name': 'royalblue', 'value': 0x4169E1},
@@ -579,53 +580,45 @@ class TokenKind {
     return '<BAD UNIT>'; // Not a unit token.
   }
 
-  /// Match color name, case insensitive match and return the associated color
-  /// entry from _EXTENDED_COLOR_NAMES list, return `null` if not found.
-  static Map<String, Object>? matchColorName(String text) {
-    var name = text.toLowerCase();
-    for (var color in _EXTENDED_COLOR_NAMES) {
-      if (color['name'] == name) return color;
-    }
-    return null;
-  }
+  // Keep the existing color entry objects for callers, but avoid scanning the
+  // entire CSS color-name table for every parsed identifier.
+  static final Map<String, Map<String, Object>> _colorNamesByName = {
+    for (final entry in _EXTENDED_COLOR_NAMES) entry['name'] as String: entry,
+  };
+
+  /// Match a CSS color keyword case-insensitively.
+  static Map<String, Object>? matchColorName(String text) =>
+      _colorNamesByName[text.toLowerCase()];
 
   /// Return RGB value as [int] from a color entry in _EXTENDED_COLOR_NAMES.
   static int colorValue(Map<String, Object> entry) => entry['value'] as int;
 
-  static String? hexToColorName(Object hexValue) {
+  // Match the old linear scan's first-name-wins behavior for aliases such as
+  // aqua/cyan and fuchsia/magenta, while avoiding a scan for every print.
+  static final Map<int, String> _colorNamesByValue = () {
+    final colors = <int, String>{};
     for (final entry in _EXTENDED_COLOR_NAMES) {
-      if (entry['value'] == hexValue) {
-        return entry['name'] as String?;
-      }
+      colors.putIfAbsent(
+        entry['value'] as int,
+        () => entry['name'] as String,
+      );
     }
+    return colors;
+  }();
 
-    return null;
-  }
+  static String? hexToColorName(Object hexValue) =>
+      _colorNamesByValue[hexValue];
 
+  /// Converts [number] to lowercase hexadecimal, zero-padded to [minDigits].
+  ///
+  /// A negative [number] keeps its sign in front; only the digits are padded.
   static String decimalToHex(int number, [int minDigits = 1]) {
-    final hexDigits = '0123456789abcdef';
-
-    var result = <String>[];
-
-    var dividend = number >> 4;
-    var remain = number % 16;
-    result.add(hexDigits[remain]);
-    while (dividend != 0) {
-      remain = dividend % 16;
-      dividend >>= 4;
-      result.add(hexDigits[remain]);
+    final hex = number.toRadixString(16);
+    if (number < 0) {
+      // Pad the digits, not the sign.
+      return '-${hex.substring(1).padLeft(minDigits, '0')}';
     }
-
-    var invertResult = StringBuffer();
-    var paddings = minDigits - result.length;
-    while (paddings-- > 0) {
-      invertResult.write('0');
-    }
-    for (var i = result.length - 1; i >= 0; i--) {
-      invertResult.write(result[i]);
-    }
-
-    return invertResult.toString();
+    return hex.padLeft(minDigits, '0');
   }
 
   static String kindToString(int kind) => switch (kind) {

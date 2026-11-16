@@ -169,5 +169,15 @@ class SseClient extends StreamChannelMixin<String?> {
   }
 }
 
+/// Binds to the global `fetch` function. Note this is available in contexts
+/// without a `window`, such as web workers.
+///
+/// See: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+@JS('fetch')
+external JSPromise<Response> _globalFetch(
+  JSString resource,
+  RequestInit options,
+);
+
 Future<void> _fetch(String resourceUrl, RequestInit options) =>
-    window.fetch(resourceUrl.toJS, options).toDart;
+    _globalFetch(resourceUrl.toJS, options).toDart;

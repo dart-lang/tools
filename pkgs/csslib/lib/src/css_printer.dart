@@ -323,16 +323,14 @@ class CssPrinter extends Visitor {
 
     var uri = node._uri ?? '';
     if (isStartingQuote(uri)) {
-      emit('@namespace ${node.prefix}"$uri"');
+      // The URI is already quoted; do not introduce a second set of quotes.
+      emit('@namespace ${node.prefix}$uri');
+    } else if (_isTesting) {
+      // Keep the existing compact url() representation.
+      emit('@namespace ${node.prefix}url($uri)');
     } else {
-      if (_isTesting) {
-        // Emit exactly was we parsed.
-        emit('@namespace ${node.prefix}url($uri)');
-      } else {
-        // url(...) isn't needed only a URI can follow a:
-        //    @namespace prefix directive.
-        emit('@namespace ${node.prefix}$uri');
-      }
+      // A namespace URI needs a quoted string (or url()) to be valid CSS.
+      emit('@namespace ${node.prefix}"$uri"');
     }
     _emitSemicolon(forceLf: true);
   }
