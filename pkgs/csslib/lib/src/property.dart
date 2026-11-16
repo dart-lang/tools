@@ -1106,12 +1106,25 @@ class Font implements _StyleProperty {
     ].join(' ');
   }
 
-  Font scale(num ratio) => Font(
-      size: size! * ratio,
+  Font scale(num ratio) {
+    final currentLineHeight = lineHeight;
+    final scaledLineHeight = currentLineHeight == null
+        ? null
+        : LineHeight(
+            currentLineHeight.inPixels
+                ? currentLineHeight.height * ratio
+                : currentLineHeight.height,
+            inPixels: currentLineHeight.inPixels,
+          );
+    return Font(
+      size: size == null ? null : size! * ratio,
       family: family,
       weight: weight,
       style: style,
-      variant: variant);
+      variant: variant,
+      lineHeight: scaledLineHeight,
+    );
+  }
 
   /// The lineHeight, provides an indirect means to specify the leading. The
   /// leading is the difference between the font-size height and the (used)

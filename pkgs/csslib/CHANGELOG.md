@@ -1,5 +1,7 @@
 ## 1.0.3-wip
 
+- `Font.scale` keeps the line height (scaling pixel heights and keeping
+  relative ratios) and no longer throws when the font size is unspecified.
 - Fix `Font.cssExpression` output for partial fonts and line heights.
 - Correct `Font.hashCode` for partial/empty font styles.
 - `Color.css` now reads the `hsl()`/`hsla()` hue as degrees (optional `deg`)
