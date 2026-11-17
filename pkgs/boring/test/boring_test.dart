@@ -17,6 +17,20 @@ void main() {
       expect(ssl.BORINGSSL_self_test(), equals(1));
     });
 
+    test('BN_ULONG is pointer-sized', () {
+      // BN_ULONG is uint32_t on 32-bit targets, where binding it as Uint64
+      // passes and returns the wrong values.
+      expect(BN_ULONG, equals(ffi.UintPtr));
+      final bn = ssl.BN_new();
+      try {
+        expect(ssl.BN_set_word(bn, 65537), equals(1));
+        expect(ssl.BN_get_word(bn), equals(65537));
+        expect(ssl.BN_is_word(bn, 65537), equals(1));
+      } finally {
+        ssl.BN_free(bn);
+      }
+    });
+
     test('opensslAllocator allocates, frees, and exposes nativeFree', () {
       using((arena) {
         final buf = arena<ffi.Uint8>(32);

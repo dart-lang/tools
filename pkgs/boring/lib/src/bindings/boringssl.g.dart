@@ -4106,7 +4106,7 @@ external int BN_MONT_CTX_set(
 /// BN_abs_is_word returns one if the absolute value of `bn` equals `w` and zero
 /// otherwise.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_abs_is_word',
 )
 external int BN_abs_is_word(
@@ -4132,7 +4132,7 @@ external int BN_add(
 
 /// BN_add_word adds `w` to `a`. It returns one on success and zero otherwise.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_add_word',
 )
 external int BN_add_word(
@@ -4339,7 +4339,7 @@ external int BN_cmp(
 /// BN_cmp_word is like `BN_cmp` except it takes its second argument as a
 /// `BN_ULONG` instead of a `BIGNUM`.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_cmp_word',
 )
 external int BN_cmp_word(
@@ -4419,7 +4419,7 @@ external int BN_div(
 /// BN_div_word sets `numerator` = `numerator`/`divisor` and returns the
 /// remainder or (BN_ULONG)-1 on error.
 @meta.RecordUse()
-@ffi.Native<BN_ULONG Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.UintPtr Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_div_word',
 )
 external int BN_div_word(
@@ -4664,7 +4664,7 @@ external int BN_get_u64(
 /// too large to be represented as a single word, the maximum possible value
 /// will be returned.
 @meta.RecordUse()
-@ffi.Native<BN_ULONG Function(ffi.Pointer<BIGNUM>)>(
+@ffi.Native<ffi.UintPtr Function(ffi.Pointer<BIGNUM>)>(
   symbol: 'bssl_dart_BN_get_word',
 )
 external int BN_get_word(
@@ -4793,7 +4793,7 @@ external int BN_is_prime_fasttest_ex(
 
 /// BN_is_word returns one if `bn` is exactly `w` and zero otherwise.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_is_word',
 )
 external int BN_is_word(
@@ -5030,7 +5030,7 @@ external int BN_mod_exp_mont_consttime(
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<BIGNUM>,
-    BN_ULONG,
+    ffi.UintPtr,
     ffi.Pointer<BIGNUM>,
     ffi.Pointer<BIGNUM>,
     ffi.Pointer<BN_CTX>,
@@ -5339,7 +5339,7 @@ external int BN_mod_sub_quick(
 
 /// BN_mod_word returns `a` mod `w` or (BN_ULONG)-1 on error.
 @meta.RecordUse()
-@ffi.Native<BN_ULONG Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.UintPtr Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_mod_word',
 )
 external int BN_mod_word(
@@ -5388,7 +5388,7 @@ external int BN_mul(
 /// BN_mul_word sets `bn` = `bn` * `w`. It returns one on success or zero on
 /// allocation failure.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_mul_word',
 )
 external int BN_mul_word(
@@ -5443,7 +5443,7 @@ external int BN_num_bits(
 );
 
 @meta.RecordUse()
-@ffi.Native<ffi.UnsignedInt Function(BN_ULONG)>(
+@ffi.Native<ffi.UnsignedInt Function(ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_num_bits_word',
 )
 external int BN_num_bits_word(
@@ -5599,7 +5599,7 @@ external int BN_rand_range(
 /// otherwise.
 @meta.RecordUse()
 @ffi.Native<
-  ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG, ffi.Pointer<BIGNUM>)
+  ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr, ffi.Pointer<BIGNUM>)
 >(symbol: 'bssl_dart_BN_rand_range_ex')
 external int BN_rand_range_ex(
   ffi.Pointer<BIGNUM> r,
@@ -5671,7 +5671,7 @@ external int BN_set_u64(
 /// BN_set_word sets `bn` to `value`. It returns one on success or zero on
 /// allocation failure.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_set_word',
 )
 external int BN_set_word(
@@ -5733,7 +5733,7 @@ external int BN_sub(
 /// BN_sub_word subtracts `w` from `a`. It returns one on success and zero on
 /// allocation failure.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_sub_word',
 )
 external int BN_sub_word(
@@ -32451,8 +32451,6 @@ typedef BLAKE2B_CTX = blake2b_state_st;
 typedef BN_CTX = bignum_ctx;
 typedef BN_GENCB = bn_gencb_st;
 typedef BN_MONT_CTX = bn_mont_ctx_st;
-typedef BN_ULONG = ffi.Uint64;
-typedef DartBN_ULONG = int;
 typedef BUF_MEM = buf_mem_st;
 typedef CBB = cbb_st;
 typedef CBS = cbs_st;
@@ -36622,7 +36620,7 @@ final class bignum_ctx extends ffi.Opaque {}
 final class bignum_st extends ffi.Struct {
   /// d is a pointer to an array of `width` `BN_BITS2`-bit chunks in
   /// little-endian order. This stores the absolute value of the number.
-  external ffi.Pointer<BN_ULONG> d;
+  external ffi.Pointer<ffi.UintPtr> d;
 
   /// width is the number of elements of `d` which are valid. This value is not
   /// necessarily minimal; the most-significant words of `d` may be zero.
@@ -36655,7 +36653,7 @@ final class bignum_st extends ffi.Struct {
 
   static ffi.Pointer<bignum_st> $allocate(
     ffi.Allocator $allocator, {
-    required ffi.Pointer<BN_ULONG> d,
+    required ffi.Pointer<ffi.UintPtr> d,
     required int width,
     required int dmax,
     required int neg,

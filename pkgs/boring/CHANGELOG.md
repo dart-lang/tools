@@ -1,4 +1,7 @@
 ## 0.4.3-wip
+- Fixed the bindings of the `BN_*_word` functions on 32-bit targets, such as
+  Android arm. `BN_ULONG` is now `UintPtr` instead of `Uint64`, because it is
+  `uint32_t` on 32-bit targets.
 - Update BoringSSL to [8f2554dc](https://boringssl.googlesource.com/boringssl/+/8f2554dc344d403fd6d628773d39637c323eb801).
 
 ## 0.4.2

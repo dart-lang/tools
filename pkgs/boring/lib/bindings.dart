@@ -16,6 +16,17 @@ import 'src/bindings/boringssl.g.dart' as bssl;
 export 'src/arena.dart';
 export 'src/bindings/boringssl.g.dart';
 
+/// BoringSSL's `BN_ULONG`, a word of a [bssl.BIGNUM].
+///
+/// It's pointer-sized: `uint64_t` on 64-bit targets and `uint32_t` on 32-bit
+/// targets. The generated bindings use [ffi.UintPtr] for it.
+// ignore: camel_case_types
+typedef BN_ULONG = ffi.UintPtr;
+
+/// The Dart type of [BN_ULONG].
+// ignore: camel_case_types
+typedef DartBN_ULONG = int;
+
 /// An [ffi.Allocator] backed by BoringSSL's [bssl.OPENSSL_malloc] and
 /// [bssl.OPENSSL_free].
 ///
