@@ -15,6 +15,12 @@ include(../third_party/boringssl/sources.cmake)
 
 # Symbol prefixing: all BoringSSL symbols become bssl_dart_<symbol>
 add_definitions(-DBORINGSSL_PREFIX=bssl_dart)
+# Smaller precomputed tables, mainly for P-256, in exchange for slower
+# elliptic-curve operations. The P-256 tables are used whenever an application
+# uses ECDSA or ECDH, so tree-shaking can't remove them: this makes the
+# tree-shaken library of package:webcrypto about 19% smaller on Linux x64, and
+# P-256 signing about 2x slower (tens of microseconds on desktop).
+add_definitions(-DOPENSSL_SMALL)
 # Keep BoringSSL free of C++ runtime symbols (such as operator delete from
 # virtual destructors), since CMake and hook/link.dart (CLinker) link the
 # library with the C compiler driver.
@@ -124,6 +130,27 @@ if(WIN32)
   add_definitions(-DNOMINMAX)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
   add_definitions(-DBORINGSSL_UNSAFE_DETERMINISTIC_MODE=0)
+endif()
+
+# The sanitizer of the Dart runtime, set by hook/build.dart from the
+# `sanitizer` of the build config. All native code must be compiled with the
+# same sanitizer as the runtime that loads it.
+if(DEFINED BSSL_DART_SANITIZER)
+  if(BSSL_DART_SANITIZER STREQUAL "asan")
+    set(BSSL_DART_SANITIZER_FLAG "-fsanitize=address")
+  elseif(BSSL_DART_SANITIZER STREQUAL "msan")
+    set(BSSL_DART_SANITIZER_FLAG "-fsanitize=memory")
+  elseif(BSSL_DART_SANITIZER STREQUAL "tsan")
+    set(BSSL_DART_SANITIZER_FLAG "-fsanitize=thread")
+  else()
+    message(FATAL_ERROR "Unsupported sanitizer: ${BSSL_DART_SANITIZER}")
+  endif()
+  set(CMAKE_C_FLAGS
+      "${CMAKE_C_FLAGS} ${BSSL_DART_SANITIZER_FLAG} -fno-omit-frame-pointer")
+  set(CMAKE_CXX_FLAGS
+      "${CMAKE_CXX_FLAGS} ${BSSL_DART_SANITIZER_FLAG} -fno-omit-frame-pointer")
+  set(CMAKE_SHARED_LINKER_FLAGS
+      "${CMAKE_SHARED_LINKER_FLAGS} ${BSSL_DART_SANITIZER_FLAG}")
 endif()
 
 # The sources are compiled once, and linked into both libraries:

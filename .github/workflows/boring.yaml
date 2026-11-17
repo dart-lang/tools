@@ -115,6 +115,23 @@ jobs:
         run: dart test
         if: always() && steps.install.outcome == 'success'
 
+  # Build BoringSSL with AddressSanitizer through the build hook, and run the
+  # tests on the Dart VM built with it.
+  asan:
+    needs: analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
+        with:
+          sdk: dev
+      - name: Install dependencies
+        run: dart pub get
+      - name: Run tests with AddressSanitizer
+        run: dart test -c cli -p vm-asan test/boring_test.dart
+
   # Check the bundled BoringSSL and the bindings against Project Wycheproof.
   conformance:
     needs: analyze
