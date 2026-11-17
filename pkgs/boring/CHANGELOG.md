@@ -1,4 +1,11 @@
 ## 0.4.3-wip
+- BoringSSL is compiled with `OPENSSL_SMALL`, which for example makes the
+  tree-shaken library of `package:webcrypto` about 19% smaller, and P-256
+  operations about 2x slower.
+- When the Dart runtime uses a sanitizer (`asan`, `msan`, or `tsan`), the
+  `fetch` and `checkout` build modes compile BoringSSL with it, using Clang.
+  The prebuilt libraries aren't instrumented, so `fetch` builds from source.
+- The `checkout` build mode rebuilds when BoringSSL's `.inc` files change.
 - Fixed the bindings of the `BN_*_word` functions on 32-bit targets, such as
   Android arm. `BN_ULONG` is now `UintPtr` instead of `Uint64`, because it is
   `uint32_t` on 32-bit targets.
