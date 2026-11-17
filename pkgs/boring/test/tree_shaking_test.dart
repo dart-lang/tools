@@ -83,7 +83,7 @@ void main() {
     'cross-compilation with toolchain (linux-arm64)',
     () {
       late Uri bundle;
-      late File executable;
+      late File compiledCode;
       late File library;
 
       setUpAll(() async {
@@ -110,15 +110,15 @@ void main() {
         expect(build.exitCode, 0, reason: '${build.stdout}\n${build.stderr}');
 
         bundle = output.uri.resolve('bundle/');
-        executable = File.fromUri(bundle.resolve('bin/boring_example'));
+        compiledCode = _compiledCode(bundle, 'boring_example');
         library = File.fromUri(
           bundle.resolve('lib/${OS.linux.dylibFileName('bssl_dart')}'),
         );
       });
 
-      test('builds a linux-arm64 executable and dynamic library', () {
+      test('compiles the example and the dynamic library for linux-arm64', () {
         // EM_AARCH64 = 183.
-        expect(_elfMachine(executable.readAsBytesSync()), 183);
+        expect(_elfMachine(compiledCode.readAsBytesSync()), 183);
         expect(_elfMachine(library.readAsBytesSync()), 183);
       });
 
@@ -152,7 +152,7 @@ void main() {
     final expectedElfMachine = Platform.isLinux ? 183 : 62;
 
     late Uri bundle;
-    late File executable;
+    late File compiledCode;
     late File library;
 
     setUpAll(() async {
@@ -195,14 +195,15 @@ void main() {
       expect(build.exitCode, 0, reason: '${build.stdout}\n${build.stderr}');
 
       bundle = output.uri.resolve('bundle/');
-      executable = File.fromUri(bundle.resolve('bin/boring_example'));
+      compiledCode = _compiledCode(bundle, 'boring_example');
       library = File.fromUri(
         bundle.resolve('lib/${OS.linux.dylibFileName('bssl_dart')}'),
       );
     });
 
-    test('builds a linux-$targetArch executable and dynamic library', () {
-      expect(_elfMachine(executable.readAsBytesSync()), expectedElfMachine);
+    test('compiles the example and the dynamic library for '
+        'linux-$targetArch', () {
+      expect(_elfMachine(compiledCode.readAsBytesSync()), expectedElfMachine);
       expect(_elfMachine(library.readAsBytesSync()), expectedElfMachine);
     });
 
@@ -221,6 +222,23 @@ void main() {
       },
     );
   });
+}
+
+/// Returns the file in a `dart build cli` [bundle] that holds the AOT-compiled
+/// code of the [name] entry point.
+///
+/// Since Dart 3.14, a Linux bundle has that code in `lib/libdartaot<name>.so`,
+/// and `bin/<name>` is only a launcher for it
+/// (https://github.com/dart-lang/sdk/issues/64915). When cross-compiling, the
+/// bundle gets the host's launcher instead of the target's
+/// (https://github.com/dart-lang/sdk/issues/64942), so the tests check the
+/// architecture of the code instead. Older SDKs put the code in `bin/<name>`.
+File _compiledCode(Uri bundle, String name) {
+  final aotLibrary = File.fromUri(
+    bundle.resolve('lib/${OS.linux.dylibFileName('dartaot$name')}'),
+  );
+  if (aotLibrary.existsSync()) return aotLibrary;
+  return File.fromUri(bundle.resolve('bin/$name'));
 }
 
 /// Creates a temporary consumer package (using the default `fetch` build mode)
