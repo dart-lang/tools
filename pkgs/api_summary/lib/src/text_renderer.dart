@@ -153,53 +153,41 @@ final class _ApiTextRenderer {
         <({MemberSortKey sortKey, ApiDeclaration element, _Kind? kind})>[];
     for (final e in library.classes) {
       allItems.add((
-        sortKey: MemberSortKey.fromDeclaration(e),
+        sortKey: .fromDeclaration(e),
         element: e,
-        kind: _Kind.classDeclaration,
+        kind: .classDeclaration,
       ));
     }
     for (final e in library.enums) {
       allItems.add((
-        sortKey: MemberSortKey.fromDeclaration(e),
+        sortKey: .fromDeclaration(e),
         element: e,
-        kind: _Kind.enumDeclaration,
+        kind: .enumDeclaration,
       ));
     }
     for (final e in library.mixins) {
       allItems.add((
-        sortKey: MemberSortKey.fromDeclaration(e),
+        sortKey: .fromDeclaration(e),
         element: e,
-        kind: _Kind.mixinDeclaration,
+        kind: .mixinDeclaration,
       ));
     }
     for (final e in library.extensions) {
-      allItems.add((
-        sortKey: MemberSortKey.fromDeclaration(e),
-        element: e,
-        kind: null,
-      ));
+      allItems.add((sortKey: .fromDeclaration(e), element: e, kind: null));
     }
     for (final e in library.extensionTypes) {
-      allItems.add((
-        sortKey: MemberSortKey.fromDeclaration(e),
-        element: e,
-        kind: null,
-      ));
+      allItems.add((sortKey: .fromDeclaration(e), element: e, kind: null));
     }
     for (final e in library.functions) {
       allItems.add((
-        sortKey: MemberSortKey.fromDeclaration(e, isTopLevel: true),
+        sortKey: .fromDeclaration(e, isTopLevel: true),
         element: e,
         kind: null,
       ));
     }
 
     for (final e in library.typeAliases) {
-      allItems.add((
-        sortKey: MemberSortKey.fromDeclaration(e),
-        element: e,
-        kind: null,
-      ));
+      allItems.add((sortKey: .fromDeclaration(e), element: e, kind: null));
     }
 
     allItems.sort((a, b) => a.sortKey.compareTo(b.sortKey));
@@ -481,15 +469,9 @@ final class _ApiTextRenderer {
   ) {
     final members = <({MemberSortKey sortKey, ApiExecutable element})>[
       for (final e in constructors)
-        (
-          sortKey: MemberSortKey.fromDeclaration(e, isInstance: true),
-          element: e,
-        ),
+        (sortKey: .fromDeclaration(e, isInstance: true), element: e),
       for (final e in methods)
-        (
-          sortKey: MemberSortKey.fromDeclaration(e, isInstance: true),
-          element: e,
-        ),
+        (sortKey: .fromDeclaration(e, isInstance: true), element: e),
     ]..sort((a, b) => a.sortKey.compareTo(b.sortKey));
 
     if (members.isNotEmpty) {
