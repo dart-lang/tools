@@ -1142,14 +1142,8 @@ external int ASN1_STRING_print_ex_fp(
   int flags,
 );
 
-/// ASN1_STRING_set sets the contents of `str` to a copy of `len` bytes from
-/// `data`. It returns one on success and zero on error. If `data` is NULL, it
-/// updates the length and allocates the buffer as needed, but does not
-/// initialize the contents.
-///
-/// If `str` is a BIT STRING, this function sets the number of unused bits to
-/// zero. `ASN1_BIT_STRING_set1` may be used to set a BIT STRING that is not a
-/// whole number of bytes.
+/// ASN1_STRING_set behaves like `ASN1_STRING_set1_data` except that, if `len` is
+/// negative, it implicitly calls `strlen` on data to determine the length.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
@@ -1178,6 +1172,21 @@ external int ASN1_STRING_set(
 external void ASN1_STRING_set0(
   ffi.Pointer<ASN1_STRING> str,
   ffi.Pointer<ffi.Void> data,
+  int len,
+);
+
+/// ASN1_STRING_set1_data sets the contents of `str` to `len` bytes from `data`.
+///
+/// If `str` is a BIT STRING, this function sets the number of unused bits to
+/// zero. `ASN1_BIT_STRING_set1` may be used to set a BIT STRING that is not a
+/// whole number of bytes.
+@meta.RecordUse()
+@ffi.Native<
+  ffi.Int Function(ffi.Pointer<ASN1_STRING>, ffi.Pointer<ffi.Uint8>, ffi.Size)
+>(symbol: 'bssl_dart_ASN1_STRING_set1_data')
+external int ASN1_STRING_set1_data(
+  ffi.Pointer<ASN1_STRING> str,
+  ffi.Pointer<ffi.Uint8> data,
   int len,
 );
 
@@ -28132,6 +28141,20 @@ external int X509_set_subject_name(
   ffi.Pointer<X509_NAME> name,
 );
 
+/// X509_set_unsigned fills in the placeholder fields in `x509` to make an
+/// unsigned certificate (RFC 9925) and returns one on success or zero on error.
+/// It sets the signature algorithm to id-alg-unsigned and the signature value to
+/// the empty string. If the issuer is empty, it additionally sets the issuer to
+/// the id-rdna-unsigned placeholder value. Otherwise, it retains the existing
+/// issuer value.
+@meta.RecordUse()
+@ffi.Native<ffi.Int Function(ffi.Pointer<X509>)>(
+  symbol: 'bssl_dart_X509_set_unsigned',
+)
+external int X509_set_unsigned(
+  ffi.Pointer<X509> x509,
+);
+
 /// X509_set_version sets `x509`'s version to `version`, which should be one of
 /// the `X509V_VERSION_*` constants. It returns one on success and zero on error.
 ///
@@ -33473,6 +33496,8 @@ const int NID_aes_256_xts = 914;
 
 const int NID_alg_mtcProof = 976;
 
+const int NID_alg_unsigned = 979;
+
 const int NID_algorithm = 376;
 
 const int NID_ansi_X9_62 = 405;
@@ -34672,6 +34697,8 @@ const int NID_rc5_ecb = 121;
 const int NID_rc5_ofb64 = 123;
 
 const int NID_rdna_trustAnchorID = 977;
+
+const int NID_rdna_unsigned = 980;
 
 const int NID_registeredAddress = 870;
 

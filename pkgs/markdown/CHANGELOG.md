@@ -1,5 +1,21 @@
 ## 7.4.1-wip
 
+* Split a fenced code block info string at the first space or tab, so a
+  tab no longer ends up inside the `language-` class (matching cmark and
+  commonmark.js).
+* Avoid regular-expression work when classifying blank lines and dedenting
+  Markdown blocks; scan ASCII whitespace directly while keeping partial-tab
+  handling.
+* Reduce allocations when rendering single-line text nodes in `HtmlRenderer`.
+* Fix a reused `HtmlRenderer` trimming the leading whitespace of the first
+  text node of a new render after a previous render ended with `p`, `li` or
+  `br`.
+* Sort footnote definitions by their case-insensitive labels rather than
+  their URI-encoded HTML IDs, so Unicode and escaped labels keep
+  first-reference order.
+* Keep existing percent-encoded sequences in extended autolink destinations
+  instead of double-encoding their `%` signs. Invalid percent sequences are
+  still escaped.
 * Skip the regular expression in `EmojiSyntax`, `AutolinkSyntax`,
   `CodeSyntax`, and `ColorSwatchSyntax` when the character at the current
   position cannot start a match. This makes inline parsing faster, mostly on

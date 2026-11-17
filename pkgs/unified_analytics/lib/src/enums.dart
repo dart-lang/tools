@@ -359,6 +359,8 @@ enum AiAgent {
   ///
   /// Returns `null` if no AI agent is detected.
   static String? detectAgentName(Map<String, String> environment) {
+    // Keep in sync with `isAiAgent` in `dart-lang/test`:
+    // https://github.com/dart-lang/test/blob/master/pkgs/test_core/lib/src/util/io.dart
     const genericAiAgentLabel = 'Generic AI Agent';
 
     if (environment.containsKey('CLAUDECODE') ||
