@@ -8,7 +8,7 @@ import 'package:collection/collection.dart';
 import 'api_declaration.dart';
 import 'api_type.dart';
 
-/// Returns an unmodifiable parameter list preserving positional parameter order
+/// An unmodifiable parameter list preserving positional parameter order
 /// followed by named parameters sorted alphabetically by [ApiParameter.name].
 List<ApiParameter> canonicalizeParameters(List<ApiParameter> parameters) {
   if (parameters.isEmpty) return const [];
@@ -51,7 +51,7 @@ final class MemberSortKey implements Comparable<MemberSortKey> {
     required this.isSetter,
   });
 
-  /// Computes the canonical [MemberSortKey] for an [ApiDeclaration].
+  /// The canonical [MemberSortKey] for [element].
   factory MemberSortKey.fromDeclaration(
     ApiDeclaration element, {
     bool isInstance = false,
@@ -59,32 +59,31 @@ final class MemberSortKey implements Comparable<MemberSortKey> {
   }) => switch (element) {
     ApiClass() || ApiExtensionType() => MemberSortKey(
       isInstanceMember: isInstance,
-      category: MemberCategory.interface,
+      category: .interface,
       name: element.name,
       isSetter: false,
     ),
     ApiExtension() => MemberSortKey(
       isInstanceMember: isInstance,
-      category: MemberCategory.extension,
+      category: .extension,
       name: element.name,
       isSetter: false,
     ),
     ApiExecutable(:final kind, :final isStatic, :final name) => MemberSortKey(
       isInstanceMember: isInstance && !(isTopLevel || isStatic),
       category: switch (kind) {
-        ApiExecutableKind.constructor => MemberCategory.constructor,
-        ApiExecutableKind.getter ||
-        ApiExecutableKind.setter => MemberCategory.propertyAccessor,
-        _ => MemberCategory.topLevelFunctionOrMethod,
+        .constructor => .constructor,
+        .getter || .setter => .propertyAccessor,
+        _ => .topLevelFunctionOrMethod,
       },
-      name: kind == ApiExecutableKind.setter && name.endsWith('=')
+      name: kind == .setter && name.endsWith('=')
           ? name.substring(0, name.length - 1)
           : name,
-      isSetter: kind == ApiExecutableKind.setter,
+      isSetter: kind == .setter,
     ),
     ApiTypeAlias() => MemberSortKey(
       isInstanceMember: isInstance,
-      category: MemberCategory.typeAlias,
+      category: .typeAlias,
       name: element.name,
       isSetter: false,
     ),
