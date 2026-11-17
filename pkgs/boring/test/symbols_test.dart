@@ -10,7 +10,7 @@ library;
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:boring/bindings.dart' as ssl;
+import 'package:boring/boring.dart' as ssl;
 import 'package:boring/src/bindings/record_use_mapping.g.dart';
 import 'package:code_assets/code_assets.dart';
 import 'package:ffi/ffi.dart';

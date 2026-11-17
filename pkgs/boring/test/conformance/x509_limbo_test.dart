@@ -29,7 +29,7 @@ import 'dart:convert';
 import 'dart:ffi' as ffi;
 import 'dart:io';
 
-import 'package:boring/bindings.dart' as ssl;
+import 'package:boring/boring.dart' as ssl;
 import 'package:ffi/ffi.dart' show StringUtf8Pointer, Utf8, Utf8Pointer;
 import 'package:test/test.dart';
 

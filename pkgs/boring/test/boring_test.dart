@@ -6,13 +6,13 @@ import 'dart:convert';
 import 'dart:ffi' as ffi;
 import 'dart:typed_data';
 
-import 'package:boring/bindings.dart';
-import 'package:boring/bindings.dart' as ssl;
+import 'package:boring/boring.dart';
+import 'package:boring/boring.dart' as ssl;
 import 'package:ffi/ffi.dart' show using;
 import 'package:test/test.dart';
 
 void main() {
-  group('package:boring/bindings.dart', () {
+  group('package:boring/boring.dart', () {
     test('BORINGSSL_self_test passes', () {
       expect(ssl.BORINGSSL_self_test(), equals(1));
     });
