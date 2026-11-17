@@ -60,11 +60,12 @@ hooks:
 - **`local`**: Uses a custom prebuilt dynamic library at `localPath`, which is
   bundled as is, without [tree-shaking](#tree-shaking).
 
-Prebuilt libraries exist for Linux (x64 and arm64), macOS (arm64 and x64),
-Windows (x64), Android (arm, arm64 and x64; API 21 and later), and iOS (arm64,
-and the arm64 and x64 simulators; iOS 12 and later). Other targets require
-`buildMode: checkout`, which requires CMake, Ninja, and a C toolchain (Clang or
-GCC, Xcode, MSVC, or the Android NDK), plus NASM on Windows.
+Prebuilt libraries exist for Linux (x64 and arm64; glibc 2.28 and later, not
+musl), macOS (arm64 and x64), Windows (x64), Android (arm, arm64 and x64; API 21
+and later), and iOS (arm64, and the arm64 and x64 simulators; iOS 12 and later).
+Other targets require `buildMode: checkout`, which requires CMake, Ninja, and a
+C toolchain (Clang or GCC, Xcode, MSVC, or the Android NDK), plus NASM on
+Windows.
 
 When the Dart runtime uses a sanitizer, for example with `dart test -p
 vm-asan`, the `fetch` build mode compiles BoringSSL from source with that

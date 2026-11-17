@@ -11,6 +11,7 @@ import 'package:crypto/crypto.dart' show sha256;
 import 'package:hooks/hooks.dart';
 
 import 'hashes.dart' show fileHashes, releaseRepository, releaseTag;
+import 'libc.dart' show currentGlibcVersion, unsupportedLinuxLibcReason;
 import 'targets.dart'
     show libraryFileName, releaseAssetName, releaseAssetUrl, targetTripleFor;
 
@@ -56,6 +57,18 @@ Future<Uri> fetchPrebuiltLibrary(
           '($assetRemoteName) in release $releaseTag of $releaseRepository.\n'
           '$_checkoutHint',
     );
+  }
+
+  // The prebuilt libraries would fail to load on another C library. Only the
+  // C library of this machine is known, so this only checks builds for it, as
+  // in `dart run` and `dart test`.
+  if (targetOS == OS.linux &&
+      OS.current == OS.linux &&
+      targetArch == Architecture.current) {
+    final reason = unsupportedLinuxLibcReason(currentGlibcVersion());
+    if (reason != null) {
+      throw BuildError(message: '$reason\n$_checkoutHint');
+    }
   }
 
   final fileName = libraryFileName(targetOS, static: static);

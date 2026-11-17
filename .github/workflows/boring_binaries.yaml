@@ -43,6 +43,7 @@ jobs:
   precompile:
     name: Precompile (${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }})
     runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
     permissions:
       contents: read
       id-token: write # To sign the provenance attestations of the libraries.
@@ -60,16 +61,21 @@ jobs:
         # `macOSDeploymentTargets` and `iOSDeploymentTarget` in
         # tool/precompile_binaries.dart.
         include:
-          # The oldest available Ubuntu, so the libraries only require glibc
-          # 2.35.
-          - os: ubuntu-22.04
+          # Built in manylinux_2_28 (AlmaLinux 8) containers, so the libraries
+          # run on glibc 2.28 and later, for example on Debian 10, Ubuntu 20.04,
+          # and RHEL 8, not only on the runner's glibc. Older glibc can't run
+          # the actions (Node.js) in the container. Keep `max-glibc` in sync
+          # with `prebuiltLinuxGlibc` in lib/src/hook_helpers/libc.dart.
+          - os: ubuntu-24.04
+            container: quay.io/pypa/manylinux_2_28_x86_64
             target-os: linux
             target-arch: x64
-            max-glibc: '2.35'
-          - os: ubuntu-22.04-arm
+            max-glibc: '2.28'
+          - os: ubuntu-24.04-arm
+            container: quay.io/pypa/manylinux_2_28_aarch64
             target-os: linux
             target-arch: arm64
-            max-glibc: '2.35'
+            max-glibc: '2.28'
           - os: macos-15
             target-os: macos
             target-arch: arm64
@@ -111,6 +117,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      # The manylinux images have GCC, CMake, and Make, but setup-dart needs
+      # unzip.
+      - name: Install unzip (manylinux)
+        if: matrix.container
+        run: dnf install -y unzip
       - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
         with:
           sdk: stable
