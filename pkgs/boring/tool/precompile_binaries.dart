@@ -112,7 +112,13 @@ void main(List<String> args) async {
     // The default generators: Visual Studio's on Windows, like
     // native_toolchain_cmake, which finds MSVC without a Developer Command
     // Prompt, and Makefiles elsewhere.
-    if (targetOS == OS.windows) ...['-A', _visualStudioPlatforms[targetArch]!],
+    if (targetOS == OS.windows) ...[
+      '-A',
+      _visualStudioPlatforms[targetArch]!,
+      // Without timestamps, like -Brepro does for MSVC in src/CMakeLists.txt.
+      // Not in there, since NASM only has this option since 2.15.05.
+      '-DCMAKE_ASM_NASM_FLAGS=--reproducible',
+    ],
     if (targetOS == OS.macOS) ...[
       '-DCMAKE_OSX_ARCHITECTURES=${_appleArchitectures[targetArch]!}',
       // Without this, the libraries would only load on the macOS version of
@@ -142,16 +148,22 @@ void main(List<String> args) async {
     '-DCMAKE_INSTALL_PREFIX=${installDir.path}',
   ]);
   // Installs both libraries into installDir, see src/CMakeLists.txt.
-  await _run('cmake', [
-    '--build',
-    buildDir.path,
-    '--config',
-    'Release',
-    '--target',
-    'install',
-    '--parallel',
-    '${Platform.numberOfProcessors}',
-  ]);
+  await _run(
+    'cmake',
+    [
+      '--build',
+      buildDir.path,
+      '--config',
+      'Release',
+      '--target',
+      'install',
+      '--parallel',
+      '${Platform.numberOfProcessors}',
+    ],
+    // Makes Apple's ar and ranlib write zero modification times, so that
+    // building the same sources gives the same static libraries.
+    environment: {'ZERO_AR_DATE': '1'},
+  );
 
   for (final static in [false, true]) {
     final builtLibrary = File.fromUri(
@@ -273,11 +285,16 @@ String _androidLlvmStrip(Uri ndk) {
   exit(1);
 }
 
-Future<void> _run(String executable, List<String> arguments) async {
+Future<void> _run(
+  String executable,
+  List<String> arguments, {
+  Map<String, String>? environment,
+}) async {
   stdout.writeln('==> $executable ${arguments.join(' ')}');
   final process = await Process.start(
     executable,
     arguments,
+    environment: environment,
     mode: ProcessStartMode.inheritStdio,
   );
   final exitCode = await process.exitCode;
