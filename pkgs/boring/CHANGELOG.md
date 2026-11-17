@@ -1,4 +1,9 @@
 ## 0.4.3-wip
+- The prebuilt Linux libraries run on glibc 2.28 and later (for example
+  Debian 10, Ubuntu 20.04, and RHEL 8), instead of 2.35. On systems with an
+  older glibc or another C library, such as musl on Alpine Linux, the
+  `fetch` build mode fails with a hint to use `buildMode: checkout`, instead
+  of bundling a library that fails to load.
 - BoringSSL is compiled with `OPENSSL_SMALL`, which for example makes the
   tree-shaken library of `package:webcrypto` about 19% smaller, and P-256
   operations about 2x slower.
