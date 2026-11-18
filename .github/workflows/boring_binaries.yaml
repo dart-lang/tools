@@ -327,16 +327,17 @@ jobs:
           body: >-
             > [!WARNING]
 
-            > **Merge order:** Do **not** merge this pull request if a
+            > **Merge order:** This pull request pins `hashes.dart` to a
+            specific release of prebuilt binaries. Do **not** merge it if a
             `[boring] Update BoringSSL` pull request (or another change to
             `pkgs/boring`'s native sources) is open and ready to merge.
 
             >
 
             > - **Merge `[boring] Update BoringSSL` first.** Landing it on
-            `main` will automatically close this pull request, build new
-            prebuilt libraries for the updated sources, and open a replacement
-            pin pull request (~7 minutes later).
+            `main` will automatically close this pull request, build and release
+            new prebuilt libraries for the updated sources, and open a
+            replacement pin pull request (~7 minutes later).
 
             > - **Never merge an older pin pull request after a newer
             BoringSSL/native update**, as that reverts `hashes.dart` to stale

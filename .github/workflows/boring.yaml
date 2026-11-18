@@ -268,15 +268,16 @@ jobs:
             > [!WARNING]
 
             > **Merge order:** Merge **this** pull request **before** any
-            `[boring] Pin the prebuilt binaries` pull request.
+            `[boring] Pin the prebuilt binaries` pull request (which pins
+            `hashes.dart` to a specific release of prebuilt binaries).
 
             >
 
             > - If a `[boring] Pin the prebuilt binaries` pull request is
             currently open, **do not merge it** — landing this pull request on
-            `main` will automatically close it, build new prebuilt libraries for
-            this revision, and open a replacement pin pull request (~7 minutes
-            later).
+            `main` will automatically close it, build and release new prebuilt
+            libraries for this revision, and open a replacement pull request
+            pinning `hashes.dart` to that release (~7 minutes later).
 
             > - After merging this pull request, wait for and merge that
             replacement `[boring] Pin the prebuilt binaries` pull request before
