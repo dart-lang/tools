@@ -106,7 +106,7 @@ jobs:
               ;;
           esac
           curl -fSL -o "$RUNNER_TEMP/aarch64-linux-gnu.tar.gz" "$url"
-          actual="$(shasum -a 256 "$RUNNER_TEMP/aarch64-linux-gnu.tar.gz" | cut -d' ' -f1)"
+          actual="$(shasum -a 256 < "$RUNNER_TEMP/aarch64-linux-gnu.tar.gz" | cut -d' ' -f1)"
           if [ "$actual" != "$expected" ]; then
             echo "::error::Expected SHA-256 $expected for $url, got $actual."
             exit 1
@@ -122,7 +122,7 @@ jobs:
           TOOLCHAIN_SHA256: 9428b2039923916418ec7037025be8cec3202926d65db9452519977834ad2a89
         run: |
           curl -fSL -o "$RUNNER_TEMP/arm-gnu-toolchain.zip" "$TOOLCHAIN_URL"
-          actual="$(sha256sum "$RUNNER_TEMP/arm-gnu-toolchain.zip" | cut -d' ' -f1)"
+          actual="$(sha256sum < "$RUNNER_TEMP/arm-gnu-toolchain.zip" | cut -d' ' -f1)"
           if [ "$actual" != "$TOOLCHAIN_SHA256" ]; then
             echo "::error::Expected SHA-256 $TOOLCHAIN_SHA256 for $TOOLCHAIN_URL, got $actual."
             exit 1
