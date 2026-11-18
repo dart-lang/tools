@@ -275,6 +275,147 @@ void main() {
         ]);
       },
     );
+
+    test(
+      'retries 403 rate-limit responses and honors Retry-After capped at 60s',
+      () async {
+        var requests = 0;
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        addTearDown(() => server.close(force: true));
+        server.listen((request) async {
+          requests++;
+          switch (requests) {
+            case 1:
+              request.response.statusCode = HttpStatus.forbidden;
+              request.response.headers.set('x-ratelimit-remaining', '0');
+              request.response.headers.set(HttpHeaders.retryAfterHeader, '12');
+              await request.response.close();
+            case 2:
+              request.response.statusCode = HttpStatus.tooManyRequests;
+              request.response.headers.set(HttpHeaders.retryAfterHeader, '300');
+              await request.response.close();
+            default:
+              request.response.add(const [9, 8, 7]);
+              await request.response.close();
+          }
+        });
+
+        final delays = <Duration>[];
+        final bytes = await downloadBytes(
+          Uri.parse('http://${server.address.host}:${server.port}/throttled'),
+          delay: (duration) async => delays.add(duration),
+        );
+
+        expect(bytes, [9, 8, 7]);
+        expect(requests, 3);
+        expect(delays, [
+          const Duration(seconds: 12),
+          const Duration(seconds: 60),
+        ]);
+      },
+    );
+
+    test(
+      'does not retry plain 403 responses without rate-limit headers',
+      () async {
+        var requests = 0;
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        addTearDown(() => server.close(force: true));
+        server.listen((request) async {
+          requests++;
+          request.response.statusCode = HttpStatus.forbidden;
+          await request.response.close();
+        });
+
+        final delays = <Duration>[];
+        await expectLater(
+          () => downloadBytes(
+            Uri.parse('http://${server.address.host}:${server.port}/denied'),
+            delay: (duration) async => delays.add(duration),
+          ),
+          throwsA(
+            isA<BuildError>().having(
+              (e) => e.message,
+              'message',
+              contains('HTTP 403'),
+            ),
+          ),
+        );
+
+        expect(requests, 1);
+        expect(delays, isEmpty);
+      },
+    );
+
+    test('honors HTTP-date Retry-After headers', () async {
+      var requests = 0;
+      final fixedNow = DateTime.utc(2026, 11, 18, 12, 0, 0);
+      final retryAt = fixedNow.add(const Duration(seconds: 9));
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() => server.close(force: true));
+      server.listen((request) async {
+        requests++;
+        if (requests == 1) {
+          request.response.statusCode = HttpStatus.serviceUnavailable;
+          request.response.headers.set(
+            HttpHeaders.retryAfterHeader,
+            HttpDate.format(retryAt),
+          );
+          await request.response.close();
+          return;
+        }
+        request.response.add(const [5, 6]);
+        await request.response.close();
+      });
+
+      final delays = <Duration>[];
+      final bytes = await downloadBytes(
+        Uri.parse('http://${server.address.host}:${server.port}/date-retry'),
+        now: () => fixedNow,
+        delay: (duration) async => delays.add(duration),
+      );
+
+      expect(bytes, [5, 6]);
+      expect(requests, 2);
+      expect(delays, [const Duration(seconds: 9)]);
+    });
+
+    test(
+      'enforces overall totalTimeout deadline across stalled body reads',
+      () async {
+        var requests = 0;
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        addTearDown(() => server.close(force: true));
+        server.listen((request) async {
+          requests++;
+          request.response.bufferOutput = false;
+          request.response.add(const [1]);
+          await request.response.flush();
+          // Leave the response stream open past totalTimeout to simulate a
+          // stalled download.
+        });
+
+        final delays = <Duration>[];
+        await expectLater(
+          () => downloadBytes(
+            Uri.parse('http://${server.address.host}:${server.port}/stalled'),
+            maxAttempts: 4,
+            totalTimeout: const Duration(milliseconds: 80),
+            delay: (duration) async => delays.add(duration),
+          ),
+          throwsA(
+            isA<BuildError>().having(
+              (e) => e.message,
+              'message',
+              allOf(contains('Timed out'), contains('buildMode: checkout')),
+            ),
+          ),
+        );
+
+        expect(requests, 1);
+        expect(delays, isEmpty);
+      },
+    );
   });
 }
 

@@ -4,20 +4,22 @@
 
 // coverage:ignore-file
 
-import 'dart:async' show TimeoutException;
 import 'dart:convert' show jsonDecode, utf8;
 import 'dart:io';
-import 'dart:typed_data' show BytesBuilder;
 
 import 'package:args/args.dart';
+import 'package:boring/src/hook_helpers/fetch.dart'
+    show
+        HttpFetchException,
+        defaultConnectionTimeout,
+        defaultMaxAttempts,
+        defaultTotalTimeout,
+        fetchHttpWithRetry;
 import 'package:boring/src/hook_helpers/hashes.dart' as current;
 import 'package:boring/src/hook_helpers/targets.dart';
 import 'package:crypto/crypto.dart' show sha256;
 
 const _hashesFile = 'lib/src/hook_helpers/hashes.dart';
-const _connectionTimeout = Duration(seconds: 30);
-const _downloadTimeout = Duration(minutes: 5);
-const _defaultMaxAttempts = 4;
 final _sha256DigestPattern = RegExp(r'^sha256:([0-9a-f]{64})$');
 
 /// Pins the prebuilt libraries of a GitHub release in
@@ -73,7 +75,7 @@ Future<void> main(List<String> args) async {
                 Platform.environment['GITHUB_TOKEN'] ??
                 Platform.environment['GH_TOKEN'],
           );
-  } on DownloadException catch (e) {
+  } on _DownloadException catch (e) {
     stderr.writeln('Not updating $_hashesFile: $e');
     exit(1);
   }
@@ -233,10 +235,12 @@ Future<({Map<String, String> hashes, List<String> missing})> _hashLocalAssets(
 /// Resolves the SHA-256 hashes for [assetNames] in GitHub release [tag] of
 /// [repository].
 ///
-/// Queries the GitHub Releases API first so all asset SHA-256 digests are
-/// retrieved in a single metadata request when available, falling back to
-/// downloading individual release assets (with retries on transient failures)
-/// if the API is unavailable or an older release lacks asset digests.
+/// The `pin` job of `.github/workflows/boring_binaries.yaml` writes
+/// `hashes.dart` directly from the build job's local `--assets` artifacts. When
+/// `--assets` is omitted (such as the `generated` check in `boring.yaml`), this
+/// queries the GitHub Releases API to cross-check all `assets[*].digest` values
+/// in one metadata request, falling back to retried asset downloads whenever
+/// the API is unavailable or an asset's digest is absent from the API payload.
 Future<({Map<String, String> hashes, List<String> missing})>
 resolveRemoteAssetHashes({
   required String repository,
@@ -245,14 +249,16 @@ resolveRemoteAssetHashes({
   Uri? apiBaseUri,
   Uri? downloadBaseUri,
   String? githubToken,
-  int maxAttempts = _defaultMaxAttempts,
+  int maxAttempts = defaultMaxAttempts,
+  Duration totalTimeout = defaultTotalTimeout,
   Future<void> Function(Duration) delay = Future<void>.delayed,
+  DateTime Function() now = DateTime.now,
 }) async {
   final effectiveApiBase = apiBaseUri ?? Uri.parse('https://api.github.com');
   final effectiveDownloadBase =
       downloadBaseUri ?? Uri.parse('https://github.com');
   final httpClient = HttpClient()
-    ..connectionTimeout = _connectionTimeout
+    ..connectionTimeout = defaultConnectionTimeout
     ..findProxy = HttpClient.findProxyFromEnvironment;
   try {
     final apiResult = await _fetchReleaseDigests(
@@ -262,7 +268,9 @@ resolveRemoteAssetHashes({
       tag: tag,
       githubToken: githubToken,
       maxAttempts: maxAttempts,
+      totalTimeout: totalTimeout,
       delay: delay,
+      now: now,
     );
     switch (apiResult) {
       case _ReleaseNotFound():
@@ -283,7 +291,9 @@ resolveRemoteAssetHashes({
           assetNames: assetNames,
           apiAssets: null,
           maxAttempts: maxAttempts,
+          totalTimeout: totalTimeout,
           delay: delay,
+          now: now,
         );
       case _ReleaseDigestsLoaded(:final assets):
         return await _downloadMissingDigests(
@@ -294,7 +304,9 @@ resolveRemoteAssetHashes({
           assetNames: assetNames,
           apiAssets: assets,
           maxAttempts: maxAttempts,
+          totalTimeout: totalTimeout,
           delay: delay,
+          now: now,
         );
     }
   } finally {
@@ -311,22 +323,17 @@ _downloadMissingDigests(
   required List<String> assetNames,
   required Map<String, String?>? apiAssets,
   required int maxAttempts,
+  required Duration totalTimeout,
   required Future<void> Function(Duration) delay,
+  required DateTime Function() now,
 }) async {
   final hashes = <String, String>{};
   final missing = <String>[];
   for (final assetName in assetNames) {
-    if (apiAssets != null) {
-      if (!apiAssets.containsKey(assetName)) {
-        stdout.writeln('  Missing: $assetName');
-        missing.add(assetName);
-        continue;
-      }
-      if (apiAssets[assetName] case final digest?) {
-        hashes[assetName] = digest;
-        stdout.writeln('  $assetName: $digest');
-        continue;
-      }
+    if (apiAssets?[assetName] case final digest?) {
+      hashes[assetName] = digest;
+      stdout.writeln('  $assetName: $digest');
+      continue;
     }
     final assetUrl = downloadBaseUri.resolve(
       '/$repository/releases/download/$tag/$assetName',
@@ -335,7 +342,9 @@ _downloadMissingDigests(
       httpClient,
       assetUrl,
       maxAttempts: maxAttempts,
+      totalTimeout: totalTimeout,
       delay: delay,
+      now: now,
     );
     if (bytes == null) {
       missing.add(assetName);
@@ -355,7 +364,9 @@ Future<_ReleaseApiResult> _fetchReleaseDigests(
   required String tag,
   required String? githubToken,
   required int maxAttempts,
+  required Duration totalTimeout,
   required Future<void> Function(Duration) delay,
+  required DateTime Function() now,
 }) async {
   final url = apiBaseUri.resolve('/repos/$repository/releases/tags/$tag');
   final headers = <String, String>{
@@ -365,22 +376,21 @@ Future<_ReleaseApiResult> _fetchReleaseDigests(
     if (githubToken != null && githubToken.isNotEmpty)
       HttpHeaders.authorizationHeader: 'Bearer $githubToken',
   };
-
-  for (var attempt = 1; ; attempt++) {
-    try {
-      final response = await _sendGet(client, url, headers: headers);
-      return _parseReleaseApiResponse(response);
-    } on _RetryableFailure catch (failure) {
-      if (attempt >= maxAttempts) {
-        return _ReleaseApiUnavailable(failure.message);
-      }
-      final backoff = Duration(seconds: 1 << (attempt - 1));
-      stdout.writeln(
-        '  Retrying GitHub Releases API after ${failure.summary} '
-        'in ${backoff.inSeconds}s (attempt ${attempt + 1} of $maxAttempts)...',
-      );
-      await delay(backoff);
-    }
+  try {
+    final response = await fetchHttpWithRetry(
+      url,
+      client: client,
+      headers: headers,
+      retryRateLimits: false,
+      maxAttempts: maxAttempts,
+      totalTimeout: totalTimeout,
+      delay: delay,
+      now: now,
+      logPrefix: '  ',
+    );
+    return _parseReleaseApiResponse(response);
+  } on HttpFetchException catch (e) {
+    return _ReleaseApiUnavailable(e.message);
   }
 }
 
@@ -499,89 +509,38 @@ Future<List<int>?> _readLocal(Directory directory, String assetName) async {
 /// Downloads [url] with retries on transient errors, or returns `null` if
 /// there is no such asset (`HTTP 404`).
 ///
-/// Throws a [DownloadException] for any other failure, which must not be
+/// Throws a [_DownloadException] for any other failure, which must not be
 /// mistaken for a missing asset.
 Future<List<int>?> _fetchWithRetry(
   HttpClient client,
   Uri url, {
   required int maxAttempts,
+  required Duration totalTimeout,
   required Future<void> Function(Duration) delay,
+  required DateTime Function() now,
 }) async {
-  for (var attempt = 1; ; attempt++) {
-    try {
-      final response = await _sendGet(
-        client,
-        url,
-        retryTooManyRequests: true,
-      );
-      if (response.statusCode == HttpStatus.notFound) {
-        stdout.writeln('  Missing: $url');
-        return null;
-      }
-      if (response.statusCode != HttpStatus.ok) {
-        throw DownloadException('$url returned status ${response.statusCode}.');
-      }
-      return response.bytes;
-    } on _RetryableFailure catch (failure) {
-      if (attempt >= maxAttempts) {
-        throw DownloadException(failure.message);
-      }
-      final backoff = Duration(seconds: 1 << (attempt - 1));
-      stdout.writeln(
-        '  Retrying $url after ${failure.summary} '
-        'in ${backoff.inSeconds}s (attempt ${attempt + 1} of $maxAttempts)...',
-      );
-      await delay(backoff);
-    }
-  }
-}
-
-/// Sends an HTTP GET request and retries transient transport or server errors.
-///
-/// Leave [retryTooManyRequests] `false` for GitHub REST API metadata lookups so
-/// hourly quota `429` responses fall back immediately to asset downloads.
-Future<({int statusCode, List<int> bytes})> _sendGet(
-  HttpClient client,
-  Uri url, {
-  Map<String, String> headers = const {},
-  bool retryTooManyRequests = false,
-}) async {
+  final ({int statusCode, List<int> bytes}) response;
   try {
-    final request = await client.getUrl(url).timeout(_connectionTimeout);
-    for (final MapEntry(:key, :value) in headers.entries) {
-      request.headers.set(key, value);
-    }
-    final response = await request.close().timeout(_connectionTimeout);
-    final statusCode = response.statusCode;
-    final retryable =
-        statusCode == HttpStatus.requestTimeout ||
-        (retryTooManyRequests && statusCode == HttpStatus.tooManyRequests) ||
-        (statusCode >= 500 && statusCode < 600);
-    if (retryable) {
-      await response.drain<void>().timeout(_connectionTimeout);
-      throw _RetryableFailure(
-        message: '$url returned status $statusCode.',
-        summary: 'HTTP $statusCode',
-      );
-    }
-    if (statusCode != HttpStatus.ok) {
-      await response.drain<void>().timeout(_connectionTimeout);
-      return (statusCode: statusCode, bytes: const <int>[]);
-    }
-    final builder = BytesBuilder(copy: false);
-    await response.forEach(builder.add).timeout(_downloadTimeout);
-    return (statusCode: statusCode, bytes: builder.takeBytes());
-  } on IOException catch (e) {
-    throw _RetryableFailure(
-      message: 'Failed to download $url: $e',
-      summary: '$e',
+    response = await fetchHttpWithRetry(
+      url,
+      client: client,
+      maxAttempts: maxAttempts,
+      totalTimeout: totalTimeout,
+      delay: delay,
+      now: now,
+      logPrefix: '  ',
     );
-  } on TimeoutException catch (e) {
-    throw _RetryableFailure(
-      message: 'Timed out downloading $url: $e',
-      summary: 'timeout',
-    );
+  } on HttpFetchException catch (e) {
+    throw _DownloadException(e.message);
   }
+  if (response.statusCode == HttpStatus.notFound) {
+    stdout.writeln('  Missing: $url');
+    return null;
+  }
+  if (response.statusCode != HttpStatus.ok) {
+    throw _DownloadException('$url returned status ${response.statusCode}.');
+  }
+  return response.bytes;
 }
 
 sealed class _ReleaseApiResult {
@@ -604,17 +563,10 @@ final class _ReleaseApiUnavailable extends _ReleaseApiResult {
   const _ReleaseApiUnavailable(this.reason);
 }
 
-final class _RetryableFailure implements Exception {
-  final String message;
-  final String summary;
-
-  const _RetryableFailure({required this.message, required this.summary});
-}
-
-final class DownloadException implements Exception {
+final class _DownloadException implements Exception {
   final String message;
 
-  DownloadException(this.message);
+  _DownloadException(this.message);
 
   @override
   String toString() => message;

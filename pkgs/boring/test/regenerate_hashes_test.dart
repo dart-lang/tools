@@ -17,10 +17,10 @@ void main() {
   group('resolveRemoteAssetHashes', () {
     test(
       'reads SHA-256 digests from the GitHub Releases API without downloading '
-      'binaries',
+      'present binaries and probes absent ones before reporting missing',
       () async {
         var apiCalls = 0;
-        var downloadCalls = 0;
+        final downloadedPaths = <String>[];
         String? authHeader;
         final server = await _bindServer((request) async {
           if (request.uri.path == '/repos/dart-lang/tools/releases/tags/v1') {
@@ -31,15 +31,20 @@ void main() {
               jsonEncode({
                 'assets': [
                   {'name': 'asset-a.so', 'digest': 'sha256:$_hashA'},
-                  {'name': 'asset-b.a', 'digest': 'sha256:$_hashB'},
                 ],
               }),
             );
             await request.response.close();
             return;
           }
-          downloadCalls++;
-          request.response.statusCode = HttpStatus.internalServerError;
+          downloadedPaths.add(request.uri.path);
+          if (request.uri.path ==
+              '/dart-lang/tools/releases/download/v1/asset-b.a') {
+            request.response.add(_bytesB);
+            await request.response.close();
+            return;
+          }
+          request.response.statusCode = HttpStatus.notFound;
           await request.response.close();
         });
 
@@ -55,7 +60,10 @@ void main() {
         );
 
         expect(apiCalls, 1);
-        expect(downloadCalls, 0);
+        expect(downloadedPaths, [
+          '/dart-lang/tools/releases/download/v1/asset-b.a',
+          '/dart-lang/tools/releases/download/v1/asset-missing.so',
+        ]);
         expect(authHeader, 'Bearer test-token-123');
         expect(resolved.hashes, {'asset-a.so': _hashA, 'asset-b.a': _hashB});
         expect(resolved.missing, ['asset-missing.so']);
@@ -81,6 +89,13 @@ void main() {
               await request.response.close();
               return;
             }
+            if (downloadAttempts == 2) {
+              request.response.statusCode = HttpStatus.forbidden;
+              request.response.headers.set('x-ratelimit-remaining', '0');
+              request.response.headers.set(HttpHeaders.retryAfterHeader, '3');
+              await request.response.close();
+              return;
+            }
             request.response.add(_bytesA);
             await request.response.close();
             return;
@@ -100,8 +115,11 @@ void main() {
           delay: (duration) async => delays.add(duration),
         );
 
-        expect(downloadAttempts, 2);
-        expect(delays, [const Duration(seconds: 1)]);
+        expect(downloadAttempts, 3);
+        expect(delays, [
+          const Duration(seconds: 1),
+          const Duration(seconds: 3),
+        ]);
         expect(resolved.hashes, {'asset-a.so': _hashA});
         expect(resolved.missing, ['asset-missing.so']);
       },
