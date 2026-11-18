@@ -20,6 +20,7 @@ on:
   push:
     branches: [ main ]
     paths:
+      - '.github/actions/setup-nasm/**'
       - '.github/workflows/boring_binaries.yaml'
       - 'pkgs/boring/src/**'
       - 'pkgs/boring/third_party/boringssl/**'
@@ -28,6 +29,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
+      - '.github/actions/setup-nasm/**'
       - '.github/workflows/boring_binaries.yaml'
       - 'pkgs/boring/src/**'
       - 'pkgs/boring/tool/precompile_binaries.dart'
@@ -40,13 +42,13 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Runs compilers and other build tools, so it only gets `contents: read` and
+  # cannot mint OIDC tokens. The `attest` job attests the libraries.
   precompile:
     name: Precompile (${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }})
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
-      id-token: write # To sign the provenance attestations of the libraries.
-      attestations: write # To store the attestations with the repository.
     defaults:
       run:
         working-directory: pkgs/boring/
@@ -116,7 +118,7 @@ jobs:
           sdk: stable
       - name: Setup NASM
         if: matrix.target-os == 'windows'
-        uses: ilammy/setup-nasm@72793074d3c8cdda771dba85f6deafe00623038b
+        uses: ./.github/actions/setup-nasm
       - name: Install dependencies
         run: dart pub get
       # Builds the dynamic library, which is bundled when linking is disabled,
@@ -202,16 +204,32 @@ jobs:
           name: binaries-${{ matrix.target-os }}-${{ matrix.target-arch }}${{ matrix.ios-sdk && format('-{0}', matrix.ios-sdk) || '' }}
           path: pkgs/boring/bin/*
           if-no-files-found: error
+
+  # Attests the provenance of the libraries that `precompile` built. Only
+  # downloads and attests them, so no build tool runs with `id-token: write`.
+  attest:
+    name: Attest the provenance of the release libraries
+    needs: precompile
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # To sign the provenance attestations of the libraries.
+      attestations: write # To store the attestations with the repository.
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: binaries-*
+          path: release-assets
+          merge-multiple: true
       # Verify with `gh attestation verify <file> --repo dart-lang/tools`.
       - name: Attest the provenance of the release libraries
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
         with:
-          subject-path: pkgs/boring/bin/*
+          subject-path: release-assets/*
 
   release:
     name: Attach the binaries to a GitHub release
-    needs: precompile
+    needs: attest
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
