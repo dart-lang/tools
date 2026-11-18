@@ -324,16 +324,36 @@ jobs:
           commit-message: "[boring] Pin the prebuilt binaries of ${{ needs.release.outputs.tag }}"
           branch: "boring-pin-binaries"
           title: "[boring] Pin the prebuilt binaries of ${{ needs.release.outputs.tag }}"
-          body: |
+          body: >-
             > [!WARNING]
-            > **Merge order:** Do **not** merge this pull request if a `[boring] Update BoringSSL` pull request (or another change to `pkgs/boring`'s native sources) is open and ready to merge.
+
+            > **Merge order:** Do **not** merge this pull request if a
+            `[boring] Update BoringSSL` pull request (or another change to
+            `pkgs/boring`'s native sources) is open and ready to merge.
+
             >
-            > - **Merge `[boring] Update BoringSSL` first.** Landing it on `main` will automatically close this pull request, build new prebuilt libraries for the updated sources, and open a replacement pin pull request (~7 minutes later).
-            > - **Never merge an older pin pull request after a newer BoringSSL/native update**, as that reverts `hashes.dart` to stale prebuilt binaries.
-            > - Merge the latest pin pull request **before** releasing `package:boring`.
 
-            Pins the SHA-256 hashes of the prebuilt libraries of [`${{ needs.release.outputs.tag }}`](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.release.outputs.tag }}), built from ${{ github.sha }} by [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) of `boring_binaries.yaml`.
+            > - **Merge `[boring] Update BoringSSL` first.** Landing it on
+            `main` will automatically close this pull request, build new
+            prebuilt libraries for the updated sources, and open a replacement
+            pin pull request (~7 minutes later).
 
-            The `generated` job re-hashes the release assets, and the tree-shaking tests download them in the `fetch` build mode.
+            > - **Never merge an older pin pull request after a newer
+            BoringSSL/native update**, as that reverts `hashes.dart` to stale
+            prebuilt binaries.
+
+            > - Merge the latest pin pull request **before** releasing
+            `package:boring`.
+
+
+            Pins the SHA-256 hashes of the prebuilt libraries of
+            [`${{ needs.release.outputs.tag }}`](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.release.outputs.tag }}),
+            built from ${{ github.sha }} by
+            [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            of `boring_binaries.yaml`.
+
+
+            The `generated` job re-hashes the release assets, and the
+            tree-shaking tests download them in the `fetch` build mode.
           labels: skip-changelog-check
           delete-branch: true
