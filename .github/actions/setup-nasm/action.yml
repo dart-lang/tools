@@ -23,7 +23,7 @@ runs:
       run: |
         url="https://www.nasm.us/pub/nasm/releasebuilds/$NASM_VERSION/win64/nasm-$NASM_VERSION-win64.zip"
         curl -fsSL -o "$RUNNER_TEMP/nasm.zip" "$url"
-        actual="$(sha256sum < "$RUNNER_TEMP/nasm.zip" | cut -d' ' -f1)"
+        actual="$(sha256sum "$RUNNER_TEMP/nasm.zip" | cut -d' ' -f1)"
         if [ "$actual" != "$NASM_SHA256" ]; then
           echo "::error::Expected SHA-256 $NASM_SHA256 for $url, got $actual."
           exit 1
