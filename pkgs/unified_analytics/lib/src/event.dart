@@ -178,6 +178,7 @@ final class Event {
     required int produceErrorsDurationMs,
     required int produceErrorsElementsDurationMs,
     required String libraryDiagnosticsBundleFailures,
+    String analysisReason,
   }) : this._(
          eventName: DashEvent.analysisStatistics,
          eventData: {
@@ -201,6 +202,7 @@ final class Event {
            'produceErrorsDurationMs': produceErrorsDurationMs,
            'produceErrorsElementsDurationMs': produceErrorsElementsDurationMs,
            'libraryDiagnosticsBundleFailures': libraryDiagnosticsBundleFailures,
+           'analysisReason': analysisReason,
          },
        );
 
