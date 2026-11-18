@@ -8,8 +8,7 @@ import 'dart:typed_data';
 import 'package:boring/src/bindings/record_use_mapping.g.dart';
 import 'package:boring/src/hook_helpers/build_options.dart'
     show BuildModeEnum, BuildOptions;
-import 'package:boring/src/hook_helpers/fetch.dart' show fetchPrebuiltLibrary;
-import 'package:boring/src/hook_helpers/hashes.dart' show releaseTag;
+import 'package:boring/src/hook_helpers/prebuilt.dart' show prebuiltLibrary;
 import 'package:code_assets/code_assets.dart';
 import 'package:hooks/hooks.dart';
 import 'package:logging/logging.dart';
@@ -86,7 +85,7 @@ Future<void> main(List<String> args) async {
       // throws a `ToolError`, which extends `Error` and is not exported, if it
       // finds no toolchain.
       stdout.writeln('boring: linking failed: $e\n$s');
-      if (!await _fallBackToPrebuiltLibrary(input, output, e)) rethrow;
+      if (!_fallBackToPrebuiltLibrary(input, output, e)) rethrow;
     }
   });
 }
@@ -96,17 +95,18 @@ Future<void> main(List<String> args) async {
 ///
 /// Returns `false` if there is no equivalent pre-built library to fall back
 /// to.
-Future<bool> _fallBackToPrebuiltLibrary(
+bool _fallBackToPrebuiltLibrary(
   LinkInput input,
   LinkOutputBuilder output,
   Object linkError,
-) async {
+) {
   final code = input.config.code;
   final target = '${code.targetOS}_${code.targetArchitecture}';
   final buildMode = BuildOptions.fromDefines(input.userDefines).buildMode;
   if (buildMode != BuildModeEnum.fetch) {
-    // The static library was not fetched, but for example built from a local
-    // checkout. Falling back would silently swap in different BoringSSL code.
+    // The static library is not the pre-built one, but for example built from
+    // a local checkout. Falling back would silently swap in different
+    // BoringSSL code.
     stderr.writeln(
       'package:boring could not link the static library built in the '
       '`${buildMode.name}` build mode for $target. Install a C toolchain '
@@ -116,7 +116,7 @@ Future<bool> _fallBackToPrebuiltLibrary(
     );
     return false;
   }
-  final library = await fetchPrebuiltLibrary(input, static: false);
+  final library = prebuiltLibrary(input, static: false);
   final reason = switch (linkError) {
     // native_toolchain_c puts the whole linker command, which has an argument
     // for each used symbol, into the message.
@@ -127,10 +127,10 @@ Future<bool> _fallBackToPrebuiltLibrary(
   };
   stderr.writeln(
     'Warning: package:boring could not tree-shake its native library for '
-    '$target, so it bundles the pre-built dynamic library of release '
-    '$releaseTag instead, which is not tree-shaken and therefore '
-    'larger. To enable tree-shaking, install a C toolchain (compiler and '
-    'linker) for $target. Linking failed with: $reason',
+    '$target, so it bundles the pre-built dynamic library instead, which is '
+    'not tree-shaken and therefore larger. To enable tree-shaking, install a '
+    'C toolchain (compiler and linker) for $target. Linking failed with: '
+    '$reason',
   );
   output.assets.code.add(
     CodeAsset(
@@ -140,6 +140,7 @@ Future<bool> _fallBackToPrebuiltLibrary(
       file: library,
     ),
   );
+  output.dependencies.add(library);
   return true;
 }
 

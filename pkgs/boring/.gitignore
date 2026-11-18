@@ -1,7 +1,10 @@
 .dart_tool/
 .packages
 build/
-bin/
+# The prebuilt libraries, which .github/workflows/boring_binaries.yaml adds to
+# the published package, and tool/precompile_binaries.dart writes. .pubignore
+# includes them in the package.
+prebuilt/
 *.dylib
 *.so
 *.dll

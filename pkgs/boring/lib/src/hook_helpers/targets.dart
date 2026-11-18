@@ -23,17 +23,13 @@ const prebuiltTargets = <(OS, Architecture, IOSSdk?)>[
   (OS.windows, Architecture.x64, null),
 ];
 
-/// The URL of the release asset [assetName] of the GitHub release [tag] of
-/// [repository] (`owner/name`).
+/// The directory of the package with the prebuilt libraries, relative to the
+/// package root.
 ///
-/// hashes.dart has the repository and the tag of the pinned release.
-Uri releaseAssetUrl({
-  required String repository,
-  required String tag,
-  required String assetName,
-}) => Uri.parse(
-  'https://github.com/$repository/releases/download/$tag/$assetName',
-);
+/// It is not checked in. `.github/workflows/boring_binaries.yaml` adds the
+/// libraries to the package that it publishes, and
+/// `tool/precompile_binaries.dart` writes them here by default.
+const prebuiltDirectory = 'prebuilt';
 
 /// Formats a canonical target identifier, including [iosSdk] when targeting iOS
 /// so device (`iphoneos`) and simulator (`iphonesimulator`) binaries do not
@@ -53,13 +49,16 @@ String libraryFileName(OS os, {required bool static}) => static
     ? os.staticlibFileName('bssl_dart_static')
     : os.dylibFileName('bssl_dart');
 
-/// The name of the GitHub release asset with the prebuilt library for [os] and
-/// [arch].
-String releaseAssetName(
+/// The path of the prebuilt library for [os] and [arch] relative to
+/// [prebuiltDirectory].
+///
+/// Each target has its own directory, so that the libraries keep the file
+/// names that `src/CMakeLists.txt` gives them.
+String prebuiltLibraryPath(
   OS os,
   Architecture arch, {
   IOSSdk? iosSdk,
   required bool static,
 }) =>
-    'boring-${targetTripleFor(os, arch, iosSdk: iosSdk)}-'
+    '${targetTripleFor(os, arch, iosSdk: iosSdk)}/'
     '${libraryFileName(os, static: static)}';

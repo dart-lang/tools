@@ -10,7 +10,8 @@ import 'package:args/args.dart';
 import 'package:boring/src/hook_helpers/targets.dart';
 import 'package:code_assets/code_assets.dart';
 
-/// Builds the dynamic and the static library for a release.
+/// Builds the dynamic and the static library that the published package
+/// bundles in `prebuilt/`.
 ///
 /// hook/build.dart bundles the dynamic library when linking is disabled, and
 /// hook/link.dart links the static library into a dynamic library with only
@@ -20,6 +21,10 @@ import 'package:code_assets/code_assets.dart';
 /// and Android (with the NDK). The `precompile` job of
 /// .github/workflows/boring_binaries.yaml builds every target in
 /// `prebuiltTargets`.
+///
+/// Writes the libraries to `prebuilt/<target>/` by default, where the `fetch`
+/// build mode of hook/build.dart finds them, also in a checkout of the
+/// repository.
 void main(List<String> args) async {
   final parser = ArgParser()
     ..addOption(
@@ -52,8 +57,9 @@ void main(List<String> args) async {
     ..addOption(
       'out-dir',
       abbr: 'd',
-      defaultsTo: 'bin',
-      help: 'Output directory for built release binaries.',
+      defaultsTo: prebuiltDirectory,
+      help:
+          'Output directory for the libraries, written to <out-dir>/<target>/.',
     );
 
   ArgResults results;
@@ -165,13 +171,19 @@ void main(List<String> args) async {
         builtLibrary.path,
       ]);
     }
-    final releaseAsset = File.fromUri(
+    final prebuiltFile = File.fromUri(
       outDir.uri.resolve(
-        releaseAssetName(targetOS, targetArch, iosSdk: iosSdk, static: static),
+        prebuiltLibraryPath(
+          targetOS,
+          targetArch,
+          iosSdk: iosSdk,
+          static: static,
+        ),
       ),
     );
-    await builtLibrary.copy(releaseAsset.path);
-    stdout.writeln('==> Created release binary: ${releaseAsset.path}');
+    await prebuiltFile.parent.create(recursive: true);
+    await builtLibrary.copy(prebuiltFile.path);
+    stdout.writeln('==> Created prebuilt library: ${prebuiltFile.path}');
   }
 }
 
