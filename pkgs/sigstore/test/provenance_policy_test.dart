@@ -30,8 +30,10 @@ List<String> check({
   String? declaredPackageVersion,
   String? expectedRepository = 'https://github.com/dieter/helpful',
   String? configuredRepository,
+  String? runnerEnvironment = githubHostedRunnerEnvironment,
   bool requireRepository = true,
   bool requireTaggedSignerRef = true,
+  bool requireGitHubHostedRunner = true,
 }) {
   return checkProvenancePolicy(
     packageName: packageName,
@@ -43,6 +45,7 @@ List<String> check({
         subjectSha256: subjectSha256,
         repository: repository,
         builderId: builderId,
+        runnerEnvironment: runnerEnvironment,
       ),
     ),
     signer: GitHubWorkflowIdentity.tryParse(signerIdentity)!,
@@ -54,6 +57,7 @@ List<String> check({
     configuredRepository: configuredRepository,
     requireRepository: requireRepository,
     requireTaggedSignerRef: requireTaggedSignerRef,
+    requireGitHubHostedRunner: requireGitHubHostedRunner,
   );
 }
 
@@ -166,6 +170,37 @@ void main() {
 
     test('does not check an unknown issuer', () {
       expect(check(oidcIssuer: null), isEmpty);
+    });
+
+    test('rejects a build on a self-hosted runner', () {
+      // A repository or organization can assign `ubuntu-latest` to a
+      // self-hosted runner, routing the trusted workflow off GitHub's
+      // isolated hosted VMs.
+      final errors = check(runnerEnvironment: 'self-hosted');
+      expect(errors, hasLength(1));
+      expect(errors.single, contains('built on a "self-hosted" runner'));
+      expect(errors.single, contains(githubHostedRunnerEnvironment));
+    });
+
+    test('rejects a bundle without a recorded runner environment', () {
+      final errors = check(runnerEnvironment: null);
+      expect(errors, hasLength(1));
+      expect(errors.single, contains('does not state the runner environment'));
+      expect(errors.single, contains(githubHostedRunnerEnvironment));
+    });
+
+    test('accepts any runner environment unless required', () {
+      expect(
+        check(
+          runnerEnvironment: 'self-hosted',
+          requireGitHubHostedRunner: false,
+        ),
+        isEmpty,
+      );
+      expect(
+        check(runnerEnvironment: null, requireGitHubHostedRunner: false),
+        isEmpty,
+      );
     });
   });
 

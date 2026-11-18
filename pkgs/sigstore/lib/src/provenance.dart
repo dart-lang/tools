@@ -7,6 +7,10 @@ import 'dart:convert';
 /// The OIDC issuer of tokens minted by GitHub Actions.
 const githubActionsOidcIssuer = 'https://token.actions.githubusercontent.com';
 
+/// The `runner_environment` recorded by GitHub Actions for GitHub-hosted
+/// runners (`internalParameters.github.runner_environment`).
+const githubHostedRunnerEnvironment = 'github-hosted';
+
 const _inTotoStatementType = 'https://in-toto.io/Statement/v1';
 const _inTotoPayloadType = 'application/vnd.in-toto+json';
 const _slsaProvenancePredicateType = 'https://slsa.dev/provenance/v1';
@@ -205,6 +209,16 @@ class BuildProvenance {
   /// The immutable id of the owner of [sourceRepository], if recorded.
   final String? repositoryOwnerId;
 
+  /// The runner environment the build ran in, if recorded (e.g.
+  /// `'github-hosted'` or `'self-hosted'`).
+  ///
+  /// GitHub fills this in from the run context
+  /// (`internalParameters.github.runner_environment`). Note that on a
+  /// compromised self-hosted runner the signing step itself could alter the
+  /// provenance statement; the authoritative statement is the Fulcio
+  /// `Runner Environment` certificate extension (`1.3.6.1.4.1.57264.1.11`).
+  final String? runnerEnvironment;
+
   /// The URL of the workflow run (`runDetails.metadata.invocationId`), if
   /// recorded.
   final String? runUrl;
@@ -228,6 +242,7 @@ class BuildProvenance {
     required this.subjects,
     this.repositoryId,
     this.repositoryOwnerId,
+    this.runnerEnvironment,
     this.runUrl,
   });
 
@@ -374,6 +389,7 @@ class BuildProvenance {
 
     String? repositoryId;
     String? repositoryOwnerId;
+    String? runnerEnvironment;
     final internalParameters = buildDefinition['internalParameters'];
     final github = internalParameters is Map
         ? internalParameters['github']
@@ -381,6 +397,10 @@ class BuildProvenance {
     if (github is Map) {
       repositoryId = _idString(github['repository_id']);
       repositoryOwnerId = _idString(github['repository_owner_id']);
+      final env = github['runner_environment'];
+      if (env is String && env.isNotEmpty) {
+        runnerEnvironment = env;
+      }
     }
 
     final ref = workflow['ref'];
@@ -394,6 +414,7 @@ class BuildProvenance {
       subjects: subjects,
       repositoryId: repositoryId,
       repositoryOwnerId: repositoryOwnerId,
+      runnerEnvironment: runnerEnvironment,
       runUrl: runUrl,
     );
   }

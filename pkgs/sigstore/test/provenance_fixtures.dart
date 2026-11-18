@@ -47,6 +47,7 @@ String buildProvenanceBundleJson({
       'publish.yml@refs/tags/v2',
   Object? repositoryId,
   Object? repositoryOwnerId,
+  Object? runnerEnvironment = 'github-hosted',
   String? runUrl,
   String statementType = 'https://in-toto.io/Statement/v1',
   String predicateType = 'https://slsa.dev/provenance/v1',
@@ -71,11 +72,14 @@ String buildProvenanceBundleJson({
             'path': workflowPath,
           },
         },
-        if (repositoryId != null || repositoryOwnerId != null)
+        if (repositoryId != null ||
+            repositoryOwnerId != null ||
+            runnerEnvironment != null)
           'internalParameters': {
             'github': {
               'repository_id': ?repositoryId,
               'repository_owner_id': ?repositoryOwnerId,
+              'runner_environment': ?runnerEnvironment,
             },
           },
         if (commitSha != null)

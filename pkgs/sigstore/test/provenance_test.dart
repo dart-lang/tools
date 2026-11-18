@@ -184,6 +184,7 @@ void main() {
       // Not recorded in this statement.
       expect(provenance.repositoryId, isNull);
       expect(provenance.repositoryOwnerId, isNull);
+      expect(provenance.runnerEnvironment, githubHostedRunnerEnvironment);
       expect(provenance.runUrl, isNull);
     });
 
@@ -192,11 +193,13 @@ void main() {
         buildProvenanceBundleJson(
           repositoryId: '1339313025',
           repositoryOwnerId: '27859082',
+          runnerEnvironment: 'self-hosted',
           runUrl: 'https://github.com/dieter/helpful/actions/runs/1/attempts/1',
         ),
       );
       expect(provenance.repositoryId, '1339313025');
       expect(provenance.repositoryOwnerId, '27859082');
+      expect(provenance.runnerEnvironment, 'self-hosted');
       expect(
         provenance.runUrl,
         'https://github.com/dieter/helpful/actions/runs/1/attempts/1',
@@ -214,13 +217,34 @@ void main() {
       expect(provenance.repositoryOwnerId, '27859082');
     });
 
-    test('ignores empty or malformed repository ids', () {
-      final provenance = BuildProvenance.parseBundle(
-        buildProvenanceBundleJson(repositoryId: '', repositoryOwnerId: true),
-      );
-      expect(provenance.repositoryId, isNull);
-      expect(provenance.repositoryOwnerId, isNull);
-    });
+    test(
+      'ignores empty or malformed repository ids and runner environment',
+      () {
+        final provenance = BuildProvenance.parseBundle(
+          buildProvenanceBundleJson(
+            repositoryId: '',
+            repositoryOwnerId: true,
+            runnerEnvironment: '',
+          ),
+        );
+        expect(provenance.repositoryId, isNull);
+        expect(provenance.repositoryOwnerId, isNull);
+        expect(provenance.runnerEnvironment, isNull);
+
+        expect(
+          BuildProvenance.parseBundle(
+            buildProvenanceBundleJson(runnerEnvironment: 42),
+          ).runnerEnvironment,
+          isNull,
+        );
+        expect(
+          BuildProvenance.parseBundle(
+            buildProvenanceBundleJson(runnerEnvironment: null),
+          ).runnerEnvironment,
+          isNull,
+        );
+      },
+    );
 
     test('accepts the payload in every base64 form ProtoJSON permits', () {
       // `sigstore-rust` verifies a payload in the standard or the URL-safe
@@ -250,6 +274,7 @@ void main() {
       expect(provenance.commitSha, '63216a3022ed606538399634cd1c525f8bd4657f');
       expect(provenance.repositoryId, '1339313025');
       expect(provenance.repositoryOwnerId, '27859082');
+      expect(provenance.runnerEnvironment, githubHostedRunnerEnvironment);
       expect(
         provenance.runUrl,
         'https://github.com/mosuem/helpful/actions/runs/33514943555/attempts/1',
