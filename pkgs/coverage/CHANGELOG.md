@@ -1,4 +1,4 @@
-## 1.16.1-wip
+## 1.16.1
 
 - Fix `HitMap.parseFiles` to allow empty `{}` coverage files written by
   `dart test --coverage` for skipped test suites.
