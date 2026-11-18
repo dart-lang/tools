@@ -24,37 +24,6 @@
           ],
           "constructors": [
             {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiClass",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
-            {
               "name": "new",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "constructor",
@@ -270,6 +239,37 @@
                   "isNamed": true
                 }
               ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiClass",
+                "libraryUri": "package:api_summary/src/api_declaration.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
             }
           ],
           "methods": [
@@ -404,26 +404,6 @@
               }
             },
             {
-              "name": "toJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "Map",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "String",
-                    "libraryUri": "dart:core"
-                  },
-                  {
-                    "kind": "dynamic"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeParameters",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -442,6 +422,26 @@
                     "name": "ApiType",
                     "libraryUri": "package:api_summary/src/api_type.dart",
                     "isNullable": true
+                  }
+                ]
+              }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
                   }
                 ]
               }
@@ -547,6 +547,17 @@
           ],
           "constructors": [
             {
+              "name": "new",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiDynamicType",
+                "libraryUri": "package:api_summary/src/api_type.dart"
+              },
+              "isConst": true
+            },
+            {
               "name": "fromJson",
               "locationUri": "package:api_summary/src/api_type.dart",
               "kind": "constructor",
@@ -576,17 +587,6 @@
                   "isRequired": true
                 }
               ]
-            },
-            {
-              "name": "new",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiDynamicType",
-                "libraryUri": "package:api_summary/src/api_type.dart"
-              },
-              "isConst": true
             }
           ],
           "methods": [
@@ -624,37 +624,6 @@
             "final"
           ],
           "constructors": [
-            {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiExecutable",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
             {
               "name": "new",
               "locationUri": "package:api_summary/src/api_declaration.dart",
@@ -808,6 +777,37 @@
                   "isNamed": true
                 }
               ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiExecutable",
+                "libraryUri": "package:api_summary/src/api_declaration.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
             }
           ],
           "methods": [
@@ -879,26 +879,6 @@
               }
             },
             {
-              "name": "toJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "Map",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "String",
-                    "libraryUri": "dart:core"
-                  },
-                  {
-                    "kind": "dynamic"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeParameters",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -920,6 +900,26 @@
                   }
                 ]
               }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
+                  }
+                ]
+              }
             }
           ]
         },
@@ -935,37 +935,6 @@
             "final"
           ],
           "constructors": [
-            {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiExtension",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
             {
               "name": "new",
               "locationUri": "package:api_summary/src/api_declaration.dart",
@@ -1081,6 +1050,37 @@
                   "isNamed": true
                 }
               ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiExtension",
+                "libraryUri": "package:api_summary/src/api_declaration.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
             }
           ],
           "methods": [
@@ -1112,26 +1112,6 @@
               }
             },
             {
-              "name": "toJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "Map",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "String",
-                    "libraryUri": "dart:core"
-                  },
-                  {
-                    "kind": "dynamic"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeParameters",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -1153,6 +1133,26 @@
                   }
                 ]
               }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
+                  }
+                ]
+              }
             }
           ]
         },
@@ -1168,37 +1168,6 @@
             "final"
           ],
           "constructors": [
-            {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiExtensionType",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
             {
               "name": "new",
               "locationUri": "package:api_summary/src/api_declaration.dart",
@@ -1348,6 +1317,37 @@
                   "isNamed": true
                 }
               ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiExtensionType",
+                "libraryUri": "package:api_summary/src/api_declaration.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
             }
           ],
           "methods": [
@@ -1413,26 +1413,6 @@
               }
             },
             {
-              "name": "toJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "Map",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "String",
-                    "libraryUri": "dart:core"
-                  },
-                  {
-                    "kind": "dynamic"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeParameters",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -1451,6 +1431,26 @@
                     "name": "ApiType",
                     "libraryUri": "package:api_summary/src/api_type.dart",
                     "isNullable": true
+                  }
+                ]
+              }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
                   }
                 ]
               }
@@ -1585,37 +1585,6 @@
           ],
           "constructors": [
             {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiFunctionType",
-                "libraryUri": "package:api_summary/src/api_type.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
-            {
               "name": "new",
               "locationUri": "package:api_summary/src/api_type.dart",
               "kind": "constructor",
@@ -1686,6 +1655,37 @@
                   "isNamed": true
                 }
               ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiFunctionType",
+                "libraryUri": "package:api_summary/src/api_type.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
             }
           ],
           "methods": [
@@ -1727,26 +1727,6 @@
               }
             },
             {
-              "name": "toJson",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "Map",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "String",
-                    "libraryUri": "dart:core"
-                  },
-                  {
-                    "kind": "dynamic"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeParameters",
               "locationUri": "package:api_summary/src/api_type.dart",
               "kind": "getter",
@@ -1765,6 +1745,26 @@
                     "name": "ApiType",
                     "libraryUri": "package:api_summary/src/api_type.dart",
                     "isNullable": true
+                  }
+                ]
+              }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
                   }
                 ]
               }
@@ -1790,37 +1790,6 @@
             "final"
           ],
           "constructors": [
-            {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiInterfaceType",
-                "libraryUri": "package:api_summary/src/api_type.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
             {
               "name": "new",
               "locationUri": "package:api_summary/src/api_type.dart",
@@ -1879,6 +1848,37 @@
                   "isNamed": true
                 }
               ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiInterfaceType",
+                "libraryUri": "package:api_summary/src/api_type.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
             }
           ],
           "methods": [
@@ -1914,6 +1914,23 @@
               }
             },
             {
+              "name": "typeArguments",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "List",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "ApiType",
+                    "libraryUri": "package:api_summary/src/api_type.dart"
+                  }
+                ]
+              }
+            },
+            {
               "name": "toJson",
               "locationUri": "package:api_summary/src/api_type.dart",
               "kind": "method",
@@ -1932,23 +1949,6 @@
                   }
                 ]
               }
-            },
-            {
-              "name": "typeArguments",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "List",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "ApiType",
-                    "libraryUri": "package:api_summary/src/api_type.dart"
-                  }
-                ]
-              }
             }
           ]
         },
@@ -1964,37 +1964,6 @@
             "final"
           ],
           "constructors": [
-            {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiLibrary",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
             {
               "name": "new",
               "locationUri": "package:api_summary/src/api_declaration.dart",
@@ -2161,6 +2130,37 @@
                   "isNamed": true
                 }
               ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiLibrary",
+                "libraryUri": "package:api_summary/src/api_declaration.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
             }
           ],
           "methods": [
@@ -2294,26 +2294,6 @@
               }
             },
             {
-              "name": "toJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "Map",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "String",
-                    "libraryUri": "dart:core"
-                  },
-                  {
-                    "kind": "dynamic"
-                  }
-                ]
-              }
-            },
-            {
               "name": "typeAliases",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
@@ -2339,6 +2319,26 @@
                 "name": "String",
                 "libraryUri": "dart:core"
               }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
+                  }
+                ]
+              }
             }
           ]
         },
@@ -2354,37 +2354,6 @@
             "final"
           ],
           "constructors": [
-            {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiParameter",
-                "libraryUri": "package:api_summary/src/api_type.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
             {
               "name": "new",
               "locationUri": "package:api_summary/src/api_type.dart",
@@ -2456,6 +2425,37 @@
                   "isNamed": true
                 }
               ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiParameter",
+                "libraryUri": "package:api_summary/src/api_type.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
             }
           ],
           "methods": [
@@ -2510,6 +2510,16 @@
               }
             },
             {
+              "name": "type",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiType",
+                "libraryUri": "package:api_summary/src/api_type.dart"
+              }
+            },
+            {
               "name": "toJson",
               "locationUri": "package:api_summary/src/api_type.dart",
               "kind": "method",
@@ -2528,16 +2538,6 @@
                   }
                 ]
               }
-            },
-            {
-              "name": "type",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiType",
-                "libraryUri": "package:api_summary/src/api_type.dart"
-              }
             }
           ]
         },
@@ -2553,37 +2553,6 @@
             "final"
           ],
           "constructors": [
-            {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiRecordNamedField",
-                "libraryUri": "package:api_summary/src/api_type.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
             {
               "name": "new",
               "locationUri": "package:api_summary/src/api_type.dart",
@@ -2615,77 +2584,14 @@
                   "isNamed": true
                 }
               ]
-            }
-          ],
-          "methods": [
-            {
-              "name": "name",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "String",
-                "libraryUri": "dart:core"
-              }
             },
-            {
-              "name": "toJson",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "Map",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "String",
-                    "libraryUri": "dart:core"
-                  },
-                  {
-                    "kind": "dynamic"
-                  }
-                ]
-              }
-            },
-            {
-              "name": "type",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiType",
-                "libraryUri": "package:api_summary/src/api_type.dart"
-              }
-            }
-          ]
-        },
-        {
-          "name": "ApiRecordType",
-          "locationUri": "package:api_summary/src/api_type.dart",
-          "supertype": {
-            "kind": "interface",
-            "name": "Object",
-            "libraryUri": "dart:core"
-          },
-          "interfaces": [
-            {
-              "kind": "interface",
-              "name": "ApiType",
-              "libraryUri": "package:api_summary/src/api_type.dart"
-            }
-          ],
-          "modifiers": [
-            "final"
-          ],
-          "constructors": [
             {
               "name": "fromJson",
               "locationUri": "package:api_summary/src/api_type.dart",
               "kind": "constructor",
               "returnType": {
                 "kind": "interface",
-                "name": "ApiRecordType",
+                "name": "ApiRecordNamedField",
                 "libraryUri": "package:api_summary/src/api_type.dart"
               },
               "parameters": [
@@ -2709,7 +2615,70 @@
                   "isRequired": true
                 }
               ]
+            }
+          ],
+          "methods": [
+            {
+              "name": "name",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core"
+              }
             },
+            {
+              "name": "type",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiType",
+                "libraryUri": "package:api_summary/src/api_type.dart"
+              }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "ApiRecordType",
+          "locationUri": "package:api_summary/src/api_type.dart",
+          "supertype": {
+            "kind": "interface",
+            "name": "Object",
+            "libraryUri": "dart:core"
+          },
+          "interfaces": [
+            {
+              "kind": "interface",
+              "name": "ApiType",
+              "libraryUri": "package:api_summary/src/api_type.dart"
+            }
+          ],
+          "modifiers": [
+            "final"
+          ],
+          "constructors": [
             {
               "name": "new",
               "locationUri": "package:api_summary/src/api_type.dart",
@@ -2763,6 +2732,37 @@
                   },
                   "isRequired": true,
                   "isNamed": true
+                }
+              ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiRecordType",
+                "libraryUri": "package:api_summary/src/api_type.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
                 }
               ]
             }
@@ -2847,37 +2847,6 @@
           ],
           "constructors": [
             {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiSummary",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
-            {
               "name": "new",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "constructor",
@@ -2958,6 +2927,37 @@
                   },
                   "isRequired": true,
                   "isNamed": true
+                }
+              ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiSummary",
+                "libraryUri": "package:api_summary/src/api_declaration.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
                 }
               ]
             }
@@ -3566,37 +3566,6 @@
           ],
           "constructors": [
             {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiTypeAlias",
-                "libraryUri": "package:api_summary/src/api_declaration.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
-            {
               "name": "new",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "constructor",
@@ -3694,6 +3663,37 @@
                   "isNamed": true
                 }
               ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiTypeAlias",
+                "libraryUri": "package:api_summary/src/api_declaration.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
             }
           ],
           "methods": [
@@ -3705,26 +3705,6 @@
                 "kind": "interface",
                 "name": "ApiType",
                 "libraryUri": "package:api_summary/src/api_type.dart"
-              }
-            },
-            {
-              "name": "toJson",
-              "locationUri": "package:api_summary/src/api_declaration.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "Map",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "String",
-                    "libraryUri": "dart:core"
-                  },
-                  {
-                    "kind": "dynamic"
-                  }
-                ]
               }
             },
             {
@@ -3746,6 +3726,26 @@
                     "name": "ApiType",
                     "libraryUri": "package:api_summary/src/api_type.dart",
                     "isNullable": true
+                  }
+                ]
+              }
+            },
+            {
+              "name": "toJson",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "Map",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  },
+                  {
+                    "kind": "dynamic"
                   }
                 ]
               }
@@ -3771,37 +3771,6 @@
             "final"
           ],
           "constructors": [
-            {
-              "name": "fromJson",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiTypeParameterType",
-                "libraryUri": "package:api_summary/src/api_type.dart"
-              },
-              "parameters": [
-                {
-                  "name": "json",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Map",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "String",
-                        "libraryUri": "dart:core"
-                      },
-                      {
-                        "kind": "dynamic"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
             {
               "name": "new",
               "locationUri": "package:api_summary/src/api_type.dart",
@@ -3831,6 +3800,37 @@
                   },
                   "isRequired": true,
                   "isNamed": true
+                }
+              ]
+            },
+            {
+              "name": "fromJson",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiTypeParameterType",
+                "libraryUri": "package:api_summary/src/api_type.dart"
+              },
+              "parameters": [
+                {
+                  "name": "json",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Map",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "String",
+                        "libraryUri": "dart:core"
+                      },
+                      {
+                        "kind": "dynamic"
+                      }
+                    ]
+                  },
+                  "isRequired": true
                 }
               ]
             }
@@ -3898,6 +3898,17 @@
           ],
           "constructors": [
             {
+              "name": "new",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "ApiVoidType",
+                "libraryUri": "package:api_summary/src/api_type.dart"
+              },
+              "isConst": true
+            },
+            {
               "name": "fromJson",
               "locationUri": "package:api_summary/src/api_type.dart",
               "kind": "constructor",
@@ -3927,17 +3938,6 @@
                   "isRequired": true
                 }
               ]
-            },
-            {
-              "name": "new",
-              "locationUri": "package:api_summary/src/api_type.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "ApiVoidType",
-                "libraryUri": "package:api_summary/src/api_type.dart"
-              },
-              "isConst": true
             }
           ],
           "methods": [
@@ -3983,6 +3983,29 @@
           ],
           "constructors": [
             {
+              "name": "new",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "JsBindingFacet",
+                "libraryUri": "package:api_summary/src/js_facet.dart"
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core",
+                    "isNullable": true
+                  },
+                  "isOptionalPositional": true
+                }
+              ],
+              "isConst": true
+            },
+            {
               "name": "fromJson",
               "locationUri": "package:api_summary/src/js_facet.dart",
               "kind": "constructor",
@@ -4012,74 +4035,9 @@
                   "isRequired": true
                 }
               ]
-            },
-            {
-              "name": "new",
-              "locationUri": "package:api_summary/src/js_facet.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "JsBindingFacet",
-                "libraryUri": "package:api_summary/src/js_facet.dart"
-              },
-              "parameters": [
-                {
-                  "name": "name",
-                  "type": {
-                    "kind": "interface",
-                    "name": "String",
-                    "libraryUri": "dart:core",
-                    "isNullable": true
-                  },
-                  "isOptionalPositional": true
-                }
-              ],
-              "isConst": true
             }
           ],
           "methods": [
-            {
-              "name": "==",
-              "locationUri": "package:api_summary/src/js_facet.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              },
-              "parameters": [
-                {
-                  "name": "other",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Object",
-                    "libraryUri": "dart:core"
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
-            {
-              "name": "compareTo",
-              "locationUri": "package:api_summary/src/js_facet.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "int",
-                "libraryUri": "dart:core"
-              },
-              "parameters": [
-                {
-                  "name": "other",
-                  "type": {
-                    "kind": "interface",
-                    "name": "ApiFacet",
-                    "libraryUri": "package:api_summary/src/api_facet.dart"
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
             {
               "name": "fromElement",
               "locationUri": "package:api_summary/src/js_facet.dart",
@@ -4150,6 +4108,48 @@
                   }
                 ]
               }
+            },
+            {
+              "name": "==",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Object",
+                    "libraryUri": "dart:core"
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "compareTo",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "int",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "ApiFacet",
+                    "libraryUri": "package:api_summary/src/api_facet.dart"
+                  },
+                  "isRequired": true
+                }
+              ]
             },
             {
               "name": "toJson",
@@ -4193,6 +4193,29 @@
           ],
           "constructors": [
             {
+              "name": "new",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "JsExportFacet",
+                "libraryUri": "package:api_summary/src/js_facet.dart"
+              },
+              "parameters": [
+                {
+                  "name": "name",
+                  "type": {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core",
+                    "isNullable": true
+                  },
+                  "isOptionalPositional": true
+                }
+              ],
+              "isConst": true
+            },
+            {
               "name": "fromJson",
               "locationUri": "package:api_summary/src/js_facet.dart",
               "kind": "constructor",
@@ -4222,74 +4245,9 @@
                   "isRequired": true
                 }
               ]
-            },
-            {
-              "name": "new",
-              "locationUri": "package:api_summary/src/js_facet.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "JsExportFacet",
-                "libraryUri": "package:api_summary/src/js_facet.dart"
-              },
-              "parameters": [
-                {
-                  "name": "name",
-                  "type": {
-                    "kind": "interface",
-                    "name": "String",
-                    "libraryUri": "dart:core",
-                    "isNullable": true
-                  },
-                  "isOptionalPositional": true
-                }
-              ],
-              "isConst": true
             }
           ],
           "methods": [
-            {
-              "name": "==",
-              "locationUri": "package:api_summary/src/js_facet.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "bool",
-                "libraryUri": "dart:core"
-              },
-              "parameters": [
-                {
-                  "name": "other",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Object",
-                    "libraryUri": "dart:core"
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
-            {
-              "name": "compareTo",
-              "locationUri": "package:api_summary/src/js_facet.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "int",
-                "libraryUri": "dart:core"
-              },
-              "parameters": [
-                {
-                  "name": "other",
-                  "type": {
-                    "kind": "interface",
-                    "name": "ApiFacet",
-                    "libraryUri": "package:api_summary/src/api_facet.dart"
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
             {
               "name": "fromElement",
               "locationUri": "package:api_summary/src/js_facet.dart",
@@ -4362,6 +4320,48 @@
               }
             },
             {
+              "name": "==",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Object",
+                    "libraryUri": "dart:core"
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
+              "name": "compareTo",
+              "locationUri": "package:api_summary/src/js_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "int",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "ApiFacet",
+                    "libraryUri": "package:api_summary/src/api_facet.dart"
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
               "name": "toJson",
               "locationUri": "package:api_summary/src/js_facet.dart",
               "kind": "method",
@@ -4403,6 +4403,34 @@
           ],
           "constructors": [
             {
+              "name": "new",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "constructor",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContractFacet",
+                "libraryUri": "package:api_summary/src/meta_facet.dart"
+              },
+              "parameters": [
+                {
+                  "name": "contracts",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Iterable",
+                    "libraryUri": "dart:core",
+                    "typeArguments": [
+                      {
+                        "kind": "interface",
+                        "name": "MetaContract",
+                        "libraryUri": "package:api_summary/src/meta_facet.dart"
+                      }
+                    ]
+                  },
+                  "isRequired": true
+                }
+              ]
+            },
+            {
               "name": "fromJson",
               "locationUri": "package:api_summary/src/meta_facet.dart",
               "kind": "constructor",
@@ -4432,37 +4460,86 @@
                   "isRequired": true
                 }
               ]
-            },
-            {
-              "name": "new",
-              "locationUri": "package:api_summary/src/meta_facet.dart",
-              "kind": "constructor",
-              "returnType": {
-                "kind": "interface",
-                "name": "MetaContractFacet",
-                "libraryUri": "package:api_summary/src/meta_facet.dart"
-              },
-              "parameters": [
-                {
-                  "name": "contracts",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Iterable",
-                    "libraryUri": "dart:core",
-                    "typeArguments": [
-                      {
-                        "kind": "interface",
-                        "name": "MetaContract",
-                        "libraryUri": "package:api_summary/src/meta_facet.dart"
-                      }
-                    ]
-                  },
-                  "isRequired": true
-                }
-              ]
             }
           ],
           "methods": [
+            {
+              "name": "fromElement",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "MetaContractFacet",
+                "libraryUri": "package:api_summary/src/meta_facet.dart",
+                "isNullable": true
+              },
+              "parameters": [
+                {
+                  "name": "element",
+                  "type": {
+                    "kind": "interface",
+                    "name": "Element",
+                    "libraryUri": "package:analyzer/dart/element/element.dart"
+                  },
+                  "isRequired": true
+                }
+              ],
+              "isStatic": true
+            },
+            {
+              "name": "contracts",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "Set",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "MetaContract",
+                    "libraryUri": "package:api_summary/src/meta_facet.dart"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "hashCode",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "int",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "namespace",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "parentheticalSegments",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "List",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core"
+                  }
+                ]
+              }
+            },
             {
               "name": "==",
               "locationUri": "package:api_summary/src/meta_facet.dart",
@@ -4504,83 +4581,6 @@
                   "isRequired": true
                 }
               ]
-            },
-            {
-              "name": "contracts",
-              "locationUri": "package:api_summary/src/meta_facet.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "Set",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "MetaContract",
-                    "libraryUri": "package:api_summary/src/meta_facet.dart"
-                  }
-                ]
-              }
-            },
-            {
-              "name": "fromElement",
-              "locationUri": "package:api_summary/src/meta_facet.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "MetaContractFacet",
-                "libraryUri": "package:api_summary/src/meta_facet.dart",
-                "isNullable": true
-              },
-              "parameters": [
-                {
-                  "name": "element",
-                  "type": {
-                    "kind": "interface",
-                    "name": "Element",
-                    "libraryUri": "package:analyzer/dart/element/element.dart"
-                  },
-                  "isRequired": true
-                }
-              ],
-              "isStatic": true
-            },
-            {
-              "name": "hashCode",
-              "locationUri": "package:api_summary/src/meta_facet.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "int",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "namespace",
-              "locationUri": "package:api_summary/src/meta_facet.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "String",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "parentheticalSegments",
-              "locationUri": "package:api_summary/src/meta_facet.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "List",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "String",
-                    "libraryUri": "dart:core"
-                  }
-                ]
-              }
             },
             {
               "name": "toJson",
@@ -4689,14 +4689,23 @@
               "isStatic": true
             },
             {
-              "name": "jsonName",
+              "name": "values",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
-                "name": "String",
-                "libraryUri": "dart:core"
-              }
+                "name": "List",
+                "libraryUri": "dart:core",
+                "typeArguments": [
+                  {
+                    "kind": "interface",
+                    "name": "ApiClassModifier",
+                    "libraryUri": "package:api_summary/src/api_declaration.dart"
+                  }
+                ]
+              },
+              "isConst": true,
+              "isStatic": true
             },
             {
               "name": "parse",
@@ -4721,23 +4730,14 @@
               "isStatic": true
             },
             {
-              "name": "values",
+              "name": "jsonName",
               "locationUri": "package:api_summary/src/api_declaration.dart",
               "kind": "getter",
               "returnType": {
                 "kind": "interface",
-                "name": "List",
-                "libraryUri": "dart:core",
-                "typeArguments": [
-                  {
-                    "kind": "interface",
-                    "name": "ApiClassModifier",
-                    "libraryUri": "package:api_summary/src/api_declaration.dart"
-                  }
-                ]
-              },
-              "isConst": true,
-              "isStatic": true
+                "name": "String",
+                "libraryUri": "dart:core"
+              }
             }
           ]
         },
@@ -4900,37 +4900,6 @@
           "locationUri": "package:api_summary/src/verify.dart",
           "methods": [
             {
-              "name": "defaultFileName",
-              "locationUri": "package:api_summary/src/verify.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "String",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
-              "name": "format",
-              "locationUri": "package:api_summary/src/verify.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "String",
-                "libraryUri": "dart:core"
-              },
-              "parameters": [
-                {
-                  "name": "summary",
-                  "type": {
-                    "kind": "interface",
-                    "name": "ApiSummary",
-                    "libraryUri": "package:api_summary/src/api_declaration.dart"
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
-            {
               "name": "json",
               "locationUri": "package:api_summary/src/verify.dart",
               "kind": "getter",
@@ -4987,6 +4956,37 @@
               "isConst": true,
               "isEnumConstant": true,
               "isStatic": true
+            },
+            {
+              "name": "defaultFileName",
+              "locationUri": "package:api_summary/src/verify.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "format",
+              "locationUri": "package:api_summary/src/verify.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "summary",
+                  "type": {
+                    "kind": "interface",
+                    "name": "ApiSummary",
+                    "libraryUri": "package:api_summary/src/api_declaration.dart"
+                  },
+                  "isRequired": true
+                }
+              ]
             }
           ]
         },
@@ -5008,27 +5008,6 @@
             }
           ],
           "methods": [
-            {
-              "name": "compareTo",
-              "locationUri": "package:api_summary/src/meta_facet.dart",
-              "kind": "method",
-              "returnType": {
-                "kind": "interface",
-                "name": "int",
-                "libraryUri": "dart:core"
-              },
-              "parameters": [
-                {
-                  "name": "other",
-                  "type": {
-                    "kind": "interface",
-                    "name": "MetaContract",
-                    "libraryUri": "package:api_summary/src/meta_facet.dart"
-                  },
-                  "isRequired": true
-                }
-              ]
-            },
             {
               "name": "experimental",
               "locationUri": "package:api_summary/src/meta_facet.dart",
@@ -5121,16 +5100,6 @@
               "isStatic": true
             },
             {
-              "name": "textLabel",
-              "locationUri": "package:api_summary/src/meta_facet.dart",
-              "kind": "getter",
-              "returnType": {
-                "kind": "interface",
-                "name": "String",
-                "libraryUri": "dart:core"
-              }
-            },
-            {
               "name": "useResult",
               "locationUri": "package:api_summary/src/meta_facet.dart",
               "kind": "getter",
@@ -5187,6 +5156,37 @@
               "isConst": true,
               "isEnumConstant": true,
               "isStatic": true
+            },
+            {
+              "name": "textLabel",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core"
+              }
+            },
+            {
+              "name": "compareTo",
+              "locationUri": "package:api_summary/src/meta_facet.dart",
+              "kind": "method",
+              "returnType": {
+                "kind": "interface",
+                "name": "int",
+                "libraryUri": "dart:core"
+              },
+              "parameters": [
+                {
+                  "name": "other",
+                  "type": {
+                    "kind": "interface",
+                    "name": "MetaContract",
+                    "libraryUri": "package:api_summary/src/meta_facet.dart"
+                  },
+                  "isRequired": true
+                }
+              ]
             }
           ]
         }

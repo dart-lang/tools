@@ -523,6 +523,14 @@ OPENSSL_EXPORT int X509_add1_ext_i2d(X509 *x, int nid, void *value, int crit,
 OPENSSL_EXPORT int X509_sign(X509 *x509, const EVP_PKEY *pkey,
                              const EVP_MD *md);
 
+// X509_set_unsigned fills in the placeholder fields in `x509` to make an
+// unsigned certificate (RFC 9925) and returns one on success or zero on error.
+// It sets the signature algorithm to id-alg-unsigned and the signature value to
+// the empty string. If the issuer is empty, it additionally sets the issuer to
+// the id-rdna-unsigned placeholder value. Otherwise, it retains the existing
+// issuer value.
+OPENSSL_EXPORT int X509_set_unsigned(X509 *x509);
+
 // X509_sign_ctx signs `x509` with `ctx` and replaces the signature algorithm
 // and signature fields. It returns the length of the signature on success and
 // zero on error. The signature algorithm and parameters come from `ctx`, which
@@ -2778,6 +2786,10 @@ OPENSSL_EXPORT ASN1_TYPE *X509_ATTRIBUTE_get0_type(X509_ATTRIBUTE *attr,
 // but an individual certificate verification may not necessarily treat every
 // trusted certificate as a trust anchor. See `X509_VERIFY_PARAM_set_trust` for
 // details.
+//
+// When this library uses a certificate as a trust anchor, the certificate's
+// fields are applied as constraints on the path, similar to RFC 5937. Expiry of
+// the trust anchor, via the notBefore and notAfter fields, is also applied.
 //
 // WARNING: Although a trusted certificate which fails the
 // `X509_VERIFY_PARAM_set_trust` check is functionally an untrusted

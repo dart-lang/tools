@@ -315,7 +315,9 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
 
     test('Escaping attributes', () {
       var e = parseFragment('<div class="a<b>">').firstChild as Element;
-      expect(e.outerHtml, '<div class="a<b>"></div>');
+      expect(e.outerHtml, '<div class="a&lt;b&gt;"></div>');
+      expect(
+          (parseFragment(e.outerHtml).firstChild as Element).className, 'a<b>');
       e = parseFragment('<div class=\'a"b\'>').firstChild as Element;
       expect(e.outerHtml, '<div class="a&quot;b"></div>');
     });

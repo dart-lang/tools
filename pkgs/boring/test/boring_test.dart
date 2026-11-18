@@ -6,15 +6,29 @@ import 'dart:convert';
 import 'dart:ffi' as ffi;
 import 'dart:typed_data';
 
-import 'package:boring/bindings.dart';
-import 'package:boring/bindings.dart' as ssl;
+import 'package:boring/boring.dart';
+import 'package:boring/boring.dart' as ssl;
 import 'package:ffi/ffi.dart' show using;
 import 'package:test/test.dart';
 
 void main() {
-  group('package:boring/bindings.dart', () {
+  group('package:boring/boring.dart', () {
     test('BORINGSSL_self_test passes', () {
       expect(ssl.BORINGSSL_self_test(), equals(1));
+    });
+
+    test('BN_ULONG is pointer-sized', () {
+      // BN_ULONG is uint32_t on 32-bit targets, where binding it as Uint64
+      // passes and returns the wrong values.
+      expect(BN_ULONG, equals(ffi.UintPtr));
+      final bn = ssl.BN_new();
+      try {
+        expect(ssl.BN_set_word(bn, 65537), equals(1));
+        expect(ssl.BN_get_word(bn), equals(65537));
+        expect(ssl.BN_is_word(bn, 65537), equals(1));
+      } finally {
+        ssl.BN_free(bn);
+      }
     });
 
     test('opensslAllocator allocates, frees, and exposes nativeFree', () {

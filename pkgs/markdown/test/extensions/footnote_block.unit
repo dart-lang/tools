@@ -300,3 +300,17 @@ Text[^a].
 </li>
 </ol>
 </section>
+>>> duplicate footnote definition with identical case uses first definition
+Text[^a].
+
+[^a]: first definition
+[^a]: second definition
+<<<
+<p>Text<sup class="footnote-ref"><a href="#fn-a" id="fnref-a">1</a></sup>.</p>
+<section class="footnotes">
+<ol>
+<li id="fn-a">
+<p>first definition <a href="#fnref-a" class="footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

@@ -67,6 +67,29 @@ a <!--
     expect(html, '<h2>I am paragraph</h2>\n');
   });
 
+  test('adjacent text nodes are combined when a custom inline syntax is '
+      'registered, #2037', () {
+    // See https://github.com/dart-lang/tools/issues/2037.
+    // `_combineAdjacentText` used to recurse into an `Element`'s children
+    // only when the element was not the last node in its containing list, so
+    // adjacent `Text` children of a trailing element were never merged.
+    // Registering any custom inline syntax (here, `StrikethroughSyntax`)
+    // switches on a stricter word-matching accelerator regex that splits
+    // plain text into more `Text` nodes than usual, which surfaced the bug
+    // even though the input contains no `~`.
+    final document = Document(inlineSyntaxes: [StrikethroughSyntax()]);
+    final nodes = document.parseInline('**This _is italics_ inside bold.**');
+
+    final strong = (nodes.single as Element).children!;
+    expect(strong[0], isA<Text>().having((t) => t.text, 'text', 'This '));
+    expect(strong[1], isA<Element>());
+    expect(
+      strong[2],
+      isA<Text>().having((t) => t.text, 'text', ' inside bold.'),
+    );
+    expect(strong, hasLength(3));
+  });
+
   test('long unbroken word does not take quadratic time', () {
     // The plain-text accelerator regex required a trailing whitespace, so a
     // long run of word characters that reached the end of a line without one
@@ -387,10 +410,26 @@ a <!--
     }
   });
 
+  test('reference link expansion is limited to max(input, 100000)', () {
+    final url = '/${'u' * 999}';
+    final html = markdownToHtml('${'[a] ' * 300}\n\n[a]: $url\n');
+    expect('<a href="$url">a</a>'.allMatches(html).length, lessThan(200));
+    expect(html, endsWith('[a]</p>\n'));
+  });
+
   test('container block nesting depth is capped at 128', () {
     final html = markdownToHtml('${'> ' * 129}a');
     expect('<blockquote>'.allMatches(html).length, 128);
     expect(html, contains('<blockquote>&gt; a\n</blockquote>'));
+  });
+
+  test('table synthetic empty cells are capped at 0x40000', () {
+    final html = markdownToHtml(
+      '${'h|' * 1000}\n${'-|' * 1000}\n${'x\n' * 1000}',
+      extensionSet: ExtensionSet.gitHubFlavored,
+    );
+    expect('<td>'.allMatches(html).length, lessThan(300000));
+    expect(html, endsWith('x</p>\n'));
   });
 }
 

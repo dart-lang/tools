@@ -258,10 +258,14 @@ jobs:
           echo "$HOME/.local/state/Dart/install/bin" >> "$GITHUB_PATH"
       - name: Update changelog
         if: steps.check_changes.outputs.changed == 'true'
-        run: report changelog "Update BoringSSL to ${SHORT_REVISION}."
+        run: >-
+          report changelog --replace-pattern '^Update BoringSSL to '
+          "Update BoringSSL to [${SHORT_REVISION}](https://boringssl.googlesource.com/boringssl/+/${REVISION})."
         env:
+          REVISION: ${{ steps.refresh.outputs.revision }}
           SHORT_REVISION: ${{ steps.refresh.outputs.short_revision }}
       - name: Create pull request
+        id: create-pr
         if: steps.check_changes.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@86c87cfdd87dd582eb8b8f226cfec4e09d825326
         with:
@@ -283,3 +287,21 @@ jobs:
             [x509-limbo](https://x509-limbo.com) testcases BoringSSL agrees
             with: review it before approving.
           delete-branch: true
+      # Each run supersedes the bot's earlier pull requests of this kind, so
+      # close them instead of leaving them for someone to clean up.
+      - name: Close superseded pull requests
+        if: steps.create-pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          GH_REPO: ${{ github.repository }}
+          NEW_PR: ${{ steps.create-pr.outputs.pull-request-number }}
+          BRANCH_PREFIX: boring-update-boringssl-
+        run: |
+          gh pr list --state open --limit 100 --json number,headRefName,author |
+            jq -r --arg prefix "$BRANCH_PREFIX" --argjson new "$NEW_PR" \
+              '.[] | select(.author.login == "app/dart-ecosystem-bot")
+                   | select(.headRefName | startswith($prefix))
+                   | select(.number != $new) | .number' |
+            while read -r pr; do
+              gh pr close "$pr" --delete-branch --comment "Superseded by #$NEW_PR."
+            done

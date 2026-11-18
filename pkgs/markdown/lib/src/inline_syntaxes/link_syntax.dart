@@ -137,26 +137,29 @@ class LinkSyntax extends DelimiterSyntax {
 
   /// Resolve a possible reference link.
   ///
-  /// Uses [linkReferences], [linkBuilder], and [createNode] to try to
-  /// resolve [label] into a [Node]. If [label] is defined in
-  /// [linkReferences] or can be resolved by [linkBuilder],
-  /// returns a `List<Node>` and calls [getChildren].
+  /// Uses [Document.linkReferences], [linkBuilder], and [createNode] to try
+  /// to resolve [label] into a [Node]. If [label] is defined in
+  /// [Document.linkReferences], or can be resolved by [linkBuilder], returns a
+  /// `List<Node>` and calls [getChildren].
   ///
-  /// Otherwise, returns `null` and does not call [getChildren].
+  /// Otherwise, or if the defined reference would exceed the document's
+  /// reference expansion limit, returns `null` and does not call
+  /// [getChildren].
   ///
   /// The [label] is the literal text between the start and end braces,
   /// and is not normalized.
   ///
   /// The [getChildren] extracts the markdown content of this link.
-  /// It must be called if and only if a non-`null` vale is returned.
+  /// It must be called if and only if a non-`null` value is returned.
   List<Node>? _resolveReferenceLink(
     String label,
     String? title,
-    Map<String, LinkReference> linkReferences, {
+    Document document, {
     required List<Node> Function() getChildren,
   }) {
-    final linkReference = linkReferences[normalizeLinkLabel(label)];
+    final linkReference = document.linkReferences[normalizeLinkLabel(label)];
     if (linkReference != null) {
+      if (!document.expandReference(linkReference)) return null;
       return [
         createNode(
           linkReference.destination,
@@ -214,7 +217,7 @@ class LinkSyntax extends DelimiterSyntax {
     final link = _resolveReferenceLink(
       label,
       title,
-      parser.document.linkReferences,
+      parser.document,
       getChildren: getChildren,
     );
     if (link != null) {
