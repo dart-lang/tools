@@ -5,7 +5,7 @@
 import 'dart:ffi' as ffi;
 import 'dart:typed_data';
 
-import '../bindings.dart' show extractBoringSslError, opensslAllocator;
+import '../boring.dart' show extractBoringSslError, opensslAllocator;
 import 'bindings/boringssl.g.dart' as bssl;
 
 /// A scoped [ffi.Allocator] and resource tracker for calling BoringSSL.

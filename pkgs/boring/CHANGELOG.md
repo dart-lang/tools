@@ -1,4 +1,9 @@
-## 0.4.3-wip
+## 0.5.0
+
+- **Breaking**: Removed `package:boring/bindings.dart`. Its API is now in
+  `package:boring/boring.dart`, which was previously a re-export of it.
+  Replace `import 'package:boring/bindings.dart'` with
+  `import 'package:boring/boring.dart'`.
 - Fixed the bindings of the `BN_*_word` functions on 32-bit targets, such as
   Android arm. `BN_ULONG` is now `UintPtr` instead of `Uint64`, because it is
   `uint32_t` on 32-bit targets.
