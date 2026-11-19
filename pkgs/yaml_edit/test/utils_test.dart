@@ -4,80 +4,77 @@
 
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
+import 'package:yaml_edit/src/cst.dart';
+import 'package:yaml_edit/src/cst_mutations.dart';
 import 'package:yaml_edit/src/utils.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
 import 'test_utils.dart';
 
+int _indentStep(String yaml) =>
+    LayoutStyle.of(CstDocument.parse(yaml)).indentStep;
+
 void main() {
   group('indentation', () {
     test('returns 2 for empty strings', () {
-      final doc = YamlEditor('');
-      expect(getIndentation(doc), equals(2));
+      expect(_indentStep(''), equals(2));
     });
 
     test('returns 2 for strings consisting only scalars', () {
-      final doc = YamlEditor('foo');
-      expect(getIndentation(doc), equals(2));
+      expect(_indentStep('foo'), equals(2));
     });
 
     test('returns 2 if only top-level elements are present', () {
-      final doc = YamlEditor('''
+      expect(_indentStep('''
 - 1
 - 2
-- 3''');
-      expect(getIndentation(doc), equals(2));
+- 3'''), equals(2));
     });
 
     test('detects the indentation used in nested list', () {
-      final doc = YamlEditor('''
+      expect(_indentStep('''
 - 1
 - 2
 - 
    - 3
-   - 4''');
-      expect(getIndentation(doc), equals(3));
+   - 4'''), equals(3));
     });
 
     test('detects the indentation used in nested map', () {
-      final doc = YamlEditor('''
+      expect(_indentStep('''
 a: 1
 b: 2
 c:
    d: 4
-   e: 5''');
-      expect(getIndentation(doc), equals(3));
+   e: 5'''), equals(3));
     });
 
     test('detects the indentation used in nested map in list', () {
-      final doc = YamlEditor('''
+      expect(_indentStep('''
 - 1
 - 2
 - 
     d: 4
-    e: 5''');
-      expect(getIndentation(doc), equals(4));
+    e: 5'''), equals(4));
     });
 
     test('detects the indentation used in nested map in list with complex keys',
         () {
-      final doc = YamlEditor('''
+      expect(_indentStep('''
 - 1
 - 2
 - 
     ? d
-    : 4''');
-      expect(getIndentation(doc), equals(4));
+    : 4'''), equals(4));
     });
 
     test('detects the indentation used in nested list in map', () {
-      final doc = YamlEditor('''
+      expect(_indentStep('''
 a: 1
 b: 2
 c:
   - 4
-  - 5''');
-      expect(getIndentation(doc), equals(2));
+  - 5'''), equals(2));
     });
   });
 
@@ -443,185 +440,6 @@ a:
 
     test('throws on list', () {
       expect(() => assertValidScalar([1]), throwsArgumentError);
-    });
-  });
-
-  group('compact char test', () {
-    test(
-      'Returns a valid index of the character used to declare block node'
-      ' in compact-inline notation for an explicit key',
-      () {
-        const yaml = '''
-? - block
-  - sequence
-
-? key: value
-  another: value
-''';
-
-        final mapKeys = (loadYamlNode(
-          yaml,
-        ) as YamlMap)
-            .nodes
-            .keys
-            .cast<YamlNode>()
-            .toList();
-
-        // Compact block lists
-        expect(
-          indexOfCompactChar(
-            yaml,
-            mapKeys.first.span.start.offset,
-          ),
-          equals((compactCharOffset: 0, lineEndingIndex: -1)),
-        );
-
-        // Compact block maps
-        expect(
-          indexOfCompactChar(
-            yaml,
-            mapKeys[1].span.start.offset,
-          ),
-
-          // Skip first "?"
-          equals(
-            (compactCharOffset: yaml.indexOf('?', 1), lineEndingIndex: -1),
-          ),
-        );
-      },
-    );
-
-    test(
-      'Returns a valid index of the character used to declare block node'
-      ' in compact-inline notation for an explicit value',
-      () {
-        /// A key/value is always implicit unless an explicit key is seen.
-        ///
-        /// See paragraph after example 8.17 in Block Mappings section.
-        const yaml = '''
-? key
-: - block
-  - sequence
-
-? another
-: explict: block
-  value: node
-''';
-
-        final values = (loadYamlNode(
-          yaml,
-        ) as YamlMap)
-            .nodes
-            .values
-            .toList();
-
-        final firstExplicitValueChar = yaml.indexOf(':');
-
-        // Compact block lists
-        expect(
-          indexOfCompactChar(yaml, values.first.span.start.offset),
-          equals(
-            (compactCharOffset: firstExplicitValueChar, lineEndingIndex: -1),
-          ),
-        );
-
-        // Compact block maps
-        expect(
-          indexOfCompactChar(yaml, values[1].span.start.offset),
-
-          // Skip first ":"
-          equals(
-            (
-              compactCharOffset: yaml.indexOf(':', firstExplicitValueChar + 1),
-              lineEndingIndex: -1
-            ),
-          ),
-        );
-      },
-    );
-
-    test(
-      'Returns a valid index of the character used to declare block node'
-      ' in compact-inline notation for a block sequence',
-      () {
-        const yaml = '''
-- - block
-  - sequence
-
-- key: value
-  another: value
-''';
-
-        final elements = (loadYamlNode(
-          yaml,
-        ) as YamlList)
-            .nodes;
-
-        // Compact block lists
-        expect(
-          indexOfCompactChar(yaml, elements.first.span.start.offset),
-          equals((compactCharOffset: 0, lineEndingIndex: -1)),
-        );
-
-        // Compact block maps
-        expect(
-          indexOfCompactChar(yaml, elements[1].span.start.offset),
-
-          // Skip first "?"
-          equals(
-            (compactCharOffset: yaml.lastIndexOf('-'), lineEndingIndex: -1),
-          ),
-        );
-      },
-    );
-
-    test('Returns index of line break when not compact', () {
-      const yaml = '''
--
-  - not compact
--
-  ?
-    - key not compact
-  :
-    - not compact
-''';
-
-      final list = (loadYamlNode(yaml) as YamlList).nodes;
-
-      // First nested block sequence is not compact
-      expect(
-        indexOfCompactChar(yaml, list[0].span.start.offset),
-        equals((compactCharOffset: -1, lineEndingIndex: yaml.indexOf('\n'))),
-      );
-
-      // Explicit key & value not compact.
-      final map = list[1] as YamlMap;
-
-      final entries = map.nodes;
-
-      expect(
-        indexOfCompactChar(
-          yaml,
-          entries.keys.cast<YamlNode>().first.span.start.offset,
-        ),
-        equals((
-          compactCharOffset: -1,
-          lineEndingIndex: yaml.indexOf('\n', map.span.start.offset)
-        )),
-      );
-
-      expect(
-        indexOfCompactChar(yaml, entries.values.first.span.start.offset),
-        equals(
-          (
-            compactCharOffset: -1,
-            lineEndingIndex: yaml.indexOf(
-              '\n',
-              yaml.indexOf(':', map.span.start.offset),
-            )
-          ),
-        ),
-      );
     });
   });
 }

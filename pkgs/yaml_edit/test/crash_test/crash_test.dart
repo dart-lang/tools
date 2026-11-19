@@ -14,7 +14,7 @@ import 'package:yaml_edit/yaml_edit.dart';
 
 import 'fuzzer.dart';
 
-/// Files with tests that are broken, so we have to skip them
+/// Files with tests that are broken, so we have to skip them.
 final _skippedFiles = <String>[];
 
 /// The crash tests will attempt to enumerate all JSON paths in each input

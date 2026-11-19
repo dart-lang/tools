@@ -162,7 +162,9 @@ D: {bar:true
 }
 E: {bar:true
 }
-F: {bar:true
+F: {
+  # comment
+  bar:true
 }
 G: {
   # comment
@@ -187,9 +189,13 @@ D: {bar:true
 }
 E: {bar:true
 }
-F: {bar:true
+F: {
+  # comment
+  bar:true
 }
-G: {bar:true
+G: {
+  # comment
+  bar:true
 }
 H: {
   foo: # comment
@@ -208,9 +214,13 @@ D: {bar:true
 }
 E: {bar:true
 }
-F: {bar:true
+F: {
+  # comment
+  bar:true
 }
-G: {bar:true
+G: {
+  # comment
+  bar:true
 }
 H: {
   bar:true
@@ -227,9 +237,13 @@ D: {bar:true
 }
 E: {bar:true
 }
-F: {bar:true
+F: {
+  # comment
+  bar:true
 }
-G: {bar:true
+G: {
+  # comment
+  bar:true
 }
 H: {
   bar:true
@@ -246,9 +260,13 @@ D: {bar:true
 }
 E: {bar:true
 }
-F: {bar:true
+F: {
+  # comment
+  bar:true
 }
-G: {bar:true
+G: {
+  # comment
+  bar:true
 }
 H: {
   bar:true

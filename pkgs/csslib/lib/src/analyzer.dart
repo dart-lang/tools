@@ -4,6 +4,38 @@
 
 part of '../parser.dart';
 
+/// Maximum nesting or derivation depth for `@include`, `@extend`, and `var()`.
+const int _maxExpansionDepth = 64;
+
+/// Maximum expansions produced from a single root `@include`, transitive
+/// `@extend` group, or `Expressions` list during `var()` polyfill resolution.
+const int _maxExpansions = 4096;
+
+bool _checkIncludeLimits(
+  Messages messages,
+  String name,
+  SourceSpan? span,
+  Set<String> activeMixins,
+  int totalExpansions,
+  int stepCost,
+) {
+  if (activeMixins.contains(name)) {
+    messages.error('Circular @include for $name', span);
+    return false;
+  }
+  if (activeMixins.length >= _maxExpansionDepth) {
+    messages.error(
+        '@include depth exceeded $_maxExpansionDepth for $name', span);
+    return false;
+  }
+  if (totalExpansions + stepCost > _maxExpansions) {
+    messages.error(
+        '@include expansions exceeded $_maxExpansions for $name', span);
+    return false;
+  }
+  return true;
+}
+
 // TODO(terry): Add optimizing phase to remove duplicated selectors in the same
 //              selector group (e.g., .btn, .btn { color: red; }).  Also, look
 //              at simplifying selectors expressions too (much harder).
@@ -192,6 +224,7 @@ class ExpandNestedSelectors extends Visitor {
 
   @override
   void visitRuleSet(RuleSet node) {
+    if (node.selectorGroup == null) return;
     final oldParent = _parentRuleSet;
 
     var oldNestedSelectorGroups = _nestedSelectorGroup;
@@ -305,6 +338,7 @@ class ExpandNestedSelectors extends Visitor {
 
   @override
   void visitDeclarationGroup(DeclarationGroup node) {
+    if (_parentRuleSet == null) return;
     var span = node.span;
 
     var currentGroup = DeclarationGroup([], span);
@@ -371,7 +405,6 @@ class ExpandNestedSelectors extends Visitor {
     if (_parentRuleSet != null) {
       _flatDeclarationGroup!.declarations.add(node);
     }
-    super.visitMarginGroup(node);
   }
 
   /// Replace the rule set that contains nested rules with the flatten rule
@@ -383,8 +416,7 @@ class ExpandNestedSelectors extends Visitor {
       var index = styleSheet.topLevels.indexOf(ruleSet);
       if (index == -1) {
         // Check any @media directives for nested rules and replace them.
-        var found = _MediaRulesReplacer.replace(styleSheet, ruleSet, newRules);
-        assert(found);
+        _MediaRulesReplacer.replace(styleSheet, ruleSet, newRules);
       } else {
         styleSheet.topLevels.insertAll(index + 1, newRules);
       }
@@ -410,13 +442,42 @@ class _MediaRulesReplacer extends Visitor {
 
   _MediaRulesReplacer(this._ruleSet, this._newRules);
 
-  @override
-  void visitMediaDirective(MediaDirective node) {
-    var index = node.rules.indexOf(_ruleSet);
+  void _replaceInRules(List<TreeNode> rules) {
+    var index = rules.indexOf(_ruleSet);
     if (index != -1) {
-      node.rules.insertAll(index + 1, _newRules);
+      rules.insertAll(index + 1, _newRules);
       _foundAndReplaced = true;
     }
+  }
+
+  @override
+  void visitMediaDirective(MediaDirective node) {
+    _replaceInRules(node.rules);
+    super.visitMediaDirective(node);
+  }
+
+  @override
+  void visitHostDirective(HostDirective node) {
+    _replaceInRules(node.rules);
+    super.visitHostDirective(node);
+  }
+
+  @override
+  void visitDocumentDirective(DocumentDirective node) {
+    _replaceInRules(node.groupRuleBody);
+    super.visitDocumentDirective(node);
+  }
+
+  @override
+  void visitSupportsDirective(SupportsDirective node) {
+    _replaceInRules(node.groupRuleBody);
+    super.visitSupportsDirective(node);
+  }
+
+  @override
+  void visitStyletDirective(StyletDirective node) {
+    _replaceInRules(node.rules);
+    super.visitStyletDirective(node);
   }
 }
 
@@ -425,6 +486,8 @@ class _MediaRulesReplacer extends Visitor {
 class TopLevelIncludes extends Visitor {
   StyleSheet? _styleSheet;
   final Messages _messages;
+  final _activeMixins = <String>{};
+  int _totalExpansions = 0;
 
   /// Map of variable name key to it's definition.
   final map = <String, MixinDefinition>{};
@@ -443,9 +506,46 @@ class TopLevelIncludes extends Visitor {
     }
   }
 
+  List<TreeNode> _expandRulesets(
+    IncludeDirective node,
+    MixinRulesetDirective mixinDef,
+  ) {
+    if (_activeMixins.isEmpty) _totalExpansions = 0;
+    final name = node.name;
+    final rules = mixinDef.rulesets;
+    final stepCost = math.max(1, rules.length);
+    if (!_checkIncludeLimits(_messages, name, node.span, _activeMixins,
+        _totalExpansions, stepCost)) {
+      return const <TreeNode>[];
+    }
+    _activeMixins.add(name);
+    _totalExpansions += stepCost;
+    try {
+      final expanded = <TreeNode>[];
+      for (final rule in rules) {
+        if (rule is NoOp) continue;
+        if (rule is IncludeDirective) {
+          final nestedDef = map[rule.name];
+          if (nestedDef is MixinRulesetDirective) {
+            expanded.addAll(_expandRulesets(rule, nestedDef));
+          } else {
+            expanded.add(rule.clone());
+          }
+        } else {
+          expanded.add(rule);
+        }
+      }
+      return expanded;
+    } finally {
+      _activeMixins.remove(name);
+    }
+  }
+
   @override
   void visitStyleSheet(StyleSheet ss) {
     _styleSheet = ss;
+    _activeMixins.clear();
+    _totalExpansions = 0;
     super.visitStyleSheet(ss);
     _styleSheet = null;
   }
@@ -456,11 +556,19 @@ class TopLevelIncludes extends Visitor {
     if (map.containsKey(node.name)) {
       var mixinDef = map[node.name];
       if (mixinDef is MixinRulesetDirective) {
-        _TopLevelIncludeReplacer.replace(_styleSheet!, node, mixinDef.rulesets);
+        final targetList = currDef is MixinRulesetDirective
+            ? currDef.rulesets
+            : _styleSheet?.topLevels;
+        if (targetList != null && targetList.contains(node)) {
+          _TopLevelIncludeReplacer.replace(
+              _styleSheet!, node, _expandRulesets(node, mixinDef));
+        }
       } else if (currDef is MixinRulesetDirective && _anyRulesets(currDef)) {
         final mixinRuleset = currDef;
         var index = mixinRuleset.rulesets.indexOf(node);
-        mixinRuleset.rulesets.removeAt(index);
+        if (index != -1) {
+          mixinRuleset.rulesets.removeAt(index);
+        }
         _messages.warning(
             'Using declaration mixin ${node.name} as top-level mixin',
             node.span);
@@ -507,34 +615,43 @@ class TopLevelIncludes extends Visitor {
 class _TopLevelIncludeReplacer extends Visitor {
   final IncludeDirective _include;
   final List<TreeNode> _newRules;
+  bool _replaced = false;
 
   /// Look for the [ruleSet] inside of an @media directive; if found then
   /// replace with the [newRules].  If [ruleSet] is found and replaced return
   /// true.
-  static void replace(StyleSheet styleSheet, IncludeDirective include,
+  static bool replace(StyleSheet styleSheet, IncludeDirective include,
       List<TreeNode> newRules) {
-    _TopLevelIncludeReplacer(include, newRules).visitStyleSheet(styleSheet);
+    final replacer = _TopLevelIncludeReplacer(include, newRules)
+      ..visitStyleSheet(styleSheet);
+    return replacer._replaced;
   }
 
   _TopLevelIncludeReplacer(this._include, this._newRules);
 
   @override
   void visitStyleSheet(StyleSheet node) {
+    if (_replaced) return;
     var index = node.topLevels.indexOf(_include);
     if (index != -1) {
       node.topLevels.insertAll(index + 1, _newRules);
       node.topLevels.replaceRange(index, index + 1, [NoOp()]);
+      _replaced = true;
+      return;
     }
     super.visitStyleSheet(node);
   }
 
   @override
   void visitMixinRulesetDirective(MixinRulesetDirective node) {
+    if (_replaced) return;
     var index = node.rulesets.indexOf(_include);
     if (index != -1) {
       node.rulesets.insertAll(index + 1, _newRules);
       // Only the resolve the @include once.
       node.rulesets.replaceRange(index, index + 1, [NoOp()]);
+      _replaced = true;
+      return;
     }
     super.visitMixinRulesetDirective(node);
   }
@@ -592,6 +709,7 @@ class CallMixin extends Visitor {
         var varDirective = definedArg;
         varDef = varDirective.def;
       }
+      if (varDef == null || index >= callArgs.length) continue;
       var callArg = callArgs[index];
 
       // Is callArg a var definition with multi-args (expressions > 1).
@@ -603,12 +721,18 @@ class CallMixin extends Visitor {
         callArg = callArgs[index];
       }
 
-      var expressions = varUsages[varDef!.definedName];
-      expressions!.forEach((k, v) {
-        for (var usagesIndex in v) {
-          k.expressions.replaceRange(usagesIndex, usagesIndex + 1, callArg);
-        }
-      });
+      var expressions = varUsages[varDef.definedName];
+      if (expressions != null) {
+        expressions.forEach((k, v) {
+          var sortedIndexes = v.toList()..sort();
+          for (var i = sortedIndexes.length - 1; i >= 0; i--) {
+            var usagesIndex = sortedIndexes[i];
+            if (usagesIndex >= 0 && usagesIndex < k.expressions.length) {
+              k.expressions.replaceRange(usagesIndex, usagesIndex + 1, callArg);
+            }
+          }
+        });
+      }
     }
 
     // Clone the mixin
@@ -618,14 +742,16 @@ class CallMixin extends Visitor {
   /// Rip apart var def with multiple parameters.
   List<List<Expression>> _varDefsAsCallArgs(List<Expression> callArg) {
     var defArgs = <List<Expression>>[];
+    if (callArg.isEmpty) return defArgs;
     var firstCallArg = callArg[0];
     if (firstCallArg is VarUsage) {
-      var varDef = varDefs![firstCallArg.name];
-      var expressions = (varDef!.expression as Expressions).expressions;
-      assert(expressions.length > 1);
-      for (var expr in expressions) {
-        if (expr is! OperatorComma) {
-          defArgs.add([expr]);
+      var varDef = varDefs?[firstCallArg.name];
+      if (varDef != null && varDef.expression is Expressions) {
+        var expressions = (varDef.expression as Expressions).expressions;
+        for (var expr in expressions) {
+          if (expr is! OperatorComma) {
+            defArgs.add([expr]);
+          }
         }
       }
     }
@@ -654,20 +780,20 @@ class CallMixin extends Visitor {
 
   @override
   void visitVarUsage(VarUsage node) {
-    assert(_currIndex != -1);
-    assert(_currExpressions != null);
-    if (varUsages.containsKey(node.name)) {
-      var expressions = varUsages[node.name];
-      var allIndexes = expressions![_currExpressions];
-      if (allIndexes == null) {
-        _addExpression(expressions);
+    if (_currIndex != -1 && _currExpressions != null) {
+      if (varUsages.containsKey(node.name)) {
+        var expressions = varUsages[node.name];
+        var allIndexes = expressions![_currExpressions];
+        if (allIndexes == null) {
+          _addExpression(expressions);
+        } else {
+          allIndexes.add(_currIndex);
+        }
       } else {
-        allIndexes.add(_currIndex);
+        var newExpressions = <Expressions, Set<int>>{};
+        _addExpression(newExpressions);
+        varUsages[node.name] = newExpressions;
       }
-    } else {
-      var newExpressions = <Expressions, Set<int>>{};
-      _addExpression(newExpressions);
-      varUsages[node.name] = newExpressions;
     }
     super.visitVarUsage(node);
   }
@@ -689,6 +815,38 @@ class CallMixin extends Visitor {
 class DeclarationIncludes extends Visitor {
   StyleSheet? _styleSheet;
   final Messages _messages;
+  final _activeMixins = <String>{};
+  int _totalExpansions = 0;
+
+  void _replaceInclude(
+    TreeNode node,
+    String mixinName,
+    int estimatedCount,
+    List<TreeNode> Function() buildNodes,
+  ) {
+    if (_activeMixins.isEmpty) _totalExpansions = 0;
+    final stepCost = math.max(1, estimatedCount);
+    final targetRoot = currDeclGroup ?? _styleSheet!;
+    if (!_checkIncludeLimits(_messages, mixinName, node.span, _activeMixins,
+        _totalExpansions, stepCost)) {
+      _IncludeReplacer.replace(targetRoot, node, const <TreeNode>[]);
+      return;
+    }
+    _activeMixins.add(mixinName);
+    _totalExpansions += stepCost;
+    final List<TreeNode> expanded;
+    try {
+      final tempGroup = DeclarationGroup(buildNodes(), node.span);
+      visitDeclarationGroup(tempGroup);
+      expanded = <TreeNode>[
+        for (final decl in tempGroup.declarations)
+          if (decl is! NoOp) decl,
+      ];
+    } finally {
+      _activeMixins.remove(mixinName);
+    }
+    _IncludeReplacer.replace(targetRoot, node, expanded);
+  }
 
   /// Map of variable name key to it's definition.
   final Map<String, MixinDefinition> map = <String, MixinDefinition>{};
@@ -720,59 +878,61 @@ class DeclarationIncludes extends Visitor {
   @override
   void visitStyleSheet(StyleSheet ss) {
     _styleSheet = ss;
+    _activeMixins.clear();
+    _totalExpansions = 0;
     super.visitStyleSheet(ss);
     _styleSheet = null;
   }
 
   @override
   void visitDeclarationGroup(DeclarationGroup node) {
+    var oldDeclGroup = currDeclGroup;
     currDeclGroup = node;
     super.visitDeclarationGroup(node);
-    currDeclGroup = null;
+    currDeclGroup = oldDeclGroup;
   }
 
   @override
   void visitIncludeMixinAtDeclaration(IncludeMixinAtDeclaration node) {
-    if (map.containsKey(node.include.name)) {
-      var mixinDef = map[node.include.name];
-
-      // Fix up any mixin that is really a Declaration but has includes.
-      if (mixinDef is MixinRulesetDirective) {
-        if (!_allIncludes(mixinDef.rulesets) && currDeclGroup != null) {
-          var index = _findInclude(currDeclGroup!.declarations, node);
-          if (index != -1) {
-            currDeclGroup!.declarations
-                .replaceRange(index, index + 1, [NoOp()]);
-          }
-          _messages.warning(
-              'Using top-level mixin ${node.include.name} as a declaration',
-              node.span);
-        } else {
-          // We're a list of @include(s) inside of a mixin ruleset - convert
-          // to a list of IncludeMixinAtDeclaration(s).
-          var origRulesets = mixinDef.rulesets;
-          var rulesets = <Declaration>[];
-          if (origRulesets.every((ruleset) => ruleset is IncludeDirective)) {
-            for (var ruleset in origRulesets) {
-              rulesets.add(IncludeMixinAtDeclaration(
-                  ruleset as IncludeDirective, ruleset.span));
-            }
-            _IncludeReplacer.replace(_styleSheet!, node, rulesets);
-          }
+    var mixinDef = map[node.include.name];
+    if (mixinDef == null) {
+      _messages.warning('Undefined mixin ${node.include.name}', node.span);
+    } else if (mixinDef is MixinRulesetDirective) {
+      if (!_allIncludes(mixinDef.rulesets) && currDeclGroup != null) {
+        _IncludeReplacer.replace(currDeclGroup!, node, const <TreeNode>[]);
+        _messages.warning(
+            'Using top-level mixin ${node.include.name} as a declaration',
+            node.span);
+      } else {
+        // We're a list of @include(s) inside of a mixin ruleset - convert
+        // to a list of IncludeMixinAtDeclaration(s).
+        var origRulesets = mixinDef.rulesets;
+        if (_allIncludes(origRulesets)) {
+          _replaceInclude(
+              node,
+              node.include.name,
+              origRulesets.length,
+              () => <TreeNode>[
+                    for (final ruleset
+                        in origRulesets.whereType<IncludeDirective>())
+                      IncludeMixinAtDeclaration(ruleset.clone(), ruleset.span),
+                  ]);
         }
       }
-
-      if (mixinDef!.definedArgs.isNotEmpty && node.include.args.isNotEmpty) {
+    } else if (mixinDef is MixinDeclarationDirective) {
+      if (mixinDef.definedArgs.isNotEmpty && node.include.args.isNotEmpty) {
         var callMixin = _createCallDeclMixin(mixinDef);
-        mixinDef = callMixin.transform(node.include.args);
+        mixinDef =
+            callMixin.transform(node.include.args) as MixinDeclarationDirective;
       }
-
-      if (mixinDef is MixinDeclarationDirective) {
-        _IncludeReplacer.replace(
-            _styleSheet!, node, mixinDef.declarations.declarations);
-      }
-    } else {
-      _messages.warning('Undefined mixin ${node.include.name}', node.span);
+      final decls = mixinDef.declarations.declarations;
+      _replaceInclude(
+          node,
+          node.include.name,
+          decls.length,
+          () => <TreeNode>[
+                for (final decl in decls) decl.clone(),
+              ]);
     }
 
     super.visitIncludeMixinAtDeclaration(node);
@@ -780,18 +940,22 @@ class DeclarationIncludes extends Visitor {
 
   @override
   void visitIncludeDirective(IncludeDirective node) {
-    if (map.containsKey(node.name)) {
-      var mixinDef = map[node.name];
-      if (currDef is MixinDeclarationDirective &&
-          mixinDef is MixinDeclarationDirective) {
-        _IncludeReplacer.replace(
-            _styleSheet!, node, mixinDef.declarations.declarations);
-      } else if (currDef is MixinDeclarationDirective) {
-        var decls =
-            (currDef as MixinDeclarationDirective).declarations.declarations;
-        var index = _findInclude(decls, node);
-        if (index != -1) {
-          decls.replaceRange(index, index + 1, [NoOp()]);
+    if (currDef is MixinDeclarationDirective && map.containsKey(node.name)) {
+      var decls =
+          (currDef as MixinDeclarationDirective).declarations.declarations;
+      if (_findInclude(decls, node) != -1) {
+        var mixinDef = map[node.name];
+        if (mixinDef is MixinDeclarationDirective) {
+          final mixinDecls = mixinDef.declarations.declarations;
+          _replaceInclude(
+              node,
+              node.name,
+              mixinDecls.length,
+              () => <TreeNode>[
+                    for (final decl in mixinDecls) decl.clone(),
+                  ]);
+        } else if (currDeclGroup != null) {
+          _IncludeReplacer.replace(currDeclGroup!, node, const <TreeNode>[]);
         }
       }
     }
@@ -825,9 +989,11 @@ class DeclarationIncludes extends Visitor {
   void visitVarDefinition(VarDefinition node) {
     // Only record var definitions that have multiple expressions (comma
     // separated for mixin parameter substitution.
-    var exprs = (node.expression as Expressions).expressions;
-    if (exprs.length > 1) {
-      varDefs[node.definedName] = node;
+    if (node.expression is Expressions) {
+      var exprs = (node.expression as Expressions).expressions;
+      if (exprs.length > 1) {
+        varDefs[node.definedName] = node;
+      }
     }
     super.visitVarDefinition(node);
   }
@@ -842,24 +1008,29 @@ class DeclarationIncludes extends Visitor {
 class _IncludeReplacer extends Visitor {
   final TreeNode _include;
   final List<TreeNode> _newDeclarations;
+  bool _replaced = false;
 
   /// Look for the [ruleSet] inside of a @media directive; if found then replace
   /// with the [newRules].
-  static void replace(
-      StyleSheet ss, TreeNode include, List<TreeNode> newDeclarations) {
+  static bool replace(
+      TreeNode root, TreeNode include, List<TreeNode> newDeclarations) {
     var visitor = _IncludeReplacer(include, newDeclarations);
-    visitor.visitStyleSheet(ss);
+    root.visit(visitor);
+    return visitor._replaced;
   }
 
   _IncludeReplacer(this._include, this._newDeclarations);
 
   @override
   void visitDeclarationGroup(DeclarationGroup node) {
+    if (_replaced) return;
     var index = _findInclude(node.declarations, _include);
     if (index != -1) {
       node.declarations.insertAll(index + 1, _newDeclarations);
       // Change @include to NoOp so it's processed only once.
       node.declarations.replaceRange(index, index + 1, [NoOp()]);
+      _replaced = true;
+      return;
     }
     super.visitDeclarationGroup(node);
   }
@@ -904,7 +1075,7 @@ class AllExtends extends Visitor {
 
   SelectorGroup? _currSelectorGroup;
   int? _currDeclIndex;
-  final _extendsToRemove = <int>[];
+  List<int> _extendsToRemove = <int>[];
 
   @override
   void visitRuleSet(RuleSet node) {
@@ -918,18 +1089,22 @@ class AllExtends extends Visitor {
 
   @override
   void visitExtendDeclaration(ExtendDeclaration node) {
-    var inheritName = '';
-    for (var selector in node.selectors) {
-      inheritName += selector.toString();
-    }
-    if (inherits.containsKey(inheritName)) {
-      inherits[inheritName]!.add(_currSelectorGroup!);
-    } else {
-      inherits[inheritName] = [_currSelectorGroup!];
+    if (_currSelectorGroup != null) {
+      var inheritName = '';
+      for (var selector in node.selectors) {
+        inheritName += selector.toString();
+      }
+      if (inherits.containsKey(inheritName)) {
+        inherits[inheritName]!.add(_currSelectorGroup!);
+      } else {
+        inherits[inheritName] = [_currSelectorGroup!];
+      }
     }
 
     // Remove this @extend
-    _extendsToRemove.add(_currDeclIndex!);
+    if (_currDeclIndex != null) {
+      _extendsToRemove.add(_currDeclIndex!);
+    }
 
     super.visitExtendDeclaration(node);
   }
@@ -937,6 +1112,8 @@ class AllExtends extends Visitor {
   @override
   void visitDeclarationGroup(DeclarationGroup node) {
     var oldDeclIndex = _currDeclIndex;
+    var oldExtendsToRemove = _extendsToRemove;
+    _extendsToRemove = <int>[];
 
     var decls = node.declarations;
     for (_currDeclIndex = 0;
@@ -953,6 +1130,7 @@ class AllExtends extends Visitor {
       _extendsToRemove.clear();
     }
 
+    _extendsToRemove = oldExtendsToRemove;
     _currDeclIndex = oldDeclIndex;
   }
 }
@@ -963,15 +1141,72 @@ class AllExtends extends Visitor {
 /// Changes any selector that matches @extend.
 class InheritExtends extends Visitor {
   final AllExtends _allExtends;
+  final Messages _messages;
 
-  InheritExtends(Messages messages, this._allExtends);
+  InheritExtends(this._messages, this._allExtends);
+
+  static String _selectorText(Selector selector) =>
+      (CssPrinter()..visitSelector(selector)).toString();
+
+  static bool _hasCycleInChain(
+    Selector selector,
+    String candidateText,
+    Map<Selector, Selector> parents,
+    Map<Selector, String> texts,
+  ) {
+    for (Selector? curr = selector; curr != null; curr = parents[curr]) {
+      if ((texts[curr] ??= _selectorText(curr)) == candidateText) return true;
+    }
+    return false;
+  }
+
+  static Selector? _deriveSelector(
+    SelectorGroup group,
+    Selector selectors,
+    SelectorGroup match,
+    int index,
+    Map<Selector, Selector> parents,
+    Map<Selector, String> texts, {
+    required bool isLastNone,
+  }) {
+    if (match == group || match.selectors.isEmpty) return null;
+    var newSeq = match.selectors[0].clone();
+    final Selector derived;
+    if (isLastNone) {
+      derived = newSeq;
+    } else {
+      var newSelectors = selectors.clone();
+      // Replace the selector sequence to the left of the pseudo class
+      // or pseudo element.
+
+      // Make new selector seq combinator the same as the original.
+      if (newSeq.simpleSelectorSequences.isNotEmpty) {
+        var orgCombinator =
+            newSelectors.simpleSelectorSequences[index].combinator;
+        newSeq.simpleSelectorSequences[0].combinator = orgCombinator;
+      }
+
+      newSelectors.simpleSelectorSequences
+          .replaceRange(index, index + 1, newSeq.simpleSelectorSequences);
+      derived = newSelectors;
+    }
+    final derivedText = _selectorText(derived);
+    if (_hasCycleInChain(selectors, derivedText, parents, texts)) return null;
+    texts[derived] = derivedText;
+    return derived;
+  }
 
   @override
   void visitSelectorGroup(SelectorGroup node) {
+    final parents = <Selector, Selector>{};
+    final texts = <Selector, String>{};
+    final depths = <Selector, int>{};
+    var expansions = 0;
     for (var selectorsIndex = 0;
         selectorsIndex < node.selectors.length;
         selectorsIndex++) {
       var selectors = node.selectors[selectorsIndex];
+      final depth = (depths[selectors] ?? 0) + 1;
       var isLastNone = false;
       var selectorName = '';
       for (var index = 0;
@@ -981,31 +1216,38 @@ class InheritExtends extends Visitor {
         var namePart = simpleSeq.simpleSelector.toString();
         selectorName = isLastNone ? (selectorName + namePart) : namePart;
         var matches = _allExtends.inherits[selectorName];
-        if (matches != null) {
-          for (var match in matches) {
-            // Create a new group.
-            var newSelectors = selectors.clone();
-            var newSeq = match.selectors[0].clone();
-            if (isLastNone) {
-              // Add the inherited selector.
-              node.selectors.add(newSeq);
-            } else {
-              // Replace the selector sequence to the left of the pseudo class
-              // or pseudo element.
-
-              // Make new selector seq combinator the same as the original.
-              var orgCombinator =
-                  newSelectors.simpleSelectorSequences[index].combinator;
-              newSeq.simpleSelectorSequences[0].combinator = orgCombinator;
-
-              newSelectors.simpleSelectorSequences.replaceRange(
-                  index, index + 1, newSeq.simpleSelectorSequences);
-              node.selectors.add(newSelectors);
-            }
-            isLastNone = false;
-          }
-        } else {
+        if (matches == null) {
           isLastNone = simpleSeq.isCombinatorNone;
+          continue;
+        }
+        for (var match in matches) {
+          final derived = _deriveSelector(
+            node,
+            selectors,
+            match,
+            index,
+            parents,
+            texts,
+            isLastNone: isLastNone,
+          );
+          isLastNone = false;
+          if (derived == null) continue;
+          if (depth > _maxExpansionDepth) {
+            _messages.error(
+                '@extend depth exceeded $_maxExpansionDepth', node.span);
+            super.visitSelectorGroup(node);
+            return;
+          }
+          if (expansions >= _maxExpansions) {
+            _messages.error(
+                '@extend expansions exceeded $_maxExpansions', node.span);
+            super.visitSelectorGroup(node);
+            return;
+          }
+          expansions++;
+          parents[derived] = selectors;
+          depths[derived] = depth;
+          node.selectors.add(derived);
         }
       }
     }

@@ -8,7 +8,6 @@
 // ignore_for_file: avoid_dynamic_calls
 
 import 'package:test/test.dart';
-import 'package:yaml/tokens.dart';
 import 'package:yaml/yaml.dart';
 
 import 'utils.dart';
@@ -1155,6 +1154,71 @@ void main() {
         First occurrence: &anchor Value
         Second occurrence: *anchor''');
     });
+
+    test('rejects malformed percent-encoding in tag URIs with YamlException',
+        () {
+      for (var input in [
+        '!<%> foo',
+        '!a!% foo',
+        '%TAG ! tag:%\n---\n!foo bar',
+        '!% foo',
+        '!<%GG> foo',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
+
+    test(
+        'rejects invalid UTF-8 percent-encoding in tag URIs with YamlException',
+        () {
+      for (var input in [
+        '!<%C3%28> foo',
+        '!%C3%28 foo',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
+
+    test('rejects undefined local tags with YamlException', () {
+      for (var input in [
+        '!custom 123',
+        '!<custom> 123',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+
+      // When %TAG ! is mapped to the standard YAML tag prefix, shorthand !str
+      // and !int tags resolve through the primary handle.
+      expectYamlLoads(['12', 12], '''
+        %TAG ! tag:yaml.org,2002:
+        ---
+        - !str 12
+        - !int "12"''');
+    });
+
+    test('handles block sequence, simple key, and CRLF edge cases cleanly', () {
+      for (var input in [
+        '- :?\t-\r:',
+        'a: "\r\n:',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+
+      expect(
+          loadYaml('?\r-'),
+          deepEquals(deepEqualsMap({
+            [null]: null
+          })));
+      expect(loadYamlNode('?\r-'), isA<YamlMap>());
+      expect(loadYaml('-\n...'), equals([null]));
+      expect(loadYamlNode('-\n...'), isA<YamlList>());
+      expect(loadYaml(':?\t'), equals(':?'));
+      expect(loadYamlNode(':?\t'), isA<YamlScalar>());
+    });
   });
 
   // Chapter 7: Flow Styles
@@ -1942,7 +2006,36 @@ void main() {
         positive: !!float 2.3e4
         infinity: !!float .inf
         not a number: !!float .nan''');
-    }, skip: 'Fails for single digit float');
+    });
+
+    test('rejects empty and invalid 1-character !!int and !!float scalars', () {
+      for (var input in [
+        '!!int',
+        '!!int ""',
+        '- !!int\n',
+        '!!float',
+        '!!float ""',
+        '- !!float\n',
+        '!!float a',
+        '!!float .',
+        '!!float -',
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
+
+    test(
+        'rejects unseparated content after a multiline quoted scalar at block '
+        'indent', () {
+      for (var input in [
+        ' a: "\n"b',
+        " a: '\n'b",
+      ]) {
+        expect(() => loadYaml(input), throwsYamlException);
+        expect(() => loadYamlNode(input), throwsYamlException);
+      }
+    });
 
     test('[Example 10.8]', () {
       expectYamlStreamLoads([
@@ -1998,47 +2091,10 @@ void main() {
     expect(sanityCheckCount, expectedPermutationCount);
   });
 
-  group('retainTokens', () {
-    test('returns null tokens by default', () {
-      final document = loadYamlDocument('a: 1 # comment');
-      expect(document.tokens, isNull);
-    });
-
-    test(
-        'emits comments and indicators in source order without 0-length tokens',
-        () {
-      const source = '# header\na: [1, 2] # inline\n# footer\n';
-      final document = loadYamlDocument(source, retainTokens: true);
-      final tokens = document.tokens!;
-      expect(tokens.every((t) => t.span.length > 0), isTrue);
-      for (var i = 1; i < tokens.length; i++) {
-        expect(
-          tokens[i].span.start.offset,
-          greaterThanOrEqualTo(tokens[i - 1].span.end.offset),
-        );
-      }
-      final comments = tokens.whereType<CommentToken>().map((c) => c.span.text);
-      expect(comments, ['# header', '# inline', '# footer']);
-    });
-
-    test('retains comments in empty or comment-only documents', () {
-      const source = '# first\n# second\n';
-      final document = loadYamlDocument(source, retainTokens: true);
-      expect(document.contents.value, isNull);
-      final tokens = document.tokens!;
-      expect(tokens, hasLength(2));
-      expect(
-        tokens.map((t) => (t.type, t.toString())).toList(),
-        [
-          (TokenType.comment, 'COMMENT "# first"'),
-          (TokenType.comment, 'COMMENT "# second"'),
-        ],
-      );
-    });
-
+  group('block scalar spans', () {
     test('includes trailing empty lines in keep-chomped block scalar span', () {
       const source = 'a: |+\n  hello\n\n\nb: 2\n';
-      final document = loadYamlDocument(source, retainTokens: true);
+      final document = loadYamlDocument(source);
       final map = document.contents as YamlMap;
       final scalar = map.nodes['a'] as YamlScalar;
       expect(scalar.value, 'hello\n\n\n');
@@ -2049,7 +2105,7 @@ void main() {
     test('bounds empty strip and clip block scalar spans at the header line',
         () {
       const source = 'strip: >-\n\nclip: >\n\nkeep: |+\n\n';
-      final document = loadYamlDocument(source, retainTokens: true);
+      final document = loadYamlDocument(source);
       final map = document.contents as YamlMap;
       final stripScalar = map.nodes['strip'] as YamlScalar;
       final clipScalar = map.nodes['clip'] as YamlScalar;
@@ -2063,87 +2119,45 @@ void main() {
       expect(keepScalar.span.text, '|+\n');
     });
 
-    test('exposes Token subclasses, types, and toString representations', () {
-      const source = '%YAML 1.2\n'
-          '%TAG !e! tag:yaml.org,2002:\n'
-          '---\n'
-          '# comment\n'
-          'a: &anc !e!str "val"\n'
-          'b: *anc\n'
-          '...\n';
-      final document = loadYamlDocument(source, retainTokens: true);
-      expect(document.toString(), '{a: val, b: val}');
-      expect(document.versionDirective.toString(), '%YAML 1.2');
-      expect(
-        document.tagDirectives.map((d) => d.toString()).toList(),
-        ['%TAG !e! tag:yaml.org,2002:'],
-      );
+    test('excludes header comment from empty block scalar span', () {
+      const source = 'a: > # comment\n\nb: 1\n';
+      final document = loadYamlDocument(source);
+      final map = document.contents as YamlMap;
+      final scalar = map.nodes['a'] as YamlScalar;
 
-      final tokens = document.tokens!;
-      final versionToken = tokens.whereType<VersionDirectiveToken>().single;
-      expect(versionToken.type, TokenType.versionDirective);
-      expect(versionToken.major, 1);
-      expect(versionToken.minor, 2);
-      expect(versionToken.toString(), 'VERSION_DIRECTIVE 1.2');
-
-      final tagDirectiveToken = tokens.whereType<TagDirectiveToken>().single;
-      expect(tagDirectiveToken.type, TokenType.tagDirective);
-      expect(tagDirectiveToken.handle, '!e!');
-      expect(tagDirectiveToken.prefix, 'tag:yaml.org,2002:');
-      expect(
-        tagDirectiveToken.toString(),
-        'TAG_DIRECTIVE !e! tag:yaml.org,2002:',
-      );
-
-      final commentToken = tokens.whereType<CommentToken>().single;
-      expect(commentToken.type, TokenType.comment);
-      expect(commentToken.toString(), 'COMMENT "# comment"');
-
-      final anchorToken = tokens.whereType<AnchorToken>().single;
-      expect(anchorToken.type, TokenType.anchor);
-      expect(anchorToken.name, 'anc');
-      expect(anchorToken.toString(), 'ANCHOR anc');
-
-      final tagToken = tokens.whereType<TagToken>().single;
-      expect(tagToken.type, TokenType.tag);
-      expect(tagToken.handle, '!e!');
-      expect(tagToken.suffix, 'str');
-      expect(tagToken.toString(), 'TAG !e! str');
-
-      final aliasToken = tokens.whereType<AliasToken>().single;
-      expect(aliasToken.type, TokenType.alias);
-      expect(aliasToken.name, 'anc');
-      expect(aliasToken.toString(), 'ALIAS anc');
-
-      final scalarTokens = tokens.whereType<ScalarToken>().toList();
-      expect(
-        scalarTokens.map((t) => (t.type, t.toString())).toList(),
-        [
-          (TokenType.scalar, 'SCALAR PLAIN "a"'),
-          (TokenType.scalar, 'SCALAR DOUBLE_QUOTED "val"'),
-          (TokenType.scalar, 'SCALAR PLAIN "b"'),
-        ],
-      );
-
-      final plainIndicator =
-          tokens.firstWhere((t) => t.type == TokenType.documentStart);
-      expect(plainIndicator.toString(), 'TokenType.documentStart');
+      expect(scalar.value, '');
+      expect(scalar.span.text, '>');
     });
   });
 
-  group('loadYamlDocuments', () {
-    test('loads multiple documents with metadata', () {
-      const source = '%YAML 1.2\n---\na: 1\n...\n---\nb: 2\n';
-      final documents =
-          loadYamlDocuments(source, sourceUrl: Uri.parse('test.yaml'));
-      expect(documents, hasLength(2));
-      expect(documents[0].contents, {'a': 1});
-      expect(documents[0].versionDirective.toString(), '%YAML 1.2');
-      expect(documents[1].contents, {'b': 2});
+  group('empty implicit flow keys', () {
+    test('parses {:} and [:] as empty-key mappings', () {
+      expect(loadYaml('{:}'), {null: null});
+      expect(loadYaml('[:]'), [
+        {null: null}
+      ]);
+      expect(loadYaml('{: a}'), {null: 'a'});
+    });
+  });
+
+  group('tabs on blank and comment-only lines', () {
+    test('allows tab-only and tab-comment lines between block entries', () {
+      expect(loadYaml('foo: 1\n\t\nbar: 2\n'), {'foo': 1, 'bar': 2});
+      expect(loadYaml('foo: 1\n\t# comment\nbar: 2\n'), {'foo': 1, 'bar': 2});
+      expect(loadYaml('- a\n\t\n- b\n'), ['a', 'b']);
+      expect(loadYaml('[a\n\t\n]'), ['a']);
     });
 
-    test('returns an empty list for an empty stream', () {
-      expect(loadYamlDocuments(''), isEmpty);
+    test('does not include trailing tab-only line in plain scalar span', () {
+      const source = 'key: value\n\t';
+      final doc = loadYamlDocument(source);
+      final scalar = (doc.contents as YamlMap).nodes['key'] as YamlScalar;
+      expect(scalar.value, 'value');
+      expect(scalar.span.text, 'value');
+    });
+
+    test('rejects tab-only line inside multiline plain scalar at column 0', () {
+      expect(() => loadYaml('a: b\n\t\n  c\n'), throwsYamlException);
     });
   });
 }

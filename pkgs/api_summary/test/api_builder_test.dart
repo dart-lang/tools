@@ -206,12 +206,6 @@ class C {
                 ],
                 'methods': [
                   {
-                    'name': 'm',
-                    'locationUri': 'package:test/file.dart',
-                    'kind': 'method',
-                    'returnType': {'kind': 'void'},
-                  },
-                  {
                     'name': 'x',
                     'locationUri': 'package:test/file.dart',
                     'kind': 'getter',
@@ -238,6 +232,12 @@ class C {
                       },
                     ],
                   },
+                  {
+                    'name': 'm',
+                    'locationUri': 'package:test/file.dart',
+                    'kind': 'method',
+                    'returnType': {'kind': 'void'},
+                  },
                 ],
               },
             ],
@@ -258,7 +258,7 @@ class MyClass extends Foo implements PrivateInterface {}
       '$testPackageLibPath/src/private.dart': '''
 class PrivateInterface {}
 ''',
-    }, customizer: _IncludeReferencedTypesCustomizer());
+    }, customizer: const ApiSummaryCustomizer(includeReferencedTypes: true));
 
     final decodedMap = jsonDecode(summary) as Map<String, dynamic>;
     final rehydrated = ApiSummary.fromJson(decodedMap);
@@ -380,6 +380,343 @@ enum MyEnum {
     expect(enumValues.isEnumConstant, isFalse);
   }
 
+  Future<void> test_customizerConstructorFlags() async {
+    final summary = await _build(
+      {
+        '$testPackageLibPath/file.dart': '''
+import 'src/private.dart';
+
+class PublicClass extends LeakedBase {}
+''',
+        '$testPackageLibPath/src/private.dart': '''
+class LeakedBase {
+  void leakedMethod(TransitiveLeak arg) {}
+}
+class TransitiveLeak {
+  int get count => 0;
+}
+''',
+      },
+      customizer: const ApiSummaryCustomizer(
+        includeImplicitNonPublicMembers: true,
+      ),
+    );
+
+    final decodedMap = jsonDecode(summary) as Map<String, dynamic>;
+    final rehydrated = ApiSummary.fromJson(decodedMap);
+
+    final privateLib = rehydrated.libraries.firstWhere(
+      (l) => l.uri == 'package:test/src/private.dart',
+    );
+    expect(privateLib.isPublicEntryPoint, isFalse);
+    expect(
+      privateLib.classes.map((c) => c.name),
+      containsAll(['LeakedBase', 'TransitiveLeak']),
+    );
+
+    final leakedBase = privateLib.classes.firstWhere(
+      (c) => c.name == 'LeakedBase',
+    );
+    expect(leakedBase.status, ApiDeclarationStatus.nonPublic);
+    expect(leakedBase.methods.map((m) => m.name), contains('leakedMethod'));
+
+    final transitiveLeak = privateLib.classes.firstWhere(
+      (c) => c.name == 'TransitiveLeak',
+    );
+    expect(transitiveLeak.status, ApiDeclarationStatus.nonPublic);
+    expect(transitiveLeak.methods.map((m) => m.name), contains('count'));
+  }
+
+  Future<void> test_canonicalSortingMatchesTextOrder() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+void aTopFunc(int posZ, int posA, {int? zNamed, required int aNamed}) {}
+set top(int value) {}
+int get top => 0;
+int get top9 => 0;
+set top9(int value) {}
+
+class C {
+  C.alpha();
+  C({int? zParam, required int aParam});
+
+  void aInstanceMethod() {}
+  set prop(int value) {}
+  int get prop => 0;
+  int get prop9 => 0;
+  set prop9(int value) {}
+
+  static void aStaticMethod() {}
+  static set sProp(int value) {}
+  static int get sProp => 0;
+}
+''',
+    });
+
+    final decodedMap = jsonDecode(summary) as Map<String, dynamic>;
+    final rehydrated = ApiSummary.fromJson(decodedMap);
+    final lib = rehydrated.libraries.single;
+
+    expect(
+      lib.functions.map((f) => f.name).toList(),
+      equals(['top', 'top=', 'top9', 'top9=', 'aTopFunc']),
+    );
+
+    final topFunc = lib.functions.singleWhere((f) => f.name == 'aTopFunc');
+    expect(
+      topFunc.parameters.map((p) => p.name).toList(),
+      equals(['posZ', 'posA', 'aNamed', 'zNamed']),
+    );
+
+    final cls = lib.classes.single;
+    expect(
+      cls.constructors.map((c) => c.name).toList(),
+      equals(['new', 'alpha']),
+    );
+    expect(
+      cls.constructors.first.parameters.map((p) => p.name).toList(),
+      equals(['aParam', 'zParam']),
+    );
+    expect(
+      cls.methods.map((m) => m.name).toList(),
+      equals([
+        'sProp',
+        'sProp=',
+        'aStaticMethod',
+        'prop',
+        'prop=',
+        'prop9',
+        'prop9=',
+        'aInstanceMethod',
+      ]),
+    );
+
+    expect(
+      rehydrated.toString(),
+      equals('''
+package:test/file.dart:
+  top (static getter: int)
+  top= (static setter: int)
+  top9 (static getter: int)
+  top9= (static setter: int)
+  aTopFunc (function: void Function(int, int, {required int aNamed, int? zNamed}))
+  C (class extends Object):
+    sProp (static getter: int)
+    sProp= (static setter: int)
+    aStaticMethod (static method: void Function())
+    new (constructor: C Function({required int aParam, int? zParam}))
+    alpha (constructor: C Function())
+    prop (getter: int)
+    prop= (setter: int)
+    prop9 (getter: int)
+    prop9= (setter: int)
+    aInstanceMethod (method: void Function())
+dart:core:
+  Object (referenced)
+  int (referenced)
+'''),
+    );
+  }
+
+  void test_fromJson_canonicalizesUnsortedInput() {
+    final rehydrated = ApiSummary.fromJson({
+      'name': 'pkg',
+      'libraries': [
+        {
+          'uri': 'package:pkg/secondary.dart',
+          'isPublicEntryPoint': true,
+          'classes': <Map<String, dynamic>>[],
+        },
+        {
+          'uri': 'package:pkg/pkg.dart',
+          'isPublicEntryPoint': true,
+          'classes': [
+            {'name': 'ZClass'},
+            {
+              'name': 'AClass',
+              'modifiers': ['sealed'],
+              'immediateSubtypes': ['ZSub', 'ASub'],
+              'constructors': [
+                {
+                  'name': 'fromJson',
+                  'kind': 'constructor',
+                  'returnType': {'kind': 'void'},
+                },
+                {
+                  'name': 'new',
+                  'kind': 'constructor',
+                  'returnType': {'kind': 'void'},
+                  'parameters': [
+                    {
+                      'name': 'posSecond',
+                      'type': {'kind': 'dynamic'},
+                      'isRequired': true,
+                    },
+                    {
+                      'name': 'posFirst',
+                      'type': {'kind': 'dynamic'},
+                      'isRequired': true,
+                    },
+                    {
+                      'name': 'zNamed',
+                      'type': {
+                        'kind': 'record',
+                        'namedFields': [
+                          {
+                            'name': 'zField',
+                            'type': {'kind': 'dynamic'},
+                          },
+                          {
+                            'name': 'aField',
+                            'type': {'kind': 'dynamic'},
+                          },
+                        ],
+                      },
+                      'isNamed': true,
+                    },
+                    {
+                      'name': 'aNamed',
+                      'type': {
+                        'kind': 'function',
+                        'returnType': {'kind': 'void'},
+                        'parameters': [
+                          {
+                            'name': 'posFn',
+                            'type': {'kind': 'dynamic'},
+                            'isRequired': true,
+                          },
+                          {
+                            'name': 'zFnNamed',
+                            'type': {'kind': 'dynamic'},
+                            'isNamed': true,
+                          },
+                          {
+                            'name': 'aFnNamed',
+                            'type': {'kind': 'dynamic'},
+                            'isNamed': true,
+                          },
+                        ],
+                      },
+                      'isNamed': true,
+                    },
+                  ],
+                },
+              ],
+              'methods': [
+                {
+                  'name': 'instMethod',
+                  'kind': 'method',
+                  'returnType': {'kind': 'void'},
+                },
+                {
+                  'name': 'a=',
+                  'kind': 'setter',
+                  'returnType': {'kind': 'void'},
+                  'parameters': [
+                    {
+                      'name': 'v',
+                      'type': {'kind': 'dynamic'},
+                      'isRequired': true,
+                    },
+                  ],
+                },
+                {
+                  'name': 'a9',
+                  'kind': 'getter',
+                  'returnType': {'kind': 'dynamic'},
+                },
+                {
+                  'name': 'a',
+                  'kind': 'getter',
+                  'returnType': {'kind': 'dynamic'},
+                },
+                {
+                  'name': 'staticGetter',
+                  'kind': 'getter',
+                  'isStatic': true,
+                  'returnType': {'kind': 'dynamic'},
+                },
+              ],
+            },
+          ],
+          'functions': [
+            {
+              'name': 'topFn',
+              'kind': 'function',
+              'returnType': {'kind': 'void'},
+            },
+            {
+              'name': 'x=',
+              'kind': 'setter',
+              'returnType': {'kind': 'void'},
+              'parameters': [
+                {
+                  'name': 'v',
+                  'type': {'kind': 'dynamic'},
+                  'isRequired': true,
+                },
+              ],
+            },
+            {
+              'name': 'x9',
+              'kind': 'getter',
+              'returnType': {'kind': 'dynamic'},
+            },
+            {
+              'name': 'x',
+              'kind': 'getter',
+              'returnType': {'kind': 'dynamic'},
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(
+      rehydrated.libraries.map((l) => l.uri).toList(),
+      equals(['package:pkg/pkg.dart', 'package:pkg/secondary.dart']),
+    );
+
+    final primaryLib = rehydrated.libraries.first;
+    expect(
+      primaryLib.classes.map((c) => c.name).toList(),
+      equals(['AClass', 'ZClass']),
+    );
+    expect(
+      primaryLib.functions.map((f) => f.name).toList(),
+      equals(['x', 'x=', 'x9', 'topFn']),
+    );
+
+    final aClass = primaryLib.classes.first;
+    expect(aClass.immediateSubtypes, equals(['ASub', 'ZSub']));
+    expect(
+      aClass.constructors.map((c) => c.name).toList(),
+      equals(['new', 'fromJson']),
+    );
+    expect(
+      aClass.methods.map((m) => m.name).toList(),
+      equals(['staticGetter', 'a', 'a=', 'a9', 'instMethod']),
+    );
+
+    final newCtor = aClass.constructors.first;
+    expect(
+      newCtor.parameters.map((p) => p.name).toList(),
+      equals(['posSecond', 'posFirst', 'aNamed', 'zNamed']),
+    );
+
+    final fnParamType = newCtor.parameters[2].type as ApiFunctionType;
+    expect(
+      fnParamType.parameters.map((p) => p.name).toList(),
+      equals(['posFn', 'aFnNamed', 'zFnNamed']),
+    );
+
+    final recordParamType = newCtor.parameters[3].type as ApiRecordType;
+    expect(
+      recordParamType.namedFields.map((f) => f.name).toList(),
+      equals(['aField', 'zField']),
+    );
+  }
+
   Future<String> _build(
     Map<String, String> files, {
     ApiSummaryCustomizer? customizer,
@@ -400,9 +737,4 @@ enum MyEnum {
     final package = await buildApiPackage('test', context, resolvedCustomizer);
     return jsonEncode(package.toJson());
   }
-}
-
-base class _IncludeReferencedTypesCustomizer extends ApiSummaryCustomizer {
-  @override
-  bool get includeReferencedTypes => true;
 }

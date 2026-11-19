@@ -9,6 +9,8 @@
 /// offsets in collections) while preserving surrounding comments and layout.
 library;
 
+import 'dart:math' show min;
+
 import 'package:yaml/yaml.dart';
 
 import 'cst.dart';
@@ -18,6 +20,151 @@ import 'source_edit.dart';
 import 'strings.dart';
 import 'utils.dart';
 import 'wrap.dart';
+
+/// Text and whitespace helpers on [CstDocument] used by slot mutations.
+extension _CstDocumentTextHelpers on CstDocument {
+  /// Returns the byte length of the line break starting at [offset]
+  /// (`2` for `\r\n`, `1` for `\n` or `\r`, and `0` otherwise).
+  int lineBreakLengthAt(int offset) {
+    if (offset < 0 || offset >= source.length) return 0;
+    final char = source.codeUnitAt(offset);
+    if (char == 0x0A) return 1;
+    if (char == 0x0D) {
+      return (offset + 1 < source.length &&
+              source.codeUnitAt(offset + 1) == 0x0A)
+          ? 2
+          : 1;
+    }
+    return 0;
+  }
+
+  /// Whether a line break starts at [offset].
+  bool hasLineBreakAt(int offset) => lineBreakLengthAt(offset) > 0;
+
+  /// Returns the byte length of the line break immediately preceding [offset]
+  /// (`2` for `\r\n`, `1` for `\n` or `\r`, and `0` otherwise).
+  int lineBreakLengthBefore(int offset) {
+    if (offset <= 0 || offset > source.length) return 0;
+    final prev = source.codeUnitAt(offset - 1);
+    if (prev == 0x0A) {
+      return (offset >= 2 && source.codeUnitAt(offset - 2) == 0x0D) ? 2 : 1;
+    }
+    if (prev == 0x0D) return 1;
+    return 0;
+  }
+
+  /// Whether a line break ends immediately before [offset].
+  bool hasLineBreakBefore(int offset) => lineBreakLengthBefore(offset) > 0;
+
+  /// Whether `[start, end)` contains any line break.
+  bool hasLineBreakInRange(int start, int end) {
+    if (start >= end) return false;
+    return lineStartOf(start) != lineStartOf(end - 1) ||
+        hasLineBreakAt(end - 1);
+  }
+
+  /// Whether the character immediately before [offset] is a space or tab.
+  bool hasWhitespaceBefore(int offset) {
+    if (offset <= 0 || offset > source.length) return false;
+    final char = source.codeUnitAt(offset - 1);
+    return char == 0x20 || char == 0x09;
+  }
+
+  /// Whether every character in `[start, end)` is a space or tab.
+  bool isWhitespaceRange(int start, int end) {
+    for (var i = start; i < end; i++) {
+      final char = source.codeUnitAt(i);
+      if (char != 0x20 && char != 0x09) return false;
+    }
+    return true;
+  }
+
+  /// Whether `[start, end)` contains a horizontal tab (`\t`).
+  bool hasTabInRange(int start, int end) {
+    for (var i = start; i < end; i++) {
+      if (source.codeUnitAt(i) == 0x09) return true;
+    }
+    return false;
+  }
+
+  /// Extends [startOffset] past any trailing blank lines and comments indented
+  /// strictly more than [collectionIndent].
+  int extendPastIndentedCommentsAndBlankLines(
+    int startOffset,
+    int collectionIndent,
+  ) {
+    var endOffset = startOffset;
+    var probe = endOffset;
+
+    while (probe < source.length) {
+      final lineStart = lineStartOf(probe);
+      if (probe != lineStart) break;
+
+      final lineContentEnd = lineContentEndOf(probe);
+      final lineBreakEnd = lineBreakEndOf(probe);
+
+      final comment = commentInRange(lineStart, lineContentEnd);
+      if (comment != null) {
+        final column = comment.span.start.offset - lineStart;
+        if (isWhitespaceRange(lineStart, comment.span.start.offset) &&
+            column > collectionIndent) {
+          endOffset = lineBreakEnd;
+          probe = lineBreakEnd;
+          continue;
+        }
+        break;
+      }
+
+      if (isWhitespaceRange(lineStart, lineContentEnd)) {
+        endOffset = lineBreakEnd;
+        probe = lineBreakEnd;
+        continue;
+      }
+
+      break;
+    }
+
+    return endOffset;
+  }
+}
+
+/// Collects all [YamlNode] values referenced by any [CstAlias] in [document].
+///
+/// Walks the CST iteratively so deeply nested documents do not overflow the
+/// call stack.
+Set<YamlNode> collectAliasedValues(CstDocument document) {
+  final root = document.root;
+  if (root == null) return const {};
+  final result = <YamlNode>{};
+  final stack = <CstNode>[root];
+  while (stack.isNotEmpty) {
+    final node = stack.removeLast();
+    switch (node) {
+      case CstAlias():
+        result.add(node.value);
+      case CstBlockSeq():
+        for (final entry in node.entries) {
+          stack.add(entry.value);
+        }
+      case CstBlockMap():
+        for (final entry in node.entries) {
+          stack.add(entry.key);
+          stack.add(entry.value);
+        }
+      case CstFlowCollection():
+        for (final entry in node.entries) {
+          if (entry.key case final key?) stack.add(key);
+          stack.add(entry.value);
+        }
+      case CstFlowPair():
+        stack.add(node.key);
+        stack.add(node.pairValue);
+      case CstScalar() || CstEmpty():
+        break;
+    }
+  }
+  return result;
+}
 
 /// The layout conventions to follow when writing new content into a document.
 ///
@@ -191,7 +338,7 @@ EncodedValue encodeValue(
   );
 }
 
-/// Encodes [value] to be written immediately after a `-`, where YAML's compact
+/// Encodes [value] to be written immediately after a `- `, where YAML's compact
 /// notation lets a nested block collection share the line.
 ///
 /// The result always follows a single space and never begins a new line.
@@ -200,15 +347,17 @@ String encodeAfterDash(
   LayoutStyle style, {
   required int dashColumn,
 }) {
-  final indent = dashColumn + style.indentStep;
+  // After `- `, content starts at `dashColumn + 2` regardless of the document's
+  // indent step, so any multi-line compact collection must align to that
+  // column.
+  final compactColumn = dashColumn + 2;
   if (_spansOwnLines(value)) {
     // The encoder indents every line including the first; drop the first line's
     // indentation so the collection can start on the dash's line.
-    return yamlEncodeBlock(value, indent, style.lineEnding).substring(indent);
+    return yamlEncodeBlock(value, compactColumn, style.lineEnding)
+        .substring(compactColumn);
   }
-  // A block scalar's body is indented relative to the entry, which starts one
-  // step past the dash, not relative to the dash itself.
-  return yamlEncodeBlock(value, indent, style.lineEnding);
+  return yamlEncodeBlock(value, compactColumn, style.lineEnding);
 }
 
 // ---------------------------------------------------------------------------
@@ -225,32 +374,150 @@ SourceEdit buildUpdate(
   YamlNode value,
 ) {
   final edit = _buildUpdate(document, path, value);
-  final bodyIndent = _blockBodyIndent(document, path, value);
+  final bodyIndent = _emittedBlockScalarBodyIndent(edit.replacement, value);
   if (bodyIndent != null) {
-    return _preventBlockScalarSwallowing(document, edit, bodyIndent);
+    final entryColumn = _entryColumnForUpdate(document, path);
+    return _preventBlockScalarSwallowing(
+      document,
+      edit,
+      bodyIndent: bodyIndent,
+      targetColumn: min(entryColumn, bodyIndent - 1),
+    );
   }
   return edit;
 }
 
-/// Adjusts [edit] to prevent an inserted or updated block scalar with
-/// [bodyIndent] from swallowing subsequent over-indented comments or blank
-/// lines (addressing Bug H2RW_0).
+final _blockScalarHeaderPattern = RegExp(r'(?:^|\s)[|>]-(\s+#.*)?$');
+
+/// Returns the trailing block-styled scalar of [node] if [node] is a block
+/// scalar or a block collection whose last entry ends with one.
+YamlScalar? _trailingBlockScalar(YamlNode node) {
+  var current = node;
+  while (true) {
+    if (current is YamlScalar) {
+      return (current.style == ScalarStyle.LITERAL ||
+              current.style == ScalarStyle.FOLDED)
+          ? current
+          : null;
+    }
+    if (!isBlockNode(current)) return null;
+    if (current is YamlList && current.nodes.isNotEmpty) {
+      current = current.nodes.last;
+    } else if (current is YamlMap && current.nodes.isNotEmpty) {
+      current = current.nodes.values.last;
+    } else {
+      return null;
+    }
+  }
+}
+
+/// Returns the actual body indentation of a trailing block scalar emitted in
+/// [replacement], or `null` if [value] did not emit a block scalar (for
+/// example, a block collection without a trailing block scalar, a flow value,
+/// or a block scalar that fell back to double-quoted style).
+int? _emittedBlockScalarBodyIndent(String replacement, YamlNode value) {
+  if (_trailingBlockScalar(value) == null) return null;
+
+  var trimmed = replacement;
+  if (trimmed.endsWith('\r\n')) {
+    trimmed = trimmed.substring(0, trimmed.length - 2);
+  } else if (trimmed.endsWith('\n') || trimmed.endsWith('\r')) {
+    trimmed = trimmed.substring(0, trimmed.length - 1);
+  }
+
+  final lines = trimmed.split(RegExp(r'\r\n|\n|\r'));
+  if (lines.length < 2) return null;
+
+  final lastLine = lines.last;
+  var bodyIndent = 0;
+  while (
+      bodyIndent < lastLine.length && lastLine.codeUnitAt(bodyIndent) == 0x20) {
+    bodyIndent++;
+  }
+  if (bodyIndent == 0 || bodyIndent == lastLine.length) return null;
+
+  // Walk backwards over the block scalar's body lines (blank lines or lines
+  // indented at least [bodyIndent]) to verify a `|-` or `>-` header precedes
+  // them.
+  var i = lines.length - 2;
+  while (i >= 0) {
+    final line = lines[i];
+    if (line.isEmpty) {
+      i--;
+      continue;
+    }
+    var spaces = 0;
+    while (spaces < line.length && line.codeUnitAt(spaces) == 0x20) {
+      spaces++;
+    }
+    if (spaces >= bodyIndent) {
+      i--;
+      continue;
+    }
+    return _blockScalarHeaderPattern.hasMatch(line) ? bodyIndent : null;
+  }
+  return null;
+}
+
+int _entryColumnForUpdate(CstDocument document, List<Object?> path) {
+  if (path.isEmpty) return 0;
+  final parent = findNode(document, path.take(path.length - 1));
+  final step = path.last;
+  return switch (parent) {
+    CstBlockSeq()
+        when step is int && step >= 0 && step < parent.entries.length =>
+      document.columnOf(parent.entries[step].dashStart),
+    CstBlockMap() => switch (findEntryIndex(parent, step)) {
+        final index? => document.columnOf(parent.entries[index].keyStart),
+        null => document.columnOf(parent.entries.first.keyStart),
+      },
+    _ => 0,
+  };
+}
+
+int _entryColumnForInsert(CstDocument document, List<Object?> path) {
+  final parent = findNode(document, path);
+  if (parent is CstBlockSeq && parent.entries.isNotEmpty) {
+    return document.columnOf(parent.entries.first.dashStart);
+  }
+  return 0;
+}
+
+/// Adjusts [edit] to prevent an emitted block scalar with [bodyIndent] from
+/// swallowing subsequent over-indented comments or whitespace-only lines
+/// (addressing H2RW_0).
+///
+/// Blank lines of any indentation do not terminate a YAML block scalar, so this
+/// scans across blank lines until a terminating line (a comment at column less
+/// than [bodyIndent] or a content line) is reached. If no hazardous line is
+/// found, [edit] is returned unchanged. Over-indented comments are re-indented
+/// to [targetColumn] (strictly less than [bodyIndent]), terminating the block
+/// scalar while keeping comments aligned with the enclosing entry.
 SourceEdit _preventBlockScalarSwallowing(
   CstDocument document,
-  SourceEdit edit,
-  int bodyIndent,
-) {
+  SourceEdit edit, {
+  required int bodyIndent,
+  required int targetColumn,
+}) {
   final endOffset = edit.offset + edit.length;
   var probe = endOffset;
 
-  final breakLength = document.lineBreakLengthAt(probe);
-  if (breakLength > 0) {
-    probe += breakLength;
+  // When [edit] ends mid-line (for example, replacing a scalar in place), step
+  // past that line's own terminating line break. When [edit] already ends at a
+  // line start (such as a whole-line insertion), leave the line at [endOffset]
+  // intact so we inspect it as the first following line.
+  final atLineStart = probe == document.lineStartOf(probe);
+  if (!atLineStart) {
+    final breakLength = document.lineBreakLengthAt(probe);
+    if (breakLength > 0) {
+      probe += breakLength;
+    }
   }
 
-  var extraLength = probe - endOffset;
+  var sawHazard = false;
   final buffer = StringBuffer();
   final source = document.source;
+  final indentPrefix = ' ' * targetColumn;
 
   while (probe < source.length) {
     final lineStart = document.lineStartOf(probe);
@@ -265,13 +532,17 @@ SourceEdit _preventBlockScalarSwallowing(
       final column = comment.span.start.offset - lineStart;
       if (document.isWhitespaceRange(lineStart, comment.span.start.offset) &&
           column >= bodyIndent) {
+        sawHazard = true;
         final commentText =
             source.substring(comment.span.start.offset, lineContentEnd);
-        buffer.write('$commentText$lineBreak');
-        extraLength += lineBreakEnd - probe;
+        buffer.write('$indentPrefix$commentText$lineBreak');
         probe = lineBreakEnd;
-        continue;
+        // Re-indenting this comment to `targetColumn < bodyIndent` terminates
+        // the block scalar, so subsequent lines are safe.
+        break;
       }
+      // A comment indented less than [bodyIndent] already terminates the block
+      // scalar.
       break;
     }
 
@@ -279,18 +550,21 @@ SourceEdit _preventBlockScalarSwallowing(
       final spacesCount = lineContentEnd - lineStart;
       if (document.hasTabInRange(lineStart, lineContentEnd) ||
           spacesCount >= bodyIndent) {
+        sawHazard = true;
         buffer.write(lineBreak);
-        extraLength += lineBreakEnd - probe;
-        probe = lineBreakEnd;
-        continue;
+      } else {
+        buffer.write(source.substring(lineStart, lineBreakEnd));
       }
+      probe = lineBreakEnd;
+      continue;
     }
 
     break;
   }
 
-  if (extraLength == 0) return edit;
+  if (!sawHazard) return edit;
 
+  final extraLength = probe - endOffset;
   final lineEnding = document.lineEnding;
   final replacementEnding = edit.replacement.endsWith(lineEnding)
       ? edit.replacement
@@ -316,50 +590,6 @@ String attachHeaderComment(
         '${replacement.substring(breakIndex)}';
   }
   return '$replacement$comment';
-}
-
-int? _blockBodyIndent(
-  CstDocument document,
-  List<Object?> path,
-  YamlNode value,
-) {
-  if (value is YamlScalar) {
-    if (value.style != ScalarStyle.LITERAL &&
-        value.style != ScalarStyle.FOLDED) {
-      return null;
-    }
-  } else if (!isBlockNode(value)) {
-    return null;
-  }
-  const additionalIndentation = 2;
-  if (path.isEmpty) return additionalIndentation;
-
-  final parentPath = path.take(path.length - 1).toList();
-  final step = path.last;
-  final parent = findNode(document, parentPath);
-  if (parent == null) return null;
-
-  switch (parent) {
-    case CstBlockSeq():
-      if (step is int && step >= 0 && step < parent.entries.length) {
-        return document.columnOf(parent.entries[step].dashStart) +
-            additionalIndentation;
-      }
-      return additionalIndentation;
-    case CstBlockMap():
-      final index = findEntryIndex(parent, step);
-      if (index != null) {
-        return document.columnOf(parent.entries[index].keyStart) +
-            additionalIndentation;
-      }
-      return document.columnOf(parent.entries.first.keyStart) +
-          additionalIndentation;
-    case CstFlowPair():
-    case CstFlowCollection():
-      return null;
-    default:
-      return additionalIndentation;
-  }
 }
 
 SourceEdit _buildUpdate(
@@ -403,7 +633,8 @@ SourceEdit _buildUpdate(
       if (index == null) {
         return _appendFlowMapEntry(document, parent, step, value);
       }
-      return _replaceFlowMapValue(parent, parent.entries[index], step, value);
+      return _replaceFlowMapValue(
+          document, parent, parent.entries[index], value);
 
     case CstFlowPair():
       if (findEntryIndex(parent, step) == null) {
@@ -488,6 +719,23 @@ String _attachCommentToReplacement(
   return '$replacement$comment';
 }
 
+/// Appends [lineEnding] to [replacement] when the replaced range ends just
+/// past a line break in [document], preventing the next line from joining onto
+/// the replacement.
+String _preserveTrailingBreak(
+  CstDocument document,
+  int replaceEnd,
+  String replacement,
+  String lineEnding,
+) {
+  if (replaceEnd > 0 &&
+      document.hasLineBreakBefore(replaceEnd) &&
+      !replacement.endsWith(lineEnding)) {
+    return '$replacement$lineEnding';
+  }
+  return replacement;
+}
+
 SourceEdit _replaceRoot(
     CstDocument document, LayoutStyle style, YamlNode value) {
   final text = yamlEncodeBlock(value, 0, style.lineEnding);
@@ -504,11 +752,16 @@ SourceEdit _replaceRoot(
     root,
     newIsBlockScalar: isBlockScalar,
   );
-  final textToInsert = _attachCommentToReplacement(
-    text,
-    commentToAttach,
+  final textToInsert = _preserveTrailingBreak(
+    document,
+    replaceEnd,
+    _attachCommentToReplacement(
+      text,
+      commentToAttach,
+      style.lineEnding,
+      isBlockScalar: isBlockScalar,
+    ),
     style.lineEnding,
-    isBlockScalar: isBlockScalar,
   );
 
   return SourceEdit(root.start, replaceEnd - root.start, textToInsert);
@@ -555,11 +808,16 @@ SourceEdit _replaceBlockSeqValue(
     entry.value,
     newIsBlockScalar: isBlockScalar,
   );
-  final textToInsert = _attachCommentToReplacement(
-    ' $encoded',
-    commentToAttach,
+  final textToInsert = _preserveTrailingBreak(
+    document,
+    replaceEnd,
+    _attachCommentToReplacement(
+      ' $encoded',
+      commentToAttach,
+      style.lineEnding,
+      isBlockScalar: isBlockScalar,
+    ),
     style.lineEnding,
-    isBlockScalar: isBlockScalar,
   );
 
   return SourceEdit(
@@ -631,48 +889,18 @@ SourceEdit _replaceBlockMapValue(
     entry.value,
     newIsBlockScalar: isBlockScalar,
   );
-  var textToInsert = encoded.text;
-
-  if (!encoded.ownLine &&
-      document.hasLineBreakInRange(colon + 1, entry.value.start)) {
-    final endsWithBreak =
-        replaceEnd > 0 && document.hasLineBreakBefore(replaceEnd);
-    if (endsWithBreak && !textToInsert.endsWith(style.lineEnding)) {
-      textToInsert = '$textToInsert${style.lineEnding}';
-    }
-  }
-
-  // Preserve trailing line break when replacing a block scalar with an inline
-  // scalar (K858_0).
-  if (entry.value is CstScalar) {
-    final oldScalar = entry.value as CstScalar;
-    if ((oldScalar.style == ScalarStyle.LITERAL ||
-            oldScalar.style == ScalarStyle.FOLDED) &&
-        !encoded.ownLine &&
-        !isBlockScalar) {
-      if (!textToInsert.endsWith(style.lineEnding) &&
-          document.hasLineBreakBefore(entry.end) &&
-          replaceEnd <= entry.value.end) {
-        textToInsert = '$textToInsert${style.lineEnding}';
-      }
-    }
-  }
-
-  if (entry.value is CstBlockSeq || entry.value is CstBlockMap) {
-    if (replaceEnd < document.source.length &&
-        document.hasLineBreakBefore(replaceEnd) &&
-        !document.hasLineBreakAt(replaceEnd) &&
-        !textToInsert.endsWith(style.lineEnding)) {
-      textToInsert = '$textToInsert${style.lineEnding}';
-    }
-  }
 
   final joiner = encoded.ownLine ? style.lineEnding : ' ';
-  final fullReplacement = _attachCommentToReplacement(
-    '$joiner$textToInsert',
-    commentToAttach,
+  final fullReplacement = _preserveTrailingBreak(
+    document,
+    replaceEnd,
+    _attachCommentToReplacement(
+      '$joiner${encoded.text}',
+      commentToAttach,
+      style.lineEnding,
+      isBlockScalar: isBlockScalar,
+    ),
     style.lineEnding,
-    isBlockScalar: isBlockScalar,
   );
   return SourceEdit(
     colon + 1,
@@ -720,11 +948,16 @@ SourceEdit _replaceInPlace(
     old,
     newIsBlockScalar: isBlockScalar,
   );
-  text = _attachCommentToReplacement(
-    text,
-    commentToAttach,
+  text = _preserveTrailingBreak(
+    document,
+    replaceEnd,
+    _attachCommentToReplacement(
+      text,
+      commentToAttach,
+      style.lineEnding,
+      isBlockScalar: isBlockScalar,
+    ),
     style.lineEnding,
-    isBlockScalar: isBlockScalar,
   );
 
   final startOffset =
@@ -747,9 +980,9 @@ SourceEdit _replaceFlowValue(CstNode old, YamlNode value) {
 /// Replaces the value of a flow mapping entry, writing a `:` if the entry was
 /// a bare key such as the `a` in `{a, b}`.
 SourceEdit _replaceFlowMapValue(
+  CstDocument document,
   CstFlowMap map,
   CstFlowEntry entry,
-  Object? key,
   YamlNode value,
 ) {
   if (entry.value is CstEmpty && value.value == null) {
@@ -761,9 +994,13 @@ SourceEdit _replaceFlowMapValue(
         entry.value.start, entry.value.end - entry.value.start, ': $text');
   }
   if (entry.value is CstEmpty) {
-    final trailingSpace = entry.comma != null ? entry.comma! : map.closeStart;
-    return SourceEdit(
-        entry.value.start, trailingSpace - entry.value.start, ' $text');
+    final trailingEnd = entry.comma ?? map.closeStart;
+    if (document.commentsInRange(entry.value.start, trailingEnd).isEmpty &&
+        !document.hasLineBreakInRange(entry.value.start, trailingEnd)) {
+      return SourceEdit(
+          entry.value.start, trailingEnd - entry.value.start, ' $text');
+    }
+    return SourceEdit(entry.value.start, 0, ' $text');
   }
   return _replaceFlowValue(entry.value, value);
 }
@@ -783,11 +1020,10 @@ SourceEdit _appendBlockMapEntry(
   Object? key,
   YamlNode value,
 ) {
-  final isCompact = map.entries.first.lineStart !=
-      document.lineStartOf(map.entries.first.keyStart);
   final rawIndex =
       key == null ? map.entries.length : getMapInsertionIndex(map.value, key);
-  final index = (isCompact && rawIndex == 0) ? map.entries.length : rawIndex;
+  final index =
+      (map.isCompact && rawIndex == 0) ? map.entries.length : rawIndex;
   final column = document.columnOf(map.entries.first.keyStart);
   final encoded = encodeValue(value, style, indicatorColumn: column);
   final keyText = yamlEncodeFlow(wrapAsYamlNode(key));
@@ -851,31 +1087,17 @@ SourceEdit buildInsert(
   YamlNode value,
 ) {
   final edit = _buildInsert(document, path, index, value);
-  final bodyIndent = _blockScalarInsertBodyIndent(document, path, index, value);
+  final bodyIndent = _emittedBlockScalarBodyIndent(edit.replacement, value);
   if (bodyIndent != null) {
-    return _preventBlockScalarSwallowing(document, edit, bodyIndent);
+    final entryColumn = _entryColumnForInsert(document, path);
+    return _preventBlockScalarSwallowing(
+      document,
+      edit,
+      bodyIndent: bodyIndent,
+      targetColumn: min(entryColumn, bodyIndent - 1),
+    );
   }
   return edit;
-}
-
-int? _blockScalarInsertBodyIndent(
-  CstDocument document,
-  List<Object?> path,
-  int index,
-  YamlNode value,
-) {
-  if (value is! YamlScalar ||
-      (value.style != ScalarStyle.LITERAL &&
-          value.style != ScalarStyle.FOLDED)) {
-    return null;
-  }
-  const additionalIndentation = 2;
-  final node = findNode(document, path);
-  if (node is CstBlockSeq && node.entries.isNotEmpty) {
-    return document.columnOf(node.entries.first.dashStart) +
-        additionalIndentation;
-  }
-  return null;
 }
 
 SourceEdit _buildInsert(
@@ -914,20 +1136,19 @@ SourceEdit _insertIntoBlockSeq(
     // Insert at the start of the line the entry it precedes is written on, so
     // that a comment written above that entry stays above it.
     //
-    // When the entry does not start its own line — as the inner `- 1` of
-    // `- - 1` does not — its `lineStart` is where the entry begins rather than
-    // where the line does, and the indentation already written before it serves
-    // for the new entry too.
-    final startsOwnLine = document.columnOf(before.lineStart) == 0;
-    if (startsOwnLine) {
-      return SourceEdit(before.lineStart, 0, '$text${style.lineEnding}');
+    // When inserting before the first entry of a compact sequence (such as
+    // `- - 1`), the outer indicator already supplies the indentation for the
+    // new entry, so write the displaced entry's indentation after the line
+    // break.
+    if (index == 0 && sequence.isCompact) {
+      return SourceEdit(
+        before.dashStart,
+        0,
+        '- ${encodeAfterDash(value, style, dashColumn: column)}'
+        '${style.lineEnding}${' ' * column}',
+      );
     }
-    return SourceEdit(
-      before.lineStart,
-      0,
-      '- ${encodeAfterDash(value, style, dashColumn: column)}'
-      '${style.lineEnding}${' ' * column}',
-    );
+    return SourceEdit(before.lineStart, 0, '$text${style.lineEnding}');
   }
 
   return _appendLineToBlockCollection(
@@ -1007,8 +1228,6 @@ SourceEdit buildRemove(CstDocument document, List<Object?> path) {
         throw PathError(path, path, parent.value);
       }
       final entry = parent.entries[step];
-      final isCompact =
-          step == 0 && entry.lineStart != document.lineStartOf(entry.dashStart);
       final nextEntryContentStart = step + 1 < parent.entries.length
           ? parent.entries[step + 1].dashStart
           : null;
@@ -1016,12 +1235,11 @@ SourceEdit buildRemove(CstDocument document, List<Object?> path) {
         document,
         style,
         entryCount: parent.entries.length,
-        lineStart: entry.lineStart,
         contentStart: entry.dashStart,
         end: entry.end,
         collection: parent,
         emptyText: '[]',
-        isCompact: isCompact,
+        isCompact: step == 0 && parent.isCompact,
         nextEntryContentStart: nextEntryContentStart,
       );
 
@@ -1029,8 +1247,6 @@ SourceEdit buildRemove(CstDocument document, List<Object?> path) {
       final index = findEntryIndex(parent, step);
       if (index == null) throw PathError(path, path, parent.value);
       final entry = parent.entries[index];
-      final isCompact =
-          index == 0 && entry.lineStart != document.lineStartOf(entry.keyStart);
       final nextEntryContentStart = index + 1 < parent.entries.length
           ? parent.entries[index + 1].keyStart
           : null;
@@ -1038,12 +1254,11 @@ SourceEdit buildRemove(CstDocument document, List<Object?> path) {
         document,
         style,
         entryCount: parent.entries.length,
-        lineStart: entry.lineStart,
         contentStart: entry.keyStart,
         end: entry.end,
         collection: parent,
         emptyText: '{}',
-        isCompact: isCompact,
+        isCompact: index == 0 && parent.isCompact,
         nextEntryContentStart: nextEntryContentStart,
       );
 
@@ -1083,7 +1298,6 @@ SourceEdit _removeBlockEntry(
   CstDocument document,
   LayoutStyle style, {
   required int entryCount,
-  required int lineStart,
   required int contentStart,
   required int end,
   required CstNode collection,
@@ -1208,20 +1422,30 @@ SourceEdit _removeFlowEntry(
 
   if (index < entries.length - 1) {
     final next = entries[index + 1];
-    final entryEnd = entry.comma != null ? entry.comma! + 1 : entry.end;
+    final entryEnd = entry.end;
     final commentsAfter = document.commentsInRange(entryEnd, next.contentStart);
     if (commentsAfter.isNotEmpty) {
-      final comment = commentsAfter.first;
-      final lineBreakEnd = document.lineBreakEndOf(comment.span.end.offset);
+      final firstComment = commentsAfter.first;
+      final sameLineComment =
+          document.lineStartOf(firstComment.span.start.offset) ==
+              document.lineStartOf(entryEnd);
       final previous = entries[index - 1];
-      final previousEnd =
-          previous.comma != null ? previous.comma! + 1 : previous.end;
       final commentsBefore =
-          document.commentsInRange(previousEnd, entry.contentStart);
+          document.commentsInRange(previous.end, entry.contentStart);
+      final entryLineStart = document.lineStartOf(entry.contentStart);
+      final startsOwnLine =
+          document.isWhitespaceRange(entryLineStart, entry.contentStart);
       final start = commentsBefore.isNotEmpty
           ? document.lineBreakEndOf(commentsBefore.last.span.end.offset)
-          : entry.contentStart;
-      return SourceEdit(start, lineBreakEnd - start, '');
+          : (startsOwnLine ? entryLineStart : entry.contentStart);
+      final deleteEnd = startsOwnLine || commentsBefore.isNotEmpty
+          ? (sameLineComment
+              ? document.lineBreakEndOf(firstComment.span.end.offset)
+              : document.lineBreakEndOf(entryEnd))
+          : (sameLineComment
+              ? document.lineContentEndOf(firstComment.span.end.offset)
+              : document.lineContentEndOf(entryEnd));
+      return SourceEdit(start, deleteEnd - start, '');
     }
     return SourceEdit(
         entry.contentStart, next.contentStart - entry.contentStart, '');
@@ -1229,25 +1453,22 @@ SourceEdit _removeFlowEntry(
 
   final previous = entries[index - 1];
   final from = previous.comma ?? previous.end;
-  final previousEnd =
-      previous.comma != null ? previous.comma! + 1 : previous.end;
   final commentsBefore =
-      document.commentsInRange(previousEnd, entry.contentStart);
+      document.commentsInRange(previous.end, entry.contentStart);
+  final entryLineEnd = document.lineBreakEndOf(entry.end);
+  final commentsAfter =
+      document.commentsInRange(entryLineEnd, collection.closeStart);
+
   if (commentsBefore.isNotEmpty) {
     final deleteStart =
         document.lineBreakEndOf(commentsBefore.last.span.end.offset);
-    return SourceEdit(deleteStart, collection.closeStart - deleteStart, '');
+    final deleteEnd = min(entryLineEnd, collection.closeStart);
+    return SourceEdit(deleteStart, deleteEnd - deleteStart, '');
   }
 
-  final commentsAfter =
-      document.commentsInRange(entry.value.end, collection.closeStart);
   if (commentsAfter.isNotEmpty) {
-    final firstComment = commentsAfter.first;
-    if (document.lineStartOf(firstComment.span.start.offset) >
-        document.lineStartOf(entry.contentStart)) {
-      final deleteEnd = document.lineBreakEndOf(entry.value.end);
-      return SourceEdit(from, deleteEnd - from, '');
-    }
+    final deleteEnd = document.lineContentEndOf(entry.end);
+    return SourceEdit(from, deleteEnd - from, '');
   }
 
   return SourceEdit(from, collection.closeStart - from, '');

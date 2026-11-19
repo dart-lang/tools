@@ -3,6 +3,8 @@
 - Fix `VersionConstraint.intersection` throwing a `TypeError` when the
   intersection of the constraints is empty (e.g. for disjoint ranges) or a
   `VersionUnion`.
+- Fix `VersionUnion.difference` throwing a `TypeError` when subtracting
+  `VersionConstraint.empty`.
 
 ## 2.2.1
 

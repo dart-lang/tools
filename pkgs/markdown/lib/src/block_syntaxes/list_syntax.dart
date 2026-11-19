@@ -305,7 +305,7 @@ abstract class ListSyntax extends BlockSyntax {
       }
     }
 
-    final listElement = Element(ordered ? 'ol' : 'ul', itemNodes);
+    final listElement = Element(ordered ? 'ol' : 'ul', <Node>[...itemNodes]);
     if (ordered && startNumber != 1) {
       listElement.attributes['start'] = '$startNumber';
     }
