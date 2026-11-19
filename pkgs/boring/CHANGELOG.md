@@ -1,5 +1,8 @@
 ## 0.5.1-wip
 
+- The `fetch` build mode only follows redirects to `https` URLs when
+  downloading the prebuilt libraries.
+
 ## 0.5.0
 
 - **Breaking**: Removed `package:boring/bindings.dart`. Its API is now in
