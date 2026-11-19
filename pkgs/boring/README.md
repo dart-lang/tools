@@ -66,6 +66,11 @@ and the arm64 and x64 simulators; iOS 12 and later). Other targets require
 `buildMode: checkout`, which requires CMake, Ninja, and a C toolchain (Clang or
 GCC, Xcode, MSVC, or the Android NDK), plus NASM on Windows.
 
+When the Dart runtime uses a sanitizer, for example with `dart test -p
+vm-asan`, the `fetch` build mode compiles BoringSSL from source with that
+sanitizer and Clang instead, because the prebuilt libraries aren't
+instrumented.
+
 ## Tree-Shaking
 
 When linking is enabled (`dart build`, and Flutter profile and release builds),
