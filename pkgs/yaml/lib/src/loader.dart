@@ -77,6 +77,24 @@ class Loader {
   /// was `true`, or `null` otherwise.
   List<Token>? get tokens => _parser.tokens;
 
+  /// Loads a single document from the stream, returning an empty `null`
+  /// document if the stream is empty, and throwing a [YamlException] if the
+  /// stream contains more than one document.
+  YamlDocument loadSingleDocument() {
+    final document = load();
+    if (document == null) {
+      return YamlDocument.internal(
+          YamlScalar.internalWithSpan(null, span), span, null, const []);
+    }
+
+    final nextDocument = load();
+    if (nextDocument != null) {
+      throw YamlException('Only expected one document.', nextDocument.span);
+    }
+
+    return document;
+  }
+
   /// Composes a document object.
   YamlDocument _loadDocument(DocumentStartEvent firstEvent) {
     var contents = _loadNode(_parser.parse());

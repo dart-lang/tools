@@ -172,6 +172,11 @@ void main() {
             (YamlTokenKind.scalar, '1'),
           ],
         );
+
+        // Unknown directive without explicit `---` still parses identically to
+        // previous releases (line break is left for `_scanToNextToken`).
+        expect(loadYaml('%FOO bar # c\na: 1\n'), {'a': 1});
+        expect(loadYaml('%FOO\n- a\n'), ['a']);
       } finally {
         yamlWarningCallback = oldWarn;
       }
