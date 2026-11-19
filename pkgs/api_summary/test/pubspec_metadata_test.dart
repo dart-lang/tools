@@ -2,7 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:api_summary/api_summary.dart';
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:yaml_edit/yaml_edit.dart';
@@ -184,6 +187,22 @@ executables:
           expect(summary.executables, isEmpty);
         },
       );
+    });
+
+    test('resolves relative packagePath (such as ".")', () async {
+      await withTempPkg('name: relative_pkg\n', (pkgPath) async {
+        final previousCurrent = Directory.current;
+        try {
+          Directory.current = pkgPath;
+          final summary = await apiSummary('.');
+          expect(summary.name, equals('relative_pkg'));
+        } finally {
+          Directory.current = previousCurrent;
+        }
+        final relativeFromCwd = p.relative(pkgPath);
+        final summaryFromRelative = await apiSummary(relativeFromCwd);
+        expect(summaryFromRelative.name, equals('relative_pkg'));
+      });
     });
 
     test('ignores null environment constraints', () async {

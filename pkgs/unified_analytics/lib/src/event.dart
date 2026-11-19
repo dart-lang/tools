@@ -921,6 +921,19 @@ final class Event {
         eventData: {'rss': rss, 'periodSec': ?periodSec, 'mbPerSec': ?mbPerSec},
       );
 
+  /// Event that is emitted by the analysis server for `dart migrate`.
+  ///
+  /// * [type] - the kind of migrate event, which decides what [additionalData]
+  ///   holds. For example, `run` for a whole migration, or `round` for one of
+  ///   its SDK version steps.
+  ///
+  /// * [additionalData] - the data for the event, which depends on [type].
+  Event.migrateEvent({required String type, CustomMetrics? additionalData})
+    : this._(
+        eventName: DashEvent.migrateEvent,
+        eventData: {'type': type, ...?additionalData?.toMap()},
+      );
+
   /// Event that is emitted periodically to report the performance of analyzer
   /// plugins when handling requests.
   ///

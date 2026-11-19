@@ -2,17 +2,22 @@
 
 * Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
 * Improve error messages when mixing list and key-value syntax.
-* Add `retainTokens` parameter to `loadYamlDocument` to retain lexical tokens
-  (including comments and structural indicators) on `YamlDocument.tokens`.
-* Add `package:yaml/tokens.dart` exporting the lexical token hierarchy (`Token`,
-  `CommentToken`, `ScalarToken`, `AnchorToken`, `TagToken`, `AliasToken`, etc.).
-* Fix `ScalarToken.span` for keep-chomped block scalars (`|+`, `>+`) to cover
+* Preserve scanned local tag names and throw `YamlException` on malformed or
+  non-UTF-8 percent-encoded tag URIs.
+* Support single-digit `!!float` scalars and throw `YamlException` instead of
+  `RangeError` on empty or invalid single-character `!!int` and `!!float`
+  scalars.
+* Speed up scanning deeply nested flow collections: the scanner no longer
+  walks every open flow level for each token.
+* Fix `YamlScalar.span` for keep-chomped block scalars (`|+`, `>+`) to cover
   trailing empty lines, and bound empty `strip` and `clip` block scalar spans
-  at the header line.
-* Fix synthetic `TokenType.key` token span for empty implicit keys in flow
-  collections.
-* Allow tab characters on empty or comment-only lines between block mapping
-  entries per YAML 1.2 §6.1.
+  at the header indicator (before any trailing spaces or header comment).
+* Fix parsing of empty implicit flow keys followed directly by `}` or `]`
+  (`{:}`, `[:]`).
+* Allow tab characters on blank or comment-only lines (YAML 1.2 §6.1).
+* Add `package:yaml/tokens.dart` providing `loadYamlDocumentWithTokens`,
+  `YamlToken`, and `YamlTokenKind` to access the scanned lexical token stream
+  (including comments and structural indicators) alongside a `YamlDocument`.
 
 ## 3.1.4
 

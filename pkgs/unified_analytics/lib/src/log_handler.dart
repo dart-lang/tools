@@ -44,14 +44,19 @@ class LogFileStats {
   /// ```
   final Map<String, int> flutterChannelCount;
 
-  /// The map containing all of the tools that have sent events
-  /// and how many events were sent by each tool.
+  /// The map containing all of the leaf tools that have sent events
+  /// and how many events were sent by each one.
+  ///
+  /// The leaf tool is the logical tool that sent an event, which can be a
+  /// shared component. It's read from the `leaf_tool` user property, falling
+  /// back to the legacy `tool` property for records written before
+  /// `leaf_tool` existed.
   ///
   /// ```
   /// {
   ///   'flutter-tool': 500,
   ///   'dart-tool': 45,
-  ///   'vscode-plugins': 321,
+  ///   'analysis-server': 321,
   /// }
   /// ```
   final Map<String, int> toolCount;
@@ -180,11 +185,52 @@ class LogHandler {
   /// Note that some developers may only be Dart
   /// developers and will not have any data for flutter
   /// related metrics.
+  ///
+  /// Returns `null` if there are no records to report, including when the
+  /// log file doesn't exist yet, is abnormally large, or couldn't be read.
+  /// A log file that is abnormally large or couldn't be read is deleted and
+  /// replaced with an empty one.
   LogFileStats? logFileStats() {
+    List<String> lines;
+    try {
+      // Avoid reading abnormally large (or corrupted) log files into
+      // memory, which can exhaust the heap; see
+      // https://github.com/dart-lang/tools/issues/275.
+      //
+      // A negative size (e.g. -1) means the file doesn't exist, which is a
+      // common and expected state (for example, before any events have been
+      // logged); treat that the same as "nothing to report" instead of
+      // falling through to a FileSystemException.
+      final size = logFile.statSync().size;
+      if (size < 0) return null;
+      if (size > kMaxLogFileSize) {
+        // Discard the file, as `save` does. Otherwise it would stay too large
+        // to read and no stats could be collected from it again.
+        _resetLogFile();
+        return null;
+      }
+
+      lines = logFile.readAsLinesSync();
+    } on FileSystemException catch (err) {
+      errorSet.add(
+        Event.analyticsException(
+          workflow: 'LogHandler.logFileStats',
+          error: err.runtimeType.toString(),
+          // Deliberately omit `err.path`: it can contain PII or proprietary
+          // information (e.g. parts of the user's file system layout).
+          description: 'message: ${err.message}',
+        ),
+      );
+      // A log file that can't be read (e.g. it has invalid UTF-8) would keep
+      // failing, so discard it.
+      _resetLogFile();
+
+      return null;
+    }
+
     // Parse each line of the log file through [LogItem],
     // some returned records may be null if malformed, they will be
     // removed later through `whereType<LogItem>`
-    final lines = logFile.readAsLinesSync();
     final records = lines
         .skip(max(0, lines.length - kLogFileLength))
         .map((String e) {
@@ -234,7 +280,7 @@ class LogHandler {
     final toolCount = <String, int>{};
     for (final record in records) {
       counter['sessions']!.add(record.sessionId);
-      counter['tool']!.add(record.tool);
+      counter['tool']!.add(record.leafTool);
       if (record.flutterChannel != null) {
         counter['flutter_channel']!.add(record.flutterChannel!);
       }
@@ -247,10 +293,10 @@ class LogHandler {
       eventCount[record.eventName] = eventCount[record.eventName]! + 1;
 
       // Counting how many events were recorded for each tool
-      if (!toolCount.containsKey(record.tool)) {
-        toolCount[record.tool] = 0;
+      if (!toolCount.containsKey(record.leafTool)) {
+        toolCount[record.leafTool] = 0;
       }
-      toolCount[record.tool] = toolCount[record.tool]! + 1;
+      toolCount[record.leafTool] = toolCount[record.leafTool]! + 1;
 
       // Necessary to perform a null check for flutter channel because
       // not all events will have information about flutter
@@ -309,6 +355,22 @@ class LogHandler {
     }
   }
 
+  /// Replaces the log file with an empty one, ignoring any failure.
+  void _resetLogFile() {
+    try {
+      // Delete without checking for existence first, since the file could be
+      // created or deleted by another process in between.
+      logFile.deleteSync();
+    } on FileSystemException {
+      // The file is already gone or can't be deleted; try to create it anyway.
+    }
+    try {
+      logFile.createSync();
+    } on Object {
+      // Best effort; `save` resets the file again if it's still unusable.
+    }
+  }
+
   /// Rewrites the log file keeping only its newest records.
   ///
   /// Keeps at most [kLogFileLength] records and at most about half the trim
@@ -359,7 +421,10 @@ class LogItem {
   final String host;
   final String? flutterVersion;
   final String dartVersion;
-  final String tool;
+
+  /// The leaf tool that sent the event, from `leaf_tool`, or from the legacy
+  /// `tool` property for older records.
+  final String leafTool;
   final DateTime localTime;
   final String hostOsVersion;
   final String locale;
@@ -372,7 +437,7 @@ class LogItem {
     required this.host,
     this.flutterVersion,
     required this.dartVersion,
-    required this.tool,
+    required this.leafTool,
     required this.localTime,
     required this.hostOsVersion,
     required this.locale,
@@ -469,8 +534,12 @@ class LogItem {
     final dartVersion =
         (userProps['dart_version']! as Map<String, Object?>)['value']
             as String?;
-    final tool =
-        (userProps['tool']! as Map<String, Object?>)['value'] as String?;
+    // Prefer `leaf_tool`. Records written before it existed only have the
+    // legacy `tool` property, which is also scheduled for removal.
+    final leafTool =
+        ((userProps['leaf_tool'] ?? userProps['tool'])
+                as Map<String, Object?>?)?['value']
+            as String?;
     final localTimeString =
         (userProps['local_time']! as Map<String, Object?>)['value'] as String?;
     final hostOsVersion =
@@ -492,7 +561,7 @@ class LogItem {
       sessionId,
       host,
       dartVersion,
-      tool,
+      leafTool,
       localTimeString,
       hostOsVersion,
       locale,
@@ -511,7 +580,7 @@ class LogItem {
       host: host!,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion!,
-      tool: tool!,
+      leafTool: leafTool!,
       localTime: localTime,
       hostOsVersion: hostOsVersion!,
       locale: locale!,

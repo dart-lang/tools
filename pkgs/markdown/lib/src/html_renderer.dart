@@ -55,7 +55,7 @@ String markdownToHtml(
 String renderToHtml(List<Node> nodes, {bool enableTagfilter = false}) =>
     HtmlRenderer(enableTagfilter: enableTagfilter).render(nodes);
 
-const _blockTags = [
+const _blockTags = {
   'blockquote',
   'h1',
   'h2',
@@ -91,7 +91,7 @@ const _blockTags = [
   'th',
   'tr',
   'td',
-];
+};
 
 /// Translates a parsed AST to HTML.
 class HtmlRenderer implements NodeVisitor {
@@ -108,6 +108,9 @@ class HtmlRenderer implements NodeVisitor {
   String render(List<Node> nodes) {
     buffer = StringBuffer();
     uniqueIds = <String>{};
+    _lastSuffix.clear();
+    _elementStack.clear();
+    _lastVisitedTag = null;
 
     for (final node in nodes) {
       node.accept(this);
@@ -123,13 +126,19 @@ class HtmlRenderer implements NodeVisitor {
     if (_tagfilterEnabled) {
       content = _filterTags(content);
     }
-    if (const ['br', 'p', 'li'].contains(_lastVisitedTag)) {
-      final lines = LineSplitter.split(content);
-      content = content.contains('<pre>')
-          ? lines.join('\n')
-          : lines.map((line) => line.trimLeft()).join('\n');
-      if (text.textContent.endsWith('\n')) {
-        content = '$content\n';
+    if (const {'br', 'p', 'li'}.contains(_lastVisitedTag)) {
+      if (!content.contains('\n') && !content.contains('\r')) {
+        // Most text nodes are a single line. Avoid splitting, mapping and
+        // joining an iterable for the common case.
+        if (!content.contains('<pre>')) content = content.trimLeft();
+      } else {
+        final lines = LineSplitter.split(content);
+        content = content.contains('<pre>')
+            ? lines.join('\n')
+            : lines.map((line) => line.trimLeft()).join('\n');
+        if (text.textContent.endsWith('\n')) {
+          content = '$content\n';
+        }
       }
     }
     buffer.write(content);
@@ -192,6 +201,8 @@ class HtmlRenderer implements NodeVisitor {
     _lastVisitedTag = _elementStack.removeLast().tag;
   }
 
+  final _lastSuffix = <String, int>{};
+
   /// Uniquifies an id generated from text.
   String uniquifyId(String id) {
     if (!uniqueIds.contains(id)) {
@@ -199,11 +210,12 @@ class HtmlRenderer implements NodeVisitor {
       return id;
     }
 
-    var suffix = 2;
+    var suffix = _lastSuffix[id] ?? 2;
     var suffixedId = '$id-$suffix';
     while (uniqueIds.contains(suffixedId)) {
-      suffixedId = '$id-${suffix++}';
+      suffixedId = '$id-${++suffix}';
     }
+    _lastSuffix[id] = suffix + 1;
     uniqueIds.add(suffixedId);
     return suffixedId;
   }
