@@ -134,7 +134,7 @@ final class Event {
   /// * [transitiveFileLineCountPercentiles] - JSON-encoded percentile values
   ///   for the number of lines in the transitive workspace files.
   ///
-  /// This allows us to understand how big is the workspace, and how it changed
+  /// This allows us to understand how big the workspace is, and how it changed
   /// over the reported period.
   ///
   /// The background analysis group includes:
@@ -153,13 +153,15 @@ final class Event {
   /// * [libraryDiagnosticsBundleFailures] - the counts of requirement failures
   ///   for library diagnostics bundles. The key is the `kindId` of the
   ///   `RequirementFailure`.
+  /// * [analysisReason] - why the analysis was performed.
   ///
-  /// This allows us to understand how many files were scheduled for analysis,
-  /// and how many of these files are served from the cache, because we
-  /// determined that the change that caused them to be scheduled for analysis
-  /// actually does not affect resolution and the set of diagnostics, e.g.
-  /// because the change was in a method body, or to an API that does not
-  /// affect this specific file (if fine-grained dependencies enabled).
+  /// This allows us to understand why analysis was performed, how many files
+  /// were scheduled for analysis, and how many of these files are served from
+  /// the cache, because we determined that the change that caused them to be
+  /// scheduled for analysis actually does not affect resolution and the set of
+  /// diagnostics, e.g. because the change was in a method body, or to an API
+  /// that does not affect this specific file (if fine-grained dependencies
+  /// enabled).
   Event.analysisStatistics({
     required String workingDuration,
     required bool withFineDependencies,
@@ -178,6 +180,7 @@ final class Event {
     required int produceErrorsDurationMs,
     required int produceErrorsElementsDurationMs,
     required String libraryDiagnosticsBundleFailures,
+    String? analysisReason,
   }) : this._(
          eventName: DashEvent.analysisStatistics,
          eventData: {
@@ -201,6 +204,7 @@ final class Event {
            'produceErrorsDurationMs': produceErrorsDurationMs,
            'produceErrorsElementsDurationMs': produceErrorsElementsDurationMs,
            'libraryDiagnosticsBundleFailures': libraryDiagnosticsBundleFailures,
+           'analysisReason': ?analysisReason,
          },
        );
 
