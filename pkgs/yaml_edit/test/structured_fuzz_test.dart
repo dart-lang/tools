@@ -466,7 +466,7 @@ List<List<Object?>> _collectPaths(YamlEditor editor) {
 }
 
 /// Checks whether two paths are structurally disjoint (neither is a prefix of
-/// the other, and they do not share a list parent where indices shift).
+/// the other).
 bool _areDisjointUpdatePaths(List<Object?> path1, List<Object?> path2) {
   if (path1.isEmpty || path2.isEmpty) return false;
   final minLength = path1.length < path2.length ? path1.length : path2.length;
@@ -786,20 +786,18 @@ items: [
             .toList();
         if (scalarPaths.length < 2) continue;
 
-        List<Object?>? path1;
-        List<Object?>? path2;
+        final disjointPairs = <(List<Object?>, List<Object?>)>[];
         for (var index1 = 0; index1 < scalarPaths.length; index1++) {
           for (var index2 = index1 + 1; index2 < scalarPaths.length; index2++) {
             if (_areDisjointUpdatePaths(
                 scalarPaths[index1], scalarPaths[index2])) {
-              path1 = scalarPaths[index1];
-              path2 = scalarPaths[index2];
-              break;
+              disjointPairs.add((scalarPaths[index1], scalarPaths[index2]));
             }
           }
-          if (path1 != null) break;
         }
-        if (path1 == null || path2 == null) continue;
+        if (disjointPairs.isEmpty) continue;
+        final (path1, path2) =
+            disjointPairs[generator.random.nextInt(disjointPairs.length)];
 
         testedPairs++;
         final value1 = generator.generateRandomValue();
