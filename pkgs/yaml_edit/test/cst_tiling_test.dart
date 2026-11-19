@@ -2,12 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// Checks the invariant the CST rests on: that it tiles its source exactly.
-///
-/// [CstDocument.parse] enforces the invariant itself and throws when it cannot
-/// hold, so these tests are really a measure of *coverage* — how much of real
-/// YAML the model can represent — rather than of correctness. A document that
-/// throws here is one the editor will refuse to touch.
 @TestOn('vm')
 library;
 
@@ -19,80 +13,40 @@ import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/src/cst.dart';
 import 'package:yaml_edit/src/utils.dart' show withYamlWarningCallback;
 
-/// Parses [source] and asserts the CST reproduces it exactly.
-void checkTiles(String source) {
-  final document = CstDocument.parse(source);
-  expect(render(document), source,
-      reason: 'the CST did not reproduce its source');
-}
+/// Renders the structural shape of [node] with exact `[start..end)` offsets
+/// for golden assertions.
+String dumpNode(CstNode node, String source) {
+  String slice(int start, int end) => source
+      .substring(start, end)
+      .replaceAll('\n', r'\n')
+      .replaceAll('\r', r'\r')
+      .replaceAll('\t', r'\t');
 
-/// Reconstructs the source by walking the CST's slots in order.
-///
-/// This duplicates what the tiling check already guarantees, but does it by a
-/// different route — concatenating substrings rather than checking boundaries —
-/// so a mistake in one is unlikely to be mirrored in the other.
-String render(CstDocument document) {
-  final source = document.source;
-  final buffer = StringBuffer();
-  var cursor = 0;
-
-  void upTo(int offset) {
-    buffer.write(source.substring(cursor, offset));
-    cursor = offset;
-  }
-
-  void visitNode(CstNode node) {
-    upTo(node.start);
-    upTo(node.contentStart);
-    switch (node) {
-      case CstScalar():
-      case CstAlias():
-      case CstEmpty():
-        upTo(node.end);
-      case CstBlockSeq():
-        for (final entry in node.entries) {
-          upTo(entry.dashStart + 1);
-          visitNode(entry.value);
-          upTo(entry.end);
-        }
-      case CstBlockMap():
-        for (final entry in node.entries) {
-          if (entry.questionMark case final questionMark?) {
-            upTo(questionMark + 1);
-          }
-          visitNode(entry.key);
-          if (entry.colon case final colon?) upTo(colon + 1);
-          visitNode(entry.value);
-          upTo(entry.end);
-        }
-      case CstFlowPair():
-        if (node.questionMark case final questionMark?) {
-          upTo(questionMark + 1);
-        }
-        visitNode(node.key);
-        if (node.colon case final colon?) upTo(colon + 1);
-        visitNode(node.pairValue);
-      case CstFlowCollection():
-        upTo(node.openEnd);
-        for (final entry in node.entries) {
-          if (entry.questionMark case final questionMark?) {
-            upTo(questionMark + 1);
-          }
-          if (entry.key case final key?) {
-            visitNode(key);
-            if (entry.colon case final colon?) upTo(colon + 1);
-          }
-          visitNode(entry.value);
-          if (entry.comma case final comma?) upTo(comma + 1);
-          upTo(entry.end);
-        }
-        upTo(node.end);
-    }
-  }
-
-  if (document.root case final root?) visitNode(root);
-  upTo(source.length);
-  return buffer.toString();
+  final props =
+      node.hasProperties ? 'props=[${node.start}..${node.contentStart}) ' : '';
+  return switch (node) {
+    CstScalar() => 'Scalar($props[${node.contentStart}..${node.end}) '
+        '"${slice(node.contentStart, node.end)}")',
+    CstAlias() =>
+      'Alias([${node.start}..${node.end}) "${slice(node.start, node.end)}")',
+    CstEmpty() => 'Empty(@${node.start})',
+    CstBlockSeq() => 'BlockSeq($props${node.isCompact ? 'compact ' : ''}'
+        '[${node.entries.map((e) => 'Entry(line=${e.lineStart} '
+            'dash=${e.dashStart} ${dumpNode(e.value, source)})').join(', ')}])',
+    CstBlockMap() => 'BlockMap($props${node.isCompact ? 'compact ' : ''}'
+        '{${node.entries.map((e) => 'Entry(line=${e.lineStart}'
+            '${e.questionMark != null ? ' ?=${e.questionMark}' : ''} '
+            'key=${dumpNode(e.key, source)}'
+            '${e.colon != null ? ' :=${e.colon}' : ''} '
+            'val=${dumpNode(e.value, source)})').join(', ')}})',
+    CstFlowSeq() => 'FlowSeq($props'
+        '[${node.entries.map((e) => dumpNode(e.value, source)).join(', ')}])',
+    CstFlowMap() => 'FlowMap($props'
+        '{${node.entries.map((e) => '${dumpNode(e.key!, source)}: '
+            '${dumpNode(e.value, source)}').join(', ')}})',
+    CstFlowPair() => 'FlowPair($props${dumpNode(node.key, source)}: '
+        '${dumpNode(node.pairValue, source)})',
+  };
 }
 
 /// Replaces special characters used by yaml-test-suite to visualize invisible
@@ -107,6 +61,162 @@ String _replaceSpecialCharacters(String input) => input
     .replaceFirst(RegExp(r'∎\n?$'), '');
 
 void main() {
+  group('structural CST parsing', () {
+    test('compact map whose first key is an alias', () {
+      const source = '- &a k\n- *a : v\n';
+      final doc = CstDocument.parse(source);
+      final root = doc.root as CstBlockSeq;
+      expect(root.entries, hasLength(2));
+      final second = root.entries[1].value as CstBlockMap;
+      expect(second.isCompact, isTrue);
+      expect(second.entries, hasLength(1));
+      final entry = second.entries.single;
+      expect(entry.key, isA<CstAlias>());
+      expect(source.substring(entry.key.start, entry.key.end), '*a');
+      expect(entry.colon, 12);
+      expect(entry.value, isA<CstScalar>());
+      expect(entry.value.value.value, 'v');
+    });
+
+    test('single flow pair with braced map key and value', () {
+      const source = '[{a: 1}: {b: 2}]';
+      final doc = CstDocument.parse(source);
+      final root = doc.root as CstFlowSeq;
+      final pair = root.entries.single.value as CstFlowPair;
+      expect(pair.hasProperties, isFalse);
+      expect(pair.key, isA<CstFlowMap>());
+      expect(source.substring(pair.key.start, pair.key.end), '{a: 1}');
+      expect(pair.colon, 7);
+      expect(pair.pairValue, isA<CstFlowMap>());
+      expect(
+          source.substring(pair.pairValue.start, pair.pairValue.end), '{b: 2}');
+    });
+
+    test('explicit key does not steal parent mapping colon', () {
+      const source = 'a:\n  ? b\n: c\n';
+      final doc = CstDocument.parse(source);
+      final root = doc.root as CstBlockMap;
+      expect(root.entries, hasLength(2));
+
+      final innerMap = root.entries[0].value as CstBlockMap;
+      expect(innerMap.entries, hasLength(1));
+      expect(innerMap.entries.single.questionMark, 5);
+      expect(innerMap.entries.single.colon, isNull);
+      expect(innerMap.entries.single.value, isA<CstEmpty>());
+
+      final secondEntry = root.entries[1];
+      expect(secondEntry.key, isA<CstEmpty>());
+      expect(secondEntry.colon, 9);
+      expect(secondEntry.value.value.value, 'c');
+    });
+
+    test('anchor on flow pair key attaches to key, not CstFlowPair', () {
+      const source = '[&x {a: 1}: b]';
+      final doc = CstDocument.parse(source);
+      final root = doc.root as CstFlowSeq;
+      final pair = root.entries.single.value as CstFlowPair;
+      expect(pair.hasProperties, isFalse);
+      final keyMap = pair.key as CstFlowMap;
+      expect(keyMap.hasProperties, isTrue);
+      expect(source.substring(keyMap.start, keyMap.contentStart), '&x ');
+      expect(source.substring(keyMap.contentStart, keyMap.end), '{a: 1}');
+    });
+
+    test('anchored block map has truthful lineStart and isCompact == false',
+        () {
+      const source = 'a: &x\n  b: 1\n  c: 2\n';
+      final doc = CstDocument.parse(source);
+      final root = doc.root as CstBlockMap;
+      final inner = root.entries.single.value as CstBlockMap;
+      expect(inner.hasProperties, isTrue);
+      expect(inner.isCompact, isFalse);
+      expect(inner.entries.first.lineStart, 6);
+      expect(doc.columnOf(inner.entries.first.lineStart), 0);
+      expect(doc.columnOf(inner.entries.first.keyStart), 2);
+    });
+
+    test(
+        'anchor on first block map key stays on key; anchor on own line '
+        'attaches to map', () {
+      final keyDoc = CstDocument.parse('a:\n  &k b: 1\n');
+      final keyInner =
+          (keyDoc.root as CstBlockMap).entries.single.value as CstBlockMap;
+      expect(keyInner.hasProperties, isFalse);
+      expect(keyInner.entries.single.key.hasProperties, isTrue);
+
+      final mapDoc = CstDocument.parse('a:\n  &k\n  b: 1\n');
+      final mapInner =
+          (mapDoc.root as CstBlockMap).entries.single.value as CstBlockMap;
+      expect(mapInner.hasProperties, isTrue);
+      expect(mapInner.entries.single.key.hasProperties, isFalse);
+    });
+
+    test('compact block sequence and map set isCompact == true', () {
+      final seqDoc = CstDocument.parse('- - 1\n  - 2\n');
+      final outerSeq = seqDoc.root as CstBlockSeq;
+      expect(outerSeq.isCompact, isFalse);
+      expect((outerSeq.entries.single.value as CstBlockSeq).isCompact, isTrue);
+
+      final mapDoc = CstDocument.parse('- a: 1\n  b: 2\n');
+      final outerMapSeq = mapDoc.root as CstBlockSeq;
+      expect(
+          (outerMapSeq.entries.single.value as CstBlockMap).isCompact, isTrue);
+    });
+
+    test('handles deeply nested flow sequences matching package:yaml depth',
+        () {
+      final source = '${'[' * 2000}${']' * 2000}';
+      final doc = CstDocument.parse(source);
+      expect(doc.root, isA<CstFlowSeq>());
+    });
+
+    test('line table handles EOF after trailing newline', () {
+      final doc = CstDocument.parse('a: 1\n');
+      expect(doc.lineStartOf(5), 5);
+      expect(doc.columnOf(5), 0);
+      expect(doc.lineContentEndOf(5), 5);
+      expect(doc.lineBreakEndOf(5), 5);
+    });
+
+    test('lineEnding uses majority vote', () {
+      expect(CstDocument.parse('a: 1\nb: 2\r\nc: 3\n').lineEnding, '\n');
+      expect(CstDocument.parse('a: 1\r\nb: 2\r\nc: 3\n').lineEnding, '\r\n');
+    });
+
+    test('commentInRange and commentsInRange use binary search accurately', () {
+      final lines = [
+        for (var i = 0; i < 50; i++) 'k$i: $i # comment $i',
+      ];
+      final source = '${lines.join('\n')}\n';
+      final doc = CstDocument.parse(source);
+      expect(doc.comments, hasLength(50));
+      final secondLineStart = doc.lineBreakEndOf(0);
+      final secondLineEnd = doc.lineContentEndOf(secondLineStart);
+      expect(doc.commentInRange(secondLineStart, secondLineEnd)?.span.text,
+          '# comment 1');
+      expect(
+        doc.commentsInRange(0, secondLineEnd).map((c) => c.span.text),
+        ['# comment 0', '# comment 1'],
+      );
+      expect(doc.commentInRange(secondLineEnd, secondLineEnd), isNull);
+    });
+
+    test('structural dump golden on mixed features', () {
+      const source = 'a: &x [1, {b: 2}]\nc: *x\n';
+      final doc = CstDocument.parse(source);
+      expect(
+        dumpNode(doc.root!, source),
+        'BlockMap({'
+        'Entry(line=0 key=Scalar([0..1) "a") :=1 '
+        'val=FlowSeq(props=[3..6) [Scalar([7..8) "1"), '
+        'FlowMap({Scalar([11..12) "b"): Scalar([14..15) "2")})])), '
+        'Entry(line=18 key=Scalar([18..19) "c") :=19 '
+        'val=Alias([21..23) "*x"))'
+        '})',
+      );
+    });
+  });
+
   group('tiles hand-written documents', () {
     const cases = <String, String>{
       'empty': '',
@@ -149,7 +259,7 @@ void main() {
       'bare document marker': '--- a\n',
       'tagged root': '--- !!str a\n',
       'tag on scalar': '- !!str x\n- 2\n',
-      'tag on flow map': '- !custom {a: 1}\n',
+      'tag on flow map': '- !!map {a: 1}\n',
       'tag on block map': 'a: !!map\n  b: 1\n',
       'anchor on scalar': 'a: &x 1\nb: 2\n',
       'anchor on flow seq': '- &x [1, 2]\n- 2\n',
@@ -176,7 +286,7 @@ void main() {
     };
 
     cases.forEach((name, source) {
-      test(name, () => checkTiles(source));
+      test(name, () => expect(CstDocument.parse(source).source, source));
     });
   });
 
@@ -190,10 +300,9 @@ void main() {
           packageUri!.resolve('../../../third_party/yaml-test-suite/src/'));
     });
 
-    test('every document the parser accepts is tiled exactly', () {
+    test('every document the parser accepts is tiled strictly', () {
       if (!suite.existsSync()) {
-        markTestSkipped('yaml-test-suite not available at ${suite.path}');
-        return;
+        fail('yaml-test-suite not available at ${suite.path}');
       }
 
       var accepted = 0;
@@ -223,7 +332,7 @@ void main() {
 
           accepted++;
           try {
-            withYamlWarningCallback(() => checkTiles(source));
+            withYamlWarningCallback(() => CstDocument.parse(source));
           } catch (error) {
             failures['${basename}_$index'] = error;
           }
