@@ -1,5 +1,10 @@
 ## 0.5.1-wip
 
+- When the Dart runtime uses a sanitizer (`asan`, `msan`, or `tsan`), the
+  `fetch` and `checkout` build modes compile BoringSSL with it, using Clang.
+  The prebuilt libraries aren't instrumented, so `fetch` builds from source.
+- The `checkout` build mode rebuilds when BoringSSL's `.inc` files change.
+
 ## 0.5.0
 
 - **Breaking**: Removed `package:boring/bindings.dart`. Its API is now in

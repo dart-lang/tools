@@ -126,6 +126,27 @@ if(WIN32)
   add_definitions(-DBORINGSSL_UNSAFE_DETERMINISTIC_MODE=0)
 endif()
 
+# The sanitizer of the Dart runtime, set by hook/build.dart from the
+# `sanitizer` of the build config. All native code must be compiled with the
+# same sanitizer as the runtime that loads it.
+if(DEFINED BSSL_DART_SANITIZER)
+  if(BSSL_DART_SANITIZER STREQUAL "asan")
+    set(BSSL_DART_SANITIZER_FLAG "-fsanitize=address")
+  elseif(BSSL_DART_SANITIZER STREQUAL "msan")
+    set(BSSL_DART_SANITIZER_FLAG "-fsanitize=memory")
+  elseif(BSSL_DART_SANITIZER STREQUAL "tsan")
+    set(BSSL_DART_SANITIZER_FLAG "-fsanitize=thread")
+  else()
+    message(FATAL_ERROR "Unsupported sanitizer: ${BSSL_DART_SANITIZER}")
+  endif()
+  set(CMAKE_C_FLAGS
+      "${CMAKE_C_FLAGS} ${BSSL_DART_SANITIZER_FLAG} -fno-omit-frame-pointer")
+  set(CMAKE_CXX_FLAGS
+      "${CMAKE_CXX_FLAGS} ${BSSL_DART_SANITIZER_FLAG} -fno-omit-frame-pointer")
+  set(CMAKE_SHARED_LINKER_FLAGS
+      "${CMAKE_SHARED_LINKER_FLAGS} ${BSSL_DART_SANITIZER_FLAG}")
+endif()
+
 # The sources are compiled once, and linked into both libraries:
 #  * bssl_dart, a dynamic library with all of BoringSSL, bundled as is when
 #    linking is disabled (for example in `dart run` and `dart test`).

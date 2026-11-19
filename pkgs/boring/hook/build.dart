@@ -31,7 +31,22 @@ Future<void> main(List<String> args) async {
     // the application uses from the static library.
     final static = input.config.linkingEnabled;
 
-    switch (buildOptions.buildMode) {
+    // The prebuilt libraries aren't built with a sanitizer, but all native
+    // code must be compiled with the sanitizer of the Dart runtime that loads
+    // it (for example `dart test -p vm-asan`), so build from source.
+    final sanitizer = input.config.code.sanitizer;
+    final buildMode =
+        sanitizer != null && buildOptions.buildMode == BuildModeEnum.fetch
+        ? BuildModeEnum.checkout
+        : buildOptions.buildMode;
+    if (buildMode != buildOptions.buildMode) {
+      stdout.writeln(
+        'boring: building from source, because there are no prebuilt '
+        'libraries with the ${sanitizer!.name} sanitizer.',
+      );
+    }
+
+    switch (buildMode) {
       case BuildModeEnum.fetch:
         final library = await fetchPrebuiltLibrary(input, static: static);
         _addLibrary(input, output, library, static: static);
@@ -106,9 +121,11 @@ Future<void> _buildLocalCMake(
   final sourceDir = packageRoot.resolve('src/');
   final targetOS = input.config.code.targetOS;
   final targetArch = input.config.code.targetArchitecture;
+  final sanitizer = input.config.code.sanitizer;
 
   stdout.writeln(
-    'boring: building native asset with CMake for $targetOS-$targetArch.',
+    'boring: building native asset with CMake for $targetOS-$targetArch'
+    '${sanitizer == null ? '' : ' with the ${sanitizer.name} sanitizer'}.',
   );
 
   // Installs both the dynamic and the static library, see src/CMakeLists.txt.
@@ -118,6 +135,14 @@ Future<void> _buildLocalCMake(
     defines: {
       'CMAKE_BUILD_TYPE': 'Release',
       'CMAKE_INSTALL_PREFIX': installDir.toFilePath(),
+      // The Dart SDK's sanitizer runtimes come from Clang, so compile with
+      // Clang instead of the compiler of the build config's toolchain.
+      if (sanitizer != null) ...{
+        'CMAKE_TOOLCHAIN_FILE': '',
+        'CMAKE_C_COMPILER': 'clang',
+        'CMAKE_CXX_COMPILER': 'clang++',
+        'BSSL_DART_SANITIZER': sanitizer.name,
+      },
     },
     targets: ['install'],
     parallelUseAllProcessors: true,
@@ -147,6 +172,9 @@ final _buildDependencyExtensions = {
   '.cmake',
   '.cpp',
   '.h',
+  // BoringSSL includes `.cc.inc` and `.c.inc` files, for example in
+  // crypto/fipsmodule/.
+  '.inc',
   '.s',
   'CMakeLists.txt',
 };
