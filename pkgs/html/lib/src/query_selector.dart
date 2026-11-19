@@ -9,8 +9,8 @@ import 'package:csslib/parser.dart';
 import 'package:csslib/visitor.dart';
 
 import '../dom.dart';
-import 'constants.dart' show isWhitespaceCC;
 import 'css_class_set.dart' show hasHtmlClassToken;
+import 'utils.dart' show allWhitespace;
 
 Element? querySelector(Node node, String selector) =>
     SelectorEvaluator().querySelector(node, _parseSelectorList(selector));
@@ -171,9 +171,8 @@ class SelectorEvaluator extends Visitor {
 
       // http://dev.w3.org/csswg/selectors-4/#the-blank-pseudo
       case 'blank':
-        return !_element!.nodes.any((n) =>
-            n is Element ||
-            n is Text && n.text.runes.any((r) => !isWhitespaceCC(r)));
+        return !_element!.nodes
+            .any((n) => n is Element || n is Text && !allWhitespace(n.text));
 
       // http://dev.w3.org/csswg/selectors-4/#the-first-child-pseudo
       case 'first-child':
