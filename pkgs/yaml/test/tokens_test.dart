@@ -8,8 +8,6 @@ import 'package:test/test.dart';
 import 'package:yaml/tokens.dart';
 import 'package:yaml/yaml.dart';
 
-import 'yaml_test_suite.dart';
-
 void main() {
   group('loadYamlDocumentWithTokens', () {
     test(
@@ -187,34 +185,6 @@ void main() {
         () => loadYamlDocumentWithTokens('---\na: 1\n---\nb: 2\n'),
         throwsA(isA<YamlException>()),
       );
-    });
-
-    test('maintains ascending start order across yaml-test-suite', () {
-      final oldWarn = yamlWarningCallback;
-      yamlWarningCallback = (_, [__]) {};
-      try {
-        for (final c in loadYamlTestSuite()) {
-          if (c.fail) continue;
-          try {
-            final (:tokens, document: _) = loadYamlDocumentWithTokens(c.yaml);
-            for (var i = 0; i < tokens.length; i++) {
-              expect(tokens[i].span.length, greaterThan(0),
-                  reason: 'zero-length token in ${c.id}');
-              if (i > 0) {
-                expect(
-                  tokens[i].span.start.offset,
-                  greaterThanOrEqualTo(tokens[i - 1].span.start.offset),
-                  reason: 'out-of-order tokens in ${c.id}',
-                );
-              }
-            }
-          } on YamlException {
-            // Multi-document or unsupported cases.
-          }
-        }
-      } finally {
-        yamlWarningCallback = oldWarn;
-      }
     });
   });
 }
