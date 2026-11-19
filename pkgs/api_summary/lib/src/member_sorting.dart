@@ -3,6 +3,29 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:collection/collection.dart';
+
+import 'api_declaration.dart';
+import 'api_type.dart';
+
+/// An unmodifiable parameter list preserving positional parameter order
+/// followed by named parameters sorted alphabetically by [ApiParameter.name].
+List<ApiParameter> canonicalizeParameters(List<ApiParameter> parameters) {
+  if (parameters.isEmpty) return const [];
+  final positional = <ApiParameter>[];
+  final named = <ApiParameter>[];
+  for (final param in parameters) {
+    if (param.isNamed) {
+      named.add(param);
+    } else {
+      positional.add(param);
+    }
+  }
+  if (named.length > 1) {
+    named.sortBy((p) => p.name);
+  }
+  return List.unmodifiable([...positional, ...named]);
+}
 
 /// Element categorization used by [MemberSortKey].
 enum MemberCategory {
@@ -27,6 +50,44 @@ final class MemberSortKey implements Comparable<MemberSortKey> {
     required this.name,
     required this.isSetter,
   });
+
+  /// The canonical [MemberSortKey] for [element].
+  factory MemberSortKey.fromDeclaration(
+    ApiDeclaration element, {
+    bool isInstance = false,
+    bool isTopLevel = false,
+  }) => switch (element) {
+    ApiClass() || ApiExtensionType() => MemberSortKey(
+      isInstanceMember: isInstance,
+      category: .interface,
+      name: element.name,
+      isSetter: false,
+    ),
+    ApiExtension() => MemberSortKey(
+      isInstanceMember: isInstance,
+      category: .extension,
+      name: element.name,
+      isSetter: false,
+    ),
+    ApiExecutable(:final kind, :final isStatic, :final name) => MemberSortKey(
+      isInstanceMember: isInstance && !(isTopLevel || isStatic),
+      category: switch (kind) {
+        .constructor => .constructor,
+        .getter || .setter => .propertyAccessor,
+        _ => .topLevelFunctionOrMethod,
+      },
+      name: kind == .setter && name.endsWith('=')
+          ? name.substring(0, name.length - 1)
+          : name,
+      isSetter: kind == .setter,
+    ),
+    ApiTypeAlias() => MemberSortKey(
+      isInstanceMember: isInstance,
+      category: .typeAlias,
+      name: element.name,
+      isSetter: false,
+    ),
+  };
 
   @override
   int compareTo(MemberSortKey other) {

@@ -1,3 +1,20 @@
+## 1.3.0-wip
+
+- Add `includeImplicitNonPublicMembers` and `includeReferencedTypes` optional
+  named constructor parameters to `ApiSummaryCustomizer`.
+- Canonicalize the sort order of libraries, declarations, constructors,
+  members, named parameters, and named record fields in the `ApiSummary` model
+  (`api.json` and `api.yaml`) to match `api.txt`, and sort getter/setter pairs
+  ahead of suffixed names (such as `a`, `a=`, `a9`, `a9=`).
+
+## 1.2.0
+
+- Sort the primary package entry point (`package:<pkg>/<pkg>.dart`) first and
+  `@experimental` public entry points after stable public entry points so shared
+  declarations expand in the primary library first and emit `(see above)` in
+  secondary or experimental libraries.
+- Support relative `packagePath` arguments (such as `'.'`) in `apiSummary`.
+
 ## 1.1.0
 
 - Added `expectApiSummaryClean`, `ApiSummaryFormat`, and

@@ -41,6 +41,9 @@ const int $rparen = 0x29;
 /// Character `*`.
 const int $asterisk = 0x2A;
 
+/// Character `-`.
+const int $dash = 0x2D;
+
 /// Character `:`.
 const int $colon = 0x3A;
 
@@ -49,6 +52,9 @@ const int $lt = 0x3C;
 
 /// Character `>`.
 const int $gt = 0x3E;
+
+/// Character `?`.
+const int $question = 0x3F;
 
 /// Character `[`.
 const int $lbracket = 0x5B;

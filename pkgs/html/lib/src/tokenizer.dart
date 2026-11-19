@@ -179,7 +179,7 @@ class HtmlTokenizer implements Iterator<Token> {
     }
 
     // Convert the set of characters consumed to an int.
-    final charAsInt = int.parse(charStack.join(), radix: radix);
+    final charAsInt = int.tryParse(charStack.join(), radix: radix) ?? 0x110000;
 
     // Certain characters get replaced with others
     var char = replacementCharacters[charAsInt];
@@ -368,7 +368,7 @@ class HtmlTokenizer implements Iterator<Token> {
           _addToken(ParseErrorToken('attributes-in-end-tag'));
         }
         if (token.selfClosing) {
-          _addToken(ParseErrorToken('this-closing-flag-on-end-tag'));
+          _addToken(ParseErrorToken('self-closing-flag-on-end-tag'));
         }
       } else if (token is StartTagToken) {
         // HTML5 specific normalizations to the token stream.
@@ -1100,7 +1100,7 @@ class HtmlTokenizer implements Iterator<Token> {
       _addAttribute('\uFFFD');
       state = attributeNameState;
     } else if (data == eof) {
-      _addToken(ParseErrorToken('expected-end-of-tag-but-got-eof'));
+      _addToken(ParseErrorToken('expected-end-of-tag-name-but-got-eof'));
       state = dataState;
     } else if ("'\"<".contains(data!)) {
       _addToken(ParseErrorToken('invalid-character-after-attribute-name'));

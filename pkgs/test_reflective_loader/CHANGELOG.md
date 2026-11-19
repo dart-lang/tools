@@ -1,3 +1,5 @@
+## 0.6.1-wip
+
 ## 0.6.0
 
 - Test classes and suites with `name`s are now registered with `package:test`s

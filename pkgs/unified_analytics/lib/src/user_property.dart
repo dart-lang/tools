@@ -18,7 +18,20 @@ class UserProperty {
   final String host;
   final String? flutterVersion;
   final String dartVersion;
+
+  /// Deprecated: the legacy `tool` value, kept so existing dashboards keep
+  /// working while they move to [rootTool] and [leafTool]. It's the leaf tool
+  /// for top-level tools and the root tool for shared components. It will be
+  /// removed in a future release.
   final String tool;
+
+  /// The label of the root tool, the user's entry point, or `null` if no root
+  /// tool could be resolved.
+  final String? rootTool;
+
+  /// The label of the leaf tool, the logical tool that sent the event. This
+  /// can be a top-level tool or a shared component.
+  final String leafTool;
   final String hostOsVersion;
   final String locale;
   final String? clientIde;
@@ -42,6 +55,8 @@ class UserProperty {
     required this.flutterVersion,
     required this.dartVersion,
     required this.tool,
+    required this.rootTool,
+    required this.leafTool,
     required this.hostOsVersion,
     required this.locale,
     required this.clientIde,
@@ -160,6 +175,8 @@ class UserProperty {
     'dart_version': dartVersion,
     'analytics_pkg_version': kPackageVersion,
     'tool': tool,
+    'root_tool': rootTool,
+    'leaf_tool': leafTool,
     'local_time': formatDateTime(clock.now()),
     'host_os_version': hostOsVersion,
     'locale': locale,

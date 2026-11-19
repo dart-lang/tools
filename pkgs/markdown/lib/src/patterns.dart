@@ -11,9 +11,12 @@ final setextPattern = RegExp(r'^[ ]{0,3}(=+|-+)\s*$');
 /// Leading (and trailing) `#` define atx-style headers.
 ///
 /// Starts with 1-6 unescaped `#` characters which must not be followed by a
-/// non-space character. Line may end with any number of `#` characters,.
+/// non-space character. Line may end with any number of `#` characters.
 final headerPattern = RegExp(
-  r'^ {0,3}(#{1,6})(?:[ \x09\x0b\x0c].*?)?(?:\s(#*)\s*)?$',
+  r'^ {0,3}(#{1,6})(?:[ \x09\x0b\x0c].*?)?(?:\s(#+)\s*)?$',
+  // `.` must also match U+2028 and U+2029, which `LineSplitter` leaves in a
+  // line's content.
+  dotAll: true,
 );
 
 /// The line starts with `>` with one optional space after.
@@ -51,7 +54,7 @@ final listPattern = RegExp(
 
 /// A line of hyphens separated by at least one pipe.
 final tablePattern = RegExp(
-  r'^[ ]{0,3}\|?([ \t]*:?\-+:?[ \t]*\|[ \t]*)+([ \t]|[ \t]*:?\-+:?[ \t]*)?$',
+  r'^[ ]{0,3}\|?[ \t]*(:?\-+:?[ \t]*\|[ \t]*)+(:?\-+:?[ \t]*)?$',
 );
 
 /// A line starting with `[^` and contains with `]:`, but without special chars
