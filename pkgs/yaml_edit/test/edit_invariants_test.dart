@@ -13,6 +13,7 @@ void _expectInvariantFailure(
   SourceEdit edit, {
   required EditOperation operation,
   required List<Object?> path,
+  required String messageContains,
 }) {
   final initialDocument = CstDocument.parse(initialYaml);
   final updatedYaml = edit.offset + edit.length <= initialYaml.length
@@ -27,7 +28,13 @@ void _expectInvariantFailure(
       operation: operation,
       path: path,
     ),
-    throwsA(isA<AssertionError>()),
+    throwsA(
+      isA<AssertionError>().having(
+        (e) => '${e.message}',
+        'message',
+        contains(messageContains),
+      ),
+    ),
   );
 }
 
@@ -39,23 +46,25 @@ void main() {
         SourceEdit(0, 99, 'a: 2\n'),
         operation: EditOperation.update,
         path: ['a'],
+        messageContains: 'out of bounds',
       );
       _expectInvariantFailure(
         'a: 1\n',
         SourceEdit(99, 0, 'x'),
         operation: EditOperation.update,
         path: ['a'],
+        messageContains: 'out of bounds',
       );
     });
 
     test('rejects flow update escaping entry slot into sibling', () {
       const yaml = '[a, b, c]\n';
-      // Replace "b, c" instead of only "b".
       _expectInvariantFailure(
         yaml,
         SourceEdit(4, 4, 'x, c'),
         operation: EditOperation.update,
         path: [1],
+        messageContains: 'exceeds CST slot end',
       );
     });
 
@@ -66,29 +75,76 @@ void main() {
         SourceEdit(4, 2, 'x]'),
         operation: EditOperation.update,
         path: [1],
+        messageContains: 'exceeds CST slot end',
       );
     });
 
     test('rejects block edit crossing into next entry syntax token', () {
       const yaml = 'a: 1\nb: 2\n';
-      // Overwrite across "b: 2" while updating "a".
       _expectInvariantFailure(
         yaml,
         SourceEdit(3, 7, '9\nb: 2\n'),
         operation: EditOperation.update,
         path: ['a'],
+        messageContains: 'crossed non-comment token',
       );
     });
 
-    test('rejects edit starting before block entry lineStart', () {
+    test('rejects edit starting before block entry start bound (comment-free)',
+        () {
+      const yaml = 'a: 1\nb: 2\n';
+      // Starts inside `a: 1` when removing `b`.
+      _expectInvariantFailure(
+        yaml,
+        SourceEdit(0, yaml.length, 'a: 1\n'),
+        operation: EditOperation.remove,
+        path: ['b'],
+        messageContains: 'precedes CST slot start',
+      );
+    });
+
+    test('rejects block map update rewriting its own key', () {
+      const yaml = 'a: 1\nb: 2\n';
+      _expectInvariantFailure(
+        yaml,
+        SourceEdit(0, 4, '"a": 9'),
+        operation: EditOperation.update,
+        path: ['a'],
+        messageContains: 'precedes CST slot start',
+      );
+    });
+
+    test('rejects edit starting before block entry lineStart with comment', () {
       const yaml = '# above b\na: 1\n# lead b\nb: 2\n';
-      // Starts inside "# lead b\n" when removing "b".
       final leadStart = yaml.indexOf('# lead b');
       _expectInvariantFailure(
         yaml,
         SourceEdit(leadStart, yaml.length - leadStart, ''),
         operation: EditOperation.remove,
         path: ['b'],
+        messageContains: 'precedes CST slot start',
+      );
+    });
+
+    test('rejects list insertion overwriting sibling flow tokens', () {
+      const yaml = '[a, b]\n';
+      _expectInvariantFailure(
+        yaml,
+        SourceEdit(1, 4, 'x, y, b'),
+        operation: EditOperation.insert,
+        path: [],
+        messageContains: 'crossed non-comment token',
+      );
+    });
+
+    test('rejects map add-key overwriting sibling block value', () {
+      const yaml = 'a: 1\nb: 2\n';
+      _expectInvariantFailure(
+        yaml,
+        SourceEdit(3, 1, '7\nc: 3'),
+        operation: EditOperation.update,
+        path: ['c'],
+        messageContains: 'crossed non-comment token',
       );
     });
 
@@ -101,6 +157,7 @@ void main() {
         SourceEdit(commaOffset, closeOffset - commaOffset, ''),
         operation: EditOperation.remove,
         path: [1],
+        messageContains: '# before close',
       );
     });
 
@@ -108,12 +165,12 @@ void main() {
       const yaml = 'a: 1 # same\nb: 2 # same\n';
       final bValueStart = yaml.indexOf('2');
       final bLineEnd = yaml.length - 1;
-      // Drops "# same" on b while the "# same" on a remains.
       _expectInvariantFailure(
         yaml,
         SourceEdit(bValueStart, bLineEnd - bValueStart, '9'),
         operation: EditOperation.update,
         path: ['b'],
+        messageContains: 'unintentionally removed',
       );
     });
 
@@ -126,18 +183,19 @@ void main() {
         SourceEdit(valueStart, valueEnd - valueStart, '9'),
         operation: EditOperation.update,
         path: ['a'],
+        messageContains: '# header',
       );
     });
 
     test('rejects block scalar swallowing a trailing comment after edit', () {
       const yaml = 'a: 1\n  # trailing\nb: 2\n';
       final oneOffset = yaml.indexOf('1');
-      // Replacing "1" with "|-\n  x" swallows "  # trailing" into the scalar!
       _expectInvariantFailure(
         yaml,
         SourceEdit(oneOffset, 1, '|-\n  x'),
         operation: EditOperation.update,
         path: ['a'],
+        messageContains: 'after edit',
       );
     });
 
@@ -145,12 +203,12 @@ void main() {
       const yaml = 'a: # keep\n  1\n';
       final commentEnd = yaml.indexOf('\n');
       final oneEnd = yaml.indexOf('1') + 1;
-      // Removing the newline glues "2" onto "# keep" -> "# keep2".
       _expectInvariantFailure(
         yaml,
         SourceEdit(commentEnd, oneEnd - commentEnd, '2'),
         operation: EditOperation.update,
         path: ['a'],
+        messageContains: 'before edit',
       );
     });
 
@@ -163,6 +221,7 @@ void main() {
         SourceEdit(commentStart, lineEnd - commentStart, '\n- x\n'),
         operation: EditOperation.insert,
         path: [],
+        messageContains: '# keep',
       );
     });
 
@@ -174,20 +233,20 @@ void main() {
         SourceEdit(commentStart, yaml.length - commentStart, '\nb: 2\n'),
         operation: EditOperation.update,
         path: ['b'],
+        messageContains: '# keep',
       );
     });
 
     test('rejects dropping comment outside replaced block collection', () {
       const yaml = 'a:\n  b: 1 # inline on b\nc: 2\n';
       final cStart = yaml.indexOf('c:');
-      // Overwriting through end of line drops "# inline on b" which sits after
-      // a's contentEnd.
       _expectInvariantFailure(
         yaml,
         SourceEdit(
             yaml.indexOf(':') + 1, cStart - yaml.indexOf(':') - 1, ' 9\n'),
         operation: EditOperation.update,
         path: ['a'],
+        messageContains: '# inline on b',
       );
     });
   });
@@ -208,6 +267,14 @@ void main() {
       expect(editor.parseAt([]).value, equals(['a', 'b']));
       expect(editor.toString(), contains('# c1'));
       expect(editor.toString(), isNot(contains('# c0')));
+    });
+
+    test('replacing root of a comments-only document replaces the document',
+        () {
+      final editor = YamlEditor('# only\n');
+      editor.update([], {'a': 1});
+      expect(editor.toString(), 'a: 1');
+      expect(editor.parseAt([]).value, {'a': 1});
     });
 
     test('updates document with unknown directive without leaking warnings',

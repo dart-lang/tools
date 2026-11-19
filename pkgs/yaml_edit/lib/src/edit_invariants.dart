@@ -32,8 +32,9 @@ enum EditOperation {
 /// and debug builds reuse the existing parse of [updatedDocument].
 ///
 /// Throws an [AssertionError] with before/after YAML context if [edit] escapes
-/// its CST target slot or drops/corrupts a comment outside the operation's
-/// CST-derived droppable range.
+/// its CST target slot, overwrites sibling syntax tokens during an insertion,
+/// or drops/corrupts a comment outside the operation's CST-derived droppable
+/// range.
 bool checkEditInvariants({
   required CstDocument initialDocument,
   required CstDocument updatedDocument,
@@ -92,6 +93,16 @@ void _checkEditBounds({
     );
   }
 
+  if (bounds.forbidSyntaxOverlap && edit.length > 0) {
+    _assertNoNonCommentTokensInRange(
+      initialDocument,
+      updatedDocument,
+      rangeStart: editStart,
+      rangeEnd: editEnd,
+      context: '$operation at $path',
+    );
+  }
+
   if (editEnd > bounds.end) {
     if (!bounds.allowTrailingTrivia) {
       throw createAssertionError(
@@ -105,25 +116,45 @@ void _checkEditBounds({
     // Block mutations may extend past the slot end only over trailing blank
     // lines, whitespace, and comments (for dangling-comment cleanup or
     // preventing block-scalar swallowing), never over sibling syntax tokens.
-    for (final token in initialDocument.tokens) {
-      final tokenStart = token.span.start.offset;
-      final tokenEnd = token.span.end.offset;
-      if (tokenStart >= editEnd) break;
-      if (tokenEnd <= bounds.end) continue;
-      if (token.kind != YamlTokenKind.comment) {
-        throw createAssertionError(
-          'Edit end $editEnd crossed non-comment token ${token.kind} at '
-          'offset $tokenStart past CST slot end ${bounds.end} for '
-          '$operation at $path.',
-          initialDocument.source,
-          updatedDocument.source,
-        );
-      }
+    _assertNoNonCommentTokensInRange(
+      initialDocument,
+      updatedDocument,
+      rangeStart: bounds.end,
+      rangeEnd: editEnd,
+      context: '$operation at $path past CST slot end ${bounds.end}',
+    );
+  }
+}
+
+void _assertNoNonCommentTokensInRange(
+  CstDocument initialDocument,
+  CstDocument updatedDocument, {
+  required int rangeStart,
+  required int rangeEnd,
+  required String context,
+}) {
+  for (final token in initialDocument.tokens) {
+    final tokenStart = token.span.start.offset;
+    final tokenEnd = token.span.end.offset;
+    if (tokenStart >= rangeEnd) break;
+    if (tokenEnd <= rangeStart) continue;
+    if (token.kind != YamlTokenKind.comment) {
+      throw createAssertionError(
+        'Edit crossed non-comment token ${token.kind} at offset $tokenStart '
+        'during $context.',
+        initialDocument.source,
+        updatedDocument.source,
+      );
     }
   }
 }
 
-({int start, int end, bool allowTrailingTrivia})? _slotBounds(
+({
+  int start,
+  int end,
+  bool allowTrailingTrivia,
+  bool forbidSyntaxOverlap,
+})? _slotBounds(
   CstDocument document,
   EditOperation operation,
   List<Object?> path,
@@ -133,7 +164,8 @@ void _checkEditBounds({
       return (
         start: 0,
         end: document.source.length,
-        allowTrailingTrivia: false
+        allowTrailingTrivia: false,
+        forbidSyntaxOverlap: false,
       );
     }
     final root = document.root;
@@ -141,10 +173,16 @@ void _checkEditBounds({
       return (
         start: 0,
         end: document.source.length,
-        allowTrailingTrivia: false
+        allowTrailingTrivia: false,
+        forbidSyntaxOverlap: false,
       );
     }
-    return (start: root.start, end: root.end, allowTrailingTrivia: true);
+    return (
+      start: root.start,
+      end: root.end,
+      allowTrailingTrivia: true,
+      forbidSyntaxOverlap: false,
+    );
   }
 
   final parentPath = operation == EditOperation.insert
@@ -159,11 +197,13 @@ void _checkEditBounds({
           start: parent.openEnd,
           end: parent.closeStart,
           allowTrailingTrivia: false,
+          forbidSyntaxOverlap: true,
         ),
       CstBlockSeq() => (
           start: parent.contentStart,
           end: parent.end,
           allowTrailingTrivia: true,
+          forbidSyntaxOverlap: true,
         ),
       _ => null,
     };
@@ -182,13 +222,22 @@ void _checkEditBounds({
             start: entry.contentStart,
             end: entry.comma ?? parent.closeStart,
             allowTrailingTrivia: false,
+            forbidSyntaxOverlap: false,
           );
         }
+        // Adding a new key to a flow map must not overwrite existing tokens.
+        return (
+          start: parent.openEnd,
+          end: parent.closeStart,
+          allowTrailingTrivia: false,
+          forbidSyntaxOverlap: true,
+        );
       }
       return (
         start: parent.openEnd,
         end: parent.closeStart,
         allowTrailingTrivia: false,
+        forbidSyntaxOverlap: false,
       );
 
     case CstFlowPair():
@@ -196,21 +245,26 @@ void _checkEditBounds({
         start: parent.contentStart,
         end: parent.end,
         allowTrailingTrivia: false,
+        forbidSyntaxOverlap: false,
       );
 
     case CstBlockSeq():
       if (step is int && step >= 0 && step < parent.entries.length) {
         final entry = parent.entries[step];
         return (
-          start: entry.lineStart,
+          start: operation == EditOperation.update
+              ? entry.dashStart + 1
+              : entry.lineStart,
           end: entry.end,
           allowTrailingTrivia: true,
+          forbidSyntaxOverlap: false,
         );
       }
       return (
         start: parent.contentStart,
         end: parent.end,
         allowTrailingTrivia: true,
+        forbidSyntaxOverlap: false,
       );
 
     case CstBlockMap():
@@ -218,15 +272,20 @@ void _checkEditBounds({
       if (index != null) {
         final entry = parent.entries[index];
         return (
-          start: entry.lineStart,
+          start: operation == EditOperation.update
+              ? (entry.colon != null ? entry.colon! + 1 : entry.key.end)
+              : entry.lineStart,
           end: entry.end,
           allowTrailingTrivia: true,
+          forbidSyntaxOverlap: false,
         );
       }
+      // Adding a new key to a block map must not overwrite existing tokens.
       return (
         start: parent.contentStart,
         end: parent.end,
         allowTrailingTrivia: true,
+        forbidSyntaxOverlap: true,
       );
 
     case CstScalar() || CstAlias() || CstEmpty():
@@ -347,8 +406,7 @@ void _checkCommentConservation({
           final entry = parent.entries[index];
           final end =
               (parent.entries.length > 1 && !(index == 0 && parent.isCompact))
-                  ? _extendPastIndentedComments(
-                      document,
+                  ? document.extendPastIndentedCommentsAndBlankLines(
                       entry.end,
                       document.columnOf(parent.entries.first.dashStart),
                     )
@@ -361,8 +419,7 @@ void _checkCommentConservation({
           final entry = parent.entries[index];
           final end =
               (parent.entries.length > 1 && !(index == 0 && parent.isCompact))
-                  ? _extendPastIndentedComments(
-                      document,
+                  ? document.extendPastIndentedCommentsAndBlankLines(
                       entry.end,
                       document.columnOf(parent.entries.first.keyStart),
                     )
@@ -407,51 +464,3 @@ void _checkCommentConservation({
       CstFlowPair() =>
         (start: node.start, end: node.contentEnd),
     };
-
-int _extendPastIndentedComments(
-  CstDocument document,
-  int startOffset,
-  int collectionIndent,
-) {
-  final source = document.source;
-  var endOffset = startOffset;
-  var probe = startOffset;
-
-  while (probe < source.length) {
-    final lineStart = document.lineStartOf(probe);
-    if (probe != lineStart) break;
-
-    final lineContentEnd = document.lineContentEndOf(probe);
-    final lineBreakEnd = document.lineBreakEndOf(probe);
-
-    final comment = document.commentInRange(lineStart, lineContentEnd);
-    if (comment != null) {
-      final commentStart = comment.span.start.offset;
-      if (_isHorizontalWhitespace(source, lineStart, commentStart) &&
-          commentStart - lineStart > collectionIndent) {
-        endOffset = lineBreakEnd;
-        probe = lineBreakEnd;
-        continue;
-      }
-      break;
-    }
-
-    if (_isHorizontalWhitespace(source, lineStart, lineContentEnd)) {
-      endOffset = lineBreakEnd;
-      probe = lineBreakEnd;
-      continue;
-    }
-
-    break;
-  }
-
-  return endOffset;
-}
-
-bool _isHorizontalWhitespace(String source, int start, int end) {
-  for (var i = start; i < end; i++) {
-    final char = source.codeUnitAt(i);
-    if (char != 0x20 && char != 0x09) return false;
-  }
-  return true;
-}
