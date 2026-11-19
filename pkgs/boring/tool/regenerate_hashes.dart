@@ -125,22 +125,16 @@ Future<void> main(List<String> args) async {
           iosSdk: iosSdk,
           static: static,
         );
-        final List<int>? bytes;
-        try {
-          bytes = assetsDir != null
-              ? await _readLocal(Directory(assetsDir), assetName)
-              : await _fetch(
-                  httpClient,
-                  releaseAssetUrl(
-                    repository: repository,
-                    tag: tag,
-                    assetName: assetName,
-                  ),
-                );
-        } on _DownloadException catch (e) {
-          stderr.writeln('Not updating $_hashesFile: $e');
-          exit(1);
-        }
+        final bytes = assetsDir != null
+            ? await _readLocal(Directory(assetsDir), assetName)
+            : await _fetch(
+                httpClient,
+                releaseAssetUrl(
+                  repository: repository,
+                  tag: tag,
+                  assetName: assetName,
+                ),
+              );
         if (bytes == null) {
           missing.add(assetName);
           continue;
@@ -168,8 +162,7 @@ Future<void> main(List<String> args) async {
           'assets of the prebuilt targets are missing from release $tag of '
           '$repository:\n  ${missing.join('\n  ')}';
       if (sourceCommit.isNotEmpty) {
-        stderr.writeln('Not updating $_hashesFile: $summary');
-        exit(1);
+        throw _AbortException('Not updating $_hashesFile: $summary');
       }
       stdout.writeln(
         'Warning: $summary\nThe release wasn\'t built by this repository.',
@@ -183,6 +176,14 @@ Future<void> main(List<String> args) async {
         assetFiles: assetFiles,
       );
     }
+  } on _DownloadException catch (e) {
+    stderr.writeln('Not updating $_hashesFile: $e');
+    exitCode = 1;
+    return;
+  } on _AbortException catch (e) {
+    stderr.writeln(e.message);
+    exitCode = 1;
+    return;
   } finally {
     httpClient.close(force: true);
     await downloadDir?.delete(recursive: true);
@@ -313,7 +314,8 @@ Future<String> _sourceCommit({
 
 /// Checks with `gh attestation verify` that each of [assetFiles] has a
 /// provenance attestation from [_binariesWorkflow] of [repository], run on
-/// main for [sourceCommit] on a GitHub-hosted runner, or exits.
+/// main for [sourceCommit] on a GitHub-hosted runner, or throws an
+/// [_AbortException].
 Future<void> _verifyAttestations({
   required String repository,
   required String sourceCommit,
@@ -341,21 +343,19 @@ Future<void> _verifyAttestations({
         '--deny-self-hosted-runners',
       ]);
     } on ProcessException catch (e) {
-      stderr.writeln(
+      throw _AbortException(
         'Not updating $_hashesFile: failed to run the GitHub CLI to verify '
         'the provenance attestations: $e\n'
         'Install it (https://cli.github.com), or pass '
         '--no-verify-attestations.',
       );
-      exit(1);
     }
     if (result.exitCode != 0) {
-      stderr.writeln(
+      throw _AbortException(
         'Not updating $_hashesFile: failed to verify that $assetName was '
         'built from $sourceCommit by $_binariesWorkflow:\n'
         '${result.stdout}${result.stderr}',
       );
-      exit(1);
     }
     stdout.writeln('  $assetName: verified');
   }
@@ -393,6 +393,15 @@ Future<List<int>?> _fetch(HttpClient client, Uri url) async {
   } on IOException catch (e) {
     throw _DownloadException('Failed to download $url: $e');
   }
+}
+
+class _AbortException implements Exception {
+  final String message;
+
+  _AbortException(this.message);
+
+  @override
+  String toString() => message;
 }
 
 class _DownloadException implements Exception {
