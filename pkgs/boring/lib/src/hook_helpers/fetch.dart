@@ -151,12 +151,20 @@ const _maxRedirects = 5;
 /// `https` URLs, so that the request never leaves TLS, unlike [HttpClient]'s
 /// own redirect handling, which also follows redirects to `http` URLs.
 ///
-/// Throws a [BuildError] for a redirect to another scheme or for too many
-/// redirects.
+/// Throws a [BuildError] if [url] is not an `https` URL, for a redirect to
+/// another scheme or an invalid redirect location, or for too many redirects.
 Future<HttpClientResponse> _getFollowingHttpsRedirects(
   HttpClient client,
   Uri url,
 ) async {
+  if (url.scheme != 'https') {
+    throw BuildError(
+      message:
+          'Refusing to download the prebuilt boring binary from $url, which '
+          'is not an https URL.\n'
+          '$_checkoutHint',
+    );
+  }
   var currentUrl = url;
   for (var redirects = 0; ; redirects++) {
     final request = await client.getUrl(currentUrl).timeout(_connectionTimeout);
@@ -165,7 +173,17 @@ Future<HttpClientResponse> _getFollowingHttpsRedirects(
     final location = response.headers.value(HttpHeaders.locationHeader);
     if (!response.isRedirect || location == null) return response;
     await response.drain<void>().timeout(_connectionTimeout);
-    final nextUrl = currentUrl.resolve(location);
+    final Uri nextUrl;
+    try {
+      nextUrl = currentUrl.resolve(location);
+    } on FormatException catch (e) {
+      throw BuildError(
+        message:
+            'Received invalid redirect location "$location" from $currentUrl '
+            'while downloading the prebuilt boring binary from $url: $e\n'
+            '$_checkoutHint',
+      );
+    }
     if (nextUrl.scheme != 'https') {
       throw BuildError(
         message:
