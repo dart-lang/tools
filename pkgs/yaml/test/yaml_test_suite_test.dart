@@ -6,11 +6,13 @@
 library;
 
 import 'package:test/test.dart';
+import 'package:yaml/tokens.dart';
+import 'package:yaml/yaml.dart';
 
 import 'yaml_test_suite.dart';
 
 void main() {
-  final cases = loadYamlTestSuite();
+  final cases = loadYamlTestSuite().toList();
 
   for (final c in cases) {
     test(c.name, () {
@@ -31,6 +33,34 @@ void main() {
       }
     });
   }
+
+  test('loadYamlDocumentWithTokens maintains ascending start order', () {
+    final oldWarn = yamlWarningCallback;
+    yamlWarningCallback = (_, [__]) {};
+    try {
+      for (final c in cases) {
+        if (c.fail) continue;
+        try {
+          final (:tokens, document: _) = loadYamlDocumentWithTokens(c.yaml);
+          for (var i = 0; i < tokens.length; i++) {
+            expect(tokens[i].span.length, greaterThan(0),
+                reason: 'zero-length token in ${c.id}');
+            if (i > 0) {
+              expect(
+                tokens[i].span.start.offset,
+                greaterThanOrEqualTo(tokens[i - 1].span.start.offset),
+                reason: 'out-of-order tokens in ${c.id}',
+              );
+            }
+          }
+        } on YamlException {
+          // Multi-document or unsupported cases.
+        }
+      }
+    } finally {
+      yamlWarningCallback = oldWarn;
+    }
+  });
 }
 
 const _expectedFailures = <String>[
