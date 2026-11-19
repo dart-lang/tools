@@ -21,8 +21,9 @@ import 'strings.dart';
 import 'utils.dart';
 import 'wrap.dart';
 
-/// Text and whitespace helpers on [CstDocument] used by slot mutations.
-extension _CstDocumentTextHelpers on CstDocument {
+/// Text and whitespace helpers on [CstDocument] used by slot mutations and
+/// debug-mode invariant checks.
+extension CstDocumentTextHelpers on CstDocument {
   /// Returns the byte length of the line break starting at [offset]
   /// (`2` for `\r\n`, `1` for `\n` or `\r`, and `0` otherwise).
   int lineBreakLengthAt(int offset) {
@@ -387,7 +388,15 @@ SourceEdit buildUpdate(
   return edit;
 }
 
-final _blockScalarHeaderPattern = RegExp(r'(?:^|\s)[|>]-(\s+#.*)?$');
+// Matches block-scalar header lines produced by `_tryYamlEncodeLiteral` and
+// `_tryYamlEncodeFolded` in `strings.dart` (plus any lifted header comment).
+// For lines after the first (`i > 0`), require an explicit key/sequence prefix
+// (`:` or `-`) so an indented body line that happens to contain `|-` is not
+// mistaken for the header.
+final _firstLineBlockScalarHeaderPattern =
+    RegExp(r'^\s*(?:.*(?::\s+|-\s+))?[|>][+-]?\d*(?:\s+#.*)?$');
+final _nestedBlockScalarHeaderPattern =
+    RegExp(r'^\s*.*(?::\s+|-\s+)[|>][+-]?\d*(?:\s+#.*)?$');
 
 /// Returns the trailing block-styled scalar of [node] if [node] is a block
 /// scalar or a block collection whose last entry ends with one.
@@ -428,33 +437,31 @@ int? _emittedBlockScalarBodyIndent(String replacement, YamlNode value) {
   final lines = trimmed.split(RegExp(r'\r\n|\n|\r'));
   if (lines.length < 2) return null;
 
-  final lastLine = lines.last;
-  var bodyIndent = 0;
-  while (
-      bodyIndent < lastLine.length && lastLine.codeUnitAt(bodyIndent) == 0x20) {
-    bodyIndent++;
-  }
-  if (bodyIndent == 0 || bodyIndent == lastLine.length) return null;
-
-  // Walk backwards over the block scalar's body lines (blank lines or lines
-  // indented at least [bodyIndent]) to verify a `|-` or `>-` header precedes
-  // them.
-  var i = lines.length - 2;
-  while (i >= 0) {
+  // Walk backwards across the block scalar's body lines, tracking the minimum
+  // indentation of non-blank lines (the scalar's true body indent even when
+  // later lines are extra-indented), until reaching the header line.
+  int? minBodyIndent;
+  for (var i = lines.length - 1; i >= 0; i--) {
     final line = lines[i];
-    if (line.isEmpty) {
-      i--;
-      continue;
-    }
+    if (line.trim().isEmpty) continue;
+
     var spaces = 0;
     while (spaces < line.length && line.codeUnitAt(spaces) == 0x20) {
       spaces++;
     }
-    if (spaces >= bodyIndent) {
-      i--;
-      continue;
+
+    if (minBodyIndent != null && spaces < minBodyIndent) {
+      final headerPattern = i == 0
+          ? _firstLineBlockScalarHeaderPattern
+          : _nestedBlockScalarHeaderPattern;
+      if (headerPattern.hasMatch(line)) {
+        return minBodyIndent > 0 ? minBodyIndent : null;
+      }
     }
-    return _blockScalarHeaderPattern.hasMatch(line) ? bodyIndent : null;
+
+    if (minBodyIndent == null || spaces < minBodyIndent) {
+      minBodyIndent = spaces;
+    }
   }
   return null;
 }
