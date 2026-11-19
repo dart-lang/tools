@@ -68,7 +68,7 @@ Future<Map<String, dynamic>> collect(
 }) async {
   scopedOutput ??= <String>{};
 
-  late VmService service;
+  final VmService service;
   if (serviceOverrideForTesting != null) {
     service = serviceOverrideForTesting;
   } else {
@@ -77,36 +77,9 @@ Future<Map<String, dynamic>> collect(
         serviceUri.pathSegments.where((c) => c.isNotEmpty).toList()..add('ws');
     final uri = serviceUri.replace(scheme: 'ws', pathSegments: pathSegments);
 
-    await retry(
-      () async {
-        try {
-          final options = const CompressionOptions(enabled: false);
-          final socket = await WebSocket.connect('$uri', compression: options);
-          final controller = StreamController<String>();
-          socket.listen(
-            (data) => controller.add(data as String),
-            onDone: () {
-              controller.close();
-              service.dispose();
-            },
-          );
-          service = VmService(
-            controller.stream,
-            socket.add,
-            log: StdoutLog(),
-            disposeHandler: socket.close,
-          );
-          await service.getVM().timeout(_retryInterval);
-        } on TimeoutException {
-          // The signature changed in vm_service version 6.0.0.
-          // ignore: await_only_futures
-          await service.dispose();
-          rethrow;
-        }
-      },
-      _retryInterval,
-      timeout: timeout,
-    );
+    service =
+        await retry(() => _connect(uri), _retryInterval, timeout: timeout)
+            as VmService;
   }
 
   try {
@@ -124,9 +97,32 @@ Future<Map<String, dynamic>> collect(
     if (resume && !waitPaused) {
       await _resumeIsolates(service);
     }
-    // The signature changed in vm_service version 6.0.0.
-    // ignore: await_only_futures
     await service.dispose();
+  }
+}
+
+Future<VmService> _connect(Uri uri) async {
+  final socket = await WebSocket.connect(
+    '$uri',
+    compression: const CompressionOptions(enabled: false),
+  );
+  final controller = StreamController<String>();
+  socket.listen(
+    (data) => controller.add(data as String),
+    onDone: controller.close,
+  );
+  final service = VmService(
+    controller.stream,
+    socket.add,
+    log: StdoutLog(),
+    disposeHandler: socket.close,
+  );
+  try {
+    await service.getVM().timeout(_retryInterval);
+    return service;
+  } catch (_) {
+    await service.dispose();
+    rethrow;
   }
 }
 

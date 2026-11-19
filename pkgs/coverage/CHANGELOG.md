@@ -1,3 +1,10 @@
+## 1.16.2-wip
+
+- Fix a race condition in `collect()` when retrying VM service connections so a
+  delayed socket close from a failed connection attempt cannot dispose the
+  active retry connection, and ensure failed attempts are always disposed.
+- Update `package:vm_service` constraints to `'>=14.2.2 <16.0.0'`.
+
 ## 1.16.1
 
 - Fix `HitMap.parseFiles` to allow empty `{}` coverage files written by
