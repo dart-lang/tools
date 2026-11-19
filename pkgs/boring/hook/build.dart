@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:boring/src/hook_helpers/build_options.dart'
     show BuildModeEnum, BuildOptions;
-import 'package:boring/src/hook_helpers/fetch.dart' show fetchPrebuiltLibrary;
+import 'package:boring/src/hook_helpers/prebuilt.dart' show prebuiltLibrary;
 import 'package:boring/src/hook_helpers/targets.dart' show libraryFileName;
 import 'package:code_assets/code_assets.dart';
 import 'package:hooks/hooks.dart';
@@ -33,15 +33,16 @@ Future<void> main(List<String> args) async {
 
     switch (buildOptions.buildMode) {
       case BuildModeEnum.fetch:
-        final library = await fetchPrebuiltLibrary(input, static: static);
+        final library = prebuiltLibrary(input, static: static);
         _addLibrary(input, output, library, static: static);
+        output.dependencies.add(library);
       case BuildModeEnum.checkout:
         await _buildLocalCMake(input, output, static: static);
       case BuildModeEnum.local:
         await _useLocalBinary(input, output, buildOptions.localPath);
     }
-    // The hooks runner reruns the hook when any of its Dart sources change,
-    // including hashes.dart, so only non-Dart inputs are listed.
+    // The hooks runner reruns the hook when any of its Dart sources change, so
+    // only non-Dart inputs are listed.
     output.dependencies.add(input.packageRoot.resolve('pubspec.yaml'));
   });
 }

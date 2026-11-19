@@ -52,9 +52,10 @@ hooks:
       buildMode: fetch # 'fetch', 'checkout', or 'local'
 ```
 
-- **`fetch`** *(default)*: Downloads the prebuilt library of the pinned
-  release from GitHub Releases and verifies it against the SHA-256 hash pinned
-  in the package. A hash mismatch is an error.
+- **`fetch`** *(default)*: Uses the prebuilt library that comes with the
+  package published on pub.dev, so the build doesn't download anything. A git
+  or path dependency on the repository has no prebuilt libraries and requires
+  `checkout`.
 - **`checkout`**: Compiles BoringSSL locally from bundled sources via CMake and
   Ninja.
 - **`local`**: Uses a custom prebuilt dynamic library at `localPath`, which is
