@@ -33,6 +33,36 @@ void main() {
       );
     });
 
+    test('maps page up split after "esc [ 5"', () async {
+      expect(
+        await keysFor([
+          [27, 91, 53],
+          [126],
+        ], 1),
+        [Key.pageUp],
+      );
+    });
+
+    test('maps page down split after "esc [ 6"', () async {
+      expect(
+        await keysFor([
+          [27, 91, 54],
+          [126],
+        ], 1),
+        [Key.pageDown],
+      );
+    });
+
+    test('maps page up split after "esc ["', () async {
+      expect(
+        await keysFor([
+          [27, 91],
+          [53, 126],
+        ], 1),
+        [Key.pageUp],
+      );
+    });
+
     test('keeps reading keys after a split escape sequence', () async {
       expect(
         await keysFor([
