@@ -118,7 +118,7 @@ Future<VmService> _connect(Uri uri) async {
     disposeHandler: socket.close,
   );
   try {
-    await service.getVM().timeout(_retryInterval);
+    await service.getVersion().timeout(_retryInterval);
     return service;
   } catch (_) {
     await service.dispose();

@@ -108,6 +108,12 @@ Map<String, dynamic> _vmResponse(List<String> isolateIds) => {
   ],
 };
 
+const _versionResponse = <String, dynamic>{
+  'type': 'Version',
+  'major': 4,
+  'minor': 0,
+};
+
 const _emptySourceReport = <String, dynamic>{
   'type': 'SourceReport',
   'ranges': <Object?>[],
@@ -115,12 +121,12 @@ const _emptySourceReport = <String, dynamic>{
 };
 
 void main() {
-  test('disposes failed connection on non-timeout getVM error', () async {
+  test('disposes failed connection on non-timeout getVersion error', () async {
     var reports = 0;
     final server = await _FakeVmServiceServer.start((connection, rpc) {
       final method = rpc['method'];
       if (connection.index == 1) {
-        if (method != 'getVM') {
+        if (method != 'getVersion') {
           connection.failUnexpectedRpc(rpc);
         }
         // Return an RPC error while keeping connection 1 open on the server.
@@ -129,7 +135,9 @@ void main() {
         return;
       }
 
-      if (method == 'getVM') {
+      if (method == 'getVersion') {
+        connection.reply(rpc['id'], _versionResponse);
+      } else if (method == 'getVM') {
         connection.reply(rpc['id'], _vmResponse(['isolates/1']));
       } else if (method == 'getSourceReport') {
         reports++;
@@ -166,17 +174,19 @@ void main() {
       server = await _FakeVmServiceServer.start((connection, rpc) async {
         final method = rpc['method'];
         if (connection.index == 1) {
-          if (method != 'getVM') {
+          if (method != 'getVersion') {
             connection.failUnexpectedRpc(rpc);
           }
-          // Stall getVM past _retryInterval and pause reading so the server
-          // withholds its close handshake response until connection 2 has an
-          // in-flight getSourceReport RPC.
+          // Stall getVersion past _retryInterval and pause reading so the
+          // server withholds its close handshake response until connection 2
+          // has an in-flight getSourceReport RPC.
           connection.pause();
           return;
         }
 
-        if (method == 'getVM') {
+        if (method == 'getVersion') {
+          connection.reply(rpc['id'], _versionResponse);
+        } else if (method == 'getVM') {
           connection.reply(
             rpc['id'],
             _vmResponse(['isolates/1', 'isolates/2']),
@@ -213,19 +223,21 @@ void main() {
     },
   );
 
-  test('retries when peer closes socket during getVM readiness', () async {
+  test('retries when peer closes socket during getVersion readiness', () async {
     var reports = 0;
     final server = await _FakeVmServiceServer.start((connection, rpc) async {
       final method = rpc['method'];
       if (connection.index == 1) {
-        if (method != 'getVM') {
+        if (method != 'getVersion') {
           connection.failUnexpectedRpc(rpc);
         }
         await connection.socket.close();
         return;
       }
 
-      if (method == 'getVM') {
+      if (method == 'getVersion') {
+        connection.reply(rpc['id'], _versionResponse);
+      } else if (method == 'getVM') {
         connection.reply(rpc['id'], _vmResponse(['isolates/1']));
       } else if (method == 'getSourceReport') {
         reports++;
