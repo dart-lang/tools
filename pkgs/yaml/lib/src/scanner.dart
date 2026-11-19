@@ -910,7 +910,6 @@ class Scanner {
       _pendingOutOfBandTokens?.add(
           Token(TokenType.unknownDirective, _scanner.spanFrom(start, end)));
       _skipComment();
-      _skipLine();
       return null;
     }
 

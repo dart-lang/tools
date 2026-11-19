@@ -67,18 +67,7 @@ YamlDocument loadYamlDocument(String yaml,
     {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener}) {
   var loader = Loader(yaml,
       sourceUrl: sourceUrl, recover: recover, errorListener: errorListener);
-  var document = loader.load();
-  if (document == null) {
-    return YamlDocument.internal(YamlScalar.internalWithSpan(null, loader.span),
-        loader.span, null, const []);
-  }
-
-  var nextDocument = loader.load();
-  if (nextDocument != null) {
-    throw YamlException('Only expected one document.', nextDocument.span);
-  }
-
-  return document;
+  return loader.loadSingleDocument();
 }
 
 /// Loads a stream of documents from a YAML string.

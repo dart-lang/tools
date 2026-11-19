@@ -14,7 +14,6 @@ import 'src/loader.dart';
 import 'src/token.dart';
 import 'src/yaml_document.dart';
 import 'src/yaml_exception.dart';
-import 'src/yaml_node.dart';
 
 /// Loads a single YAML document together with all non-empty lexical tokens
 /// scanned from [yaml].
@@ -55,20 +54,7 @@ import 'src/yaml_node.dart';
     retainTokens: true,
     errorListener: errorListener,
   );
-  var document = loader.load();
-  if (document == null) {
-    document = YamlDocument.internal(
-      YamlScalar.internalWithSpan(null, loader.span),
-      loader.span,
-      null,
-      const [],
-    );
-  } else {
-    final nextDocument = loader.load();
-    if (nextDocument != null) {
-      throw YamlException('Only expected one document.', nextDocument.span);
-    }
-  }
+  final document = loader.loadSingleDocument();
   final tokens = List<YamlToken>.unmodifiable(
     loader.tokens!
         .map((token) => YamlToken._(_kindFor(token.type), token.span)),
