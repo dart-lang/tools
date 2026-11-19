@@ -177,8 +177,9 @@ final class CstBlockSeq extends CstNode {
   /// sequence with no entries cannot be written.
   final List<CstBlockSeqEntry> entries;
 
-  /// Whether this sequence starts compactly on the same line as an enclosing
-  /// `-` or `?` indicator (for example `- - 1`).
+  /// Whether this sequence's first entry does not begin at the start of its
+  /// line (for example a compact sequence `- - 1` or an indented root
+  /// sequence).
   final bool isCompact;
 
   @override
@@ -218,8 +219,9 @@ final class CstBlockSeqEntry {
   /// the previous entry.
   final int start;
 
-  /// Start of the line the `-` is written on, or [start] when this is the first
-  /// entry of a compact block sequence sharing a line with an outer indicator.
+  /// Start of the line the `-` is written on, or [start] when the first entry
+  /// does not begin at the start of its line (for example a compact sequence
+  /// sharing a line with an outer indicator, or an indented root sequence).
   ///
   /// The range `[start, lineStart)` holds whole lines of blank space and
   /// comments that precede this entry. Deleting an entry deletes
@@ -266,8 +268,8 @@ final class CstBlockMap extends CstNode {
   /// mapping with no entries cannot be written.
   final List<CstBlockMapEntry> entries;
 
-  /// Whether this mapping starts compactly on the same line as an enclosing
-  /// `-` or `?` indicator (for example `- a: 1`).
+  /// Whether this mapping's first entry does not begin at the start of its
+  /// line (for example a compact mapping `- a: 1` or an indented root mapping).
   final bool isCompact;
 
   @override
@@ -304,8 +306,9 @@ final class CstBlockMapEntry {
   /// the previous entry.
   final int start;
 
-  /// Start of the line the key is written on, or [start] when this is the first
-  /// entry of a compact block mapping sharing a line with an outer indicator.
+  /// Start of the line the key is written on, or [start] when the first entry
+  /// does not begin at the start of its line (for example a compact mapping
+  /// sharing a line with an outer indicator, or an indented root mapping).
   final int lineStart;
 
   /// Offset of the `?` indicator, for entries written in explicit key form.
@@ -1472,7 +1475,7 @@ final class _CstBuilder {
 
       final entryColumn = _lineTable.columnOf(questionMark ?? keyNode.start);
       final colon = _tryConsumeColon(
-        keyEnd: keyNode.end,
+        keyEnd: keyNode.contentEnd,
         expectedColumnOnNewLine: entryColumn,
       );
 
@@ -1505,10 +1508,6 @@ final class _CstBuilder {
   }
 
   /// Builds a [CstFlowSeq] or [CstFlowMap].
-  ///
-  /// Entry parsing is kept inline here so each nesting level uses only two Dart
-  /// stack frames (`_buildNode` -> `_buildFlowCollection`), matching
-  /// `package:yaml`'s loader depth.
   CstFlowCollection _buildFlowCollection(
     int start,
     int contentStart,
