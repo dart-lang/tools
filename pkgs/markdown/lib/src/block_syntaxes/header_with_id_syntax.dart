@@ -4,6 +4,7 @@
 
 import '../ast.dart';
 import '../block_parser.dart';
+import '../pending_header_id.dart';
 import 'header_syntax.dart';
 
 /// Parses atx-style headers, and adds generated IDs to the generated elements.
@@ -15,7 +16,7 @@ class HeaderWithIdSyntax extends HeaderSyntax {
     final element = super.parse(parser) as Element;
 
     if (element.children?.isNotEmpty ?? false) {
-      element.needsGeneratedId = true;
+      markPendingHeaderId(element);
     }
 
     return element;

@@ -11,6 +11,7 @@ import 'extension_set.dart';
 import 'inline_parser.dart';
 import 'inline_syntaxes/inline_syntax.dart';
 import 'line.dart';
+import 'pending_header_id.dart';
 import 'util.dart';
 
 /// Maintains the context needed to parse a Markdown document.
@@ -142,7 +143,7 @@ class Document {
           break;
         }
       }
-      if (!descended && owner != null && owner.needsGeneratedId) {
+      if (!descended && owner != null && hasPendingHeaderId(owner)) {
         owner.generatedId = BlockSyntax.generateAnchorHash(owner);
       }
     }
