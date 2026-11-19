@@ -1,0 +1,151 @@
+name: package:sigstore
+permissions:
+  contents: read
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/sigstore.yaml'
+      - 'pkgs/sigstore/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/sigstore.yaml'
+      - 'pkgs/sigstore/**'
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: pkgs/sigstore/
+
+jobs:
+  # Check Dart and Rust formatting and static analysis on a single OS (linux).
+  analyze:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [dev]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+        if: always() && steps.install.outcome == 'success'
+      - name: Analyze code
+        run: dart analyze --fatal-infos
+        if: always() && steps.install.outcome == 'success'
+      - name: Check Rust formatting
+        run: cargo fmt --check --manifest-path rust/Cargo.toml
+        if: always()
+      - name: Run Rust Clippy
+        run: cargo clippy --manifest-path rust/Cargo.toml -- -D warnings
+        if: always()
+
+  # Build the Rust library from source with the `checkout` build mode (selected
+  # in pubspec.yaml) and run the tests on each desktop OS.
+  test:
+    needs: analyze
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        sdk: [stable]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Run tests
+        run: dart test
+        if: always() && steps.install.outcome == 'success'
+
+  # Build hooks only read `hooks.user_defines` from the root package, whose
+  # pubspec selects `checkout` for development. To exercise what
+  # `dart pub add sigstore` gives users, run the tests from a scratch consumer
+  # package with the default `fetch` build mode, which downloads the
+  # precompiled binaries pinned in lib/src/hook_helpers/hashes.dart.
+  #
+  # On pull requests this job is advisory: a PR that changes the FFI surface
+  # fails here until the matching binaries are released and hashes.dart points
+  # at them (see "Releasing" in pkgs/sigstore/README.md).
+  fetch-mode:
+    needs: analyze
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ github.event_name == 'pull_request' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        sdk: [stable]
+    defaults:
+      run:
+        working-directory: pkgs/
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Create consumer package
+        shell: bash
+        run: |
+          mkdir sigstore_fetch_mode_consumer
+          cp -r sigstore/test sigstore_fetch_mode_consumer/test
+          cat > sigstore_fetch_mode_consumer/pubspec.yaml << 'EOF'
+          name: sigstore_fetch_mode_consumer
+          publish_to: none
+          environment:
+            sdk: ^3.10.0
+          dependencies:
+            sigstore:
+              path: ../sigstore
+          dev_dependencies:
+            test: ^1.25.0
+          EOF
+      - id: install
+        name: Install dependencies
+        working-directory: pkgs/sigstore_fetch_mode_consumer/
+        run: dart pub get
+      - name: Run tests
+        working-directory: pkgs/sigstore_fetch_mode_consumer/
+        run: dart test
+        if: always() && steps.install.outcome == 'success'
+
+  # Run the Sigstore conformance test suite against the CLI in
+  # bin/conformance.dart.
+  conformance:
+    needs: analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
+        with:
+          sdk: stable
+      - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38
+        with:
+          python-version: '3.12'
+      - name: Install pytest
+        run: python -m pip install pytest
+      - name: Run conformance tests
+        run: ./tool/run_conformance_tests.sh
