@@ -21,6 +21,14 @@ a `boring-binaries-<date>-<commit>` pre-release with a provenance attestation
 (`gh attestation verify <file> --repo dart-lang/tools`), and opens a pull
 request (`tool/regenerate_hashes.dart`) that pins their SHA-256 hashes in
 [`lib/src/hook_helpers/hashes.dart`](lib/src/hook_helpers/hashes.dart).
+The release also has the attestation bundles in `provenance.intoto.jsonl`,
+so copies of the libraries can be verified offline (`gh attestation verify
+<file> --repo dart-lang/tools --bundle provenance.intoto.jsonl`).
+
+`tool/regenerate_hashes.dart` only pins libraries whose provenance attestation
+shows that this workflow built them on `main` from the pinned `sourceCommit`,
+which it checks with the [GitHub CLI](https://cli.github.com) (`gh`). Pass
+`--no-verify-attestations` to skip the check if you don't have `gh`.
 
 CI (`tool/check_prebuilt_binaries.sh`) checks that a release of this package
 pins libraries built from the sources it vendors, so `fetch` and `checkout`

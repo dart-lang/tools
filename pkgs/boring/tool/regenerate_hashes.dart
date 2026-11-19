@@ -14,6 +14,9 @@ import 'package:crypto/crypto.dart' show sha256;
 
 const _hashesFile = 'lib/src/hook_helpers/hashes.dart';
 
+/// The workflow that builds, attests, and releases the prebuilt libraries.
+const _binariesWorkflow = '.github/workflows/boring_binaries.yaml';
+
 /// Pins the prebuilt libraries of a GitHub release in
 /// lib/src/hook_helpers/hashes.dart: the repository, the tag, the commit they
 /// were built from, and the SHA-256 hashes of the release assets built by
@@ -30,6 +33,13 @@ const _hashesFile = 'lib/src/hook_helpers/hashes.dart';
 /// from a release built by that workflow, so that a failed or partial release
 /// can't break the `fetch` build mode for that target. Releases built elsewhere
 /// (`sourceCommit` is empty) may predate some targets.
+///
+/// For releases built by that workflow, also fails without writing anything
+/// unless `gh attestation verify` confirms that every asset has a provenance
+/// attestation from that workflow on main, built from `sourceCommit`, so that
+/// only libraries that this repository built from its own sources get pinned.
+/// This requires the GitHub CLI (`gh`); pass `--no-verify-attestations` to
+/// skip the check, for example when `gh` isn't available.
 Future<void> main(List<String> args) async {
   final parser = ArgParser()
     ..addOption(
@@ -48,6 +58,13 @@ Future<void> main(List<String> args) async {
       help:
           'A directory with the release assets to hash instead of downloading '
           'them.',
+    )
+    ..addFlag(
+      'verify-attestations',
+      help:
+          'Verify the provenance attestations of the assets of releases built '
+          'by $_binariesWorkflow with `gh attestation verify`.',
+      defaultsTo: true,
     )
     ..addFlag('help', abbr: 'h', negatable: false);
   final ArgResults options;
@@ -80,8 +97,23 @@ Future<void> main(List<String> args) async {
         : 'Hashing the assets of release $tag of $repository in $assetsDir...',
   );
 
+  final verifyAttestations =
+      options.flag('verify-attestations') && sourceCommit.isNotEmpty;
+  if (options.flag('verify-attestations') && sourceCommit.isEmpty) {
+    stdout.writeln(
+      'Not verifying provenance attestations: the release wasn\'t built by '
+      '$_binariesWorkflow of this repository.',
+    );
+  }
+
   final fileHashes = <String, String>{};
   final missing = <String>[];
+  // The files to verify the provenance attestations of, by asset name.
+  final assetFiles = <String, File>{};
+  // Holds the downloaded assets while their attestations are verified.
+  final downloadDir = verifyAttestations && assetsDir == null
+      ? await Directory.systemTemp.createTemp('boring_release_assets_')
+      : null;
   final httpClient = HttpClient()
     ..findProxy = HttpClient.findProxyFromEnvironment;
   try {
@@ -93,22 +125,16 @@ Future<void> main(List<String> args) async {
           iosSdk: iosSdk,
           static: static,
         );
-        final List<int>? bytes;
-        try {
-          bytes = assetsDir != null
-              ? await _readLocal(Directory(assetsDir), assetName)
-              : await _fetch(
-                  httpClient,
-                  releaseAssetUrl(
-                    repository: repository,
-                    tag: tag,
-                    assetName: assetName,
-                  ),
-                );
-        } on _DownloadException catch (e) {
-          stderr.writeln('Not updating $_hashesFile: $e');
-          exit(1);
-        }
+        final bytes = assetsDir != null
+            ? await _readLocal(Directory(assetsDir), assetName)
+            : await _fetch(
+                httpClient,
+                releaseAssetUrl(
+                  repository: repository,
+                  tag: tag,
+                  assetName: assetName,
+                ),
+              );
         if (bytes == null) {
           missing.add(assetName);
           continue;
@@ -116,24 +142,51 @@ Future<void> main(List<String> args) async {
         final hash = sha256.convert(bytes).toString();
         fileHashes[assetName] = hash;
         stdout.writeln('  $assetName: $hash');
+        if (verifyAttestations) {
+          if (downloadDir != null) {
+            final file = File.fromUri(downloadDir.uri.resolve(assetName));
+            await file.writeAsBytes(bytes);
+            assetFiles[assetName] = file;
+          } else {
+            assetFiles[assetName] = File.fromUri(
+              Directory(assetsDir!).uri.resolve(assetName),
+            );
+          }
+        }
       }
     }
+
+    if (missing.isNotEmpty) {
+      final summary =
+          '${missing.length} of the ${fileHashes.length + missing.length} '
+          'assets of the prebuilt targets are missing from release $tag of '
+          '$repository:\n  ${missing.join('\n  ')}';
+      if (sourceCommit.isNotEmpty) {
+        throw _AbortException('Not updating $_hashesFile: $summary');
+      }
+      stdout.writeln(
+        'Warning: $summary\nThe release wasn\'t built by this repository.',
+      );
+    }
+
+    if (verifyAttestations) {
+      await _verifyAttestations(
+        repository: repository,
+        sourceCommit: sourceCommit,
+        assetFiles: assetFiles,
+      );
+    }
+  } on _DownloadException catch (e) {
+    stderr.writeln('Not updating $_hashesFile: $e');
+    exitCode = 1;
+    return;
+  } on _AbortException catch (e) {
+    stderr.writeln(e.message);
+    exitCode = 1;
+    return;
   } finally {
     httpClient.close(force: true);
-  }
-
-  if (missing.isNotEmpty) {
-    final summary =
-        '${missing.length} of the ${fileHashes.length + missing.length} '
-        'assets of the prebuilt targets are missing from release $tag of '
-        '$repository:\n  ${missing.join('\n  ')}';
-    if (sourceCommit.isNotEmpty) {
-      stderr.writeln('Not updating $_hashesFile: $summary');
-      exit(1);
-    }
-    stdout.writeln(
-      'Warning: $summary\nThe release wasn\'t built by this repository.',
-    );
+    await downloadDir?.delete(recursive: true);
   }
 
   final buffer = StringBuffer()
@@ -259,6 +312,55 @@ Future<String> _sourceCommit({
   return commit;
 }
 
+/// Checks with `gh attestation verify` that each of [assetFiles] has a
+/// provenance attestation from [_binariesWorkflow] of [repository], run on
+/// main for [sourceCommit] on a GitHub-hosted runner, or throws an
+/// [_AbortException].
+Future<void> _verifyAttestations({
+  required String repository,
+  required String sourceCommit,
+  required Map<String, File> assetFiles,
+}) async {
+  stdout.writeln(
+    'Verifying the provenance attestations of the ${assetFiles.length} '
+    'assets...',
+  );
+  for (final MapEntry(key: assetName, value: file) in assetFiles.entries) {
+    final ProcessResult result;
+    try {
+      result = await Process.run('gh', [
+        'attestation',
+        'verify',
+        file.path,
+        '--repo',
+        repository,
+        '--signer-workflow',
+        '$repository/$_binariesWorkflow',
+        '--source-ref',
+        'refs/heads/main',
+        '--source-digest',
+        sourceCommit,
+        '--deny-self-hosted-runners',
+      ]);
+    } on ProcessException catch (e) {
+      throw _AbortException(
+        'Not updating $_hashesFile: failed to run the GitHub CLI to verify '
+        'the provenance attestations: $e\n'
+        'Install it (https://cli.github.com), or pass '
+        '--no-verify-attestations.',
+      );
+    }
+    if (result.exitCode != 0) {
+      throw _AbortException(
+        'Not updating $_hashesFile: failed to verify that $assetName was '
+        'built from $sourceCommit by $_binariesWorkflow:\n'
+        '${result.stdout}${result.stderr}',
+      );
+    }
+    stdout.writeln('  $assetName: verified');
+  }
+}
+
 Future<List<int>?> _readLocal(Directory directory, String assetName) async {
   final file = File.fromUri(directory.uri.resolve(assetName));
   if (!await file.exists()) {
@@ -291,6 +393,15 @@ Future<List<int>?> _fetch(HttpClient client, Uri url) async {
   } on IOException catch (e) {
     throw _DownloadException('Failed to download $url: $e');
   }
+}
+
+class _AbortException implements Exception {
+  final String message;
+
+  _AbortException(this.message);
+
+  @override
+  String toString() => message;
 }
 
 class _DownloadException implements Exception {

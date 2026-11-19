@@ -204,10 +204,29 @@ jobs:
           if-no-files-found: error
       # Verify with `gh attestation verify <file> --repo dart-lang/tools`.
       - name: Attest the provenance of the release libraries
+        id: attest
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
         with:
           subject-path: pkgs/boring/bin/*
+      # The release job publishes the attestation bundles with the libraries,
+      # so that copies of them, such as on a mirror, can be verified offline
+      # with `gh attestation verify <file> --bundle provenance.intoto.jsonl`.
+      # The job index keeps the names of the bundles of the targets apart.
+      - name: Name the provenance attestation bundle
+        if: steps.attest.outcome == 'success'
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+          INDEX: ${{ strategy.job-index }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/provenance"
+          cp "$BUNDLE" "$RUNNER_TEMP/provenance/$INDEX.intoto.jsonl"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: steps.attest.outcome == 'success'
+        with:
+          name: provenance-${{ strategy.job-index }}
+          path: ${{ runner.temp }}/provenance/*
+          if-no-files-found: error
 
   release:
     name: Attach the binaries to a GitHub release
@@ -222,8 +241,22 @@ jobs:
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
+          pattern: binaries-*
           path: release-assets
           merge-multiple: true
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: provenance-*
+          path: provenance
+          merge-multiple: true
+      # provenance.intoto.jsonl has one attestation bundle per line, which
+      # `gh attestation verify --bundle` accepts as is.
+      - name: Combine the provenance attestation bundles
+        working-directory: release-assets
+        run: |
+          for bundle in ../provenance/*.intoto.jsonl; do
+            jq -c . "$bundle"
+          done > provenance.intoto.jsonl
       - name: Create the GitHub release
         id: release
         env:
@@ -238,7 +271,7 @@ jobs:
           if ! gh release view "$tag" > /dev/null 2>&1; then
             gh release create "$tag" --prerelease --target "$COMMIT" \
               --title "package:boring binaries $tag" \
-              --notes "The prebuilt BoringSSL libraries for package:boring, built from $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$COMMIT by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Verify a library with \`gh attestation verify <file> --repo $GITHUB_REPOSITORY\`."
+              --notes "The prebuilt BoringSSL libraries for package:boring, built from $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$COMMIT by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Verify a library with \`gh attestation verify <file> --repo $GITHUB_REPOSITORY\`, or offline by adding \`--bundle provenance.intoto.jsonl\`."
           fi
           # lib/src/hook_helpers/hashes.dart pins the hashes of the assets, so
           # never replace them. Delete a failed release to rebuild a commit.
@@ -280,6 +313,7 @@ jobs:
           sdk: stable
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
+          pattern: binaries-*
           path: release-assets
           merge-multiple: true
       - name: Install dependencies
@@ -291,6 +325,8 @@ jobs:
           TAG: ${{ needs.release.outputs.tag }}
           COMMIT: ${{ github.sha }}
           GH_REPO: ${{ github.repository }}
+          # For `gh attestation verify`.
+          GH_TOKEN: ${{ github.token }}
         run: dart run tool/regenerate_hashes.dart --repository "$GH_REPO" --source-commit "$COMMIT" --assets "$GITHUB_WORKSPACE/release-assets" "$TAG"
       - name: Create pull request
         id: create-pr
