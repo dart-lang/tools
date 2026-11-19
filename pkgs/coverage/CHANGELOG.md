@@ -1,5 +1,6 @@
 ## 1.16.2-wip
 
+- Use `getVersion()` instead of `getVM()` when pinging the VM service API.
 - Fix a race condition in `collect()` when retrying VM service connections so a
   delayed socket close from a failed connection attempt cannot dispose the
   active retry connection, and ensure failed attempts are always disposed.
