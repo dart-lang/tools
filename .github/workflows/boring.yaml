@@ -170,8 +170,12 @@ jobs:
       - name: Regenerate at tool/REVISION
         run: ./tool/bump-boringssl-revision.sh "$(cat tool/REVISION)"
       # Also checks that every prebuilt target's asset exists in the pinned
-      # release, since `fetch` fails for a target without a hash.
+      # release, since `fetch` fails for a target without a hash, and that the
+      # assets' provenance attestations match the pinned `sourceCommit`.
       - name: Regenerate the hashes of the pinned release
+        env:
+          # For `gh attestation verify`.
+          GH_TOKEN: ${{ github.token }}
         run: dart run tool/regenerate_hashes.dart
       - name: Check for changes
         run: |
