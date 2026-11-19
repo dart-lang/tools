@@ -10,6 +10,8 @@ import '../patterns.dart';
 import '../util.dart';
 import 'block_syntax.dart';
 
+final _infoSeparatorPattern = RegExp(r'[ \t]');
+
 /// Parses preformatted code blocks between two ~~~ or ``` sequences.
 ///
 /// See the CommonMark spec:
@@ -176,15 +178,13 @@ class _FenceMatch {
     }
 
     // We assume the info string is trimmed already.
-    final firstSpaceIndex = info.indexOf(' ');
-    if (firstSpaceIndex == -1) {
-      // If there is no space, the whole string is the language.
+    final separatorIndex = info.indexOf(_infoSeparatorPattern);
+    if (separatorIndex == -1) {
       return (info, null);
     }
-
     return (
-      info.substring(0, firstSpaceIndex),
-      info.substring(firstSpaceIndex + 1),
+      info.substring(0, separatorIndex),
+      info.substring(separatorIndex + 1),
     );
   }
 

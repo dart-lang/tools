@@ -1,8 +1,14 @@
-## 4.13.0-wip
+## 4.13.1-wip
+
+- Separate chained cascades after assignments ending in nullable casts so the
+  generated code parses correctly.
+
+## 4.13.0
 
 - Add `Expression.nullSafeCascade`, `cascadeIndex`, and `nullSafeCascadeIndex`
   for building null-aware cascades (`?..`) and cascaded index accesses
   (`..[]`, `?..[]`).
+- Allow `package:built_collection` 6.x.
 
 ## 4.12.0
 

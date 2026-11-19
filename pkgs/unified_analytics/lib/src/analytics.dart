@@ -44,7 +44,28 @@ abstract class Analytics {
   ///
   /// [agent] is an optional parameter to capture the name of any AI coding
   /// assistant/agent executing the tool. Examples include "Claude Code",
-  /// "Cursor", or "Copilot".
+  /// "Cursor", or "Copilot". If omitted, defaults to
+  /// `AiAgent.detectAgentName(io.Platform.environment)`.
+  ///
+  /// [tool] is the leaf tool: the logical tool sending the events, which can
+  /// be a top-level tool or a shared component. It's recorded as the
+  /// `leaf_tool` user property.
+  ///
+  /// [fallbackRootTool] is used as the root tool, the user's entry point, when
+  /// the `DASH__TOOL` environment variable doesn't name a valid tool. Pass it
+  /// only if the tool can work out its entry point another way, for example
+  /// from a command-line flag. If neither resolves, the root tool is [tool]
+  /// itself, or none at all if [tool] is a shared component. Only a
+  /// [DashTool] that [DashTool.canBeRootTool] can be the root tool.
+  ///
+  /// The root tool decides opt-in status and which consent message is shown.
+  /// If no root tool resolves, which can only happen for a shared component,
+  /// analytics are disabled for the session and this returns a
+  /// [NoOpAnalytics] without touching the file system.
+  ///
+  /// [fallbackRootTool] only applies to this instance. It isn't passed on to
+  /// child processes through [getEnvironment], so a child started by a shared
+  /// component that relies on [fallbackRootTool] won't see that root tool.
   factory Analytics({
     required DashTool tool,
     required String dartVersion,
@@ -53,8 +74,15 @@ abstract class Analytics {
     String? clientIde,
     String? enabledFeatures,
     String? agent,
+    DashTool? fallbackRootTool,
     bool enableAsserts = false,
   }) {
+    final rootTool = resolveRootTool(
+      tool: tool,
+      fallbackRootTool: fallbackRootTool,
+    );
+    if (rootTool == null) return const NoOpAnalytics();
+
     // Create the instance of the file system so clients don't need
     // resolve on their own
     const FileSystem fs = LocalFileSystem();
@@ -87,6 +115,7 @@ abstract class Analytics {
 
     return AnalyticsImpl(
       tool: tool,
+      rootTool: rootTool,
       homeDirectory: homeDirectory,
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
@@ -103,7 +132,7 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      agent: agent,
+      agent: agent ?? AiAgent.detectAgentName(io.Platform.environment),
       firstRun: firstRun,
     );
   }
@@ -120,7 +149,28 @@ abstract class Analytics {
   ///
   /// [agent] is an optional parameter to capture the name of any AI coding
   /// assistant/agent executing the tool. Examples include "Claude Code",
-  /// "Cursor", or "Copilot".
+  /// "Cursor", or "Copilot". If omitted, defaults to
+  /// `AiAgent.detectAgentName(io.Platform.environment)`.
+  ///
+  /// [tool] is the leaf tool: the logical tool sending the events, which can
+  /// be a top-level tool or a shared component. It's recorded as the
+  /// `leaf_tool` user property.
+  ///
+  /// [fallbackRootTool] is used as the root tool, the user's entry point, when
+  /// the `DASH__TOOL` environment variable doesn't name a valid tool. Pass it
+  /// only if the tool can work out its entry point another way, for example
+  /// from a command-line flag. If neither resolves, the root tool is [tool]
+  /// itself, or none at all if [tool] is a shared component. Only a
+  /// [DashTool] that [DashTool.canBeRootTool] can be the root tool.
+  ///
+  /// The root tool decides opt-in status and which consent message is shown.
+  /// If no root tool resolves, which can only happen for a shared component,
+  /// analytics are disabled for the session and this returns a
+  /// [NoOpAnalytics] without touching the file system.
+  ///
+  /// [fallbackRootTool] only applies to this instance. It isn't passed on to
+  /// child processes through [getEnvironment], so a child started by a shared
+  /// component that relies on [fallbackRootTool] won't see that root tool.
   factory Analytics.development({
     required DashTool tool,
     required String dartVersion,
@@ -129,8 +179,15 @@ abstract class Analytics {
     String? clientIde,
     String? enabledFeatures,
     String? agent,
+    DashTool? fallbackRootTool,
     bool enableAsserts = true,
   }) {
+    final rootTool = resolveRootTool(
+      tool: tool,
+      fallbackRootTool: fallbackRootTool,
+    );
+    if (rootTool == null) return const NoOpAnalytics();
+
     // Create the instance of the file system so clients don't need
     // resolve on their own
     const FileSystem fs = LocalFileSystem();
@@ -172,6 +229,7 @@ abstract class Analytics {
 
     return AnalyticsImpl(
       tool: tool,
+      rootTool: rootTool,
       homeDirectory: homeDirectory,
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
@@ -188,9 +246,39 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      agent: agent,
+      agent: agent ?? AiAgent.detectAgentName(io.Platform.environment),
       firstRun: firstRun,
     );
+  }
+
+  /// Returns `true` if [environment] indicates that the tool is running in an
+  /// automated CI or bot environment.
+  static bool isBot(Map<String, String> environment) {
+    final bot = environment['BOT']?.trim().toLowerCase();
+    if (bot == 'false' ||
+        bot == '0' ||
+        environment.containsKey('FLUTTER_HOST') ||
+        environment.containsKey('FLUTTER_ANALYTICS_LOG_FILE')) {
+      return false;
+    }
+
+    final ci = environment['CI']?.trim().toLowerCase();
+    return (bot != null && bot.isNotEmpty) ||
+        (ci != null && ci.isNotEmpty && ci != 'false' && ci != '0') ||
+        environment['TRAVIS'] == 'true' ||
+        environment['CONTINUOUS_INTEGRATION'] == 'true' ||
+        environment.containsKey('APPVEYOR') ||
+        environment.containsKey('CIRRUS_CI') ||
+        (environment.containsKey('AWS_REGION') &&
+            environment.containsKey('CODEBUILD_INITIATOR')) ||
+        environment.containsKey('JENKINS_URL') ||
+        environment.containsKey('GITHUB_ACTIONS') ||
+        environment['CHROME_HEADLESS'] == '1' ||
+        environment.containsKey('BUILDBOT_BUILDERNAME') ||
+        environment.containsKey('SWARMING_TASK_ID') ||
+        environment.containsKey('BORG_ALLOC_DIR') ||
+        environment.containsKey('TF_BUILD') ||
+        environment.containsKey('AZURE_HTTP_USER_AGENT');
   }
 
   /// The shared identifier for Flutter and Dart related tooling using
@@ -204,6 +292,10 @@ abstract class Analytics {
   /// Returns true if it is OK to send an analytics message. Do not cache,
   /// as this depends on factors that can change, such as the configuration
   /// file contents.
+  ///
+  /// Instances created by the [Analytics] factories return `false` when the
+  /// `DASH__SUPPRESS_ANALYTICS` environment variable is `true`, or when no
+  /// root tool could be resolved.
   bool get okToSend;
 
   /// Boolean indicating whether this instance is configured for an external
@@ -271,6 +363,9 @@ abstract class Analytics {
   ///
   /// Setting the telemetry status will also send an event to GA
   /// indicating the latest status of the telemetry from [reportingBool].
+  /// Instances created by the [Analytics] factories don't send this event
+  /// when the `DASH__SUPPRESS_ANALYTICS` environment variable is `true`, but
+  /// still update the configuration file.
   Future<void> setTelemetry(bool reportingBool);
 
   /// Calling this will result in telemetry collection being suppressed for
@@ -304,6 +399,17 @@ abstract class Analytics {
 
   /// Returns an instance of [FakeAnalytics] which can be used in tests to check
   /// for certain [Event] instances within [FakeAnalytics.sentEvents].
+  ///
+  /// The returned instance checks `DASH__SUPPRESS_ANALYTICS` and AI agent
+  /// variables in [environment] rather than in the process environment.
+  /// [environment] defaults to an empty map, so tests aren't affected by the
+  /// shell they run in. Pass `Platform.environment` to follow the real
+  /// environment. The production [Analytics] factories don't offer this, and
+  /// always respect the real environment.
+  ///
+  /// The root tool is resolved from `DASH__TOOL` in [environment], then
+  /// [fallbackRootTool], then [tool], the same way as the [Analytics]
+  /// factory. Pass [rootTool] to skip resolution and use that value directly.
   @visibleForTesting
   static FakeAnalytics fake({
     required DashTool tool,
@@ -322,6 +428,9 @@ abstract class Analytics {
     String toolsMessage = kToolsMessage,
     bool enableAsserts = true,
     bool isExternal = true,
+    Map<String, String> environment = const {},
+    DashTool? fallbackRootTool,
+    DashTool? rootTool,
   }) {
     final firstRun = runInitialization(
       homeDirectory: homeDirectory,
@@ -330,6 +439,13 @@ abstract class Analytics {
 
     return FakeAnalytics._(
       tool: tool,
+      rootTool:
+          rootTool ??
+          resolveRootToolIn(
+            environment,
+            tool: tool,
+            fallbackRootTool: fallbackRootTool,
+          ),
       homeDirectory: homeDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
@@ -348,16 +464,25 @@ abstract class Analytics {
       gaClient: gaClient ?? const FakeGAClient(),
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      agent: agent,
+      agent: agent ?? AiAgent.detectAgentName(environment),
       firstRun: firstRun,
       enableAsserts: enableAsserts,
       isExternal: isExternal,
+      environment: environment,
     );
   }
 }
 
 class AnalyticsImpl implements Analytics {
+  /// The leaf tool: the logical tool that sends events, which can be a shared
+  /// component.
   final DashTool tool;
+
+  /// The root tool, the user's entry point, or `null` if none could be
+  /// resolved.
+  ///
+  /// Only a [DashTool] for which [DashTool.canBeRootTool] returns true.
+  final DashTool? rootTool;
   final FileSystem fs;
   final int toolsMessageVersion;
   @override
@@ -383,6 +508,13 @@ class AnalyticsImpl implements Analytics {
   /// Telemetry suppression flag that is set via [Analytics.suppressTelemetry].
   bool _telemetrySuppressed = false;
 
+  /// Whether the `DASH__SUPPRESS_ANALYTICS` environment variable suppresses
+  /// analytics.
+  ///
+  /// Read once, on first use, because a process's environment is fixed when
+  /// it starts.
+  late final bool _envSuppressed = _readEnvSuppressed();
+
   /// Indicates if this is the first run for a given tool.
   bool _firstRun = false;
 
@@ -402,6 +534,7 @@ class AnalyticsImpl implements Analytics {
 
   AnalyticsImpl({
     required this.tool,
+    required this.rootTool,
     required Directory homeDirectory,
     required String? flutterChannel,
     required String? flutterVersion,
@@ -417,7 +550,11 @@ class AnalyticsImpl implements Analytics {
     required bool firstRun,
     String? agent,
     this.isExternal = ie.isExternal,
-  }) : _gaClient = gaClient,
+  }) : assert(
+         rootTool == null || rootTool.canBeRootTool,
+         'rootTool must be a tool that can be a root tool.',
+       ),
+       _gaClient = gaClient,
        _surveyHandler = surveyHandler,
        _enableAsserts = enableAsserts,
        _clientIdFile = homeDirectory
@@ -431,7 +568,9 @@ class AnalyticsImpl implements Analytics {
          host: platform.label,
          flutterVersion: flutterVersion,
          dartVersion: dartVersion,
-         tool: tool.label,
+         tool: legacyToolValue(tool: tool, rootTool: rootTool),
+         rootTool: rootTool?.label,
+         leafTool: tool.label,
          // We truncate this to a maximum of 36 characters since this can
          // a very long string for some operating systems
          hostOsVersion: truncateStringToLength(
@@ -457,6 +596,12 @@ class AnalyticsImpl implements Analytics {
              .childFile(kLogFileName),
        ) {
     if (!isExternal) return;
+
+    // Consent belongs to the root tool. Without one, analytics are disabled
+    // for the session (see [okToSend]) and no consent message is shown.
+    final rootTool = this.rootTool;
+    if (rootTool == null) return;
+
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
     // on the first run
@@ -468,14 +613,14 @@ class AnalyticsImpl implements Analytics {
       _firstRun = false;
     }
 
-    // Check if the tool has already been onboarded, and if it
+    // Check if the root tool has already been onboarded, and if it
     // has, check if the latest message version is greater to
     // prompt the client to show a message
     //
-    // If the tool has not been added to the config file, then
+    // If the root tool has not been added to the config file, then
     // we will show the message as well
     final currentVersion =
-        _configHandler.parsedTools[tool.label]?.versionNumber ?? -1;
+        _configHandler.parsedTools[rootTool.label]?.versionNumber ?? -1;
     if (currentVersion < toolsMessageVersion) {
       _showMessage = true;
 
@@ -498,14 +643,19 @@ class AnalyticsImpl implements Analytics {
 
   @override
   String get getConsentMessage {
+    // The consent message describes the root tool, the user's entry point.
+    // Without one there is no consent message to show.
+    final rootTool = this.rootTool;
+    if (rootTool == null) return '';
+
     // The command to swap in the consent message
     final commandString =
-        tool == DashTool.flutterTool || tool == DashTool.devtools
+        rootTool == DashTool.flutterTool || rootTool == DashTool.devtools
         ? 'flutter'
         : 'dart';
 
     return kToolsMessage
-        .replaceAll('{{ toolDescription }}', tool.description)
+        .replaceAll('{{ toolDescription }}', rootTool.description)
         .replaceAll('{{ toolName }}', commandString);
   }
 
@@ -522,9 +672,19 @@ class AnalyticsImpl implements Analytics {
   ///
   /// Checking if it is the first time a tool is running with this package
   /// as indicated by [_firstRun].
+  ///
+  /// Events are never sent when the `DASH__SUPPRESS_ANALYTICS` environment
+  /// variable is set to `true`, or when no [rootTool] could be resolved,
+  /// regardless of the other checks. Consent belongs to the root tool, so
+  /// without one there is nothing to send under, even in internal builds.
   @override
   bool get okToSend =>
-      telemetryEnabled && !_showMessage && !_telemetrySuppressed && !_firstRun;
+      rootTool != null &&
+      !_envSuppressed &&
+      telemetryEnabled &&
+      !_showMessage &&
+      !_telemetrySuppressed &&
+      !_firstRun;
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
@@ -543,20 +703,25 @@ class AnalyticsImpl implements Analytics {
   void clientShowedMessage() {
     if (!isExternal) return;
 
-    // Check the tool needs to be added to the config file
-    if (!_configHandler.parsedTools.containsKey(tool.label)) {
+    // Only the root tool gets a line in the config file, so a shared
+    // component never records consent of its own.
+    final rootTool = this.rootTool;
+    if (rootTool == null) return;
+
+    // Check the root tool needs to be added to the config file
+    if (!_configHandler.parsedTools.containsKey(rootTool.label)) {
       _configHandler.addTool(
-        tool: tool.label,
+        tool: rootTool.label,
         versionNumber: toolsMessageVersion,
       );
     }
 
-    // When the tool already exists but the consent message version
+    // When the root tool already exists but the consent message version
     // has been updated
-    if (_configHandler.parsedTools[tool.label]!.versionNumber <
+    if (_configHandler.parsedTools[rootTool.label]!.versionNumber <
         toolsMessageVersion) {
       _configHandler.incrementToolVersion(
-        tool: tool.label,
+        tool: rootTool.label,
         newVersionNumber: toolsMessageVersion,
       );
     }
@@ -667,7 +832,9 @@ class AnalyticsImpl implements Analytics {
 
   @override
   Future<void> setTelemetry(bool reportingBool) {
-    if (!isExternal) return Future.value();
+    // Without a root tool, analytics are disabled for the session and the
+    // config file is never written.
+    if (!isExternal || rootTool == null) return Future.value();
     _configHandler.setTelemetry(reportingBool);
 
     // Creation of the [Event] for opting out
@@ -700,7 +867,7 @@ class AnalyticsImpl implements Analytics {
         enabledFeatures: _enabledFeatures,
       );
 
-      _logHandler.save(data: body);
+      if (!_envSuppressed) _logHandler.save(data: body);
     } else {
       // Construct the body of the request to signal
       // telemetry status toggling
@@ -719,6 +886,10 @@ class AnalyticsImpl implements Analytics {
 
       _clientId = '';
     }
+
+    // The configuration and local files above are still updated, but nothing
+    // is sent when the environment suppresses analytics.
+    if (_envSuppressed) return Future.value();
 
     // Pass to the google analytics client to send with a
     // timeout incase http clients hang
@@ -754,6 +925,13 @@ class AnalyticsImpl implements Analytics {
     _surveyHandler.dismiss(survey, false);
     send(Event.surveyShown(surveyId: survey.uniqueId));
   }
+
+  /// Reads whether analytics are suppressed by the process environment.
+  ///
+  /// Only [FakeAnalytics] overrides this, so tests can be isolated from the
+  /// developer's shell. Production instances always read the real
+  /// environment.
+  bool _readEnvSuppressed() => areAnalyticsSuppressed();
 
   /// Send any pending error events, useful for tests to avoid closing
   /// the connection.
@@ -794,9 +972,14 @@ class FakeAnalytics extends AnalyticsImpl {
   /// invoking the send method
   final List<Event> sentEvents = [];
 
+  /// The environment used in place of the process environment when checking
+  /// `DASH__SUPPRESS_ANALYTICS`.
+  final Map<String, String> _environment;
+
   /// Class to use when you want to see which events were sent
   FakeAnalytics._({
     required super.tool,
+    required super.rootTool,
     required super.homeDirectory,
     required super.dartVersion,
     required super.platform,
@@ -812,10 +995,14 @@ class FakeAnalytics extends AnalyticsImpl {
     super.gaClient = const FakeGAClient(),
     super.enableAsserts = true,
     super.isExternal = true,
-  });
+    Map<String, String> environment = const {},
+  }) : _environment = environment;
 
   /// Getter to reference the private [UserProperty].
   UserProperty get userProperty => _userProperty;
+
+  @override
+  bool _readEnvSuppressed() => areAnalyticsSuppressedIn(_environment);
 
   @override
   void send(Event event) {

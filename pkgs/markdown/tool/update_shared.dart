@@ -5,17 +5,22 @@
 import 'dart:convert';
 import 'dart:io';
 
-Future<Object?> downloadJson(String uri) async {
+Future<String> downloadText(String uri) async {
   final client = HttpClient();
   try {
     final request = await client.getUrl(Uri.parse(uri));
     final response = await request.close();
-
-    return await response
-        .transform(utf8.decoder)
-        .transform(const JsonDecoder())
-        .single;
+    if (response.statusCode != HttpStatus.ok) {
+      throw HttpException(
+        'Failed to download $uri (${response.statusCode})',
+        uri: Uri.parse(uri),
+      );
+    }
+    return await response.transform(utf8.decoder).join();
   } finally {
     client.close();
   }
 }
+
+Future<Object?> downloadJson(String uri) async =>
+    jsonDecode(await downloadText(uri));

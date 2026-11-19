@@ -1,5 +1,5 @@
 name: boolean_selector
-version: 2.1.2
+version: 2.1.3-wip
 description: >-
   A flexible syntax for boolean expressions, based on a simplified version of
   Dart's expression syntax.

@@ -44,39 +44,39 @@ class HtmlBlockSyntax extends BlockSyntax {
   List<Line> parseChildLines(BlockParser parser) {
     final lines = <Line>[];
 
-    final match = pattern.firstMatch(parser.current.content);
-    var matchedCondition = 0;
-    for (var i = 0; i < match!.groupCount; i++) {
-      if (match.group(i + 1) != null) {
-        matchedCondition = i;
-        break;
+    // If the line after an HTML block starts an HTML block again, put them
+    // together with the previous HTML block.
+    while (!parser.isDone) {
+      final match = pattern.firstMatch(parser.current.content);
+      if (match == null) break;
+      var matchedCondition = 0;
+      for (var i = 0; i < match.groupCount; i++) {
+        if (match.group(i + 1) != null) {
+          matchedCondition = i;
+          break;
+        }
       }
-    }
 
-    final endCondition = _endConditions[matchedCondition];
-    if (endCondition == emptyPattern) {
-      lines.add(parser.current);
-      parser.advance();
-
-      while (!parser.isDone && !endCondition.hasMatch(parser.current.content)) {
+      final endCondition = _endConditions[matchedCondition];
+      if (endCondition == emptyPattern) {
         lines.add(parser.current);
         parser.advance();
-      }
-    } else {
-      while (!parser.isDone) {
-        lines.add(parser.current);
-        if (endCondition.hasMatch(parser.current.content)) {
-          break;
+
+        while (!parser.isDone &&
+            !endCondition.hasMatch(parser.current.content)) {
+          lines.add(parser.current);
+          parser.advance();
+        }
+      } else {
+        while (!parser.isDone) {
+          lines.add(parser.current);
+          if (endCondition.hasMatch(parser.current.content)) {
+            break;
+          }
+          parser.advance();
         }
         parser.advance();
       }
-      parser.advance();
-    }
-
-    // If the current line start an HTML block again, put them together with
-    // the previous HTML block.
-    if (!parser.isDone && pattern.hasMatch(parser.current.content)) {
-      lines.addAll(parseChildLines(parser));
     }
 
     return lines;

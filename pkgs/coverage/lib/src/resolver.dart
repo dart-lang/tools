@@ -70,7 +70,7 @@ class Resolver {
         final lib = uri.path;
         filePath = p.join(sdkRoot, lib, '$lib.dart');
       }
-      return resolveSymbolicLinks(filePath);
+      return _resolveLinksWithinKnownRoots(filePath);
     }
     if (uri.scheme == 'package') {
       final packages = _packages;
@@ -86,12 +86,10 @@ class Resolver {
       }
       final packagePath = p.fromUri(packageUri);
       final pathInPackage = p.joinAll(uri.pathSegments.sublist(1));
-      return resolveSymbolicLinks(p.join(packagePath, pathInPackage));
+      return _resolveLinksWithinKnownRoots(p.join(packagePath, pathInPackage));
     }
     if (uri.scheme == 'file') {
-      final resolved = resolveSymbolicLinks(p.fromUri(uri));
-      if (resolved == null || !_isWithinKnownRoots(resolved)) return null;
-      return resolved;
+      return _resolveLinksWithinKnownRoots(p.fromUri(uri));
     }
     // We cannot deal with anything else.
     failed.add('$uri');
@@ -106,6 +104,16 @@ class Resolver {
     return File(normalizedPath).resolveSymbolicLinksSync();
   }
 
+  String? _resolveLinksWithinKnownRoots(String path) {
+    try {
+      final resolved = resolveSymbolicLinks(path);
+      if (resolved == null || !_isWithinKnownRoots(resolved)) return null;
+      return resolved;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// The directories a `file:` URI is allowed to resolve into.
   ///
   /// `source` entries in coverage data are supplied by whatever produced the
@@ -117,13 +125,27 @@ class Resolver {
   /// contents printed straight into the coverage report.
   List<String>? _knownRoots;
 
-  bool _isWithinKnownRoots(String path) {
-    final roots = _knownRoots ??= [
+  List<String> _createKnownRoots() {
+    final roots = [
       ?packagePath,
       ?sdkRoot,
       ...?_packages?.values.map(p.fromUri),
       Directory.current.path,
-    ].map(p.normalize).toList();
+    ];
+    final knownRoots = <String>[];
+    for (final root in roots) {
+      final fallback = p.normalize(p.absolute(root));
+      try {
+        knownRoots.add(resolveSymbolicLinks(root) ?? fallback);
+      } on FileSystemException {
+        knownRoots.add(fallback);
+      }
+    }
+    return knownRoots;
+  }
+
+  bool _isWithinKnownRoots(String path) {
+    final roots = _knownRoots ??= _createKnownRoots();
     final normalized = p.normalize(path);
     return roots.any(
       (root) => normalized == root || p.isWithin(root, normalized),
@@ -151,12 +173,41 @@ class Resolver {
   }
 }
 
+extension ResolverPackageUri on Resolver {
+  /// Returns a `package:` URI string if [scriptUri] is a `file:` URI under a
+  /// known package's library root, or [scriptUri] unchanged.
+  String toPackageUri(String scriptUri) {
+    final packages = _packages;
+    if (packages == null) return scriptUri;
+    final uri = Uri.tryParse(scriptUri);
+    if (uri == null || uri.scheme != 'file') return scriptUri;
+    final uriStr = uri.toString();
+    for (final MapEntry(key: packageName, value: packageUri)
+        in packages.entries) {
+      final rootStr = packageUri.toString();
+      if (uriStr.startsWith(rootStr)) {
+        return 'package:$packageName/${uriStr.substring(rootStr.length)}';
+      }
+    }
+    return scriptUri;
+  }
+}
+
 /// Bazel URI resolver.
 class BazelResolver extends Resolver {
   /// Creates a Bazel resolver with the specified workspace path, if any.
-  BazelResolver({this.workspacePath = ''});
+  BazelResolver({this.workspacePath = ''})
+    : _workspace = _normalizeWorkspace(workspacePath);
 
   final String workspacePath;
+  final String _workspace;
+
+  static String _normalizeWorkspace(String workspacePath) {
+    final parts = p.posix
+        .split(workspacePath)
+        .where((s) => s.isNotEmpty && s != '.' && s != '/');
+    return parts.isEmpty ? '.' : p.posix.joinAll(parts);
+  }
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
@@ -172,22 +223,28 @@ class BazelResolver extends Resolver {
       return _resolveBazelPackage(uri.pathSegments);
     }
     if (uri.scheme == 'file') {
-      final runfilesPathSegment = '.runfiles/$workspacePath'.replaceAll(
-        RegExp(r'/*$'),
-        '/',
-      );
-      final runfilesPos = uri.path.indexOf(runfilesPathSegment);
-      if (runfilesPos >= 0) {
-        final pathStart = runfilesPos + runfilesPathSegment.length;
-        return uri.path.substring(pathStart);
-      }
-      return null;
+      return _extractFilePath(uri);
     }
     if (uri.scheme == 'https' || uri.scheme == 'http') {
       return _extractHttpPath(uri);
     }
     // We cannot deal with anything else.
     failed.add('$uri');
+    return null;
+  }
+
+  String? _extractFilePath(Uri uri) {
+    final segments = [
+      for (final s in uri.pathSegments)
+        if (s.isNotEmpty) s,
+    ];
+    for (var i = 0; i < segments.length; i++) {
+      if (!segments[i].endsWith('.runfiles')) continue;
+      final after = p.posix.joinAll(segments.skip(i + 1));
+      if (after.isNotEmpty && p.posix.isWithin(_workspace, after)) {
+        return p.posix.relative(after, from: _workspace);
+      }
+    }
     return null;
   }
 
