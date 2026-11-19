@@ -107,13 +107,14 @@ Future<Uri> fetchPrebuiltLibrary(
 ///
 /// Honors the `HTTPS_PROXY` family of environment variables, which the hooks
 /// runner passes through to hooks, and gives up on a connection that hangs.
+/// Follows redirects, such as GitHub's to its release asset storage, only to
+/// `https` URLs.
 Future<List<int>> _download(Uri url) async {
   final client = HttpClient()
     ..connectionTimeout = _connectionTimeout
     ..findProxy = HttpClient.findProxyFromEnvironment;
   try {
-    final request = await client.getUrl(url).timeout(_connectionTimeout);
-    final response = await request.close().timeout(_connectionTimeout);
+    final response = await _getFollowingHttpsRedirects(client, url);
     if (response.statusCode != HttpStatus.ok) {
       await response.drain<void>();
       throw BuildError(
@@ -140,5 +141,66 @@ Future<List<int>> _download(Uri url) async {
     );
   } finally {
     client.close(force: true);
+  }
+}
+
+/// The most redirects [_getFollowingHttpsRedirects] follows.
+const _maxRedirects = 5;
+
+/// Sends a GET request for [url] with [client] and follows redirects only to
+/// `https` URLs, so that the request never leaves TLS, unlike [HttpClient]'s
+/// own redirect handling, which also follows redirects to `http` URLs.
+///
+/// Throws a [BuildError] if [url] is not an `https` URL, for a redirect to
+/// another scheme or an invalid redirect location, or for too many redirects.
+Future<HttpClientResponse> _getFollowingHttpsRedirects(
+  HttpClient client,
+  Uri url,
+) async {
+  if (url.scheme != 'https') {
+    throw BuildError(
+      message:
+          'Refusing to download the prebuilt boring binary from $url, which '
+          'is not an https URL.\n'
+          '$_checkoutHint',
+    );
+  }
+  var currentUrl = url;
+  for (var redirects = 0; ; redirects++) {
+    final request = await client.getUrl(currentUrl).timeout(_connectionTimeout);
+    request.followRedirects = false;
+    final response = await request.close().timeout(_connectionTimeout);
+    final location = response.headers.value(HttpHeaders.locationHeader);
+    if (!response.isRedirect || location == null) return response;
+    await response.drain<void>().timeout(_connectionTimeout);
+    final Uri nextUrl;
+    try {
+      nextUrl = currentUrl.resolve(location);
+    } on FormatException catch (e) {
+      throw BuildError(
+        message:
+            'Received invalid redirect location "$location" from $currentUrl '
+            'while downloading the prebuilt boring binary from $url: $e\n'
+            '$_checkoutHint',
+      );
+    }
+    if (nextUrl.scheme != 'https') {
+      throw BuildError(
+        message:
+            'Refusing to follow the redirect from $currentUrl to $nextUrl, '
+            'which is not an https URL, while downloading the prebuilt '
+            'boring binary from $url.\n'
+            '$_checkoutHint',
+      );
+    }
+    if (redirects == _maxRedirects) {
+      throw BuildError(
+        message:
+            'Too many redirects downloading the prebuilt boring binary from '
+            '$url.\n'
+            '$_checkoutHint',
+      );
+    }
+    currentUrl = nextUrl;
   }
 }
