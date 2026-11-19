@@ -239,7 +239,11 @@ class YamlEditor {
 
     final collectionPath = pathAsList.take(pathAsList.length - 1).toList();
     final keyOrIndex = pathAsList.last;
-    final parentNode = _traverse(collectionPath, checkAlias: true);
+    final parentNode = _traverse(
+      collectionPath,
+      checkAlias: true,
+      checkChildAliases: false,
+    );
     _assertNoReferencedAnchor(pathAsList);
 
     if (parentNode is YamlList) {
@@ -467,8 +471,12 @@ class YamlEditor {
   ///
   /// If [checkAlias] is `true`, throw [AliasException] if an aliased node is
   /// encountered.
-  YamlNode _traverse(Iterable<Object?> path,
-      {bool checkAlias = false, YamlNode Function()? orElse}) {
+  YamlNode _traverse(
+    Iterable<Object?> path, {
+    bool checkAlias = false,
+    bool checkChildAliases = true,
+    YamlNode Function()? orElse,
+  }) {
     if (path.isEmpty) return _contents;
 
     var currentNode = _contents;
@@ -506,7 +514,13 @@ class YamlEditor {
       }
     }
 
-    if (checkAlias) _assertNoChildAlias(path, currentNode);
+    if (checkAlias) {
+      if (checkChildAliases) {
+        _assertNoChildAlias(path, currentNode);
+      } else if (_aliases.contains(currentNode)) {
+        throw AliasException(path, currentNode);
+      }
+    }
 
     return currentNode;
   }

@@ -110,6 +110,41 @@ void main() {
       expect(secondEntry.value.value.value, 'c');
     });
 
+    test('explicit block-collection key does not steal parent mapping colon',
+        () {
+      const rootSource = '? ? - x\n: c\n';
+      final rootDoc = CstDocument.parse(rootSource);
+      final rootMap = rootDoc.root as CstBlockMap;
+      expect(rootMap.entries, hasLength(1));
+      expect(rootMap.entries.single.colon, 8);
+      final innerMap = rootMap.entries.single.key as CstBlockMap;
+      expect(innerMap.entries.single.colon, isNull);
+      expect(innerMap.entries.single.key, isA<CstBlockSeq>());
+
+      const nestedSource = '- ? ? - x\n  : c\n';
+      final nestedDoc = CstDocument.parse(nestedSource);
+      final outerSeq = nestedDoc.root as CstBlockSeq;
+      final nestedMap = outerSeq.entries.single.value as CstBlockMap;
+      expect(nestedMap.entries.single.colon, 12);
+      final nestedInnerMap = nestedMap.entries.single.key as CstBlockMap;
+      expect(nestedInnerMap.entries.single.colon, isNull);
+    });
+
+    test('26DV_0: block mapping with anchor and alias key parses into CST', () {
+      const source = '&node1 a: 1\n&node2 b: 2\ntop3: &node3\n  *node1 : 3\n';
+      final doc = CstDocument.parse(source);
+      final root = doc.root as CstBlockMap;
+      final top3 = root.entries[2].value as CstBlockMap;
+      expect(top3.entries.single.key, isA<CstAlias>());
+    });
+
+    test('CstError formats offset and message', () {
+      final error = CstError('Test message', 42);
+      expect(error.offset, 42);
+      expect(error.message, 'Test message');
+      expect(error.toString(), 'CstError at 42: Test message');
+    });
+
     test('anchor on flow pair key attaches to key, not CstFlowPair', () {
       const source = '[&x {a: 1}: b]';
       final doc = CstDocument.parse(source);
