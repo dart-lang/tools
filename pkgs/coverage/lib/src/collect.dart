@@ -78,7 +78,8 @@ Future<Map<String, dynamic>> collect(
     final uri = serviceUri.replace(scheme: 'ws', pathSegments: pathSegments);
 
     service =
-        await retry(() => _connect(uri), _retryInterval, timeout: timeout);
+        await retry(() => _connect(uri), _retryInterval, timeout: timeout)
+            as VmService;
   }
 
   try {
@@ -108,8 +109,9 @@ Future<VmService> _connect(Uri uri) async {
   final controller = StreamController<String>();
   socket.listen(
     (data) => controller.add(data as String),
-    onError: controller.addError,
+    onError: (_, _) => controller.close(),
     onDone: controller.close,
+    cancelOnError: true,
   );
   final service = VmService(
     controller.stream,
