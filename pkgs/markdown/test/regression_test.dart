@@ -67,6 +67,29 @@ a <!--
     expect(html, '<h2>I am paragraph</h2>\n');
   });
 
+  test('adjacent text nodes are combined when a custom inline syntax is '
+      'registered, #2037', () {
+    // See https://github.com/dart-lang/tools/issues/2037.
+    // `_combineAdjacentText` used to recurse into an `Element`'s children
+    // only when the element was not the last node in its containing list, so
+    // adjacent `Text` children of a trailing element were never merged.
+    // Registering any custom inline syntax (here, `StrikethroughSyntax`)
+    // switches on a stricter word-matching accelerator regex that splits
+    // plain text into more `Text` nodes than usual, which surfaced the bug
+    // even though the input contains no `~`.
+    final document = Document(inlineSyntaxes: [StrikethroughSyntax()]);
+    final nodes = document.parseInline('**This _is italics_ inside bold.**');
+
+    final strong = (nodes.single as Element).children!;
+    expect(strong[0], isA<Text>().having((t) => t.text, 'text', 'This '));
+    expect(strong[1], isA<Element>());
+    expect(
+      strong[2],
+      isA<Text>().having((t) => t.text, 'text', ' inside bold.'),
+    );
+    expect(strong, hasLength(3));
+  });
+
   test('long unbroken word does not take quadratic time', () {
     // The plain-text accelerator regex required a trailing whitespace, so a
     // long run of word characters that reached the end of a line without one
@@ -80,4 +103,344 @@ a <!--
     expect(html, isNotNull); // To use the output.
     expect(time.elapsedMilliseconds, lessThan(10000));
   });
+
+  group('link reference definitions at EOF', () {
+    test('trailing backslash in label does not throw RangeError', () {
+      expect(markdownToHtml(r'[\'), '<p>[\\</p>\n');
+    });
+
+    test('trailing backslash in bracketed destination does not throw', () {
+      expect(markdownToHtml(r'[a]: <\'), '<p>[a]: &lt;\\</p>\n');
+    });
+
+    test('trailing backslash in bare destination does not throw', () {
+      expect(markdownToHtml(r'[a]: \'), '\n');
+      expect(markdownToHtml('[a]: \\\n\n[a]'), '<p><a href="%5C">a</a></p>\n');
+    });
+
+    test('trailing backslash in title does not throw RangeError', () {
+      expect(markdownToHtml(r'[a]: /url "\'), '<p>[a]: /url &quot;\\</p>\n');
+    });
+
+    test('unclosed bracketed destination at EOF does not throw RangeError', () {
+      expect(markdownToHtml('[a]: <'), '<p>[a]: &lt;</p>\n');
+      expect(markdownToHtml('[*#]:<'), '<p>[*#]:&lt;</p>\n');
+    });
+
+    test('unbalanced parentheses in bare destination are rejected', () {
+      expect(
+        markdownToHtml('[a]: /url)\n\n[a]'),
+        '<p>[a]: /url)</p>\n<p>[a]</p>\n',
+      );
+      expect(
+        markdownToHtml('[a]: /url(bar\n\n[a]'),
+        '<p>[a]: /url(bar</p>\n<p>[a]</p>\n',
+      );
+      expect(
+        markdownToHtml('[a]: /url(a)b\n\n[a]'),
+        '<p><a href="/url(a)b">a</a></p>\n',
+      );
+    });
+  });
+
+  test('multiple non-advancing block syntaxes on the same line do not throw '
+      'AssertionError', () {
+    // Line 1 matches both TableSyntax.canParse (because line 2 is a 2-column
+    // table delimiter row) and LinkReferenceDefinitionSyntax.canParse, and
+    // both retreat to line 1 during parse().
+    const input = '[a]: /b (c\n| :--- | ---: |\n';
+    expect(
+      markdownToHtml(input, extensionSet: ExtensionSet.gitHubFlavored),
+      '<p>[a]: /b (c\n| :--- | ---: |</p>\n',
+    );
+  });
+
+  test('footnote definition containing a list or horizontal rule does not '
+      'throw TypeError', () {
+    expect(
+      markdownToHtml(
+        '[^1]\n\n[^1]: - note',
+        extensionSet: ExtensionSet.gitHubWeb,
+      ),
+      '<p><sup class="footnote-ref"><a href="#fn-1" id="fnref-1">1</a></sup></p>\n'
+      '<section class="footnotes">\n'
+      '<ol>\n'
+      '<li id="fn-1">\n'
+      '<ul>\n'
+      '<li>note</li><a href="#fnref-1" class="footnote-backref">\u21a9</a></ul>\n'
+      '</li>\n'
+      '</ol>\n'
+      '</section>\n',
+    );
+    expect(
+      markdownToHtml('[^1]\n\n[^1]: ---', extensionSet: ExtensionSet.gitHubWeb),
+      '<p><sup class="footnote-ref"><a href="#fn-1" id="fnref-1">1</a></sup></p>\n'
+      '<section class="footnotes">\n'
+      '<ol>\n'
+      '<li id="fn-1">\n'
+      '<hr /> <a href="#fnref-1" class="footnote-backref">\u21a9</a></li>\n'
+      '</ol>\n'
+      '</section>\n',
+    );
+  });
+
+  test(
+    'many consecutive link reference definitions do not re-read later lines',
+    () {
+      // LinkReferenceDefinitionSyntax used to consume every remaining line in
+      // the block (because LinkReferenceDefinitionSyntax.canEndBlock is false),
+      // join them with '\n', parse a single definition, split the unconsumed
+      // remainder on '\n', and retreat BlockParser by that count. For N
+      // consecutive definitions, line k had its content read O(k) times.
+      const count = 100;
+      final lines = [
+        for (var i = 1; i <= count; i++)
+          _CountingLine('[#$i]: https://example.com/pull/$i'),
+        _CountingLine(''),
+        _CountingLine('See [#1] and [#$count].'),
+      ];
+
+      final html = renderToHtml(Document().parseLineList(lines));
+      expect(
+        html,
+        '<p>See <a href="https://example.com/pull/1">#1</a> and '
+        '<a href="https://example.com/pull/$count">#$count</a>.</p>',
+      );
+      for (final line in lines) {
+        expect(line.reads, lessThan(20));
+      }
+    },
+  );
+
+  group('inline syntaxes that check their first character', () {
+    // These syntaxes skip the regex when the first character cannot match.
+    // They must still match after CJK text and punctuation, and leave a lone
+    // first character as text.
+    test('EmojiSyntax', () {
+      expect(
+        markdownToHtml(
+          '中文:smile: a: b, (:+1:)',
+          inlineSyntaxes: [EmojiSyntax()],
+        ),
+        '<p>中文😄 a: b, (👍)</p>\n',
+      );
+    });
+
+    test('AutolinkSyntax', () {
+      expect(
+        markdownToHtml('中文<http://a.b>, (<mailto:x@y.z>) a < b'),
+        '<p>中文<a href="http://a.b">http://a.b</a>, '
+        '(<a href="mailto:x@y.z">mailto:x@y.z</a>) a &lt; b</p>\n',
+      );
+    });
+
+    test('CodeSyntax', () {
+      expect(
+        markdownToHtml('中文`code`, (``a`b``) a ` b'),
+        '<p>中文<code>code</code>, (<code>a`b</code>) a ` b</p>\n',
+      );
+    });
+
+    test('ColorSwatchSyntax', () {
+      expect(
+        markdownToHtml(
+          '中文`#f00`, (`rgb(0,255,0)`) `#ba`',
+          inlineSyntaxes: [ColorSwatchSyntax()],
+        ),
+        '<p>中文<code class="gfm-color_chip">#f00<span '
+        'style="background-color:#f00;"></span></code>, '
+        '(<code class="gfm-color_chip">rgb(0,255,0)<span '
+        'style="background-color:rgb(0,255,0);"></span></code>) '
+        '<code>#ba</code></p>\n',
+      );
+    });
+  });
+
+  test('linkBuilder that does not call getChildren discards inner nodes', () {
+    expect(
+      markdownToHtml(
+        'hello [a]',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>a</a></p>\n',
+    );
+    expect(
+      markdownToHtml(
+        'hello [*a] b*',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>*a</a> b*</p>\n',
+    );
+    expect(
+      markdownToHtml(
+        'hello [*a*]',
+        linkBuilder: (label, title, getChildren) => [Element.text('a', label)],
+      ),
+      '<p>hello <a>*a*</a></p>\n',
+    );
+  });
+
+  test('emphasis after a span containing an unmatched delimiter', () {
+    expect(markdownToHtml('_*_ *a*'), '<p><em>*</em> <em>a</em></p>\n');
+    expect(
+      markdownToHtml(
+        '*~~__a__~~* ~~*__b__*~~',
+        extensionSet: ExtensionSet.gitHubWeb,
+      ),
+      '<p><em><del><strong>a</strong></del></em> '
+      '<del><em><strong>b</strong></em></del></p>\n',
+    );
+  });
+
+  test('link reference definitions with labels over 999 characters are not '
+      'definitions', () {
+    final label999 = 'a' * 999;
+    final label1000 = 'a' * 1000;
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[text][$label999]'),
+      '<p><a href="/url">text</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label1000]: /url\n\n[a]'),
+      '<p>[$label1000]: /url</p>\n<p>[a]</p>\n',
+    );
+    // A backslash escape counts as two characters.
+    final escaped999 = '${'a' * 997}\\[';
+    final escaped1000 = '${'a' * 998}\\[';
+    expect(
+      markdownToHtml('[$escaped999]: /url\n\n[text][$escaped999]'),
+      '<p><a href="/url">text</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$escaped1000]: /url\n\n[a]'),
+      '<p>[${'a' * 998}[]: /url</p>\n<p>[a]</p>\n',
+    );
+  });
+
+  test(
+    'link reference definition labels may span lines up to 999 characters',
+    () {
+      final label999 = '${'x' * 500}\n${'y' * 498}';
+      final label1000 = '${'x' * 500}\n${'y' * 499}';
+      expect(
+        markdownToHtml('[$label999]: /u\n\n[${'x' * 500} ${'y' * 498}]'),
+        '<p><a href="/u">${'x' * 500} ${'y' * 498}</a></p>\n',
+      );
+      expect(
+        markdownToHtml('[$label1000]: /u\n\n[${'x' * 500} ${'y' * 499}]'),
+        '<p>[$label1000]: /u</p>\n<p>[${'x' * 500} ${'y' * 499}]</p>\n',
+      );
+    },
+  );
+
+  test('reusing HtmlRenderer resets duplicate heading ID suffixes', () {
+    final doc = Document(extensionSet: ExtensionSet.gitHubWeb);
+    final nodes = doc.parseLines(['# a', '# a', '# a']);
+    final renderer = HtmlRenderer();
+    const expected =
+        '<h1 id="a">a</h1>\n<h1 id="a-2">a</h1>\n<h1 id="a-3">a</h1>';
+    expect(renderer.render(nodes), expected);
+    expect(renderer.render(nodes), expected);
+  });
+
+  test('reference link labels over 999 characters are not resolved', () {
+    final label999 = 'a' * 999;
+    final label1000 = 'a' * 1000;
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[text][$label999]'),
+      '<p><a href="/url">text</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[$label999]'),
+      '<p><a href="/url">$label999</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[$label1000]'),
+      '<p>[$label1000]</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[$label999][]'),
+      '<p><a href="/url">$label999</a></p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[$label1000][]'),
+      '<p>[$label1000][]</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]: /url\n\n[text][$label1000]'),
+      '<p>[text][$label1000]</p>\n',
+    );
+    expect(
+      markdownToHtml('[a b]: /url\n\n[a${' ' * 1000}b]'),
+      '<p>[a${' ' * 1000}b]</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label999]', linkResolver: (name, [_]) => Text(name)),
+      '<p>$label999</p>\n',
+    );
+    expect(
+      markdownToHtml('[$label1000]', linkResolver: (name, [_]) => Text(name)),
+      '<p>[$label1000]</p>\n',
+    );
+    expect(
+      markdownToHtml(
+        '[$label1000][ref]',
+        linkResolver: (name, [title]) => Text('$name:${title?.length}'),
+      ),
+      '<p>ref:1000</p>\n',
+    );
+  });
+
+  test('inline nesting depth is capped at 128', () {
+    expect(markdownToHtml('${'*a **a ' * 100}b${' a** a*' * 100}'), isNotEmpty);
+    expect(markdownToHtml('${'**' * 200}a${'**' * 200}'), isNotEmpty);
+    final imgHtml = markdownToHtml('${'![x' * 130}${'](/u)' * 130}');
+    expect(imgHtml, contains('alt="${'x' * 128}"'));
+  });
+
+  test('deeply nested inline emphasis does not overflow the stack', () {
+    const n = 32000;
+    for (final input in [
+      '${'*a **a ' * n}b${' a** a*' * n}',
+      '${'*a **a ' * n}b${' a** a*' * n} x',
+      '${'**' * n}a${'**' * n}',
+      '![${'*a **a ' * n}b${' a** a*' * n}](/u)',
+    ]) {
+      expect(markdownToHtml(input), isNotEmpty);
+    }
+  });
+
+  test('reference link expansion is limited to max(input, 100000)', () {
+    final url = '/${'u' * 999}';
+    final html = markdownToHtml('${'[a] ' * 300}\n\n[a]: $url\n');
+    expect('<a href="$url">a</a>'.allMatches(html).length, lessThan(200));
+    expect(html, endsWith('[a]</p>\n'));
+  });
+
+  test('container block nesting depth is capped at 128', () {
+    final html = markdownToHtml('${'> ' * 129}a');
+    expect('<blockquote>'.allMatches(html).length, 128);
+    expect(html, contains('<blockquote>&gt; a\n</blockquote>'));
+  });
+
+  test('table synthetic empty cells are capped at 0x40000', () {
+    final html = markdownToHtml(
+      '${'h|' * 1000}\n${'-|' * 1000}\n${'x\n' * 1000}',
+      extensionSet: ExtensionSet.gitHubFlavored,
+    );
+    expect('<td>'.allMatches(html).length, lessThan(300000));
+    expect(html, endsWith('x</p>\n'));
+  });
+}
+
+class _CountingLine extends Line {
+  int reads = 0;
+
+  _CountingLine(super.content);
+
+  @override
+  String get content {
+    reads++;
+    return super.content;
+  }
 }

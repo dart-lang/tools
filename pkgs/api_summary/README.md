@@ -92,9 +92,26 @@ An executable programmatic example is also available in the
 
 ### Customizing the Summary
 
-Extend the `ApiSummaryCustomizer` class to customize what is displayed in the
-API summary. For example, to exclude specific public classes or only display
-details of certain elements:
+Pass `ApiSummaryCustomizer` with optional flags, or extend it to customize what
+is displayed in the API summary. For example, to include member details for
+implicitly exposed non-public types or referenced external types:
+
+```dart
+import 'package:api_summary/api_summary.dart';
+
+void main() async {
+  final summary = await apiSummary(
+    '/path/to/package',
+    customizer: const ApiSummaryCustomizer(
+      includeImplicitNonPublicMembers: true,
+      includeReferencedTypes: true,
+    ),
+  );
+  print(summary);
+}
+```
+
+Or extend `ApiSummaryCustomizer` for custom element filtering:
 
 ```dart
 import 'package:api_summary/api_summary.dart';

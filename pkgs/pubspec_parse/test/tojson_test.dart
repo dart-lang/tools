@@ -39,6 +39,9 @@ void main() {
         'funding': null,
         'topics': null,
         'ignored_advisories': null,
+        'platforms': null,
+        'false_secrets': null,
+        'hooks': null,
       });
     });
 
@@ -65,6 +68,13 @@ void main() {
         ],
         'workspace': ['pkg1', 'pkg2'],
         'resolution': 'workspace',
+        'platforms': {'android': null, 'web': null},
+        'false_secrets': ['/lib/src/hardcoded_api_key.dart', '/test/*.pem'],
+        'hooks': {
+          'user_defines': {
+            'my_package': {'enable_experimental': true},
+          },
+        },
         'executables': {
           'my_script': 'bin/my_script.dart',
           'my_script2': 'bin/my_script2.dart',
@@ -106,6 +116,13 @@ void main() {
         'ignored_advisories': ['111', '222'],
         'workspace': ['pkg1', 'pkg2'],
         'resolution': 'workspace',
+        'platforms': {'android': null, 'web': null},
+        'false_secrets': ['/lib/src/hardcoded_api_key.dart', '/test/*.pem'],
+        'hooks': {
+          'user_defines': {
+            'my_package': {'enable_experimental': true},
+          },
+        },
         'executables': {
           'my_script': 'bin/my_script.dart',
           'my_script2': 'bin/my_script2.dart',
@@ -139,6 +156,9 @@ void main() {
       expect(newValue.workspace, value.workspace);
       expect(newValue.resolution, value.resolution);
       expect(newValue.executables, value.executables);
+      expect(newValue.platforms, value.platforms);
+      expect(newValue.falseSecrets, value.falseSecrets);
+      expect(newValue.hooks, value.hooks);
     });
 
     test('all fields set', () async {
@@ -163,6 +183,13 @@ void main() {
         ],
         'workspace': ['pkg1', 'pkg2'],
         'resolution': 'workspace',
+        'platforms': {'android': null, 'web': null},
+        'false_secrets': ['/lib/src/hardcoded_api_key.dart', '/test/*.pem'],
+        'hooks': {
+          'user_defines': {
+            'my_package': {'enable_experimental': true},
+          },
+        },
         'executables': {
           'my_script': 'bin/my_script.dart',
           'my_script2': 'bin/my_script2.dart',
@@ -200,6 +227,9 @@ void main() {
       expect(newValue.workspace, value.workspace);
       expect(newValue.resolution, value.resolution);
       expect(newValue.executables, value.executables);
+      expect(newValue.platforms, value.platforms);
+      expect(newValue.falseSecrets, value.falseSecrets);
+      expect(newValue.hooks, value.hooks);
     });
 
     test('dependencies', () async {
@@ -230,6 +260,10 @@ void main() {
             'version': '^2.0.1',
           },
           'local_utils': {'path': '../local_utils'},
+          'versioned_local': {
+            'path': '../versioned_local',
+            'version': '^1.2.3',
+          },
         },
       }, skipTryPub: true);
 
@@ -237,7 +271,7 @@ void main() {
 
       final newValue = await parse(jsonValue, skipTryPub: true);
 
-      expect(value.dependencies, hasLength(9));
+      expect(value.dependencies, hasLength(10));
       expect(value.dependencies, {
         'flutter': isA<SdkDependency>(),
         'http': isA<HostedDependency>(),
@@ -248,6 +282,7 @@ void main() {
         'shared_preferences': isA<GitDependency>(),
         'kittens': isA<GitDependency>(),
         'local_utils': isA<PathDependency>(),
+        'versioned_local': isA<PathDependency>(),
       });
 
       expect(
@@ -292,6 +327,14 @@ void main() {
       expect(
         value.dependencies['local_utils']?.toJson(),
         newValue.dependencies['local_utils']?.toJson(),
+      );
+      expect(value.dependencies['versioned_local']?.toJson(), {
+        'path': '../versioned_local',
+        'version': '^1.2.3',
+      });
+      expect(
+        value.dependencies['versioned_local']?.toJson(),
+        newValue.dependencies['versioned_local']?.toJson(),
       );
     });
   });

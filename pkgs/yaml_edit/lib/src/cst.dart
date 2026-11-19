@@ -4,43 +4,55 @@
 
 /// A concrete syntax tree (CST) for a single YAML document.
 ///
-/// Built from the `YamlNode` value tree and `Token` stream produced by
-/// `package:yaml` (`loadYamlDocument(..., retainTokens: true)`). Every node,
+/// Built from the `YamlNode` value tree and [YamlToken] stream produced by
+/// `package:yaml/tokens.dart` (`loadYamlDocumentWithTokens`). Every node,
 /// indicator, comment, and whitespace span is recorded with exact character
 /// offsets (`[start, end)`).
 ///
-/// A [CstDocument] forms a complete tiling of its source text: slots are
-/// contiguous, non-overlapping, and ordered by source offset. Concatenating all
-/// slots reproduces the original document byte for byte. [CstDocument.parse]
-/// enforces this invariant on every document it constructs.
+/// ## Tiling model and comment ownership
+///
+/// A [CstDocument] partitions the source into three contiguous regions:
+/// - prefix `[0, root.start)` — directives, `---`, leading blank/comment lines
+/// - root `[root.start, root.end)` — the document's syntax tree
+/// - suffix `[root.end, source.length)` — `...`, trailing blank/comment lines
+///
+/// Within block collections, each entry owns `[start, lineStart)` (whole
+/// comment and blank lines preceding the entry), `[lineStart, value.end)` (the
+/// entry itself), and `[value.end, end)` (trailing spaces, inline comment, and
+/// terminating line break on the entry's final line). Deleting `[lineStart,
+/// end)` removes the entry and its inline comment while preserving comments
+/// written above it.
+///
+/// [CstDocument.parse] enforces the tiling invariants on every constructed
+/// document via [_checkTiling].
 library;
 
 import 'package:yaml/tokens.dart';
 import 'package:yaml/yaml.dart';
 
-/// Thrown when the CST builder cannot produce an exact tiling of the source.
+/// Thrown when the CST builder cannot produce a valid tiling of a YAML
+/// document.
 ///
-/// This indicates a document shape the builder does not model. It is a bug in
-/// the builder rather than a problem with the document, and callers are
-/// expected to treat it as unrecoverable.
-final class CstException implements Exception {
-  /// Explanation of why the CST tiling failed.
+/// This indicates an unmodeled document shape or internal builder bug rather
+/// than invalid YAML input.
+final class CstError extends Error {
+  /// Explanation of why CST construction or tiling verification failed.
   final String message;
 
-  /// The offset in the source at which the problem was detected.
+  /// The character offset in the source at which the problem was detected.
   final int offset;
 
-  CstException(this.message, this.offset);
+  CstError(this.message, this.offset);
 
   @override
-  String toString() => 'CstException at $offset: $message';
+  String toString() => 'CstError at $offset: $message';
 }
 
 /// A node of the concrete syntax tree.
 ///
 /// Every node occupies the source range `[start, end)`. The range is split into
-/// the *properties* `[start, contentStart)` — a verbatim anchor and/or tag,
-/// including the whitespace separating it from the content — and the *content*
+/// the *properties* `[start, contentStart)` — any leading `&anchor` and/or
+/// `!tag` tokens plus intervening whitespace/comments — and the *content*
 /// `[contentStart, end)`:
 ///
 /// ```text
@@ -48,6 +60,13 @@ final class CstException implements Exception {
 /// ^            ^                   ^
 /// start        contentStart        contentEnd / end
 /// ```
+///
+/// For a block collection on a new line without properties, [start] and
+/// [contentStart] both point to the start of the line holding its first entry
+/// (or any leading comment/blank lines preceding that entry). When a block
+/// collection has properties on an earlier line, `[start, contentStart)` covers
+/// the properties through the end of their line, and [contentStart] starts at
+/// the beginning of the following line.
 sealed class CstNode {
   /// Offset of the first character of this node, including node properties.
   int get start;
@@ -90,8 +109,8 @@ final class CstScalar extends CstNode {
   @override
   final YamlScalar value;
 
-  /// The comment on the header line of a block scalar, if present.
-  final CommentToken? headerComment;
+  /// The comment token on the header line of a block scalar, if present.
+  final YamlToken? headerComment;
 
   /// The style the scalar is written in.
   ScalarStyle get style => value.style;
@@ -158,20 +177,22 @@ final class CstBlockSeq extends CstNode {
   /// sequence with no entries cannot be written.
   final List<CstBlockSeqEntry> entries;
 
+  /// Whether this sequence starts compactly on the same line as an enclosing
+  /// `-` or `?` indicator (for example `- - 1`).
+  final bool isCompact;
+
   @override
   int get end => entries.last.end;
 
   @override
   int get contentEnd => entries.last.value.contentEnd;
 
-  /// The column at which this sequence's `-` indicators are written.
-  int get indent => entries.first.dashStart - entries.first.lineStart;
-
   CstBlockSeq({
     required this.start,
     required this.contentStart,
     required List<CstBlockSeqEntry> entries,
     required this.value,
+    required this.isCompact,
   }) : entries = List.unmodifiable(entries);
 }
 
@@ -197,7 +218,8 @@ final class CstBlockSeqEntry {
   /// the previous entry.
   final int start;
 
-  /// Start of the line the `-` is written on.
+  /// Start of the line the `-` is written on, or [start] when this is the first
+  /// entry of a compact block sequence sharing a line with an outer indicator.
   ///
   /// The range `[start, lineStart)` holds whole lines of blank space and
   /// comments that precede this entry. Deleting an entry deletes
@@ -218,11 +240,8 @@ final class CstBlockSeqEntry {
   /// trailing comment belongs to this entry and is removed with it.
   final int end;
 
-  /// A comment sitting between the `-` indicator and the entry value, if any.
-  final CommentToken? separatorComment;
-
   /// Whether a comment sits between the `-` indicator and the entry value.
-  bool get hasSeparatorComment => separatorComment != null;
+  final bool hasSeparatorComment;
 
   CstBlockSeqEntry({
     required this.start,
@@ -230,7 +249,7 @@ final class CstBlockSeqEntry {
     required this.dashStart,
     required this.value,
     required this.end,
-    this.separatorComment,
+    required this.hasSeparatorComment,
   });
 }
 
@@ -247,20 +266,22 @@ final class CstBlockMap extends CstNode {
   /// mapping with no entries cannot be written.
   final List<CstBlockMapEntry> entries;
 
+  /// Whether this mapping starts compactly on the same line as an enclosing
+  /// `-` or `?` indicator (for example `- a: 1`).
+  final bool isCompact;
+
   @override
   int get end => entries.last.end;
 
   @override
   int get contentEnd => entries.last.value.contentEnd;
 
-  /// The column at which this mapping's keys are written.
-  int get indent => entries.first.keyStart - entries.first.lineStart;
-
   CstBlockMap({
     required this.start,
     required this.contentStart,
     required List<CstBlockMapEntry> entries,
     required this.value,
+    required this.isCompact,
   }) : entries = List.unmodifiable(entries);
 }
 
@@ -283,7 +304,8 @@ final class CstBlockMapEntry {
   /// the previous entry.
   final int start;
 
-  /// Start of the line the key is written on. See [CstBlockSeqEntry.lineStart].
+  /// Start of the line the key is written on, or [start] when this is the first
+  /// entry of a compact block mapping sharing a line with an outer indicator.
   final int lineStart;
 
   /// Offset of the `?` indicator, for entries written in explicit key form.
@@ -303,11 +325,8 @@ final class CstBlockMapEntry {
   /// End of this entry, just past the line break that terminates it.
   final int end;
 
-  /// A comment sitting between the `:` separator and the entry value, if any.
-  final CommentToken? separatorComment;
-
   /// Whether a comment sits between the `:` separator and the entry value.
-  bool get hasSeparatorComment => separatorComment != null;
+  final bool hasSeparatorComment;
 
   /// Offset of the first character of this entry's own content, which is the
   /// `?` if there is one and the key otherwise.
@@ -321,7 +340,7 @@ final class CstBlockMapEntry {
     required this.colon,
     required this.value,
     required this.end,
-    this.separatorComment,
+    required this.hasSeparatorComment,
   });
 }
 
@@ -439,8 +458,8 @@ final class CstFlowEntry {
   /// comma.
   final int? comma;
 
-  /// End of this entry: just past the `,` if there is one, otherwise the end of
-  /// the whitespace and comments following the value.
+  /// End of this entry: `comma + 1` if a comma is present, otherwise
+  /// `value.end`.
   final int end;
 
   CstFlowEntry({
@@ -517,7 +536,8 @@ final class _LineTable {
     final starts = <int>[0];
     final contentEnds = <int>[];
     final breakEnds = <int>[];
-    var hasCrlf = false;
+    var unixNewlines = 0;
+    var windowsNewlines = 0;
 
     var index = 0;
     final length = source.length;
@@ -526,33 +546,32 @@ final class _LineTable {
       if (char == '\r') {
         contentEnds.add(index);
         if (index + 1 < length && source[index + 1] == '\n') {
-          hasCrlf = true;
+          windowsNewlines++;
           index += 2;
         } else {
           index += 1;
         }
         breakEnds.add(index);
-        if (index < length) starts.add(index);
+        starts.add(index);
       } else if (char == '\n') {
         contentEnds.add(index);
+        unixNewlines++;
         index += 1;
         breakEnds.add(index);
-        if (index < length) starts.add(index);
+        starts.add(index);
       } else {
         index++;
       }
     }
 
-    if (contentEnds.length < starts.length) {
-      contentEnds.add(length);
-      breakEnds.add(length);
-    }
+    contentEnds.add(length);
+    breakEnds.add(length);
 
     return _LineTable._(
       lineStarts: List.unmodifiable(starts),
       lineContentEnds: List.unmodifiable(contentEnds),
       lineBreakEnds: List.unmodifiable(breakEnds),
-      lineEnding: hasCrlf ? '\r\n' : '\n',
+      lineEnding: windowsNewlines > unixNewlines ? '\r\n' : '\n',
     );
   }
 
@@ -585,6 +604,9 @@ final class _LineTable {
 
   /// Offset just past the line break of the line containing [offset].
   int lineBreakEndOf(int offset) => lineBreakEnds[lineIndexFor(offset)];
+
+  /// Zero-based column of [offset] relative to the start of its line.
+  int columnOf(int offset) => offset - lineStartOf(offset);
 }
 
 /// A parsed YAML document, tiled into a prefix, a root node and a suffix.
@@ -613,13 +635,15 @@ final class CstDocument {
   /// The value of the document, which is `null` for an empty document.
   final YamlNode value;
 
-  /// All tokens retained during parsing, ordered by source offset.
-  final List<Token> tokens;
+  /// All tokens retained during parsing, ordered by ascending start offset.
+  final List<YamlToken> tokens;
 
-  /// All comment tokens retained during parsing, ordered by source offset.
-  final List<CommentToken> comments;
+  /// All comment tokens retained during parsing, ordered by ascending start
+  /// offset.
+  final List<YamlToken> comments;
 
-  /// The primary line terminator detected in this document.
+  /// The primary line terminator detected in this document (majority vote of
+  /// `\r\n` vs `\n`, defaulting to `\n`).
   final String lineEnding;
 
   final _LineTable _lineTable;
@@ -628,20 +652,13 @@ final class CstDocument {
     required this.source,
     required this.root,
     required this.value,
-    required List<Token> tokens,
-    required List<CommentToken> comments,
+    required List<YamlToken> tokens,
+    required List<YamlToken> comments,
     required this.lineEnding,
     required _LineTable lineTable,
   })  : tokens = List.unmodifiable(tokens),
         comments = List.unmodifiable(comments),
         _lineTable = lineTable;
-
-  /// The set of nodes that are reachable more than once because of aliasing.
-  ///
-  /// A node appears here when it is the target of at least one alias. Editing
-  /// such a node, or anything inside it, would silently change the document at
-  /// every point that refers to it, so callers must refuse to do so.
-  late final Set<YamlNode> aliasedValues = _collectAliasedValues(value);
 
   /// Returns the offset of the first character of the line containing [offset].
   int lineStartOf(int offset) => _lineTable.lineStartOf(offset);
@@ -654,218 +671,195 @@ final class CstDocument {
   /// containing [offset], or `source.length` if the line has no line break.
   int lineBreakEndOf(int offset) => _lineTable.lineBreakEndOf(offset);
 
-  /// Returns the length of the line break starting at [offset] (2 for `\r\n`,
-  /// 1 for `\n` or `\r`, 0 if none).
-  int lineBreakLengthAt(int offset) {
-    if (offset < 0 || offset >= source.length) return 0;
-    final char = source[offset];
-    if (char == '\r') {
-      return (offset + 1 < source.length && source[offset + 1] == '\n') ? 2 : 1;
-    }
-    if (char == '\n') return 1;
-    return 0;
-  }
-
-  /// Whether a line break starts at [offset].
-  bool hasLineBreakAt(int offset) => lineBreakLengthAt(offset) > 0;
-
-  /// Returns the length of the line break immediately preceding [offset].
-  int lineBreakLengthBefore(int offset) {
-    if (offset <= 0 || offset > source.length) return 0;
-    final char = source[offset - 1];
-    if (char == '\n') {
-      return (offset - 1 > 0 && source[offset - 2] == '\r') ? 2 : 1;
-    }
-    if (char == '\r') return 1;
-    return 0;
-  }
-
-  /// Whether a line break immediately precedes [offset].
-  bool hasLineBreakBefore(int offset) => lineBreakLengthBefore(offset) > 0;
-
-  /// Whether any line break occurs in `[start, end)`.
-  bool hasLineBreakInRange(int start, int end) =>
-      start < end && _lineTable.lineContentEndOf(start) < end;
-
   /// Zero-based column index of [offset] relative to the start of its line.
-  int columnOf(int offset) => offset - lineStartOf(offset);
+  int columnOf(int offset) => _lineTable.columnOf(offset);
 
-  /// Whether a space or tab immediately precedes [offset].
-  bool hasWhitespaceBefore(int offset) {
-    if (offset <= 0 || offset > source.length) return false;
-    final char = source[offset - 1];
-    return char == ' ' || char == '\t';
+  /// Binary search for the first index in [comments] with start >= [offset].
+  int _firstCommentIndexAtOrAfter(int offset) {
+    var low = 0;
+    var high = comments.length;
+    while (low < high) {
+      final mid = (low + high) >> 1;
+      if (comments[mid].span.start.offset < offset) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    return low;
   }
 
-  /// Returns the first [CommentToken] fully contained in `[start, end)`, or
+  /// Returns the first comment token fully contained in `[start, end)`, or
   /// `null` if none exists.
-  CommentToken? commentInRange(int start, int end) {
-    for (final comment in comments) {
-      final offset = comment.span.start.offset;
-      if (offset >= end) break;
-      if (offset >= start && comment.span.end.offset <= end) {
-        return comment;
-      }
+  YamlToken? commentInRange(int start, int end) {
+    if (start >= end) return null;
+    for (var i = _firstCommentIndexAtOrAfter(start); i < comments.length; i++) {
+      final comment = comments[i];
+      if (comment.span.start.offset >= end) break;
+      if (comment.span.end.offset <= end) return comment;
     }
     return null;
   }
 
-  /// Returns all [CommentToken]s fully contained in `[start, end)`.
-  List<CommentToken> commentsInRange(int start, int end) {
-    final result = <CommentToken>[];
-    for (final comment in comments) {
-      final offset = comment.span.start.offset;
-      if (offset >= end) break;
-      if (offset >= start && comment.span.end.offset <= end) {
-        result.add(comment);
-      }
+  /// Returns all comment tokens fully contained in `[start, end)`.
+  List<YamlToken> commentsInRange(int start, int end) {
+    if (start >= end) return const [];
+    final result = <YamlToken>[];
+    for (var i = _firstCommentIndexAtOrAfter(start); i < comments.length; i++) {
+      final comment = comments[i];
+      if (comment.span.start.offset >= end) break;
+      if (comment.span.end.offset <= end) result.add(comment);
     }
     return result;
-  }
-
-  /// Whether every character in `[start, end)` is a space or tab.
-  bool isWhitespaceRange(int start, int end) {
-    for (var i = start; i < end; i++) {
-      final char = source[i];
-      if (char != ' ' && char != '\t') return false;
-    }
-    return true;
-  }
-
-  /// Whether `[start, end)` contains a tab character (`\t`).
-  bool hasTabInRange(int start, int end) {
-    for (var i = start; i < end; i++) {
-      if (source[i] == '\t') return true;
-    }
-    return false;
-  }
-
-  /// Extends [offset] past blank lines and full-line comments whose column is
-  /// greater than [minIndent], returning the end of the last such line.
-  int extendPastIndentedCommentsAndBlankLines(int offset, int minIndent) {
-    var probe = offset;
-    while (probe < source.length) {
-      final lineStart = lineStartOf(probe);
-      if (probe != lineStart) break;
-
-      final lineContentEnd = lineContentEndOf(probe);
-      final lineBreakEnd = lineBreakEndOf(probe);
-
-      final comment = commentInRange(lineStart, lineContentEnd);
-      if (comment != null) {
-        final commentStart = comment.span.start.offset;
-        final column = commentStart - lineStart;
-        if (isWhitespaceRange(lineStart, commentStart) && column > minIndent) {
-          probe = lineBreakEnd;
-          continue;
-        }
-        break;
-      }
-
-      if (isWhitespaceRange(lineStart, lineContentEnd)) {
-        probe = lineBreakEnd;
-        continue;
-      }
-
-      break;
-    }
-    return probe;
   }
 
   /// Parses [source] into a CST.
   ///
   /// Throws a [YamlException] if [source] is not a valid YAML document, and a
-  /// [CstException] if it is valid but the builder cannot tile it.
+  /// [CstError] if it is valid but the builder cannot tile it.
   factory CstDocument.parse(String source) {
-    final yamlDocument = loadYamlDocument(source, retainTokens: true);
-    final value = yamlDocument.contents;
-    final allTokens = yamlDocument.tokens ?? const <Token>[];
+    final (:document, :tokens) = loadYamlDocumentWithTokens(source);
+    final value = document.contents;
     final lineTable = _LineTable(source);
-    final builder = _CstBuilder(source, allTokens, lineTable);
+    final tokensByOffset = <int, YamlToken>{
+      for (final token in tokens) token.span.start.offset: token,
+    };
+    final builder = _CstBuilder(source, tokensByOffset, lineTable);
     final root = builder.buildDocument(value);
-    final comments = allTokens.whereType<CommentToken>().toList();
-    final document = CstDocument._(
+    final comments = [
+      for (final token in tokens)
+        if (token.kind == YamlTokenKind.comment) token,
+    ];
+    final cst = CstDocument._(
       source: source,
       root: root,
       value: value,
-      tokens: allTokens,
+      tokens: tokens,
       comments: comments,
       lineEnding: lineTable.lineEnding,
       lineTable: lineTable,
     );
-    _checkTiling(document);
-    return document;
+    _checkTiling(cst, tokensByOffset);
+    return cst;
   }
-}
-
-/// Collects the nodes reachable by more than one path, which is exactly the set
-/// of nodes that some alias refers to.
-Set<YamlNode> _collectAliasedValues(YamlNode root) {
-  final aliased = <YamlNode>{};
-  final visited = <YamlNode>{};
-  void visit(YamlNode node) {
-    if (!visited.add(node)) {
-      aliased.add(node);
-      return;
-    }
-    switch (node) {
-      case YamlMap():
-        node.nodes.forEach((key, value) {
-          visit(key as YamlNode);
-          visit(value);
-        });
-      case YamlList():
-        node.nodes.forEach(visit);
-      default:
-    }
-  }
-
-  visit(root);
-  return aliased;
 }
 
 // ---------------------------------------------------------------------------
 // Tiling check
 // ---------------------------------------------------------------------------
 
-/// Verifies that [document]'s slots tile its source exactly.
+/// Verifies that [document]'s slots tile its source accurately.
 ///
-/// Walks the tree in source order and checks that:
-/// 1. Slot boundaries are monotonically non-decreasing (disjoint and ordered).
-/// 2. Every structural indicator (`-`, `?`, `:`, `,`, `[`, `]`, `{`, `}`)
+/// Walks the tree iteratively in source order and checks that:
+/// 1. The prefix `[0, prefixEnd)` holds only whitespace, BOM, comments,
+///    directives, and document markers (`---`/`...`).
+/// 2. The suffix `[suffixStart, source.length)` holds only whitespace, BOM,
+///    comments, and document end markers (`...`).
+/// 3. Slot boundaries are monotonically non-decreasing (disjoint and ordered).
+/// 4. Every structural indicator (`-`, `?`, `:`, `,`, `[`, `]`, `{`, `}`)
 ///    matches its expected character in the source.
-/// 3. Every region between structural indicators and node contents contains
-///    only whitespace and comments.
+/// 5. Every gap between slots holds only whitespace and whole
+///    [YamlTokenKind.comment] tokens.
+/// 6. Node property regions `[start, contentStart)` hold only whitespace,
+///    comments, anchors, and tags.
+/// 7. Every [CstScalar] matches its [YamlScalar.span] and every [CstAlias]
+///    matches an earlier-targeted [YamlTokenKind.alias] token.
 ///
-/// Throws a [CstException] if any check fails.
-void _checkTiling(CstDocument document) {
+/// Throws a [CstError] if any check fails.
+void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
   final source = document.source;
   var cursor = 0;
 
+  bool isTriviaChar(int codeUnit) =>
+      codeUnit == 0x20 || // space
+      codeUnit == 0x09 || // tab
+      codeUnit == 0x0A || // LF
+      codeUnit == 0x0D; // CR
+
+  /// Checks a prefix or suffix region where only whitespace, BOM, and tokens
+  /// of [allowedKinds] may appear.
+  void checkEdgeRegion(
+    int start,
+    int end,
+    Set<YamlTokenKind> allowedKinds,
+    String what,
+  ) {
+    if (end < start || end > source.length) {
+      throw CstError('$what bounds [$start, $end) out of range', start);
+    }
+    var index = start;
+    while (index < end) {
+      final codeUnit = source.codeUnitAt(index);
+      if (isTriviaChar(codeUnit) || codeUnit == 0xFEFF) {
+        index++;
+      } else if (tokensByOffset[index] case final token?
+          when allowedKinds.contains(token.kind) &&
+              token.span.end.offset <= end) {
+        index = token.span.end.offset;
+      } else {
+        throw CstError(
+          'unexpected content in $what: '
+          '${_describe(source.substring(index, end))}',
+          index,
+        );
+      }
+    }
+  }
+
   /// Advances the cursor to [offset], requiring `[cursor, offset)` to hold only
-  /// blank space and comments.
+  /// whitespace and complete [YamlTokenKind.comment] tokens.
   void whitespaceAndComments(int offset, String what) {
     if (offset < cursor) {
-      throw CstException(
-          'slot "$what" starts at $offset, before the previous slot ended at '
-          '$cursor',
-          offset);
+      throw CstError(
+        'slot "$what" starts at $offset, before the previous slot ended at '
+        '$cursor',
+        offset,
+      );
     }
     var index = cursor;
     while (index < offset) {
-      final char = source[index];
-      if (char == ' ' || char == '\t' || char == '\n' || char == '\r') {
+      if (isTriviaChar(source.codeUnitAt(index))) {
         index++;
-      } else if (char == '#') {
-        while (
-            index < offset && source[index] != '\n' && source[index] != '\r') {
-          index++;
-        }
+      } else if (tokensByOffset[index] case final token?
+          when token.kind == YamlTokenKind.comment &&
+              token.span.end.offset <= offset) {
+        index = token.span.end.offset;
       } else {
-        throw CstException(
-            'the source before "$what" was taken to be whitespace or comments, '
-            'but holds ${_describe(source.substring(cursor, offset))}',
-            index);
+        throw CstError(
+          'the source before "$what" was taken to be whitespace or comments, '
+          'but holds ${_describe(source.substring(cursor, offset))}',
+          index,
+        );
+      }
+    }
+    cursor = offset;
+  }
+
+  /// Advances the cursor over `[cursor, offset)` requiring only whitespace,
+  /// comments, anchors, and tags.
+  void properties(int offset) {
+    if (offset < cursor) {
+      throw CstError(
+        'node properties end at $offset, before they started at $cursor',
+        offset,
+      );
+    }
+    var index = cursor;
+    while (index < offset) {
+      if (isTriviaChar(source.codeUnitAt(index))) {
+        index++;
+      } else if (tokensByOffset[index] case final token?
+          when (token.kind == YamlTokenKind.anchor ||
+                  token.kind == YamlTokenKind.tag ||
+                  token.kind == YamlTokenKind.comment) &&
+              token.span.end.offset <= offset) {
+        index = token.span.end.offset;
+      } else {
+        throw CstError(
+          'unexpected token in node properties: '
+          '${_describe(source.substring(cursor, offset))}',
+          index,
+        );
       }
     }
     cursor = offset;
@@ -878,99 +872,178 @@ void _checkTiling(CstDocument document) {
       final found = offset >= source.length
           ? '<end of input>'
           : _describe(source[offset]);
-      throw CstException(
-          'expected $what ("$char") at $offset but found $found', offset);
+      throw CstError(
+        'expected $what ("$char") at $offset but found $found',
+        offset,
+      );
     }
     cursor = offset + 1;
   }
 
-  /// Advances the cursor over a region whose contents are not whitespace or
-  /// comments, such as a scalar's text or a node's anchor and tag.
+  /// Advances the cursor over a scalar or alias body.
   void opaque(int offset, String what) {
     if (offset < cursor) {
-      throw CstException(
-          'slot "$what" ends at $offset, before it started at $cursor', offset);
+      throw CstError(
+        'slot "$what" ends at $offset, before it started at $cursor',
+        offset,
+      );
     }
     cursor = offset;
   }
 
-  void visitNode(CstNode node) {
-    whitespaceAndComments(node.start, 'node');
-    opaque(node.contentStart, 'node properties');
-    switch (node) {
-      case CstScalar():
-      case CstAlias():
-      case CstEmpty():
-        opaque(node.end, 'node content');
-      case CstBlockSeq():
-        for (final entry in node.entries) {
-          whitespaceAndComments(entry.start, 'block sequence entry');
-          whitespaceAndComments(entry.lineStart, 'block sequence entry line');
-          indicator(entry.dashStart, '-', 'block sequence entry indicator');
-          visitNode(entry.value);
-          whitespaceAndComments(entry.end, 'end of block sequence entry');
-        }
-      case CstBlockMap():
-        for (final entry in node.entries) {
-          whitespaceAndComments(entry.start, 'block mapping entry');
-          whitespaceAndComments(entry.lineStart, 'block mapping entry line');
-          if (entry.questionMark case final questionMark?) {
-            indicator(questionMark, '?', 'explicit key indicator');
-          }
-          visitNode(entry.key);
-          if (entry.colon case final colon?) {
-            indicator(colon, ':', 'key/value separator');
-          }
-          visitNode(entry.value);
-          whitespaceAndComments(entry.end, 'end of block mapping entry');
-        }
-      case CstFlowPair():
-        if (node.questionMark case final questionMark?) {
-          indicator(questionMark, '?', 'explicit key indicator');
-        }
-        visitNode(node.key);
-        if (node.colon case final colon?) {
-          indicator(colon, ':', 'flow key/value separator');
-        }
-        visitNode(node.pairValue);
-      case CstFlowCollection():
-        indicator(node.contentStart, node is CstFlowSeq ? '[' : '{',
-            'flow collection opening delimiter');
-        for (final entry in node.entries) {
-          whitespaceAndComments(entry.start, 'flow entry');
-          if (entry.questionMark case final questionMark?) {
-            indicator(questionMark, '?', 'explicit key indicator');
-          }
-          if (entry.key case final key?) {
-            visitNode(key);
-            if (entry.colon case final colon?) {
-              indicator(colon, ':', 'flow key/value separator');
-            }
-          }
-          visitNode(entry.value);
-          if (entry.comma case final comma?) {
-            indicator(comma, ',', 'flow entry separator');
-          }
-          whitespaceAndComments(entry.end, 'end of flow entry');
-        }
-        indicator(node.closeStart, node is CstFlowSeq ? ']' : '}',
-            'flow collection closing delimiter');
-    }
+  const prefixKinds = {
+    YamlTokenKind.versionDirective,
+    YamlTokenKind.tagDirective,
+    YamlTokenKind.unknownDirective,
+    YamlTokenKind.documentStart,
+    YamlTokenKind.documentEnd,
+    YamlTokenKind.comment,
+  };
+  const suffixKinds = {
+    YamlTokenKind.documentEnd,
+    YamlTokenKind.comment,
+  };
+
+  final root = document.root;
+  if (root == null) {
+    checkEdgeRegion(0, source.length, prefixKinds, 'empty document');
+    return;
   }
 
-  if (document.root case final root?) {
-    // The prefix is exempt from the whitespace and comments check: it
-    // legitimately holds directives and a `---` marker as well as comments. The
-    // suffix likewise may hold `...`, and is simply whatever is left over.
-    cursor = root.start;
-    visitNode(root);
+  checkEdgeRegion(0, root.start, prefixKinds, 'document prefix');
+  cursor = root.start;
+
+  // Iterative traversal to avoid overflowing the Dart stack on deeply nested
+  // flow collections.
+  final stack = <void Function()>[];
+
+  void scheduleNode(CstNode node) {
+    stack.add(() {
+      whitespaceAndComments(node.start, 'node');
+      properties(node.contentStart);
+      switch (node) {
+        case CstScalar():
+          if (node.start != node.value.span.start.offset ||
+              node.end != node.value.span.end.offset) {
+            throw CstError(
+              'scalar slot [${node.start}, ${node.end}) does not match '
+              'YamlScalar span [${node.value.span.start.offset}, '
+              '${node.value.span.end.offset})',
+              node.start,
+            );
+          }
+          opaque(node.end, 'scalar');
+        case CstAlias():
+          final aliasToken = tokensByOffset[node.start];
+          if (aliasToken == null ||
+              aliasToken.kind != YamlTokenKind.alias ||
+              aliasToken.span.end.offset != node.end) {
+            throw CstError(
+              'alias slot [${node.start}, ${node.end}) does not match an alias '
+              'token',
+              node.start,
+            );
+          }
+          if (node.value.span.start.offset >= node.start) {
+            throw CstError(
+              'alias at ${node.start} points to node starting at '
+              '${node.value.span.start.offset}',
+              node.start,
+            );
+          }
+          opaque(node.end, 'alias');
+        case CstEmpty():
+          opaque(node.end, 'empty');
+        case CstBlockSeq():
+          for (var i = node.entries.length - 1; i >= 0; i--) {
+            final entry = node.entries[i];
+            stack.add(() =>
+                whitespaceAndComments(entry.end, 'end of block seq entry'));
+            scheduleNode(entry.value);
+            stack.add(() {
+              whitespaceAndComments(entry.start, 'block sequence entry');
+              whitespaceAndComments(
+                  entry.lineStart, 'block sequence entry line');
+              indicator(entry.dashStart, '-', 'block sequence entry indicator');
+            });
+          }
+        case CstBlockMap():
+          for (var i = node.entries.length - 1; i >= 0; i--) {
+            final entry = node.entries[i];
+            stack.add(() =>
+                whitespaceAndComments(entry.end, 'end of block map entry'));
+            scheduleNode(entry.value);
+            if (entry.colon case final colon?) {
+              stack.add(() => indicator(colon, ':', 'key/value separator'));
+            }
+            scheduleNode(entry.key);
+            stack.add(() {
+              whitespaceAndComments(entry.start, 'block mapping entry');
+              whitespaceAndComments(
+                  entry.lineStart, 'block mapping entry line');
+              if (entry.questionMark case final questionMark?) {
+                indicator(questionMark, '?', 'explicit key indicator');
+              }
+            });
+          }
+        case CstFlowPair():
+          scheduleNode(node.pairValue);
+          if (node.colon case final colon?) {
+            stack.add(() => indicator(colon, ':', 'flow key/value separator'));
+          }
+          scheduleNode(node.key);
+          if (node.questionMark case final questionMark?) {
+            stack.add(
+                () => indicator(questionMark, '?', 'explicit key indicator'));
+          }
+        case CstFlowCollection():
+          indicator(
+            node.contentStart,
+            node is CstFlowSeq ? '[' : '{',
+            'flow collection opening delimiter',
+          );
+          stack.add(() => indicator(
+                node.closeStart,
+                node is CstFlowSeq ? ']' : '}',
+                'flow collection closing delimiter',
+              ));
+          for (var i = node.entries.length - 1; i >= 0; i--) {
+            final entry = node.entries[i];
+            stack.add(() {
+              if (entry.comma case final comma?) {
+                indicator(comma, ',', 'flow entry separator');
+              }
+              whitespaceAndComments(entry.end, 'end of flow entry');
+            });
+            scheduleNode(entry.value);
+            if (entry.key case final key?) {
+              if (entry.colon case final colon?) {
+                stack.add(
+                    () => indicator(colon, ':', 'flow key/value separator'));
+              }
+              scheduleNode(key);
+            }
+            stack.add(() {
+              whitespaceAndComments(entry.start, 'flow entry');
+              if (entry.questionMark case final questionMark?) {
+                indicator(questionMark, '?', 'explicit key indicator');
+              }
+            });
+          }
+      }
+    });
   }
-  if (cursor > document.source.length) {
-    throw CstException(
-        'tiling runs past the end of the source '
-        '($cursor > ${document.source.length})',
-        cursor);
+
+  scheduleNode(root);
+  while (stack.isNotEmpty) {
+    stack.removeLast()();
   }
+
+  if (cursor != root.end) {
+    throw CstError(
+        'root node ended at ${root.end} but cursor is $cursor', cursor);
+  }
+  checkEdgeRegion(root.end, source.length, suffixKinds, 'document suffix');
 }
 
 /// Renders [text] for an error message, escaping line breaks and truncating.
@@ -990,22 +1063,14 @@ String _describe(String text) {
 // ---------------------------------------------------------------------------
 
 /// Builds a CST by advancing through the source under the guidance of the value
-/// tree and the token stream emitted by `package:yaml`.
-///
-/// The value tree tells the builder what to expect and in what order, while the
-/// token stream provides exact spans for anchors, tags, aliases, scalars,
-/// comments, and indicators.
+/// tree and the token stream emitted by `package:yaml/tokens.dart`.
 final class _CstBuilder {
   final String source;
-  final Map<int, Token> _tokensByOffset;
+  final Map<int, YamlToken> _tokensByOffset;
   final _LineTable _lineTable;
   int position = 0;
 
-  _CstBuilder(this.source, List<Token> tokens, this._lineTable)
-      : _tokensByOffset = {
-          for (final token in tokens)
-            if (token.span.length > 0) token.span.start.offset: token
-        };
+  _CstBuilder(this.source, this._tokensByOffset, this._lineTable);
 
   int get length => source.length;
 
@@ -1039,8 +1104,9 @@ final class _CstBuilder {
     while (!atEnd) {
       if (_isSpace(position)) {
         position++;
-      } else if (_tokensByOffset[position] case CommentToken(:final span)) {
-        position = span.end.offset;
+      } else if (_tokensByOffset[position] case final token?
+          when token.kind == YamlTokenKind.comment) {
+        position = token.span.end.offset;
       } else if (_isBreak(position)) {
         position = _pastBreak(position);
       } else {
@@ -1050,44 +1116,38 @@ final class _CstBuilder {
   }
 
   /// Advances past whole lines that contain nothing but blank space and
-  /// comments, and returns the offset at which the first line with content
-  /// begins.
-  ///
-  /// Leaves [position] at that same offset, so the content line's own
-  /// indentation is left unconsumed for the caller to attribute.
+  /// comments, returning the offset at which the first line with content
+  /// begins (or [position] unchanged when called mid-line on a compact entry).
   int _skipCommentAndBlankLines() {
     while (true) {
       var probe = position;
       while (_isSpace(probe)) {
         probe++;
       }
-      if (_tokensByOffset[probe] case CommentToken(:final span)) {
-        probe = span.end.offset;
+      if (_tokensByOffset[probe] case final token?
+          when token.kind == YamlTokenKind.comment) {
+        probe = token.span.end.offset;
       }
       if (probe < length && _isBreak(probe)) {
         position = _pastBreak(probe);
         continue;
       }
-      // Either content on this line, or trailing blank space at end of input.
       return position;
     }
   }
 
   /// Consumes the remainder of the current line if it holds nothing but blank
-  /// space and an optional comment, and returns the resulting position.
-  ///
-  /// If the line has more content on it — as in a flow collection, or a nested
-  /// block collection sharing a line with its parent — nothing is consumed.
+  /// space and an optional comment, returning the resulting position.
   int _consumeTrailingLine() {
     var probe = position;
     while (_isSpace(probe)) {
       probe++;
     }
-    if (_tokensByOffset[probe] case CommentToken(:final span)) {
-      probe = span.end.offset;
+    if (_tokensByOffset[probe] case final token?
+        when token.kind == YamlTokenKind.comment) {
+      probe = token.span.end.offset;
     }
     if (probe >= length) {
-      // Trailing blank space or a comment at end of input.
       position = probe;
     } else if (_isBreak(probe)) {
       position = _pastBreak(probe);
@@ -1095,21 +1155,21 @@ final class _CstBuilder {
     return position;
   }
 
-  Never _fail(String message) => throw CstException(message, position);
+  Never _fail(String message) => throw CstError(message, position);
 
-  void _expectToken(TokenType expectedType, String what) {
+  void _expectToken(YamlTokenKind expectedKind, String what) {
     final token = _tokensByOffset[position];
-    if (token == null || token.type != expectedType) {
+    if (token == null || token.kind != expectedKind) {
       final found =
-          token?.type ?? (atEnd ? '<end of input>' : '"${source[position]}"');
-      _fail('expected $what ($expectedType) but found $found');
+          token?.kind ?? (atEnd ? '<end of input>' : '"${source[position]}"');
+      _fail('expected $what ($expectedKind) but found $found');
     }
     position = token.span.end.offset;
   }
 
-  int? _tryConsumeToken(TokenType type) {
+  int? _tryConsumeToken(YamlTokenKind kind) {
     final token = _tokensByOffset[position];
-    if (token != null && token.type == type) {
+    if (token != null && token.kind == kind) {
       final start = position;
       position = token.span.end.offset;
       return start;
@@ -1117,19 +1177,22 @@ final class _CstBuilder {
     return null;
   }
 
+  bool _hasCommentBetween(int start, int end) {
+    for (var offset = start; offset < end; offset++) {
+      if (_tokensByOffset[offset]?.kind == YamlTokenKind.comment) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /// Whether [node] is written as nothing at all.
-  ///
-  /// `package:yaml` gives such nodes a zero-length span. No node that is
-  /// actually written can have one: even `''` is two characters.
   static bool _isEmptyNode(YamlNode node) =>
       node is YamlScalar && node.span.length == 0;
 
   /// Builds the root node, leaving [position] just past it.
   CstNode? buildDocument(YamlNode value) {
-    // A document with no node at all still parses as `null`, but the scalar
-    // reported for it covers the document's comments and blank lines rather
-    // than any content of its own. Detect that and treat the whole source as
-    // prefix.
+    // A document with no node at all still parses as `null`, with style ANY.
     if (value is YamlScalar &&
         value.style == ScalarStyle.ANY &&
         value.value == null) {
@@ -1143,11 +1206,14 @@ final class _CstBuilder {
   CstNode _buildNode(YamlNode value) {
     final start = position;
 
-    // Aliases share their value — and therefore their span — with the node they
-    // refer to. When we find an AliasToken emitted at `position`, use its exact
-    // span.
-    if (_tokensByOffset[position] case AliasToken(:final span)) {
-      position = span.end.offset;
+    // Aliases share their value — and therefore their span — with the earlier
+    // anchored node they refer to. Guard with `value.span.start.offset <
+    // position` so a compact block mapping whose first key is an alias
+    // (`- *a : v`) is not mistaken for an alias itself.
+    if (_tokensByOffset[position] case final token?
+        when token.kind == YamlTokenKind.alias &&
+            value.span.start.offset < position) {
+      position = token.span.end.offset;
       return CstAlias(start: start, end: position, value: value);
     }
 
@@ -1157,16 +1223,14 @@ final class _CstBuilder {
 
     switch (value) {
       case YamlScalar():
-        // A scalar may be written as nothing but an anchor and/or a tag, as in
-        // `a: &anchor` or `- !!str`. It still denotes `null`, but it is not
-        // zero-length, so it does not look empty. Bounding the scan by the
-        // node's own end keeps it from running on into what follows.
+        // Bound by `value.span.end.offset` so property-only scalars like
+        // `a: &anchor` do not consume past themselves.
         _skipProperties(limit: value.span.end.offset);
         return _buildScalar(start, position, value);
 
       case YamlList() when value.style == CollectionStyle.FLOW:
-        _skipProperties(landsOn: TokenType.flowSequenceStart);
-        return _buildFlowSeq(start, position, value);
+        _skipProperties(landsOn: YamlTokenKind.flowSequenceStart);
+        return _buildFlowCollection(start, position, value);
 
       case YamlList():
         _skipProperties(crossesLineBreak: true);
@@ -1177,21 +1241,17 @@ final class _CstBuilder {
         final bound = firstKey != null && firstKey.span.start.offset >= position
             ? firstKey.span.start.offset
             : null;
-        _skipProperties(
-          crossesLineBreak: true,
-          bound: bound,
-        );
+        _skipProperties(crossesLineBreak: true, bound: bound);
         return _buildBlockMap(start, position, value);
 
       case YamlMap():
-        _skipProperties(landsOn: TokenType.flowMappingStart);
         if (_isBraced(value)) {
-          return _buildFlowMap(start, position, value);
+          _skipProperties(landsOn: YamlTokenKind.flowMappingStart);
+          return _buildFlowCollection(start, position, value);
         }
         // A flow mapping written without braces is a single pair standing in
-        // for a mapping inside a flow sequence, as in `[a: 1]`. It has no
-        // delimiter of its own, so any anchor or tag written here belongs to
-        // its key rather than to the pair.
+        // for a mapping inside a flow sequence, as in `[a: 1]`. Any anchor or
+        // tag at `position` belongs to its key rather than to the pair.
         return _buildFlowPair(start, position, value);
 
       default:
@@ -1199,58 +1259,74 @@ final class _CstBuilder {
     }
   }
 
-  /// Whether the flow mapping [value] is written with braces.
-  ///
-  /// A single pair may stand in for a mapping inside a flow sequence, and then
-  /// there are no braces to find. A braced mapping starts at `{` and ends at
-  /// `}`, whereas a bare flow pair starts at its key (or `?`) and ends at its
-  /// value.
+  /// Whether the flow mapping [value] is written with `{...}` braces.
   bool _isBraced(YamlMap value) {
+    // A single-pair flow mapping has no braces of its own; its sole key starts
+    // right at `position` (unless preceded by `?` or an empty implicit key `:`,
+    // in which case `position` is not `{` or a property anyway).
+    if (value.nodes.length == 1) {
+      final firstKey = value.nodes.keys.single as YamlNode;
+      if (firstKey.span.start.offset == position) return false;
+    }
+    final saved = position;
+    _skipProperties(landsOn: YamlTokenKind.flowMappingStart);
     final startToken = _tokensByOffset[position];
+    position = saved;
     final end = value.span.end.offset;
     final endToken = end > 0 ? _tokensByOffset[end - 1] : null;
-    return startToken?.type == TokenType.flowMappingStart &&
-        endToken?.type == TokenType.flowMappingEnd;
+    return startToken?.kind == YamlTokenKind.flowMappingStart &&
+        endToken?.kind == YamlTokenKind.flowMappingEnd;
   }
 
   /// Consumes any anchor and tag tokens written before a node's content, along
-  /// with the whitespace and comments separating them from it — but only if
-  /// doing so lands where that node's content is required to begin.
+  /// with separating whitespace and comments, if doing so satisfies the
+  /// required acceptance condition.
   ///
-  /// Uses the exact `AnchorToken` and `TagToken` spans emitted by
-  /// `package:yaml`'s scanner.
+  /// When [crossesLineBreak] is `true` (block collections), rewinds to the
+  /// start of the line immediately after the last property's line break so the
+  /// first entry retains its own leading indentation and comment lines.
   void _skipProperties({
     int? limit,
     int? bound,
-    TokenType? landsOn,
+    YamlTokenKind? landsOn,
     bool crossesLineBreak = false,
   }) {
     assert(
-        [limit, landsOn, crossesLineBreak ? true : null].nonNulls.length == 1,
-        'exactly one acceptance condition must be given');
+      [limit, landsOn, crossesLineBreak ? true : null].nonNulls.length == 1,
+      'exactly one acceptance condition must be given',
+    );
     final maxOffset =
         limit ?? (bound != null && bound >= position ? bound : null) ?? length;
     final start = position;
     var sawBreak = false;
+    int? lineStartAfterLastProperty;
 
     while (position < maxOffset) {
       final token = _tokensByOffset[position];
-      if (token is! AnchorToken && token is! TagToken) break;
-      if (token!.span.end.offset > maxOffset) break;
+      if (token == null ||
+          (token.kind != YamlTokenKind.anchor &&
+              token.kind != YamlTokenKind.tag)) {
+        break;
+      }
+      if (token.span.end.offset > maxOffset) break;
 
       position = token.span.end.offset;
+      int? firstBreakAfterThisProperty;
       while (position < maxOffset) {
         if (_isBreak(position)) {
           sawBreak = true;
           position = _pastBreak(position);
+          firstBreakAfterThisProperty ??= position;
         } else if (_isSpace(position)) {
           position++;
-        } else if (_tokensByOffset[position] case CommentToken(:final span)) {
-          position = span.end.offset;
+        } else if (_tokensByOffset[position] case final comment?
+            when comment.kind == YamlTokenKind.comment) {
+          position = comment.span.end.offset;
         } else {
           break;
         }
       }
+      lineStartAfterLastProperty = firstBreakAfterThisProperty;
     }
 
     if (position == start) return;
@@ -1258,28 +1334,27 @@ final class _CstBuilder {
     if (limit != null) {
       accepted = true;
     } else if (landsOn != null) {
-      accepted = _tokensByOffset[position]?.type == landsOn;
+      accepted = _tokensByOffset[position]?.kind == landsOn;
     } else {
       accepted = sawBreak;
+      if (accepted && lineStartAfterLastProperty != null) {
+        position = lineStartAfterLastProperty;
+      }
     }
     if (!accepted) position = start;
   }
 
   CstNode _buildScalar(int start, int contentStart, YamlScalar value) {
-    var end = value.span.end.offset;
-    CommentToken? headerComment;
+    final end = value.span.end.offset;
+    YamlToken? headerComment;
 
-    // Use token span for plain scalars to avoid character scanning.
-    if (value.style == ScalarStyle.PLAIN) {
-      if (_tokensByOffset[contentStart] case final ScalarToken token) {
-        end = token.span.end.offset;
-      }
-    } else if (value.style == ScalarStyle.LITERAL ||
+    if (value.style == ScalarStyle.LITERAL ||
         value.style == ScalarStyle.FOLDED) {
       final headerLineBreak = _lineTable.lineBreakEndOf(contentStart);
       for (var offset = contentStart + 1; offset < headerLineBreak; offset++) {
-        if (_tokensByOffset[offset] case final CommentToken comment) {
-          headerComment = comment;
+        if (_tokensByOffset[offset] case final token?
+            when token.kind == YamlTokenKind.comment) {
+          headerComment = token;
           break;
         }
       }
@@ -1298,50 +1373,68 @@ final class _CstBuilder {
     );
   }
 
+  /// Advances to and builds the child node of a block sequence or mapping
+  /// entry.
+  CstNode _buildBlockChild(YamlNode child) {
+    if (_isEmptyNode(child)) {
+      return CstEmpty(start: position, value: child as YamlScalar);
+    }
+    final isBlock = (child is YamlMap && child.style != CollectionStyle.FLOW) ||
+        (child is YamlList && child.style != CollectionStyle.FLOW);
+    final firstChildKind = _tokensByOffset[child.span.start.offset]?.kind;
+    final hasProperties = firstChildKind == YamlTokenKind.anchor ||
+        firstChildKind == YamlTokenKind.tag;
+    if (isBlock &&
+        !hasProperties &&
+        _lineTable.lineStartOf(child.span.start.offset) >
+            _lineTable.lineStartOf(position)) {
+      _consumeTrailingLine();
+    } else {
+      _skipWhitespaceAndComments();
+    }
+    return _buildNode(child);
+  }
+
+  /// Attempts to consume a `:` value indicator after a mapping key.
+  ///
+  /// When [expectedColumnOnNewLine] is provided (block mappings), a `:` on a
+  /// later line than [keyEnd] is only accepted if its column matches
+  /// [expectedColumnOnNewLine] so an inner explicit key cannot steal an outer
+  /// mapping's `:`.
+  int? _tryConsumeColon({required int keyEnd, int? expectedColumnOnNewLine}) {
+    final beforeColon = position;
+    _skipWhitespaceAndComments();
+    var colon = _tryConsumeToken(YamlTokenKind.value);
+    if (colon != null &&
+        expectedColumnOnNewLine != null &&
+        _lineTable.lineStartOf(colon) > _lineTable.lineStartOf(keyEnd) &&
+        _lineTable.columnOf(colon) != expectedColumnOnNewLine) {
+      colon = null;
+    }
+    if (colon == null) {
+      position = beforeColon;
+    }
+    return colon;
+  }
+
   CstBlockSeq _buildBlockSeq(int start, int contentStart, YamlList value) {
+    final isCompact = contentStart > _lineTable.lineStartOf(contentStart);
     final entries = <CstBlockSeqEntry>[];
     for (final child in value.nodes) {
       final entryStart = position;
       final lineStart = _skipCommentAndBlankLines();
       _skipSpaces();
       final dashStart = position;
-      _expectToken(TokenType.blockEntry, 'block sequence entry indicator');
+      _expectToken(YamlTokenKind.blockEntry, 'block sequence entry indicator');
 
-      final CstNode childNode;
-      if (_isEmptyNode(child)) {
-        childNode = CstEmpty(start: position, value: child as YamlScalar);
-      } else {
-        final isBlock =
-            (child is YamlMap && child.style != CollectionStyle.FLOW) ||
-                (child is YamlList && child.style != CollectionStyle.FLOW);
-        final firstChildToken = _tokensByOffset[child.span.start.offset];
-        final hasProperties =
-            firstChildToken is AnchorToken || firstChildToken is TagToken;
-        if (isBlock &&
-            !hasProperties &&
-            _lineTable.lineStartOf(child.span.start.offset) >
-                _lineTable.lineStartOf(position)) {
-          _consumeTrailingLine();
-        } else {
-          _skipWhitespaceAndComments();
-        }
-        childNode = _buildNode(child);
-      }
-
-      CommentToken? separatorComment;
-      for (var offset = dashStart + 1; offset < childNode.start; offset++) {
-        if (_tokensByOffset[offset] case final CommentToken token) {
-          separatorComment = token;
-          break;
-        }
-      }
+      final childNode = _buildBlockChild(child);
 
       entries.add(CstBlockSeqEntry(
         start: entryStart,
         lineStart: lineStart,
         dashStart: dashStart,
         value: childNode,
-        separatorComment: separatorComment,
+        hasSeparatorComment: _hasCommentBetween(dashStart + 1, childNode.start),
         end: childNode is CstBlockSeq || childNode is CstBlockMap
             ? childNode.end
             : _consumeTrailingLine(),
@@ -1355,68 +1448,35 @@ final class _CstBuilder {
       contentStart: contentStart,
       entries: entries,
       value: value,
+      isCompact: isCompact,
     );
   }
 
   CstBlockMap _buildBlockMap(int start, int contentStart, YamlMap value) {
+    final isCompact = contentStart > _lineTable.lineStartOf(contentStart);
     final entries = <CstBlockMapEntry>[];
     value.nodes.forEach((key, child) {
       final entryStart = position;
       final lineStart = _skipCommentAndBlankLines();
       _skipSpaces();
 
-      final questionMark = _tryConsumeToken(TokenType.key);
+      final questionMark = _tryConsumeToken(YamlTokenKind.key);
       if (questionMark != null) {
         _skipWhitespaceAndComments();
       }
 
       final keyValue = key as YamlNode;
-      final CstNode keyNode;
-      if (_isEmptyNode(keyValue)) {
-        keyNode = CstEmpty(start: position, value: keyValue as YamlScalar);
-      } else {
-        keyNode = _buildNode(keyValue);
-      }
+      final keyNode = _isEmptyNode(keyValue)
+          ? CstEmpty(start: position, value: keyValue as YamlScalar)
+          : _buildNode(keyValue);
 
-      // The `:` may be separated from the key by whitespace and comments, and
-      // for an explicit key written without a value there may be no `:` at all.
-      final beforeColon = position;
-      _skipWhitespaceAndComments();
-      final colon = _tryConsumeToken(TokenType.value);
-      if (colon == null) {
-        position = beforeColon;
-      }
+      final entryColumn = _lineTable.columnOf(questionMark ?? keyNode.start);
+      final colon = _tryConsumeColon(
+        keyEnd: keyNode.end,
+        expectedColumnOnNewLine: entryColumn,
+      );
 
-      final CstNode valueNode;
-      if (_isEmptyNode(child)) {
-        valueNode = CstEmpty(start: position, value: child as YamlScalar);
-      } else {
-        final isBlock =
-            (child is YamlMap && child.style != CollectionStyle.FLOW) ||
-                (child is YamlList && child.style != CollectionStyle.FLOW);
-        final firstChildToken = _tokensByOffset[child.span.start.offset];
-        final hasProperties =
-            firstChildToken is AnchorToken || firstChildToken is TagToken;
-        if (isBlock &&
-            !hasProperties &&
-            _lineTable.lineStartOf(child.span.start.offset) >
-                _lineTable.lineStartOf(position)) {
-          _consumeTrailingLine();
-        } else {
-          _skipWhitespaceAndComments();
-        }
-        valueNode = _buildNode(child);
-      }
-
-      CommentToken? separatorComment;
-      if (colon != null) {
-        for (var offset = colon + 1; offset < valueNode.start; offset++) {
-          if (_tokensByOffset[offset] case final CommentToken token) {
-            separatorComment = token;
-            break;
-          }
-        }
-      }
+      final valueNode = _buildBlockChild(child);
 
       entries.add(CstBlockMapEntry(
         start: entryStart,
@@ -1425,7 +1485,8 @@ final class _CstBuilder {
         key: keyNode,
         colon: colon,
         value: valueNode,
-        separatorComment: separatorComment,
+        hasSeparatorComment:
+            colon != null && _hasCommentBetween(colon + 1, valueNode.start),
         end: valueNode is CstBlockSeq || valueNode is CstBlockMap
             ? valueNode.end
             : _consumeTrailingLine(),
@@ -1439,109 +1500,139 @@ final class _CstBuilder {
       contentStart: contentStart,
       entries: entries,
       value: value,
+      isCompact: isCompact,
     );
   }
 
-  CstFlowSeq _buildFlowSeq(int start, int contentStart, YamlList value) {
+  /// Builds a [CstFlowSeq] or [CstFlowMap].
+  ///
+  /// Entry parsing is kept inline here so each nesting level uses only two Dart
+  /// stack frames (`_buildNode` -> `_buildFlowCollection`), matching
+  /// `package:yaml`'s loader depth.
+  CstFlowCollection _buildFlowCollection(
+    int start,
+    int contentStart,
+    YamlNode value,
+  ) {
+    final isSeq = value is YamlList;
     _expectToken(
-        TokenType.flowSequenceStart, 'flow sequence opening delimiter');
-    final entries = <CstFlowEntry>[];
-    for (final child in value.nodes) {
-      entries.add(_buildFlowEntry(key: null, child: child));
-    }
-    _skipWhitespaceAndComments();
-    final closeStart = position;
-    _expectToken(TokenType.flowSequenceEnd, 'flow sequence closing delimiter');
-    final isMultiline = _lineTable.lineStartOf(closeStart) >
-        _lineTable.lineStartOf(contentStart);
-    return CstFlowSeq(
-      start: start,
-      contentStart: contentStart,
-      entries: entries,
-      closeStart: closeStart,
-      isMultiline: isMultiline,
-      value: value,
+      isSeq ? YamlTokenKind.flowSequenceStart : YamlTokenKind.flowMappingStart,
+      isSeq
+          ? 'flow sequence opening delimiter'
+          : 'flow mapping opening delimiter',
     );
-  }
 
-  CstFlowMap _buildFlowMap(int start, int contentStart, YamlMap value) {
-    _expectToken(TokenType.flowMappingStart, 'flow mapping opening delimiter');
     final entries = <CstFlowEntry>[];
-    value.nodes.forEach((key, child) {
-      entries.add(_buildFlowEntry(key: key as YamlNode, child: child));
-    });
+    void addEntry(YamlNode? key, YamlNode child) {
+      final entryStart = position;
+      _skipWhitespaceAndComments();
+
+      int? questionMark;
+      CstNode? keyNode;
+      int? colon;
+      if (key != null) {
+        (:questionMark, key: keyNode, :colon) = _buildFlowKey(key);
+      }
+
+      final CstNode valueNode;
+      if (_isEmptyNode(child)) {
+        valueNode = CstEmpty(start: position, value: child as YamlScalar);
+      } else {
+        _skipWhitespaceAndComments();
+        valueNode = _buildNode(child);
+      }
+
+      final afterValue = position;
+      _skipWhitespaceAndComments();
+      final comma = _tryConsumeToken(YamlTokenKind.flowEntry);
+      if (comma == null) {
+        position = afterValue;
+      }
+
+      entries.add(CstFlowEntry(
+        start: entryStart,
+        questionMark: questionMark,
+        key: keyNode,
+        colon: colon,
+        value: valueNode,
+        comma: comma,
+        end: position,
+      ));
+    }
+
+    if (value is YamlList) {
+      for (final child in value.nodes) {
+        addEntry(null, child);
+      }
+    } else {
+      (value as YamlMap).nodes.forEach((key, child) {
+        addEntry(key as YamlNode, child);
+      });
+    }
+
     _skipWhitespaceAndComments();
     final closeStart = position;
-    _expectToken(TokenType.flowMappingEnd, 'flow mapping closing delimiter');
+    _expectToken(
+      isSeq ? YamlTokenKind.flowSequenceEnd : YamlTokenKind.flowMappingEnd,
+      isSeq
+          ? 'flow sequence closing delimiter'
+          : 'flow mapping closing delimiter',
+    );
     final isMultiline = _lineTable.lineStartOf(closeStart) >
         _lineTable.lineStartOf(contentStart);
+
+    if (value is YamlList) {
+      return CstFlowSeq(
+        start: start,
+        contentStart: contentStart,
+        entries: entries,
+        closeStart: closeStart,
+        isMultiline: isMultiline,
+        value: value,
+      );
+    }
     return CstFlowMap(
       start: start,
       contentStart: contentStart,
       entries: entries,
       closeStart: closeStart,
       isMultiline: isMultiline,
-      value: value,
+      value: value as YamlMap,
     );
   }
 
   CstFlowPair _buildFlowPair(int start, int contentStart, YamlMap value) {
     if (value.nodes.length != 1) {
-      _fail('a flow mapping written without braces must hold exactly one pair, '
-          'but this one holds ${value.nodes.length}');
+      _fail(
+        'a flow mapping written without braces must hold exactly one pair, '
+        'but this one holds ${value.nodes.length}',
+      );
     }
     final key = value.nodes.keys.single as YamlNode;
     final (:questionMark, key: keyNode, :colon) = _buildFlowKey(key);
     final child = value.nodes.values.single;
+    final CstNode pairValue;
+    if (_isEmptyNode(child)) {
+      pairValue = CstEmpty(start: position, value: child as YamlScalar);
+    } else {
+      _skipWhitespaceAndComments();
+      pairValue = _buildNode(child);
+    }
     return CstFlowPair(
       start: start,
       contentStart: contentStart,
       questionMark: questionMark,
       key: keyNode,
       colon: colon,
-      pairValue: _buildFlowValue(child),
+      pairValue: pairValue,
       value: value,
-    );
-  }
-
-  CstFlowEntry _buildFlowEntry({
-    required YamlNode? key,
-    required YamlNode child,
-  }) {
-    final entryStart = position;
-    _skipWhitespaceAndComments();
-
-    int? questionMark;
-    CstNode? keyNode;
-    int? colon;
-    if (key != null) {
-      (:questionMark, key: keyNode, :colon) = _buildFlowKey(key);
-    }
-
-    final valueNode = _buildFlowValue(child);
-
-    final afterValue = position;
-    _skipWhitespaceAndComments();
-    final comma = _tryConsumeToken(TokenType.flowEntry);
-    if (comma == null) {
-      position = afterValue;
-    }
-
-    return CstFlowEntry(
-      start: entryStart,
-      questionMark: questionMark,
-      key: keyNode,
-      colon: colon,
-      value: valueNode,
-      comma: comma,
-      end: position,
     );
   }
 
   /// Scans the `? key :` part of a flow mapping entry, in either its explicit
   /// or implicit form.
   ({int? questionMark, CstNode key, int? colon}) _buildFlowKey(YamlNode key) {
-    final questionMark = _tryConsumeToken(TokenType.key);
+    final questionMark = _tryConsumeToken(YamlTokenKind.key);
     if (questionMark != null) {
       _skipWhitespaceAndComments();
     }
@@ -1550,23 +1641,7 @@ final class _CstBuilder {
         ? CstEmpty(start: position, value: key as YamlScalar)
         : _buildNode(key);
 
-    // An explicit key may be written without a value, in which case there is
-    // no `:` to find.
-    final beforeColon = position;
-    _skipWhitespaceAndComments();
-    final colon = _tryConsumeToken(TokenType.value);
-    if (colon == null) {
-      position = beforeColon;
-    }
+    final colon = _tryConsumeColon(keyEnd: keyNode.end);
     return (questionMark: questionMark, key: keyNode, colon: colon);
-  }
-
-  /// Scans the value of a flow mapping entry or sequence entry.
-  CstNode _buildFlowValue(YamlNode child) {
-    if (_isEmptyNode(child)) {
-      return CstEmpty(start: position, value: child as YamlScalar);
-    }
-    _skipWhitespaceAndComments();
-    return _buildNode(child);
   }
 }

@@ -203,6 +203,90 @@ void main() {
     expect(logFileStats!.recordCount, 2);
   });
 
+  group('toolCount reads the leaf tool', () {
+    String record({String? tool, String? leafTool}) => jsonEncode({
+      'client_id': 'ffcea97b-db5e-4c66-98c2-3942de4fac40',
+      'events': [
+        {
+          'name': 'hot_reload_time',
+          'params': {'timeMs': 136},
+        },
+      ],
+      'user_properties': {
+        'session_id': {'value': 1699385899950},
+        'flutter_channel': {'value': null},
+        'host': {'value': 'macOS'},
+        'flutter_version': {'value': null},
+        'dart_version': {'value': 'Dart 3.10.0'},
+        'analytics_pkg_version': {'value': '8.4.0'},
+        'tool': ?(tool == null ? null : {'value': tool}),
+        'root_tool': {'value': 'vscode-plugins'},
+        'leaf_tool': ?(leafTool == null ? null : {'value': leafTool}),
+        'local_time': {'value': '2026-11-03 10:00:00.000000 -0800'},
+        'host_os_version': {'value': 'Version 26.0'},
+        'locale': {'value': 'en'},
+        'client_ide': {'value': null},
+      },
+    });
+
+    test('from leaf_tool, ignoring the legacy tool value', () {
+      logFile.writeAsStringSync(
+        '${record(tool: 'vscode-plugins', leafTool: 'analysis-server')}\n',
+      );
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 1);
+      expect(logFileStats.toolCount, {'analysis-server': 1});
+    });
+
+    test('from the legacy tool property for older records', () {
+      logFile.writeAsStringSync(
+        '${record(tool: 'vscode-plugins', leafTool: 'analysis-server')}\n'
+        '${record(tool: 'flutter-tool')}\n',
+      );
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 2);
+      expect(logFileStats.toolCount, {'analysis-server': 1, 'flutter-tool': 1});
+    });
+
+    test('from leaf_tool once the legacy tool property is removed', () {
+      logFile.writeAsStringSync('${record(leafTool: 'dart-tool')}\n');
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 1);
+      expect(logFileStats.toolCount, {'dart-tool': 1});
+    });
+
+    test('treats a record with neither as malformed', () {
+      logFile.writeAsStringSync(
+        '${record()}\n${record(leafTool: 'dart-tool')}\n',
+      );
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 1);
+      expect(logFileStats.toolCount, {'dart-tool': 1});
+    });
+
+    test('for events sent through Analytics', () async {
+      final serverAnalytics = Analytics.fake(
+        tool: DashTool.analysisServer,
+        homeDirectory: homeDirectory,
+        dartVersion: 'dartVersion',
+        fs: fs,
+        platform: DevicePlatform.macos,
+        rootTool: DashTool.flutterTool,
+      );
+      serverAnalytics.send(testEvent);
+      analytics.send(testEvent);
+
+      expect(analytics.logFileStats()!.toolCount, {
+        'analysis-server': 1,
+        'flutter-tool': 1,
+      });
+    });
+  });
+
   test('Malformed record gets phased out after several events', () async {
     // Write invalid json for the only log record
     logFile.writeAsStringSync('{{\n');
@@ -432,6 +516,95 @@ void main() {
     );
   });
 
+  test('logFileStats returns null without reading the file when it exceeds '
+      'kMaxLogFileSize', () async {
+    var readAsLinesSyncCalled = false;
+    var deleted = false;
+    var created = false;
+    final logFile = _FakeFile('log.txt')
+      .._statSyncImpl = (() => _FakeFileStat(kMaxLogFileSize + 1))
+      .._deleteSyncImpl = (() => deleted = true)
+      .._createSyncImpl = (() => created = true)
+      .._readAsLinesSyncImpl = (() {
+        readAsLinesSyncCalled = true;
+        return <String>[];
+      });
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      readAsLinesSyncCalled,
+      isFalse,
+      reason:
+          'The file should not be read into memory when it exceeds '
+          'kMaxLogFileSize, to avoid OOM on abnormally large log files',
+    );
+    expect(
+      deleted && created,
+      isTrue,
+      reason:
+          'The oversized file should be replaced with an empty one, '
+          'otherwise it would stay too large to ever collect stats from',
+    );
+  });
+
+  test('logFileStats returns null without reading the file when it '
+      "doesn't exist", () async {
+    var readAsLinesSyncCalled = false;
+    final logFile = _FakeFile('log.txt')
+      // A nonexistent file reports a size of -1.
+      .._statSyncImpl = (() => _FakeFileStat(-1))
+      .._readAsLinesSyncImpl = (() {
+        readAsLinesSyncCalled = true;
+        return <String>[];
+      });
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      readAsLinesSyncCalled,
+      isFalse,
+      reason:
+          'A missing log file is an expected state (e.g. before any events '
+          'have been logged) and should not be treated as an error',
+    );
+    expect(
+      logHandler.errorSet,
+      isEmpty,
+      reason: 'A missing log file should not be reported as an exception',
+    );
+  });
+
+  test('logFileStats returns null and records an analyticsException when '
+      'reading the log file throws a FileSystemException', () async {
+    var deleted = false;
+    var created = false;
+    final logFile = _FakeFile('log.txt')
+      .._statSyncImpl = (() => _FakeFileStat(0))
+      .._deleteSyncImpl = (() => deleted = true)
+      .._createSyncImpl = (() => created = true)
+      .._readAsLinesSyncImpl = () {
+        throw const FileSystemException(
+          "Failed to decode data using encoding 'utf-8'",
+          'log.txt',
+        );
+      };
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      logHandler.errorSet,
+      contains(
+        Event.analyticsException(
+          workflow: 'LogHandler.logFileStats',
+          error: 'FileSystemException',
+          description: "message: Failed to decode data using encoding 'utf-8'",
+        ),
+      ),
+    );
+    expect(deleted && created, isTrue, reason: 'The unreadable file is reset');
+  });
+
   test('truncateStringToLength returns same string when '
       'max length greater than string length', () {
     final testString = 'Version 14.1 (Build 23B74)';
@@ -510,6 +683,9 @@ class _FakeFile extends Fake implements File {
 
   @override
   FileStat statSync() => _statSyncImpl!();
+
+  @override
+  bool existsSync() => true;
 
   void Function()? _deleteSyncImpl;
 

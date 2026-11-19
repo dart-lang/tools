@@ -38,6 +38,34 @@ void main() {
     });
   });
 
+  group('Line.isBlankLine', () {
+    test('only ASCII spaces and tabs count as a blank line', () {
+      for (final input in ['', ' ', '\t', ' \t  \t']) {
+        expect(Line(input).isBlankLine, isTrue, reason: input);
+      }
+      for (final input in ['a', ' a ', '\u00a0', '\u2003', ' \tb']) {
+        expect(Line(input).isBlankLine, isFalse, reason: input);
+      }
+    });
+  });
+
+  group('String.dedent()', () {
+    test('preserves partial tab indentation', () {
+      final partial = '  \ttext'.dedent(3);
+      expect(partial.text, 'text');
+      expect(partial.tabRemaining, 3);
+    });
+
+    test('handles spaces, tabs and non-whitespace prefixes', () {
+      expect('    text'.dedent().text, 'text');
+      expect('\ttext'.dedent().text, 'text');
+      expect('\ttext'.dedent().tabRemaining, 0);
+      expect('  text'.dedent().text, 'text');
+      expect('text'.dedent().text, 'text');
+      expect('\u00a0 text'.dedent().text, '\u00a0 text');
+    });
+  });
+
   group('String.indentation()', () {
     test('only spaces', () {
       expect('   '.indentation(), 3);

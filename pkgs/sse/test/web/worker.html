@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SSE Web Worker Test</title>
+</head>
+
+<body>
+    <script type="application/javascript">
+        // Keep a reference so the worker stays alive for the whole test.
+        window.sseWorker = new Worker('worker.dart.js');
+    </script>
+</body>
+
+</html>

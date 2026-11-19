@@ -112,7 +112,7 @@ class YamlEditor {
   /// any modification is taking place.
   ///
   /// See 7.1 Alias Nodes: https://yaml.org/spec/1.2/spec.html#id2786196
-  Set<YamlNode> get _aliases => _document.aliasedValues;
+  late Set<YamlNode> _aliases = collectAliasedValues(_document);
 
   /// Returns the current YAML string.
   @override
@@ -237,7 +237,7 @@ class YamlEditor {
     final collectionPath = pathAsList.take(pathAsList.length - 1).toList();
     final keyOrIndex = pathAsList.last;
     final parentNode = _traverse(collectionPath, checkAlias: true);
-    _traverse(pathAsList, checkAlias: true, orElse: () => wrapAsYamlNode(null));
+    _assertNoReferencedAnchor(pathAsList);
 
     if (parentNode is YamlList) {
       if (keyOrIndex is! int) {
@@ -529,6 +529,47 @@ class YamlEditor {
     }
   }
 
+  /// Throws [AliasException] if the CST node at [path] or any of its non-alias
+  /// descendants is the target of an alias elsewhere in the document.
+  ///
+  /// Replacing a [CstAlias] reference itself is safe because it cannot
+  /// invalidate any anchor; only overwriting a referenced anchor definition
+  /// would leave a dangling reference.
+  void _assertNoReferencedAnchor(List<Object?> path) {
+    if (_aliases.isEmpty) return;
+    final target = findNode(_document, path);
+    if (target == null) return;
+    final stack = <CstNode>[target];
+    while (stack.isNotEmpty) {
+      final node = stack.removeLast();
+      if (node is CstAlias) continue;
+      if (_aliases.contains(node.value)) {
+        throw AliasException(path, node.value);
+      }
+      switch (node) {
+        case CstBlockSeq():
+          for (final entry in node.entries) {
+            stack.add(entry.value);
+          }
+        case CstBlockMap():
+          for (final entry in node.entries) {
+            stack.add(entry.key);
+            stack.add(entry.value);
+          }
+        case CstFlowCollection():
+          for (final entry in node.entries) {
+            if (entry.key case final key?) stack.add(key);
+            stack.add(entry.value);
+          }
+        case CstFlowPair():
+          stack.add(node.key);
+          stack.add(node.pairValue);
+        case CstScalar() || CstEmpty() || CstAlias():
+          break;
+      }
+    }
+  }
+
   /// Traverses down the provided [path] to return the [YamlList] at [path].
   ///
   /// Convenience function to ensure that a [YamlList] is returned.
@@ -576,7 +617,10 @@ class YamlEditor {
         initialYaml,
         updatedYaml,
       );
-    } on CstException {
+      // Convert internal CST errors to AssertionError with before/after YAML
+      // context so callers get actionable bug reports.
+      // ignore: avoid_catching_errors
+    } on CstError {
       throw createAssertionError(
         'Modification produced YAML that cannot be modelled.',
         initialYaml,
@@ -596,6 +640,7 @@ class YamlEditor {
     // Update state of YamlEditor, when we've validated that the edit was
     // semantically correct!
     _document = updated;
+    _aliases = collectAliasedValues(updated);
     _edits.add(edit);
   }
 
