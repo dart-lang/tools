@@ -96,7 +96,7 @@ Future<Map<String, dynamic>> collect(
             log: StdoutLog(),
             disposeHandler: socket.close,
           );
-          await service.getVM().timeout(_retryInterval);
+          await service.getVersion().timeout(_retryInterval);
         } on TimeoutException {
           // The signature changed in vm_service version 6.0.0.
           // ignore: await_only_futures
