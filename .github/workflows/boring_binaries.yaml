@@ -61,15 +61,17 @@ jobs:
         # tool/precompile_binaries.dart.
         include:
           # The oldest available Ubuntu, so the libraries only require glibc
-          # 2.35.
+          # 2.34, for the pthread functions that moved into libc in 2.34. Keep
+          # `max-glibc` in sync with `prebuiltLinuxGlibc` in
+          # lib/src/hook_helpers/libc.dart.
           - os: ubuntu-22.04
             target-os: linux
             target-arch: x64
-            max-glibc: '2.35'
+            max-glibc: '2.34'
           - os: ubuntu-22.04-arm
             target-os: linux
             target-arch: arm64
-            max-glibc: '2.35'
+            max-glibc: '2.34'
           - os: macos-15
             target-os: macos
             target-arch: arm64

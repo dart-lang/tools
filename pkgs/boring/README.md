@@ -66,6 +66,12 @@ and the arm64 and x64 simulators; iOS 12 and later). Other targets require
 `buildMode: checkout`, which requires CMake, Ninja, and a C toolchain (Clang or
 GCC, Xcode, MSVC, or the Android NDK), plus NASM on Windows.
 
+The prebuilt Linux libraries require glibc 2.34 or later, for example Ubuntu
+22.04, Debian 12, RHEL 9, Fedora 35, or Amazon Linux 2023. On older
+distributions, and on distributions with another C library, such as musl on
+Alpine Linux, the `fetch` build mode fails with a hint to use `buildMode:
+checkout` instead, which compiles BoringSSL for the C library of the machine.
+
 When the Dart runtime uses a sanitizer, for example with `dart test -p
 vm-asan`, the `fetch` build mode compiles BoringSSL from source with that
 sanitizer and Clang instead, because the prebuilt libraries aren't

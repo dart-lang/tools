@@ -1,5 +1,10 @@
 ## 0.5.1-wip
 
+- On Linux, the `fetch` build mode checks that the machine has glibc 2.34 or
+  later, which the prebuilt libraries require, and otherwise fails with a hint
+  to use `buildMode: checkout`, instead of bundling a library that fails to
+  load. This includes distributions with another C library, such as musl on
+  Alpine Linux. The README now lists the requirement.
 - When the Dart runtime uses a sanitizer (`asan`, `msan`, or `tsan`), the
   `fetch` and `checkout` build modes compile BoringSSL with it, using Clang.
   The prebuilt libraries aren't instrumented, so `fetch` builds from source.

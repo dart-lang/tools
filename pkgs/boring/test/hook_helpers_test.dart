@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:boring/src/hook_helpers/build_options.dart';
 import 'package:boring/src/hook_helpers/fetch.dart';
 import 'package:boring/src/hook_helpers/hashes.dart';
+import 'package:boring/src/hook_helpers/libc.dart';
 import 'package:boring/src/hook_helpers/targets.dart';
 import 'package:code_assets/code_assets.dart';
 import 'package:hooks/hooks.dart';
@@ -133,6 +134,41 @@ void main() {
         () => BuildOptions.fromDefines(_userDefines({'buildMode': true})),
         throwsA(isA<BuildError>()),
       );
+    });
+  });
+
+  group('libc.dart', () {
+    test('parses glibc versions', () {
+      expect(parseGlibcVersion('2.35'), equals((2, 35)));
+      expect(parseGlibcVersion('2.39.9000'), equals((2, 39)));
+      expect(parseGlibcVersion('unknown'), isNull);
+    });
+
+    test('accepts glibc from prebuiltLinuxGlibc on', () {
+      final (major, minor) = prebuiltLinuxGlibc;
+      expect(unsupportedLinuxLibcReason((major, minor)), isNull);
+      expect(unsupportedLinuxLibcReason((major, minor + 7)), isNull);
+      expect(unsupportedLinuxLibcReason((major + 1, 0)), isNull);
+    });
+
+    test('rejects older glibc and other C libraries', () {
+      final (major, minor) = prebuiltLinuxGlibc;
+      expect(
+        unsupportedLinuxLibcReason((major, minor - 1)),
+        contains('require glibc $major.$minor or newer'),
+      );
+      expect(unsupportedLinuxLibcReason(null), contains('musl'));
+    });
+
+    test('finds the glibc of this process', () {
+      final version = currentGlibcVersion();
+      if (Platform.isLinux) {
+        // The CI runners use glibc.
+        expect(version, isNotNull);
+        expect(unsupportedLinuxLibcReason(version), isNull);
+      } else {
+        expect(version, isNull);
+      }
     });
   });
 
