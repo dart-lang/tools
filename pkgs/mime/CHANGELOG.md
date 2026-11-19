@@ -1,5 +1,7 @@
 ## 2.1.1-wip
 
+* Detect the EBML header `1A 45 DF A3` as `video/x-matroska` instead of the
+  non-existent `audio/weba`.
 * Forward mid-stream multipart parse errors and invalid UTF-8 header bytes to
   the output stream as `MimeMultipartException` instead of throwing uncaught
   synchronous errors or raw `FormatException`s.
