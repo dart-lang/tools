@@ -14,11 +14,20 @@ import 'hashes.dart' show fileHashes, releaseRepository, releaseTag;
 import 'targets.dart'
     show libraryFileName, releaseAssetName, releaseAssetUrl, targetTripleFor;
 
-/// How long to wait for the connection and for each response.
-const _connectionTimeout = Duration(seconds: 30);
+/// Default timeout for opening a connection and receiving response headers.
+const defaultConnectionTimeout = Duration(seconds: 30);
 
-/// How long to wait for the whole library to download.
+/// Default number of attempts (initial try + retries) for transient failures.
+const defaultMaxAttempts = 4;
+
+/// Default overall wall-clock deadline across all attempts and backoff sleeps.
+const defaultTotalTimeout = Duration(minutes: 6);
+
+/// How long to wait for a single response body to finish streaming.
 const _downloadTimeout = Duration(minutes: 5);
+
+/// Maximum `Retry-After` delay honored before clamping.
+const _maxRetryAfter = Duration(seconds: 60);
 
 const _checkoutHint =
     'To build boring locally from source instead, set '
@@ -83,7 +92,7 @@ Future<Uri> fetchPrebuiltLibrary(
   );
   stdout.writeln('boring: fetching prebuilt binary from $binaryUrl...');
 
-  final bytes = await _download(binaryUrl);
+  final bytes = await downloadBytes(binaryUrl);
   final actualHash = sha256.convert(bytes).toString();
 
   if (actualHash != expectedHash) {
@@ -103,42 +112,244 @@ Future<Uri> fetchPrebuiltLibrary(
   return cachedFile.uri;
 }
 
-/// Downloads [url], or throws a [BuildError] if the download fails.
+/// Downloads [url] with retries on transient HTTP (`408`, `429`, rate-limit
+/// `403`, `5xx`), network, or timeout errors, or throws a [BuildError] if the
+/// download fails.
 ///
-/// Honors the `HTTPS_PROXY` family of environment variables, which the hooks
-/// runner passes through to hooks, and gives up on a connection that hangs.
-Future<List<int>> _download(Uri url) async {
-  final client = HttpClient()
-    ..connectionTimeout = _connectionTimeout
-    ..findProxy = HttpClient.findProxyFromEnvironment;
+/// Honors `HTTPS_PROXY` environment variables, `Retry-After` headers (capped at
+/// 60s), and an overall [totalTimeout] across all attempts.
+Future<List<int>> downloadBytes(
+  Uri url, {
+  int maxAttempts = defaultMaxAttempts,
+  Duration totalTimeout = defaultTotalTimeout,
+  Future<void> Function(Duration) delay = Future<void>.delayed,
+  DateTime Function() now = DateTime.now,
+}) async {
+  final ({int statusCode, List<int> bytes}) response;
   try {
-    final request = await client.getUrl(url).timeout(_connectionTimeout);
-    final response = await request.close().timeout(_connectionTimeout);
-    if (response.statusCode != HttpStatus.ok) {
-      await response.drain<void>();
-      throw BuildError(
-        message:
-            'Failed to download prebuilt boring binary from $url '
-            '(HTTP ${response.statusCode}).\n'
-            '$_checkoutHint',
-      );
-    }
-    final builder = BytesBuilder(copy: false);
-    await response.forEach(builder.add).timeout(_downloadTimeout);
-    return builder.takeBytes();
-  } on IOException catch (e) {
-    throw BuildError(
-      message:
-          'Network error downloading prebuilt boring binary from $url: $e\n'
-          '$_checkoutHint',
+    response = await fetchHttpWithRetry(
+      url,
+      maxAttempts: maxAttempts,
+      totalTimeout: totalTimeout,
+      delay: delay,
+      now: now,
     );
-  } on TimeoutException catch (e) {
+  } on HttpFetchException catch (e) {
+    throw BuildError(message: '${e.message}\n$_checkoutHint');
+  }
+  if (response.statusCode != HttpStatus.ok) {
     throw BuildError(
       message:
-          'Timed out downloading prebuilt boring binary from $url: $e\n'
-          '$_checkoutHint',
+          'Failed to download prebuilt boring binary from $url '
+          '(HTTP ${response.statusCode}).\n$_checkoutHint',
+    );
+  }
+  return response.bytes;
+}
+
+/// Sends a `GET` request to [url] with exponential-backoff retries on transient
+/// HTTP (`408`, `5xx`, and when [retryRateLimits] is `true`, `429` plus `403`
+/// responses carrying `Retry-After` or `x-ratelimit-remaining: 0`), network, or
+/// timeout errors.
+///
+/// Honors `Retry-After` headers (delay-seconds or HTTP-date, capped at 60s)
+/// before falling back to `1s`, `2s`, `4s`, and enforces an overall
+/// [totalTimeout] across all attempts. Returns the non-retryable HTTP status
+/// and body bytes (`200` or permanent status codes such as `404`), or throws an
+/// [HttpFetchException] when retries or [totalTimeout] are exhausted.
+Future<({int statusCode, List<int> bytes})> fetchHttpWithRetry(
+  Uri url, {
+  HttpClient? client,
+  Map<String, String> headers = const {},
+  bool retryRateLimits = true,
+  int maxAttempts = defaultMaxAttempts,
+  Duration totalTimeout = defaultTotalTimeout,
+  Future<void> Function(Duration) delay = Future<void>.delayed,
+  DateTime Function() now = DateTime.now,
+  String logPrefix = 'boring: ',
+}) async {
+  assert(maxAttempts >= 1, 'maxAttempts must be at least 1.');
+  final ownsClient = client == null;
+  final effectiveClient =
+      client ??
+      (HttpClient()
+        ..connectionTimeout = defaultConnectionTimeout
+        ..findProxy = HttpClient.findProxyFromEnvironment);
+  final stopwatch = Stopwatch()..start();
+  try {
+    return await _runFetchLoop(
+      effectiveClient,
+      url,
+      headers: headers,
+      retryRateLimits: retryRateLimits,
+      maxAttempts: maxAttempts,
+      totalTimeout: totalTimeout,
+      stopwatch: stopwatch,
+      delay: delay,
+      now: now,
+      logPrefix: logPrefix,
     );
   } finally {
-    client.close(force: true);
+    if (ownsClient) {
+      effectiveClient.close(force: true);
+    }
   }
+}
+
+Future<({int statusCode, List<int> bytes})> _runFetchLoop(
+  HttpClient client,
+  Uri url, {
+  required Map<String, String> headers,
+  required bool retryRateLimits,
+  required int maxAttempts,
+  required Duration totalTimeout,
+  required Stopwatch stopwatch,
+  required Future<void> Function(Duration) delay,
+  required DateTime Function() now,
+  required String logPrefix,
+}) async {
+  for (var attempt = 1; ; attempt++) {
+    final remaining = totalTimeout - stopwatch.elapsed;
+    if (remaining <= Duration.zero) {
+      throw HttpFetchException(
+        'Timed out downloading from $url after ${totalTimeout.inSeconds}s.',
+      );
+    }
+    try {
+      return await _sendOnce(
+        client,
+        url,
+        headers: headers,
+        retryRateLimits: retryRateLimits,
+        remainingBudget: remaining,
+        now: now,
+      );
+    } on _RetryableDownloadFailure catch (failure) {
+      final backoff =
+          failure.retryAfter ?? Duration(seconds: 1 << (attempt - 1));
+      final budgetAfterAttempt = totalTimeout - stopwatch.elapsed;
+      if (attempt >= maxAttempts || budgetAfterAttempt <= backoff) {
+        throw HttpFetchException(failure.message);
+      }
+      stdout.writeln(
+        '$logPrefix${failure.summary}; retrying in ${backoff.inSeconds}s '
+        '(attempt ${attempt + 1} of $maxAttempts)...',
+      );
+      await delay(backoff);
+    }
+  }
+}
+
+Future<({int statusCode, List<int> bytes})> _sendOnce(
+  HttpClient client,
+  Uri url, {
+  required Map<String, String> headers,
+  required bool retryRateLimits,
+  required Duration remainingBudget,
+  required DateTime Function() now,
+}) async {
+  final stepTimeout = _minDuration(defaultConnectionTimeout, remainingBudget);
+  try {
+    final request = await client.getUrl(url).timeout(stepTimeout);
+    for (final MapEntry(:key, :value) in headers.entries) {
+      request.headers.set(key, value);
+    }
+    final response = await request.close().timeout(stepTimeout);
+    final statusCode = response.statusCode;
+    if (_isRetryableStatus(
+      statusCode,
+      response.headers,
+      retryRateLimits: retryRateLimits,
+    )) {
+      final retryAfter = _parseRetryAfter(response.headers, now);
+      await response.drain<void>().timeout(stepTimeout);
+      throw _RetryableDownloadFailure(
+        message: 'Failed to download from $url (HTTP $statusCode).',
+        summary: 'HTTP $statusCode from $url',
+        retryAfter: retryAfter,
+      );
+    }
+    if (statusCode != HttpStatus.ok) {
+      await response.drain<void>().timeout(stepTimeout);
+      return (statusCode: statusCode, bytes: const <int>[]);
+    }
+    final bodyTimeout = _minDuration(_downloadTimeout, remainingBudget);
+    final builder = BytesBuilder(copy: false);
+    await response.forEach(builder.add).timeout(bodyTimeout);
+    return (statusCode: statusCode, bytes: builder.takeBytes());
+  } on IOException catch (e) {
+    throw _RetryableDownloadFailure(
+      message: 'Network error downloading from $url: $e',
+      summary: 'network error from $url ($e)',
+    );
+  } on TimeoutException catch (e) {
+    throw _RetryableDownloadFailure(
+      message: 'Timed out downloading from $url: $e',
+      summary: 'timeout from $url',
+    );
+  }
+}
+
+bool _isRetryableStatus(
+  int statusCode,
+  HttpHeaders headers, {
+  required bool retryRateLimits,
+}) {
+  if (statusCode == HttpStatus.requestTimeout ||
+      (statusCode >= 500 && statusCode < 600)) {
+    return true;
+  }
+  if (!retryRateLimits) return false;
+  if (statusCode == HttpStatus.tooManyRequests) return true;
+  if (statusCode == HttpStatus.forbidden) {
+    return headers.value(HttpHeaders.retryAfterHeader) != null ||
+        headers.value('x-ratelimit-remaining')?.trim() == '0';
+  }
+  return false;
+}
+
+Duration? _parseRetryAfter(HttpHeaders headers, DateTime Function() now) {
+  final raw = headers.value(HttpHeaders.retryAfterHeader)?.trim();
+  if (raw == null || raw.isEmpty) return null;
+  final seconds = int.tryParse(raw);
+  if (seconds != null) {
+    return _clampRetryAfter(Duration(seconds: seconds));
+  }
+  try {
+    return _clampRetryAfter(HttpDate.parse(raw).difference(now()));
+  } on FormatException {
+    return null;
+  } on HttpException {
+    return null;
+  }
+}
+
+Duration _clampRetryAfter(Duration duration) {
+  if (duration <= Duration.zero) return Duration.zero;
+  return duration > _maxRetryAfter ? _maxRetryAfter : duration;
+}
+
+Duration _minDuration(Duration a, Duration b) => a <= b ? a : b;
+
+/// Exception thrown by [fetchHttpWithRetry] when all retry attempts or the
+/// overall deadline are exhausted.
+final class HttpFetchException implements Exception {
+  final String message;
+
+  const HttpFetchException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+final class _RetryableDownloadFailure implements Exception {
+  final String message;
+  final String summary;
+  final Duration? retryAfter;
+
+  const _RetryableDownloadFailure({
+    required this.message,
+    required this.summary,
+    this.retryAfter,
+  });
 }
