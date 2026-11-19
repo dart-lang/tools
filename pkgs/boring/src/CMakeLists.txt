@@ -15,6 +15,12 @@ include(../third_party/boringssl/sources.cmake)
 
 # Symbol prefixing: all BoringSSL symbols become bssl_dart_<symbol>
 add_definitions(-DBORINGSSL_PREFIX=bssl_dart)
+# Smaller precomputed tables, mainly for P-256, in exchange for slower
+# elliptic-curve operations. The P-256 tables are used whenever an application
+# uses ECDSA or ECDH, so tree-shaking can't remove them: this makes the
+# tree-shaken library of package:webcrypto about 19% smaller on Linux x64, and
+# P-256 signing about 2x slower (tens of microseconds on desktop).
+add_definitions(-DOPENSSL_SMALL)
 # Keep BoringSSL free of C++ runtime symbols (such as operator delete from
 # virtual destructors), since CMake and hook/link.dart (CLinker) link the
 # library with the C compiler driver.
