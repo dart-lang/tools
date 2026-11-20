@@ -407,6 +407,18 @@ void main() {
       final leadingCommaLast = YamlEditor('{\n  a: 1\n    , b: 2\n}\n');
       leadingCommaLast.remove(['b']);
       expect(leadingCommaLast.toString(), '{\n  a: 1\n}\n');
+
+      // Removing the last entry of a nested block map preserves a blank line
+      // separating outer sections (e.g. dependencies and dev_dependencies).
+      final pubspecSections = YamlEditor(
+        'dependencies:\n  foo: ^1.0.0\n  bar: ^2.0.0\n\n'
+        'dev_dependencies:\n  test: ^1.0.0\n',
+      );
+      pubspecSections.remove(['dependencies', 'bar']);
+      expect(
+        pubspecSections.toString(),
+        'dependencies:\n  foo: ^1.0.0\n\ndev_dependencies:\n  test: ^1.0.0\n',
+      );
     });
 
     test('removes sole entry of zero-indented block sequence in compact map',
