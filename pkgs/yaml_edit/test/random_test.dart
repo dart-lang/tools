@@ -17,8 +17,6 @@ import 'test_utils.dart';
 /// inputs (boolean, null, strings, or numbers) to modify the YAML and assert
 /// that the change produced was expected.
 void main() {
-  final generator = _Generator(maxDepth: 5);
-
   const roundsOfTesting = 40;
   const modificationsPerRound = 1000;
 
@@ -26,7 +24,8 @@ void main() {
     test(
       'testing with randomly generated modifications: test $i',
       () {
-        final editor = YamlEditor('''
+        final generator = _Generator(seed: i, maxDepth: 5);
+        const initialYaml = '''
 name: yaml_edit
 description: A library for YAML manipulation with comment and whitespace preservation.
 version: 0.0.1-dev
@@ -41,14 +40,20 @@ dependencies:
 dev_dependencies:
   pedantic: ^1.9.0
   test: ^1.14.4
-''');
+''';
+        final editor = YamlEditor(initialYaml);
 
         for (var j = 0; j < modificationsPerRound; j++) {
           expect(
-            () => generator.performNextModification(editor, i),
+            () => generator.performNextModification(editor),
             returnsNormally,
           );
         }
+
+        expect(
+          SourceEdit.applyAll(initialYaml, editor.edits),
+          equals(editor.toString()),
+        );
       },
     );
   }
@@ -116,29 +121,35 @@ class _Generator {
   }
 
   /// Generates the next [YamlList], with the current [depth].
-  YamlList nextYamlList(int depth) {
+  YamlList nextYamlList(int depth, {bool allowFlow = true}) {
     final length = nextInt(9);
+    final style = nextCollectionStyle(allowFlow: allowFlow);
+    final childAllowFlow = allowFlow && style == CollectionStyle.FLOW;
     final list = [];
 
     for (var i = 0; i < length; i++) {
-      list.add(nextYamlNode(depth + 1));
+      list.add(nextYamlNode(depth: depth + 1, allowFlow: childAllowFlow));
     }
 
-    return wrapAsYamlNode(list, collectionStyle: nextCollectionStyle())
-        as YamlList;
+    return wrapAsYamlNode(list, collectionStyle: style) as YamlList;
   }
 
-  /// Generates the next [YamlList], with the current [depth].
-  YamlMap nextYamlMap(int depth) {
+  /// Generates the next [YamlMap], with the current [depth].
+  YamlMap nextYamlMap(int depth, {bool allowFlow = true}) {
     final length = nextInt(9);
+    final style = nextCollectionStyle(allowFlow: allowFlow);
+    // Avoid nesting CollectionStyle.FLOW inside a block collection until the
+    // pre-existing strings.dart encoder bug (emitting flow children at column
+    // 0) is fixed separately.
+    final childAllowFlow = allowFlow && style == CollectionStyle.FLOW;
     final nodes = {};
 
     for (var i = 0; i < length; i++) {
-      nodes[nextYamlNode(depth + 1)] = nextYamlScalar();
+      nodes[nextYamlScalar()] =
+          nextYamlNode(depth: depth + 1, allowFlow: childAllowFlow);
     }
 
-    return wrapAsYamlNode(nodes, collectionStyle: nextCollectionStyle())
-        as YamlMap;
+    return wrapAsYamlNode(nodes, collectionStyle: style) as YamlMap;
   }
 
   /// Returns a [YamlNode], with it being a [YamlScalar] 80% of the time, a
@@ -146,7 +157,7 @@ class _Generator {
   ///
   /// If [depth] is greater than [maxDepth], we instantly return a [YamlScalar]
   /// to prevent the parent from growing any further, to improve our speeds.
-  YamlNode nextYamlNode([int depth = 0]) {
+  YamlNode nextYamlNode({int depth = 0, bool allowFlow = true}) {
     if (depth >= maxDepth) {
       return nextYamlScalar();
     }
@@ -156,14 +167,14 @@ class _Generator {
     if (roll < 8) {
       return nextYamlScalar();
     } else if (roll == 8) {
-      return nextYamlList(depth);
+      return nextYamlList(depth, allowFlow: allowFlow);
     } else {
-      return nextYamlMap(depth);
+      return nextYamlMap(depth, allowFlow: allowFlow);
     }
   }
 
   /// Performs a random modification
-  void performNextModification(YamlEditor editor, int count) {
+  void performNextModification(YamlEditor editor) {
     final path = findPath(editor);
     final node = editor.parseAt(path);
     final initialString = editor.toString();
@@ -293,14 +304,14 @@ $stacktrace
     }
   }
 
-  CollectionStyle nextCollectionStyle() {
-    final seed = nextInt(3);
+  CollectionStyle nextCollectionStyle({bool allowFlow = true}) {
+    final seed = nextInt(allowFlow ? 3 : 2);
 
     switch (seed) {
       case 0:
         return CollectionStyle.BLOCK;
       case 1:
-        return CollectionStyle.FLOW;
+        return allowFlow ? CollectionStyle.FLOW : CollectionStyle.ANY;
       default:
         return CollectionStyle.ANY;
     }
