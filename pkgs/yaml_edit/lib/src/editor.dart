@@ -532,13 +532,10 @@ class YamlEditor {
     }
 
     if (node is YamlMap) {
-      final keyList = node.keys.toList();
-      for (var i = 0; i < node.length; i++) {
-        final updatedPath = [...path, keyList[i]];
-        if (_aliases.contains(keyList[i])) {
-          throw AliasException(path, keyList[i] as YamlNode);
-        }
-        _assertNoChildAlias(updatedPath, node.nodes[keyList[i]]);
+      for (final entry in node.nodes.entries) {
+        final keyNode = entry.key as YamlNode;
+        _assertNoChildAlias(path, keyNode);
+        _assertNoChildAlias([...path, keyNode.value], entry.value);
       }
     }
   }

@@ -1,0 +1,17 @@
+COMMENT PRESERVATION IN FLOW MAPS
+---
+config: {
+  # lead a
+  a: 1, # trail a
+  # lead b
+  b: # empty b comment
+  ,
+  # lead c
+  c: 3, # trail c
+  # before close
+}
+---
+- [update, [config, b], 2]
+- [remove, [config, a]]
+- [remove, [config, c]]
+- [update, [config, d], 4]

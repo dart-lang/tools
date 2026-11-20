@@ -276,23 +276,46 @@ void main() {
         ['a'],
         wrapAsYamlNode('x\n  y', scalarStyle: ScalarStyle.LITERAL),
       );
+      expect(editor.toString(), 'a: |-\n  x\n    y\n# c\nb: 2\n');
       expect(editor.parseAt([]).value, {'a': 'x\n  y', 'b': 2});
-      expect(editor.toString(), contains('# c'));
     });
 
     test('preserves pre-comma comment in flow sequence removal', () {
       final editor = YamlEditor('[word1\n# comment\n, word2]\n');
       editor.remove([0]);
-      expect(editor.toString(), contains('# comment'));
+      expect(editor.toString(), '[\n# comment\nword2]\n');
       expect(editor.parseAt([]).value, ['word2']);
+    });
+
+    test('standalone comma after comment leaves no junk whitespace', () {
+      final sameLineNext = YamlEditor('[\n  a\n  # c\n  , b\n]\n');
+      sameLineNext.remove([0]);
+      expect(sameLineNext.toString(), '[\n  # c\n  b\n]\n');
+      expect(sameLineNext.parseAt([]).value, ['b']);
+
+      final nextLineNext = YamlEditor('[\n  a\n  # c\n  ,\n  b\n]\n');
+      nextLineNext.remove([0]);
+      expect(nextLineNext.toString(), '[\n  # c\n  b\n]\n');
+      expect(nextLineNext.parseAt([]).value, ['b']);
+
+      final withCommaComment =
+          YamlEditor('[\n  a\n  # c\n  , # drop\n  b\n]\n');
+      withCommaComment.remove([0]);
+      expect(withCommaComment.toString(), '[\n  # c\n  b\n]\n');
+      expect(withCommaComment.parseAt([]).value, ['b']);
+
+      final multilineWithInlineBeforeComma =
+          YamlEditor("[\n  'foo\nbar' # inline\n  , b\n]\n");
+      multilineWithInlineBeforeComma.remove([0]);
+      expect(multilineWithInlineBeforeComma.toString(), '[ b\n]\n');
+      expect(multilineWithInlineBeforeComma.parseAt([]).value, ['b']);
     });
 
     test('preserves leading comments around standalone comma in flow map', () {
       final editor =
           YamlEditor('{\n  # lead a\n  a: 1\n  ,\n  # lead b\n  b: 2\n}\n');
       editor.remove(['a']);
-      expect(editor.toString(), contains('# lead a'));
-      expect(editor.toString(), contains('# lead b'));
+      expect(editor.toString(), '{\n  # lead a\n  # lead b\n  b: 2\n}\n');
       expect(editor.parseAt([]).value, {'b': 2});
     });
 
@@ -300,9 +323,149 @@ void main() {
       final editor =
           YamlEditor('key: | # Header comment\r\n  line1\r\n  line2\r\n');
       editor.update(['key'], 'new_scalar');
-      expect(editor.toString(), contains('# Header comment'));
-      expect(editor.toString(), contains('\r\n'));
+      expect(editor.toString(), 'key: new_scalar # Header comment\r\n');
       expect(editor.parseAt(['key']).value, 'new_scalar');
+    });
+
+    test(
+        'preserves trailing comma and multiline closing bracket on flow remove',
+        () {
+      final trailingMap = YamlEditor('{a: 1, b: 2,}');
+      trailingMap.remove(['b']);
+      expect(trailingMap.toString(), '{a: 1,}');
+
+      final multilineTrailing = YamlEditor('[\n  a,\n  b, # c\n]\n');
+      multilineTrailing.remove([1]);
+      expect(multilineTrailing.toString(), '[\n  a,\n]\n');
+
+      final multilineNoTrailing = YamlEditor('[\n  a,\n  b # c\n]\n');
+      multilineNoTrailing.remove([1]);
+      expect(multilineNoTrailing.toString(), '[\n  a\n]\n');
+
+      final multilineTrailingBeforeClose = YamlEditor(
+        '[\n  a,\n  b, # trail b\n  # before close\n]\n',
+      );
+      multilineTrailingBeforeClose.remove([1]);
+      expect(
+        multilineTrailingBeforeClose.toString(),
+        '[\n  a,\n  # before close\n]\n',
+      );
+
+      final firstWithCommaComment = YamlEditor(
+        '"map": {\n  "foo": 42, # drop\n  "bar": "baz"\n}\n',
+      );
+      firstWithCommaComment.remove(['map', 'foo']);
+      expect(
+        firstWithCommaComment.toString(),
+        '"map": {\n  "bar": "baz"\n}\n',
+      );
+
+      final ownership = YamlEditor('[\n  a, # c1\n  b, # c2\n  c # c3\n]\n');
+      ownership.remove([1]);
+      expect(ownership.toString(), '[\n  a, # c1\n  c # c3\n]\n');
+
+      final inlineMiddle = YamlEditor('[a, b, # c2\n c]\n');
+      inlineMiddle.remove([1]);
+      expect(inlineMiddle.toString(), '[a, \n c]\n');
+      expect(inlineMiddle.parseAt([]).value, ['a', 'c']);
+
+      final inlineMiddleNextLineComment = YamlEditor('[a, b,\n# keep\n c]\n');
+      inlineMiddleNextLineComment.remove([1]);
+      expect(inlineMiddleNextLineComment.toString(), '[a, \n# keep\n c]\n');
+      expect(inlineMiddleNextLineComment.parseAt([]).value, ['a', 'c']);
+    });
+
+    test('removes sole entry of zero-indented block sequence in compact map',
+        () {
+      // Regression from dart-lang/tools .github/labeler.yml.
+      final labeler =
+          YamlEditor("a:\n  - changed-files:\n    - any-glob: 'x'\n");
+      labeler.remove(['a', 0, 'changed-files', 0]);
+      expect(labeler.toString(), 'a:\n  - changed-files:\n      []\n');
+      expect(labeler.parseAt([]).value, {
+        'a': [
+          {'changed-files': <Object?>[]},
+        ],
+      });
+
+      final nested = YamlEditor('a:\n  b:\n  - 1\n');
+      nested.remove(['a', 'b', 0]);
+      expect(nested.toString(), 'a:\n  b:\n    []\n');
+
+      final rootLevel = YamlEditor('key:\n- 1\n');
+      rootLevel.remove(['key', 0]);
+      expect(rootLevel.toString(), 'key:\n  []\n');
+
+      final commentedRootSeq = YamlEditor('# comment\n- 1\n');
+      commentedRootSeq.remove([0]);
+      expect(commentedRootSeq.toString(), '# comment\n[]\n');
+    });
+
+    test('detects anchored map keys and flow-pair anchors on remove and update',
+        () {
+      final anchoredKey = YamlEditor('r:\n  &k a: 1\nother: *k\n');
+      expect(() => anchoredKey.remove(['r']), throwsA(isA<AliasException>()));
+
+      final complexAnchoredKey = YamlEditor('r:\n  [&k a]: 1\nother: *k\n');
+      expect(
+        () => complexAnchoredKey.remove(['r']),
+        throwsA(isA<AliasException>()),
+      );
+
+      final flowPairAnchor = YamlEditor('a: [&k b: 1]\nc: *k\n');
+      expect(
+        () => flowPairAnchor.update(['a'], 2),
+        throwsA(isA<AliasException>()),
+      );
+    });
+
+    test('attaches comment onto single-line empty block scalar replacement',
+        () {
+      final editor = YamlEditor('a: 1 # keep\nb: 2\n');
+      editor.update(
+        ['a'],
+        wrapAsYamlNode('', scalarStyle: ScalarStyle.LITERAL),
+      );
+      expect(editor.toString(), 'a: "" # keep\nb: 2\n');
+      expect(editor.parseAt([]).value, {'a': '', 'b': 2});
+    });
+
+    test('updates and removes explicit keys cleanly', () {
+      final updateEditor = YamlEditor('? a\n: 1\n');
+      updateEditor.update(['a'], 2);
+      expect(updateEditor.toString(), '? a\n: 2\n');
+
+      final removeEditor = YamlEditor('? a\n: 1\n? b\n: 2\n');
+      removeEditor.remove(['a']);
+      expect(removeEditor.toString(), '? b\n: 2\n');
+    });
+
+    test('replaces root scalar with block map preserving trailing newline', () {
+      final editor = YamlEditor('a\n');
+      editor.update([], {'x': 1});
+      expect(editor.toString(), 'x: 1\n');
+    });
+
+    test(
+        'replaying editor.edits reproduces toString across CRLF and root edits',
+        () {
+      for (final (initial, run) in <(String, void Function(YamlEditor))>[
+        (
+          'a: 1 # c\r\nb: |\r\n  x\r\n  y\r\n',
+          (e) {
+            e.update(['a'], 2);
+            e.remove(['b']);
+          },
+        ),
+        (
+          'a: 1 # c\n',
+          (e) => e.update([], 'z'),
+        ),
+      ]) {
+        final editor = YamlEditor(initial);
+        run(editor);
+        expect(SourceEdit.applyAll(initial, editor.edits), editor.toString());
+      }
     });
 
     test('updates explicit key without colon to block collection (LF and CRLF)',

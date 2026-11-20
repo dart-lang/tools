@@ -1,0 +1,16 @@
+COMMENT PRESERVATION WITH COMPACT COLLECTIONS AND EXPLICIT KEYS
+---
+# explicit keys
+? exp_a # after exp_a
+: 1 # inline 1
+? exp_b
+# compact map with zero-indent list
+rules:
+  - changed-files:
+    - any-glob: '*.dart'
+    other: true # keep other
+---
+- [update, [exp_a], 10]
+- [update, [exp_b], 20]
+- [remove, [rules, 0, changed-files, 0]]
+- [remove, [exp_a]]

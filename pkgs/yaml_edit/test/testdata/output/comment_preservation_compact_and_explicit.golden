@@ -1,0 +1,50 @@
+# explicit keys
+? exp_a # after exp_a
+: 1 # inline 1
+? exp_b
+# compact map with zero-indent list
+rules:
+  - changed-files:
+    - any-glob: '*.dart'
+    other: true # keep other
+---
+# explicit keys
+? exp_a # after exp_a
+: 10 # inline 1
+? exp_b
+# compact map with zero-indent list
+rules:
+  - changed-files:
+    - any-glob: '*.dart'
+    other: true # keep other
+---
+# explicit keys
+? exp_a # after exp_a
+: 10 # inline 1
+? exp_b
+: 20
+# compact map with zero-indent list
+rules:
+  - changed-files:
+    - any-glob: '*.dart'
+    other: true # keep other
+---
+# explicit keys
+? exp_a # after exp_a
+: 10 # inline 1
+? exp_b
+: 20
+# compact map with zero-indent list
+rules:
+  - changed-files:
+      []
+    other: true # keep other
+---
+# explicit keys
+? exp_b
+: 20
+# compact map with zero-indent list
+rules:
+  - changed-files:
+      []
+    other: true # keep other
