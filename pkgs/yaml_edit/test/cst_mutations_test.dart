@@ -395,6 +395,12 @@ void main() {
           YamlEditor('- - one # Compact\n  - two # sequence\n- three\n');
       seqCollectionUpdate.update([0], 42);
       expect(seqCollectionUpdate.toString(), '- 42 # sequence\n- three\n');
+
+      // Updating a bare `?` explicit key at the end of a multiline flow map
+      // keeps `}` on its own line (DFF7_0).
+      final bareExplicitFlow = YamlEditor('{\n  a: 1,\n  ?\n}\n');
+      bareExplicitFlow.update([null], 42);
+      expect(bareExplicitFlow.toString(), '{\n  a: 1,\n  ?\n: 42\n}\n');
     });
 
     test('removes sole entry of zero-indented block sequence in compact map',
