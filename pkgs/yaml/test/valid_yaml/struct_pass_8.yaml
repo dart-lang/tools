@@ -1,0 +1,5 @@
+# Flow sequence in block sequence with correct indentation
+-
+  [
+    a, b
+  ]

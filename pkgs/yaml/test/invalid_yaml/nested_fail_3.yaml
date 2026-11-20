@@ -1,0 +1,5 @@
+# Tests invalid flow mapping brace at col 0
+foo:
+{
+  a: b
+}

@@ -1,0 +1,7 @@
+# Tests valid flow sequence comma indentation
+foo:
+  [
+    a
+    ,
+    b
+  ]

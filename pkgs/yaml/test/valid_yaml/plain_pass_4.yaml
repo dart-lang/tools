@@ -1,0 +1,6 @@
+# Flow mapping with integers, > block indent (3 > 2)
+block:
+  key: {
+   1: 2,
+   3: 4
+  }

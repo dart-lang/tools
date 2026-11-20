@@ -1,0 +1,8 @@
+# Tests invalid nested flow mapping brace at col 0
+foo:
+  {
+    a:
+{
+      b: c
+    }
+  }

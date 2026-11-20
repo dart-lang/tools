@@ -1,0 +1,8 @@
+# Tests valid deeply nested flow sequence brackets indentation
+a:
+  foo:
+    [
+      [
+        a
+      ]
+    ]

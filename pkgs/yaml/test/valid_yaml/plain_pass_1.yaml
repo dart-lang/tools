@@ -1,0 +1,5 @@
+# Plain scalar inside root flow collection, spanning 2 lines. Both column 1 > 0.
+key: [
+ plain
+ scalar
+]

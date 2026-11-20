@@ -1,0 +1,6 @@
+# Valid double quoted string in flow collection, proper indent
+key:
+  [
+    "line1
+    line2"
+  ]
