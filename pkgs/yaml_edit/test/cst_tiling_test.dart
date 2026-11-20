@@ -250,6 +250,336 @@ void main() {
         '})',
       );
     });
+
+    test('structural dump goldens on ownership-sensitive constructs', () {
+      final goldens = <(String, String, String)>[
+        (
+          'anchor on first block map key vs anchor on map',
+          'a:\n  &k b: 1\n',
+          'BlockMap({Entry(line=0 key=Scalar([0..1) "a") :=1 '
+              'val=BlockMap({Entry(line=3 key=Scalar(props=[5..8) [8..9) "b") '
+              ':=9 val=Scalar([11..12) "1"))}))})',
+        ),
+        (
+          'anchor on block map',
+          'a:\n  &k\n  b: 1\n',
+          'BlockMap({Entry(line=0 key=Scalar([0..1) "a") :=1 '
+              'val=BlockMap(props=[5..8) {Entry(line=8 '
+              'key=Scalar([10..11) "b") :=11 val=Scalar([13..14) "1"))}))})',
+        ),
+        (
+          'compact block map inside block sequence',
+          '- a: 1\n  b: 2\n',
+          'BlockSeq([Entry(line=0 dash=0 BlockMap(compact {'
+              'Entry(line=2 key=Scalar([2..3) "a") :=3 '
+              'val=Scalar([5..6) "1")), '
+              'Entry(line=7 key=Scalar([9..10) "b") :=10 '
+              'val=Scalar([12..13) "2"))}))])',
+        ),
+        (
+          'compact block sequence inside block sequence',
+          '- - 1\n  - 2\n',
+          'BlockSeq([Entry(line=0 dash=0 BlockSeq(compact ['
+              'Entry(line=2 dash=2 Scalar([4..5) "1")), '
+              'Entry(line=6 dash=8 Scalar([10..11) "2"))]))])',
+        ),
+        (
+          'explicit block keys with and without values',
+          '? a\n: 1\n? b\n',
+          'BlockMap({Entry(line=0 ?=0 key=Scalar([2..3) "a") :=4 '
+              'val=Scalar([6..7) "1")), '
+              'Entry(line=8 ?=8 key=Scalar([10..11) "b") val=Empty(@11))})',
+        ),
+        (
+          'complex explicit flow-sequence key',
+          '? [1, 2]\n: a\n',
+          'BlockMap({Entry(line=0 ?=0 key=FlowSeq(['
+              'Scalar([3..4) "1"), Scalar([6..7) "2")]) :=9 '
+              'val=Scalar([11..12) "a"))})',
+        ),
+        (
+          'flow pairs inside flow sequence',
+          '[a: 1, ? b: 2]',
+          'FlowSeq([FlowPair(Scalar([1..2) "a"): Scalar([4..5) "1")), '
+              'FlowPair(Scalar([9..10) "b"): Scalar([12..13) "2"))])',
+        ),
+        (
+          'block scalar with header comment',
+          'a: | # hdr\n  x\n',
+          'BlockMap({Entry(line=0 key=Scalar([0..1) "a") :=1 '
+              r'val=Scalar([3..14) "| # hdr\n  x"))})',
+        ),
+        (
+          'empty values in block map',
+          'a:\nb: 2\n',
+          'BlockMap({Entry(line=0 key=Scalar([0..1) "a") :=1 '
+              'val=Empty(@2)), Entry(line=3 key=Scalar([3..4) "b") :=4 '
+              'val=Scalar([6..7) "2"))})',
+        ),
+        (
+          'empty values in block sequence',
+          '-\n- 2\n',
+          'BlockSeq([Entry(line=0 dash=0 Empty(@1)), '
+              'Entry(line=2 dash=2 Scalar([4..5) "2"))])',
+        ),
+        (
+          'tagged block map',
+          'a: !!map\n  b: 1\n',
+          'BlockMap({Entry(line=0 key=Scalar([0..1) "a") :=1 '
+              'val=BlockMap(props=[3..9) {Entry(line=9 '
+              'key=Scalar([11..12) "b") :=12 val=Scalar([14..15) "1"))}))})',
+        ),
+        (
+          '1-space indentation',
+          'a:\n b: 1\n',
+          'BlockMap({Entry(line=0 key=Scalar([0..1) "a") :=1 '
+              'val=BlockMap({Entry(line=3 key=Scalar([4..5) "b") :=5 '
+              'val=Scalar([7..8) "1"))}))})',
+        ),
+        (
+          '3-space indentation',
+          'a:\n   - x\n   - y\n',
+          'BlockMap({Entry(line=0 key=Scalar([0..1) "a") :=1 '
+              'val=BlockSeq([Entry(line=3 dash=6 Scalar([8..9) "x")), '
+              'Entry(line=10 dash=13 Scalar([15..16) "y"))]))})',
+        ),
+        (
+          '4-space indentation',
+          'a:\n    b:\n        c: 1\n',
+          'BlockMap({Entry(line=0 key=Scalar([0..1) "a") :=1 '
+              'val=BlockMap({Entry(line=3 key=Scalar([7..8) "b") :=8 '
+              'val=BlockMap({Entry(line=10 key=Scalar([18..19) "c") :=19 '
+              'val=Scalar([21..22) "1"))}))}))})',
+        ),
+        (
+          'tab-indented document and tab after colon',
+          '\ta:\t1\n',
+          'BlockMap({Entry(line=1 key=Scalar([1..2) "a") :=2 '
+              'val=Scalar([4..5) "1"))})',
+        ),
+        (
+          'explicit document start with root block scalar',
+          '--- |\n  hello\n',
+          r'Scalar([4..13) "|\n  hello")',
+        ),
+        (
+          'BOM-prefixed document',
+          '\uFEFFa: 1\n',
+          'BlockMap({Entry(line=1 key=Scalar([1..2) "a") :=2 '
+              'val=Scalar([4..5) "1"))})',
+        ),
+        (
+          'multiline plain scalar',
+          'a: foo\n  bar\n',
+          'BlockMap({Entry(line=0 key=Scalar([0..1) "a") :=1 '
+              r'val=Scalar([3..12) "foo\n  bar"))})',
+        ),
+      ];
+
+      for (final (description, source, expected) in goldens) {
+        final doc = CstDocument.parse(source);
+        expect(dumpNode(doc.root!, source), expected, reason: description);
+      }
+
+      // Also verify block scalar headerComment ownership and anchor-on-empty.
+      final hdrDoc = CstDocument.parse('a: | # hdr\n  x\n');
+      final hdrScalar =
+          (hdrDoc.root as CstBlockMap).entries.single.value as CstScalar;
+      expect(hdrScalar.headerComment?.span.text, '# hdr');
+
+      final emptyAnchorDoc = CstDocument.parse('a: &e\nb: *e\n');
+      final emptyAnchorMap = emptyAnchorDoc.root as CstBlockMap;
+      expect(emptyAnchorMap.entries[0].value.hasProperties, isTrue);
+      expect(emptyAnchorMap.entries[1].value, isA<CstAlias>());
+    });
+  });
+
+  group('tiling verifier negative tests', () {
+    void expectCstError(void Function() fn, String messageContains) {
+      expect(
+        fn,
+        throwsA(
+          isA<CstError>().having(
+            (e) => e.message,
+            'message',
+            contains(messageContains),
+          ),
+        ),
+      );
+    }
+
+    test('rejects unexpected content in prefix, suffix, and empty document',
+        () {
+      final doc = CstDocument.parse('a: 1\n');
+      final map = doc.root as CstBlockMap;
+      final firstEntry = map.entries.single;
+      // Pretend root starts at `1`, leaving `a: ` as unexpected prefix.
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: doc.source,
+          root: firstEntry.value,
+          value: doc.value,
+          tokens: doc.tokens,
+        ),
+        'unexpected content in document prefix',
+      );
+      // Pretend document is empty when it has tokens.
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: doc.source,
+          root: null,
+          value: doc.value,
+          tokens: doc.tokens,
+        ),
+        'unexpected content in empty document',
+      );
+      // Point closeStart at `'2'` instead of `']'` to trigger indicator error.
+      final seqDoc = CstDocument.parse('[1, 2]');
+      final seq = seqDoc.root as CstFlowSeq;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: seqDoc.source,
+          root: CstFlowSeq(
+            start: seq.start,
+            contentStart: seq.contentStart,
+            entries: [seq.entries.first],
+            closeStart: 4,
+            isMultiline: false,
+            value: seq.value,
+          ),
+          value: seqDoc.value,
+          tokens: seqDoc.tokens,
+        ),
+        'expected flow collection closing delimiter',
+      );
+    });
+
+    test('rejects non-trivia gap and overlapping slots', () {
+      final doc = CstDocument.parse('a: 1\nb: 2\n');
+      final map = doc.root as CstBlockMap;
+      final first = map.entries[0];
+      final second = map.entries[1];
+
+      // Drop first entry so `a: 1` sits in the prefix before `b: 2`.
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: doc.source,
+          root: CstBlockMap(
+            start: map.start,
+            contentStart: map.contentStart,
+            entries: [second],
+            isCompact: false,
+            value: map.value,
+          ),
+          value: doc.value,
+          tokens: doc.tokens,
+        ),
+        'whitespace or comments',
+      );
+
+      // Duplicate first entry so the second slot starts before cursor.
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: doc.source,
+          root: CstBlockMap(
+            start: map.start,
+            contentStart: map.contentStart,
+            entries: [first, first],
+            isCompact: false,
+            value: map.value,
+          ),
+          value: doc.value,
+          tokens: doc.tokens,
+        ),
+        'before the previous slot ended',
+      );
+    });
+
+    test('rejects mismatched scalar span, alias target, and node properties',
+        () {
+      final scalarDoc = CstDocument.parse('hello\n');
+      final scalar = scalarDoc.root as CstScalar;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: scalarDoc.source,
+          root: CstScalar(
+            start: 0,
+            contentStart: 0,
+            end: 4,
+            value: scalar.value,
+          ),
+          value: scalarDoc.value,
+          tokens: scalarDoc.tokens,
+        ),
+        'does not match YamlScalar span',
+      );
+
+      // Non-property text (`h`) inside [start, contentStart).
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: scalarDoc.source,
+          root: CstScalar(
+            start: 0,
+            contentStart: 1,
+            end: scalar.end,
+            value: scalar.value,
+          ),
+          value: scalarDoc.value,
+          tokens: scalarDoc.tokens,
+        ),
+        'unexpected token in node properties',
+      );
+
+      // CstAlias pointing to a non-alias scalar token.
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: scalarDoc.source,
+          root: CstAlias(start: 0, end: scalar.end, value: scalar.value),
+          value: scalarDoc.value,
+          tokens: scalarDoc.tokens,
+        ),
+        'does not match an alias token',
+      );
+
+      // CstAlias pointing forward to a node whose span starts after the alias.
+      final aliasDoc = CstDocument.parse('a: &x 1\nb: *x\nc: 2\n');
+      final aliasMap = aliasDoc.root as CstBlockMap;
+      final aliasEntry = aliasMap.entries[1];
+      final realAlias = aliasEntry.value as CstAlias;
+      final fakeForwardAlias = CstAlias(
+        start: realAlias.start,
+        end: realAlias.end,
+        value: aliasMap.entries[2].value.value,
+      );
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: aliasDoc.source,
+          root: CstBlockMap(
+            start: aliasMap.start,
+            contentStart: aliasMap.contentStart,
+            entries: [
+              aliasMap.entries[0],
+              CstBlockMapEntry(
+                start: aliasEntry.start,
+                lineStart: aliasEntry.lineStart,
+                questionMark: aliasEntry.questionMark,
+                key: aliasEntry.key,
+                colon: aliasEntry.colon,
+                value: fakeForwardAlias,
+                end: aliasEntry.end,
+                hasSeparatorComment: aliasEntry.hasSeparatorComment,
+              ),
+              aliasMap.entries[2],
+            ],
+            isCompact: false,
+            value: aliasMap.value,
+          ),
+          value: aliasDoc.value,
+          tokens: aliasDoc.tokens,
+        ),
+        'points to node starting at',
+      );
+    });
   });
 
   group('tiles hand-written documents', () {
