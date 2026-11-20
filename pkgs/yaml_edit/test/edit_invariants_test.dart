@@ -434,6 +434,59 @@ void main() {
         path: [0],
         messageContains: 'whitespace-only line',
       );
+
+      // Pure deletion starting at a line start leaving trailing spaces behind.
+      _expectInvariantFailure(
+        'a: 1\nb: 2   \n',
+        SourceEdit(5, 4, ''),
+        operation: EditOperation.remove,
+        path: ['b'],
+        messageContains: 'whitespace-only line',
+      );
+
+      // Pure deletion leaving leading spaces before the line break behind.
+      _expectInvariantFailure(
+        '  a: 1\n',
+        SourceEdit(2, 4, ''),
+        operation: EditOperation.remove,
+        path: ['a'],
+        messageContains: 'whitespace-only line',
+      );
+
+      // Appending a trailing whitespace-only line after a plain scalar.
+      _expectInvariantFailure(
+        'a: 1',
+        SourceEdit(3, 1, '2\n  '),
+        operation: EditOperation.update,
+        path: ['a'],
+        messageContains: 'whitespace-only line',
+      );
+    });
+
+    test('allows pre-existing trailing whitespace-only line on block append',
+        () {
+      final mapEditor = YamlEditor('a: 1\n  ')..update(['c'], 3);
+      expect(mapEditor.parseAt([]).value, {'a': 1, 'c': 3});
+
+      final listEditor = YamlEditor('- 1\n  ')..appendToList([], 2);
+      expect(listEditor.parseAt([]).value, [1, 2]);
+    });
+
+    test(
+        'compact first-entry removal still rejects gluing unrelated own-line '
+        'comment inline', () {
+      // Single-entry compact sequence has no second entry, so `# footer` sits
+      // outside any compact-lift gap and must not be pulled inline.
+      const yaml = '- - 0\n# footer\n';
+      final zeroStart = yaml.indexOf('- 0');
+      final footerStart = yaml.indexOf('# footer');
+      _expectInvariantFailure(
+        yaml,
+        SourceEdit(zeroStart, footerStart - zeroStart, '[] '),
+        operation: EditOperation.remove,
+        path: [0, 0],
+        messageContains: 'own-line -> inline',
+      );
     });
   });
 

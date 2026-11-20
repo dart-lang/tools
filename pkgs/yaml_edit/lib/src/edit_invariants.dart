@@ -7,6 +7,7 @@
 library;
 
 import 'package:yaml/tokens.dart';
+import 'package:yaml/yaml.dart';
 
 import 'cst.dart';
 import 'cst_mutations.dart';
@@ -24,6 +25,12 @@ enum EditOperation {
   /// Removing an entry or the entire document.
   remove,
 }
+
+typedef _EditTarget = ({
+  List<Object?> parentPath,
+  CstNode? parent,
+  int? index,
+});
 
 /// Verifies structural locality, layout/formatting preservation, and comment
 /// conservation for [edit] against [initialDocument] and the already-parsed
@@ -48,12 +55,15 @@ bool checkEditInvariants({
   required EditOperation operation,
   required List<Object?> path,
 }) {
+  final target = _resolveTarget(initialDocument, operation, path);
+
   _checkEditBounds(
     initialDocument: initialDocument,
     updatedDocument: updatedDocument,
     edit: edit,
     operation: operation,
     path: path,
+    target: target,
   );
 
   _checkLayoutPreservation(
@@ -62,6 +72,7 @@ bool checkEditInvariants({
     edit: edit,
     operation: operation,
     path: path,
+    target: target,
   );
 
   _checkFormattingHygiene(
@@ -70,6 +81,7 @@ bool checkEditInvariants({
     edit: edit,
     operation: operation,
     path: path,
+    target: target,
   );
 
   _checkCommentConservation(
@@ -78,9 +90,41 @@ bool checkEditInvariants({
     edit: edit,
     operation: operation,
     path: path,
+    target: target,
   );
 
   return true;
+}
+
+_EditTarget _resolveTarget(
+  CstDocument document,
+  EditOperation operation,
+  List<Object?> path,
+) {
+  if (operation != EditOperation.insert && path.isEmpty) {
+    return (parentPath: const [], parent: null, index: null);
+  }
+  final parentPath = operation == EditOperation.insert
+      ? path
+      : path.sublist(0, path.length - 1);
+  final parent = findNode(document, parentPath);
+  if (parent == null || operation == EditOperation.insert) {
+    return (parentPath: parentPath, parent: parent, index: null);
+  }
+  final step = path.last;
+  final index = switch (parent) {
+    CstBlockSeq(:final entries) => switch (step) {
+        final int i when i >= 0 && i < entries.length => i,
+        _ => null,
+      },
+    CstFlowSeq(:final entries) => switch (step) {
+        final int i when i >= 0 && i < entries.length => i,
+        _ => null,
+      },
+    CstBlockMap() || CstFlowMap() => findEntryIndex(parent, step),
+    _ => null,
+  };
+  return (parentPath: parentPath, parent: parent, index: index);
 }
 
 void _checkEditBounds({
@@ -89,6 +133,7 @@ void _checkEditBounds({
   required SourceEdit edit,
   required EditOperation operation,
   required List<Object?> path,
+  required _EditTarget target,
 }) {
   final sourceLength = initialDocument.source.length;
   final editStart = edit.offset;
@@ -103,7 +148,7 @@ void _checkEditBounds({
     );
   }
 
-  final bounds = _slotBounds(initialDocument, operation, path);
+  final bounds = _slotBounds(initialDocument, operation, path, target);
   if (bounds == null) return;
 
   if (editStart < bounds.start) {
@@ -192,6 +237,7 @@ void _assertNoNonCommentTokensInRange(
   CstDocument document,
   EditOperation operation,
   List<Object?> path,
+  _EditTarget target,
 ) {
   if (operation != EditOperation.insert && path.isEmpty) {
     if (operation == EditOperation.remove) {
@@ -219,10 +265,7 @@ void _assertNoNonCommentTokensInRange(
     );
   }
 
-  final parentPath = operation == EditOperation.insert
-      ? path
-      : path.sublist(0, path.length - 1);
-  final parent = findNode(document, parentPath);
+  final parent = target.parent;
   if (parent == null) return null;
 
   if (operation == EditOperation.insert) {
@@ -243,14 +286,11 @@ void _assertNoNonCommentTokensInRange(
     };
   }
 
-  final step = path.last;
+  final index = target.index;
   switch (parent) {
     case CstFlowCollection():
-      final index = parent is CstFlowSeq
-          ? (step is int ? step : null)
-          : findEntryIndex(parent, step);
       if (operation == EditOperation.update) {
-        if (index != null && index >= 0 && index < parent.entries.length) {
+        if (index != null) {
           final entry = parent.entries[index];
           return (
             start: entry.contentStart,
@@ -267,14 +307,11 @@ void _assertNoNonCommentTokensInRange(
           forbidSyntaxOverlap: true,
         );
       }
-      if (index != null &&
-          index >= 0 &&
-          index < parent.entries.length &&
-          parent.entries.length > 1) {
+      if (index != null && parent.entries.length > 1) {
         final start = index == 0
             ? parent.openEnd
             : document.trimmedEnd(
-                parent.entries[index - 1].value.start,
+                parent.entries[index - 1].contentStart,
                 parent.entries[index - 1].value.end,
               );
         final end = index + 1 < parent.entries.length
@@ -303,8 +340,8 @@ void _assertNoNonCommentTokensInRange(
       );
 
     case CstBlockSeq():
-      if (step is int && step >= 0 && step < parent.entries.length) {
-        final entry = parent.entries[step];
+      if (index != null) {
+        final entry = parent.entries[index];
         return (
           start: operation == EditOperation.update
               ? entry.dashStart + 1
@@ -322,7 +359,6 @@ void _assertNoNonCommentTokensInRange(
       );
 
     case CstBlockMap():
-      final index = findEntryIndex(parent, step);
       if (index != null) {
         final entry = parent.entries[index];
         return (
@@ -356,18 +392,15 @@ void _checkLayoutPreservation({
   required SourceEdit edit,
   required EditOperation operation,
   required List<Object?> path,
+  required _EditTarget target,
 }) {
-  if (operation != EditOperation.insert && path.isEmpty) return;
-
-  final parentPath = operation == EditOperation.insert
-      ? path
-      : path.sublist(0, path.length - 1);
-  final parent = findNode(initialDocument, parentPath);
+  final parent = target.parent;
   if (parent == null) return;
 
   final editStart = edit.offset;
   final editOldEnd = edit.offset + edit.length;
   final delta = edit.replacement.length - edit.length;
+  final targetIndex = target.index;
 
   void checkLandmark(int oldOffset, String label) {
     if (oldOffset > editStart && oldOffset < editOldEnd) return;
@@ -385,12 +418,8 @@ void _checkLayoutPreservation({
     }
   }
 
-  final step = operation == EditOperation.insert ? null : path.last;
   switch (parent) {
     case CstBlockSeq():
-      final targetIndex = operation == EditOperation.insert
-          ? null
-          : (step is int ? step : null);
       for (var i = 0; i < parent.entries.length; i++) {
         if (i == targetIndex) continue;
         // Removing entry 0 of a compact sequence intentionally shifts entry 1
@@ -405,9 +434,6 @@ void _checkLayoutPreservation({
       }
 
     case CstBlockMap():
-      final targetIndex = operation == EditOperation.insert
-          ? null
-          : findEntryIndex(parent, step);
       for (var i = 0; i < parent.entries.length; i++) {
         if (i == targetIndex) continue;
         if (operation == EditOperation.remove &&
@@ -420,17 +446,10 @@ void _checkLayoutPreservation({
       }
 
     case CstFlowCollection():
-      final targetIndex = operation == EditOperation.insert
-          ? null
-          : (parent is CstFlowSeq
-              ? (step is int ? step : null)
-              : findEntryIndex(parent, step));
       final isInsertOrAdd = operation == EditOperation.insert ||
           (operation == EditOperation.update && targetIndex == null);
       final removedInlineEntry = operation == EditOperation.remove &&
           targetIndex != null &&
-          targetIndex >= 0 &&
-          targetIndex < parent.entries.length &&
           !_startsOwnLine(
             initialDocument,
             parent.entries[targetIndex].contentStart,
@@ -466,6 +485,7 @@ void _checkFormattingHygiene({
   required SourceEdit edit,
   required EditOperation operation,
   required List<Object?> path,
+  required _EditTarget target,
 }) {
   // 1. Line-ending consistency on uniform-EOL documents.
   final initial = initialDocument.source;
@@ -493,27 +513,22 @@ void _checkFormattingHygiene({
 
   // 2. Trailing-comma preservation when removing the last entry of a
   // multi-entry flow collection written in trailing-comma style.
-  if (operation == EditOperation.remove && path.isNotEmpty) {
-    final parentPath = path.sublist(0, path.length - 1);
-    final parent = findNode(initialDocument, parentPath);
+  if (operation == EditOperation.remove) {
+    final parent = target.parent;
     if (parent is CstFlowCollection &&
         parent.entries.length > 1 &&
-        parent.entries.last.comma != null) {
-      final index = parent is CstFlowSeq
-          ? (path.last is int ? path.last as int : null)
-          : findEntryIndex(parent, path.last);
-      if (index == parent.entries.length - 1) {
-        final updatedParent = findNode(updatedDocument, parentPath);
-        if (updatedParent is CstFlowCollection &&
-            updatedParent.entries.isNotEmpty &&
-            updatedParent.entries.last.comma == null) {
-          throw createAssertionError(
-            'Removing the last entry of a trailing-comma flow collection at '
-            '$path dropped the trailing comma.',
-            initial,
-            updatedDocument.source,
-          );
-        }
+        parent.entries.last.comma != null &&
+        target.index == parent.entries.length - 1) {
+      final updatedParent = findNode(updatedDocument, target.parentPath);
+      if (updatedParent is CstFlowCollection &&
+          updatedParent.entries.isNotEmpty &&
+          updatedParent.entries.last.comma == null) {
+        throw createAssertionError(
+          'Removing the last entry of a trailing-comma flow collection at '
+          '$path dropped the trailing comma.',
+          initial,
+          updatedDocument.source,
+        );
       }
     }
   }
@@ -521,32 +536,45 @@ void _checkFormattingHygiene({
   // 3. No newly introduced non-empty whitespace-only lines outside scalars.
   final editStart = edit.offset;
   final editNewEnd = editStart + edit.replacement.length;
+  final delta = edit.replacement.length - edit.length;
   final updated = updatedDocument.source;
-  if (editStart < updated.length || editNewEnd > editStart) {
-    final startOffset = editStart.clamp(0, updated.length);
-    final endOffset = editNewEnd.clamp(0, updated.length);
-    var cursor = updatedDocument.lineStartOf(startOffset);
-    final scanEnd = updatedDocument.lineBreakEndOf(
-      endOffset > startOffset ? endOffset - 1 : startOffset,
-    );
-    while (cursor < scanEnd) {
-      final contentEnd = updatedDocument.lineContentEndOf(cursor);
-      final breakEnd = updatedDocument.lineBreakEndOf(cursor);
-      final touchedByEdit = breakEnd > editStart && cursor < editNewEnd;
-      if (touchedByEdit &&
-          contentEnd > cursor &&
-          updatedDocument.isWhitespaceRange(cursor, contentEnd) &&
-          !_isInsideScalar(updatedDocument, cursor, contentEnd)) {
-        throw createAssertionError(
-          'Edit introduced a whitespace-only line at offset $cursor for '
-          '$operation at $path.',
-          initial,
-          updated,
-        );
-      }
-      if (breakEnd <= cursor) break;
-      cursor = breakEnd;
+
+  bool wasPreexistingWhitespaceLine(int start, int end) {
+    if (end <= editStart) {
+      return initialDocument.lineStartOf(start) == start &&
+          initialDocument.lineContentEndOf(start) == end &&
+          initialDocument.isWhitespaceRange(start, end) &&
+          !_isInsideScalar(initialDocument, start, end);
     }
+    if (start >= editNewEnd) {
+      final oldStart = start - delta;
+      final oldEnd = end - delta;
+      return initialDocument.lineStartOf(oldStart) == oldStart &&
+          initialDocument.lineContentEndOf(oldStart) == oldEnd &&
+          initialDocument.isWhitespaceRange(oldStart, oldEnd) &&
+          !_isInsideScalar(initialDocument, oldStart, oldEnd);
+    }
+    return false;
+  }
+
+  var cursor = updatedDocument.lineStartOf(editStart);
+  final scanEnd = updatedDocument.lineBreakEndOf(editNewEnd);
+  while (cursor < scanEnd) {
+    final contentEnd = updatedDocument.lineContentEndOf(cursor);
+    final breakEnd = updatedDocument.lineBreakEndOf(cursor);
+    if (contentEnd > cursor &&
+        updatedDocument.isWhitespaceRange(cursor, contentEnd) &&
+        !_isInsideScalar(updatedDocument, cursor, contentEnd) &&
+        !wasPreexistingWhitespaceLine(cursor, contentEnd)) {
+      throw createAssertionError(
+        'Edit introduced a whitespace-only line at offset $cursor for '
+        '$operation at $path.',
+        initial,
+        updated,
+      );
+    }
+    if (breakEnd <= cursor) break;
+    cursor = breakEnd;
   }
 }
 
@@ -569,7 +597,10 @@ bool _isInsideScalar(CstDocument document, int start, int end) {
     if (end <= node.start || start >= node.end) continue;
     switch (node) {
       case CstScalar():
-        if (start >= node.contentStart && end <= node.end) return true;
+        final scalarEnd = node.value.style == ScalarStyle.PLAIN
+            ? document.trimmedEnd(node.contentStart, node.end)
+            : node.end;
+        if (start >= node.contentStart && end <= scalarEnd) return true;
       case CstBlockSeq():
         for (final entry in node.entries) {
           stack.add(entry.value);
@@ -600,6 +631,7 @@ void _checkCommentConservation({
   required SourceEdit edit,
   required EditOperation operation,
   required List<Object?> path,
+  required _EditTarget target,
 }) {
   if (initialDocument.comments.isEmpty) return;
 
@@ -607,16 +639,24 @@ void _checkCommentConservation({
   final editOldEnd = edit.offset + edit.length;
   final editNewEnd = editStart + edit.replacement.length;
   final delta = edit.replacement.length - edit.length;
-  final droppable = _droppableCommentRange(initialDocument, operation, path);
+  final droppable =
+      _droppableCommentRange(initialDocument, operation, path, target);
 
   // Removing entry 0 of a compact block collection (`- - 0\n  # c\n  - 1`)
   // can legitimately move an own-line comment right after entry 0 onto the
   // outer indicator's line (`-   # c`).
-  final allowsCompactCommentLift = _isCompactFirstEntryRemove(
-    initialDocument,
-    operation,
-    path,
-  );
+  final compactLiftRange =
+      operation == EditOperation.remove && target.index == 0
+          ? switch (target.parent) {
+              CstBlockSeq(isCompact: true, :final entries)
+                  when entries.length > 1 =>
+                (start: entries[0].end, end: entries[1].dashStart),
+              CstBlockMap(isCompact: true, :final entries)
+                  when entries.length > 1 =>
+                (start: entries[0].end, end: entries[1].keyStart),
+              _ => null,
+            }
+          : null;
 
   final updatedCommentsByStart = <int, YamlToken>{
     for (final comment in updatedDocument.comments)
@@ -632,12 +672,17 @@ void _checkCommentConservation({
   var replacementCursor = 0;
 
   void checkPlacement(YamlToken before, YamlToken after, String text) {
-    final wasOwnLine =
-        _startsOwnLine(initialDocument, before.span.start.offset);
+    final beforeStart = before.span.start.offset;
+    final beforeEnd = before.span.end.offset;
+    final wasOwnLine = _startsOwnLine(initialDocument, beforeStart);
     final isOwnLine = _startsOwnLine(updatedDocument, after.span.start.offset);
-    if (wasOwnLine != isOwnLine && !(allowsCompactCommentLift && wasOwnLine)) {
+    final allowedLift = wasOwnLine &&
+        compactLiftRange != null &&
+        beforeStart >= compactLiftRange.start &&
+        beforeEnd <= compactLiftRange.end;
+    if (wasOwnLine != isOwnLine && !allowedLift) {
       throw createAssertionError(
-        'Comment "$text" at offset ${before.span.start.offset} changed '
+        'Comment "$text" at offset $beforeStart changed '
         'placement (${wasOwnLine ? 'own-line' : 'inline'} -> '
         '${isOwnLine ? 'own-line' : 'inline'}).',
         initialDocument.source,
@@ -700,20 +745,6 @@ void _checkCommentConservation({
   }
 }
 
-bool _isCompactFirstEntryRemove(
-  CstDocument document,
-  EditOperation operation,
-  List<Object?> path,
-) {
-  if (operation != EditOperation.remove || path.isEmpty) return false;
-  final parent = findNode(document, path.sublist(0, path.length - 1));
-  return switch (parent) {
-    CstBlockSeq() => parent.isCompact && path.last == 0,
-    CstBlockMap() => parent.isCompact && findEntryIndex(parent, path.last) == 0,
-    _ => false,
-  };
-}
-
 /// Computes the source range within [document] whose comments are allowed to be
 /// dropped by [operation] at [path], derived purely from the CST.
 ///
@@ -723,6 +754,7 @@ bool _isCompactFirstEntryRemove(
   CstDocument document,
   EditOperation operation,
   List<Object?> path,
+  _EditTarget target,
 ) {
   switch (operation) {
     case EditOperation.insert:
@@ -740,11 +772,11 @@ bool _isCompactFirstEntryRemove(
 
     case EditOperation.remove:
       if (path.isEmpty) return (start: 0, end: document.source.length);
-      final parent = findNode(document, path.sublist(0, path.length - 1));
-      final step = path.last;
+      final parent = target.parent;
+      final index = target.index;
       switch (parent) {
         case CstBlockSeq():
-          final index = step as int;
+          if (index == null) return null;
           final entry = parent.entries[index];
           final end =
               (parent.entries.length > 1 && !(index == 0 && parent.isCompact))
@@ -756,7 +788,6 @@ bool _isCompactFirstEntryRemove(
           return (start: entry.lineStart, end: end);
 
         case CstBlockMap():
-          final index = findEntryIndex(parent, step);
           if (index == null) return null;
           final entry = parent.entries[index];
           final end =
@@ -769,8 +800,6 @@ bool _isCompactFirstEntryRemove(
           return (start: entry.lineStart, end: end);
 
         case CstFlowCollection():
-          final index =
-              parent is CstFlowSeq ? step as int : findEntryIndex(parent, step);
           if (index == null) return null;
           if (parent.entries.length == 1) {
             return (start: parent.openEnd, end: parent.closeStart);
