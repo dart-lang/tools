@@ -64,7 +64,8 @@
                       }
                     ]
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "[]"
                 },
                 {
                   "name": "immediateSubtypes",
@@ -107,7 +108,8 @@
                     "name": "bool",
                     "libraryUri": "dart:core"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "false"
                 },
                 {
                   "name": "locationUri",
@@ -187,7 +189,8 @@
                     "name": "ApiDeclarationStatus",
                     "libraryUri": "package:api_summary/src/api_declaration.dart"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "ApiDeclarationStatus.public"
                 },
                 {
                   "name": "superclassConstraints",
@@ -203,7 +206,8 @@
                       }
                     ]
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "[]"
                 },
                 {
                   "name": "supertype",
@@ -635,6 +639,16 @@
               },
               "parameters": [
                 {
+                  "name": "constantValue",
+                  "type": {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core",
+                    "isNullable": true
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "facets",
                   "type": {
                     "kind": "interface",
@@ -648,7 +662,8 @@
                       }
                     ]
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "[]"
                 },
                 {
                   "name": "isConst",
@@ -657,7 +672,8 @@
                     "name": "bool",
                     "libraryUri": "dart:core"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "false"
                 },
                 {
                   "name": "isDeprecated",
@@ -666,7 +682,8 @@
                     "name": "bool",
                     "libraryUri": "dart:core"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "false"
                 },
                 {
                   "name": "isEnumConstant",
@@ -675,7 +692,8 @@
                     "name": "bool",
                     "libraryUri": "dart:core"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "false"
                 },
                 {
                   "name": "isStatic",
@@ -751,7 +769,8 @@
                     "name": "ApiDeclarationStatus",
                     "libraryUri": "package:api_summary/src/api_declaration.dart"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "ApiDeclarationStatus.public"
                 },
                 {
                   "name": "typeParameters",
@@ -811,6 +830,17 @@
             }
           ],
           "methods": [
+            {
+              "name": "constantValue",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core",
+                "isNullable": true
+              }
+            },
             {
               "name": "isConst",
               "locationUri": "package:api_summary/src/api_declaration.dart",
@@ -969,7 +999,8 @@
                       }
                     ]
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "[]"
                 },
                 {
                   "name": "isDeprecated",
@@ -978,7 +1009,8 @@
                     "name": "bool",
                     "libraryUri": "dart:core"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "false"
                 },
                 {
                   "name": "locationUri",
@@ -1024,7 +1056,8 @@
                     "name": "ApiDeclarationStatus",
                     "libraryUri": "package:api_summary/src/api_declaration.dart"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "ApiDeclarationStatus.public"
                 },
                 {
                   "name": "typeParameters",
@@ -1209,7 +1242,8 @@
                       }
                     ]
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "[]"
                 },
                 {
                   "name": "interfaces",
@@ -1235,7 +1269,8 @@
                     "name": "bool",
                     "libraryUri": "dart:core"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "false"
                 },
                 {
                   "name": "locationUri",
@@ -1291,7 +1326,8 @@
                     "name": "ApiDeclarationStatus",
                     "libraryUri": "package:api_summary/src/api_declaration.dart"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "ApiDeclarationStatus.public"
                 },
                 {
                   "name": "typeParameters",
@@ -2056,7 +2092,8 @@
                       }
                     ]
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "[]"
                 },
                 {
                   "name": "functions",
@@ -2365,6 +2402,16 @@
               },
               "parameters": [
                 {
+                  "name": "defaultValue",
+                  "type": {
+                    "kind": "interface",
+                    "name": "String",
+                    "libraryUri": "dart:core",
+                    "isNullable": true
+                  },
+                  "isNamed": true
+                },
+                {
                   "name": "isDeprecated",
                   "type": {
                     "kind": "interface",
@@ -2459,6 +2506,17 @@
             }
           ],
           "methods": [
+            {
+              "name": "defaultValue",
+              "locationUri": "package:api_summary/src/api_type.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "String",
+                "libraryUri": "dart:core",
+                "isNullable": true
+              }
+            },
             {
               "name": "isDeprecated",
               "locationUri": "package:api_summary/src/api_type.dart",
@@ -3232,7 +3290,8 @@
                     "name": "bool",
                     "libraryUri": "dart:core"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "false"
                 },
                 {
                   "name": "includeReferencedTypes",
@@ -3241,7 +3300,8 @@
                     "name": "bool",
                     "libraryUri": "dart:core"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "false"
                 }
               ],
               "isConst": true
@@ -3599,7 +3659,8 @@
                       }
                     ]
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "[]"
                 },
                 {
                   "name": "isDeprecated",
@@ -3608,7 +3669,8 @@
                     "name": "bool",
                     "libraryUri": "dart:core"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "false"
                 },
                 {
                   "name": "locationUri",
@@ -3637,7 +3699,8 @@
                     "name": "ApiDeclarationStatus",
                     "libraryUri": "package:api_summary/src/api_declaration.dart"
                   },
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "ApiDeclarationStatus.public"
                 },
                 {
                   "name": "typeParameters",
@@ -5273,7 +5336,8 @@
                 "name": "ApiSummaryFormat",
                 "libraryUri": "package:api_summary/src/verify.dart"
               },
-              "isNamed": true
+              "isNamed": true,
+              "defaultValue": "ApiSummaryFormat.text"
             },
             {
               "name": "goldenFilePath",

@@ -45,6 +45,7 @@ libraries:
                       name: ApiFacet
                       libraryUri: package:api_summary/src/api_facet.dart
                 isNamed: true
+                defaultValue: "[]"
               - name: immediateSubtypes
                 type:
                   kind: interface
@@ -73,6 +74,7 @@ libraries:
                   name: bool
                   libraryUri: dart:core
                 isNamed: true
+                defaultValue: "false"
               - name: locationUri
                 type:
                   kind: interface
@@ -126,6 +128,7 @@ libraries:
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
                 isNamed: true
+                defaultValue: ApiDeclarationStatus.public
               - name: superclassConstraints
                 type:
                   kind: interface
@@ -136,6 +139,7 @@ libraries:
                       name: ApiType
                       libraryUri: package:api_summary/src/api_type.dart
                 isNamed: true
+                defaultValue: "[]"
               - name: supertype
                 type:
                   kind: interface
@@ -415,6 +419,13 @@ libraries:
               name: ApiExecutable
               libraryUri: package:api_summary/src/api_declaration.dart
             parameters:
+              - name: constantValue
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                  isNullable: true
+                isNamed: true
               - name: facets
                 type:
                   kind: interface
@@ -425,24 +436,28 @@ libraries:
                       name: ApiFacet
                       libraryUri: package:api_summary/src/api_facet.dart
                 isNamed: true
+                defaultValue: "[]"
               - name: isConst
                 type:
                   kind: interface
                   name: bool
                   libraryUri: dart:core
                 isNamed: true
+                defaultValue: "false"
               - name: isDeprecated
                 type:
                   kind: interface
                   name: bool
                   libraryUri: dart:core
                 isNamed: true
+                defaultValue: "false"
               - name: isEnumConstant
                 type:
                   kind: interface
                   name: bool
                   libraryUri: dart:core
                 isNamed: true
+                defaultValue: "false"
               - name: isStatic
                 type:
                   kind: interface
@@ -495,6 +510,7 @@ libraries:
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
                 isNamed: true
+                defaultValue: ApiDeclarationStatus.public
               - name: typeParameters
                 type:
                   kind: interface
@@ -530,6 +546,14 @@ libraries:
                     - kind: dynamic
                 isRequired: true
         methods:
+          - name: constantValue
+            locationUri: package:api_summary/src/api_declaration.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+              isNullable: true
           - name: isConst
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter
@@ -637,12 +661,14 @@ libraries:
                       name: ApiFacet
                       libraryUri: package:api_summary/src/api_facet.dart
                 isNamed: true
+                defaultValue: "[]"
               - name: isDeprecated
                 type:
                   kind: interface
                   name: bool
                   libraryUri: dart:core
                 isNamed: true
+                defaultValue: "false"
               - name: locationUri
                 type:
                   kind: interface
@@ -674,6 +700,7 @@ libraries:
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
                 isNamed: true
+                defaultValue: ApiDeclarationStatus.public
               - name: typeParameters
                 type:
                   kind: interface
@@ -792,6 +819,7 @@ libraries:
                       name: ApiFacet
                       libraryUri: package:api_summary/src/api_facet.dart
                 isNamed: true
+                defaultValue: "[]"
               - name: interfaces
                 type:
                   kind: interface
@@ -809,6 +837,7 @@ libraries:
                   name: bool
                   libraryUri: dart:core
                 isNamed: true
+                defaultValue: "false"
               - name: locationUri
                 type:
                   kind: interface
@@ -847,6 +876,7 @@ libraries:
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
                 isNamed: true
+                defaultValue: ApiDeclarationStatus.public
               - name: typeParameters
                 type:
                   kind: interface
@@ -1339,6 +1369,7 @@ libraries:
                       name: ApiFacet
                       libraryUri: package:api_summary/src/api_facet.dart
                 isNamed: true
+                defaultValue: "[]"
               - name: functions
                 type:
                   kind: interface
@@ -1537,6 +1568,13 @@ libraries:
               name: ApiParameter
               libraryUri: package:api_summary/src/api_type.dart
             parameters:
+              - name: defaultValue
+                type:
+                  kind: interface
+                  name: String
+                  libraryUri: dart:core
+                  isNullable: true
+                isNamed: true
               - name: isDeprecated
                 type:
                   kind: interface
@@ -1599,6 +1637,14 @@ libraries:
                     - kind: dynamic
                 isRequired: true
         methods:
+          - name: defaultValue
+            locationUri: package:api_summary/src/api_type.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: String
+              libraryUri: dart:core
+              isNullable: true
           - name: isDeprecated
             locationUri: package:api_summary/src/api_type.dart
             kind: getter
@@ -2104,12 +2150,14 @@ libraries:
                   name: bool
                   libraryUri: dart:core
                 isNamed: true
+                defaultValue: "false"
               - name: includeReferencedTypes
                 type:
                   kind: interface
                   name: bool
                   libraryUri: dart:core
                 isNamed: true
+                defaultValue: "false"
             isConst: true
         methods:
           - name: includeImplicitNonPublicMembers
@@ -2346,12 +2394,14 @@ libraries:
                       name: ApiFacet
                       libraryUri: package:api_summary/src/api_facet.dart
                 isNamed: true
+                defaultValue: "[]"
               - name: isDeprecated
                 type:
                   kind: interface
                   name: bool
                   libraryUri: dart:core
                 isNamed: true
+                defaultValue: "false"
               - name: locationUri
                 type:
                   kind: interface
@@ -2372,6 +2422,7 @@ libraries:
                   name: ApiDeclarationStatus
                   libraryUri: package:api_summary/src/api_declaration.dart
                 isNamed: true
+                defaultValue: ApiDeclarationStatus.public
               - name: typeParameters
                 type:
                   kind: interface
@@ -3474,6 +3525,7 @@ libraries:
               name: ApiSummaryFormat
               libraryUri: package:api_summary/src/verify.dart
             isNamed: true
+            defaultValue: ApiSummaryFormat.text
           - name: goldenFilePath
             type:
               kind: interface
