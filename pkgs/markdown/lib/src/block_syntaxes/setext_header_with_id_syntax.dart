@@ -4,7 +4,7 @@
 
 import '../ast.dart';
 import '../block_parser.dart';
-import 'block_syntax.dart';
+import '../pending_header_id.dart';
 import 'setext_header_syntax.dart';
 
 /// Parses setext-style headers, and adds generated IDs to the generated
@@ -15,7 +15,7 @@ class SetextHeaderWithIdSyntax extends SetextHeaderSyntax {
   @override
   Node parse(BlockParser parser) {
     final element = super.parse(parser) as Element;
-    element.generatedId = BlockSyntax.generateAnchorHash(element);
+    markPendingHeaderId(element);
     return element;
   }
 }

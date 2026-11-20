@@ -96,6 +96,12 @@
   link reference definitions is limited to the larger of the input size and
   100,000 characters per document, matching cmark; further reference links are
   rendered as text.
+* Fixes header id generation (from `HeaderWithIdSyntax` and
+  `SetextHeaderWithIdSyntax`) to use each header's fully inline-parsed text,
+  so that a header containing a link uses the link's text instead of its
+  target, and a header containing an image omits it entirely.
+  `BlockSyntax.generateAnchorHash` now uses the element's full `textContent`,
+  so it should be called after the element's children are inline-parsed.
 
 ## 7.4.0
 
