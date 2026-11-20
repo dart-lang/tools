@@ -249,6 +249,47 @@ void main() {
         messageContains: '# inline on b',
       );
     });
+
+    test('rejects flow removal dropping sibling entry trailing comment', () {
+      const yaml = '[\n  a, # keep a\n  b # trail b\n]\n';
+      final commaOffset = yaml.indexOf(',');
+      final closeOffset = yaml.indexOf(']');
+      _expectInvariantFailure(
+        yaml,
+        SourceEdit(commaOffset, closeOffset - commaOffset, '\n'),
+        operation: EditOperation.remove,
+        path: [1],
+        messageContains: '# keep a',
+      );
+    });
+
+    test('falls back to collection bounds for out-of-range block-seq step', () {
+      const yaml = 'a:\n  - 1\n  - 2\n';
+      _expectInvariantFailure(
+        yaml,
+        SourceEdit(0, 2, 'b:'),
+        operation: EditOperation.update,
+        path: ['a', 99],
+        messageContains: 'precedes CST slot start',
+      );
+    });
+
+    test('accepts edits when parent is a scalar without slot bounds', () {
+      const yaml = 'a: 1\n';
+      final initial = CstDocument.parse(yaml);
+      final edit = SourceEdit(3, 1, '2');
+      final updated = CstDocument.parse(edit.apply(yaml));
+      expect(
+        checkEditInvariants(
+          initialDocument: initial,
+          updatedDocument: updated,
+          edit: edit,
+          operation: EditOperation.update,
+          path: ['a', 'nested'],
+        ),
+        isTrue,
+      );
+    });
   });
 
   group('YamlEditor invariant integration', () {
@@ -257,16 +298,14 @@ void main() {
       final editor = YamlEditor('[a, # c0\n a, # c1\n b]\n');
       editor.remove([0]);
       expect(editor.parseAt([]).value, equals(['a', 'b']));
-      expect(editor.toString(), contains('# c1'));
-      expect(editor.toString(), isNot(contains('# c0')));
+      expect(editor.toString(), '[ a, # c1\n b]\n');
     });
 
     test('removes first of duplicate block-list elements cleanly', () {
       final editor = YamlEditor('- a # c0\n- a # c1\n- b\n');
       editor.remove([0]);
       expect(editor.parseAt([]).value, equals(['a', 'b']));
-      expect(editor.toString(), contains('# c1'));
-      expect(editor.toString(), isNot(contains('# c0')));
+      expect(editor.toString(), '- a # c1\n- b\n');
     });
 
     test('replacing root of a comments-only document replaces the document',
@@ -275,6 +314,14 @@ void main() {
       editor.update([], {'a': 1});
       expect(editor.toString(), 'a: 1');
       expect(editor.parseAt([]).value, {'a': 1});
+    });
+
+    test('updates BOM-prefixed document without false-positive invariant error',
+        () {
+      final editor = YamlEditor('\uFEFFa: 1 # keep\n');
+      editor.update(['a'], 2);
+      expect(editor.toString(), '\uFEFFa: 2 # keep\n');
+      expect(editor.parseAt([]).value, {'a': 2});
     });
 
     test('updates document with unknown directive without leaking warnings',
@@ -287,7 +334,7 @@ void main() {
         warnings.clear();
         editor.update(['a'], 2);
         expect(warnings, isEmpty);
-        expect(editor.toString(), contains('# keep'));
+        expect(editor.toString(), '%FOO bar\n---\na: 2 # keep\n');
       } finally {
         yamlWarningCallback = previous;
       }
@@ -310,14 +357,19 @@ other: 1 # other
       editor.update(['other'], 2);
       editor.remove(['items', 0]);
 
-      final result = editor.toString();
-      expect(result, contains('# header'));
-      expect(result, contains('# above a'));
-      expect(result, contains('# above b'));
-      expect(result, contains('# inline b'));
-      expect(result, contains('# other'));
-      expect(result, contains('# footer'));
-      expect(result, isNot(contains('# inline a')));
+      expect(
+        editor.toString(),
+        '''
+# header
+items:
+  # above a
+  # above b
+  - mid
+  - b # inline b
+other: 2 # other
+# footer
+''',
+      );
     });
   });
 }
