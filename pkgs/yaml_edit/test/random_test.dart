@@ -231,9 +231,6 @@ class _Generator {
         return;
       }
     } catch (error, stacktrace) {
-      /// TODO: Fix once reproducible. Identify pattern.
-      if (count == 20) return;
-
       print('''
 Failed to call $method on:
 $initialString

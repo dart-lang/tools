@@ -1,0 +1,15 @@
+COMMENT PRESERVATION IN BLOCK MAPS
+---
+# document header
+alpha: 1 # inline alpha
+# above beta
+beta: # after colon beta
+  nested: 10 # inline nested
+# above gamma
+gamma: 3 # inline gamma
+# document footer
+---
+- [update, [alpha], 2]
+- [update, [beta, added], 20]
+- [update, [delta], 4]
+- [remove, [gamma]]
