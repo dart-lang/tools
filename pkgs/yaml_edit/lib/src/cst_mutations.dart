@@ -1029,8 +1029,14 @@ SourceEdit _replaceFlowMapValue(
   }
   final text = yamlEncodeFlow(value);
   if (entry.colon == null) {
-    return SourceEdit(
-        entry.value.start, entry.value.end - entry.value.start, ': $text');
+    final atOwnLineClose = entry.value.start == map.closeStart &&
+        document.isWhitespaceRange(
+            document.lineStartOf(map.closeStart), map.closeStart);
+    final suffix = atOwnLineClose
+        ? '${document.lineEnding}${' ' * document.columnOf(map.closeStart)}'
+        : '';
+    return SourceEdit(entry.value.start, entry.value.end - entry.value.start,
+        ': $text$suffix');
   }
   if (entry.value is CstEmpty) {
     final trailingEnd = entry.comma ?? map.closeStart;
