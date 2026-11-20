@@ -1,7 +1,8 @@
 ## 2.3.0-wip
 
 * Rewrite internal modification logic to use a lossless Concrete Syntax Tree
-  (CST) and slot-directed mutations.
+  (CST) and slot-directed mutations, with debug-mode checks verifying edit slot
+  bounds and comment conservation.
 * Preserve comments written above a removed entry in flow collections (matching
   block collection removal behavior).
 * Require Dart `^3.4.0` and `package:yaml` `^3.2.0`.

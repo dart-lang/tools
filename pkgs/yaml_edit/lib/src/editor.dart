@@ -8,6 +8,7 @@ import 'package:yaml/yaml.dart';
 
 import 'cst.dart';
 import 'cst_mutations.dart';
+import 'edit_invariants.dart';
 import 'equality.dart';
 import 'errors.dart';
 import 'source_edit.dart';
@@ -231,6 +232,8 @@ class YamlEditor {
         buildUpdate(_document, pathAsList, valueNode),
         pathAsList,
         valueNode,
+        operation: EditOperation.update,
+        targetPath: pathAsList,
       );
     }
 
@@ -254,6 +257,8 @@ class YamlEditor {
         buildUpdate(_document, pathAsList, valueNode),
         collectionPath,
         expected,
+        operation: EditOperation.update,
+        targetPath: pathAsList,
       );
     }
 
@@ -264,6 +269,8 @@ class YamlEditor {
         buildUpdate(_document, pathAsList, valueNode),
         collectionPath,
         expectedMap,
+        operation: EditOperation.update,
+        targetPath: pathAsList,
       );
     }
 
@@ -330,8 +337,13 @@ class YamlEditor {
       [...list.nodes]..insert(index, valueNode),
     );
 
-    _performEdit(buildInsert(_document, pathAsList, index, valueNode),
-        pathAsList, expected);
+    _performEdit(
+      buildInsert(_document, pathAsList, index, valueNode),
+      pathAsList,
+      expected,
+      operation: EditOperation.insert,
+      targetPath: pathAsList,
+    );
   }
 
   /// Changes the contents of the list at [path] by removing [deleteCount]
@@ -416,6 +428,8 @@ class YamlEditor {
         buildRemove(_document, pathAsList),
         pathAsList,
         wrapAsYamlNode(null),
+        operation: EditOperation.remove,
+        targetPath: pathAsList,
       );
       return nodeToRemove;
     }
@@ -441,6 +455,8 @@ class YamlEditor {
       buildRemove(_document, pathAsList),
       collectionPath,
       expectedNode,
+      operation: EditOperation.remove,
+      targetPath: pathAsList,
     );
 
     return nodeToRemove;
@@ -609,8 +625,10 @@ class YamlEditor {
   void _performEdit(
     SourceEdit edit,
     Iterable<Object?> path,
-    YamlNode expectedNode,
-  ) {
+    YamlNode expectedNode, {
+    required EditOperation operation,
+    required List<Object?> targetPath,
+  }) {
     final expectedTree = _deepModify(_contents, path, [], expectedNode);
     final initialYaml = _yaml;
     final updatedYaml = edit.apply(_yaml);
@@ -647,6 +665,16 @@ class YamlEditor {
         updatedYaml,
       );
     }
+
+    assert(
+      checkEditInvariants(
+        initialDocument: _document,
+        updatedDocument: updated,
+        edit: edit,
+        operation: operation,
+        path: targetPath,
+      ),
+    );
 
     // Update state of YamlEditor, when we've validated that the edit was
     // semantically correct!
