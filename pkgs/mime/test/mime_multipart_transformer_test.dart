@@ -30,12 +30,13 @@ void _runParseTest(
   List<Map<String, String>>? expectedHeaders,
   List<String?>? expectedParts,
   bool expectError = false,
+  int? headerSizeLimit,
 ]) {
   Future<void> testWrite(List<int> data, [int chunkSize = -1]) {
     final controller = StreamController<List<int>>(sync: true);
 
-    final stream =
-        controller.stream.transform(MimeMultipartTransformer(boundary));
+    final stream = controller.stream.transform(
+        MimeMultipartTransformer(boundary, headerSizeLimit: headerSizeLimit));
     var i = 0;
     final completer = Completer<void>();
     final futures = <Future<void>>[];
@@ -88,7 +89,7 @@ void _runParseTest(
       }
     }, onError: (Object error) {
       // ignore: only_throw_errors
-      if (!expectError) throw error;
+      if (error is! MimeMultipartException || !expectError) throw error;
     }, onDone: () {
       if (expectedParts != null) {
         expect(i, equals(expectedParts.length));
@@ -105,8 +106,8 @@ void _runParseTest(
     final completer = Completer<void>();
     final controller = StreamController<List<int>>(sync: true);
 
-    final stream =
-        controller.stream.transform(MimeMultipartTransformer(boundary));
+    final stream = controller.stream.transform(
+        MimeMultipartTransformer(boundary, headerSizeLimit: headerSizeLimit));
 
     stream.first.then((multipart) {
       if (expectedHeaders != null) {
@@ -132,8 +133,8 @@ void _runParseTest(
       [int chunkSize = -1]) {
     final completer = Completer<void>();
     final controller = StreamController<List<int>>(sync: true);
-    final stream =
-        controller.stream.transform(MimeMultipartTransformer(boundary));
+    final stream = controller.stream.transform(
+        MimeMultipartTransformer(boundary, headerSizeLimit: headerSizeLimit));
     late StreamSubscription<void> subscription;
     var i = 0;
     final futures = <Future<void>>[];
@@ -180,7 +181,7 @@ void _runParseTest(
         completes);
   });
 
-  if (expectedParts!.isNotEmpty) {
+  if (expectedParts != null && expectedParts.isNotEmpty) {
     test('test-first-part-only', () {
       expect(
           Future.wait([
@@ -193,7 +194,7 @@ void _runParseTest(
     });
 
     test('test-n-parts-only', () {
-      var numPartsExpected = expectedParts.length - 1;
+      var numPartsExpected = expectedParts.length;
       if (numPartsExpected == 0) numPartsExpected = 1;
 
       expect(
@@ -211,13 +212,14 @@ void _runParseTest(
 void _testParse(String message, String boundary,
     [List<Map<String, String>>? expectedHeaders,
     List<String?>? expectedParts,
-    bool expectError = false]) {
+    bool expectError = false,
+    int? headerSizeLimit]) {
   _runParseTest(message, boundary, TestMode.immediateListen, expectedHeaders,
-      expectedParts, expectError);
+      expectedParts, expectError, headerSizeLimit);
   _runParseTest(message, boundary, TestMode.delayListen, expectedHeaders,
-      expectedParts, expectError);
+      expectedParts, expectError, headerSizeLimit);
   _runParseTest(message, boundary, TestMode.pauseResume, expectedHeaders,
-      expectedParts, expectError);
+      expectedParts, expectError, headerSizeLimit);
 }
 
 void _testParseValid() {
@@ -486,29 +488,6 @@ Body2\r
   _testParse(message, 'xxx', null, [null, null], true);
 
   group('mid-stream parse errors and invalid UTF-8 headers', () {
-    Future<void> expectStreamMultipartError(List<int> bytes) async {
-      for (final chunks in [
-        [bytes],
-        [
-          for (final b in bytes) [b]
-        ],
-      ]) {
-        Object? zoneError;
-        await runZonedGuarded(() async {
-          final out = Stream<List<int>>.fromIterable(chunks).transform(
-            MimeMultipartTransformer('bnd'),
-          );
-          await expectLater(
-            out.toList(),
-            throwsA(isA<MimeMultipartException>()),
-          );
-        }, (error, _) {
-          zoneError = error;
-        });
-        expect(zoneError, isNull);
-      }
-    }
-
     test('invalid header field routes MimeMultipartException to stream',
         () async {
       await expectStreamMultipartError(
@@ -673,6 +652,129 @@ Body2\r
       }
     });
   });
+
+  group('overlong headers', () {
+    String message(String headers,
+        {int earlierParts = 0,
+        bool valid = false,
+        int limit = MimeMultipartTransformer.defaultHeaderSizeLimit}) {
+      final size = utf8.encode(headers).length;
+      if ((size <= limit) != valid) {
+        throw TestFailure(
+            'Inconsistent header, size: $size, limit: $limit, valid: $valid');
+      }
+      final buffer = StringBuffer();
+      while (earlierParts > 0) {
+        buffer.write('--bnd\r\n');
+        buffer.write('\r\n');
+        buffer.write('earlier\r\n');
+      }
+      buffer.write('--bnd\r\n');
+      buffer.write(headers);
+      buffer.write('\r\n');
+      buffer.write('content\r\n');
+      buffer.write('--bnd--\r\n');
+      return buffer.toString();
+    }
+
+    final xs = 'x' * 52;
+    group('total size', () {
+      // Header with total size > 64 * 1024.
+      //
+      // Each line is 64 bytes. ('key' + 5 digits + ': ' + 52 xs + '\r\n').
+      // long header.
+      group('valid', () {
+        final validHeader = [
+          for (var i = 0; i < 1024; i++) 'key${"$i".padLeft(5, '0')}: $xs\r\n'
+        ].join();
+        _testParse(message(validHeader, valid: true), 'bnd');
+      });
+      group('invalid', () {
+        final longHeader = [
+          for (var i = 0; i < 1025; i++) 'key${"$i".padLeft(5, '0')}: $xs\r\n'
+        ].join();
+        _testParse(message(longHeader), 'bnd', null, null, true);
+      });
+    });
+    group('single large key', () {
+      group('valid', () {
+        _testParse(message('${'x' * 65531}: 0\r\n', valid: true), 'bnd');
+      });
+      group('invalid', () {
+        _testParse(message('${'x' * 65537}: 0\r\n'), 'bnd', null, null, true);
+      });
+    });
+
+    group('single large value', () {
+      group('valid', () {
+        _testParse(message('x: ${'x' * 65531}\r\n', valid: true), 'bnd');
+      });
+      group('invalid', () {
+        _testParse(message('x: ${'x' * 65537}\r\n'), 'bnd', null, null, true);
+      });
+    });
+    group('header whitespace after colon', () {
+      group('valid', () {
+        _testParse(message('x:${' ' * 65531}0\r\n', valid: true), 'bnd');
+      });
+      group('invalid', () {
+        _testParse(message('x:${' ' * 65537}0\r\n'), 'bnd', null, null, true);
+      });
+    });
+    group('with whitespace after value', () {
+      group('valid', () {
+        _testParse(
+            message('x:${'  \r\n' * 16382} 012\r\n', valid: true), 'bnd');
+      });
+      group('invalid', () {
+        _testParse(
+            message('x:${'  \r\n' * 16384} 0\r\n'), 'bnd', null, null, true);
+      });
+    });
+    group('with low limit', () {
+      const lowLimit = 64 * 64;
+      group('valid', () {
+        final validHeader = [
+          for (var i = 0; i < 64; i++) 'key${"$i".padLeft(5, '0')}: $xs\r\n'
+        ].join();
+        _testParse(message(validHeader, valid: true, limit: lowLimit), 'bnd',
+            null, null, false, 64 * 64);
+      });
+      group('invalid', () {
+        final longHeader = [
+          for (var i = 0; i < 65; i++) 'key${"$i".padLeft(5, '0')}: $xs\r\n'
+        ].join();
+        _testParse(message(longHeader, limit: lowLimit), 'bnd', null, null,
+            true, 64 * 64);
+      });
+    });
+  });
+}
+
+Future<void> expectStreamMultipartError(List<int> bytes,
+    {int headerSizeLimit =
+        MimeMultipartTransformer.defaultHeaderSizeLimit}) async {
+  for (final chunks in [
+    [bytes],
+    [
+      for (final b in bytes) [b]
+    ],
+  ]) {
+    Object? zoneError;
+    await runZonedGuarded(() async {
+      final out = Stream<List<int>>.fromIterable(chunks).transform(
+        MimeMultipartTransformer('bnd', headerSizeLimit: headerSizeLimit),
+      );
+      await expectLater(
+        out.toList(),
+        throwsA(isA<MimeMultipartException>()),
+      );
+    }, (error, _) {
+      zoneError = error;
+    });
+    await Future<void>.delayed(Duration.zero);
+    expect(zoneError, isNull);
+  }
 }
 
 void main() {

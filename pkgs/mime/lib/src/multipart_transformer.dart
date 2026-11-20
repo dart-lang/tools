@@ -28,15 +28,31 @@ Uint8List _getBoundary(String boundary) {
 /// of them streaming the multipart data.
 class MimeMultipartTransformer
     extends StreamTransformerBase<List<int>, MimeMultipart> {
-  final List<int> _boundary;
+  /// Default byte limit on the headers of each multipart part.
+  static const int defaultHeaderSizeLimit = 64 * 1024;
 
-  /// Construct a new MIME multipart parser with the boundary
-  /// [boundary]. The boundary should be as specified in the content
+  final List<int> _boundary;
+  final int _headerSizeLimit;
+
+  /// Construct a new MIME multipart parser with the boundary [boundary].
+  ///
+  /// The boundary should be as specified in the content
   /// type parameter, that is without the -- prefix.
-  MimeMultipartTransformer(String boundary)
-      : _boundary = _getBoundary(boundary);
+  ///
+  /// If [headerSizeLimit] is provided, that is the limit
+  /// on the total byte-size of the header of a multi-part part.
+  /// The [headerSizeLimit] must be non-negative.
+  /// If it is zero (or very low), no headers can be accepted.
+  /// Default is 64K, the same default as the platform HTTP headers
+  /// parser.
+  MimeMultipartTransformer(String boundary, {int? headerSizeLimit})
+      : _headerSizeLimit = headerSizeLimit == null
+            ? defaultHeaderSizeLimit
+            : RangeError.checkNotNegative(headerSizeLimit, 'headerSizeLimit'),
+        _boundary = _getBoundary(boundary);
 
   @override
   Stream<MimeMultipart> bind(Stream<List<int>> stream) =>
-      BoundMultipartStream(_boundary, stream).stream;
+      BoundMultipartStream(_boundary, stream, headerSizeLimit: _headerSizeLimit)
+          .stream;
 }
