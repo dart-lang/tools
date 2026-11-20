@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:collection/collection.dart';
 import 'package:yaml/yaml.dart';
 
 import 'utils.dart';
@@ -100,47 +99,40 @@ String? _tryYamlEncodeFolded(String string, int indentSize, String lineEnding) {
 
   if (_hasUnprintableCharacters(string)) return null;
 
-  // TODO: Are there other strings we can't encode in folded mode?
-
   final indent = ' ' * indentSize;
+  final lines = string.split('\n');
+  final buffer = StringBuffer('>-$lineEnding$indent${lines.first}');
 
-  /// Remove trailing `\n` & white-space to ease string folding
-  var trimmed = string.trimRight();
-  final stripped = string.substring(trimmed.length);
-
-  final trimmedSplit =
-      trimmed.replaceAll('\n', lineEnding + indent).split(lineEnding);
-
-  /// Try folding to match specification:
-  /// * https://yaml.org/spec/1.2.2/#65-line-folding
-  trimmed = trimmedSplit.reduceIndexed((index, previous, current) {
-    var updated = current;
-
-    /// If initially empty, this line holds only `\n` or white-space. This
-    /// tells us we don't need to apply an additional `\n`.
-    ///
-    /// See https://yaml.org/spec/1.2.2/#64-empty-lines
-    ///
-    /// If this line is not empty, we need to apply an additional `\n` if and
-    /// only if:
-    ///   1. The preceding line was non-empty too
-    ///   2. If the current line doesn't begin with white-space
-    ///
-    /// Such that we apply `\n` for `foo\nbar` but not `foo\n bar`.
-    if (current.trim().isNotEmpty &&
-        trimmedSplit[index - 1].trim().isNotEmpty &&
-        !current.replaceFirst(indent, '').startsWith(' ')) {
-      updated = lineEnding + updated;
+  // Line folding only happens between two folded lines: a single line break
+  // between them is folded into a space, and `n + 1` line breaks between them
+  // are folded into `n` line breaks. Line breaks next to a spaced line are
+  // never folded.
+  //
+  // So a line break between two folded lines has to be written as two line
+  // breaks, which the parser then folds back into one. Empty lines in between
+  // do not change this, as they are neither folded nor spaced lines.
+  //
+  // See https://yaml.org/spec/1.2.2/#65-line-folding
+  var previousIsFolded = _isFoldedLine(lines.first);
+  for (final line in lines.skip(1)) {
+    if (line.isNotEmpty) {
+      final isFolded = _isFoldedLine(line);
+      if (previousIsFolded && isFolded) buffer.write(lineEnding);
+      previousIsFolded = isFolded;
     }
+    buffer.write('$lineEnding$indent$line');
+  }
 
-    /// Apply a `\n` by default.
-    return previous + lineEnding + updated;
-  });
-
-  return '>-\n'
-      '$indent$trimmed'
-      '${stripped.replaceAll('\n', lineEnding + indent)}';
+  return buffer.toString();
 }
+
+/// Whether [line] of a folded block scalar is a _folded line_, which starts
+/// with a non-whitespace character, as opposed to a _spaced line_, which starts
+/// with a space or tab, or an empty line.
+///
+/// See https://yaml.org/spec/1.2.2/#813-folded-style
+bool _isFoldedLine(String line) =>
+    line.isNotEmpty && !line.startsWith(' ') && !line.startsWith('\t');
 
 /// Attempts to encode a [string] as a _YAML literal string_ and apply the
 /// appropriate _chomping indicator_.
