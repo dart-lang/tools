@@ -27,6 +27,7 @@
 /// document via [_checkTiling].
 library;
 
+import 'package:meta/meta.dart';
 import 'package:yaml/tokens.dart';
 import 'package:yaml/yaml.dart';
 
@@ -111,9 +112,6 @@ final class CstScalar extends CstNode {
 
   /// The comment token on the header line of a block scalar, if present.
   final YamlToken? headerComment;
-
-  /// The style the scalar is written in.
-  ScalarStyle get style => value.style;
 
   CstScalar({
     required this.start,
@@ -386,9 +384,6 @@ sealed class CstFlowCollection extends CstNode {
 
   @override
   int get end => closeStart + 1;
-
-  /// Start of the whitespace and comments preceding the closing delimiter.
-  int get beforeCloseStart => entries.isEmpty ? openEnd : entries.last.end;
 }
 
 /// A sequence written as `[a, b]`.
@@ -628,13 +623,6 @@ final class CstDocument {
   /// source is the prefix.
   final CstNode? root;
 
-  /// Offset at which the root node starts. Equals `source.length` when [root]
-  /// is `null`.
-  int get prefixEnd => root?.start ?? source.length;
-
-  /// Offset at which the suffix starts.
-  int get suffixStart => root?.end ?? source.length;
-
   /// The value of the document, which is `null` for an empty document.
   final YamlNode value;
 
@@ -751,12 +739,41 @@ final class CstDocument {
 // Tiling check
 // ---------------------------------------------------------------------------
 
+/// Runs the tiling verifier on an arbitrary [root] and [tokens] against
+/// [source], throwing [CstError] on any tiling violation.
+@visibleForTesting
+void checkCstTilingForTesting({
+  required String source,
+  required CstNode? root,
+  required YamlNode value,
+  required List<YamlToken> tokens,
+}) {
+  final lineTable = _LineTable(source);
+  final tokensByOffset = <int, YamlToken>{
+    for (final token in tokens) token.span.start.offset: token,
+  };
+  final comments = [
+    for (final token in tokens)
+      if (token.kind == YamlTokenKind.comment) token,
+  ];
+  final document = CstDocument._(
+    source: source,
+    root: root,
+    value: value,
+    tokens: tokens,
+    comments: comments,
+    lineEnding: lineTable.lineEnding,
+    lineTable: lineTable,
+  );
+  _checkTiling(document, tokensByOffset);
+}
+
 /// Verifies that [document]'s slots tile its source accurately.
 ///
 /// Walks the tree iteratively in source order and checks that:
-/// 1. The prefix `[0, prefixEnd)` holds only whitespace, BOM, comments,
+/// 1. The prefix `[0, root.start)` holds only whitespace, BOM, comments,
 ///    directives, and document markers (`---`/`...`).
-/// 2. The suffix `[suffixStart, source.length)` holds only whitespace, BOM,
+/// 2. The suffix `[root.end, source.length)` holds only whitespace, BOM,
 ///    comments, and document end markers (`...`).
 /// 3. Slot boundaries are monotonically non-decreasing (disjoint and ordered).
 /// 4. Every structural indicator (`-`, `?`, `:`, `,`, `[`, `]`, `{`, `}`)
@@ -1202,7 +1219,36 @@ final class _CstBuilder {
       return null;
     }
     position = value.span.start.offset;
+    final isBlock = (value is YamlMap && value.style != CollectionStyle.FLOW) ||
+        (value is YamlList && value.style != CollectionStyle.FLOW);
+    if (isBlock && !_hasOwnProperties(value)) {
+      final lineStart = _lineTable.lineStartOf(position);
+      if (_isSpacesOrTabsRange(lineStart, position)) {
+        position = lineStart;
+      }
+    }
     return _buildNode(value);
+  }
+
+  bool _hasOwnProperties(YamlNode node) {
+    final firstKind = _tokensByOffset[node.span.start.offset]?.kind;
+    if (firstKind != YamlTokenKind.anchor && firstKind != YamlTokenKind.tag) {
+      return false;
+    }
+    if (node is YamlMap) {
+      final firstKeyStart =
+          (node.nodes.keys.firstOrNull as YamlNode?)?.span.start.offset;
+      if (firstKeyStart == node.span.start.offset) return false;
+    }
+    return true;
+  }
+
+  bool _isSpacesOrTabsRange(int start, int end) {
+    for (var i = start; i < end; i++) {
+      final unit = source.codeUnitAt(i);
+      if (unit != 0x20 && unit != 0x09) return false;
+    }
+    return true;
   }
 
   /// Builds the node [value], which must start at [position].
@@ -1384,9 +1430,7 @@ final class _CstBuilder {
     }
     final isBlock = (child is YamlMap && child.style != CollectionStyle.FLOW) ||
         (child is YamlList && child.style != CollectionStyle.FLOW);
-    final firstChildKind = _tokensByOffset[child.span.start.offset]?.kind;
-    final hasProperties = firstChildKind == YamlTokenKind.anchor ||
-        firstChildKind == YamlTokenKind.tag;
+    final hasProperties = _hasOwnProperties(child);
     if (isBlock &&
         !hasProperties &&
         _lineTable.lineStartOf(child.span.start.offset) >
@@ -1420,8 +1464,17 @@ final class _CstBuilder {
     return colon;
   }
 
+  bool _hasNonTriviaBeforeOnLine(int offset) {
+    final lineStart = _lineTable.lineStartOf(offset);
+    for (var i = lineStart; i < offset; i++) {
+      final unit = source.codeUnitAt(i);
+      if (unit != 0x20 && unit != 0x09 && unit != 0xFEFF) return true;
+    }
+    return false;
+  }
+
   CstBlockSeq _buildBlockSeq(int start, int contentStart, YamlList value) {
-    final isCompact = contentStart > _lineTable.lineStartOf(contentStart);
+    final isCompact = _hasNonTriviaBeforeOnLine(contentStart);
     final entries = <CstBlockSeqEntry>[];
     for (final child in value.nodes) {
       final entryStart = position;
@@ -1456,7 +1509,7 @@ final class _CstBuilder {
   }
 
   CstBlockMap _buildBlockMap(int start, int contentStart, YamlMap value) {
-    final isCompact = contentStart > _lineTable.lineStartOf(contentStart);
+    final isCompact = _hasNonTriviaBeforeOnLine(contentStart);
     final entries = <CstBlockMapEntry>[];
     value.nodes.forEach((key, child) {
       final entryStart = position;

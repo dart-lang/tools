@@ -1,0 +1,19 @@
+COMMENT PRESERVATION IN FLOW LISTS
+---
+# header
+items: [
+  # lead 0
+  a, # trail 0
+  # lead 1
+  b, # trail 1
+  # lead 2
+  c, # trail 2
+  # before close
+]
+# footer
+---
+- [update, [items, 1], b2]
+- [remove, [items, 1]]
+- [remove, [items, 1]]
+- [append, [items], d]
+- [remove, [items, 0]]

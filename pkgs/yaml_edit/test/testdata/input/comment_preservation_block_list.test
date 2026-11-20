@@ -1,0 +1,17 @@
+COMMENT PRESERVATION IN BLOCK LISTS
+---
+# header
+items: # after colon
+  # before first
+  - first # inline first
+  # before second
+  - second # inline second
+  # before third
+  - third # inline third
+# footer
+---
+- [prepend, [items], zero]
+- [insert, [items], 2, mid]
+- [append, [items], last]
+- [update, [items, 1], first_updated]
+- [remove, [items, 3]]

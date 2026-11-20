@@ -1,0 +1,70 @@
+# header
+items: # after colon
+  # before first
+  - first # inline first
+  # before second
+  - second # inline second
+  # before third
+  - third # inline third
+# footer
+---
+# header
+items: # after colon
+  # before first
+  - zero
+  - first # inline first
+  # before second
+  - second # inline second
+  # before third
+  - third # inline third
+# footer
+---
+# header
+items: # after colon
+  # before first
+  - zero
+  - first # inline first
+  # before second
+  - mid
+  - second # inline second
+  # before third
+  - third # inline third
+# footer
+---
+# header
+items: # after colon
+  # before first
+  - zero
+  - first # inline first
+  # before second
+  - mid
+  - second # inline second
+  # before third
+  - third # inline third
+  - last
+# footer
+---
+# header
+items: # after colon
+  # before first
+  - zero
+  - first_updated # inline first
+  # before second
+  - mid
+  - second # inline second
+  # before third
+  - third # inline third
+  - last
+# footer
+---
+# header
+items: # after colon
+  # before first
+  - zero
+  - first_updated # inline first
+  # before second
+  - mid
+  # before third
+  - third # inline third
+  - last
+# footer

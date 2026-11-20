@@ -1,0 +1,41 @@
+# header
+literal: |- # header comment
+  line one
+  line two
+keep: |+ # keep header
+  kept line
+
+# between entries
+plain: value # inline plain
+next: 1
+---
+# header
+literal: replaced # header comment
+keep: |+ # keep header
+  kept line
+
+# between entries
+plain: value # inline plain
+next: 1
+---
+# header
+literal: replaced # header comment
+keep: simple # keep header
+
+# between entries
+plain: value # inline plain
+next: 1
+---
+# header
+literal: replaced # header comment
+keep: simple # keep header
+
+# between entries
+plain: "multiline\nblock" # inline plain
+next: 1
+---
+# header
+literal: replaced # header comment
+# between entries
+plain: "multiline\nblock" # inline plain
+next: 1

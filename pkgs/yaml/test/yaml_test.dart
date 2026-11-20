@@ -2128,6 +2128,73 @@ void main() {
       expect(scalar.value, '');
       expect(scalar.span.text, '>');
     });
+
+    test('keep-chomped block scalar span does not swallow following comment',
+        () {
+      const source = 'a: |+\n  hello\n\n# comment\nb: 2\n';
+      final document = loadYamlDocument(source);
+      final map = document.contents as YamlMap;
+      final scalar = map.nodes['a'] as YamlScalar;
+
+      expect(scalar.value, 'hello\n\n');
+      expect(scalar.span.text, '|+\n  hello\n');
+      expect(source.substring(scalar.span.end.offset), '\n# comment\nb: 2\n');
+    });
+
+    test('includes trailing empty lines in folded keep-chomped scalar span',
+        () {
+      const source = 'a: >+\n  hello\n  world\n\n\nb: 2\n';
+      final document = loadYamlDocument(source);
+      final map = document.contents as YamlMap;
+      final scalar = map.nodes['a'] as YamlScalar;
+
+      expect(scalar.value, 'hello world\n\n\n');
+      expect(scalar.span.text, '>+\n  hello\n  world\n\n');
+      expect(source.substring(scalar.span.end.offset), '\nb: 2\n');
+    });
+
+    test('handles CRLF line endings in block scalar spans', () {
+      const source = 'keep: |+\r\n  hello\r\n\r\n'
+          'strip: |-\r\n  world\r\n'
+          'empty: >\r\n\r\n'
+          'b: 1\r\n';
+      final document = loadYamlDocument(source);
+      final map = document.contents as YamlMap;
+      final keep = map.nodes['keep'] as YamlScalar;
+      final strip = map.nodes['strip'] as YamlScalar;
+      final empty = map.nodes['empty'] as YamlScalar;
+
+      expect(keep.value, 'hello\n\n');
+      expect(keep.span.text, '|+\r\n  hello\r\n');
+      expect(strip.value, 'world');
+      expect(strip.span.text, '|-\r\n  world');
+      expect(empty.value, '');
+      expect(empty.span.text, '>');
+    });
+
+    test('handles block scalars at EOF without trailing newline', () {
+      final clipDoc = loadYamlDocument('a: |\n  hello');
+      final clipScalar = (clipDoc.contents as YamlMap).nodes['a'] as YamlScalar;
+      expect(clipScalar.value, 'hello\n');
+      expect(clipScalar.span.text, '|\n  hello');
+
+      final stripDoc = loadYamlDocument('a: |-\n  hello');
+      final stripScalar =
+          (stripDoc.contents as YamlMap).nodes['a'] as YamlScalar;
+      expect(stripScalar.value, 'hello');
+      expect(stripScalar.span.text, '|-\n  hello');
+
+      final keepDoc = loadYamlDocument('a: |+\n  hello\n\n');
+      final keepScalar = (keepDoc.contents as YamlMap).nodes['a'] as YamlScalar;
+      expect(keepScalar.value, 'hello\n\n');
+      expect(keepScalar.span.text, '|+\n  hello\n');
+
+      final emptyDoc = loadYamlDocument('a: >-');
+      final emptyScalar =
+          (emptyDoc.contents as YamlMap).nodes['a'] as YamlScalar;
+      expect(emptyScalar.value, '');
+      expect(emptyScalar.span.text, '>-');
+    });
   });
 
   group('empty implicit flow keys', () {
@@ -2146,6 +2213,17 @@ void main() {
       expect(loadYaml('foo: 1\n\t# comment\nbar: 2\n'), {'foo': 1, 'bar': 2});
       expect(loadYaml('- a\n\t\n- b\n'), ['a', 'b']);
       expect(loadYaml('[a\n\t\n]'), ['a']);
+    });
+
+    test('allows tab-only and tab-comment lines after non-plain tokens', () {
+      expect(loadYaml('foo: "1"\n\t\nbar: 2\n'), {'foo': '1', 'bar': 2});
+      expect(loadYaml('foo: [1]\n  \t # comment\nbar: 2\n'), {
+        'foo': [1],
+        'bar': 2,
+      });
+      expect(loadYaml('# lead\n\t# second\nfoo: 1\n'), {'foo': 1});
+      expect(loadYaml('---\n\t \t\nfoo: 1\n'), {'foo': 1});
+      expect(() => loadYaml('foo: "1"\n\tbar: 2\n'), throwsYamlException);
     });
 
     test('does not include trailing tab-only line in plain scalar span', () {

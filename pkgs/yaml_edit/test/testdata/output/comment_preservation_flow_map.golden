@@ -1,0 +1,50 @@
+config: {
+  # lead a
+  a: 1, # trail a
+  # lead b
+  b: # empty b comment
+  ,
+  # lead c
+  c: 3, # trail c
+  # before close
+}
+---
+config: {
+  # lead a
+  a: 1, # trail a
+  # lead b
+  b: 2 # empty b comment
+  ,
+  # lead c
+  c: 3, # trail c
+  # before close
+}
+---
+config: {
+  # lead a
+  # lead b
+  b: 2 # empty b comment
+  ,
+  # lead c
+  c: 3, # trail c
+  # before close
+}
+---
+config: {
+  # lead a
+  # lead b
+  b: 2 # empty b comment
+  ,
+  # lead c
+  # before close
+}
+---
+config: {
+  # lead a
+  # lead b
+  b: 2 # empty b comment
+  ,
+  # lead c
+  # before close
+  d: 4,
+}

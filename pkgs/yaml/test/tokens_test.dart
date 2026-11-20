@@ -186,5 +186,81 @@ void main() {
         throwsA(isA<YamlException>()),
       );
     });
+
+    test('supports recover: true with errorListener', () {
+      final collector = ErrorCollector();
+      final (:document, :tokens) = loadYamlDocumentWithTokens(
+        'a: 1\nb\n',
+        recover: true,
+        errorListener: collector,
+      );
+      expect(collector.errors, hasLength(1));
+      expect(collector.errors.first.message, contains("Expected ':'"));
+      expect(document.contents.value, {'a': 1, 'b': null});
+      expect(tokens.every((t) => t.span.length > 0), isTrue);
+      expect(
+        tokens.map((t) => (t.kind, t.span.text)).toList(),
+        [
+          (YamlTokenKind.scalar, 'a'),
+          (YamlTokenKind.value, ':'),
+          (YamlTokenKind.scalar, '1'),
+          (YamlTokenKind.scalar, 'b'),
+        ],
+      );
+    });
+
+    test('rejects errorListener when recover is false', () {
+      expect(
+        () => loadYamlDocumentWithTokens(
+          'a: 1\n',
+          errorListener: ErrorCollector(),
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+
+    test('propagates sourceUrl to document and token spans', () {
+      final url = Uri.parse('package:example/config.yaml');
+      final (:document, :tokens) =
+          loadYamlDocumentWithTokens('a: 1 # note\n', sourceUrl: url);
+      expect(document.span.sourceUrl, url);
+      expect(tokens, isNotEmpty);
+      expect(tokens.every((t) => t.span.sourceUrl == url), isTrue);
+    });
+
+    test('handles BOM, CRLF, tabs before comments, and EOF comments', () {
+      final bomResult = loadYamlDocumentWithTokens('\uFEFFa: 1 # bom\n');
+      expect(bomResult.document.contents.value, {'a': 1});
+      expect(
+        bomResult.tokens.map((t) => (t.kind, t.span.text)).toList(),
+        [
+          (YamlTokenKind.scalar, 'a'),
+          (YamlTokenKind.value, ':'),
+          (YamlTokenKind.scalar, '1'),
+          (YamlTokenKind.comment, '# bom'),
+        ],
+      );
+
+      const crlfAndTabs = 'a: 1\t# c1\r\nb: [2, # c2\r\n  3]\r\n... # end';
+      final (:document, :tokens) = loadYamlDocumentWithTokens(crlfAndTabs);
+      expect(document.contents.value, {
+        'a': 1,
+        'b': [2, 3],
+      });
+      expect(
+        tokens
+            .where((t) => t.kind == YamlTokenKind.comment)
+            .map((t) => t.span.text),
+        ['# c1', '# c2', '# end'],
+      );
+      expect(tokens.last.kind, YamlTokenKind.comment);
+      expect(tokens.last.span.end.offset, crlfAndTabs.length);
+    });
+
+    test('formats toString on YamlToken and YamlTokenKind', () {
+      final (:tokens, document: _) = loadYamlDocumentWithTokens('a: 1\n');
+      expect(tokens.first.toString(), 'scalar(0..1)');
+      expect(tokens.first.kind.toString(), 'YamlTokenKind.scalar');
+    });
   });
 }
