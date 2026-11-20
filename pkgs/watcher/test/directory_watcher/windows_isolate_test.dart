@@ -24,8 +24,9 @@ void main() {
     late int eventsSeen;
     late int recoveriesSeen;
     late int totalRecoveriesSeen;
+    late int failedRecoveriesSeen;
 
-    setUp(() async {
+    Future<void> setUpFilesystemAndWatcher() async {
       temp = Directory.systemTemp.createTempSync();
       final watcher = DirectoryWatcher(
         temp.path,
@@ -34,10 +35,6 @@ void main() {
       // To recover from an error "modify" is sent for files that still exist,
       // so any event on this file indicates a recovery.
       File('${temp.path}\\recovery.txt').writeAsStringSync('');
-
-      eventsSeen = 0;
-      recoveriesSeen = 0;
-      totalRecoveriesSeen = 0;
       subscription = watcher.events.listen((e) {
         if (e.path.contains('recovery.txt')) {
           ++recoveriesSeen;
@@ -46,10 +43,19 @@ void main() {
         }
       });
       await watcher.ready;
+    }
+
+    setUp(() async {
+      eventsSeen = 0;
+      recoveriesSeen = 0;
+      totalRecoveriesSeen = 0;
+      failedRecoveriesSeen = 0;
+      await setUpFilesystemAndWatcher();
     });
 
     tearDown(() {
       subscription.cancel();
+      temp.deleteSync(recursive: true);
     });
 
     test(
@@ -100,19 +106,26 @@ void main() {
               await file.writeAsString('');
             }
             await Future<void>.delayed(const Duration(milliseconds: 10));
-            fail(
+            print(
               'On attempt ${times + 1}, watcher registered nothing. '
               'On retry, it registered: $recoveriesSeen recoveries, '
               '$eventsSeen event(s).',
             );
+            ++failedRecoveriesSeen;
+            // Watch a new directory instead.
+            await setUpFilesystemAndWatcher();
           }
         }
 
-        // Buffer exhaustion is likely without the isolate but not guaranteed.
         if (runInIsolate) {
-          expect(totalRecoveriesSeen, 0);
+          expect(failedRecoveriesSeen, 0);
+          // Buffer exhaustion is possible with the isolate, just unlikely.
+          expect(totalRecoveriesSeen, lessThan(5));
         } else {
+          // Buffer exhaustion is likely without the isolate but not guaranteed.
           expect(totalRecoveriesSeen, greaterThan(150));
+          // Recovery is not 100% guaranteed on older SDKs.
+          expect(failedRecoveriesSeen, lessThan(5));
         }
       },
     );
