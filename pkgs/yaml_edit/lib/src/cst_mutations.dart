@@ -1575,6 +1575,13 @@ SourceEdit _removeFlowEntry(
   final closeOnLaterLine = document.lineStartOf(collection.closeStart) >
       document.lineStartOf(entryContentEnd);
 
+  final fromLineStart = document.lineStartOf(from);
+  final prevValueEnd =
+      document.trimmedEnd(previous.value.start, previous.value.end);
+  final fromStartsOwnLine = !hasTrailingComma &&
+      fromLineStart >= prevValueEnd &&
+      document.isWhitespaceRange(fromLineStart, from);
+
   if (commentsBefore.isNotEmpty) {
     final deleteStart =
         document.lineBreakEndOf(commentsBefore.last.span.end.offset);
@@ -1586,6 +1593,9 @@ SourceEdit _removeFlowEntry(
     if (hasTrailingComma &&
         document.isWhitespaceRange(entryLineStart, entry.contentStart)) {
       return SourceEdit(entryLineStart, entryLineEnd - entryLineStart, '');
+    }
+    if (fromStartsOwnLine) {
+      return SourceEdit(fromLineStart, entryLineEnd - fromLineStart, '');
     }
     final deleteEnd = document.lineContentEndOf(entryContentEnd);
     return SourceEdit(from, deleteEnd - from, '');
@@ -1603,6 +1613,9 @@ SourceEdit _removeFlowEntry(
   }
 
   if (closeOnLaterLine) {
+    if (fromStartsOwnLine) {
+      return SourceEdit(fromLineStart, entryLineEnd - fromLineStart, '');
+    }
     final deleteEnd = document.lineContentEndOf(entryContentEnd);
     return SourceEdit(from, deleteEnd - from, '');
   }

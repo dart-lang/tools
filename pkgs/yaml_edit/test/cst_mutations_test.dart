@@ -401,6 +401,12 @@ void main() {
       final bareExplicitFlow = YamlEditor('{\n  a: 1,\n  ?\n}\n');
       bareExplicitFlow.update([null], 42);
       expect(bareExplicitFlow.toString(), '{\n  a: 1,\n  ?\n: 42\n}\n');
+
+      // Removing a leading-comma last flow entry leaves no spaces-only line
+      // (mangled_json.yaml).
+      final leadingCommaLast = YamlEditor('{\n  a: 1\n    , b: 2\n}\n');
+      leadingCommaLast.remove(['b']);
+      expect(leadingCommaLast.toString(), '{\n  a: 1\n}\n');
     });
 
     test('removes sole entry of zero-indented block sequence in compact map',
