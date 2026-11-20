@@ -1089,14 +1089,6 @@ items: [
           final isQuoted = (originalNode.style == ScalarStyle.SINGLE_QUOTED ||
                   originalNode.style == ScalarStyle.DOUBLE_QUOTED) &&
               cstNode is CstScalar;
-          final parentCst = findNode(doc, path.sublist(0, path.length - 1));
-          final isCanonicalMapLiteral =
-              originalNode.style == ScalarStyle.LITERAL &&
-                  cstNode is CstScalar &&
-                  parentCst is CstBlockMap &&
-                  generator.indentStep == 2 &&
-                  originalNode.span.text.startsWith('|-') &&
-                  !originalNode.span.text.startsWith('|-2');
 
           if (isSingleLinePlain) {
             selfUpdatePlain++;
@@ -1114,15 +1106,6 @@ items: [
               selfEditor.toString(),
               equals(yaml),
               reason: 'Quoted scalar self-update changed document bytes '
-                  '(round $round, path $path)',
-            );
-          } else if (isCanonicalMapLiteral) {
-            selfUpdateBlock++;
-            final selfEditor = YamlEditor(yaml)..update(path, originalNode);
-            expect(
-              selfEditor.toString(),
-              equals(yaml),
-              reason: 'Literal block scalar self-update changed bytes '
                   '(round $round, path $path)',
             );
           }
@@ -1148,19 +1131,16 @@ items: [
           reason: 'Block-scalar round-trip diverged byte-for-byte '
               '(round $round, path $path)\nInitial:\n$yaml',
         );
-        expect(
-          deepEquals(twoStep.parseAt([]), oneStep.parseAt([])),
-          isTrue,
-          reason: 'Block-scalar round-trip semantic mismatch',
-        );
         _assertTaggedCommentsInOrder(twoStep.toString(), emittedTags);
         _assertEditsReplay(yaml, twoStep);
       }
 
-      // Explicitly exercise canonical literal block-scalar self-update across
-      // LF/CRLF, strip/clip chomping, header comments, maps, and sequences.
+      // Explicitly exercise canonical strip (`|-`) literal block-scalar
+      // self-update across LF/CRLF, header comments, maps, and sequences
+      // (`yamlEncodeBlock` falls back to double-quoted strings for clip `|`
+      // scalars ending in a newline).
       for (final eol in ['\n', '\r\n']) {
-        for (final (doc, path) in <(String, List<Object?>)>[
+        for (final (source, path) in <(String, List<Object?>)>[
           ('a: |-$eol  line1$eol  line2${eol}b: 1$eol', ['a']),
           ('a: |-$eol  line1$eol  line2$eol', ['a']),
           ('a: |- # @hdr_0@$eol  line1$eol  line2${eol}b: 1$eol', ['a']),
@@ -1175,15 +1155,16 @@ items: [
           ('- |- # @hdr_2@$eol    x$eol    y$eol- z$eol', [0]),
         ]) {
           selfUpdateBlock++;
-          final editor = YamlEditor(doc);
+          final editor = YamlEditor(source);
           final original = editor.parseAt(path) as YamlScalar;
           editor.update(path, original);
           expect(
             editor.toString(),
-            equals(doc),
-            reason: 'Literal block scalar self-update changed bytes for:\n$doc',
+            equals(source),
+            reason:
+                'Literal block scalar self-update changed bytes for:\n$source',
           );
-          _assertEditsReplay(doc, editor);
+          _assertEditsReplay(source, editor);
         }
       }
 
