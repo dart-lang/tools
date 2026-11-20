@@ -1,5 +1,9 @@
 ## 5.0.7-wip
 
+* Fix running an executable with `runInShell: true` on Windows when its path
+  contains parentheses (or another character that `cmd.exe` treats specially)
+  but no spaces.
+
 ## 5.0.6
 
 * Add an example app.
