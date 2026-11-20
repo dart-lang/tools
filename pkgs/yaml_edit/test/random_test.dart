@@ -69,7 +69,6 @@ class _Generator {
   /// Maximum depth of random YAML collection generated.
   final int maxDepth;
 
-  // ignore: unused_element
   _Generator({int seed = 0, required this.maxDepth}) : r = Random(seed);
 
   int nextInt([int max = maxInt]) => r.nextInt(max);
@@ -124,6 +123,9 @@ class _Generator {
   YamlList nextYamlList(int depth, {bool allowFlow = true}) {
     final length = nextInt(9);
     final style = nextCollectionStyle(allowFlow: allowFlow);
+    // Avoid nesting CollectionStyle.FLOW inside a block collection until the
+    // pre-existing strings.dart encoder bug (emitting flow children at column
+    // 0) is fixed separately.
     final childAllowFlow = allowFlow && style == CollectionStyle.FLOW;
     final list = [];
 
@@ -307,13 +309,10 @@ $stacktrace
   CollectionStyle nextCollectionStyle({bool allowFlow = true}) {
     final seed = nextInt(allowFlow ? 3 : 2);
 
-    switch (seed) {
-      case 0:
-        return CollectionStyle.BLOCK;
-      case 1:
-        return allowFlow ? CollectionStyle.FLOW : CollectionStyle.ANY;
-      default:
-        return CollectionStyle.ANY;
-    }
+    return switch (seed) {
+      0 => CollectionStyle.BLOCK,
+      1 => allowFlow ? CollectionStyle.FLOW : CollectionStyle.ANY,
+      _ => CollectionStyle.ANY,
+    };
   }
 }

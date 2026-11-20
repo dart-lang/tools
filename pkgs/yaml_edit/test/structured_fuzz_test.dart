@@ -204,22 +204,19 @@ final class _StructuredYamlGenerator {
 
     final rootRoll =
         allowFlowOrScalarRoot ? random.nextInt(6) : random.nextInt(2);
-    if (rootRoll == 0) {
-      buffer.write(
-        _generateBlockMap(0, maxDepth, includeAliases: includeAliases),
-      );
-    } else if (rootRoll == 1) {
-      buffer.write(
-        _generateBlockSeq(0, maxDepth, includeAliases: includeAliases),
-      );
-    } else if (rootRoll == 2 || rootRoll == 3) {
-      buffer.write(
-        _generateBlockMap(0, maxDepth, includeAliases: includeAliases),
-      );
-    } else if (rootRoll == 4) {
-      buffer.write(_generateFlowCollection(0));
-    } else {
-      buffer.write(_generateScalar(0, includeAliases: false));
+    switch (rootRoll) {
+      case 0 || 2 || 3:
+        buffer.write(
+          _generateBlockMap(0, maxDepth, includeAliases: includeAliases),
+        );
+      case 1:
+        buffer.write(
+          _generateBlockSeq(0, maxDepth, includeAliases: includeAliases),
+        );
+      case 4:
+        buffer.write(_generateFlowCollection(0));
+      default:
+        buffer.write(_generateScalar(0, includeAliases: false));
     }
     buffer.write(lineEnding);
 
@@ -252,7 +249,7 @@ final class _StructuredYamlGenerator {
       }
 
       final key = 'k_${depth}_$index';
-      final kind = depth > 0 ? random.nextInt(9) : random.nextInt(5);
+      final kind = depth > 0 ? random.nextInt(10) : random.nextInt(5);
       if (kind == 0 || depth <= 0) {
         final isExplicit = random.nextInt(4) == 0;
         final isEmptyValue = !isExplicit && random.nextInt(5) == 0;
@@ -287,7 +284,6 @@ final class _StructuredYamlGenerator {
             lines.add('$prefix? $key$trailingComment');
           }
         } else if (kind == 4 && random.nextBool()) {
-          // Multiline plain scalar value.
           final trailingComment = random.nextBool()
               ? ' ${_nextComment('multiline_plain_$key')}'
               : '';
@@ -341,6 +337,15 @@ final class _StructuredYamlGenerator {
         lines.add(
           _generateBlockMap(childIndent, depth - 1,
               includeAliases: includeAliases),
+        );
+      } else if (kind == 8) {
+        // Multiline plain scalar value at any nesting depth.
+        final trailingComment =
+            random.nextBool() ? ' ${_nextComment('multiline_plain_$key')}' : '';
+        lines.add(
+          '$prefix$key: plain_first_${random.nextInt(50)}$lineEnding'
+          '${' ' * childIndent}plain_second_${random.nextInt(50)}'
+          '$trailingComment',
         );
       } else {
         // Indented compact block sequence under key.
@@ -941,17 +946,13 @@ items: [
 
         for (var step = 0; step < 12; step++) {
           final paths = _collectPaths(editor);
-          if (paths.isEmpty) break;
           final path = paths[random.nextInt(paths.length)];
           final node = editor.parseAt(path);
 
           try {
             if (path.isEmpty && random.nextInt(5) == 0) {
               rootEdits++;
-              editor.update(
-                [],
-                generator.generateRandomValue(allowCollections: true),
-              );
+              editor.update([], generator.generateRandomValue());
             } else if (node is YamlList) {
               switch (random.nextInt(6)) {
                 case 0:
