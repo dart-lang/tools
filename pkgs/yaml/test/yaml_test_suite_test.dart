@@ -43,61 +43,71 @@ void main() {
     try {
       for (final c in cases) {
         if (c.fail) continue;
+        final ({YamlDocument document, List<YamlToken> tokens}) parsed;
         try {
-          final (:tokens, :document) = loadYamlDocumentWithTokens(c.yaml);
-          parsedCount++;
-          for (var i = 0; i < tokens.length; i++) {
-            expect(tokens[i].span.length, greaterThan(0),
-                reason: 'zero-length token in ${c.id}');
-            if (i > 0) {
-              expect(
-                tokens[i].span.start.offset,
-                greaterThanOrEqualTo(tokens[i - 1].span.start.offset),
-                reason: 'out-of-order tokens in ${c.id}',
-              );
-              if (tokens[i].span.start.offset < tokens[i - 1].span.end.offset) {
-                // Only a header comment inside a non-empty block scalar may
-                // overlap the preceding token.
-                expect(
-                  tokens[i].kind,
-                  YamlTokenKind.comment,
-                  reason: 'unexpected overlapping token in ${c.id}',
-                );
-                expect(
-                  tokens[i - 1].kind,
-                  YamlTokenKind.scalar,
-                  reason: 'comment overlaps non-scalar token in ${c.id}',
-                );
-                expect(
-                  tokens[i].span.end.offset,
-                  lessThanOrEqualTo(tokens[i - 1].span.end.offset),
-                  reason: 'header comment extends past scalar end in ${c.id}',
-                );
-              }
-            }
-          }
-
-          // Comment-deletion oracle: removing every retained comment token must
-          // preserve the parsed document value (catching false-positive
-          // comments inside scalars or syntax).
-          final commentTokens = [
-            for (final token in tokens)
-              if (token.kind == YamlTokenKind.comment) token,
-          ];
-          if (commentTokens.isNotEmpty) {
-            commentedCount++;
-            final stripped = _stripComments(c.yaml, commentTokens);
-            final reparsed = loadYamlDocument(stripped);
-            expect(
-              _nodesEqual(reparsed.contents, document.contents),
-              isTrue,
-              reason: 'stripping comments changed value in ${c.id}: '
-                  'expected ${document.contents.value}, '
-                  'got ${reparsed.contents.value}',
-            );
-          }
+          parsed = loadYamlDocumentWithTokens(c.yaml);
         } on YamlException {
           // Multi-document or unsupported cases.
+          continue;
+        }
+        final (:tokens, :document) = parsed;
+        parsedCount++;
+        for (var i = 0; i < tokens.length; i++) {
+          expect(tokens[i].span.length, greaterThan(0),
+              reason: 'zero-length token in ${c.id}');
+          if (i > 0) {
+            expect(
+              tokens[i].span.start.offset,
+              greaterThanOrEqualTo(tokens[i - 1].span.start.offset),
+              reason: 'out-of-order tokens in ${c.id}',
+            );
+            if (tokens[i].span.start.offset < tokens[i - 1].span.end.offset) {
+              // Only a header comment inside a non-empty block scalar may
+              // overlap the preceding token.
+              expect(
+                tokens[i].kind,
+                YamlTokenKind.comment,
+                reason: 'unexpected overlapping token in ${c.id}',
+              );
+              expect(
+                tokens[i - 1].kind,
+                YamlTokenKind.scalar,
+                reason: 'comment overlaps non-scalar token in ${c.id}',
+              );
+              expect(
+                tokens[i].span.end.offset,
+                lessThanOrEqualTo(tokens[i - 1].span.end.offset),
+                reason: 'header comment extends past scalar end in ${c.id}',
+              );
+            }
+          }
+        }
+
+        // Comment-deletion oracle: removing every retained comment token must
+        // stay parsable and preserve the parsed document value (catching
+        // false-positive comments inside scalars or syntax).
+        final commentTokens = [
+          for (final token in tokens)
+            if (token.kind == YamlTokenKind.comment) token,
+        ];
+        if (commentTokens.isNotEmpty) {
+          commentedCount++;
+          final stripped = _stripComments(c.yaml, commentTokens);
+          final YamlDocument reparsed;
+          try {
+            reparsed = loadYamlDocument(stripped);
+          } on YamlException catch (e) {
+            fail(
+              'stripping comments made ${c.id} unparsable: $e\n$stripped',
+            );
+          }
+          expect(
+            _nodesEqual(reparsed.contents, document.contents),
+            isTrue,
+            reason: 'stripping comments changed value in ${c.id}: '
+                'expected ${document.contents.value}, '
+                'got ${reparsed.contents.value}',
+          );
         }
       }
       expect(parsedCount, greaterThan(200));
