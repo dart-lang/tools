@@ -22,6 +22,7 @@ import 'package:test/test.dart';
 import 'package:yaml/tokens.dart';
 import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/src/cst.dart';
+import 'package:yaml_edit/src/cst_mutations.dart' show findNode;
 import 'package:yaml_edit/src/equality.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
@@ -1055,9 +1056,14 @@ items: [
 
   group('update round-trips, cancellation, and commutativity', () {
     test(
-        'plain scalar self-update is byte-identical and block round-trip '
-        'preserves semantics and comments', () {
-      for (var round = 0; round < 40; round++) {
+        'cross-style scalar self-update and block-scalar round-trip are '
+        'byte-identical', () {
+      var selfUpdatePlain = 0;
+      var selfUpdateQuoted = 0;
+      var selfUpdateBlock = 0;
+      var blockRoundTrips = 0;
+
+      for (var round = 0; round < 50; round++) {
         final lineEnding = round.isEven ? '\n' : '\r\n';
         final generator = _StructuredYamlGenerator(
           Random(3003 + round),
@@ -1066,6 +1072,7 @@ items: [
         );
         final yaml = generator.generateDocument(maxDepth: 2);
         final emittedTags = List<String>.of(generator.emittedComments);
+        final doc = CstDocument.parse(yaml);
         final editor = YamlEditor(yaml);
         final scalarPaths = _collectPaths(editor)
             .where(
@@ -1073,15 +1080,55 @@ items: [
             .toList();
         if (scalarPaths.isEmpty) continue;
 
-        final path = scalarPaths[generator.random.nextInt(scalarPaths.length)];
-        final originalNode = editor.parseAt(path) as YamlScalar;
+        for (final path in scalarPaths) {
+          final originalNode = editor.parseAt(path) as YamlScalar;
+          final cstNode = findNode(doc, path);
+          final isSingleLinePlain = originalNode.style == ScalarStyle.PLAIN &&
+              !originalNode.span.text.contains('\n') &&
+              cstNode is CstScalar;
+          final isQuoted = (originalNode.style == ScalarStyle.SINGLE_QUOTED ||
+                  originalNode.style == ScalarStyle.DOUBLE_QUOTED) &&
+              cstNode is CstScalar;
+          final parentCst = findNode(doc, path.sublist(0, path.length - 1));
+          final isCanonicalMapLiteral =
+              originalNode.style == ScalarStyle.LITERAL &&
+                  cstNode is CstScalar &&
+                  parentCst is CstBlockMap &&
+                  generator.indentStep == 2 &&
+                  originalNode.span.text.startsWith('|-') &&
+                  !originalNode.span.text.startsWith('|-2');
 
-        if (originalNode.style == ScalarStyle.PLAIN) {
-          final selfEditor = YamlEditor(yaml)..update(path, originalNode.value);
-          expect(selfEditor.toString(), equals(yaml),
-              reason: 'Plain scalar self-update changed document bytes');
+          if (isSingleLinePlain) {
+            selfUpdatePlain++;
+            final selfEditor = YamlEditor(yaml)..update(path, originalNode);
+            expect(
+              selfEditor.toString(),
+              equals(yaml),
+              reason: 'Plain scalar self-update changed document bytes '
+                  '(round $round, path $path)',
+            );
+          } else if (isQuoted) {
+            selfUpdateQuoted++;
+            final selfEditor = YamlEditor(yaml)..update(path, originalNode);
+            expect(
+              selfEditor.toString(),
+              equals(yaml),
+              reason: 'Quoted scalar self-update changed document bytes '
+                  '(round $round, path $path)',
+            );
+          } else if (isCanonicalMapLiteral) {
+            selfUpdateBlock++;
+            final selfEditor = YamlEditor(yaml)..update(path, originalNode);
+            expect(
+              selfEditor.toString(),
+              equals(yaml),
+              reason: 'Literal block scalar self-update changed bytes '
+                  '(round $round, path $path)',
+            );
+          }
         }
 
+        final path = scalarPaths[generator.random.nextInt(scalarPaths.length)];
         final blockIntermediate = YamlScalar.wrap(
           'intermediate_line_1\nintermediate_line_2',
           style: ScalarStyle.LITERAL,
@@ -1094,23 +1141,65 @@ items: [
 
         final oneStep = YamlEditor(yaml)..update(path, finalScalar);
 
+        blockRoundTrips++;
+        expect(
+          twoStep.toString(),
+          equals(oneStep.toString()),
+          reason: 'Block-scalar round-trip diverged byte-for-byte '
+              '(round $round, path $path)\nInitial:\n$yaml',
+        );
         expect(
           deepEquals(twoStep.parseAt([]), oneStep.parseAt([])),
           isTrue,
           reason: 'Block-scalar round-trip semantic mismatch',
         );
-        expect(
-          _extractComments(twoStep.toString()),
-          equals(_extractComments(oneStep.toString())),
-          reason: 'Transitioning through a block scalar lost comments',
-        );
         _assertTaggedCommentsInOrder(twoStep.toString(), emittedTags);
         _assertEditsReplay(yaml, twoStep);
       }
+
+      // Explicitly exercise canonical literal block-scalar self-update across
+      // LF/CRLF, strip/clip chomping, header comments, maps, and sequences.
+      for (final eol in ['\n', '\r\n']) {
+        for (final (doc, path) in <(String, List<Object?>)>[
+          ('a: |-$eol  line1$eol  line2${eol}b: 1$eol', ['a']),
+          ('a: |-$eol  line1$eol  line2$eol', ['a']),
+          ('a: |- # @hdr_0@$eol  line1$eol  line2${eol}b: 1$eol', ['a']),
+          (
+            'a: |- # @hdr_1@$eol  line1$eol  line2$eol  line3${eol}b: 1$eol',
+            ['a']
+          ),
+          (
+            'root:$eol  nested: |-$eol    x$eol    y${eol}other: 2$eol',
+            ['root', 'nested']
+          ),
+          ('- |- # @hdr_2@$eol    x$eol    y$eol- z$eol', [0]),
+        ]) {
+          selfUpdateBlock++;
+          final editor = YamlEditor(doc);
+          final original = editor.parseAt(path) as YamlScalar;
+          editor.update(path, original);
+          expect(
+            editor.toString(),
+            equals(doc),
+            reason: 'Literal block scalar self-update changed bytes for:\n$doc',
+          );
+          _assertEditsReplay(doc, editor);
+        }
+      }
+
+      expect(selfUpdatePlain, greaterThan(20));
+      expect(selfUpdateQuoted, greaterThan(20));
+      expect(selfUpdateBlock, greaterThanOrEqualTo(12));
+      expect(blockRoundTrips, greaterThan(30));
     });
 
-    test('insert-then-remove restores semantics and comments', () {
-      for (var round = 0; round < 40; round++) {
+    test('insert-then-remove restores bytes, semantics, and comments', () {
+      var exactBlockListRestores = 0;
+      var exactFlowListRestores = 0;
+      var exactBlockMapRestores = 0;
+      var exactFlowMapRestores = 0;
+
+      for (var round = 0; round < 50; round++) {
         final lineEnding = round.isEven ? '\n' : '\r\n';
         final generator = _StructuredYamlGenerator(
           Random(4004 + round),
@@ -1119,6 +1208,7 @@ items: [
         );
         final yaml = generator.generateDocument(maxDepth: 2);
         final emittedTags = List<String>.of(generator.emittedComments);
+        final doc = CstDocument.parse(yaml);
         final editor = YamlEditor(yaml);
         final allPaths = _collectPaths(editor);
         final listPaths =
@@ -1133,6 +1223,7 @@ items: [
           final listPath =
               listPaths[generator.random.nextInt(listPaths.length)];
           final listNode = editor.parseAt(listPath) as YamlList;
+          final cstList = findNode(doc, listPath);
           final index = generator.random.nextInt(listNode.length + 1);
 
           final listEditor = YamlEditor(yaml);
@@ -1151,11 +1242,32 @@ items: [
           );
           _assertTaggedCommentsInOrder(listEditor.toString(), emittedTags);
           _assertEditsReplay(yaml, listEditor);
+
+          if (cstList is CstBlockSeq) {
+            exactBlockListRestores++;
+            expect(
+              listEditor.toString(),
+              equals(yaml),
+              reason: 'Block list insert-remove did not restore exact bytes '
+                  '(round $round, path $listPath, index $index)',
+            );
+          } else if (cstList is CstFlowSeq && (index > 0 || listNode.isEmpty)) {
+            exactFlowListRestores++;
+            expect(
+              listEditor.toString(),
+              equals(yaml),
+              reason: 'Flow list insert-remove did not restore exact bytes '
+                  '(round $round, path $listPath, index $index)',
+            );
+          }
         }
 
         if (mapPaths.isNotEmpty) {
           final mapPath = mapPaths[generator.random.nextInt(mapPaths.length)];
-          final newKey = 'temp_k_$round';
+          final cstMap = findNode(doc, mapPath);
+          // Prefix with `zz_` so sorted flow maps append rather than hitting
+          // index-0 legacy `[ "b"]` spacing.
+          final newKey = 'zz_temp_k_$round';
 
           final mapEditor = YamlEditor(yaml);
           mapEditor.update([...mapPath, newKey], 'temp_val_$round');
@@ -1173,8 +1285,31 @@ items: [
           );
           _assertTaggedCommentsInOrder(mapEditor.toString(), emittedTags);
           _assertEditsReplay(yaml, mapEditor);
+
+          if (cstMap is CstBlockMap) {
+            exactBlockMapRestores++;
+            expect(
+              mapEditor.toString(),
+              equals(yaml),
+              reason: 'Block map add-remove did not restore exact bytes '
+                  '(round $round, path $mapPath)',
+            );
+          } else if (cstMap is CstFlowMap) {
+            exactFlowMapRestores++;
+            expect(
+              mapEditor.toString(),
+              equals(yaml),
+              reason: 'Flow map add-remove did not restore exact bytes '
+                  '(round $round, path $mapPath)',
+            );
+          }
         }
       }
+
+      expect(exactBlockListRestores, greaterThan(10));
+      expect(exactFlowListRestores, greaterThan(5));
+      expect(exactBlockMapRestores, greaterThan(15));
+      expect(exactFlowMapRestores, greaterThan(5));
     });
 
     test('disjoint scalar updates commute byte-for-byte', () {
