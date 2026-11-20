@@ -203,7 +203,7 @@ void main() {
       _expectMimeType('file', 'audio/aac',
           headerBytes: [0xFF, 0xF1, 0x0D, 0x0A, 0x1A, 0x0A]);
       _expectMimeType('file', 'audio/ogg',
-          headerBytes: [0x4F, 0x70, 0x75, 0x0D, 0x0A, 0x1A, 0x0A]);
+          headerBytes: [0x4F, 0x67, 0x67, 0x53, 0x0D, 0x0A, 0x1A, 0x0A]);
       _expectMimeType('file', 'audio/x-aiff', headerBytes: [
         0x46,
         0x4F,
@@ -279,6 +279,23 @@ void main() {
         0x31,
         0x00
       ]);
+    });
+
+    test('correct Ogg, glTF and PostScript magic numbers', () {
+      // https://github.com/dart-lang/tools/issues/2741 - real file signatures.
+      _expectMimeType('file', 'audio/ogg',
+          headerBytes: [0x4F, 0x67, 0x67, 0x53, 0x00, 0x02]); // 'OggS'.
+      _expectMimeType('file', 'model/gltf-binary',
+          headerBytes: [0x67, 0x6C, 0x54, 0x46, 0x02, 0x00]); // 'glTF'.
+      _expectMimeType('file', 'application/postscript',
+          headerBytes: [0x25, 0x21, 0x50, 0x53]); // '%!PS'.
+
+      // The previously-wrong signatures must not match these types.
+      _expectMimeType('file', null,
+          headerBytes: [0x4F, 0x70, 0x75]); // 'Opu' (from OpusHead).
+      _expectMimeType('file', null,
+          headerBytes: [0x46, 0x54, 0x6C, 0x67]); // 'FTlg'.
+      _expectMimeType('file', null, headerBytes: [0x25, 0x51]); // '%Q'.
     });
   });
 
