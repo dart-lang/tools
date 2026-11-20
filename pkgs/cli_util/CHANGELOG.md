@@ -10,6 +10,9 @@
   size of 5 items (using `SelectComponentSizing.fit`).
 - Allow ANSI SGR styling sequences (`\x1b[...m`) in option labels and
   descriptions.
+- Fix the `keys` stream throwing a `RangeError` when a chunk of input ends
+  right after an `esc [` escape sequence prefix. The prefix is now completed
+  by the next chunk.
 
 ## 0.6.0
 

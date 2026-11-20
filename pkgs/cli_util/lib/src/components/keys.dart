@@ -11,12 +11,26 @@ extension Keys on Stream<List<int>> {
     // actually complete when cancelled if the user hits ctrl+c.
     final streamController = StreamController<Key>();
 
-    final subscription = listen((bytes) {
+    // An unfinished escape sequence that ended a chunk, to be completed by the
+    // next one.
+    var pending = const <int>[];
+
+    final subscription = listen((chunk) {
+      final bytes = pending.isEmpty ? chunk : [...pending, ...chunk];
+      pending = const [];
       for (var b = 0; b < bytes.length; b++) {
         final byte = bytes[b];
         Key? key;
         // Check for an escape sequence (starts with "esc [").
         if (byte == 27 && b + 1 < bytes.length && bytes[b + 1] == 91) {
+          // Wait for the next chunk if the sequence is cut off after "esc [",
+          // or after the "5"/"6" of a page up/down sequence ("esc [ 5 ~").
+          if (b + 2 == bytes.length ||
+              (b + 3 == bytes.length &&
+                  (bytes[b + 2] == 53 || bytes[b + 2] == 54))) {
+            pending = bytes.sublist(b);
+            break;
+          }
           b += 2;
           key = switch (bytes[b]) {
             65 => Key.up, // A
