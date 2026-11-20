@@ -1,5 +1,7 @@
 ## 2.2.5-wip
 
+- Fix `YamlEditor.update` on empty block sequence entries so the computed edit
+  is correct both before and after the `yaml` empty block node span fix.
 - Fix `YamlEditor.appendToList` and map updates when adding to flow collections with a trailing comma.
 
 ## 2.2.4

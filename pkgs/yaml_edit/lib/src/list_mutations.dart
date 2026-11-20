@@ -45,7 +45,12 @@ SourceEdit updateInList(
 
     var end = getContentSensitiveEnd(currValue);
     if (end <= offset) {
-      offset++;
+      // An empty node's span is zero-width. yaml <=3.1.x places it on the
+      // '-' indicator while yaml >=3.2.0 places it just after it, so only
+      // skip past the indicator for the older position.
+      if (offset < yaml.length && yaml[offset] == '-') {
+        offset++;
+      }
       end = offset;
       valueString = ' $valueString';
     }
