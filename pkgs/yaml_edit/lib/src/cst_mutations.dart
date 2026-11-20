@@ -1238,6 +1238,18 @@ SourceEdit buildRemove(CstDocument document, List<Object?> path) {
       final nextEntryContentStart = step + 1 < parent.entries.length
           ? parent.entries[step + 1].dashStart
           : null;
+      int? parentKeyColumn;
+      if (parent.entries.length == 1 && parentPath.isNotEmpty) {
+        final grandParent =
+            findNode(document, parentPath.sublist(0, parentPath.length - 1));
+        if (grandParent is CstBlockMap) {
+          final grandParentIndex = findEntryIndex(grandParent, parentPath.last);
+          if (grandParentIndex != null) {
+            parentKeyColumn = document
+                .columnOf(grandParent.entries[grandParentIndex].keyStart);
+          }
+        }
+      }
       return _removeBlockEntry(
         document,
         style,
@@ -1248,6 +1260,7 @@ SourceEdit buildRemove(CstDocument document, List<Object?> path) {
         emptyText: '[]',
         isCompact: step == 0 && parent.isCompact,
         nextEntryContentStart: nextEntryContentStart,
+        parentKeyColumn: parentKeyColumn,
       );
 
     case CstBlockMap():
@@ -1311,14 +1324,22 @@ SourceEdit _removeBlockEntry(
   required String emptyText,
   required bool isCompact,
   required int? nextEntryContentStart,
+  int? parentKeyColumn,
 }) {
   if (entryCount == 1) {
     final breakLength = document.lineBreakLengthBefore(end);
     final column = document.columnOf(contentStart);
-    final text = (column == 0 && document.hasLineBreakBefore(contentStart))
-        ? '  $emptyText'
-        : emptyText;
-    return SourceEdit(contentStart, end - breakLength - contentStart, text);
+    final lineStart = document.lineStartOf(contentStart);
+    final startsOwnLine = document.isWhitespaceRange(lineStart, contentStart);
+    final needsIndent =
+        startsOwnLine && parentKeyColumn != null && column <= parentKeyColumn;
+    final extraSpaces =
+        needsIndent ? ' ' * (parentKeyColumn - column + style.indentStep) : '';
+    return SourceEdit(
+      contentStart,
+      end - breakLength - contentStart,
+      '$extraSpaces$emptyText',
+    );
   }
 
   int startOffset;
@@ -1374,14 +1395,50 @@ SourceEdit _removeFlowEntry(
         final ownLineComments = commentsInEntry
             .where((c) =>
                 document.lineStartOf(c.span.start.offset) >
-                document.lineStartOf(entry.contentStart))
+                document.lineStartOf(entry.value.end))
             .toList();
         if (ownLineComments.isNotEmpty) {
-          final preserved = document.source.substring(entry.value.end, comma);
+          final entryLineStart = document.lineStartOf(entry.contentStart);
+          final startsOwnLine =
+              document.isWhitespaceRange(entryLineStart, entry.contentStart);
+          final firstCommentLineStart =
+              document.lineStartOf(ownLineComments.first.span.start.offset);
+          final lastCommentLineBreakEnd =
+              document.lineBreakEndOf(ownLineComments.last.span.end.offset);
+          final preservedComments = document.source
+              .substring(firstCommentLineStart, lastCommentLineBreakEnd);
+          final nextContent = entries[1].contentStart;
+          final commaLineStart = document.lineStartOf(comma);
+          final nextOnCommaLine =
+              document.lineStartOf(nextContent) == commaLineStart;
+          final commentsAfterComma =
+              document.commentsInRange(comma + 1, nextContent);
+          final sameLineCommentAfterComma = commentsAfterComma.isNotEmpty &&
+              document.lineStartOf(
+                      commentsAfterComma.first.span.start.offset) ==
+                  commaLineStart;
+
+          final deleteStart =
+              startsOwnLine ? entryLineStart : entry.contentStart;
+          final prefixBreak = startsOwnLine ? '' : document.lineEnding;
+
+          if (nextOnCommaLine) {
+            final commaIndent =
+                document.source.substring(commaLineStart, comma);
+            return SourceEdit(
+              deleteStart,
+              nextContent - deleteStart,
+              '$prefixBreak$preservedComments$commaIndent',
+            );
+          }
+          final deleteEnd = sameLineCommentAfterComma
+              ? document
+                  .lineBreakEndOf(commentsAfterComma.first.span.end.offset)
+              : document.lineBreakEndOf(comma);
           return SourceEdit(
-            entry.contentStart,
-            (comma + 1) - entry.contentStart,
-            preserved,
+            deleteStart,
+            deleteEnd - deleteStart,
+            '$prefixBreak$preservedComments',
           );
         }
       }
@@ -1408,15 +1465,21 @@ SourceEdit _removeFlowEntry(
         return SourceEdit(start, end - start, '');
       }
 
+      var start = collection.openEnd;
       var end = comma + 1;
       if (commentsAfterComma.isNotEmpty) {
         final comment = commentsAfterComma.first;
         if (document.lineStartOf(comment.span.start.offset) ==
             document.lineStartOf(comma)) {
+          final entryLineStart = document.lineStartOf(entry.contentStart);
+          if (entryLineStart > document.lineStartOf(collection.openEnd) &&
+              document.isWhitespaceRange(entryLineStart, entry.contentStart)) {
+            start = entryLineStart;
+          }
           end = document.lineBreakEndOf(comment.span.end.offset);
         }
       }
-      return SourceEdit(collection.openEnd, end - collection.openEnd, '');
+      return SourceEdit(start, end - start, '');
     }
     final commentsBefore =
         document.commentsInRange(collection.openEnd, entry.contentStart);
@@ -1459,12 +1522,17 @@ SourceEdit _removeFlowEntry(
   }
 
   final previous = entries[index - 1];
-  final from = previous.comma ?? previous.end;
+  final hasTrailingComma = entry.comma != null;
+  final from =
+      hasTrailingComma ? previous.end : (previous.comma ?? previous.end);
   final commentsBefore =
       document.commentsInRange(previous.end, entry.contentStart);
+  final entryLineStart = document.lineStartOf(entry.contentStart);
   final entryLineEnd = document.lineBreakEndOf(entry.end);
   final commentsAfter =
       document.commentsInRange(entryLineEnd, collection.closeStart);
+  final closeOnLaterLine = document.lineStartOf(collection.closeStart) >
+      document.lineStartOf(entry.end);
 
   if (commentsBefore.isNotEmpty) {
     final deleteStart =
@@ -1474,6 +1542,25 @@ SourceEdit _removeFlowEntry(
   }
 
   if (commentsAfter.isNotEmpty) {
+    if (hasTrailingComma &&
+        document.isWhitespaceRange(entryLineStart, entry.contentStart)) {
+      return SourceEdit(entryLineStart, entryLineEnd - entryLineStart, '');
+    }
+    final deleteEnd = document.lineContentEndOf(entry.end);
+    return SourceEdit(from, deleteEnd - from, '');
+  }
+
+  if (hasTrailingComma) {
+    if (closeOnLaterLine &&
+        document.isWhitespaceRange(entryLineStart, entry.contentStart)) {
+      return SourceEdit(entryLineStart, entryLineEnd - entryLineStart, '');
+    }
+    final deleteEnd =
+        closeOnLaterLine ? document.lineContentEndOf(entry.end) : entry.end;
+    return SourceEdit(from, deleteEnd - from, '');
+  }
+
+  if (closeOnLaterLine) {
     final deleteEnd = document.lineContentEndOf(entry.end);
     return SourceEdit(from, deleteEnd - from, '');
   }

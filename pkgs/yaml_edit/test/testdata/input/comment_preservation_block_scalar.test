@@ -1,0 +1,17 @@
+COMMENT PRESERVATION AROUND BLOCK SCALARS
+---
+# header
+literal: |- # header comment
+  line one
+  line two
+keep: |+ # keep header
+  kept line
+
+# between entries
+plain: value # inline plain
+next: 1
+---
+- [update, [literal], replaced]
+- [update, [keep], simple]
+- [update, [plain], "multiline\nblock"]
+- [remove, [keep]]
