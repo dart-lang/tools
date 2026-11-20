@@ -1,4 +1,4 @@
-## 0.15.8-wip
+## 0.15.8
 
 - Reduce allocations when parsing and serializing: `HtmlInputStream` no longer copies the input when it needs no newline or surrogate normalization, and `htmlSerializeEscape` copies unescaped runs at once and returns the input unchanged when nothing needs escaping.
 - Fix `Element.text`, `DocumentFragment.text` and `Node.textContent` throwing a `StackOverflowError` on very deeply nested elements; text is now extracted iteratively.
