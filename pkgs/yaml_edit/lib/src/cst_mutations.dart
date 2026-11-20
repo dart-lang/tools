@@ -109,10 +109,15 @@ extension CstDocumentTextHelpers on CstDocument {
 
   /// Extends [startOffset] past any trailing blank lines and comments indented
   /// strictly more than [collectionIndent].
+  ///
+  /// When [preserveTrailingBlankLines] is `true`, trailing blank lines are only
+  /// consumed if followed by an over-indented comment, preserving
+  /// section-separating blank lines that belong to an enclosing collection.
   int extendPastIndentedCommentsAndBlankLines(
     int startOffset,
-    int collectionIndent,
-  ) {
+    int collectionIndent, {
+    bool preserveTrailingBlankLines = false,
+  }) {
     var endOffset = startOffset;
     var probe = endOffset;
 
@@ -136,7 +141,9 @@ extension CstDocumentTextHelpers on CstDocument {
       }
 
       if (isWhitespaceRange(lineStart, lineContentEnd)) {
-        endOffset = lineBreakEnd;
+        if (!preserveTrailingBlankLines) {
+          endOffset = lineBreakEnd;
+        }
         probe = lineBreakEnd;
         continue;
       }
@@ -1401,12 +1408,48 @@ SourceEdit _removeBlockEntry(
       _ => 0,
     };
 
+    // Preserve section-separating blank lines after a removed last entry
+    // unless the preceding entry ends with a keep-chomped block scalar (`|+`
+    // or `>+`), which would otherwise absorb those blank lines.
+    final isLastEntry = nextEntryContentStart == null;
+    final previousValue = isLastEntry && entryCount > 1
+        ? switch (collection) {
+            CstBlockSeq() => collection.entries[entryCount - 2].value,
+            CstBlockMap() => collection.entries[entryCount - 2].value,
+            _ => null,
+          }
+        : null;
+    final preserveTrailingBlankLines = isLastEntry &&
+        (previousValue == null ||
+            !_endsWithKeepBlockScalar(document, previousValue));
+
     endOffset = document.extendPastIndentedCommentsAndBlankLines(
-        endOffset, collectionIndent);
+      endOffset,
+      collectionIndent,
+      preserveTrailingBlankLines: preserveTrailingBlankLines,
+    );
   }
 
   return SourceEdit(startOffset, endOffset - startOffset, '');
 }
+
+bool _endsWithKeepBlockScalar(CstDocument document, CstNode node) =>
+    switch (node) {
+      CstScalar() => (node.value.style == ScalarStyle.LITERAL ||
+              node.value.style == ScalarStyle.FOLDED) &&
+          document.source
+              .substring(
+                node.contentStart,
+                node.headerComment?.span.start.offset ??
+                    document.lineContentEndOf(node.contentStart),
+              )
+              .contains('+'),
+      CstBlockSeq() =>
+        _endsWithKeepBlockScalar(document, node.entries.last.value),
+      CstBlockMap() =>
+        _endsWithKeepBlockScalar(document, node.entries.last.value),
+      _ => false,
+    };
 
 /// Removes one entry of a flow collection, along with the comma that separates
 /// it from its neighbours, while preserving any leading full-line comments and
