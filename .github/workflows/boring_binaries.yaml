@@ -209,10 +209,43 @@ jobs:
         with:
           subject-path: pkgs/boring/bin/*
 
-  release:
-    name: Attach the binaries to a GitHub release
+  # The builds are reproducible, so the libraries only need a new release if
+  # their hashes differ from the pinned ones, say not when a push only changes
+  # this workflow. `workflow_dispatch` always releases them.
+  changes:
+    name: Compare the hashes with the pinned ones
     needs: precompile
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+    defaults:
+      run:
+        working-directory: pkgs/boring/
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
+        with:
+          sdk: stable
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Install dependencies
+        run: dart pub get
+      - id: diff
+        run: |
+          dart run tool/regenerate_hashes.dart --assets "$GITHUB_WORKSPACE/release-assets"
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] || ! git diff --exit-code; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  release:
+    name: Attach the binaries to a GitHub release
+    needs: changes
+    if: needs.changes.outputs.changed == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write # To create the release and upload its assets.
