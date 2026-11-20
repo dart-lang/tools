@@ -1219,7 +1219,36 @@ final class _CstBuilder {
       return null;
     }
     position = value.span.start.offset;
+    final isBlock = (value is YamlMap && value.style != CollectionStyle.FLOW) ||
+        (value is YamlList && value.style != CollectionStyle.FLOW);
+    if (isBlock && !_hasOwnProperties(value)) {
+      final lineStart = _lineTable.lineStartOf(position);
+      if (_isSpacesOrTabsRange(lineStart, position)) {
+        position = lineStart;
+      }
+    }
     return _buildNode(value);
+  }
+
+  bool _hasOwnProperties(YamlNode node) {
+    final firstKind = _tokensByOffset[node.span.start.offset]?.kind;
+    if (firstKind != YamlTokenKind.anchor && firstKind != YamlTokenKind.tag) {
+      return false;
+    }
+    if (node is YamlMap) {
+      final firstKeyStart =
+          (node.nodes.keys.firstOrNull as YamlNode?)?.span.start.offset;
+      if (firstKeyStart == node.span.start.offset) return false;
+    }
+    return true;
+  }
+
+  bool _isSpacesOrTabsRange(int start, int end) {
+    for (var i = start; i < end; i++) {
+      final unit = source.codeUnitAt(i);
+      if (unit != 0x20 && unit != 0x09) return false;
+    }
+    return true;
   }
 
   /// Builds the node [value], which must start at [position].
@@ -1401,13 +1430,7 @@ final class _CstBuilder {
     }
     final isBlock = (child is YamlMap && child.style != CollectionStyle.FLOW) ||
         (child is YamlList && child.style != CollectionStyle.FLOW);
-    final firstChildKind = _tokensByOffset[child.span.start.offset]?.kind;
-    final firstKeyStart = child is YamlMap
-        ? (child.nodes.keys.firstOrNull as YamlNode?)?.span.start.offset
-        : null;
-    final hasProperties = (firstChildKind == YamlTokenKind.anchor ||
-            firstChildKind == YamlTokenKind.tag) &&
-        firstKeyStart != child.span.start.offset;
+    final hasProperties = _hasOwnProperties(child);
     if (isBlock &&
         !hasProperties &&
         _lineTable.lineStartOf(child.span.start.offset) >

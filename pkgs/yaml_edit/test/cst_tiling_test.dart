@@ -354,8 +354,14 @@ void main() {
         (
           'tab-indented document and tab after colon',
           '\ta:\t1\n',
-          'BlockMap({Entry(line=1 key=Scalar([1..2) "a") :=2 '
+          'BlockMap({Entry(line=0 key=Scalar([1..2) "a") :=2 '
               'val=Scalar([4..5) "1"))})',
+        ),
+        (
+          'indented root block sequence',
+          ' - 1\n - 2\n',
+          'BlockSeq([Entry(line=0 dash=1 Scalar([3..4) "1")), '
+              'Entry(line=5 dash=6 Scalar([8..9) "2"))])',
         ),
         (
           'explicit document start with root block scalar',
