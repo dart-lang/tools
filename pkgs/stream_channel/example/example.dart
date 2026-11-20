@@ -103,6 +103,11 @@ Future<void> main() async {
   //     basis for wrapping other `StreamChannel<T>` objects.
   //   * The `jsonDocument` transformer converts events to/from JSON, using
   //     the `json` codec from `dart:convert`.
+  //   * The `newlineDelimited` transformer frames UTF-8 text as
+  //     newline-delimited lines. Combined with `jsonDocument`, it turns a
+  //     byte channel like standard I/O into a channel of newline-delimited
+  //     JSON (JSONL) objects: `StreamChannel(stdin, stdout)
+  //     .transform(newlineDelimited).transform(jsonDocument)`.
   //   * `package:json_rpc_2` directly builds on top of
   //     `package:stream_channel`, so any compatible transport can be used to
   //      create interactive client/server or peer-to-peer applications (i.e.
