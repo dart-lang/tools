@@ -938,14 +938,11 @@ SourceEdit _replaceInPlace(
   final lineStart = document.lineStartOf(old.start);
   final startsOwnLine = document.isWhitespaceRange(lineStart, old.start);
   var text = yamlEncodeBlock(value, column, style.lineEnding);
-  if (isCollection) {
-    if (!startsOwnLine && _spansOwnLines(value)) {
-      text = text.substring(column);
-    }
-  } else {
-    if (startsOwnLine) {
-      text = '${' ' * column}$text';
-    }
+  final hasLeadingIndent = isCollection && isBlockNode(value);
+  if (startsOwnLine && !hasLeadingIndent) {
+    text = '${' ' * column}$text';
+  } else if (!startsOwnLine && hasLeadingIndent) {
+    text = text.substring(column);
   }
 
   final isBlockScalar = value is YamlScalar &&
