@@ -373,6 +373,40 @@ void main() {
       inlineMiddleNextLineComment.remove([1]);
       expect(inlineMiddleNextLineComment.toString(), '[a, \n# keep\n c]\n');
       expect(inlineMiddleNextLineComment.parseAt([]).value, ['a', 'c']);
+
+      // Plain scalars inside multiline flow collections include trailing
+      // whitespace/newlines in package:yaml spans; updates and removals must
+      // keep the closing delimiter on its own line.
+      final flowPlainUpdate = YamlEditor('[\nfoo: bar\n]\n');
+      flowPlainUpdate.update([0], 42);
+      expect(flowPlainUpdate.toString(), '[\n42\n]\n');
+
+      final flowPlainIndentedUpdate = YamlEditor('- [\n  foo\n  ]\n');
+      flowPlainIndentedUpdate.update([0, 0], 42);
+      expect(flowPlainIndentedUpdate.toString(), '- [\n  42\n  ]\n');
+
+      final flowPlainRemoveLast = YamlEditor('key1: [\n  1,\n  2\n]\n');
+      flowPlainRemoveLast.remove(['key1', 1]);
+      expect(flowPlainRemoveLast.toString(), 'key1: [\n  1\n]\n');
+
+      // Replacing a nested block collection inside a block sequence must not
+      // emit a stray newline that pushes its trailing comment onto a new line.
+      final seqCollectionUpdate =
+          YamlEditor('- - one # Compact\n  - two # sequence\n- three\n');
+      seqCollectionUpdate.update([0], 42);
+      expect(seqCollectionUpdate.toString(), '- 42 # sequence\n- three\n');
+
+      // Updating a bare `?` explicit key at the end of a multiline flow map
+      // keeps `}` on its own line (DFF7_0).
+      final bareExplicitFlow = YamlEditor('{\n  a: 1,\n  ?\n}\n');
+      bareExplicitFlow.update([null], 42);
+      expect(bareExplicitFlow.toString(), '{\n  a: 1,\n  ?\n: 42\n}\n');
+
+      // Removing a leading-comma last flow entry leaves no spaces-only line
+      // (mangled_json.yaml).
+      final leadingCommaLast = YamlEditor('{\n  a: 1\n    , b: 2\n}\n');
+      leadingCommaLast.remove(['b']);
+      expect(leadingCommaLast.toString(), '{\n  a: 1\n}\n');
     });
 
     test('removes sole entry of zero-indented block sequence in compact map',

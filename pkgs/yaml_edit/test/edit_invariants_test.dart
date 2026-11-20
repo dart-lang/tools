@@ -290,6 +290,151 @@ void main() {
         isTrue,
       );
     });
+
+    test('rejects flow remove escaping removed entry neighborhood', () {
+      const yaml = '[a, b, c]\n';
+      // Starts inside `a` when removing `b`.
+      _expectInvariantFailure(
+        yaml,
+        SourceEdit(1, 5, 'a, '),
+        operation: EditOperation.remove,
+        path: [1],
+        messageContains: 'precedes CST slot start',
+      );
+      // Extends into `c` when removing `b`.
+      _expectInvariantFailure(
+        yaml,
+        SourceEdit(4, 4, 'c'),
+        operation: EditOperation.remove,
+        path: [1],
+        messageContains: 'exceeds CST slot end',
+      );
+    });
+
+    test('rejects pure insertion deleting existing bytes', () {
+      _expectInvariantFailure(
+        '[a, b]\n',
+        SourceEdit(3, 1, ' x, '),
+        operation: EditOperation.insert,
+        path: [],
+        messageContains: 'Pure insertion',
+      );
+      _expectInvariantFailure(
+        'a: 1\n',
+        SourceEdit(4, 1, '\nb: 2\n'),
+        operation: EditOperation.update,
+        path: ['b'],
+        messageContains: 'Pure insertion',
+      );
+    });
+
+    test('rejects shifting untouched sibling or closing delimiter off its line',
+        () {
+      // Collapsing opening newline onto sibling entry (json_comments.yaml bug).
+      const mapYaml = 'map: {\n  foo: 42, # c\n  bar: baz\n}\n';
+      final openEnd = mapYaml.indexOf('{') + 1;
+      final afterComment = mapYaml.indexOf('\n  bar') + 1;
+      _expectInvariantFailure(
+        mapYaml,
+        SourceEdit(openEnd, afterComment - openEnd, ''),
+        operation: EditOperation.remove,
+        path: ['map', 'foo'],
+        messageContains: 'Sibling flow entry 1',
+      );
+
+      // Pulling closing `]` onto previous entry's line.
+      const listYaml = '[\n  a,\n  b # c\n]\n';
+      final commaOffset = listYaml.indexOf(',');
+      final closeOffset = listYaml.indexOf(']');
+      _expectInvariantFailure(
+        listYaml,
+        SourceEdit(commaOffset, closeOffset - commaOffset, ''),
+        operation: EditOperation.remove,
+        path: [1],
+        messageContains: 'Flow closing delimiter',
+      );
+
+      // Shifting a block sequence entry off column 2 to column 1.
+      const seqYaml = 'a:\n  - 1\n';
+      _expectInvariantFailure(
+        seqYaml,
+        SourceEdit(4, 0, '- 0\n'),
+        operation: EditOperation.insert,
+        path: ['a'],
+        messageContains: 'Sibling sequence entry 0',
+      );
+    });
+
+    test('rejects flipping comment placement between inline and own-line', () {
+      // Pushing an inline block-scalar header comment onto its own line.
+      const headerYaml = 'a: |- # hdr\n  text\nb: 2\n';
+      final start = headerYaml.indexOf('|-');
+      final end = headerYaml.indexOf('\nb:');
+      _expectInvariantFailure(
+        headerYaml,
+        SourceEdit(start, end - start, '1\n# hdr'),
+        operation: EditOperation.update,
+        path: ['a'],
+        messageContains: 'inline -> own-line',
+      );
+
+      // Gluing an own-line comment onto a code line.
+      const ownLineYaml = 'a: 1\n# own\nb: 2\n';
+      final oneOffset = ownLineYaml.indexOf('1');
+      final hashOffset = ownLineYaml.indexOf('# own');
+      _expectInvariantFailure(
+        ownLineYaml,
+        SourceEdit(oneOffset, hashOffset - oneOffset, '2 '),
+        operation: EditOperation.update,
+        path: ['a'],
+        messageContains: 'own-line -> inline',
+      );
+    });
+
+    test('rejects mismatched line endings in uniform-EOL documents', () {
+      const crlfYaml = 'a: 1\r\nb: 2\r\n';
+      _expectInvariantFailure(
+        crlfYaml,
+        SourceEdit(crlfYaml.length, 0, 'c: 3\n'),
+        operation: EditOperation.update,
+        path: ['c'],
+        messageContains: 'LF line break in a CRLF document',
+      );
+      const lfYaml = 'a: 1\nb: 2\n';
+      _expectInvariantFailure(
+        lfYaml,
+        SourceEdit(lfYaml.length, 0, 'c: 3\r\n'),
+        operation: EditOperation.update,
+        path: ['c'],
+        messageContains: 'CRLF line break in an LF document',
+      );
+    });
+
+    test('rejects dropping trailing comma on last flow entry removal', () {
+      const yaml = '{a: 1, b: 2,}';
+      final commaOffset = yaml.indexOf(',');
+      final closeOffset = yaml.indexOf('}');
+      _expectInvariantFailure(
+        yaml,
+        SourceEdit(commaOffset, closeOffset - commaOffset, ''),
+        operation: EditOperation.remove,
+        path: ['b'],
+        messageContains: 'dropped the trailing comma',
+      );
+    });
+
+    test('rejects introducing a non-empty whitespace-only line', () {
+      const yaml = '[\n  a\n  # c\n  , b\n]\n';
+      final aOffset = yaml.indexOf('a');
+      final commaEnd = yaml.indexOf(',') + 1;
+      _expectInvariantFailure(
+        yaml,
+        SourceEdit(aOffset, commaEnd - aOffset, '\n  # c\n  '),
+        operation: EditOperation.remove,
+        path: [0],
+        messageContains: 'whitespace-only line',
+      );
+    });
   });
 
   group('YamlEditor invariant integration', () {

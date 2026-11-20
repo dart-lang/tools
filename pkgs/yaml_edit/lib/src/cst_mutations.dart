@@ -71,6 +71,25 @@ extension CstDocumentTextHelpers on CstDocument {
     return char == 0x20 || char == 0x09;
   }
 
+  /// Returns [end] trimmed backward over trailing spaces, tabs, and line
+  /// breaks (never going before [start]).
+  ///
+  /// `package:yaml` extends plain-scalar spans inside flow collections through
+  /// trailing whitespace and line breaks up to the closing delimiter; trimming
+  /// prevents edits from swallowing the line break before `]` or `}`.
+  int trimmedEnd(int start, int end) {
+    var cursor = end;
+    while (cursor > start) {
+      final char = source.codeUnitAt(cursor - 1);
+      if (char == 0x20 || char == 0x09 || char == 0x0A || char == 0x0D) {
+        cursor--;
+      } else {
+        break;
+      }
+    }
+    return cursor;
+  }
+
   /// Whether every character in `[start, end)` is a space or tab.
   bool isWhitespaceRange(int start, int end) {
     for (var i = start; i < end; i++) {
@@ -625,7 +644,7 @@ SourceEdit _buildUpdate(
       if (step is! int || step < 0 || step >= parent.entries.length) {
         throw PathError(path, path, parent.value);
       }
-      return _replaceFlowValue(parent.entries[step].value, value);
+      return _replaceFlowValue(document, parent.entries[step].value, value);
 
     case CstBlockMap():
       final index = findEntryIndex(parent, step);
@@ -653,7 +672,7 @@ SourceEdit _buildUpdate(
         return SourceEdit(
             parent.contentStart, parent.end - parent.contentStart, replacement);
       }
-      return _replaceFlowValue(parent.pairValue, value);
+      return _replaceFlowValue(document, parent.pairValue, value);
 
     default:
       throw PathError.unexpected(
@@ -802,7 +821,15 @@ SourceEdit _replaceBlockSeqValue(
     return _replaceInPlace(document, style, entry.value, value);
   }
   var encoded = encodeAfterDash(value, style, dashColumn: dashColumn);
-  if (entry.value is CstBlockSeq || entry.value is CstBlockMap) {
+  final hasTrailingComment =
+      !document.hasLineBreakBefore(entry.value.contentEnd) &&
+          document.commentInRange(
+                entry.value.contentEnd,
+                document.lineBreakEndOf(entry.value.contentEnd),
+              ) !=
+              null;
+  if ((entry.value is CstBlockSeq || entry.value is CstBlockMap) &&
+      !hasTrailingComment) {
     if (encoded.isNotEmpty && !encoded.endsWith(style.lineEnding)) {
       encoded += style.lineEnding;
     }
@@ -971,14 +998,22 @@ SourceEdit _replaceInPlace(
 
 /// Replaces a value inside a flow collection, where everything stays on one
 /// line and only flow syntax is allowed.
-SourceEdit _replaceFlowValue(CstNode old, YamlNode value) {
+SourceEdit _replaceFlowValue(
+  CstDocument document,
+  CstNode old,
+  YamlNode value,
+) {
   if (old is CstEmpty && value.value == null) {
     return SourceEdit(old.start, 0, '');
   }
   final startOffset = (old.hasProperties && deepEquals(old.value, value))
       ? old.contentStart
       : old.start;
-  return SourceEdit(startOffset, old.end - startOffset, yamlEncodeFlow(value));
+  final trimmed = document.trimmedEnd(startOffset, old.end);
+  final endOffset =
+      document.hasLineBreakInRange(trimmed, old.end) ? trimmed : old.end;
+  return SourceEdit(
+      startOffset, endOffset - startOffset, yamlEncodeFlow(value));
 }
 
 /// Replaces the value of a flow mapping entry, writing a `:` if the entry was
@@ -994,8 +1029,14 @@ SourceEdit _replaceFlowMapValue(
   }
   final text = yamlEncodeFlow(value);
   if (entry.colon == null) {
-    return SourceEdit(
-        entry.value.start, entry.value.end - entry.value.start, ': $text');
+    final atOwnLineClose = entry.value.start == map.closeStart &&
+        document.isWhitespaceRange(
+            document.lineStartOf(map.closeStart), map.closeStart);
+    final suffix = atOwnLineClose
+        ? '${document.lineEnding}${' ' * document.columnOf(map.closeStart)}'
+        : '';
+    return SourceEdit(entry.value.start, entry.value.end - entry.value.start,
+        ': $text$suffix');
   }
   if (entry.value is CstEmpty) {
     final trailingEnd = entry.comma ?? map.closeStart;
@@ -1006,7 +1047,7 @@ SourceEdit _replaceFlowMapValue(
     }
     return SourceEdit(entry.value.start, 0, ' $text');
   }
-  return _replaceFlowValue(entry.value, value);
+  return _replaceFlowValue(document, entry.value, value);
 }
 
 // ---------------------------------------------------------------------------
@@ -1525,11 +1566,21 @@ SourceEdit _removeFlowEntry(
   final commentsBefore =
       document.commentsInRange(previous.end, entry.contentStart);
   final entryLineStart = document.lineStartOf(entry.contentStart);
-  final entryLineEnd = document.lineBreakEndOf(entry.end);
+  final entryContentEnd = hasTrailingComma
+      ? entry.end
+      : document.trimmedEnd(entry.contentStart, entry.end);
+  final entryLineEnd = document.lineBreakEndOf(entryContentEnd);
   final commentsAfter =
       document.commentsInRange(entryLineEnd, collection.closeStart);
   final closeOnLaterLine = document.lineStartOf(collection.closeStart) >
-      document.lineStartOf(entry.end);
+      document.lineStartOf(entryContentEnd);
+
+  final fromLineStart = document.lineStartOf(from);
+  final prevValueEnd =
+      document.trimmedEnd(previous.value.start, previous.value.end);
+  final fromStartsOwnLine = !hasTrailingComma &&
+      fromLineStart >= prevValueEnd &&
+      document.isWhitespaceRange(fromLineStart, from);
 
   if (commentsBefore.isNotEmpty) {
     final deleteStart =
@@ -1543,7 +1594,10 @@ SourceEdit _removeFlowEntry(
         document.isWhitespaceRange(entryLineStart, entry.contentStart)) {
       return SourceEdit(entryLineStart, entryLineEnd - entryLineStart, '');
     }
-    final deleteEnd = document.lineContentEndOf(entry.end);
+    if (fromStartsOwnLine) {
+      return SourceEdit(fromLineStart, entryLineEnd - fromLineStart, '');
+    }
+    final deleteEnd = document.lineContentEndOf(entryContentEnd);
     return SourceEdit(from, deleteEnd - from, '');
   }
 
@@ -1552,13 +1606,17 @@ SourceEdit _removeFlowEntry(
         document.isWhitespaceRange(entryLineStart, entry.contentStart)) {
       return SourceEdit(entryLineStart, entryLineEnd - entryLineStart, '');
     }
-    final deleteEnd =
-        closeOnLaterLine ? document.lineContentEndOf(entry.end) : entry.end;
+    final deleteEnd = closeOnLaterLine
+        ? document.lineContentEndOf(entryContentEnd)
+        : entryContentEnd;
     return SourceEdit(from, deleteEnd - from, '');
   }
 
   if (closeOnLaterLine) {
-    final deleteEnd = document.lineContentEndOf(entry.end);
+    if (fromStartsOwnLine) {
+      return SourceEdit(fromLineStart, entryLineEnd - fromLineStart, '');
+    }
+    final deleteEnd = document.lineContentEndOf(entryContentEnd);
     return SourceEdit(from, deleteEnd - from, '');
   }
 
