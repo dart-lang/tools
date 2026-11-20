@@ -499,6 +499,27 @@ void main() {
       spaced.update([0], [1, 2]);
       expect(spaced.parseAt([0]).value, [1, 2]);
 
+      final spacedEmptyBlock = YamlEditor('-   item\n');
+      spacedEmptyBlock.update(
+        [0],
+        wrapAsYamlNode(<Object?>[], collectionStyle: CollectionStyle.BLOCK),
+      );
+      expect(spacedEmptyBlock.toString(), '-   []\n');
+
+      final nextLineFlowMap = YamlEditor("-\n  'item'\n- {}\n");
+      nextLineFlowMap.update(
+        [0],
+        wrapAsYamlNode({'a': 1}, collectionStyle: CollectionStyle.FLOW),
+      );
+      expect(nextLineFlowMap.toString(), '-\n  {a: 1}\n- {}\n');
+
+      final commentedMapFlowVal = YamlEditor('a: # keep\n  1\nb: 2\n');
+      commentedMapFlowVal.update(
+        ['a'],
+        wrapAsYamlNode([1, 2], collectionStyle: CollectionStyle.FLOW),
+      );
+      expect(commentedMapFlowVal.toString(), 'a: # keep\n  [1, 2]\nb: 2\n');
+
       final anchoredSeq = YamlEditor('- &anchor 1\n');
       anchoredSeq.update([0], 1);
       expect(anchoredSeq.parseAt([0]).value, 1);
