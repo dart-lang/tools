@@ -79,6 +79,28 @@ void main() {
       expect(doc.toString(), equals('replacement # comment'));
       expectYamlBuilderValue(doc, 'replacement');
     });
+
+    test('replaces empty document with block map containing a flow list', () {
+      // https://github.com/dart-lang/tools/issues/2612
+      final doc = YamlEditor('');
+      doc.update([], loadYamlNode('a: [1, 2]'));
+
+      expect(doc.toString(), equals('a: [1, 2]'));
+      expectYamlBuilderValue(doc, {
+        'a': [1, 2],
+      });
+    });
+
+    test('replaces empty document with block map containing a flow map', () {
+      // https://github.com/dart-lang/tools/issues/2612
+      final doc = YamlEditor('');
+      doc.update([], loadYamlNode('a: {b: 1}'));
+
+      expect(doc.toString(), equals('a: {b: 1}'));
+      expectYamlBuilderValue(doc, {
+        'a': {'b': 1},
+      });
+    });
   });
 
   group('replaces in', () {
