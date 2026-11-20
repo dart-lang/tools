@@ -98,6 +98,17 @@ class Scanner {
   /// Whether this scanner should attempt to recover when parsing invalid YAML.
   final bool _recover;
 
+  /// All non-empty tokens emitted by this scanner if `retainTokens` was set to
+  /// `true`, or `null` otherwise.
+  final List<Token>? retainedTokens;
+
+  /// Out-of-band tokens (comments and unknown directives) scanned ahead of
+  /// [scan], merged into [retainedTokens] in source order.
+  final List<Token>? _pendingOutOfBandTokens;
+
+  /// Index of the next unmerged token in [_pendingOutOfBandTokens].
+  var _pendingOutOfBandIndex = 0;
+
   /// A listener to report YAML errors to.
   final ErrorListener? _errorListener;
 
@@ -293,8 +304,13 @@ class Scanner {
 
   /// Creates a scanner that scans [source].
   Scanner(String source,
-      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener})
+      {Uri? sourceUrl,
+      bool recover = false,
+      bool retainTokens = false,
+      ErrorListener? errorListener})
       : _recover = recover,
+        retainedTokens = retainTokens ? [] : null,
+        _pendingOutOfBandTokens = retainTokens ? [] : null,
         _errorListener = errorListener,
         _scanner = SpanScanner.eager(source, sourceUrl: sourceUrl);
 
@@ -307,6 +323,24 @@ class Scanner {
     _tokenAvailable = false;
     _tokensParsed++;
     _streamEndProduced = token.type == TokenType.streamEnd;
+    if (retainedTokens case final retained?) {
+      final pending = _pendingOutOfBandTokens!;
+      if (token.span.length > 0) {
+        final tokenStart = token.span.start.offset;
+        while (_pendingOutOfBandIndex < pending.length &&
+            pending[_pendingOutOfBandIndex].span.start.offset <= tokenStart) {
+          retained.add(pending[_pendingOutOfBandIndex++]);
+        }
+        assert(
+            retained.isEmpty || tokenStart >= retained.last.span.start.offset);
+        retained.add(token);
+      }
+      if (_streamEndProduced) {
+        while (_pendingOutOfBandIndex < pending.length) {
+          retained.add(pending[_pendingOutOfBandIndex++]);
+        }
+      }
+    }
     return token;
   }
 
@@ -860,10 +894,22 @@ class Scanner {
 
       // libyaml doesn't support unknown directives, but the spec says to ignore
       // them and warn: http://yaml.org/spec/1.2/spec.html#id2781147.
+      // Scan parameters without swallowing a trailing `#` comment preceded by
+      // whitespace.
+      var end = _scanner.state;
       while (!_isBreakOrEnd) {
-        _scanner.readCodePoint();
+        if (_isBlank) {
+          _skipBlanks();
+          if (_scanner.peekChar() == HASH || _isBreakOrEnd) break;
+        }
+        while (!_isBlank && !_isBreakOrEnd) {
+          _scanner.readCodePoint();
+        }
+        end = _scanner.state;
       }
-
+      _pendingOutOfBandTokens?.add(
+          Token(TokenType.unknownDirective, _scanner.spanFrom(start, end)));
+      _skipComment();
       return null;
     }
 
@@ -1715,8 +1761,13 @@ class Scanner {
   /// Moves the scanner past a comment, if one starts at the current position.
   void _skipComment() {
     if (_scanner.peekChar() != HASH) return;
+    final start = _pendingOutOfBandTokens != null ? _scanner.state : null;
     while (!_isBreakOrEnd) {
       _scanner.readChar();
+    }
+    if (start != null) {
+      _pendingOutOfBandTokens!
+          .add(Token(TokenType.comment, _scanner.spanFrom(start)));
     }
   }
 

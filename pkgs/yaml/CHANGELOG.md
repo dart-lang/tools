@@ -15,6 +15,9 @@
 * Fix parsing of empty implicit flow keys followed directly by `}` or `]`
   (`{:}`, `[:]`).
 * Allow tab characters on blank or comment-only lines (YAML 1.2 §6.1).
+* Add `package:yaml/tokens.dart` providing `loadYamlDocumentWithTokens`,
+  `YamlToken`, and `YamlTokenKind` to access the scanned lexical token stream
+  (including comments and structural indicators) alongside a `YamlDocument`.
 
 ## 3.1.4
 

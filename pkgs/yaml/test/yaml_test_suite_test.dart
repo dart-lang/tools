@@ -6,11 +6,13 @@
 library;
 
 import 'package:test/test.dart';
+import 'package:yaml/tokens.dart';
+import 'package:yaml/yaml.dart';
 
 import 'yaml_test_suite.dart';
 
 void main() {
-  final cases = loadYamlTestSuite();
+  final cases = loadYamlTestSuite().toList();
 
   for (final c in cases) {
     test(c.name, () {
@@ -30,6 +32,162 @@ void main() {
         c.runTest();
       }
     });
+  }
+
+  test('loadYamlDocumentWithTokens maintains non-overlap and comment oracle',
+      () {
+    final oldWarn = yamlWarningCallback;
+    yamlWarningCallback = (_, [__]) {};
+    var parsedCount = 0;
+    var commentedCount = 0;
+    try {
+      for (final c in cases) {
+        if (c.fail) continue;
+        final ({YamlDocument document, List<YamlToken> tokens}) parsed;
+        try {
+          parsed = loadYamlDocumentWithTokens(c.yaml);
+        } on YamlException {
+          // Multi-document or unsupported cases.
+          continue;
+        }
+        final (:tokens, :document) = parsed;
+        parsedCount++;
+        for (var i = 0; i < tokens.length; i++) {
+          expect(tokens[i].span.length, greaterThan(0),
+              reason: 'zero-length token in ${c.id}');
+          if (i > 0) {
+            expect(
+              tokens[i].span.start.offset,
+              greaterThanOrEqualTo(tokens[i - 1].span.start.offset),
+              reason: 'out-of-order tokens in ${c.id}',
+            );
+            if (tokens[i].span.start.offset < tokens[i - 1].span.end.offset) {
+              // Only a header comment inside a non-empty block scalar may
+              // overlap the preceding token.
+              expect(
+                tokens[i].kind,
+                YamlTokenKind.comment,
+                reason: 'unexpected overlapping token in ${c.id}',
+              );
+              expect(
+                tokens[i - 1].kind,
+                YamlTokenKind.scalar,
+                reason: 'comment overlaps non-scalar token in ${c.id}',
+              );
+              expect(
+                tokens[i].span.end.offset,
+                lessThanOrEqualTo(tokens[i - 1].span.end.offset),
+                reason: 'header comment extends past scalar end in ${c.id}',
+              );
+            }
+          }
+        }
+
+        // Comment-deletion oracle: removing every retained comment token must
+        // stay parsable and preserve the parsed document value (catching
+        // false-positive comments inside scalars or syntax).
+        final commentTokens = [
+          for (final token in tokens)
+            if (token.kind == YamlTokenKind.comment) token,
+        ];
+        if (commentTokens.isNotEmpty) {
+          commentedCount++;
+          final stripped = _stripComments(c.yaml, commentTokens);
+          final YamlDocument reparsed;
+          try {
+            reparsed = loadYamlDocument(stripped);
+          } on YamlException catch (e) {
+            fail(
+              'stripping comments made ${c.id} unparsable: $e\n$stripped',
+            );
+          }
+          expect(
+            _nodesEqual(reparsed.contents, document.contents),
+            isTrue,
+            reason: 'stripping comments changed value in ${c.id}: '
+                'expected ${document.contents.value}, '
+                'got ${reparsed.contents.value}',
+          );
+        }
+      }
+      expect(parsedCount, greaterThan(200));
+      expect(commentedCount, greaterThan(30));
+    } finally {
+      yamlWarningCallback = oldWarn;
+    }
+  });
+}
+
+String _stripComments(String source, List<YamlToken> comments) {
+  final buffer = StringBuffer();
+  var cursor = 0;
+  for (final comment in comments) {
+    var start = comment.span.start.offset;
+    var end = comment.span.end.offset;
+
+    // If the comment sits on its own line (preceded only by spaces/tabs),
+    // drop the full line including its line break so keep-chomped block
+    // scalars before it do not absorb a newly created blank line.
+    var lineStart = start;
+    while (lineStart > 0 &&
+        (source.codeUnitAt(lineStart - 1) == 0x20 ||
+            source.codeUnitAt(lineStart - 1) == 0x09)) {
+      lineStart--;
+    }
+    final isOwnLine = lineStart == 0 ||
+        source.codeUnitAt(lineStart - 1) == 0x0A ||
+        source.codeUnitAt(lineStart - 1) == 0x0D;
+    if (isOwnLine && lineStart >= cursor) {
+      start = lineStart;
+      if (end < source.length && source.codeUnitAt(end) == 0x0D) end++;
+      if (end < source.length && source.codeUnitAt(end) == 0x0A) end++;
+    }
+
+    buffer.write(source.substring(cursor, start));
+    cursor = end;
+  }
+  buffer.write(source.substring(cursor));
+  return buffer.toString();
+}
+
+bool _nodesEqual(
+  YamlNode a,
+  YamlNode b, [
+  List<(YamlNode, YamlNode)>? visited,
+]) {
+  final seen = visited ?? <(YamlNode, YamlNode)>[];
+  for (final (va, vb) in seen) {
+    final loopA = identical(a, va);
+    final loopB = identical(b, vb);
+    if (loopA && loopB) return true;
+    if (loopA || loopB) return false;
+  }
+  seen.add((a, b));
+  try {
+    if (a is YamlScalar && b is YamlScalar) {
+      final av = a.value;
+      final bv = b.value;
+      if (av is num && bv is num && av.isNaN && bv.isNaN) return true;
+      return av == bv;
+    }
+    if (a is YamlList && b is YamlList) {
+      if (a.nodes.length != b.nodes.length) return false;
+      for (var i = 0; i < a.nodes.length; i++) {
+        if (!_nodesEqual(a.nodes[i], b.nodes[i], seen)) return false;
+      }
+      return true;
+    }
+    if (a is YamlMap && b is YamlMap) {
+      if (a.nodes.length != b.nodes.length) return false;
+      for (final entry in a.nodes.entries) {
+        if (!b.nodes.containsKey(entry.key)) return false;
+        if (!_nodesEqual(entry.value, b.nodes[entry.key]!, seen)) return false;
+      }
+      return true;
+    }
+    return false;
+  } finally {
+    seen.removeLast();
   }
 }
 

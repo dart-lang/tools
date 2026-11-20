@@ -12,6 +12,7 @@ import 'equality.dart';
 import 'error_listener.dart';
 import 'event.dart';
 import 'parser.dart';
+import 'token.dart';
 import 'yaml_document.dart';
 import 'yaml_exception.dart';
 import 'yaml_node.dart';
@@ -38,9 +39,15 @@ class Loader {
 
   /// Creates a loader that loads [source].
   factory Loader(String source,
-      {Uri? sourceUrl, bool recover = false, ErrorListener? errorListener}) {
+      {Uri? sourceUrl,
+      bool recover = false,
+      bool retainTokens = false,
+      ErrorListener? errorListener}) {
     var parser = Parser(source,
-        sourceUrl: sourceUrl, recover: recover, errorListener: errorListener);
+        sourceUrl: sourceUrl,
+        recover: recover,
+        retainTokens: retainTokens,
+        errorListener: errorListener);
     var event = parser.parse();
     assert(event.type == EventType.streamStart);
     return Loader._(parser, event.span);
@@ -63,6 +70,28 @@ class Loader {
     var document = _loadDocument(event as DocumentStartEvent);
     _span = _span.expand(document.span as FileSpan);
     _aliases.clear();
+    return document;
+  }
+
+  /// All non-empty tokens emitted by the underlying scanner if `retainTokens`
+  /// was `true`, or `null` otherwise.
+  List<Token>? get tokens => _parser.tokens;
+
+  /// Loads a single document from the stream, returning an empty `null`
+  /// document if the stream is empty, and throwing a [YamlException] if the
+  /// stream contains more than one document.
+  YamlDocument loadSingleDocument() {
+    final document = load();
+    if (document == null) {
+      return YamlDocument.internal(
+          YamlScalar.internalWithSpan(null, span), span, null, const []);
+    }
+
+    final nextDocument = load();
+    if (nextDocument != null) {
+      throw YamlException('Only expected one document.', nextDocument.span);
+    }
+
     return document;
   }
 

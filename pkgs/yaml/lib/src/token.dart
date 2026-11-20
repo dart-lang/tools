@@ -134,6 +134,7 @@ enum TokenType {
 
   versionDirective,
   tagDirective,
+  unknownDirective,
   documentStart,
   documentEnd,
 
@@ -154,5 +155,6 @@ enum TokenType {
   alias,
   anchor,
   tag,
-  scalar
+  scalar,
+  comment
 }
