@@ -289,6 +289,18 @@ class SingleMapping extends Mapping {
   /// Source root prepended to all entries in [urls].
   String? sourceRoot;
 
+  /// Zero-based indices into [urls] identifying sources that tools should
+  /// ignore by default (ECMA-426 `"ignoreList"`), or `null` if omitted.
+  List<int>? ignoreList;
+
+  /// Encoded ECMA-426 `"scopes"` trees parallel to [urls], or `null` if
+  /// omitted.
+  List<String?>? scopes;
+
+  /// Encoded ECMA-426 `"ranges"` trees per generated line, or `null` if
+  /// omitted.
+  List<String>? ranges;
+
   final Uri? _mapUrl;
 
   final Map<String, dynamic> extensions;
@@ -349,84 +361,60 @@ class SingleMapping extends Mapping {
         names = List<String>.from((map['names'] as List?) ?? []),
         files = List.filled((map['sources'] as List).length, null),
         sourceRoot = map['sourceRoot'] as String?,
+        ignoreList = map['ignoreList'] == null
+            ? null
+            : List<int>.from(map['ignoreList'] as List),
+        scopes = map['scopes'] == null
+            ? null
+            : List<String?>.from(map['scopes'] as List),
+        ranges = map['ranges'] == null
+            ? null
+            : List<String>.from(map['ranges'] as List),
         lines = <TargetLineEntry>[],
         _mapUrl = mapUrl is String ? Uri.parse(mapUrl) : (mapUrl as Uri?),
         extensions = {} {
-    var sourcesContent = map['sourcesContent'] == null
-        ? const <String?>[]
-        : List<String?>.from(map['sourcesContent'] as List);
-    for (var i = 0; i < urls.length && i < sourcesContent.length; i++) {
-      var source = sourcesContent[i];
-      if (source == null) continue;
-      files[i] = SourceFile.fromString(source, url: urls[i]);
-    }
+    _populateFiles(map['sourcesContent'] as List?);
+    lines.addAll(_parseLines(map['mappings'] as String));
+    map.forEach((name, value) {
+      if (name.startsWith('x_')) extensions[name] = value;
+    });
+  }
 
+  void _populateFiles(List<dynamic>? rawSourcesContent) {
+    if (rawSourcesContent == null) return;
+    for (var i = 0; i < urls.length && i < rawSourcesContent.length; i++) {
+      var source = rawSourcesContent[i] as String?;
+      if (source != null) {
+        files[i] = SourceFile.fromString(source, url: urls[i]);
+      }
+    }
+  }
+
+  List<TargetLineEntry> _parseLines(String mappings) {
+    var parsedLines = <TargetLineEntry>[];
     var line = 0;
-    var column = 0;
-    var srcUrlId = 0;
-    var srcLine = 0;
-    var srcColumn = 0;
-    var srcNameId = 0;
-    var tokenizer = _MappingTokenizer(map['mappings'] as String);
+    var tokenizer =
+        _MappingTokenizer(mappings, urls.length, names.length, targetUrl);
     var entries = <TargetEntry>[];
 
     while (tokenizer.hasTokens) {
       if (tokenizer.nextKind.isNewLine) {
         if (entries.isNotEmpty) {
-          lines.add(TargetLineEntry(line, entries));
+          parsedLines.add(TargetLineEntry(line, entries));
           entries = <TargetEntry>[];
         }
         line++;
-        column = 0;
         tokenizer._consumeNewLine();
         continue;
       }
 
-      // Decode the next entry, using the previous encountered values to
-      // decode the relative values.
-      //
-      // We expect 1, 4, or 5 values. If present, values are expected in the
-      // following order:
-      //   0: the starting column in the current line of the generated file
-      //   1: the id of the original source file
-      //   2: the starting line in the original source
-      //   3: the starting column in the original source
-      //   4: the id of the original symbol name
-      // The values are relative to the previous encountered values.
-      if (tokenizer.nextKind.isNewSegment) throw _segmentError(0, line);
-      column += tokenizer._consumeValue();
-      if (!tokenizer.nextKind.isValue) {
-        entries.add(TargetEntry(column));
-      } else {
-        srcUrlId += tokenizer._consumeValue();
-        if (srcUrlId < 0 || srcUrlId >= urls.length) {
-          throw StateError(
-              'Invalid source url id. $targetUrl, $line, $srcUrlId');
-        }
-        if (!tokenizer.nextKind.isValue) throw _segmentError(2, line);
-        srcLine += tokenizer._consumeValue();
-        if (!tokenizer.nextKind.isValue) throw _segmentError(3, line);
-        srcColumn += tokenizer._consumeValue();
-        if (!tokenizer.nextKind.isValue) {
-          entries.add(TargetEntry(column, srcUrlId, srcLine, srcColumn));
-        } else {
-          srcNameId += tokenizer._consumeValue();
-          if (srcNameId < 0 || srcNameId >= names.length) {
-            throw StateError('Invalid name id: $targetUrl, $line, $srcNameId');
-          }
-          entries.add(
-              TargetEntry(column, srcUrlId, srcLine, srcColumn, srcNameId));
-        }
-      }
+      entries.add(tokenizer._consumeEntry(line));
       if (tokenizer.nextKind.isNewSegment) tokenizer._consumeNewSegment();
     }
     if (entries.isNotEmpty) {
-      lines.add(TargetLineEntry(line, entries));
+      parsedLines.add(TargetLineEntry(line, entries));
     }
-
-    map.forEach((name, value) {
-      if (name.startsWith('x_')) extensions[name] = value;
-    });
+    return parsedLines;
   }
 
   /// Encodes the Mapping mappings as a json map.
@@ -434,6 +422,27 @@ class SingleMapping extends Mapping {
   /// If [includeSourceContents] is `true`, this includes the source file
   /// contents from [files] in the map if possible.
   Map<String, dynamic> toJson({bool includeSourceContents = false}) {
+    var result = <String, dynamic>{
+      'version': 3,
+      'sourceRoot': sourceRoot ?? '',
+      'sources': urls,
+      'names': names,
+      'mappings': _encodeMappings(lines),
+    };
+    if (targetUrl != null) result['file'] = targetUrl!;
+
+    if (includeSourceContents) {
+      result['sourcesContent'] = files.map((file) => file?.getText(0)).toList();
+    }
+    if (ignoreList != null) result['ignoreList'] = ignoreList!;
+    if (scopes != null) result['scopes'] = scopes!;
+    if (ranges != null) result['ranges'] = ranges!;
+    extensions.forEach((name, value) => result[name] = value);
+
+    return result;
+  }
+
+  static String _encodeMappings(List<TargetLineEntry> lines) {
     var buff = StringBuffer();
     var line = 0;
     var column = 0;
@@ -446,9 +455,7 @@ class SingleMapping extends Mapping {
     for (var entry in lines) {
       var nextLine = entry.line;
       if (nextLine > line) {
-        for (var i = line; i < nextLine; ++i) {
-          buff.write(';');
-        }
+        buff.write(';' * (nextLine - line));
         line = nextLine;
         column = 0;
         first = true;
@@ -471,22 +478,7 @@ class SingleMapping extends Mapping {
         srcNameId = _append(buff, srcNameId, segment.sourceNameId!);
       }
     }
-
-    var result = <String, dynamic>{
-      'version': 3,
-      'sourceRoot': sourceRoot ?? '',
-      'sources': urls,
-      'names': names,
-      'mappings': buff.toString(),
-    };
-    if (targetUrl != null) result['file'] = targetUrl!;
-
-    if (includeSourceContents) {
-      result['sourcesContent'] = files.map((file) => file?.getText(0)).toList();
-    }
-    extensions.forEach((name, value) => result[name] = value);
-
-    return result;
+    return buff.toString();
   }
 
   /// Appends to [buff] a VLQ encoding of [newValue] using the difference
@@ -495,10 +487,6 @@ class SingleMapping extends Mapping {
     buff.writeAll(encodeVlq(newValue - oldValue));
     return newValue;
   }
-
-  StateError _segmentError(int seen, int line) =>
-      StateError('Invalid entry in sourcemap, expected 1, 4, or 5'
-          ' values, but got $seen.\ntargeturl: $targetUrl, line: $line');
 
   /// Returns the last [TargetEntry] which includes the location denoted by
   /// [line], [column].
@@ -653,8 +641,18 @@ class TargetEntry {
 class _MappingTokenizer implements Iterator<String> {
   final String _internal;
   final int _length;
+  final int _urlCount;
+  final int _nameCount;
+  final String? _targetUrl;
   int index = -1;
-  _MappingTokenizer(String internal)
+  int _column = 0;
+  int _srcUrlId = 0;
+  int _srcLine = 0;
+  int _srcColumn = 0;
+  int _srcNameId = 0;
+
+  _MappingTokenizer(
+      String internal, this._urlCount, this._nameCount, this._targetUrl)
       : _internal = internal,
         _length = internal.length;
 
@@ -678,13 +676,44 @@ class _MappingTokenizer implements Iterator<String> {
   }
 
   int _consumeValue() => decodeVlq(this);
+
   void _consumeNewLine() {
     ++index;
+    _column = 0;
   }
 
   void _consumeNewSegment() {
     ++index;
   }
+
+  /// Decodes the next 1-, 4-, or 5-value VLQ segment relative to prior values.
+  TargetEntry _consumeEntry(int line) {
+    if (nextKind.isNewSegment) throw _segmentError(0, line);
+    _column += _consumeValue();
+    if (!nextKind.isValue) return TargetEntry(_column);
+
+    _srcUrlId += _consumeValue();
+    if (_srcUrlId < 0 || _srcUrlId >= _urlCount) {
+      throw StateError('Invalid source url id. $_targetUrl, $line, $_srcUrlId');
+    }
+    if (!nextKind.isValue) throw _segmentError(2, line);
+    _srcLine += _consumeValue();
+    if (!nextKind.isValue) throw _segmentError(3, line);
+    _srcColumn += _consumeValue();
+    if (!nextKind.isValue) {
+      return TargetEntry(_column, _srcUrlId, _srcLine, _srcColumn);
+    }
+
+    _srcNameId += _consumeValue();
+    if (_srcNameId < 0 || _srcNameId >= _nameCount) {
+      throw StateError('Invalid name id: $_targetUrl, $line, $_srcNameId');
+    }
+    return TargetEntry(_column, _srcUrlId, _srcLine, _srcColumn, _srcNameId);
+  }
+
+  StateError _segmentError(int seen, int line) =>
+      StateError('Invalid entry in sourcemap, expected 1, 4, or 5'
+          ' values, but got $seen.\ntargeturl: $_targetUrl, line: $line');
 
   // Print the state of the iterator, with colors indicating the current
   // position.
