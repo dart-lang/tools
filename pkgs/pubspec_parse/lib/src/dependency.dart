@@ -376,7 +376,7 @@ class HostedDetails {
   /// Creates a JSON representation of the data of this object.
   Map<String, dynamic> toJson() => {
     if (declaredName != null) 'name': declaredName,
-    'url': url.toString(),
+    'url': ?url?.toString(),
   };
 }
 
