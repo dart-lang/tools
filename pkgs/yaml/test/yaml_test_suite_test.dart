@@ -34,7 +34,6 @@ void main() {
 }
 
 const _expectedFailures = <String>[
-  'VJP3-0',
   '7FWL-0',
   '565N-0',
   '6CK3-0',
@@ -43,7 +42,6 @@ const _expectedFailures = <String>[
   'X4QW-0',
   'CC74-0',
   'CVW2-0',
-  'QB6E-0',
   'SU5Z-0',
   'DK4H-0',
   '5TYM-0',
@@ -55,7 +53,6 @@ const _expectedFailures = <String>[
   'Y79Y-7',
   'Y79Y-8',
   'Y79Y-9',
-  '9C9N-0',
   'DK95-0',
   'DK95-1',
   'DK95-4',
