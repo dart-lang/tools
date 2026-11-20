@@ -8,20 +8,227 @@ import 'package:meta/meta.dart';
 
 import 'enums.dart';
 
+/// Public helper in unified_analytics to sort and chunk dependencies.
+///
+/// Respects GA4's 100-character limit per parameter and 25-parameter limit
+/// per event.
+///
+/// To eliminate alphabetical bias (e.g., always omitting packages starting
+/// with 'z' when exceeding the 20-chunk cap) while preventing ecosystem-wide
+/// starvation of specific package names across projects, dependencies are
+/// sorted deterministically using a 32-bit FNV-1a hash salted with the
+/// project's canonical dependency set.
+///
+/// This ensures:
+/// 1. **Cross-Machine Stability**: Identical dependency sets always produce the
+///    exact same deterministic chunk payload across developers and CI runs.
+/// 2. **Cross-Project Diversity**: Different projects produce different hash
+///    permutations, ensuring no package is globally starved across the
+///    ecosystem under truncation.
+/// 3. **Zero PII**: Salt is derived strictly from public package names without
+///    relying on local paths, usernames, or private project identifiers.
+@visibleForTesting
+Map<String, String> chunkDependencies(Set<String> deps) {
+  if (deps.isEmpty) return const {};
+
+  // Compute a deterministic project-level salt from the canonical
+  // (alphabetically sorted) dependency set.
+  final sortedBase = deps.toList()..sort();
+  var setSalt = 2166136261;
+  for (final dep in sortedBase) {
+    setSalt = _fnv1a(dep, setSalt);
+  }
+
+  // Sort deterministically by salted FNV-1a hash value. Fall back to
+  // alphabetical comparison if there is a hash collision to guarantee absolute
+  // determinism.
+  final sortedDeps = deps.toList()
+    ..sort((a, b) {
+      final hashA = _fnv1a(a, setSalt);
+      final hashB = _fnv1a(b, setSalt);
+      if (hashA != hashB) {
+        return hashA.compareTo(hashB);
+      }
+      return a.compareTo(b);
+    });
+
+  final chunks = <String, String>{};
+  var currentChunk = <String>[];
+  var currentLength = 0;
+  var chunkIndex = 0;
+
+  // We have a maximum of 25 parameters per event in GA4. Standard event
+  // parameters (name, enabledExperiments, exitCode, pubspec_has_flutter_sdk)
+  // take up to 4 slots, leaving 21 slots. Capping at 20 chunks guarantees
+  // safety.
+  const maxChunks = 20;
+
+  for (final dep in sortedDeps) {
+    // Guard: Skip package names that are somehow longer than 100 characters
+    // to prevent violating GA4's value length limit.
+    if (dep.length > 100) continue;
+
+    final lengthToAdd = dep.length + (currentChunk.isEmpty ? 0 : 1);
+    if (currentLength + lengthToAdd > 100) {
+      chunks['pubspec_dep_$chunkIndex'] = currentChunk.join(',');
+      chunkIndex++;
+
+      // Stop adding chunks if we reach the GA4 parameter count safety limit
+      if (chunkIndex >= maxChunks) {
+        currentChunk = const [];
+        break;
+      }
+
+      currentChunk = [dep];
+      currentLength = dep.length;
+    } else {
+      currentChunk.add(dep);
+      currentLength += lengthToAdd;
+    }
+  }
+
+  if (currentChunk.isNotEmpty && chunkIndex < maxChunks) {
+    chunks['pubspec_dep_$chunkIndex'] = currentChunk.join(',');
+  }
+
+  return chunks;
+}
+
+/// Computes a deterministic 32-bit FNV-1a hash of a string with an optional
+/// seed.
+///
+/// This is used to shuffle dependency names in a stable, pseudo-random
+/// way to eliminate alphabetical and global package bias when sampling packages
+/// for telemetry while maintaining 100% determinism across runs.
+int _fnv1a(String s, [int seed = 2166136261]) {
+  var hash = seed;
+  for (var i = 0; i < s.length; i++) {
+    hash ^= s.codeUnitAt(i);
+    // Split the multiplication to prevent exceeding the 53-bit safe integer
+    // limit on the web.
+    hash = (((hash & 0xff) << 24) + (hash * 403)) & 0xffffffff;
+  }
+  return hash;
+}
+
+/// A base class for custom metrics that will be defined by a unified_analytics
+/// client.
+///
+/// This base type can be used as a parameter in any event constructor that
+/// allows custom metrics to be added by a unified_analytics client.
+abstract base class CustomMetrics {
+  /// Converts the custom metrics data to a [Map] object.
+  ///
+  /// This must be a JSON-encodable [Map].
+  Map<String, Object> toMap();
+}
+
 final class Event {
   final DashEvent eventName;
   late final Map<String, Object?> eventData;
 
-  Event._({required this.eventName, required this.eventData}) {
-    if (eventData.containsKey('enabled_features')) {
-      throw ArgumentError.value(
-        eventData,
-        'eventData',
-        'The enabled_features key is reserved and cannot '
-            "be used as part of an event's data.",
-      );
-    }
-  }
+  /// Event that is emitted periodically to report the performance of the
+  /// analyzer.
+  ///
+  /// * [workingDuration] - JSON-encoded percentile values indicating how long
+  ///   the analysis status was "working".
+  /// * [withFineDependencies] - whether the fine-grained feature is enabled.
+  ///
+  /// Then there are three groups of measurements:
+  /// * file modifications
+  /// * workspace shape
+  /// * background analysis
+  ///
+  /// The file modifications group includes:
+  /// * [changedFileEventCount] - the number of file change events received.
+  /// * [removedFileEventCount] - the number of file removal events received.
+  /// * [changedFileUniqueCount] - the number of unique files that were changed.
+  /// * [removedFileUniqueCount] - the number of unique files that were removed.
+  ///
+  /// The workspace shape group includes:
+  /// * [immediateFileCountPercentiles] - JSON-encoded percentile values for the
+  ///  number of files in the immediate workspace.
+  /// * [immediateFileLineCountPercentiles] - JSON-encoded percentile values for
+  ///   the number of lines in the immediate workspace files.
+  /// * [transitiveFileCountPercentiles] - JSON-encoded percentile values for
+  ///   the number of files in the transitive workspace.
+  /// * [transitiveFileLineCountPercentiles] - JSON-encoded percentile values
+  ///   for the number of lines in the transitive workspace files.
+  ///
+  /// This allows us to understand how big the workspace is, and how it changed
+  /// over the reported period.
+  ///
+  /// The background analysis group includes:
+  /// * [produceErrorsPotentialFileCount] - the total number of files for which
+  ///   the reported diagnostics could potentially change.
+  /// * [produceErrorsPotentialFileLineCount] - the total number of lines in
+  ///   files for which the reported diagnostics could potentially change.
+  /// * [produceErrorsActualFileCount] - the total number of files that actually
+  ///   were analyzed during background analysis.
+  /// * [produceErrorsActualFileLineCount] - the total number of lines in files
+  ///   that actually were analyzed during background analysis.
+  /// * [produceErrorsDurationMs] - the total duration in milliseconds for
+  ///   producing diagnostics.
+  /// * [produceErrorsElementsDurationMs] - the total duration in milliseconds
+  ///   for preparing elements before analysis.
+  /// * [libraryDiagnosticsBundleFailures] - the counts of requirement failures
+  ///   for library diagnostics bundles. The key is the `kindId` of the
+  ///   `RequirementFailure`.
+  /// * [analysisReason] - the reason for re-creating the analysis context
+  ///   collection and hence re-analyzing the IDE workspace.
+  ///
+  /// This allows us to understand why analysis was performed, how many files
+  /// were scheduled for analysis, and how many of these files are served from
+  /// the cache, because we determined that the change that caused them to be
+  /// scheduled for analysis actually does not affect resolution and the set of
+  /// diagnostics, e.g. because the change was in a method body, or to an API
+  /// that does not affect this specific file (if fine-grained dependencies
+  /// enabled).
+  Event.analysisStatistics({
+    required String workingDuration,
+    required bool withFineDependencies,
+    required int changedFileEventCount,
+    required int removedFileEventCount,
+    required int changedFileUniqueCount,
+    required int removedFileUniqueCount,
+    required String immediateFileCountPercentiles,
+    required String immediateFileLineCountPercentiles,
+    required String transitiveFileCountPercentiles,
+    required String transitiveFileLineCountPercentiles,
+    required int produceErrorsPotentialFileCount,
+    required int produceErrorsPotentialFileLineCount,
+    required int produceErrorsActualFileCount,
+    required int produceErrorsActualFileLineCount,
+    required int produceErrorsDurationMs,
+    required int produceErrorsElementsDurationMs,
+    required String libraryDiagnosticsBundleFailures,
+    String? analysisReason,
+  }) : this._(
+         eventName: DashEvent.analysisStatistics,
+         eventData: {
+           'workingDuration': workingDuration,
+           'withFineDependencies': withFineDependencies,
+           'changedFileUniqueCount': changedFileUniqueCount,
+           'removedFileUniqueCount': removedFileUniqueCount,
+           'changedFileEventCount': changedFileEventCount,
+           'removedFileEventCount': removedFileEventCount,
+           'immediateFileCountPercentiles': immediateFileCountPercentiles,
+           'immediateFileLineCountPercentiles':
+               immediateFileLineCountPercentiles,
+           'transitiveFileCountPercentiles': transitiveFileCountPercentiles,
+           'transitiveFileLineCountPercentiles':
+               transitiveFileLineCountPercentiles,
+           'produceErrorsPotentialFileCount': produceErrorsPotentialFileCount,
+           'produceErrorsPotentialFileLineCount':
+               produceErrorsPotentialFileLineCount,
+           'produceErrorsActualFileCount': produceErrorsActualFileCount,
+           'produceErrorsActualFileLineCount': produceErrorsActualFileLineCount,
+           'produceErrorsDurationMs': produceErrorsDurationMs,
+           'produceErrorsElementsDurationMs': produceErrorsElementsDurationMs,
+           'libraryDiagnosticsBundleFailures': libraryDiagnosticsBundleFailures,
+           'analysisReason': ?analysisReason,
+         },
+       );
 
   /// Event that is emitted whenever a user has opted in
   /// or out of the analytics collection.
@@ -103,104 +310,6 @@ final class Event {
            'duration': duration,
            'latency': latency,
            'method': method,
-         },
-       );
-
-  /// Event that is emitted periodically to report the performance of the
-  /// analyzer.
-  ///
-  /// * [workingDuration] - JSON-encoded percentile values indicating how long
-  ///   the analysis status was "working".
-  /// * [withFineDependencies] - whether the fine-grained feature is enabled.
-  ///
-  /// Then there are three groups of measurements:
-  /// * file modifications
-  /// * workspace shape
-  /// * background analysis
-  ///
-  /// The file modifications group includes:
-  /// * [changedFileEventCount] - the number of file change events received.
-  /// * [removedFileEventCount] - the number of file removal events received.
-  /// * [changedFileUniqueCount] - the number of unique files that were changed.
-  /// * [removedFileUniqueCount] - the number of unique files that were removed.
-  ///
-  /// The workspace shape group includes:
-  /// * [immediateFileCountPercentiles] - JSON-encoded percentile values for the
-  ///  number of files in the immediate workspace.
-  /// * [immediateFileLineCountPercentiles] - JSON-encoded percentile values for
-  ///   the number of lines in the immediate workspace files.
-  /// * [transitiveFileCountPercentiles] - JSON-encoded percentile values for
-  ///   the number of files in the transitive workspace.
-  /// * [transitiveFileLineCountPercentiles] - JSON-encoded percentile values
-  ///   for the number of lines in the transitive workspace files.
-  ///
-  /// This allows us to understand how big is the workspace, and how it changed
-  /// over the reported period.
-  ///
-  /// The background analysis group includes:
-  /// * [produceErrorsPotentialFileCount] - the total number of files for which
-  ///   the reported diagnostics could potentially change.
-  /// * [produceErrorsPotentialFileLineCount] - the total number of lines in
-  ///   files for which the reported diagnostics could potentially change.
-  /// * [produceErrorsActualFileCount] - the total number of files that actually
-  ///   were analyzed during background analysis.
-  /// * [produceErrorsActualFileLineCount] - the total number of lines in files
-  ///   that actually were analyzed during background analysis.
-  /// * [produceErrorsDurationMs] - the total duration in milliseconds for
-  ///   producing diagnostics.
-  /// * [produceErrorsElementsDurationMs] - the total duration in milliseconds
-  ///   for preparing elements before analysis.
-  /// * [libraryDiagnosticsBundleFailures] - the counts of requirement failures
-  ///   for library diagnostics bundles. The key is the `kindId` of the
-  ///   `RequirementFailure`.
-  ///
-  /// This allows us to understand how many files were scheduled for analysis,
-  /// and how many of these files are served from the cache, because we
-  /// determined that the change that caused them to be scheduled for analysis
-  /// actually does not affect resolution and the set of diagnostics, e.g.
-  /// because the change was in a method body, or to an API that does not
-  /// affect this specific file (if fine-grained dependencies enabled).
-  Event.analysisStatistics({
-    required String workingDuration,
-    required bool withFineDependencies,
-    required int changedFileEventCount,
-    required int removedFileEventCount,
-    required int changedFileUniqueCount,
-    required int removedFileUniqueCount,
-    required String immediateFileCountPercentiles,
-    required String immediateFileLineCountPercentiles,
-    required String transitiveFileCountPercentiles,
-    required String transitiveFileLineCountPercentiles,
-    required int produceErrorsPotentialFileCount,
-    required int produceErrorsPotentialFileLineCount,
-    required int produceErrorsActualFileCount,
-    required int produceErrorsActualFileLineCount,
-    required int produceErrorsDurationMs,
-    required int produceErrorsElementsDurationMs,
-    required String libraryDiagnosticsBundleFailures,
-  }) : this._(
-         eventName: DashEvent.analysisStatistics,
-         eventData: {
-           'workingDuration': workingDuration,
-           'withFineDependencies': withFineDependencies,
-           'changedFileUniqueCount': changedFileUniqueCount,
-           'removedFileUniqueCount': removedFileUniqueCount,
-           'changedFileEventCount': changedFileEventCount,
-           'removedFileEventCount': removedFileEventCount,
-           'immediateFileCountPercentiles': immediateFileCountPercentiles,
-           'immediateFileLineCountPercentiles':
-               immediateFileLineCountPercentiles,
-           'transitiveFileCountPercentiles': transitiveFileCountPercentiles,
-           'transitiveFileLineCountPercentiles':
-               transitiveFileLineCountPercentiles,
-           'produceErrorsPotentialFileCount': produceErrorsPotentialFileCount,
-           'produceErrorsPotentialFileLineCount':
-               produceErrorsPotentialFileLineCount,
-           'produceErrorsActualFileCount': produceErrorsActualFileCount,
-           'produceErrorsActualFileLineCount': produceErrorsActualFileLineCount,
-           'produceErrorsDurationMs': produceErrorsDurationMs,
-           'produceErrorsElementsDurationMs': produceErrorsElementsDurationMs,
-           'libraryDiagnosticsBundleFailures': libraryDiagnosticsBundleFailures,
          },
        );
 
@@ -517,6 +626,37 @@ final class Event {
          },
        );
 
+  /// An event that is sent from the Dart MCP server.
+  ///
+  /// The [client] is the name of the client, as given when it connected to the
+  /// MCP server, and [clientVersion] is the version of the client.
+  ///
+  /// The [serverVersion] is the version of the Dart MCP server.
+  ///
+  /// The [type] identifies the kind of event this is, and [additionalData] is
+  /// the actual data for the event.
+  ///
+  /// The [agentPlugin] is optional and is the name of the agent plugin that is
+  /// using the MCP server.
+  Event.dartMCPEvent({
+    required String client,
+    required String clientVersion,
+    required String serverVersion,
+    required String type,
+    String? agentPlugin,
+    CustomMetrics? additionalData,
+  }) : this._(
+         eventName: DashEvent.dartMCPEvent,
+         eventData: {
+           'client': client,
+           'clientVersion': clientVersion,
+           'serverVersion': serverVersion,
+           'type': type,
+           'agentPlugin': ?agentPlugin,
+           ...?additionalData?.toMap(),
+         },
+       );
+
   /// Event that is sent from DevTools for various different actions as
   /// indicated by the [eventCategory].
   ///
@@ -688,42 +828,6 @@ final class Event {
          },
        );
 
-  @Deprecated(
-    "Use 'flutterWasmDryRunPackage' instead. This will be removed in "
-    'a future version.',
-  )
-  Event.flutterWasmDryRun({
-    required String result,
-    required int exitCode,
-    String? findingsSummary,
-  }) : this._(
-         eventName: DashEvent.flutterWasmDryRun,
-         eventData: {
-           'result': result,
-           'exitCode': exitCode,
-           'findings': ?findingsSummary,
-         },
-       );
-
-  /// Provides information about the results of a WASM dry run including public
-  /// package names and versions.
-  ///
-  /// * [result] - dry run result summary.
-  ///
-  /// * [exitCode] - the exit code of the dry run.
-  ///
-  /// * [findingsInfo] - findings for the dry run, keyed by finding index.
-  ///   The value is a comma-separated string containing flags and package
-  ///   information in `name:version` format, e.g., `'-ph,pkg1:1.2.3'`.
-  Event.flutterWasmDryRunPackage({
-    required String result,
-    required int exitCode,
-    required Map<String, String> findingsInfo,
-  }) : this._(
-         eventName: DashEvent.flutterWasmDryRunPackage,
-         eventData: {'result': result, 'exitCode': exitCode, ...findingsInfo},
-       );
-
   /// Provides information about the plugins injected into an iOS or macOS
   /// project.
   ///
@@ -839,6 +943,42 @@ final class Event {
          },
        );
 
+  @Deprecated(
+    "Use 'flutterWasmDryRunPackage' instead. This will be removed in "
+    'a future version.',
+  )
+  Event.flutterWasmDryRun({
+    required String result,
+    required int exitCode,
+    String? findingsSummary,
+  }) : this._(
+         eventName: DashEvent.flutterWasmDryRun,
+         eventData: {
+           'result': result,
+           'exitCode': exitCode,
+           'findings': ?findingsSummary,
+         },
+       );
+
+  /// Provides information about the results of a WASM dry run including public
+  /// package names and versions.
+  ///
+  /// * [result] - dry run result summary.
+  ///
+  /// * [exitCode] - the exit code of the dry run.
+  ///
+  /// * [findingsInfo] - findings for the dry run, keyed by finding index.
+  ///   The value is a comma-separated string containing flags and package
+  ///   information in `name:version` format, e.g., `'-ph,pkg1:1.2.3'`.
+  Event.flutterWasmDryRunPackage({
+    required String result,
+    required int exitCode,
+    required Map<String, String> findingsInfo,
+  }) : this._(
+         eventName: DashEvent.flutterWasmDryRunPackage,
+         eventData: {'result': result, 'exitCode': exitCode, ...findingsInfo},
+       );
+
   // TODO: eliasyishak, remove this or replace once we have a generic
   //  timing event that can be used by potentially more than one DashTool.
   Event.hotReloadTime({required int timeMs})
@@ -933,6 +1073,28 @@ final class Event {
         eventName: DashEvent.migrateEvent,
         eventData: {'type': type, ...?additionalData?.toMap()},
       );
+
+  /// An event that is sent from package:skills.
+  ///
+  /// The [version] is the version of the skills package.
+  ///
+  /// The [type] identifies the kind of event this is, and [additionalData] is
+  /// the actual data for the event.
+  ///
+  /// See https://github.com/dart-lang/ai/tree/main/pkgs/skills for the actual
+  /// events sent by this package.
+  Event.packageSkillsEvent({
+    required String version,
+    required String type,
+    CustomMetrics? additionalData,
+  }) : this._(
+         eventName: DashEvent.packageSkillsEvent,
+         eventData: {
+           'version': version,
+           'type': type,
+           ...?additionalData?.toMap(),
+         },
+       );
 
   /// Event that is emitted periodically to report the performance of analyzer
   /// plugins when handling requests.
@@ -1143,58 +1305,16 @@ final class Event {
          },
        );
 
-  /// An event that is sent from the Dart MCP server.
-  ///
-  /// The [client] is the name of the client, as given when it connected to the
-  /// MCP server, and [clientVersion] is the version of the client.
-  ///
-  /// The [serverVersion] is the version of the Dart MCP server.
-  ///
-  /// The [type] identifies the kind of event this is, and [additionalData] is
-  /// the actual data for the event.
-  ///
-  /// The [agentPlugin] is optional and is the name of the agent plugin that is
-  /// using the MCP server.
-  Event.dartMCPEvent({
-    required String client,
-    required String clientVersion,
-    required String serverVersion,
-    required String type,
-    String? agentPlugin,
-    CustomMetrics? additionalData,
-  }) : this._(
-         eventName: DashEvent.dartMCPEvent,
-         eventData: {
-           'client': client,
-           'clientVersion': clientVersion,
-           'serverVersion': serverVersion,
-           'type': type,
-           'agentPlugin': ?agentPlugin,
-           ...?additionalData?.toMap(),
-         },
-       );
-
-  /// An event that is sent from package:skills.
-  ///
-  /// The [version] is the version of the skills package.
-  ///
-  /// The [type] identifies the kind of event this is, and [additionalData] is
-  /// the actual data for the event.
-  ///
-  /// See https://github.com/dart-lang/ai/tree/main/pkgs/skills for the actual
-  /// events sent by this package.
-  Event.packageSkillsEvent({
-    required String version,
-    required String type,
-    CustomMetrics? additionalData,
-  }) : this._(
-         eventName: DashEvent.packageSkillsEvent,
-         eventData: {
-           'version': version,
-           'type': type,
-           ...?additionalData?.toMap(),
-         },
-       );
+  Event._({required this.eventName, required this.eventData}) {
+    if (eventData.containsKey('enabled_features')) {
+      throw ArgumentError.value(
+        eventData,
+        'eventData',
+        'The enabled_features key is reserved and cannot '
+            "be used as part of an event's data.",
+      );
+    }
+  }
 
   @override
   int get hashCode => Object.hash(eventName, jsonEncode(eventData));
@@ -1260,119 +1380,4 @@ final class Event {
       return null;
     }
   }
-}
-
-/// A base class for custom metrics that will be defined by a unified_analytics
-/// client.
-///
-/// This base type can be used as a parameter in any event constructor that
-/// allows custom metrics to be added by a unified_analytics client.
-abstract base class CustomMetrics {
-  /// Converts the custom metrics data to a [Map] object.
-  ///
-  /// This must be a JSON-encodable [Map].
-  Map<String, Object> toMap();
-}
-
-/// Public helper in unified_analytics to sort and chunk dependencies.
-///
-/// Respects GA4's 100-character limit per parameter and 25-parameter limit
-/// per event.
-///
-/// To eliminate alphabetical bias (e.g., always omitting packages starting
-/// with 'z' when exceeding the 20-chunk cap) while preventing ecosystem-wide
-/// starvation of specific package names across projects, dependencies are
-/// sorted deterministically using a 32-bit FNV-1a hash salted with the
-/// project's canonical dependency set.
-///
-/// This ensures:
-/// 1. **Cross-Machine Stability**: Identical dependency sets always produce the
-///    exact same deterministic chunk payload across developers and CI runs.
-/// 2. **Cross-Project Diversity**: Different projects produce different hash
-///    permutations, ensuring no package is globally starved across the
-///    ecosystem under truncation.
-/// 3. **Zero PII**: Salt is derived strictly from public package names without
-///    relying on local paths, usernames, or private project identifiers.
-@visibleForTesting
-Map<String, String> chunkDependencies(Set<String> deps) {
-  if (deps.isEmpty) return const {};
-
-  // Compute a deterministic project-level salt from the canonical
-  // (alphabetically sorted) dependency set.
-  final sortedBase = deps.toList()..sort();
-  var setSalt = 2166136261;
-  for (final dep in sortedBase) {
-    setSalt = _fnv1a(dep, setSalt);
-  }
-
-  // Sort deterministically by salted FNV-1a hash value. Fall back to
-  // alphabetical comparison if there is a hash collision to guarantee absolute
-  // determinism.
-  final sortedDeps = deps.toList()
-    ..sort((a, b) {
-      final hashA = _fnv1a(a, setSalt);
-      final hashB = _fnv1a(b, setSalt);
-      if (hashA != hashB) {
-        return hashA.compareTo(hashB);
-      }
-      return a.compareTo(b);
-    });
-
-  final chunks = <String, String>{};
-  var currentChunk = <String>[];
-  var currentLength = 0;
-  var chunkIndex = 0;
-
-  // We have a maximum of 25 parameters per event in GA4. Standard event
-  // parameters (name, enabledExperiments, exitCode, pubspec_has_flutter_sdk)
-  // take up to 4 slots, leaving 21 slots. Capping at 20 chunks guarantees
-  // safety.
-  const maxChunks = 20;
-
-  for (final dep in sortedDeps) {
-    // Guard: Skip package names that are somehow longer than 100 characters
-    // to prevent violating GA4's value length limit.
-    if (dep.length > 100) continue;
-
-    final lengthToAdd = dep.length + (currentChunk.isEmpty ? 0 : 1);
-    if (currentLength + lengthToAdd > 100) {
-      chunks['pubspec_dep_$chunkIndex'] = currentChunk.join(',');
-      chunkIndex++;
-
-      // Stop adding chunks if we reach the GA4 parameter count safety limit
-      if (chunkIndex >= maxChunks) {
-        currentChunk = const [];
-        break;
-      }
-
-      currentChunk = [dep];
-      currentLength = dep.length;
-    } else {
-      currentChunk.add(dep);
-      currentLength += lengthToAdd;
-    }
-  }
-
-  if (currentChunk.isNotEmpty && chunkIndex < maxChunks) {
-    chunks['pubspec_dep_$chunkIndex'] = currentChunk.join(',');
-  }
-
-  return chunks;
-}
-
-/// Computes a deterministic 32-bit FNV-1a hash of a string with an optional
-/// seed.
-///
-/// This is used to shuffle dependency names in a stable, pseudo-random
-/// way to eliminate alphabetical and global package bias when sampling packages
-/// for telemetry while maintaining 100% determinism across runs.
-int _fnv1a(String s, [int seed = 2166136261]) {
-  var hash = seed;
-  for (var i = 0; i < s.length; i++) {
-    hash ^= s.codeUnitAt(i);
-    // Split the multiplication to prevent exceeding the 53-bit safe integer
-    // limit on the web.
-    hash = (((hash & 0xff) << 24) + (hash * 403)) & 0xffffffff;
-  }
-  return hash;
 }
