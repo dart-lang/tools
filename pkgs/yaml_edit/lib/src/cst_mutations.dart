@@ -673,11 +673,15 @@ SourceEdit _buildUpdate(
       if (findEntryIndex(parent, step) == null) {
         final keyText = yamlEncodeFlow(wrapAsYamlNode(step));
         final valueText = yamlEncodeFlow(value);
+        final trimmed = document.trimmedEnd(parent.contentStart, parent.end);
+        final pairEnd = document.hasLineBreakInRange(trimmed, parent.end)
+            ? trimmed
+            : parent.end;
         final existingText =
-            document.source.substring(parent.contentStart, parent.end);
+            document.source.substring(parent.contentStart, pairEnd);
         final replacement = '{$existingText, $keyText: $valueText}';
         return SourceEdit(
-            parent.contentStart, parent.end - parent.contentStart, replacement);
+            parent.contentStart, pairEnd - parent.contentStart, replacement);
       }
       return _replaceFlowValue(document, parent.pairValue, value);
 
@@ -828,16 +832,17 @@ SourceEdit _replaceBlockSeqValue(
     return _replaceInPlace(document, style, entry.value, value);
   }
   var encoded = encodeAfterDash(value, style, dashColumn: dashColumn);
-  final hasTrailingComment =
-      !document.hasLineBreakBefore(entry.value.contentEnd) &&
-          document.commentInRange(
-                entry.value.contentEnd,
-                document.lineBreakEndOf(entry.value.contentEnd),
-              ) !=
-              null;
-  if ((entry.value is CstBlockSeq || entry.value is CstBlockMap) &&
-      !hasTrailingComment) {
-    if (encoded.isNotEmpty && !encoded.endsWith(style.lineEnding)) {
+  if (entry.value is CstBlockSeq || entry.value is CstBlockMap) {
+    final hasTrailingComment =
+        !document.hasLineBreakBefore(entry.value.contentEnd) &&
+            document.commentInRange(
+                  entry.value.contentEnd,
+                  document.lineBreakEndOf(entry.value.contentEnd),
+                ) !=
+                null;
+    if (!hasTrailingComment &&
+        encoded.isNotEmpty &&
+        !encoded.endsWith(style.lineEnding)) {
       encoded += style.lineEnding;
     }
   }
@@ -1411,17 +1416,18 @@ SourceEdit _removeBlockEntry(
     // Preserve section-separating blank lines after a removed last entry
     // unless the preceding entry ends with a keep-chomped block scalar (`|+`
     // or `>+`), which would otherwise absorb those blank lines.
-    final isLastEntry = nextEntryContentStart == null;
-    final previousValue = isLastEntry && entryCount > 1
-        ? switch (collection) {
-            CstBlockSeq() => collection.entries[entryCount - 2].value,
-            CstBlockMap() => collection.entries[entryCount - 2].value,
-            _ => null,
-          }
-        : null;
-    final preserveTrailingBlankLines = isLastEntry &&
-        (previousValue == null ||
-            !_endsWithKeepBlockScalar(document, previousValue));
+    final preserveTrailingBlankLines = nextEntryContentStart == null &&
+        switch (collection) {
+          CstBlockSeq() => !_endsWithKeepBlockScalar(
+              document,
+              collection.entries[entryCount - 2].value,
+            ),
+          CstBlockMap() => !_endsWithKeepBlockScalar(
+              document,
+              collection.entries[entryCount - 2].value,
+            ),
+          _ => true,
+        };
 
     endOffset = document.extendPastIndentedCommentsAndBlankLines(
       endOffset,
@@ -1613,35 +1619,18 @@ SourceEdit _removeFlowEntry(
       ? entry.end
       : document.trimmedEnd(entry.contentStart, entry.end);
   final entryLineEnd = document.lineBreakEndOf(entryContentEnd);
-  final commentsAfter =
-      document.commentsInRange(entryLineEnd, collection.closeStart);
   final closeOnLaterLine = document.lineStartOf(collection.closeStart) >
       document.lineStartOf(entryContentEnd);
 
   final fromLineStart = document.lineStartOf(from);
-  final prevValueEnd =
-      document.trimmedEnd(previous.value.start, previous.value.end);
-  final fromStartsOwnLine = !hasTrailingComma &&
-      fromLineStart >= prevValueEnd &&
-      document.isWhitespaceRange(fromLineStart, from);
+  final fromStartsOwnLine =
+      !hasTrailingComma && document.isWhitespaceRange(fromLineStart, from);
 
   if (commentsBefore.isNotEmpty) {
     final deleteStart =
         document.lineBreakEndOf(commentsBefore.last.span.end.offset);
     final deleteEnd = min(entryLineEnd, collection.closeStart);
     return SourceEdit(deleteStart, deleteEnd - deleteStart, '');
-  }
-
-  if (commentsAfter.isNotEmpty) {
-    if (hasTrailingComma &&
-        document.isWhitespaceRange(entryLineStart, entry.contentStart)) {
-      return SourceEdit(entryLineStart, entryLineEnd - entryLineStart, '');
-    }
-    if (fromStartsOwnLine) {
-      return SourceEdit(fromLineStart, entryLineEnd - fromLineStart, '');
-    }
-    final deleteEnd = document.lineContentEndOf(entryContentEnd);
-    return SourceEdit(from, deleteEnd - from, '');
   }
 
   if (hasTrailingComma) {

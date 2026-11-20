@@ -599,5 +599,18 @@ void main() {
       expect(() => buildRemove(flowPair, [0, 'nonexistent']),
           throwsA(isA<PathError>()));
     });
+
+    test('removes leading-comma last entry after key-only implicit-null entry',
+        () {
+      final editor = YamlEditor('{\n  a\n  , b: 2\n}\n');
+      editor.remove(['b']);
+      expect(editor.toString(), '{\n  a\n}\n');
+    });
+
+    test('adds key to multiline flow pair without pulling closing bracket', () {
+      final editor = YamlEditor('[\nfoo: bar\n]\n');
+      editor.update([0, 'baz'], 1);
+      expect(editor.toString(), '[\n{foo: bar, baz: 1}\n]\n');
+    });
   });
 }
