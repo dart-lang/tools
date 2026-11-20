@@ -9,6 +9,7 @@
   characters and reject ASCII DEL (`0x7F`) in header field names.
 * Fix a stream hang and buffer assertion failure when trailing epilogue bytes
   follow the final `--boundary--\r\n` delimiter.
+* Recognize `3gp2` and `3gp4` brand headers as `video/3gpp`.
 
 ## 2.1.0
 
