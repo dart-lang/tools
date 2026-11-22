@@ -9154,7 +9154,7 @@ external int ECDH_compute_key(
 
 /// ECDH_compute_key_fips calculates the shared key between `pub_key` and
 /// `priv_key` and hashes it with the appropriate SHA function for `out_len`. The
-/// only value values for `out_len` are thus 24 (SHA-224), 32 (SHA-256), 48
+/// only valid values for `out_len` are thus 28 (SHA-224), 32 (SHA-256), 48
 /// (SHA-384), and 64 (SHA-512). It returns one on success and zero on error.
 ///
 /// Note that the return value is different to `ECDH_compute_key`: it returns an
@@ -12675,8 +12675,7 @@ external int EVP_DecodeBase64(
 /// `dst`. It returns the number of bytes written or -1 on error.
 ///
 /// WARNING: EVP_DecodeBlock's return value does not take padding into
-/// account. It also strips leading whitespace and trailing
-/// whitespace and minuses.
+/// account. It also strips leading spaces and tabs, and trailing whitespace.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>, ffi.Size)
@@ -16838,15 +16837,26 @@ external ffi.Pointer<EVP_MD> EVP_sha512();
 @ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha512_256')
 external ffi.Pointer<EVP_MD> EVP_sha512_256();
 
-/// EVP_shake256 is SHAKE256 extendable-output function.
+/// EVP_shake* implement SHAKE128 and SHAKE256 extendable-output function.
 ///
-/// WARNING: SHAKE is slow. Prefer SHA-2, or TurboSHAKE (`EVP_turboshake256`) if
+/// WARNING: SHAKE is slow. Prefer SHA-2, or TurboSHAKE (`EVP_turboshake*`) if
 /// an XOF is needed.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_shake128')
+external ffi.Pointer<EVP_MD> EVP_shake128();
+
 @meta.RecordUse()
 @ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_shake256')
 external ffi.Pointer<EVP_MD> EVP_shake256();
 
-/// EVP_turboshake256 is TurboSHAKE extendable output function.
+/// EVP_turboshake* implement TurboSHAKE (RFC 9861). TurboSHAKE is similar to
+/// SHAKE, but is faster due to it using a more practical round count.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(
+  symbol: 'bssl_dart_EVP_turboshake128',
+)
+external ffi.Pointer<EVP_MD> EVP_turboshake128();
+
 @meta.RecordUse()
 @ffi.Native<ffi.Pointer<EVP_MD> Function()>(
   symbol: 'bssl_dart_EVP_turboshake256',
@@ -20853,7 +20863,7 @@ external int RSA_generate_key_ex(
 
 /// RSA_generate_key_fips behaves like `RSA_generate_key_ex` but performs
 /// additional checks for FIPS compliance. The public exponent is always 65537
-/// and `bits` must be either 2048 or 3072.
+/// and `bits` must be one of 2048, 3072 and 4096.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<RSA>, ffi.Int, ffi.Pointer<BN_GENCB>)>(
   symbol: 'bssl_dart_RSA_generate_key_fips',
@@ -32999,7 +33009,7 @@ const int EVP_MAX_IV_LENGTH = 16;
 
 const int EVP_MAX_KEY_LENGTH = 64;
 
-const int EVP_MAX_MD_BLOCK_SIZE = 136;
+const int EVP_MAX_MD_BLOCK_SIZE = 168;
 
 const int EVP_MAX_MD_DATA_SIZE = 240;
 
@@ -36410,8 +36420,6 @@ const int X509_V_FLAG_TRUSTED_FIRST = 0;
 const int X509_V_FLAG_USE_CHECK_TIME = 2;
 
 const int X509_V_FLAG_USE_DELTAS = 8192;
-
-const int X509_V_FLAG_USE_MTC_DRAFT_PLANTS_07 = 4194304;
 
 const int X509_V_FLAG_X509_STRICT = 0;
 
