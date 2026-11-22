@@ -91,8 +91,12 @@ if(MSVC)
   set(MSVC_DISABLED_WARNINGS_STR " -wd4100 -wd4127 -wd4132 -wd4244 -wd4267 -wd4706 -wd4141 -wd4201")
   # -Gy and -Gw put each function and variable in its own COMDAT, so the link
   # hook can drop the unused ones. BoringSSL doesn't use RTTI (-GR-).
-  set(CMAKE_C_FLAGS "-utf-8 -W4 -WX -Gy -Gw ${MSVC_DISABLED_WARNINGS_STR}")
-  set(CMAKE_CXX_FLAGS "-utf-8 -W4 -WX -Gy -Gw -GR- ${MSVC_DISABLED_WARNINGS_STR}")
+  # -Brepro leaves the timestamps out of the objects and libraries, so that
+  # building the same sources gives the same libraries.
+  set(CMAKE_C_FLAGS "-utf-8 -W4 -WX -Gy -Gw -Brepro ${MSVC_DISABLED_WARNINGS_STR}")
+  set(CMAKE_CXX_FLAGS "-utf-8 -W4 -WX -Gy -Gw -GR- -Brepro ${MSVC_DISABLED_WARNINGS_STR}")
+  string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Brepro")
+  string(APPEND CMAKE_STATIC_LINKER_FLAGS " -Brepro")
   # Link the C runtime statically (-MT), like the Dart SDK does, so that the
   # libraries don't need the Visual C++ Redistributable (vcruntime140.dll) on
   # the machines that run them. The objects carry the choice as a default
