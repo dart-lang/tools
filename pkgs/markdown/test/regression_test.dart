@@ -431,6 +431,18 @@ a <!--
     expect('<td>'.allMatches(html).length, lessThan(300000));
     expect(html, endsWith('x</p>\n'));
   });
+
+  test('inline syntaxes skip positions that cannot start a match', () {
+    String render(String input) =>
+        markdownToHtml(input, extensionSet: ExtensionSet.gitHubFlavored);
+
+    // Case folding must not make a non-ASCII character start a match.
+    expect(render('\u212A\u017Fww.x.com'), '<p>\u212A\u017Fww.x.com</p>\n');
+    expect(render('x@y.com'), contains('mailto:x@y.com'));
+    expect(render('a\\\nb'), contains('<br />'));
+    expect(render('a  \nb'), contains('<br />'));
+    expect(render('a\u3000\nb'), isNot(contains('<br />')));
+  });
 }
 
 class _CountingLine extends Line {

@@ -66,9 +66,22 @@ class AutolinkExtensionSyntax extends InlineSyntax {
     $gt,
   };
 
+  // A match starts with an ASCII letter, a digit, or one of `-`, `_`, `.`, `+`:
+  // a scheme or `www.` starts with a letter and an email address with a
+  // local-part character.
+  static bool _canStartMatch(int char) =>
+      (char >= 0x61 && char <= 0x7A) || // a-z
+      (char >= 0x41 && char <= 0x5A) || // A-Z
+      (char >= 0x30 && char <= 0x39) || // 0-9
+      char == $dash ||
+      char == $underscore ||
+      char == $dot ||
+      char == $plus;
+
   @override
   bool tryMatch(InlineParser parser, [int? startMatchPos]) {
     startMatchPos ??= parser.pos;
+    if (!_canStartMatch(parser.charAt(startMatchPos))) return false;
     // When it is a link and it is not at the beginning of a line, or preceded
     // by whitespace, `*`, `_`, `~`, `(`, or `>`, it is invalid. See
     // https://github.github.com/gfm/#autolinks-extension-.
