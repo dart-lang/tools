@@ -181,6 +181,10 @@ enum DashEvent {
     label: 'context_structure',
     description: 'Structure of the analysis contexts being analyzed',
   ),
+  diagnosticReportedCount(
+    label: 'diagnostic_reported_count',
+    description: 'Number of times a given diagnostic is reported',
+  ),
   lintUsageCount(
     label: 'lint_usage_count',
     description: 'Number of times a given lint is enabled',

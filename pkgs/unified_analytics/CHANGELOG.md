@@ -11,6 +11,8 @@
 - Added an `analysisReason` parameter to the `analysisStatistics` constructor to
   report the reason for re-creating the analysis context collection and hence
   re-analyzing the IDE workspace.
+- Added a `diagnosticReportedCount` constructor to create a new kind of event
+  used to report how often a diagnostic with a given code has been reported.
 
 ## 8.4.0
 
