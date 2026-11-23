@@ -84,6 +84,88 @@ void main() {
         expect(child.parentNode, same(parent));
       }
     });
+
+    test('insertAll with duplicate detached nodes at index 0', () {
+      final parent = Element.tag('div');
+      final a = Element.tag('a');
+      final x = Element.tag('span');
+      parent.append(a);
+      parent.nodes.insertAll(0, [x, x]);
+      expect(parent.nodes, [x, a]);
+      expect(x.parentNode, same(parent));
+      expect(a.parentNode, same(parent));
+    });
+
+    test('insertAll with duplicate detached nodes at non-zero index', () {
+      final parent = Element.tag('div');
+      final a = Element.tag('a');
+      final b = Element.tag('b');
+      final x = Element.tag('span');
+      final y = Element.tag('em');
+      parent.nodes.addAll([a, b]);
+      parent.nodes.insertAll(1, [x, y, x]);
+      expect(parent.nodes, [a, y, x, b]);
+      for (final child in parent.nodes) {
+        expect(child.parentNode, same(parent));
+      }
+    });
+
+    test('insertAll with fragment and duplicate reference to its child', () {
+      final parent = Element.tag('div');
+      final a = Element.tag('a');
+      final x = Element.tag('span');
+      final fragment = DocumentFragment()..append(x);
+      parent.append(a);
+      parent.nodes.insertAll(0, [fragment, x]);
+      expect(parent.nodes, [x, a]);
+      expect(fragment.nodes, isEmpty);
+      expect(x.parentNode, same(parent));
+    });
+
+    test('insertAll with duplicate earlier sibling', () {
+      final parent = Element.tag('div');
+      final a = Element.tag('a');
+      final b = Element.tag('b');
+      parent.nodes.addAll([a, b]);
+      parent.nodes.insertAll(1, [a, a]);
+      expect(parent.nodes, [a, b]);
+      expect(a.parentNode, same(parent));
+      expect(b.parentNode, same(parent));
+    });
+
+    test('addAll with duplicate nodes keeps last occurrence', () {
+      final parent = Element.tag('div');
+      final a = Element.tag('a');
+      final x = Element.tag('span');
+      final y = Element.tag('em');
+      parent.append(a);
+      parent.nodes.addAll([x, y, x]);
+      expect(parent.nodes, [a, y, x]);
+      for (final child in parent.nodes) {
+        expect(child.parentNode, same(parent));
+      }
+    });
+
+    test('insert ignores stale parentNode not in list', () {
+      final parent = Element.tag('div');
+      final a = Element.tag('a');
+      final x = Element.tag('span')..parentNode = parent;
+      parent.append(a);
+      parent.nodes.insert(0, x);
+      expect(parent.nodes, [x, a]);
+      expect(x.parentNode, same(parent));
+    });
+
+    test('operator []= ignores stale parentNode not in list', () {
+      final parent = Element.tag('div');
+      final a = Element.tag('a');
+      final x = Element.tag('span')..parentNode = parent;
+      parent.append(a);
+      parent.nodes[0] = x;
+      expect(parent.nodes, [x]);
+      expect(a.parentNode, isNull);
+      expect(x.parentNode, same(parent));
+    });
   });
 
   group('bulk fragment insertion', () {

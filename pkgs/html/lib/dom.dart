@@ -878,8 +878,11 @@ class NodeList extends ListProxy<Node> {
     if (element is DocumentFragment) {
       insertAll(index, element.nodes);
     } else {
-      if (identical(element.parentNode, _parent) && indexOf(element) < index) {
-        index--;
+      if (identical(element.parentNode, _parent)) {
+        final existing = indexOf(element);
+        if (existing >= 0 && existing < index) {
+          index--;
+        }
       }
       super.insert(index, _setParent(element));
     }
@@ -908,8 +911,11 @@ class NodeList extends ListProxy<Node> {
       if (identical(this[index], value)) return;
       // Removing a sibling before the target shifts its index. Detach first,
       // then replace the node at the adjusted position.
-      if (identical(value.parentNode, _parent) && indexOf(value) < index) {
-        index--;
+      if (identical(value.parentNode, _parent)) {
+        final existing = indexOf(value);
+        if (existing >= 0 && existing < index) {
+          index--;
+        }
       }
       value.remove();
       this[index].parentNode = null;
@@ -979,8 +985,11 @@ class NodeList extends ListProxy<Node> {
 
     final list = _flattenDocFragments(iterable);
     for (var node in list.reversed) {
-      if (identical(node.parentNode, _parent) && indexOf(node) < index) {
-        index--;
+      if (identical(node.parentNode, _parent)) {
+        final existing = indexOf(node);
+        if (existing >= 0 && existing < index) {
+          index--;
+        }
       }
       _setParent(node);
     }
@@ -988,9 +997,11 @@ class NodeList extends ListProxy<Node> {
   }
 
   List<Node> _flattenDocFragments(Iterable<Node> collection) {
-    // Note: this function serves two purposes:
+    // Note: this function serves three purposes:
     //  * it flattens document fragments
-    //  * it creates a copy of [collections] when `collection is NodeList`.
+    //  * it creates a copy of [collection] when `collection is NodeList`
+    //  * it deduplicates nodes keeping the last occurrence so a node never
+    //    appears twice in a parent's child list
     final result = <Node>[];
     for (var node in collection) {
       if (node is DocumentFragment) {
@@ -999,7 +1010,18 @@ class NodeList extends ListProxy<Node> {
         result.add(node);
       }
     }
-    return result;
+    if (result.length <= 1) return result;
+
+    final seen = Set<Node>.identity();
+    final uniqueReversed = <Node>[];
+    for (var i = result.length - 1; i >= 0; i--) {
+      final node = result[i];
+      if (seen.add(node)) {
+        uniqueReversed.add(node);
+      }
+    }
+    if (uniqueReversed.length == result.length) return result;
+    return uniqueReversed.reversed.toList();
   }
 }
 
