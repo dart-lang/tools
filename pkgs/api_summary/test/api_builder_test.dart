@@ -990,6 +990,102 @@ dart:core:
     );
   }
 
+  Future<void> test_unexportedSrcConstantsAndControlChars() async {
+    final summary = await _build({
+      '$testPackageLibPath/src/hidden.dart': '''
+class Hidden {
+  const Hidden();
+  static void hiddenStatic() {}
+}
+
+enum HiddenEnum { a }
+
+void hiddenTopFunc() {}
+
+extension type const HiddenExt(Hidden value) implements Object {}
+''',
+      '$testPackageLibPath/src/reexported.dart': '''
+class Reexported {
+  const Reexported();
+}
+
+class ReexportedBox<T> {
+  const ReexportedBox();
+}
+''',
+      '$testPackageLibPath/file.dart': r'''
+export 'src/reexported.dart';
+
+import 'src/hidden.dart';
+import 'src/reexported.dart';
+
+extension type const Meters(int value) {}
+
+void probe({
+  Object hiddenInstance = const Hidden(),
+  Object hiddenTypeArg = const <Hidden>[],
+  Object hiddenMapTypeArg = const <String, Hidden>{},
+  Object hiddenBox = const ReexportedBox<Hidden>(),
+  Object reexported = const Reexported(),
+  Object reexportedBox = const ReexportedBox<int>(),
+  Meters distance = const Meters(5),
+  String controls = 'a\u0085b\u009bc\u2028d\u2029e\uD800f café 🚀',
+}) {}
+
+const Object kHiddenInstance = Hidden();
+const Object kHiddenEnum = HiddenEnum.a;
+const void Function() kHiddenTopFunc = hiddenTopFunc;
+const void Function() kHiddenStatic = Hidden.hiddenStatic;
+const Object kHiddenCtorTearOff = Hidden.new;
+const Type kHiddenType = Hidden;
+const Type kHiddenGenericType = List<Hidden>;
+const Object kHiddenExt = HiddenExt(Hidden());
+const Object kReexported = Reexported();
+const Object kReexportedBox = ReexportedBox<int>();
+const Meters kMeters = Meters(5);
+''',
+    });
+
+    final decodedMap = jsonDecode(summary) as Map<String, dynamic>;
+    final rehydrated = ApiSummary.fromJson(decodedMap);
+    final lib = rehydrated.libraries.singleWhere(
+      (l) => l.uri == 'package:test/file.dart',
+    );
+
+    final probeFn = lib.functions.firstWhere((f) => f.name == 'probe');
+    final probeDefaults = {
+      for (final p in probeFn.parameters) p.name: p.defaultValue,
+    };
+    expect(probeDefaults, {
+      'hiddenInstance': null,
+      'hiddenTypeArg': null,
+      'hiddenMapTypeArg': null,
+      'hiddenBox': null,
+      'reexported': 'Reexported()',
+      'reexportedBox': 'ReexportedBox()',
+      'distance': '5',
+      'controls': r"'a\u{85}b\u{9b}c\u{2028}d\u{2029}e\u{d800}f café 🚀'",
+    });
+
+    final constants = {
+      for (final f in lib.functions)
+        if (f.kind == ApiExecutableKind.getter) f.name: f.constantValue,
+    };
+    expect(constants, {
+      'kHiddenInstance': null,
+      'kHiddenEnum': null,
+      'kHiddenTopFunc': null,
+      'kHiddenStatic': null,
+      'kHiddenCtorTearOff': null,
+      'kHiddenType': null,
+      'kHiddenGenericType': null,
+      'kHiddenExt': null,
+      'kReexported': 'Reexported()',
+      'kReexportedBox': 'ReexportedBox()',
+      'kMeters': '5',
+    });
+  }
+
   Future<String> _build(
     Map<String, String> files, {
     ApiSummaryCustomizer? customizer,
