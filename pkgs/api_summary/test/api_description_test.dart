@@ -925,6 +925,7 @@ dart:core:
     final resolvedCustomizer = customizer ?? _ValidatingCustomizer();
     final package = await buildApiPackage('test', context, resolvedCustomizer);
     expect(resolvedCustomizer.initialScanCompleteCalled, isTrue);
+    verifySummaryRoundTrip(package);
     return package.toString();
   }
 }
