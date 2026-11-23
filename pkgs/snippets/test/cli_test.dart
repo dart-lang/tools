@@ -11,6 +11,7 @@
 library;
 
 import 'package:checks/checks.dart';
+import 'package:path/path.dart' as p;
 import 'package:snippets/src/cli/cli.dart';
 import 'package:test/scaffolding.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -151,7 +152,7 @@ void main() {
     final err = StringBuffer();
     await check(runSnippets(['validate', '-C', d.sandbox], err: err))
         .completes((it) => it.equals(1));
-    check(err.toString()).contains('pkgs/a/hello.dart');
+    check(err.toString()).contains(p.join('pkgs', 'a', 'hello.dart'));
   });
 
   test('only requires pubspec.yaml for files with references', () async {
