@@ -47,8 +47,8 @@ struct EVP_PKEY_ALG_EC : public EVP_PKEY_ALG {
 extern const EVP_PKEY_ASN1_METHOD ec_asn1_meth;
 extern const EVP_PKEY_CTX_METHOD ec_pkey_meth;
 
-int eckey_pub_encode(CBB *out, const EvpPkey *key) {
-  const EC_KEY *ec_key = reinterpret_cast<const EC_KEY *>(key->pkey);
+int eckey_pub_encode_with_point_conv_form(CBB *out, const EC_KEY *ec_key,
+                                          point_conversion_form_t form) {
   const EC_GROUP *group = EC_KEY_get0_group(ec_key);
   const EC_POINT *public_key = EC_KEY_get0_public_key(ec_key);
 
@@ -61,14 +61,19 @@ int eckey_pub_encode(CBB *out, const EvpPkey *key) {
       !EC_KEY_marshal_curve_name(&algorithm, group) ||
       !CBB_add_asn1(&spki, &key_bitstring, CBS_ASN1_BITSTRING) ||
       !CBB_add_u8(&key_bitstring, 0 /* padding */) ||
-      !EC_POINT_point2cbb(&key_bitstring, group, public_key,
-                          POINT_CONVERSION_UNCOMPRESSED, nullptr) ||
+      !EC_POINT_point2cbb(&key_bitstring, group, public_key, form, nullptr) ||
       !CBB_flush(out)) {
     OPENSSL_PUT_ERROR(EVP, EVP_R_ENCODE_ERROR);
     return 0;
   }
 
   return 1;
+}
+
+int eckey_pub_encode(CBB *out, const EvpPkey *key) {
+  const EC_KEY *ec_key = reinterpret_cast<const EC_KEY *>(key->pkey);
+  return eckey_pub_encode_with_point_conv_form(out, ec_key,
+                                               POINT_CONVERSION_UNCOMPRESSED);
 }
 
 bssl::evp_decode_result_t eckey_pub_decode(const EVP_PKEY_ALG *alg,
@@ -176,8 +181,7 @@ int eckey_priv_encode(CBB *out, const EvpPkey *key) {
   return 1;
 }
 
-int eckey_set1_tls_encodedpoint(EvpPkey *pkey, const uint8_t *in,
-                                size_t len) {
+int eckey_set1_tls_encodedpoint(EvpPkey *pkey, const uint8_t *in, size_t len) {
   EC_KEY *ec_key = reinterpret_cast<EC_KEY *>(pkey->pkey);
   if (ec_key == nullptr) {
     OPENSSL_PUT_ERROR(EVP, EVP_R_NO_KEY_SET);
@@ -187,8 +191,7 @@ int eckey_set1_tls_encodedpoint(EvpPkey *pkey, const uint8_t *in,
   return EC_KEY_oct2key(ec_key, in, len, nullptr);
 }
 
-size_t eckey_get1_tls_encodedpoint(const EvpPkey *pkey,
-                                   uint8_t **out_ptr) {
+size_t eckey_get1_tls_encodedpoint(const EvpPkey *pkey, uint8_t **out_ptr) {
   const EC_KEY *ec_key = reinterpret_cast<const EC_KEY *>(pkey->pkey);
   if (ec_key == nullptr) {
     OPENSSL_PUT_ERROR(EVP, EVP_R_NO_KEY_SET);
@@ -543,12 +546,8 @@ const EVP_PKEY_ALG *bssl::evp_pkey_ec_no_curve() {
   return &kAlg;
 }
 
-int EVP_PKEY_set1_EC_KEY(EVP_PKEY *pkey, EC_KEY *key) {
-  if (EVP_PKEY_assign_EC_KEY(pkey, key)) {
-    EC_KEY_up_ref(key);
-    return 1;
-  }
-  return 0;
+int EVP_PKEY_set1_EC_KEY(EVP_PKEY *pkey, const EC_KEY *key) {
+  return EVP_PKEY_assign_EC_KEY(pkey, EC_KEY_dup_ref(key));
 }
 
 int EVP_PKEY_assign_EC_KEY(EVP_PKEY *pkey, EC_KEY *key) {
@@ -601,8 +600,8 @@ static EVP_PKEY *pkey_from_ec_point(const EC_GROUP *group, const uint8_t *in,
   return pkey.release();
 }
 
-EVP_PKEY *EVP_PKEY_from_ec_uncompressed_point(
-    const EVP_PKEY_ALG *alg, const uint8_t *in, size_t len) {
+EVP_PKEY *EVP_PKEY_from_ec_uncompressed_point(const EVP_PKEY_ALG *alg,
+                                              const uint8_t *in, size_t len) {
   const EC_GROUP *group = alg_to_group(alg);
   if (group == nullptr) {
     return nullptr;
@@ -650,6 +649,16 @@ int EVP_PKEY_marshal_ec_uncompressed_point(CBB *cbb, const EVP_PKEY *key) {
 
 int EVP_PKEY_marshal_ec_compressed_point(CBB *cbb, const EVP_PKEY *key) {
   return marshal_ec_point(cbb, key, POINT_CONVERSION_COMPRESSED);
+}
+
+int EVP_marshal_public_key_with_ec_point_format(
+    CBB *cbb, const EVP_PKEY *key, point_conversion_form_t format) {
+  const EC_KEY *ec_key = EVP_PKEY_get0_EC_KEY(key);
+  if (ec_key == nullptr) {
+    // Error is set by `EVP_PKEY_get0_EC_KEY` already.
+    return 0;
+  }
+  return eckey_pub_encode_with_point_conv_form(cbb, ec_key, format);
 }
 
 EVP_PKEY *EVP_PKEY_from_ec_private_scalar(const EVP_PKEY_ALG *alg,

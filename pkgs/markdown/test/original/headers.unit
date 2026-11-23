@@ -33,3 +33,28 @@
 
 <<<
 <h1>header</h1>
+>>> empty header with tabs and closing "#"
+###	#	
+
+<<<
+<h3></h3>
+>>> header with many spaces before text
+#                                                  header
+
+<<<
+<h1>header</h1>
+>>> header with trailing U+2028 line separator
+### Heading 
+
+<<<
+<h3>Heading</h3>
+>>> header with U+2028 and U+2029 in the text
+### Heading  mid  text
+
+<<<
+<h3>Heading  mid  text</h3>
+>>> header with closing "#" after U+2028
+# a  #
+
+<<<
+<h1>a</h1>

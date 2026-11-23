@@ -35,7 +35,7 @@
 
 using namespace bssl;
 
-int X509_verify(const X509 *x509, EVP_PKEY *pkey) {
+int X509_verify(const X509 *x509, const EVP_PKEY *pkey) {
   auto *impl = FromOpaque(x509);
   if (X509_ALGOR_cmp(impl->sig_alg.get(), impl->tbs_sig_alg.get())) {
     OPENSSL_PUT_ERROR(X509, X509_R_SIGNATURE_ALGORITHM_MISMATCH);
@@ -51,17 +51,36 @@ int X509_verify(const X509 *x509, EVP_PKEY *pkey) {
                                pkey);
 }
 
-int X509_REQ_verify(const X509_REQ *req, EVP_PKEY *pkey) {
+int X509_REQ_verify(const X509_REQ *req, const EVP_PKEY *pkey) {
   return ASN1_item_verify(ASN1_ITEM_rptr(X509_REQ_INFO), req->sig_alg,
                           req->signature, req->req_info, pkey);
 }
 
-int X509_sign(X509 *x, EVP_PKEY *pkey, const EVP_MD *md) {
+int X509_sign(X509 *x, const EVP_PKEY *pkey, const EVP_MD *md) {
   ScopedEVP_MD_CTX ctx;
   if (!EVP_DigestSignInit(ctx.get(), nullptr, md, nullptr, pkey)) {
     return 0;
   }
   return X509_sign_ctx(x, ctx.get());
+}
+
+int X509_set_unsigned(X509 *x509) {
+  if (ScopedX509Algor algor;
+      !X509_ALGOR_set0(algor.get(), OBJ_nid2obj(NID_alg_unsigned), V_ASN1_UNDEF,
+                       nullptr) ||
+      !X509_set1_signature_algo(x509, algor.get())) {
+    return 0;
+  }
+  if (X509_NAME_entry_count(X509_get_issuer_name(x509)) == 0) {
+    if (UniquePtr<X509_NAME> name(X509_NAME_new());
+        !name ||
+        !X509_NAME_add_entry_by_NID(name.get(), NID_rdna_unsigned,
+                                    V_ASN1_UTF8STRING, nullptr, 0, -1, 0) ||
+        !X509_set_issuer_name(x509, name.get())) {
+      return 0;
+    }
+  }
+  return X509_set1_signature_value(x509, nullptr, 0);
 }
 
 int X509_sign_ctx(X509 *x, EVP_MD_CTX *ctx) {
@@ -89,7 +108,7 @@ int X509_sign_ctx(X509 *x, EVP_MD_CTX *ctx) {
                                  CBBAsSpan(cbb.get()));
 }
 
-int X509_REQ_sign(X509_REQ *x, EVP_PKEY *pkey, const EVP_MD *md) {
+int X509_REQ_sign(X509_REQ *x, const EVP_PKEY *pkey, const EVP_MD *md) {
   asn1_encoding_clear(&x->req_info->enc);
   return ASN1_item_sign(ASN1_ITEM_rptr(X509_REQ_INFO), x->sig_alg, nullptr,
                         x->signature, x->req_info, pkey, md);
@@ -101,7 +120,7 @@ int X509_REQ_sign_ctx(X509_REQ *x, EVP_MD_CTX *ctx) {
                             x->signature, x->req_info, ctx);
 }
 
-int X509_CRL_sign(X509_CRL *x, EVP_PKEY *pkey, const EVP_MD *md) {
+int X509_CRL_sign(X509_CRL *x, const EVP_PKEY *pkey, const EVP_MD *md) {
   asn1_encoding_clear(&x->crl->enc);
   return ASN1_item_sign(ASN1_ITEM_rptr(X509_CRL_INFO), x->crl->sig_alg,
                         x->sig_alg, x->signature, x->crl, pkey, md);
@@ -113,12 +132,13 @@ int X509_CRL_sign_ctx(X509_CRL *x, EVP_MD_CTX *ctx) {
                             x->sig_alg, x->signature, x->crl, ctx);
 }
 
-int NETSCAPE_SPKI_sign(NETSCAPE_SPKI *x, EVP_PKEY *pkey, const EVP_MD *md) {
+int NETSCAPE_SPKI_sign(NETSCAPE_SPKI *x, const EVP_PKEY *pkey,
+                       const EVP_MD *md) {
   return ASN1_item_sign(ASN1_ITEM_rptr(NETSCAPE_SPKAC), x->sig_algor, nullptr,
                         x->signature, x->spkac, pkey, md);
 }
 
-int NETSCAPE_SPKI_verify(NETSCAPE_SPKI *spki, EVP_PKEY *pkey) {
+int NETSCAPE_SPKI_verify(const NETSCAPE_SPKI *spki, const EVP_PKEY *pkey) {
   return ASN1_item_verify(ASN1_ITEM_rptr(NETSCAPE_SPKAC), spki->sig_algor,
                           spki->signature, spki->spkac, pkey);
 }

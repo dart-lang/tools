@@ -2,7 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:collection/collection.dart';
+
 import 'json_utils.dart';
+import 'member_sorting.dart';
 
 enum _Kind {
   isDynamic('dynamic', ApiDynamicType.fromJson),
@@ -129,10 +132,15 @@ final class ApiRecordType implements ApiType {
   final bool isNullable;
 
   ApiRecordType({
-    required this.positionalFields,
-    required this.namedFields,
+    required List<ApiType> positionalFields,
+    required List<ApiRecordNamedField> namedFields,
     required this.isNullable,
-  });
+  }) : positionalFields = positionalFields.isEmpty
+           ? const []
+           : List.unmodifiable(positionalFields),
+       namedFields = namedFields.isEmpty
+           ? const []
+           : List.unmodifiable(namedFields.sortedBy((f) => f.name));
 
   factory ApiRecordType.fromJson(Map<String, dynamic> json) => ApiRecordType(
     positionalFields: parseList(json, 'positionalFields', ApiType.fromJson),
@@ -161,9 +169,9 @@ final class ApiFunctionType implements ApiType {
   ApiFunctionType({
     required this.returnType,
     required this.typeParameters,
-    required this.parameters,
+    required List<ApiParameter> parameters,
     required this.isNullable,
-  });
+  }) : parameters = canonicalizeParameters(parameters);
 
   factory ApiFunctionType.fromJson(Map<String, dynamic> json) =>
       ApiFunctionType(
@@ -192,7 +200,8 @@ final class ApiFunctionType implements ApiType {
 
 /// Represents a parameter in a function or method signature.
 ///
-/// Models parameter name, type, and optional/required/named status.
+/// Models parameter name, type, optional/required/named status, and optional
+/// compile-time constant [defaultValue].
 final class ApiParameter {
   final String name;
   final ApiType type;
@@ -201,6 +210,10 @@ final class ApiParameter {
   final bool isOptionalPositional;
   final bool isDeprecated;
 
+  /// The canonical string representation of the parameter's default value, if
+  /// specified, non-null, and representable in the public API.
+  final String? defaultValue;
+
   ApiParameter({
     required this.name,
     required this.type,
@@ -208,6 +221,7 @@ final class ApiParameter {
     required this.isNamed,
     required this.isOptionalPositional,
     required this.isDeprecated,
+    this.defaultValue,
   });
 
   factory ApiParameter.fromJson(Map<String, dynamic> json) => ApiParameter(
@@ -217,6 +231,7 @@ final class ApiParameter {
     isNamed: json['isNamed'] as bool? ?? false,
     isOptionalPositional: json['isOptionalPositional'] as bool? ?? false,
     isDeprecated: json['isDeprecated'] as bool? ?? false,
+    defaultValue: json['defaultValue'] as String?,
   );
 
   Map<String, dynamic> toJson() => {
@@ -226,5 +241,6 @@ final class ApiParameter {
     if (isNamed) 'isNamed': isNamed,
     if (isOptionalPositional) 'isOptionalPositional': isOptionalPositional,
     if (isDeprecated) 'isDeprecated': isDeprecated,
+    if (defaultValue != null) 'defaultValue': defaultValue,
   };
 }

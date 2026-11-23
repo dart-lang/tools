@@ -21,6 +21,7 @@ import 'block_syntaxes/setext_header_syntax.dart';
 import 'block_syntaxes/unordered_list_syntax.dart';
 import 'document.dart';
 import 'line.dart';
+import 'util.dart';
 
 /// Maintains the internal state needed to parse a series of lines into blocks
 /// of Markdown suitable for further inline parsing.
@@ -157,7 +158,29 @@ class BlockParser {
   BlockSyntax? get previousSyntax => _previousSyntax;
   BlockSyntax? _previousSyntax;
 
+  static const _maxDepth = 128;
+  static int _depth = 0;
+
   List<Node> parseLines({
+    BlockSyntax? parentSyntax,
+    bool disabledSetextHeading = false,
+  }) {
+    if (_depth >= _maxDepth) {
+      final text = lines.map((e) => e.content).join('\n');
+      return [Text(document.encodeHtml ? escapeHtml(text) : text)];
+    }
+    _depth++;
+    try {
+      return _parseLines(
+        parentSyntax: parentSyntax,
+        disabledSetextHeading: disabledSetextHeading,
+      );
+    } finally {
+      _depth--;
+    }
+  }
+
+  List<Node> _parseLines({
     BlockSyntax? parentSyntax,
     bool disabledSetextHeading = false,
   }) {

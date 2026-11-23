@@ -287,10 +287,10 @@
   "140": "strict",
   "141": "strict",
   "142": "strict",
-  "143": "fail",
+  "143": "diverged",
   "144": "strict",
   "145": "strict",
-  "146": "fail",
+  "146": "diverged",
   "147": "strict"
  },
  "Hard line breaks": {

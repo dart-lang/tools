@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'charcode.dart';
+import 'file.dart';
 import 'location.dart';
 import 'span.dart';
 import 'span_with_context.dart';
@@ -59,6 +60,33 @@ int countCodeUnits(String string, int codeUnit) {
   return count;
 }
 
+/// Returns whether [text] has a line terminator at [index].
+///
+/// A line terminator is either `\n` or a `\r` not immediately followed by `\n`.
+bool _isLineEnd(String text, int index) {
+  final codeUnit = text.codeUnitAt(index);
+  if (codeUnit == $lf) return true;
+  if (codeUnit != $cr) return false;
+  return index + 1 == text.length || text.codeUnitAt(index + 1) != $lf;
+}
+
+/// Returns the index of the next line terminator in [text] at or after [start],
+/// or `-1` if none exists.
+int _indexOfLineEnd(String text, int start) {
+  for (var i = start; i < text.length; i++) {
+    if (_isLineEnd(text, i)) return i;
+  }
+  return -1;
+}
+
+/// Returns the start index of the line containing [index] in [text].
+int _lineStartAt(String text, int index) {
+  for (var i = index - 1; i >= 0; i--) {
+    if (_isLineEnd(text, i)) return i + 1;
+  }
+  return 0;
+}
+
 /// Finds a line in [context] containing [text] at the specified [column].
 ///
 /// Returns the index in [context] where that line begins, or null if none
@@ -69,13 +97,12 @@ int? findLineStart(String context, String text, int column) {
   if (text.isEmpty) {
     var beginningOfLine = 0;
     while (true) {
-      final index = context.indexOf('\n', beginningOfLine);
+      final index = _indexOfLineEnd(context, beginningOfLine);
       if (index == -1) {
         return context.length - beginningOfLine >= column
             ? beginningOfLine
             : null;
       }
-
       if (index - beginningOfLine >= column) return beginningOfLine;
       beginningOfLine = index + 1;
     }
@@ -84,13 +111,59 @@ int? findLineStart(String context, String text, int column) {
   var index = context.indexOf(text);
   while (index != -1) {
     // Start looking before [index] in case [text] starts with a newline.
-    final lineStart = index == 0 ? 0 : context.lastIndexOf('\n', index - 1) + 1;
+    final lineStart = _lineStartAt(context, index);
     final textColumn = index - lineStart;
     if (column == textColumn) return lineStart;
     index = context.indexOf(text, index + 1);
   }
   // ignore: avoid_returning_null
   return null;
+}
+
+/// A [SourceSpanWithContext] created by
+/// [SourceSpanWithContextExtension.subspan] that records its start offset
+/// within [context].
+class SubspanWithContext extends SourceSpanWithContext {
+  /// The code-unit offset where [text] begins within [context].
+  final int contextStart;
+
+  SubspanWithContext(
+    super.start,
+    super.end,
+    super.text,
+    super.context,
+    this.contextStart,
+  );
+}
+
+/// Returns the number of line terminators in [text] before [end].
+int _countLinesBefore(String text, int end) {
+  var count = 0;
+  for (var i = 0; i < end; i++) {
+    if (_isLineEnd(text, i)) count++;
+  }
+  return count;
+}
+
+/// Finds the line in `span.context` containing [span], returning both the
+/// code-unit offset where that line begins and the number of preceding context
+/// lines.
+///
+/// Returns `null` if no line in `span.context` contains `span.text` at
+/// `span.start.column`.
+({int lineStart, int linesBefore})? findSpanLineStart(
+    SourceSpanWithContext span) {
+  if (span is FileSpan) return (lineStart: 0, linesBefore: 0);
+
+  final context = span.context;
+  final lineStart = span is SubspanWithContext
+      ? _lineStartAt(context, span.contextStart)
+      : findLineStart(context, span.text, span.start.column);
+  if (lineStart == null) return null;
+  return (
+    lineStart: lineStart,
+    linesBefore: _countLinesBefore(context, lineStart),
+  );
 }
 
 /// Returns a two-element list containing the start and end locations of the
@@ -100,6 +173,8 @@ int? findLineStart(String context, String text, int column) {
 /// This is factored out so it can be shared between
 /// [SourceSpanExtension.subspan] and [SourceSpanWithContextExtension.subspan].
 List<SourceLocation> subspanLocations(SourceSpan span, int start, [int? end]) {
+  if (start == span.length) return [span.end, span.end];
+
   final text = span.text;
   final startLocation = span.start;
   var line = startLocation.line;
@@ -108,12 +183,7 @@ List<SourceLocation> subspanLocations(SourceSpan span, int start, [int? end]) {
   // Adjust [line] and [column] as necessary if the character at [i] in [text]
   // is a newline.
   void consumeCodePoint(int i) {
-    final codeUnit = text.codeUnitAt(i);
-    if (codeUnit == $lf ||
-        // A carriage return counts as a newline, but only if it's not
-        // followed by a line feed.
-        (codeUnit == $cr &&
-            (i + 1 == text.length || text.codeUnitAt(i + 1) != $lf))) {
+    if (_isLineEnd(text, i)) {
       line += 1;
       column = 0;
     } else {

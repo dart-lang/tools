@@ -43,9 +43,11 @@ namespace mldsa {
 namespace {
 
 namespace fips {
+
 void ensure_keygen_self_test();
 void ensure_sign_self_test();
 void ensure_verify_self_test();
+
 }  // namespace fips
 
 constexpr int kDegree = 256;
@@ -305,7 +307,7 @@ inline uint32_t reduce_once(uint32_t x) {
   // selects with the same condition into a branch instead of CMOV/CSEL. This
   // condition does not occur in ML-DSA, so omitting it seems to be generally
   // safe. However, see `coefficient_from_nibble`.
-  return (mask & x) | (~mask & subtracted);
+  return subtracted + (mask & kPrime);
 }
 
 // reduce_from_u32 returns `x mod kPrime`. `x` can be any `uint32_t`.
@@ -359,7 +361,7 @@ inline uint32_t mod_sub(uint32_t a, uint32_t b) {
   // return r < 0 ? r + kPrime : r;
   uint32_t mask = 0u - (r >> 31);
   // See `reduce_once` for why this does not have a value barrier.
-  return (mask & (r + kPrime)) | (~mask & r);
+  return r + (mask & kPrime);
 }
 
 inline void scalar_add(scalar *out, const scalar *lhs, const scalar *rhs) {
@@ -544,15 +546,24 @@ inline void vector_inverse_ntt_montgomery(vector<X> *a) {
   }
 }
 
+// matrix_mult_montgomery sets `out` to `m` times `a`, both in the number
+// theoretically transformed state and fully reduced. Like
+// `scalar_mult_montgomery`, each term gains an extra R^-1 factor.
 template <int K, int L>
 inline void matrix_mult_montgomery(vector<K> *out, const matrix<K, L> *m,
                                    const vector<L> *a) {
-  vector_zero(out);
+  // Rather than reducing every product, sum the L products for each
+  // coefficient and reduce once. The sum is at most L * (kPrime - 1)^2, which
+  // is within the range `reduce_montgomery` accepts.
+  static_assert(uint64_t{L} * (kPrime - 1) * (kPrime - 1) <=
+                (uint64_t{kPrime} << 32));
   for (int i = 0; i < K; i++) {
-    for (int j = 0; j < L; j++) {
-      scalar product;
-      scalar_mult_montgomery(&product, &m->v[i][j], &a->v[j]);
-      scalar_add(&out->v[i], &out->v[i], &product);
+    for (int n = 0; n < kDegree; n++) {
+      uint64_t sum = 0;
+      for (int j = 0; j < L; j++) {
+        sum += uint64_t{m->v[i][j].c[n]} * a->v[j].c[n];
+      }
+      out->v[i].c[n] = reduce_montgomery(sum);
     }
   }
 }
@@ -615,7 +626,7 @@ inline uint32_t high_bits(uint32_t x) {
     r1 = (r1 * 11275 + (1 << 23)) >> 24;
 
     // For corner-case r1 = (Q-1)/(2 gamma2) = 44, we have to set r1=0.
-    r1 ^= ((uint32_t)(((int32_t)(43 - r1)) >> 31)) & r1;
+    r1 ^= ((uint32_t)(((int32_t)(43 - r1)) >> 31)) & 44u;
   }
   return r1;
 }
@@ -1385,6 +1396,19 @@ inline void scalar_uniform_x4(scalar *out[4],
 }
 #endif
 
+// Initializes `ctx` to output the bytes that `ExpandMask` decodes into the
+// scalar at position `index`.
+inline void sample_mask_keccak_init(struct BORINGSSL_keccak_st *ctx,
+                                    const uint8_t rho_prime[kRhoPrimeBytes],
+                                    size_t index) {
+  BORINGSSL_keccak_init(ctx, boringssl_shake256);
+  BORINGSSL_keccak_absorb(ctx, rho_prime, kRhoPrimeBytes);
+  uint8_t index_buf[2];
+  index_buf[0] = static_cast<uint8_t>(index);
+  index_buf[1] = static_cast<uint8_t>(index >> 8);
+  BORINGSSL_keccak_absorb(ctx, index_buf, 2);
+}
+
 // FIPS 204, Algorithm 34 (`ExpandMask`), but just a single step.
 template <int K>
 inline void scalar_sample_mask(scalar *out,
@@ -1392,15 +1416,48 @@ inline void scalar_sample_mask(scalar *out,
                                size_t index) {
   uint8_t buf[scalar_le_gamma1_bytes<K>()];
   struct BORINGSSL_keccak_st ctx;
-  BORINGSSL_keccak_init(&ctx, boringssl_shake256);
-  BORINGSSL_keccak_absorb(&ctx, rho_prime, kRhoPrimeBytes);
-  uint8_t index_buf[2];
-  index_buf[0] = static_cast<uint8_t>(index);
-  index_buf[1] = static_cast<uint8_t>(index >> 8);
-  BORINGSSL_keccak_absorb(&ctx, index_buf, 2);
+  sample_mask_keccak_init(&ctx, rho_prime, index);
   BORINGSSL_keccak_squeeze(&ctx, buf, sizeof(buf));
   scalar_decode_signed<gamma1_bits<K>() + 1, gamma1<K>()>(out, buf);
 }
+
+#if defined(HAVE_KECCAK_X2)
+// Performs `scalar_sample_mask` for `index` and `index + 1` in parallel.
+template <int K>
+inline void scalar_sample_mask_x2(scalar *out[2],
+                                  const uint8_t rho_prime[kRhoPrimeBytes],
+                                  size_t index) {
+  BORINGSSL_keccak_st keccak_ctx[2];
+  for (int k = 0; k < 2; k++) {
+    sample_mask_keccak_init(&keccak_ctx[k], rho_prime, index + k);
+  }
+  uint8_t buf[2][scalar_le_gamma1_bytes<K>()];
+  uint8_t *bufs[] = {buf[0], buf[1]};
+  BORINGSSL_keccak_squeeze_x2(keccak_ctx, bufs, sizeof(buf[0]));
+  for (int k = 0; k < 2; k++) {
+    scalar_decode_signed<gamma1_bits<K>() + 1, gamma1<K>()>(out[k], buf[k]);
+  }
+}
+#endif
+
+#if defined(HAVE_KECCAK_X4)
+// Performs `scalar_sample_mask` for `index` through `index + 3` in parallel.
+template <int K>
+inline void scalar_sample_mask_x4(scalar *out[4],
+                                  const uint8_t rho_prime[kRhoPrimeBytes],
+                                  size_t index) {
+  BORINGSSL_keccak_st keccak_ctx[4];
+  for (int k = 0; k < 4; k++) {
+    sample_mask_keccak_init(&keccak_ctx[k], rho_prime, index + k);
+  }
+  uint8_t buf[4][scalar_le_gamma1_bytes<K>()];
+  uint8_t *bufs[] = {buf[0], buf[1], buf[2], buf[3]};
+  BORINGSSL_keccak_squeeze_x4(keccak_ctx, bufs, sizeof(buf[0]));
+  for (int k = 0; k < 4; k++) {
+    scalar_decode_signed<gamma1_bits<K>() + 1, gamma1<K>()>(out[k], buf[k]);
+  }
+}
+#endif
 
 // FIPS 204, Algorithm 29 (`SampleInBall`).
 inline void scalar_sample_in_ball_vartime(scalar *out, const uint8_t *seed,
@@ -1630,9 +1687,27 @@ inline void vector_expand_mask(vector<L> *out,
                                size_t kappa) {
   assert(kappa + L <= 0x10000);
 
-  for (int i = 0; i < L; i++) {
-    size_t index = kappa + i;
-    scalar_sample_mask<K>(&out->v[i], rho_prime, index);
+  // Each scalar is sampled independently, so use the parallel Keccak
+  // implementations where possible.
+  int i = 0;
+#if defined(HAVE_KECCAK_X4)
+  if (BORINGSSL_have_keccak_x4()) {
+    for (; i + 4 <= L; i += 4) {
+      scalar *outs[] = {&out->v[i], &out->v[i + 1], &out->v[i + 2],
+                        &out->v[i + 3]};
+      scalar_sample_mask_x4<K>(outs, rho_prime, kappa + i);
+    }
+  }
+#endif
+#if defined(HAVE_KECCAK_X2)
+  for (; i + 2 <= L; i += 2) {
+    scalar *outs[] = {&out->v[i], &out->v[i + 1]};
+    scalar_sample_mask_x2<K>(outs, rho_prime, kappa + i);
+  }
+#endif
+
+  for (; i < L; i++) {
+    scalar_sample_mask<K>(&out->v[i], rho_prime, kappa + i);
   }
 }
 

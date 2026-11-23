@@ -230,12 +230,11 @@ static void evp_md_ctx_verify_service_indicator(const EVP_MD_CTX *ctx,
     }
 
     // The approved RSA key sizes for signing are 2048, 3072 and 4096 bits.
-    // Note: `EVP_PKEY_size` returns the size in bytes.
-    size_t pkey_size = EVP_PKEY_size(FromOpaque(ctx->pctx)->pkey.get());
+    const int pkey_bits = EVP_PKEY_bits(pkey);
 
     // Check if the MD type and the RSA key size are approved.
     if (md_ok(md_type) &&
-        (pkey_size == 256 || pkey_size == 384 || pkey_size == 512)) {
+        (pkey_bits == 2048 || pkey_bits == 3072 || pkey_bits == 4096)) {
       FIPS_service_indicator_update_state();
     }
   } else if (pkey_type == EVP_PKEY_EC) {
@@ -250,6 +249,16 @@ static void evp_md_ctx_verify_service_indicator(const EVP_MD_CTX *ctx,
 err:
   // Ensure that junk errors aren't left on the queue.
   ERR_clear_error();
+}
+
+void bssl::CMAC_verify_service_indicator(const EVP_CIPHER_CTX *ctx) {
+  // Only AES-128 and AES-256 are tested with ACVP for CMAC.
+  switch (EVP_CIPHER_CTX_nid(ctx)) {
+    case NID_aes_128_cbc:
+    case NID_aes_256_cbc:
+      FIPS_service_indicator_update_state();
+      break;
+  }
 }
 
 void bssl::EC_KEY_keygen_verify_service_indicator(const EC_KEY *eckey) {

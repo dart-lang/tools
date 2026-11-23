@@ -1,12 +1,51 @@
-## 0.4.2-wip
+## 0.5.1-wip
 
-- Update BoringSSL to e98a6564.
+- BoringSSL is compiled with `OPENSSL_SMALL`, which for example makes the
+  tree-shaken library of `package:webcrypto` about 19% smaller, and P-256
+  operations about 2x slower.
+- Update BoringSSL to [289645a4](https://boringssl.googlesource.com/boringssl/+/289645a450721a7210bf9c69d42bf40a0f1ee730).
+
+## 0.5.0
+
+- **Breaking**: Removed `package:boring/bindings.dart`. Its API is now in
+  `package:boring/boring.dart`, which was previously a re-export of it.
+  Replace `import 'package:boring/bindings.dart'` with
+  `import 'package:boring/boring.dart'`.
+- Fixed the bindings of the `BN_*_word` functions on 32-bit targets, such as
+  Android arm. `BN_ULONG` is now `UintPtr` instead of `Uint64`, because it is
+  `uint32_t` on 32-bit targets.
+- Update BoringSSL to [8f2554dc](https://boringssl.googlesource.com/boringssl/+/8f2554dc344d403fd6d628773d39637c323eb801).
+
+## 0.4.2
+
 - Moved the package to the
   [dart-lang/tools](https://github.com/dart-lang/tools) repository.
 - The package is now licensed under the BSD 3-Clause license used by other
   Dart packages.
-- Update BoringSSL to 3fed4f20.
-- Update BoringSSL to 64188f17.
+- Update BoringSSL to 90c6b370 (including the intermediate certificate
+  blocklist update at dd682072).
+- Removed the `BIO_vsnprintf` and `OPENSSL_vasprintf` (`va_list`) bindings,
+  excluded unused system-header declarations from the generated bindings, and
+  changed `SymbolAddresses` to an extension type so `addresses` no longer leaks
+  a private type.
+- An unknown `buildMode` under `hooks.user_defines.boring` is an error instead
+  of silently using `fetch`.
+- The `fetch` build mode honors the `HTTPS_PROXY` family of environment
+  variables, no longer hangs on a stalled download, and fails instead of
+  falling back to a CMake build when a prebuilt library is unavailable or fails
+  to download.
+- The prebuilt macOS libraries run on macOS 10.15 (x64) and 11 (arm64) and
+  later, instead of only on the macOS version they were built on.
+- The Windows libraries link the C runtime statically, so they don't require
+  the Visual C++ Redistributable.
+- The prebuilt libraries are built from the vendored BoringSSL by CI, which
+  pins them in an automated pull request, so the `fetch` and `checkout` build
+  modes use the same sources.
+- Prebuilt libraries for Android (arm, arm64, x64) and iOS (arm64, and the
+  arm64 and x64 simulators), so Flutter apps no longer compile BoringSSL from
+  source.
+- The libraries no longer reference libc++ when built with it, which failed
+  to link on Android.
 
 ## 0.4.1
 

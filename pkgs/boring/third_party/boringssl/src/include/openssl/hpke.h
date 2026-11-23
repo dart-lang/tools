@@ -55,6 +55,10 @@ OPENSSL_EXPORT const EVP_HPKE_KEM *EVP_hpke_xwing(void);
 OPENSSL_EXPORT const EVP_HPKE_KEM *EVP_hpke_mlkem768(void);
 OPENSSL_EXPORT const EVP_HPKE_KEM *EVP_hpke_mlkem1024(void);
 
+// EVP_kem_dhkem_* implement DHKEM variants defined in RFC 9180.
+OPENSSL_EXPORT const EVP_KEM *EVP_kem_dhkem_p256_hkdf_sha256(void);
+OPENSSL_EXPORT const EVP_KEM *EVP_kem_dhkem_x25519_hkdf_sha256(void);
+
 // EVP_HPKE_KEM_id returns the HPKE KEM identifier for `kem`, which
 // will be one of the `EVP_HPKE_KEM_*` constants.
 OPENSSL_EXPORT uint16_t EVP_HPKE_KEM_id(const EVP_HPKE_KEM *kem);
@@ -416,14 +420,6 @@ struct evp_hpke_ctx_st {
 
 struct evp_hpke_key_st {
   const EVP_HPKE_KEM *kem;
-  uint8_t private_key[EVP_HPKE_MAX_PRIVATE_KEY_LENGTH];
-  uint8_t public_key[EVP_HPKE_MAX_PUBLIC_KEY_LENGTH];
-
-  // `pkey`, if non-null, takes precedence over `private_key` and `public_key`,
-  // which are left unused. Otherwise `private_key` and `public_key` are used
-  // instead.
-  // TODO(crbug.com/535883377): Unify EVP_HPKE_KEM and EVP_KEM for all supported
-  // HPKE KEMs.
   EVP_PKEY *pkey;
 };
 

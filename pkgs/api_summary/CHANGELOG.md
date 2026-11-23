@@ -1,7 +1,26 @@
 ## 1.3.0-wip
 
+- Include `ApiDeclarationStatus.nonPublic` skeleton declarations in
+  `ApiSummary.libraries` unconditionally so `api.json` and `api.yaml` match
+  `api.txt`.
+- Fail `expectApiSummaryClean` and `api_summary --check` by default when
+  non-public types leak into public API signatures (including `lib/src/` types
+  or package-owned types referenced by the primary barrel without being
+  exported by it).
+- Add `allowNonPublicTypes` optional named constructor parameter to
+  `ApiSummaryCustomizer`.
 - Add `includeImplicitNonPublicMembers` and `includeReferencedTypes` optional
   named constructor parameters to `ApiSummaryCustomizer`.
+- Canonicalize the sort order of libraries, declarations, constructors,
+  members, named parameters, and named record fields in the `ApiSummary` model
+  (`api.json` and `api.yaml`) to match `api.txt`, and sort getter/setter pairs
+  ahead of suffixed names (such as `a`, `a=`, `a9`, `a9=`).
+- Track parameter `defaultValue` on `ApiParameter` (including inherited `super.`
+  defaults) and render non-null public default values in text, JSON, and YAML
+  summaries ([#2461](https://github.com/dart-lang/tools/issues/2461)).
+- Track `constantValue` on `isConst` `ApiExecutable` getters and render public
+  constant values in text, JSON, and YAML summaries
+  ([#2462](https://github.com/dart-lang/tools/issues/2462)).
 - Track `pubspec.yaml` runtime `dependencies` constraints for external packages
   referenced in the public API on `ApiSummary.dependencies`, and render them
   inline on referenced `package:...` library headers in `api.txt`

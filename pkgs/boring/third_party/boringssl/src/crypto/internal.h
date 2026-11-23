@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include <type_traits>
+#include <utility>
 
 #if defined(BORINGSSL_CONSTANT_TIME_VALIDATION)
 #include <valgrind/memcheck.h>
@@ -48,8 +49,6 @@
 
 #if defined(OPENSSL_THREADS)
 #include <atomic>
-#else
-#include <utility>
 #endif
 
 #if defined(OPENSSL_WINDOWS_THREADS)
@@ -1398,6 +1397,12 @@ inline int CRYPTO_is_VPCLMULQDQ_capable() {
 // ARMV8_SHA3 indicates support for eor3 instructions.
 #define ARMV8_SHA3 (1 << 7)
 
+// ARMV8_DIT indicates support for Data Independent Timing.
+#define ARMV8_DIT (1 << 8)
+
+// ARMV8_SB indicates support for Speculation Barrier.
+#define ARMV8_SB (1 << 9)
+
 #if defined(OPENSSL_STATIC_ARMCAP)
 // We assume `CRYPTO_is_*_capable` already checked static capabilities.
 inline uint32_t OPENSSL_get_armcap() { return 0; }
@@ -1413,7 +1418,7 @@ OPENSSL_ATTR_CONST uint32_t OPENSSL_get_armcap();
 #endif  // OPENSSL_STATIC_ARMCAP
 
 // Normalize some older feature flags to their modern ACLE values.
-// https://developer.arm.com/architectures/system-architectures/software-standards/acle
+// https://arm-software.github.io/acle/main/acle.html
 #if defined(__ARM_NEON__) && !defined(__ARM_NEON)
 #define __ARM_NEON 1
 #endif
@@ -1435,6 +1440,26 @@ inline int CRYPTO_is_NEON_capable() {
 #else
   return (OPENSSL_get_armcap() & ARMV7_NEON) != 0;
 #endif
+}
+
+inline int CRYPTO_is_ARMv8_DIT_capable() {
+// As of 2026 ACLE does not include DIT detection macro.
+// Tracking issue: https://github.com/ARM-software/acle/issues/463
+// Additionally, macOS ARM support is first available on M1 chips,
+// which is already ARMv8.4-A. ARMv8.4-A has made DIT mandatory.
+// See
+// https://support.arm.com/documentation/109697/2026_09/Feature-descriptions/The-Armv8-4-architecture-extension#md449-the-armv84-architecture-extension__feat_FEAT_DIT
+#if defined(OPENSSL_MACOS)
+  return 1;
+#else
+  return (OPENSSL_get_armcap() & ARMV8_DIT) != 0;
+#endif
+}
+
+inline int CRYPTO_is_ARMv8_SB_capable() {
+  // As of 2026 ACLE does not include SB detection macro.
+  // Tracking issue: https://github.com/ARM-software/acle/issues/463
+  return (OPENSSL_get_armcap() & ARMV8_SB) != 0;
 }
 
 inline int CRYPTO_is_ARMv8_AES_capable() {
@@ -1493,6 +1518,102 @@ inline int CRYPTO_is_ARMv8_SHA3_capable() {
 
 #endif  // OPENSSL_ARM || OPENSSL_AARCH64
 
+// We cannot support Windows at the moment. The platform does not expose DIT
+// feature detection.
+#if defined(OPENSSL_AARCH64) && !defined(OPENSSL_NO_ASM) && \
+    !defined(OPENSSL_WINDOWS)
+#define OPENSSL_ARM_DIT
+#define OPENSSL_ARM_SB
+// Clang only supports the GCC target specifier format since Clang 16 (2023).
+// We should unify the style earliest from 2028.
+#if defined(__clang__)
+#define SB_FEATURE __attribute__((target("sb")))
+#else
+#define SB_FEATURE
+#endif
+#endif
+
+// ConstTimeGuard is a guard type to designate a program region in which
+// constant time arithmetic is guaranteed. NOTE: inputs and outputs must be
+// marked with `WillReadSecret` and `DidComputeResult` to prevent the compiler
+// from reordering code.
+class ConstTimeGuard {
+ public:
+#if defined(OPENSSL_ARM_DIT)
+  ConstTimeGuard();
+  ~ConstTimeGuard();
+#else
+  // No-op
+  ConstTimeGuard() = default;
+  ~ConstTimeGuard() = default;
+#endif
+  ConstTimeGuard(const ConstTimeGuard &) = delete;
+  ConstTimeGuard &operator=(const ConstTimeGuard &) = delete;
+  ConstTimeGuard(ConstTimeGuard &&) = delete;
+  ConstTimeGuard &operator=(ConstTimeGuard &&) = delete;
+
+  // Mark an input in scope of constant-time guard. This prevents the compiler
+  // from moving computation depending on `val` before this call.
+  template <typename T>
+  void WillReadSecret(T *val) {
+#if defined(OPENSSL_ARM_DIT) && (defined(__GNUC__) || defined(__clang__))
+    // Tell the compiler that we might write to secret memory reachable from
+    // `val`. We do not actually write, but this prevents the compiler from
+    // moving secret-dependent computation before this "write".
+    __asm__ __volatile__("" : : "r"(val) : "memory");
+#else
+    (void)val;
+#endif
+  }
+
+  // Mark an input in scope of constant-time guard. This prevents the compiler
+  // from moving computation depending on `val` before this call.
+  template <typename T, size_t N>
+  void WillReadSecret(Span<T, N> val) {
+    WillReadSecret(val.data());
+  }
+
+  // Mark an input in scope of constant-time guard. This prevents the compiler
+  // from moving computation depending on `val` before this call.
+  template <typename T>
+  void WillReadSecret(T &val) {
+    WillReadSecret(&val);
+  }
+
+  // Mark an output in scope of constant-time guard. This prevents the compiler
+  // from moving the computation of `val` to after this call.
+  template <typename T>
+  void DidComputeResult(T *val) {
+#if defined(OPENSSL_ARM_DIT) && (defined(__GNUC__) || defined(__clang__))
+    // Tell the compiler that we might read from the results reachable from
+    // `val`. We do not actually read, but this prevents the compiler from
+    // moving the computation after this "read".
+    __asm__ __volatile__("" : : "r"(val) : "memory");
+#else
+    (void)val;
+#endif
+  }
+
+  // Mark an output in scope of constant-time guard. This prevents the compiler
+  // from moving the computation of `val` to after this call.
+  template <typename T, size_t N>
+  void DidComputeResult(Span<T, N> val) {
+    DidComputeResult(val.data());
+  }
+
+  // Mark an output in scope of constant-time guard. This prevents the compiler
+  // from moving the computation of `val` to after this call.
+  template <typename T>
+  void DidComputeResult(T &val) {
+    DidComputeResult(&val);
+  }
+
+ private:
+#if defined(OPENSSL_ARM_DIT)
+  bool previous_dit_ = false;
+#endif  // OPENSSL_AARCH64
+};
+
 
 #if defined(BORINGSSL_DISPATCH_TEST)
 // Runtime CPU dispatch testing support
@@ -1526,7 +1647,7 @@ OPENSSL_EXPORT int OPENSSL_vasprintf_internal(char **str, const char *format,
 // CRYPTO_fuzzer_mode_enabled returns whether fuzzer mode is enabled. See
 // `CRYPTO_set_fuzzer_mode`. In non-fuzzer builds, this function statically
 // returns zero so the codepaths will be deleted by the optimizer.
-int CRYPTO_fuzzer_mode_enabled();
+OPENSSL_EXPORT int CRYPTO_fuzzer_mode_enabled();
 #else
 inline int CRYPTO_fuzzer_mode_enabled() { return 0; }
 #endif
@@ -1760,6 +1881,34 @@ template <typename Public>
 inline const typename Public::ImplType *FromOpaque(const Public *p) {
   return static_cast<const typename Public::ImplType *>(p);
 }
+
+template <auto F, typename... Args>
+inline constexpr decltype(auto) AsmThunk(Args... args) noexcept(
+    noexcept(F(std::forward<Args>(args)...))) {
+  return F(std::forward<Args>(args)...);
+}
+
+template <auto Item>
+struct AsmRaw {
+  static inline constexpr auto kRaw = Item;
+};
+
+// TODO(crbug.com/585160970): We should replace this with a more long term
+// solution. A better design is possible.
+#define DECLARE_ASM_FUNCTION(ret, name, params)                             \
+  namespace asm_raw {                                                       \
+                                                                            \
+  extern "C" ret name params noexcept;                                      \
+                                                                            \
+  }                                                                         \
+                                                                            \
+  inline constexpr decltype(asm_raw::name) &name = AsmThunk<asm_raw::name>; \
+                                                                            \
+  template <>                                                               \
+  struct AsmRaw<name> {                                                     \
+    static inline constexpr auto kRaw = asm_raw::name;                      \
+  };
+
 
 BSSL_NAMESPACE_END
 

@@ -187,6 +187,76 @@ void main() {
 
       expect(resolver.resolve(p.toUri(outsideFile.path).toString()), null);
     });
+
+    test('does not resolve package URIs outside every known root', () async {
+      final resolver = await Resolver.create(
+        packagesPath: p.join(
+          d.sandbox,
+          'foo',
+          '.dart_tool',
+          'package_config.json',
+        ),
+      );
+      File(
+        p.join(d.sandbox, 'outside.txt'),
+      ).writeAsStringSync('should not leak');
+
+      expect(resolver.resolve('package:foo/..%2f..%2foutside.txt'), null);
+    });
+
+    test('does not resolve dart URIs outside every known root', () async {
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+        sdkRoot: p.join(d.sandbox, 'sdk'),
+      );
+      File(
+        p.join(d.sandbox, 'outside.txt'),
+      ).writeAsStringSync('should not leak');
+
+      expect(resolver.resolve('dart:io/..%2f..%2foutside.txt'), null);
+    });
+
+    test('resolves package URIs through a symlinked root', () async {
+      final sandboxUriPath = p.toUri(d.sandbox).toString();
+      await d.dir('real_pkg', [
+        d.dir('lib', [d.file('real.dart', 'final real = true;')]),
+      ]).create();
+      Link(
+        p.join(d.sandbox, 'link_pkg'),
+      ).createSync(p.join(d.sandbox, 'real_pkg'));
+      await d.dir('linked', [
+        d.dir('.dart_tool', [
+          d.file('package_config.json', '''
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "linked",
+      "rootUri": "$sandboxUriPath/link_pkg",
+      "packageUri": "lib/"
+    }
+  ]
+}
+'''),
+        ]),
+      ]).create();
+
+      final resolver = await Resolver.create(
+        packagesPath: p.join(
+          d.sandbox,
+          'linked',
+          '.dart_tool',
+          'package_config.json',
+        ),
+      );
+
+      expect(
+        resolver.resolve('package:linked/real.dart'),
+        File(
+          p.join(d.sandbox, 'real_pkg', 'lib', 'real.dart'),
+        ).resolveSymbolicLinksSync(),
+      );
+    });
   });
 
   group('Bazel resolver', () {
@@ -231,6 +301,101 @@ void main() {
           'file://x/y/z.runfiles/$workspace/foo/bar/lib/src/baz.dart',
         ),
         'foo/bar/lib/src/baz.dart',
+      );
+      expect(resolver.resolve('file://x/y/z/foo/bar/lib/baz.dart'), isNull);
+    });
+
+    test('resolves file URIs when workspacePath is slash-padded', () {
+      for (final padded in ['$workspace/', '$workspace///', '/$workspace/']) {
+        final slashResolver = BazelResolver(workspacePath: padded);
+        expect(
+          slashResolver.resolve(
+            'file://x/y/z.runfiles/$workspace/foo/bar/lib/baz.dart',
+          ),
+          'foo/bar/lib/baz.dart',
+          reason: 'workspacePath="$padded" (2-slash file URI)',
+        );
+        expect(
+          slashResolver.resolve(
+            'file:///x/y/z.runfiles/$workspace/foo/bar/lib/src/baz.dart',
+          ),
+          'foo/bar/lib/src/baz.dart',
+          reason: 'workspacePath="$padded" (3-slash file URI)',
+        );
+      }
+    });
+
+    test('resolves file URIs when workspacePath is empty', () {
+      final defaultResolver = BazelResolver();
+      expect(
+        defaultResolver.resolve('file://x/y/z.runfiles/foo/bar/lib/baz.dart'),
+        'foo/bar/lib/baz.dart',
+      );
+      expect(
+        BazelResolver(
+          workspacePath: '',
+        ).resolve('file:///x/y/z.runfiles/foo/bar/lib/src/baz.dart'),
+        'foo/bar/lib/src/baz.dart',
+      );
+    });
+
+    test('resolves file URIs with multi-segment workspacePath', () {
+      final multiResolver = BazelResolver(workspacePath: 'a/b');
+      expect(
+        multiResolver.resolve('file:///x/y/z.runfiles/a/b/lib/baz.dart'),
+        'lib/baz.dart',
+      );
+    });
+
+    test('decodes percent-encoded segments in file URIs', () {
+      expect(
+        resolver.resolve('file:///x/y/z.runfiles/$workspace/my%20dir/baz.dart'),
+        'my dir/baz.dart',
+      );
+    });
+
+    test('resolves Windows drive-letter file URIs', () {
+      expect(
+        resolver.resolve(
+          'file:///C:/b/execroot/z.runfiles/$workspace/foo/bar/lib/baz.dart',
+        ),
+        'foo/bar/lib/baz.dart',
+      );
+    });
+
+    test('resolves nested .runfiles segments matching workspacePath', () {
+      expect(
+        resolver.resolve(
+          'file:///x/outer.runfiles/other_ws/inner.runfiles/$workspace/lib/baz.dart',
+        ),
+        'lib/baz.dart',
+      );
+    });
+
+    test('rejects workspace prefix collisions and directory-only URIs', () {
+      expect(
+        resolver.resolve(
+          'file:///x/y/z.runfiles/${workspace}_other/lib/baz.dart',
+        ),
+        isNull,
+      );
+      expect(resolver.resolve('file:///x/y/z.runfiles/$workspace/'), isNull);
+      expect(resolver.resolve('file:///x/y/z.runfiles/$workspace'), isNull);
+      expect(BazelResolver().resolve('file:///x/y/z.runfiles/'), isNull);
+    });
+
+    test('rejects .. escapes while normalizing internal .. segments', () {
+      expect(
+        resolver.resolve('file:///x/y/z.runfiles/$workspace/../etc/passwd'),
+        isNull,
+      );
+      expect(
+        BazelResolver().resolve('file:///x/y/z.runfiles/../etc/passwd'),
+        isNull,
+      );
+      expect(
+        resolver.resolve('file:///x/y/z.runfiles/$workspace/foo/../bar.dart'),
+        'bar.dart',
       );
     });
 
