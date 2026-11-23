@@ -105,6 +105,8 @@ class BoundMultipartStream {
   static const int _controllerStatePaused = 2;
   static const int _controllerStateCanceled = 3;
 
+  final int _headerSizeLimit;
+
   int _controllerState = _controllerStateIdle;
 
   final _controller = StreamController<MimeMultipart>(sync: true);
@@ -118,6 +120,7 @@ class BoundMultipartStream {
 
   int _state = _startCode;
   int _boundaryIndex = 2;
+  int _headersByteLimit = 0;
 
   /// Current index into [_buffer].
   ///
@@ -126,7 +129,9 @@ class BoundMultipartStream {
   int _index = 0;
   List<int> _buffer = _placeholderBuffer;
 
-  BoundMultipartStream(this._boundary, Stream<List<int>> stream) {
+  BoundMultipartStream(this._boundary, Stream<List<int>> stream,
+      {required int headerSizeLimit})
+      : _headerSizeLimit = headerSizeLimit {
     _controller
       ..onPause = _pauseStream
       ..onResume = _resumeStream
@@ -164,6 +169,10 @@ class BoundMultipartStream {
     _state = _failCode;
     _buffer = _placeholderBuffer;
     _index = 0;
+    _subscription
+        .cancel()
+        .onError(_controller.addError)
+        .whenComplete(_controller.close);
     _controller.addError(error, stackTrace);
     if (_multipartController case final controller?) {
       _multipartController = null;
@@ -171,10 +180,6 @@ class BoundMultipartStream {
         ..addError(error, stackTrace)
         ..close();
     }
-    _subscription
-        .cancel()
-        .catchError(_controller.addError)
-        .whenComplete(_controller.close);
   }
 
   void _resumeStream() {
@@ -201,6 +206,13 @@ class BoundMultipartStream {
           throw StateError('This code should never be reached.');
       }
     }
+  }
+
+  /// Throws error if header exceeds its configured limit.
+  Never _overlongHeader() {
+    assert(_headersByteLimit < 0);
+    throw MimeMultipartException(
+        'Multipart part header exceeds $_headerSizeLimit bytes');
   }
 
   void _parse() {
@@ -241,7 +253,13 @@ class BoundMultipartStream {
         _index < _buffer.length && _state != _failCode && _state != _doneCode) {
       final byte =
           _index < 0 ? _boundary[boundaryPrefix + _index] : _buffer[_index];
-      switch (_state) {
+      final currentState = _state;
+      if (currentState >= _headerFieldCode &&
+          currentState < _headerEndingCode &&
+          --_headersByteLimit < 0) {
+        _overlongHeader();
+      }
+      switch (currentState) {
         case _startCode:
           if (byte == _boundary[_boundaryIndex]) {
             _boundaryIndex++;
@@ -269,6 +287,7 @@ class BoundMultipartStream {
           _state = _headerStartCode;
 
         case _headerStartCode:
+          _headersByteLimit = _headerSizeLimit;
           _headers = <String, String>{};
           if (byte == char_code.cr) {
             _state = _headerEndingCode;
@@ -398,7 +417,6 @@ class BoundMultipartStream {
       // Move to the next byte.
       _index++;
     }
-
     // Report any known content.
     if (_state == _contentCode && contentStartIndex != null) {
       reportData();
