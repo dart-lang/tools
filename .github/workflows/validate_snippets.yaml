@@ -1,0 +1,44 @@
+# Reusable workflow for checking that `@example` markdown code blocks are up to
+# date. Callers should pin to a commit SHA:
+#
+#   jobs:
+#     examples:
+#       uses: dart-lang/tools/.github/workflows/validate_snippets.yaml@<commit-sha>
+name: Validate snippets
+
+on:
+  workflow_call:
+    inputs:
+      directory:
+        description: 'Directory to validate (defaults to repository root).'
+        required: false
+        default: '.'
+        type: string
+      sdk:
+        description: 'Dart SDK version or channel (must be >= 3.12.0).'
+        required: false
+        default: 'stable'
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  PUB_ENVIRONMENT: bot.github
+
+jobs:
+  validate:
+    name: Validate markdown examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
+        with:
+          sdk: ${{ inputs.sdk }}
+      - name: Validate examples
+        shell: bash
+        env:
+          DIRECTORY: ${{ inputs.directory }}
+        run: dart run snippets@ validate -C "$DIRECTORY"
