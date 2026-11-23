@@ -1,0 +1,30 @@
+name: snippets
+version: 0.9.0-wip
+description: >-
+  Keep the code samples in your markdown files up to date with real, analyzed
+  code in example/ and test/.
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/snippets
+issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Asnippets
+topics:
+  - documentation
+  - examples
+  - markdown
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  args: ^2.5.0
+  collection: ^1.19.0
+  path: ^1.9.0
+  source_span: ^1.10.0
+  string_scanner: ^1.4.0
+
+dev_dependencies:
+  checks: ^0.3.0
+  dart_flutter_team_lints: ^3.0.0
+  test: ^1.24.0
+  test_descriptor: ^2.0.0
+
+executables:
+  snippets:
