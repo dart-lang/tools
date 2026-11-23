@@ -686,6 +686,43 @@ void main() {
         'must start with an anchor or tag',
       );
 
+      // Leading whitespace inside [start, contentStart) before an anchor.
+      final leadWsAncDoc = CstDocument.parse('a:  &x 1\n');
+      final leadWsAncRoot = leadWsAncDoc.root as CstBlockMap;
+      final leadWsAncEntry = leadWsAncRoot.entries.single;
+      final leadWsAncVal = leadWsAncEntry.value as CstScalar;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: leadWsAncDoc.source,
+          root: CstBlockMap(
+            start: leadWsAncRoot.start,
+            contentStart: leadWsAncRoot.contentStart,
+            entries: [
+              CstBlockMapEntry(
+                start: leadWsAncEntry.start,
+                lineStart: leadWsAncEntry.lineStart,
+                questionMark: null,
+                key: leadWsAncEntry.key,
+                colon: leadWsAncEntry.colon,
+                value: CstScalar(
+                  start: leadWsAncVal.start - 1,
+                  contentStart: leadWsAncVal.contentStart,
+                  end: leadWsAncVal.end,
+                  value: leadWsAncVal.value,
+                ),
+                end: leadWsAncEntry.end,
+                hasSeparatorComment: false,
+              ),
+            ],
+            isCompact: false,
+            value: leadWsAncRoot.value,
+          ),
+          value: leadWsAncDoc.value,
+          tokens: leadWsAncDoc.tokens,
+        ),
+        'node properties [3, 7) must start with an anchor or tag',
+      );
+
       // Block collection properties that swallow a comment line past the break.
       final propMapDoc = CstDocument.parse('a: &x\n  # c\n  b: 1\n');
       final propRoot = propMapDoc.root as CstBlockMap;
@@ -2280,7 +2317,9 @@ void main() {
       'nested block': 'a:\n  b:\n    c: 1\n',
       'zero indent seq': 'key:\n- 1\n- 2\n',
       'nested seq': '- - 1\n  - 2\n',
+      'nested seq followed by comment': '- - a\n# c\n- b\n',
       'compact map in seq': '- a: 1\n  b: 2\n',
+      'compact maps in seq with blank line': '- a: 1\n\n- b: 2\n',
       'flow seq': '[1, 2]',
       'flow seq trailing comma': '[1, 2, ]',
       'flow seq multiline': '[\n  1,\n  2,\n]',
