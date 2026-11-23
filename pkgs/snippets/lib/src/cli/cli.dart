@@ -9,7 +9,6 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 
-import '../diagnostic.dart';
 import '../runner.dart';
 
 part 'cli.update.dart';
@@ -83,12 +82,16 @@ abstract base class _Base extends Command<int> {
     }
   }
 
-  /// Prints [diagnostics] to [err] and returns whether there were any errors.
-  bool report(List<ExampleFormatException> diagnostics) {
+  /// Prints warnings and errors on [outcome] to [err] and returns whether there
+  /// were any errors.
+  bool report(RunOutcome outcome) {
     final color = identical(err, stderr) && stderr.supportsAnsiEscapes;
-    for (final diagnostic in diagnostics) {
+    for (final warning in outcome.warnings) {
+      err.writeln(warning.toString(color: color ? '\u001b[33m' : false));
+    }
+    for (final diagnostic in outcome.diagnostics) {
       err.writeln(diagnostic.toString(color: color));
     }
-    return diagnostics.isNotEmpty;
+    return outcome.diagnostics.isNotEmpty;
   }
 }

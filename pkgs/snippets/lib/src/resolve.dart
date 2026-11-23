@@ -29,6 +29,7 @@ String resolveReference({
   required String packageRoot,
   required String documentPath,
   required String reference,
+  void Function(String message)? onWarning,
 }) {
   final uri = Uri.tryParse(reference);
   if (uri == null) {
@@ -57,10 +58,20 @@ String resolveReference({
   // real filesystem: `/` then means the package root, and `..` runs out of
   // path at the root instead of escaping into the user's home directory.
   final directory = p.relative(p.dirname(document), from: root);
-  final base = directory == '.'
+  final dirSegments = directory == '.' ? const <String>[] : p.split(directory);
+  final base = dirSegments.isEmpty
       ? Uri(path: '/')
-      : Uri(pathSegments: ['', ...p.split(directory), '']);
-  final resolved = base.resolveUri(uri.removeFragment());
+      : Uri(pathSegments: ['', ...dirSegments, '']);
+  final cleanUri = uri.removeFragment();
+  final resolved = base.resolveUri(cleanUri);
+
+  if (onWarning != null &&
+      _climbsAboveRoot(cleanUri.path, dirSegments.length)) {
+    onWarning(
+      '`$reference` climbs above the root directory; '
+      'resolved as `${resolved.path}`',
+    );
+  }
 
   final relative = p.fromUri(resolved.path.substring(1));
   final path = p.normalize(p.join(root, relative));
@@ -70,4 +81,18 @@ String resolveReference({
     );
   }
   return path;
+}
+
+bool _climbsAboveRoot(String uriPath, int startDepth) {
+  var depth = uriPath.startsWith('/') ? 0 : startDepth;
+  for (final segment in uriPath.split('/')) {
+    if (segment.isEmpty || segment == '.') continue;
+    if (segment == '..') {
+      if (depth == 0) return true;
+      depth--;
+    } else {
+      depth++;
+    }
+  }
+  return false;
 }

@@ -38,20 +38,23 @@ final class UpdateResult {
   /// Errors encountered while checking or updating this document.
   final List<ExampleFormatException> diagnostics;
 
+  /// Non-fatal warnings encountered while checking or updating this document.
+  final List<ExampleWarning> warnings;
+
   UpdateResult({
     required this.updated,
     required this.stale,
     required this.diagnostics,
+    this.warnings = const [],
   });
 }
 
 /// Returns [source] with every referenced code block filled in.
 ///
-/// [documentPath] and [packageRoot] (when non-null) are absolute. If
-/// [packageRoot] is `null`, documents without example references succeed and
-/// documents with references report an error at the first reference.
-/// Diagnostics in the document are labelled with [sourceUrl], which defaults to
-/// [documentPath].
+/// [documentPath] and [packageRoot] (when non-null) are absolute. When
+/// [packageRoot] is `null`, leading-`/` references report an error and relative
+/// references resolve within [displayRoot] (if provided). Diagnostics in the
+/// document are labelled with [sourceUrl], which defaults to [documentPath].
 UpdateResult updateDocument({
   required String source,
   required String documentPath,
@@ -61,6 +64,7 @@ UpdateResult updateDocument({
   Uri? sourceUrl,
 }) {
   final diagnostics = <ExampleFormatException>[];
+  final warnings = <ExampleWarning>[];
   final stale = <ExampleReference>[];
 
   if (!source.toLowerCase().contains('@example')) {
@@ -78,18 +82,27 @@ UpdateResult updateDocument({
     return UpdateResult(updated: null, stale: stale, diagnostics: diagnostics);
   }
 
-  if (packageRoot == null) {
-    diagnostics.add(ExampleFormatException(
-      'no `pubspec.yaml` found in any parent directory of this file',
-      references.first.span,
-    ));
-    return UpdateResult(updated: null, stale: stale, diagnostics: diagnostics);
-  }
+  final boundaryRoot = packageRoot ?? displayRoot;
 
   // Work out what every block should contain before changing anything. A
   // broken reference is reported and skipped; the other blocks are updated.
   final wanted = <ExampleReference, String>{};
   for (final reference in references) {
+    if (packageRoot == null && reference.path.startsWith('/')) {
+      diagnostics.add(ExampleFormatException(
+        'leading `/` requires a `pubspec.yaml` in a parent directory of this '
+        'file',
+        reference.span,
+      ));
+      continue;
+    }
+    if (boundaryRoot == null) {
+      diagnostics.add(ExampleFormatException(
+        'no `pubspec.yaml` found in any parent directory of this file',
+        reference.span,
+      ));
+      continue;
+    }
     if (reference.block.closeFence == null) {
       diagnostics.add(ExampleFormatException(
         'this code block has no closing fence, so it cannot be updated safely',
@@ -103,9 +116,10 @@ UpdateResult updateDocument({
       content = _contentFor(
         reference,
         documentPath: documentPath,
-        packageRoot: packageRoot,
-        displayRoot: displayRoot ?? packageRoot,
+        packageRoot: boundaryRoot,
+        displayRoot: displayRoot ?? boundaryRoot,
         readFile: readFile,
+        onWarning: (msg) => warnings.add(ExampleWarning(msg, reference.span)),
       );
     } on ExampleFormatException catch (e) {
       diagnostics.add(
@@ -119,7 +133,12 @@ UpdateResult updateDocument({
     wanted[reference] = content;
   }
   if (wanted.isEmpty) {
-    return UpdateResult(updated: null, stale: stale, diagnostics: diagnostics);
+    return UpdateResult(
+      updated: null,
+      stale: stale,
+      diagnostics: diagnostics,
+      warnings: warnings,
+    );
   }
 
   // Splice from the end so that the offsets of the blocks still to be done
@@ -131,7 +150,12 @@ UpdateResult updateDocument({
     updated = spliceContent(updated, reference.block, wanted[reference]!);
   }
 
-  return UpdateResult(updated: updated, stale: stale, diagnostics: diagnostics);
+  return UpdateResult(
+    updated: updated,
+    stale: stale,
+    diagnostics: diagnostics,
+    warnings: warnings,
+  );
 }
 
 /// The content [reference] asks for.
@@ -141,11 +165,13 @@ String _contentFor(
   required String packageRoot,
   required String displayRoot,
   required FileReader readFile,
+  required void Function(String message) onWarning,
 }) {
   final path = resolveReference(
     packageRoot: packageRoot,
     documentPath: documentPath,
     reference: reference.path,
+    onWarning: onWarning,
   );
   final source = readFile(path);
   if (source == null) {

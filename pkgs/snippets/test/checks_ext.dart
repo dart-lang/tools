@@ -15,6 +15,11 @@ extension ExampleFormatExceptionChecks on Subject<ExampleFormatException> {
   Subject<int?> get line => has((e) => e.span?.start.line, 'line');
 }
 
+extension ExampleWarningChecks on Subject<ExampleWarning> {
+  Subject<String> get message => has((w) => w.message, 'message');
+  Subject<SourceSpan?> get span => has((w) => w.span, 'span');
+}
+
 extension SourceSpanChecks on Subject<SourceSpan> {
   Subject<String> get text => has((s) => s.text, 'text');
   Subject<Uri?> get sourceUrl => has((s) => s.sourceUrl, 'sourceUrl');
@@ -47,4 +52,6 @@ extension UpdateResultChecks on Subject<UpdateResult> {
   Subject<List<ExampleReference>> get stale => has((r) => r.stale, 'stale');
   Subject<List<ExampleFormatException>> get diagnostics =>
       has((r) => r.diagnostics, 'diagnostics');
+  Subject<List<ExampleWarning>> get warnings =>
+      has((r) => r.warnings, 'warnings');
 }

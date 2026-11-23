@@ -6,15 +6,14 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-/// Every `.md` file under [root] (skipping hidden directories and `build/`),
-/// in a stable order.
+/// Every `.md` file under [root] (skipping hidden directories), in a stable
+/// order.
 List<String> markdownFiles(String root) {
   final files = <String>[];
   void walk(Directory dir) {
     for (final entity in dir.listSync(followLinks: false)) {
       if (entity is Directory) {
-        final name = p.basename(entity.path);
-        if (!name.startsWith('.') && name != 'build') walk(entity);
+        if (!p.basename(entity.path).startsWith('.')) walk(entity);
       } else if (entity is File && entity.path.toLowerCase().endsWith('.md')) {
         files.add(entity.path);
       }

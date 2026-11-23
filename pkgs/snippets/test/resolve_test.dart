@@ -20,11 +20,16 @@ const root = '/pkg';
 
 String expected(String path) => p.normalize(p.absolute(path));
 
-String resolve(String reference, {String document = '/pkg/README.md'}) =>
+String resolve(
+  String reference, {
+  String document = '/pkg/README.md',
+  void Function(String)? onWarning,
+}) =>
     resolveReference(
       packageRoot: root,
       documentPath: document,
       reference: reference,
+      onWarning: onWarning,
     );
 
 void main() {
@@ -47,10 +52,16 @@ void main() {
         .equals(expected('/pkg/example/hello.dart'));
   });
 
-  test('`..` is clamped at the package root', () {
-    // URI resolution runs out of path rather than escaping, which is what
-    // dartdoc relies on; the `isWithin` check below is the safety net.
-    check(resolve('../../../etc/passwd')).equals(expected('/pkg/etc/passwd'));
+  test('`..` is clamped at the package root with a warning', () {
+    final warnings = <String>[];
+    check(resolve('../example/hello.dart',
+            document: '/pkg/doc/guide.md', onWarning: warnings.add))
+        .equals(expected('/pkg/example/hello.dart'));
+    check(warnings).isEmpty();
+
+    check(resolve('../../../etc/passwd', onWarning: warnings.add))
+        .equals(expected('/pkg/etc/passwd'));
+    check(warnings).single.contains('climbs above the root directory');
   });
 
   test('percent-encoding is decoded', () {

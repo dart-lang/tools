@@ -148,6 +148,10 @@ void main() {
       ]),
     ]).validate();
 
+    await d
+        .file(
+            'pkgs/a/README.md', '```dart @example /hello.dart#unclosed\n```\n')
+        .create();
     await d.file('pkgs/a/hello.dart', '// #region unclosed\n').create();
     final err = StringBuffer();
     await check(runSnippets(['validate', '-C', d.sandbox], err: err))
@@ -155,47 +159,70 @@ void main() {
     check(err.toString()).contains(p.join('pkgs', 'a', 'hello.dart'));
   });
 
-  test('only requires pubspec.yaml for files with references', () async {
-    final isolated = d.dir('no_pubspec');
-    await isolated.create();
-    await d
-        .file('no_pubspec/README.md', '```dart\nvoid main() {}\n```\n')
-        .create();
-
+  test('relative references work without pubspec.yaml; leading / requires one',
+      () async {
     // Only safe if `d.sandbox` itself has no enclosing `pubspec.yaml` either:
     d.file('pubspec.yaml').io.deleteSync();
 
-    await check(
-      runSnippets(['validate', '-C', isolated.io.path], out: StringBuffer()),
-    ).completes((it) => it.equals(0));
+    await d.dir('no_pubspec', [
+      d.file('hello.dart', 'ok;\n'),
+      d.file('README.md', '```dart @example hello.dart\n```\n'),
+    ]).create();
+    final root = d.path('no_pubspec');
+
+    await check(runSnippets(['update', '-C', root], out: StringBuffer()))
+        .completes((it) => it.equals(0));
+    await d
+        .file('no_pubspec/README.md', '```dart @example hello.dart\nok;\n```\n')
+        .validate();
 
     await d
         .file(
           'no_pubspec/README.md',
-          '# Intro\n\n```dart @example example/hello.dart\n```\n',
+          '# Intro\n\n```dart @example /hello.dart\n```\n',
         )
         .create();
     final err = StringBuffer();
-    await check(
-      runSnippets(['validate', '-C', isolated.io.path], err: err),
-    ).completes((it) => it.equals(1));
+    await check(runSnippets(['validate', '-C', root], err: err))
+        .completes((it) => it.equals(1));
     check(err.toString())
       ..contains('line 3')
       ..contains('pubspec.yaml');
   });
 
-  test('ignores markdown files in hidden directories and build/', () async {
+  test('skips non-UTF-8 markdown files and rejects binary targets', () async {
+    await d.file('latin1.md', [0xff, 0xfe]).create();
+    await d.file('README.md', '# ok\n').create();
+
+    final err = StringBuffer();
+    await check(
+      runSnippets(['validate', '-C', d.sandbox], out: StringBuffer(), err: err),
+    ).completes((it) => it.equals(0));
+    check(err.toString())
+      ..contains('Warning:')
+      ..contains('latin1.md');
+
+    await d.file('logo.bin', [0x89, 0x50, 0x4e, 0x47, 0xff]).create();
+    await d.file('README.md', '```text @example logo.bin\n```\n').create();
+    err.clear();
+    await check(
+      runSnippets(['validate', '-C', d.sandbox], out: StringBuffer(), err: err),
+    ).completes((it) => it.equals(1));
+    check(err.toString())
+      ..contains('README.md')
+      ..contains('not valid UTF-8');
+  });
+
+  test('ignores markdown files in hidden directories', () async {
     await d.file('a.dart', 'void main() {}\n').create();
     const stale = '```dart @example ../a.dart\n```\n';
     await d.dir('.dart_tool', [d.file('stale.md', stale)]).create();
-    await d.dir('build', [d.file('stale.md', stale)]).create();
 
     await check(runSnippets(['validate', '-C', d.sandbox], out: StringBuffer()))
         .completes((it) => it.equals(0));
     await check(runSnippets(['update', '-C', d.sandbox], out: StringBuffer()))
         .completes((it) => it.equals(0));
     await d.dir('.dart_tool', [d.file('stale.md', stale)]).validate();
-    await d.dir('build', [d.file('stale.md', stale)]).validate();
   });
 
   test('-C may come before the command', () async {

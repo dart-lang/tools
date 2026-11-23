@@ -46,10 +46,12 @@ void greet() {
 ''');
   });
 
-  test('the whole file is the default, keeping markers like dartdoc', () {
+  test('the whole file is the default, ignoring markers like dartdoc', () {
     check(extract(_file)).equals(_file);
     const withHide = '// #region r\na;\nb; // #hide\n// #endregion\n';
     check(extract(withHide)).equals(withHide);
+    const unclosed = '// #region unclosed\na;\n';
+    check(extract(unclosed)).equals(unclosed);
   });
 
   test('preserves indentation as written', () {
@@ -151,7 +153,7 @@ app.mount('#root');
     });
 
     test('divergence: #endregion without #region is an error', () {
-      check(() => extract('a;\n// #endregion\n'))
+      check(() => extract('a;\n// #endregion\n', region: 'r'))
           .throws<ExampleFormatException>()
           .line
           .equals(1);
@@ -189,13 +191,10 @@ app.mount('#root');
           .contains('no regions');
     });
 
-    test('broken markers are caught even when the whole file is requested', () {
-      check(() => extract('// #region unclosed\na;\n'))
-          .throws<ExampleFormatException>();
-    });
-
     test('the file path is attached to the error', () {
-      check(() => extract('// #endregion\n', path: 'example/bad.dart'))
+      check(
+        () => extract('// #endregion\n', region: 'r', path: 'example/bad.dart'),
+      )
           .throws<ExampleFormatException>()
           .span
           .isNotNull()

@@ -5,6 +5,7 @@
 /// Running [updateDocument] over a directory of markdown files.
 library;
 
+import 'dart:convert' show utf8;
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -24,10 +25,14 @@ final class RunOutcome {
   /// Errors encountered while checking or updating documents, in file order.
   final List<ExampleFormatException> diagnostics;
 
+  /// Non-fatal warnings encountered while scanning or resolving documents.
+  final List<ExampleWarning> warnings;
+
   RunOutcome({
     required this.scanned,
     required this.stale,
     required this.diagnostics,
+    this.warnings = const [],
   });
 }
 
@@ -37,31 +42,34 @@ final class RunOutcome {
 /// only reported, which is what `validate` does in CI.
 ///
 /// Each document is resolved against **its own** package root (the nearest
-/// enclosing directory containing `pubspec.yaml`), so a workspace of many
-/// packages, or a package with an `example/` application of its own, does the
-/// right thing without being told about it.
+/// enclosing directory containing `pubspec.yaml`), or [directory] itself for
+/// relative references in documents outside any package.
 RunOutcome updateDirectory({
   required String directory,
   required bool write,
 }) {
   final root = p.normalize(p.absolute(directory));
   final diagnostics = <ExampleFormatException>[];
+  final warnings = <ExampleWarning>[];
   final stale = <String, int>{};
   var scanned = 0;
 
   for (final file in markdownFiles(root)) {
-    scanned++;
     final label = p.relative(file, from: root);
 
     final String source;
     try {
-      source = File(file).readAsStringSync();
+      source = utf8.decode(File(file).readAsBytesSync());
+    } on FormatException {
+      warnings.add(ExampleWarning('skipping non-UTF-8 file `$label`'));
+      continue;
     } on FileSystemException catch (e) {
       diagnostics.add(
         ExampleFormatException('cannot read `$label` (${e.message})'),
       );
       continue;
     }
+    scanned++;
 
     if (!source.toLowerCase().contains('@example')) continue;
 
@@ -73,10 +81,22 @@ RunOutcome updateDirectory({
       sourceUrl: p.toUri(label),
       readFile: (path) {
         final example = File(path);
-        return example.existsSync() ? example.readAsStringSync() : null;
+        if (!example.existsSync()) return null;
+        try {
+          return utf8.decode(example.readAsBytesSync());
+        } on FormatException {
+          throw ExampleFormatException(
+            '`${p.relative(path, from: root)}` is not valid UTF-8 text',
+          );
+        } on FileSystemException catch (e) {
+          throw ExampleFormatException(
+            'cannot read `${p.relative(path, from: root)}` (${e.message})',
+          );
+        }
       },
     );
     diagnostics.addAll(result.diagnostics);
+    warnings.addAll(result.warnings);
 
     if (result.stale.isNotEmpty) stale[label] = result.stale.length;
     if (result.updated == null) continue;
@@ -90,5 +110,6 @@ RunOutcome updateDirectory({
     scanned: scanned,
     stale: stale,
     diagnostics: diagnostics,
+    warnings: warnings,
   );
 }

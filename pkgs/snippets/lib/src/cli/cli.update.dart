@@ -27,7 +27,7 @@ final class _UpdateCommand extends _Base {
     checkNoPositionalArguments();
     final dryRun = argResults!.flag('dry-run');
     final outcome = updateDirectory(directory: directory, write: !dryRun);
-    final failed = report(outcome.diagnostics);
+    final failed = report(outcome);
 
     final prefix = dryRun ? 'would update' : 'updated';
     for (final file in outcome.stale.keys) {

@@ -19,7 +19,7 @@ final class _ValidateCommand extends _Base {
   int run() {
     checkNoPositionalArguments();
     final outcome = updateDirectory(directory: directory, write: false);
-    final failed = report(outcome.diagnostics);
+    final failed = report(outcome);
 
     for (final MapEntry(key: file, value: count) in outcome.stale.entries) {
       err.writeln('$file: error: $count code '

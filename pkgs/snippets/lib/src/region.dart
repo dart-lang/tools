@@ -21,12 +21,11 @@
 /// not parse the host language, and that is the point: the same three markers
 /// work everywhere.
 ///
-/// Where dartdoc is lenient, we are not. dartdoc warns and does a best-effort
-/// extraction; this tool *rewrites your documentation*, so a malformed file is
-/// an error and the blocks referencing it are left alone. Specifically, and
-/// unlike dartdoc:
+/// Where dartdoc continues with best-effort output after reporting an error,
+/// this tool *rewrites your documentation*, so a malformed region file throws
+/// [ExampleFormatException] and the blocks referencing it are left alone:
 ///
-/// * an unterminated region is an error,
+/// * an unterminated `#region` is an error,
 /// * a stray `#endregion`, or one labelled with a name other than the
 ///   innermost open region, is an error.
 library;
@@ -36,6 +35,8 @@ import 'package:string_scanner/string_scanner.dart';
 
 import 'diagnostic.dart';
 import 'util/scanner.dart';
+
+final _crlfOrCr = RegExp(r'\r\n|\r');
 
 /// Start of a region; group 1 is its name.
 ///
@@ -55,20 +56,27 @@ final _hide = RegExp(r'#hide\b', caseSensitive: false);
 
 /// Returns [region] of [source], or the whole file if [region] is `null`.
 ///
-/// Marker lines and `#hide` lines are removed from a region, and kept when the
-/// whole file is requested, matching dartdoc. If [region] is opened more than
-/// once in [source], the lines from each block are concatenated in order.
+/// Marker lines and `#hide` lines are removed from a named region, and left
+/// untouched (without parsing markers) when the whole file is requested,
+/// matching dartdoc. If [region] is opened more than once in [source], the
+/// lines from each block are concatenated in order.
 ///
 /// The result is empty, or ends with a single `\n`. Line endings are
 /// normalised to `\n`: the document being written into decides what its own
 /// lines end with, not the example file.
 ///
-/// Throws [ExampleFormatException] if the markers in [source] are malformed, or
-/// if there is no such region.
+/// Throws [ExampleFormatException] when extracting a named [region] if the
+/// markers in [source] are malformed, or if there is no such region.
 String extractRegion(
   FileSpan source, {
   String? region,
 }) {
+  if (region == null) {
+    if (source.length == 0) return '';
+    final normalized = source.text.replaceAll(_crlfOrCr, '\n');
+    return normalized.endsWith('\n') ? normalized : '$normalized\n';
+  }
+
   final scanner = SpanScanner.within(source);
   final selected = <String>[];
   final open = <({String name, FileSpan span})>[];
@@ -82,7 +90,6 @@ String extractRegion(
       final name = start[1]!;
       open.add((name: name, span: line.trim()));
       seen.add(name);
-      if (region == null) selected.add(text);
     } else if (_regionEnd.firstMatch(text) case final end?) {
       if (open.isEmpty) {
         throw ExampleFormatException(
@@ -99,10 +106,9 @@ String extractRegion(
           line.trim(),
         );
       }
-      if (region == null) selected.add(text);
-    } else if (region != null && _hide.hasMatch(text)) {
+    } else if (_hide.hasMatch(text)) {
       continue;
-    } else if (region == null || open.any((r) => r.name == region)) {
+    } else if (open.any((r) => r.name == region)) {
       selected.add(text);
     }
   }
@@ -116,7 +122,7 @@ String extractRegion(
   }
 
   // No span: the mistake is in the reference, not at a place in this file.
-  if (region != null && !seen.contains(region)) {
+  if (!seen.contains(region)) {
     throw ExampleFormatException(
       seen.isEmpty
           ? 'the referenced file has no region `$region`; it defines no '
