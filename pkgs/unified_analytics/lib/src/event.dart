@@ -581,6 +581,19 @@ final class Event {
          },
        );
 
+  /// Event that is emitted periodically to report the number of times a
+  /// diagnostic with a given code has been reported.
+  ///
+  /// * [code] - the code of the diagnostics that were reported.
+  ///
+  /// * [count] - the number of times a diagnostic with a given code has been
+  ///   reported.
+  Event.diagnosticReportedCount({required String code, required int count})
+    : this._(
+        eventName: DashEvent.diagnosticReportedCount,
+        eventData: {'code': code, 'count': count},
+      );
+
   /// Event that contains the results for a specific doctor validator.
   ///
   /// * [validatorName] - the name for the doctor validator.
@@ -612,19 +625,6 @@ final class Event {
            'statusInfo': ?statusInfo,
          },
        );
-
-  /// Event that is emitted periodically to report the number of times a
-  /// diagnostic with a given code has been reported.
-  ///
-  /// * [code] - the code of the diagnostics that were reported.
-  ///
-  /// * [count] - the number of times a diagnostic with a given code has been
-  ///   reported.
-  Event.diagnosticReportedCount({required String code, required int count})
-    : this._(
-        eventName: DashEvent.diagnosticReportedCount,
-        eventData: {'code': code, 'count': count},
-      );
 
   /// Generic event for all dash tools to use when encountering an
   /// exception that we want to log.
