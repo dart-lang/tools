@@ -16,6 +16,7 @@ import 'api_declaration.dart';
 import 'api_facet.dart';
 import 'api_summary_customizer.dart';
 import 'api_type.dart';
+import 'constant_renderer.dart';
 import 'extensions.dart';
 import 'js_facet.dart';
 import 'meta_facet.dart';
@@ -58,6 +59,7 @@ final class _ApiBuilder {
   final _pendingElements = Queue<Element>();
   final _libraryBuilders = <String, _ApiLibraryBuilder>{};
   final _elementToLibraries = <Element, List<LibraryElement>>{};
+  final _topLevelPublicElements = <Element>{};
 
   _ApiBuilder(
     this._pkgName,
@@ -68,18 +70,17 @@ final class _ApiBuilder {
 
   Future<ApiSummary> build(AnalysisContext context) async {
     final publicApiLibraries = <LibraryElement>[];
-    final topLevelPublicElements = <Element>{};
     final scanContext = ApiSummaryContext(
       packageName: _pkgName,
       analysisContext: context,
       publicApiLibraries: publicApiLibraries,
-      topLevelPublicElements: topLevelPublicElements,
+      topLevelPublicElements: _topLevelPublicElements,
     );
     await _customizer.setupComplete(scanContext);
 
     await _scanPublicApiLibraries(
       context,
-      topLevelPublicElements,
+      _topLevelPublicElements,
       publicApiLibraries,
     );
     await _customizer.initialScanComplete(scanContext);
@@ -91,7 +92,7 @@ final class _ApiBuilder {
       final isReferenced = !(element.library?.uri.isIn(_pkgName) ?? false);
 
       final ApiDeclarationStatus status;
-      if (topLevelPublicElements.contains(element)) {
+      if (_topLevelPublicElements.contains(element)) {
         status = ApiDeclarationStatus.public;
       } else if (!isReferenced) {
         status = ApiDeclarationStatus.nonPublic;
@@ -553,6 +554,14 @@ final class _ApiBuilder {
     ?JsExportFacet.fromElement(element),
   ];
 
+  bool _isPublicElement(Element element) {
+    final base = element.baseElement;
+    if (base.library?.uri.isIn(_pkgName) ?? false) {
+      return _topLevelPublicElements.contains(base);
+    }
+    return true;
+  }
+
   ApiExecutable _buildExecutable(
     ExecutableElement element, {
     required ApiDeclarationStatus status,
@@ -594,11 +603,19 @@ final class _ApiBuilder {
               isNamed: e.isNamed,
               isOptionalPositional: e.isOptionalPositional,
               isDeprecated: e.isDeprecated,
+              defaultValue: extractParameterDefaultValue(
+                e,
+                isPublicElement: _isPublicElement,
+              ),
             ),
           )
           .toList(),
       isStatic: element.isStatic,
       isConst: isConst,
+      constantValue: extractGetterConstantValue(
+        element,
+        isPublicElement: _isPublicElement,
+      ),
       isDeprecated: _isDeprecated(element),
       isEnumConstant: isEnumConstant,
       facets: _extractFacets(element),
