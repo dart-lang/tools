@@ -1,4 +1,4 @@
-## 0.9.0-wip
+## 0.9.0
 
 * `package:snippets` is now a CLI tool for keeping `@example` markdown code
   blocks up to date with source files in `example/` and `test/` (formerly
