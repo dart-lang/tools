@@ -175,9 +175,8 @@ final class CstBlockSeq extends CstNode {
   /// sequence with no entries cannot be written.
   final List<CstBlockSeqEntry> entries;
 
-  /// Whether this sequence's first entry does not begin at the start of its
-  /// line (for example a compact sequence `- - 1` or an indented root
-  /// sequence).
+  /// Whether this sequence's first entry shares its line with a preceding
+  /// non-whitespace token (for example a compact sequence `- - 1` or `? - 1`).
   final bool isCompact;
 
   @override
@@ -217,9 +216,9 @@ final class CstBlockSeqEntry {
   /// the previous entry.
   final int start;
 
-  /// Start of the line the `-` is written on, or [start] when the first entry
-  /// does not begin at the start of its line (for example a compact sequence
-  /// sharing a line with an outer indicator, or an indented root sequence).
+  /// Start of the line the `-` is written on (past any leading BOM), or
+  /// [start] when this is the first entry of a compact sequence sharing a line
+  /// with an outer indicator.
   ///
   /// The range `[start, lineStart)` holds whole lines of blank space and
   /// comments that precede this entry. Deleting an entry deletes
@@ -266,8 +265,8 @@ final class CstBlockMap extends CstNode {
   /// mapping with no entries cannot be written.
   final List<CstBlockMapEntry> entries;
 
-  /// Whether this mapping's first entry does not begin at the start of its
-  /// line (for example a compact mapping `- a: 1` or an indented root mapping).
+  /// Whether this mapping's first entry shares its line with a preceding
+  /// non-whitespace token (for example a compact mapping `- a: 1` or `? a: 1`).
   final bool isCompact;
 
   @override
@@ -304,9 +303,9 @@ final class CstBlockMapEntry {
   /// the previous entry.
   final int start;
 
-  /// Start of the line the key is written on, or [start] when the first entry
-  /// does not begin at the start of its line (for example a compact mapping
-  /// sharing a line with an outer indicator, or an indented root mapping).
+  /// Start of the line the key is written on (past any leading BOM), or
+  /// [start] when this is the first entry of a compact mapping sharing a line
+  /// with an outer indicator.
   final int lineStart;
 
   /// Offset of the `?` indicator, for entries written in explicit key form.
@@ -796,6 +795,10 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
   final source = document.source;
   var cursor = 0;
 
+  void check(bool condition, int offset, String Function() message) {
+    if (!condition) throw CstError(message(), offset);
+  }
+
   bool isHorizontalSpace(int codeUnit) =>
       codeUnit == 0x20 || // space
       codeUnit == 0x09; // tab
@@ -817,30 +820,21 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
   }
 
   /// Expected `lineStart` for a non-compact block entry anchored at [anchor]:
-  /// the start of [anchor]'s line, advanced past any leading BOM.
+  /// the start of [anchor]'s line, advanced past a leading BOM if present.
   int expectedLineStartOf(int anchor) {
     var lineStart = document.lineStartOf(anchor);
-    while (lineStart < anchor && source.codeUnitAt(lineStart) == 0xFEFF) {
+    if (lineStart < anchor && source.codeUnitAt(lineStart) == 0xFEFF) {
       lineStart++;
     }
     return lineStart;
   }
 
-  void checkHorizontalSpaceOnly(int start, int end, String what) {
-    for (var i = start; i < end; i++) {
-      if (!isHorizontalSpace(source.codeUnitAt(i))) {
-        throw CstError(
-          'expected only horizontal whitespace in $what, '
-          'but found ${_describe(source.substring(start, end))}',
-          i,
-        );
-      }
-    }
-  }
-
   /// Computes the expected `entry.end` for a block entry with [value].
-  int expectedBlockEntryEnd(CstNode value) {
-    if (value is CstBlockSeq || value is CstBlockMap) return value.end;
+  int expectedBlockEntryEnd(
+    CstNode value, {
+    required bool alreadyTerminatedLine,
+  }) {
+    if (alreadyTerminatedLine) return value.end;
     final valueEnd = value.end;
     var probe = valueEnd;
     while (
@@ -851,10 +845,9 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
         when token.kind == YamlTokenKind.comment) {
       probe = token.span.end.offset;
     }
-    if (probe == document.lineContentEndOf(valueEnd)) {
-      return document.lineBreakEndOf(valueEnd);
-    }
-    return valueEnd;
+    return probe == document.lineContentEndOf(valueEnd)
+        ? document.lineBreakEndOf(valueEnd)
+        : valueEnd;
   }
 
   /// Checks a prefix or suffix region where only whitespace, BOM, and tokens
@@ -865,9 +858,11 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
     Set<YamlTokenKind> allowedKinds,
     String what,
   ) {
-    if (end < start || end > source.length) {
-      throw CstError('$what bounds [$start, $end) out of range', start);
-    }
+    check(
+      end >= start && end <= source.length,
+      start,
+      () => '$what bounds [$start, $end) out of range',
+    );
     var index = start;
     while (index < end) {
       final codeUnit = source.codeUnitAt(index);
@@ -890,13 +885,12 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
   /// Advances the cursor to [offset], requiring `[cursor, offset)` to hold only
   /// whitespace and complete [YamlTokenKind.comment] tokens.
   void whitespaceAndComments(int offset, String what) {
-    if (offset < cursor) {
-      throw CstError(
-        'slot "$what" starts at $offset, before the previous slot ended at '
-        '$cursor',
-        offset,
-      );
-    }
+    check(
+      offset >= cursor,
+      offset,
+      () => 'slot "$what" starts at $offset, before the previous slot ended at '
+          '$cursor',
+    );
     var index = cursor;
     while (index < offset) {
       if (isTriviaChar(source.codeUnitAt(index))) {
@@ -926,12 +920,11 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
     YamlNode owner, {
     required bool isBlockCollection,
   }) {
-    if (offset < cursor) {
-      throw CstError(
-        'node properties end at $offset, before they started at $cursor',
-        offset,
-      );
-    }
+    check(
+      offset >= cursor,
+      offset,
+      () => 'node properties end at $offset, before they started at $cursor',
+    );
     if (offset == cursor) return;
 
     final start = cursor;
@@ -950,22 +943,20 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
               token.span.end.offset <= offset) {
         if (token.kind == YamlTokenKind.anchor) {
           anchorCount++;
-          if (anchorCount > 1) {
-            throw CstError(
-              'duplicate anchor token in node properties at $index',
-              index,
-            );
-          }
+          check(
+            anchorCount == 1,
+            index,
+            () => 'duplicate anchor token in node properties at $index',
+          );
           anchors[token.span.text.substring(1)] = owner;
           lastPropertyEnd = token.span.end.offset;
         } else if (token.kind == YamlTokenKind.tag) {
           tagCount++;
-          if (tagCount > 1) {
-            throw CstError(
-              'duplicate tag token in node properties at $index',
-              index,
-            );
-          }
+          check(
+            tagCount == 1,
+            index,
+            () => 'duplicate tag token in node properties at $index',
+          );
           lastPropertyEnd = token.span.end.offset;
         }
         index = token.span.end.offset;
@@ -979,38 +970,44 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
     }
 
     final firstToken = tokensByOffset[start];
-    if (lastPropertyEnd == null ||
-        firstToken == null ||
-        (firstToken.kind != YamlTokenKind.anchor &&
-            firstToken.kind != YamlTokenKind.tag)) {
-      throw CstError(
-        'node properties [$start, $offset) must start with an anchor or tag',
-        start,
-      );
-    }
+    check(
+      lastPropertyEnd != null &&
+          firstToken != null &&
+          (firstToken.kind == YamlTokenKind.anchor ||
+              firstToken.kind == YamlTokenKind.tag),
+      start,
+      () => 'node properties [$start, $offset) must start with an anchor or '
+          'tag',
+    );
     if (isBlockCollection) {
-      final expectedContentStart = document.lineBreakEndOf(lastPropertyEnd);
-      if (offset != expectedContentStart ||
-          expectedContentStart <= lastPropertyEnd) {
-        throw CstError(
-          'block collection properties [$start, $offset) must end at line '
-          'break $expectedContentStart after last property',
-          offset,
-        );
-      }
+      final expectedContentStart = document.lineBreakEndOf(lastPropertyEnd!);
+      check(
+        offset == expectedContentStart &&
+            expectedContentStart > lastPropertyEnd,
+        offset,
+        () => 'block collection properties [$start, $offset) must end at line '
+            'break $expectedContentStart after last property',
+      );
     }
     cursor = offset;
   }
 
-  /// Advances the cursor past an indicator that must match [char] and
-  /// [expectedKind].
-  void indicator(
-    int offset,
-    String char,
-    YamlTokenKind expectedKind,
-    String what,
-  ) {
+  String indicatorChar(YamlTokenKind kind) => switch (kind) {
+        YamlTokenKind.blockEntry => '-',
+        YamlTokenKind.key => '?',
+        YamlTokenKind.value => ':',
+        YamlTokenKind.flowEntry => ',',
+        YamlTokenKind.flowSequenceStart => '[',
+        YamlTokenKind.flowSequenceEnd => ']',
+        YamlTokenKind.flowMappingStart => '{',
+        YamlTokenKind.flowMappingEnd => '}',
+        _ => throw StateError('Not an indicator token kind: $kind'),
+      };
+
+  /// Advances the cursor past an indicator matching [expectedKind].
+  void indicator(int offset, YamlTokenKind expectedKind, String what) {
     whitespaceAndComments(offset, what);
+    final char = indicatorChar(expectedKind);
     final token = tokensByOffset[offset];
     if (offset >= source.length ||
         source[offset] != char ||
@@ -1032,13 +1029,117 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
 
   /// Advances the cursor over a scalar or alias body.
   void opaque(int offset, String what) {
-    if (offset < cursor) {
-      throw CstError(
-        'slot "$what" ends at $offset, before it started at $cursor',
-        offset,
+    check(
+      offset >= cursor,
+      offset,
+      () => 'slot "$what" ends at $offset, before it started at $cursor',
+    );
+    cursor = offset;
+  }
+
+  void checkNoColonEmpty(CstNode value, String what) {
+    check(
+      value is CstEmpty,
+      value.start,
+      () => '$what without ":" must have a CstEmpty value',
+    );
+  }
+
+  void checkContiguousEntries(
+    int containerStart,
+    int count,
+    int Function(int) entryStart,
+    int Function(int) entryEnd,
+    String kind,
+  ) {
+    if (count == 0) return;
+    check(
+      entryStart(0) == containerStart,
+      entryStart(0),
+      () => '$kind first entry starts at ${entryStart(0)}, expected '
+          '$containerStart',
+    );
+    for (var i = 1; i < count; i++) {
+      check(
+        entryStart(i) == entryEnd(i - 1),
+        entryStart(i),
+        () => '$kind entry $i starts at ${entryStart(i)}, expected '
+            '${entryEnd(i - 1)}',
       );
     }
-    cursor = offset;
+  }
+
+  void checkBlockHeader(
+    CstNode node,
+    int entryCount,
+    bool isCompact,
+    String kind,
+  ) {
+    check(entryCount > 0, node.start, () => '$kind has no entries');
+    final expectedCompact = hasNonTriviaBeforeOnLine(node.contentStart);
+    check(
+      isCompact == expectedCompact,
+      node.contentStart,
+      () => '$kind at ${node.start} has isCompact=$isCompact '
+          'but expected $expectedCompact',
+    );
+  }
+
+  void checkBlockEntryStart(
+    int entryStart,
+    int lineStart,
+    int anchor, {
+    required bool isFirstCompact,
+    required String kind,
+  }) {
+    whitespaceAndComments(entryStart, '$kind entry');
+    whitespaceAndComments(lineStart, '$kind entry line');
+    if (isFirstCompact) {
+      check(
+        lineStart == entryStart && lineStart == anchor,
+        lineStart,
+        () => 'compact $kind first entry lineStart $lineStart must equal '
+            'start ($entryStart) and anchor ($anchor)',
+      );
+    } else {
+      final expectedLineStart = expectedLineStartOf(anchor);
+      check(
+        lineStart == expectedLineStart,
+        lineStart,
+        () => '$kind entry lineStart $lineStart does not match line start '
+            '$expectedLineStart',
+      );
+    }
+  }
+
+  void checkBlockEntryEnd(
+    int entryEnd,
+    CstNode value, {
+    required bool alreadyTerminatedLine,
+    required int? sepStart,
+    required bool hasSeparatorComment,
+    required int anchor,
+    required String kind,
+  }) {
+    final expectedEnd = expectedBlockEntryEnd(
+      value,
+      alreadyTerminatedLine: alreadyTerminatedLine,
+    );
+    check(
+      entryEnd == expectedEnd,
+      entryEnd,
+      () => '$kind entry ends at $entryEnd, expected $expectedEnd',
+    );
+    final expectedSepComment = sepStart != null &&
+        document.commentInRange(sepStart + 1, value.start) != null;
+    check(
+      hasSeparatorComment == expectedSepComment,
+      anchor,
+      () => '$kind entry at $anchor has '
+          'hasSeparatorComment=$hasSeparatorComment, expected '
+          '$expectedSepComment',
+    );
+    whitespaceAndComments(entryEnd, 'end of $kind entry');
   }
 
   const prefixKinds = {
@@ -1077,33 +1178,30 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
       );
       switch (node) {
         case CstScalar():
-          if (node.start != node.value.span.start.offset ||
-              node.end != node.value.span.end.offset) {
-            throw CstError(
-              'scalar slot [${node.start}, ${node.end}) does not match '
-              'YamlScalar span [${node.value.span.start.offset}, '
-              '${node.value.span.end.offset})',
-              node.start,
-            );
-          }
+          check(
+            node.start == node.value.span.start.offset &&
+                node.end == node.value.span.end.offset,
+            node.start,
+            () => 'scalar slot [${node.start}, ${node.end}) does not match '
+                'YamlScalar span [${node.value.span.start.offset}, '
+                '${node.value.span.end.offset})',
+          );
           if (node.contentStart == node.end) {
-            if (!node.hasProperties) {
-              throw CstError(
-                'zero-width CstScalar at ${node.start} without properties',
-                node.start,
-              );
-            }
+            check(
+              node.hasProperties,
+              node.start,
+              () => 'zero-width CstScalar at ${node.start} without properties',
+            );
           } else {
             final scalarToken = tokensByOffset[node.contentStart];
-            if (scalarToken == null ||
-                scalarToken.kind != YamlTokenKind.scalar ||
-                scalarToken.span.end.offset != node.end) {
-              throw CstError(
-                'scalar content [${node.contentStart}, ${node.end}) does not '
-                'match a scalar token',
-                node.contentStart,
-              );
-            }
+            check(
+              scalarToken != null &&
+                  scalarToken.kind == YamlTokenKind.scalar &&
+                  scalarToken.span.end.offset == node.end,
+              node.contentStart,
+              () => 'scalar content [${node.contentStart}, ${node.end}) does '
+                  'not match a scalar token',
+            );
           }
           final expectedHeaderComment =
               node.value.style == ScalarStyle.LITERAL ||
@@ -1113,329 +1211,201 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
                       document.lineBreakEndOf(node.contentStart),
                     )
                   : null;
-          if (!identical(node.headerComment, expectedHeaderComment)) {
-            throw CstError(
-              'scalar at ${node.start} has mismatched headerComment',
-              node.contentStart,
-            );
-          }
+          check(
+            identical(node.headerComment, expectedHeaderComment),
+            node.contentStart,
+            () => 'scalar at ${node.start} has mismatched headerComment',
+          );
           opaque(node.end, 'scalar');
         case CstAlias():
           final aliasToken = tokensByOffset[node.start];
-          if (aliasToken == null ||
-              aliasToken.kind != YamlTokenKind.alias ||
-              aliasToken.span.end.offset != node.end) {
-            throw CstError(
-              'alias slot [${node.start}, ${node.end}) does not match an alias '
-              'token',
-              node.start,
-            );
-          }
-          if (node.value.span.start.offset >= node.start) {
-            throw CstError(
-              'alias at ${node.start} points to node starting at '
-              '${node.value.span.start.offset}',
-              node.start,
-            );
-          }
-          final aliasName = aliasToken.span.text.substring(1);
+          check(
+            aliasToken != null &&
+                aliasToken.kind == YamlTokenKind.alias &&
+                aliasToken.span.end.offset == node.end,
+            node.start,
+            () => 'alias slot [${node.start}, ${node.end}) does not match an '
+                'alias token',
+          );
+          check(
+            node.value.span.start.offset < node.start,
+            node.start,
+            () => 'alias at ${node.start} points to node starting at '
+                '${node.value.span.start.offset}',
+          );
+          final aliasName = aliasToken!.span.text.substring(1);
           final target = anchors[aliasName];
-          if (target == null || !identical(target, node.value)) {
-            throw CstError(
-              'alias "*$aliasName" at ${node.start} does not match anchored '
-              'node',
-              node.start,
-            );
-          }
+          check(
+            target != null && identical(target, node.value),
+            node.start,
+            () => 'alias "*$aliasName" at ${node.start} does not match '
+                'anchored node',
+          );
           opaque(node.end, 'alias');
         case CstEmpty():
-          if (node.value.span.length != 0) {
-            throw CstError(
-              'empty node at ${node.start} has non-empty YamlScalar span '
-              '[${node.value.span.start.offset}, '
-              '${node.value.span.end.offset})',
-              node.start,
-            );
-          }
+          check(
+            node.value.span.length == 0,
+            node.start,
+            () => 'empty node at ${node.start} has non-empty YamlScalar span '
+                '[${node.value.span.start.offset}, '
+                '${node.value.span.end.offset})',
+          );
           opaque(node.end, 'empty');
         case CstBlockSeq():
-          if (node.entries.isEmpty) {
-            throw CstError('block sequence has no entries', node.start);
-          }
-          final expectedCompact = hasNonTriviaBeforeOnLine(node.contentStart);
-          if (node.isCompact != expectedCompact) {
-            throw CstError(
-              'block sequence at ${node.start} has isCompact=${node.isCompact} '
-              'but expected $expectedCompact',
-              node.contentStart,
-            );
-          }
+          checkBlockHeader(
+              node, node.entries.length, node.isCompact, 'block sequence');
           stack.add(() {
-            final expectedStart = node.value.span.start.offset;
             final actualStart =
                 node.hasProperties ? node.start : node.entries.first.dashStart;
-            if (actualStart != expectedStart) {
-              throw CstError(
-                'block sequence start $actualStart does not match YamlList '
-                'span start $expectedStart',
-                actualStart,
-              );
-            }
-            if (node.entries.length != node.value.nodes.length) {
-              throw CstError(
-                'block sequence has ${node.entries.length} CST entries but '
-                '${node.value.nodes.length} YamlList elements',
-                node.start,
-              );
-            }
-            if (node.entries.first.start != node.contentStart) {
-              throw CstError(
-                'block sequence first entry starts at '
-                '${node.entries.first.start}, expected ${node.contentStart}',
-                node.entries.first.start,
-              );
-            }
+            final expectedStart = node.value.span.start.offset;
+            check(
+              actualStart == expectedStart,
+              actualStart,
+              () => 'block sequence start $actualStart does not match YamlList '
+                  'span start $expectedStart',
+            );
+            check(
+              node.entries.length == node.value.nodes.length,
+              node.start,
+              () => 'block sequence has ${node.entries.length} CST entries but '
+                  '${node.value.nodes.length} YamlList elements',
+            );
+            checkContiguousEntries(
+              node.contentStart,
+              node.entries.length,
+              (i) => node.entries[i].start,
+              (i) => node.entries[i].end,
+              'block sequence',
+            );
             for (var i = 0; i < node.entries.length; i++) {
-              if (i > 0 && node.entries[i].start != node.entries[i - 1].end) {
-                throw CstError(
-                  'block sequence entry $i starts at ${node.entries[i].start}, '
-                  'expected ${node.entries[i - 1].end}',
-                  node.entries[i].start,
-                );
-              }
-              if (!identical(
-                  node.entries[i].value.value, node.value.nodes[i])) {
-                throw CstError(
-                  'block sequence entry $i does not match YamlList element',
-                  node.entries[i].start,
-                );
-              }
+              check(
+                identical(node.entries[i].value.value, node.value.nodes[i]),
+                node.entries[i].start,
+                () => 'block sequence entry $i does not match YamlList element',
+              );
             }
           });
           for (var i = node.entries.length - 1; i >= 0; i--) {
             final entry = node.entries[i];
             final isFirstCompact = i == 0 && node.isCompact;
-            stack.add(() {
-              final expectedEnd = expectedBlockEntryEnd(entry.value);
-              if (entry.end != expectedEnd) {
-                throw CstError(
-                  'block sequence entry ends at ${entry.end}, expected '
-                  '$expectedEnd',
+            stack.add(() => checkBlockEntryEnd(
                   entry.end,
-                );
-              }
-              final expectedSepComment = document.commentInRange(
-                    entry.dashStart + 1,
-                    entry.value.start,
-                  ) !=
-                  null;
-              if (entry.hasSeparatorComment != expectedSepComment) {
-                throw CstError(
-                  'block sequence entry at ${entry.dashStart} has '
-                  'hasSeparatorComment=${entry.hasSeparatorComment}, expected '
-                  '$expectedSepComment',
-                  entry.dashStart,
-                );
-              }
-              whitespaceAndComments(entry.end, 'end of block seq entry');
-            });
+                  entry.value,
+                  alreadyTerminatedLine:
+                      entry.value is CstBlockSeq || entry.value is CstBlockMap,
+                  sepStart: entry.dashStart,
+                  hasSeparatorComment: entry.hasSeparatorComment,
+                  anchor: entry.dashStart,
+                  kind: 'block sequence',
+                ));
             scheduleNode(entry.value);
             stack.add(() {
-              whitespaceAndComments(entry.start, 'block sequence entry');
-              whitespaceAndComments(
-                  entry.lineStart, 'block sequence entry line');
-              if (isFirstCompact) {
-                if (entry.lineStart != entry.start ||
-                    entry.lineStart != entry.dashStart) {
-                  throw CstError(
-                    'compact block sequence first entry lineStart '
-                    '${entry.lineStart} must equal start (${entry.start}) and '
-                    'dashStart (${entry.dashStart})',
-                    entry.lineStart,
-                  );
-                }
-              } else {
-                final expectedLineStart = expectedLineStartOf(entry.dashStart);
-                if (entry.lineStart != expectedLineStart) {
-                  throw CstError(
-                    'block sequence entry lineStart ${entry.lineStart} does '
-                    'not match line start $expectedLineStart',
-                    entry.lineStart,
-                  );
-                }
-                checkHorizontalSpaceOnly(
-                  entry.lineStart,
-                  entry.dashStart,
-                  'block sequence entry indentation',
-                );
-              }
+              checkBlockEntryStart(
+                entry.start,
+                entry.lineStart,
+                entry.dashStart,
+                isFirstCompact: isFirstCompact,
+                kind: 'block sequence',
+              );
               indicator(
                 entry.dashStart,
-                '-',
                 YamlTokenKind.blockEntry,
                 'block sequence entry indicator',
               );
             });
           }
         case CstBlockMap():
-          if (node.entries.isEmpty) {
-            throw CstError('block mapping has no entries', node.start);
-          }
-          final expectedCompact = hasNonTriviaBeforeOnLine(node.contentStart);
-          if (node.isCompact != expectedCompact) {
-            throw CstError(
-              'block mapping at ${node.start} has isCompact=${node.isCompact} '
-              'but expected $expectedCompact',
-              node.contentStart,
-            );
-          }
+          checkBlockHeader(
+              node, node.entries.length, node.isCompact, 'block mapping');
           stack.add(() {
-            final expectedStart = node.value.span.start.offset;
             final actualStart =
                 node.hasProperties ? node.start : node.entries.first.keyStart;
-            if (actualStart != expectedStart) {
-              throw CstError(
-                'block mapping start $actualStart does not match YamlMap span '
-                'start $expectedStart',
-                actualStart,
-              );
-            }
-            if (node.entries.length != node.value.nodes.length) {
-              throw CstError(
-                'block mapping has ${node.entries.length} CST entries but '
-                '${node.value.nodes.length} YamlMap entries',
-                node.start,
-              );
-            }
-            if (node.entries.first.start != node.contentStart) {
-              throw CstError(
-                'block mapping first entry starts at '
-                '${node.entries.first.start}, expected ${node.contentStart}',
-                node.entries.first.start,
-              );
-            }
+            final expectedStart = node.value.span.start.offset;
+            check(
+              actualStart == expectedStart,
+              actualStart,
+              () => 'block mapping start $actualStart does not match YamlMap '
+                  'span start $expectedStart',
+            );
+            check(
+              node.entries.length == node.value.nodes.length,
+              node.start,
+              () => 'block mapping has ${node.entries.length} CST entries but '
+                  '${node.value.nodes.length} YamlMap entries',
+            );
+            checkContiguousEntries(
+              node.contentStart,
+              node.entries.length,
+              (i) => node.entries[i].start,
+              (i) => node.entries[i].end,
+              'block mapping',
+            );
             var i = 0;
             for (final mapEntry in node.value.nodes.entries) {
               final entry = node.entries[i];
-              if (i > 0 && entry.start != node.entries[i - 1].end) {
-                throw CstError(
-                  'block mapping entry $i starts at ${entry.start}, '
-                  'expected ${node.entries[i - 1].end}',
-                  entry.start,
-                );
-              }
-              if (!identical(entry.key.value, mapEntry.key) ||
-                  !identical(entry.value.value, mapEntry.value)) {
-                throw CstError(
-                  'block mapping entry $i does not match YamlMap entry',
-                  entry.start,
-                );
-              }
+              check(
+                identical(entry.key.value, mapEntry.key) &&
+                    identical(entry.value.value, mapEntry.value),
+                entry.start,
+                () => 'block mapping entry $i does not match YamlMap entry',
+              );
               i++;
             }
           });
           for (var i = node.entries.length - 1; i >= 0; i--) {
             final entry = node.entries[i];
             final isFirstCompact = i == 0 && node.isCompact;
-            stack.add(() {
-              final expectedEnd = expectedBlockEntryEnd(entry.value);
-              if (entry.end != expectedEnd) {
-                throw CstError(
-                  'block mapping entry ends at ${entry.end}, expected '
-                  '$expectedEnd',
+            stack.add(() => checkBlockEntryEnd(
                   entry.end,
-                );
-              }
-              final expectedSepComment = entry.colon != null &&
-                  document.commentInRange(
-                        entry.colon! + 1,
-                        entry.value.start,
-                      ) !=
-                      null;
-              if (entry.hasSeparatorComment != expectedSepComment) {
-                throw CstError(
-                  'block mapping entry at ${entry.keyStart} has '
-                  'hasSeparatorComment=${entry.hasSeparatorComment}, expected '
-                  '$expectedSepComment',
-                  entry.keyStart,
-                );
-              }
-              whitespaceAndComments(entry.end, 'end of block map entry');
-            });
+                  entry.value,
+                  alreadyTerminatedLine: entry.value is CstBlockSeq ||
+                      entry.value is CstBlockMap ||
+                      (entry.colon == null &&
+                          (entry.key is CstBlockSeq ||
+                              entry.key is CstBlockMap)),
+                  sepStart: entry.colon,
+                  hasSeparatorComment: entry.hasSeparatorComment,
+                  anchor: entry.keyStart,
+                  kind: 'block mapping',
+                ));
             scheduleNode(entry.value);
             if (entry.colon case final colon?) {
               stack.add(() {
                 if (document.lineStartOf(colon) >
                     document.lineStartOf(entry.key.contentEnd)) {
-                  if (entry.questionMark == null) {
-                    throw CstError(
-                      'multiline block mapping colon at $colon without '
-                      'explicit "?" indicator',
-                      colon,
-                    );
-                  }
+                  check(
+                    entry.questionMark != null,
+                    colon,
+                    () => 'multiline block mapping colon at $colon without '
+                        'explicit "?" indicator',
+                  );
                   final expectedCol = document.columnOf(entry.keyStart);
                   final actualCol = document.columnOf(colon);
-                  if (actualCol != expectedCol) {
-                    throw CstError(
-                      'multiline block mapping colon at $colon is at column '
-                      '$actualCol, expected $expectedCol',
-                      colon,
-                    );
-                  }
-                }
-                indicator(
-                  colon,
-                  ':',
-                  YamlTokenKind.value,
-                  'key/value separator',
-                );
-              });
-            } else {
-              stack.add(() {
-                if (entry.value is! CstEmpty) {
-                  throw CstError(
-                    'block mapping entry without ":" must have a CstEmpty '
-                    'value',
-                    entry.value.start,
+                  check(
+                    actualCol == expectedCol,
+                    colon,
+                    () => 'multiline block mapping colon at $colon is at '
+                        'column $actualCol, expected $expectedCol',
                   );
                 }
+                indicator(colon, YamlTokenKind.value, 'key/value separator');
               });
+            } else {
+              stack.add(
+                  () => checkNoColonEmpty(entry.value, 'block mapping entry'));
             }
             scheduleNode(entry.key);
             stack.add(() {
-              whitespaceAndComments(entry.start, 'block mapping entry');
-              whitespaceAndComments(
-                  entry.lineStart, 'block mapping entry line');
-              if (isFirstCompact) {
-                if (entry.lineStart != entry.start ||
-                    entry.lineStart != entry.keyStart) {
-                  throw CstError(
-                    'compact block mapping first entry lineStart '
-                    '${entry.lineStart} must equal start (${entry.start}) and '
-                    'keyStart (${entry.keyStart})',
-                    entry.lineStart,
-                  );
-                }
-              } else {
-                final expectedLineStart = expectedLineStartOf(entry.keyStart);
-                if (entry.lineStart != expectedLineStart) {
-                  throw CstError(
-                    'block mapping entry lineStart ${entry.lineStart} does '
-                    'not match line start $expectedLineStart',
-                    entry.lineStart,
-                  );
-                }
-                checkHorizontalSpaceOnly(
-                  entry.lineStart,
-                  entry.keyStart,
-                  'block mapping entry indentation',
-                );
-              }
+              checkBlockEntryStart(
+                entry.start,
+                entry.lineStart,
+                entry.keyStart,
+                isFirstCompact: isFirstCompact,
+                kind: 'block mapping',
+              );
               if (entry.questionMark case final questionMark?) {
                 indicator(
                   questionMark,
-                  '?',
                   YamlTokenKind.key,
                   'explicit key indicator',
                 );
@@ -1443,90 +1413,66 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
             });
           }
         case CstFlowPair():
-          if (!allowFlowPair) {
-            throw CstError(
-              'CstFlowPair at ${node.start} is only valid directly inside a '
-              'CstFlowSeq',
-              node.start,
-            );
-          }
-          if (node.hasProperties) {
-            throw CstError(
-              'CstFlowPair at ${node.start} must not carry node properties',
-              node.start,
-            );
-          }
-          if (node.value.nodes.length != 1) {
-            throw CstError(
-              'CstFlowPair at ${node.start} must have 1 YamlMap entry, found '
-              '${node.value.nodes.length}',
-              node.start,
-            );
-          }
+          check(
+            allowFlowPair,
+            node.start,
+            () => 'CstFlowPair at ${node.start} is only valid directly inside '
+                'a CstFlowSeq',
+          );
+          check(
+            !node.hasProperties,
+            node.start,
+            () => 'CstFlowPair at ${node.start} must not carry node properties',
+          );
+          check(
+            node.value.nodes.length == 1,
+            node.start,
+            () => 'CstFlowPair at ${node.start} must have 1 YamlMap entry, '
+                'found ${node.value.nodes.length}',
+          );
           final pairAnchor = node.questionMark ?? node.key.start;
-          if (pairAnchor != node.start) {
-            throw CstError(
-              'CstFlowPair starts at ${node.start}, expected $pairAnchor',
-              node.start,
-            );
-          }
+          check(
+            pairAnchor == node.start,
+            node.start,
+            () => 'CstFlowPair starts at ${node.start}, expected $pairAnchor',
+          );
           final mapEntry = node.value.nodes.entries.single;
-          stack.add(() {
-            if (!identical(node.key.value, mapEntry.key) ||
-                !identical(node.pairValue.value, mapEntry.value)) {
-              throw CstError(
-                'CstFlowPair at ${node.start} does not match YamlMap entry',
+          stack.add(() => check(
+                identical(node.key.value, mapEntry.key) &&
+                    identical(node.pairValue.value, mapEntry.value),
                 node.start,
-              );
-            }
-          });
+                () => 'CstFlowPair at ${node.start} does not match YamlMap '
+                    'entry',
+              ));
           scheduleNode(node.pairValue);
           if (node.colon case final colon?) {
             stack.add(() => indicator(
-                  colon,
-                  ':',
-                  YamlTokenKind.value,
-                  'flow key/value separator',
-                ));
+                colon, YamlTokenKind.value, 'flow key/value separator'));
           } else {
-            stack.add(() {
-              if (node.pairValue is! CstEmpty) {
-                throw CstError(
-                  'CstFlowPair without ":" must have a CstEmpty value',
-                  node.pairValue.start,
-                );
-              }
-            });
+            stack.add(() => checkNoColonEmpty(node.pairValue, 'CstFlowPair'));
           }
           scheduleNode(node.key);
           if (node.questionMark case final questionMark?) {
             stack.add(() => indicator(
-                  questionMark,
-                  '?',
-                  YamlTokenKind.key,
-                  'explicit key indicator',
-                ));
+                questionMark, YamlTokenKind.key, 'explicit key indicator'));
           }
         case CstFlowCollection():
-          if (node.start != node.value.span.start.offset) {
-            throw CstError(
-              'flow collection start ${node.start} does not match YamlNode '
-              'span start ${node.value.span.start.offset}',
-              node.start,
-            );
-          }
+          check(
+            node.start == node.value.span.start.offset,
+            node.start,
+            () => 'flow collection start ${node.start} does not match YamlNode '
+                'span start ${node.value.span.start.offset}',
+          );
           final expectedMultiline = document.lineStartOf(node.closeStart) >
               document.lineStartOf(node.contentStart);
-          if (node.isMultiline != expectedMultiline) {
-            throw CstError(
-              'flow collection at ${node.start} has '
-              'isMultiline=${node.isMultiline}, expected $expectedMultiline',
-              node.contentStart,
-            );
-          }
+          check(
+            node.isMultiline == expectedMultiline,
+            node.contentStart,
+            () => 'flow collection at ${node.start} has '
+                'isMultiline=${node.isMultiline}, expected $expectedMultiline',
+          );
           indicator(
             node.contentStart,
-            node is CstFlowSeq ? '[' : '{',
             node is CstFlowSeq
                 ? YamlTokenKind.flowSequenceStart
                 : YamlTokenKind.flowMappingStart,
@@ -1535,142 +1481,105 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
           stack.add(() {
             indicator(
               node.closeStart,
-              node is CstFlowSeq ? ']' : '}',
               node is CstFlowSeq
                   ? YamlTokenKind.flowSequenceEnd
                   : YamlTokenKind.flowMappingEnd,
               'flow collection closing delimiter',
             );
-            if (node.end != node.value.span.end.offset) {
-              throw CstError(
-                'flow collection end ${node.end} does not match YamlNode span '
-                'end ${node.value.span.end.offset}',
-                node.end,
-              );
-            }
-            if (node.entries.isNotEmpty) {
-              if (node.entries.first.start != node.openEnd) {
-                throw CstError(
-                  'flow collection first entry starts at '
-                  '${node.entries.first.start}, expected ${node.openEnd}',
-                  node.entries.first.start,
-                );
-              }
-              for (var i = 1; i < node.entries.length; i++) {
-                if (node.entries[i].start != node.entries[i - 1].end) {
-                  throw CstError(
-                    'flow collection entry $i starts at '
-                    '${node.entries[i].start}, expected '
-                    '${node.entries[i - 1].end}',
-                    node.entries[i].start,
-                  );
-                }
-              }
-            }
+            check(
+              node.end == node.value.span.end.offset,
+              node.end,
+              () => 'flow collection end ${node.end} does not match YamlNode '
+                  'span end ${node.value.span.end.offset}',
+            );
+            checkContiguousEntries(
+              node.openEnd,
+              node.entries.length,
+              (i) => node.entries[i].start,
+              (i) => node.entries[i].end,
+              'flow collection',
+            );
             if (node is CstFlowSeq) {
-              if (node.entries.length != node.value.nodes.length) {
-                throw CstError(
-                  'flow sequence has ${node.entries.length} CST entries but '
-                  '${node.value.nodes.length} YamlList elements',
-                  node.start,
-                );
-              }
+              check(
+                node.entries.length == node.value.nodes.length,
+                node.start,
+                () => 'flow sequence has ${node.entries.length} CST entries '
+                    'but ${node.value.nodes.length} YamlList elements',
+              );
               for (var i = 0; i < node.entries.length; i++) {
-                if (!identical(
-                    node.entries[i].value.value, node.value.nodes[i])) {
-                  throw CstError(
-                    'flow sequence entry $i does not match YamlList element',
-                    node.entries[i].start,
-                  );
-                }
+                check(
+                  identical(node.entries[i].value.value, node.value.nodes[i]),
+                  node.entries[i].start,
+                  () => 'flow sequence entry $i does not match YamlList '
+                      'element',
+                );
               }
             } else if (node is CstFlowMap) {
-              if (node.entries.length != node.value.nodes.length) {
-                throw CstError(
-                  'flow mapping has ${node.entries.length} CST entries but '
-                  '${node.value.nodes.length} YamlMap entries',
-                  node.start,
-                );
-              }
+              check(
+                node.entries.length == node.value.nodes.length,
+                node.start,
+                () => 'flow mapping has ${node.entries.length} CST entries but '
+                    '${node.value.nodes.length} YamlMap entries',
+              );
               var i = 0;
               for (final mapEntry in node.value.nodes.entries) {
                 final entry = node.entries[i];
-                if (!identical(entry.key!.value, mapEntry.key) ||
-                    !identical(entry.value.value, mapEntry.value)) {
-                  throw CstError(
-                    'flow mapping entry $i does not match YamlMap entry',
-                    entry.start,
-                  );
-                }
+                check(
+                  identical(entry.key!.value, mapEntry.key) &&
+                      identical(entry.value.value, mapEntry.value),
+                  entry.start,
+                  () => 'flow mapping entry $i does not match YamlMap entry',
+                );
                 i++;
               }
             }
           });
           for (var i = node.entries.length - 1; i >= 0; i--) {
             final entry = node.entries[i];
-            if (i < node.entries.length - 1 && entry.comma == null) {
-              throw CstError(
-                'non-final flow entry $i at ${entry.start} is missing a "," '
-                'separator',
-                entry.start,
-              );
-            }
+            check(
+              i == node.entries.length - 1 || entry.comma != null,
+              entry.start,
+              () => 'non-final flow entry $i at ${entry.start} is missing a '
+                  '"," separator',
+            );
             if (node is CstFlowSeq) {
-              if (entry.key != null ||
-                  entry.questionMark != null ||
-                  entry.colon != null) {
-                throw CstError(
-                  'flow sequence entry at ${entry.start} must not have key, '
-                  'questionMark, or colon',
-                  entry.start,
-                );
-              }
+              check(
+                entry.key == null &&
+                    entry.questionMark == null &&
+                    entry.colon == null,
+                entry.start,
+                () => 'flow sequence entry at ${entry.start} must not have '
+                    'key, questionMark, or colon',
+              );
             } else {
-              if (entry.key == null) {
-                throw CstError(
-                  'flow mapping entry at ${entry.start} must have a key',
-                  entry.start,
-                );
-              }
+              check(
+                entry.key != null,
+                entry.start,
+                () => 'flow mapping entry at ${entry.start} must have a key',
+              );
             }
             stack.add(() {
               if (entry.comma case final comma?) {
                 indicator(
-                  comma,
-                  ',',
-                  YamlTokenKind.flowEntry,
-                  'flow entry separator',
-                );
+                    comma, YamlTokenKind.flowEntry, 'flow entry separator');
               }
               final expectedEnd =
                   entry.comma != null ? entry.comma! + 1 : entry.value.end;
-              if (entry.end != expectedEnd) {
-                throw CstError(
-                  'flow entry ends at ${entry.end}, expected $expectedEnd',
-                  entry.end,
-                );
-              }
+              check(
+                entry.end == expectedEnd,
+                entry.end,
+                () => 'flow entry ends at ${entry.end}, expected $expectedEnd',
+              );
               whitespaceAndComments(entry.end, 'end of flow entry');
             });
             scheduleNode(entry.value, allowFlowPair: node is CstFlowSeq);
             if (entry.key case final key?) {
               if (entry.colon case final colon?) {
                 stack.add(() => indicator(
-                      colon,
-                      ':',
-                      YamlTokenKind.value,
-                      'flow key/value separator',
-                    ));
+                    colon, YamlTokenKind.value, 'flow key/value separator'));
               } else {
-                stack.add(() {
-                  if (entry.value is! CstEmpty) {
-                    throw CstError(
-                      'flow mapping entry without ":" must have a CstEmpty '
-                      'value',
-                      entry.value.start,
-                    );
-                  }
-                });
+                stack.add(
+                    () => checkNoColonEmpty(entry.value, 'flow mapping entry'));
               }
               scheduleNode(key);
             }
@@ -1679,7 +1588,6 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
               if (entry.questionMark case final questionMark?) {
                 indicator(
                   questionMark,
-                  '?',
                   YamlTokenKind.key,
                   'explicit key indicator',
                 );
@@ -1695,17 +1603,17 @@ void _checkTiling(CstDocument document, Map<int, YamlToken> tokensByOffset) {
     stack.removeLast()();
   }
 
-  if (cursor != root.end) {
-    throw CstError(
-        'root node ended at ${root.end} but cursor is $cursor', cursor);
-  }
+  check(
+    cursor == root.end,
+    cursor,
+    () => 'root node ended at ${root.end} but cursor is $cursor',
+  );
   checkEdgeRegion(root.end, source.length, suffixKinds, 'document suffix');
-  if (!identical(root.value, document.value)) {
-    throw CstError(
-      'root node value does not match document value',
-      root.start,
-    );
-  }
+  check(
+    identical(root.value, document.value),
+    root.start,
+    () => 'root node value does not match document value',
+  );
 }
 
 /// Renders [text] for an error message, escaping line breaks and truncating.
@@ -1865,7 +1773,7 @@ final class _CstBuilder {
         (value is YamlList && value.style != CollectionStyle.FLOW);
     if (isBlock && !_hasOwnProperties(value)) {
       var lineStart = _lineTable.lineStartOf(position);
-      while (lineStart < position && source.codeUnitAt(lineStart) == 0xFEFF) {
+      if (lineStart < position && source.codeUnitAt(lineStart) == 0xFEFF) {
         lineStart++;
       }
       if (_isSpacesOrTabsRange(lineStart, position)) {
@@ -2177,6 +2085,10 @@ final class _CstBuilder {
 
       final valueNode = _buildBlockChild(child);
 
+      final alreadyTerminatedLine = valueNode is CstBlockSeq ||
+          valueNode is CstBlockMap ||
+          (colon == null && (keyNode is CstBlockSeq || keyNode is CstBlockMap));
+
       entries.add(CstBlockMapEntry(
         start: entryStart,
         lineStart: lineStart,
@@ -2186,9 +2098,7 @@ final class _CstBuilder {
         value: valueNode,
         hasSeparatorComment:
             colon != null && _hasCommentBetween(colon + 1, valueNode.start),
-        end: valueNode is CstBlockSeq || valueNode is CstBlockMap
-            ? valueNode.end
-            : _consumeTrailingLine(),
+        end: alreadyTerminatedLine ? valueNode.end : _consumeTrailingLine(),
       ));
     });
     if (entries.isEmpty) {

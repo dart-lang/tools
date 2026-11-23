@@ -414,15 +414,31 @@ void main() {
     });
 
     test('BOM-prefixed indented root block map keeps exact lineStart', () {
-      const source = '\uFEFF  a: 1\n   b: 2\n';
+      const source = '\uFEFF  a: 1\n';
       final doc = CstDocument.parse(source);
       final root = doc.root as CstBlockMap;
       expect(root.start, 1);
       expect(root.isCompact, isFalse);
-      expect(root.entries[0].lineStart, 1);
-      expect(root.entries[0].keyStart, 3);
-      expect(root.entries[1].lineStart, 8);
-      expect(root.entries[1].keyStart, 11);
+      expect(root.entries.single.lineStart, 1);
+      expect(root.entries.single.keyStart, 3);
+    });
+
+    test(
+        'explicit block-collection key without value preserves next-line '
+        'comments', () {
+      const between = '? - a\n# about b\n? - b\n';
+      final doc = CstDocument.parse(between);
+      final root = doc.root as CstBlockMap;
+      expect(root.entries[0].end, 6);
+      expect(root.entries[1].start, 6);
+      expect(root.entries[1].lineStart, 16);
+      expect(between.substring(6, 16), '# about b\n');
+
+      const trailing = '? - a\n# trailing\n';
+      final trailingDoc = CstDocument.parse(trailing);
+      final trailingRoot = trailingDoc.root as CstBlockMap;
+      expect(trailingRoot.entries.single.end, 6);
+      expect(trailing.substring(trailingRoot.end), '# trailing\n');
     });
   });
 
@@ -824,31 +840,41 @@ void main() {
         'expected key/value separator (":", YamlTokenKind.value)',
       );
 
-      // Indicator at offset of a scalar whose text starts with `[` (not a
-      // flowSequenceStart token).
-      final fakeBracketDoc = CstDocument.parse("'[1]'\n");
-      final realSeqDoc = CstDocument.parse('[1]\n');
-      final realSeq = realSeqDoc.root as CstFlowSeq;
+      // Indicator `-` at offset 0 of plain scalar `-a` (character matches `-`,
+      // but token kind is `YamlTokenKind.scalar`, not `blockEntry`).
+      final plainDashDoc = CstDocument.parse('-a\n');
+      final realSeqDoc = CstDocument.parse('- 1\n');
+      final realSeq = realSeqDoc.root as CstBlockSeq;
       expectCstError(
         () => checkCstTilingForTesting(
-          source: "'[1]'\n",
-          root: CstFlowSeq(
+          source: plainDashDoc.source,
+          root: CstBlockSeq(
             start: 0,
             contentStart: 0,
-            entries: const [],
-            closeStart: 3,
-            isMultiline: false,
+            entries: [
+              CstBlockSeqEntry(
+                start: 0,
+                lineStart: 0,
+                dashStart: 0,
+                value: CstEmpty(start: 1, value: emptyVal.value),
+                end: 3,
+                hasSeparatorComment: false,
+              ),
+            ],
+            isCompact: false,
             value: realSeq.value,
           ),
-          value: fakeBracketDoc.value,
-          tokens: fakeBracketDoc.tokens,
+          value: realSeq.value,
+          tokens: plainDashDoc.tokens,
         ),
-        'flow collection opening delimiter',
+        'expected block sequence entry indicator ("-", '
+        'YamlTokenKind.blockEntry)',
       );
 
       // CstFlowPair at root (only valid directly inside CstFlowSeq).
       final pairDoc = CstDocument.parse('[a: 1]');
-      final pair = (pairDoc.root as CstFlowSeq).entries.single.value;
+      final pair =
+          (pairDoc.root as CstFlowSeq).entries.single.value as CstFlowPair;
       expectCstError(
         () => checkCstTilingForTesting(
           source: 'a: 1',
@@ -856,7 +882,7 @@ void main() {
             start: 0,
             contentStart: 0,
             questionMark: null,
-            key: (pair as CstFlowPair).key,
+            key: pair.key,
             colon: 1,
             pairValue: pair.pairValue,
             value: pair.value,
@@ -911,6 +937,163 @@ void main() {
         'must not carry node properties',
       );
 
+      // CstFlowPair with != 1 YamlMap entry.
+      final twoEntryMapDoc = CstDocument.parse('{a: 1, b: 2}');
+      final twoEntryMap = twoEntryMapDoc.root as CstFlowMap;
+      final pairSeq = pairDoc.root as CstFlowSeq;
+      final pairEntry = pairSeq.entries.single;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: pairDoc.source,
+          root: CstFlowSeq(
+            start: pairSeq.start,
+            contentStart: pairSeq.contentStart,
+            entries: [
+              CstFlowEntry(
+                start: pairEntry.start,
+                questionMark: null,
+                key: null,
+                colon: null,
+                value: CstFlowPair(
+                  start: pair.start,
+                  contentStart: pair.contentStart,
+                  questionMark: pair.questionMark,
+                  key: pair.key,
+                  colon: pair.colon,
+                  pairValue: pair.pairValue,
+                  value: twoEntryMap.value,
+                ),
+                comma: null,
+                end: pairEntry.end,
+              ),
+            ],
+            closeStart: pairSeq.closeStart,
+            isMultiline: false,
+            value: pairSeq.value,
+          ),
+          value: pairDoc.value,
+          tokens: pairDoc.tokens,
+        ),
+        'must have 1 YamlMap entry, found 2',
+      );
+
+      // CstFlowPair start shifted before key/questionMark.
+      final spacedPairDoc = CstDocument.parse('[ a: 1]');
+      final spacedPairSeq = spacedPairDoc.root as CstFlowSeq;
+      final spacedPair = spacedPairSeq.entries.single.value as CstFlowPair;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: spacedPairDoc.source,
+          root: CstFlowSeq(
+            start: spacedPairSeq.start,
+            contentStart: spacedPairSeq.contentStart,
+            entries: [
+              CstFlowEntry(
+                start: spacedPairSeq.entries.single.start,
+                questionMark: null,
+                key: null,
+                colon: null,
+                value: CstFlowPair(
+                  start: 1,
+                  contentStart: 1,
+                  questionMark: null,
+                  key: spacedPair.key,
+                  colon: spacedPair.colon,
+                  pairValue: spacedPair.pairValue,
+                  value: spacedPair.value,
+                ),
+                comma: null,
+                end: spacedPairSeq.entries.single.end,
+              ),
+            ],
+            closeStart: spacedPairSeq.closeStart,
+            isMultiline: false,
+            value: spacedPairSeq.value,
+          ),
+          value: spacedPairDoc.value,
+          tokens: spacedPairDoc.tokens,
+        ),
+        'CstFlowPair starts at 1, expected 2',
+      );
+
+      // CstFlowPair with mismatched key/value YamlNode identity.
+      final pairDoc2 = CstDocument.parse('[a: 1]');
+      final pair2 =
+          (pairDoc2.root as CstFlowSeq).entries.single.value as CstFlowPair;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: pairDoc.source,
+          root: CstFlowSeq(
+            start: pairSeq.start,
+            contentStart: pairSeq.contentStart,
+            entries: [
+              CstFlowEntry(
+                start: pairEntry.start,
+                questionMark: null,
+                key: null,
+                colon: null,
+                value: CstFlowPair(
+                  start: pair.start,
+                  contentStart: pair.contentStart,
+                  questionMark: pair.questionMark,
+                  key: pair2.key,
+                  colon: pair.colon,
+                  pairValue: pair.pairValue,
+                  value: pair.value,
+                ),
+                comma: null,
+                end: pairEntry.end,
+              ),
+            ],
+            closeStart: pairSeq.closeStart,
+            isMultiline: false,
+            value: pairSeq.value,
+          ),
+          value: pairDoc.value,
+          tokens: pairDoc.tokens,
+        ),
+        'does not match YamlMap entry',
+      );
+
+      // CstFlowPair without `:` having a non-CstEmpty value.
+      final noColonPairDoc = CstDocument.parse('[? a]');
+      final noColonPairSeq = noColonPairDoc.root as CstFlowSeq;
+      final noColonPair = noColonPairSeq.entries.single.value as CstFlowPair;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: noColonPairDoc.source,
+          root: CstFlowSeq(
+            start: noColonPairSeq.start,
+            contentStart: noColonPairSeq.contentStart,
+            entries: [
+              CstFlowEntry(
+                start: noColonPairSeq.entries.single.start,
+                questionMark: null,
+                key: null,
+                colon: null,
+                value: CstFlowPair(
+                  start: noColonPair.start,
+                  contentStart: noColonPair.contentStart,
+                  questionMark: noColonPair.questionMark,
+                  key: CstEmpty(start: 3, value: emptyVal.value),
+                  colon: null,
+                  pairValue: noColonPair.key,
+                  value: noColonPair.value,
+                ),
+                comma: null,
+                end: noColonPairSeq.entries.single.end,
+              ),
+            ],
+            closeStart: noColonPairSeq.closeStart,
+            isMultiline: false,
+            value: noColonPairSeq.value,
+          ),
+          value: noColonPairDoc.value,
+          tokens: noColonPairDoc.tokens,
+        ),
+        'CstFlowPair without ":" must have a CstEmpty value',
+      );
+
       // Block mapping entry with colon == null but non-CstEmpty value.
       final noColonDoc = CstDocument.parse('? a\n');
       final noColonRoot = noColonDoc.root as CstBlockMap;
@@ -940,6 +1123,37 @@ void main() {
           tokens: noColonDoc.tokens,
         ),
         'without ":" must have a CstEmpty value',
+      );
+
+      // Multiline block mapping colon without explicit `?` indicator.
+      final explicitDoc = CstDocument.parse('? a\n: 1\n');
+      final explicitRoot = explicitDoc.root as CstBlockMap;
+      final explicitEntry = explicitRoot.entries.single;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: '  a\n: 1\n',
+          root: CstBlockMap(
+            start: 0,
+            contentStart: 0,
+            entries: [
+              CstBlockMapEntry(
+                start: 0,
+                lineStart: 0,
+                questionMark: null,
+                key: explicitEntry.key,
+                colon: explicitEntry.colon,
+                value: explicitEntry.value,
+                end: explicitEntry.end,
+                hasSeparatorComment: false,
+              ),
+            ],
+            isCompact: false,
+            value: explicitRoot.value,
+          ),
+          value: explicitDoc.value,
+          tokens: explicitDoc.tokens.sublist(1),
+        ),
+        'multiline block mapping colon at 4 without explicit "?" indicator',
       );
 
       // Multiline block mapping colon at wrong column (inner key stealing
@@ -994,12 +1208,123 @@ void main() {
       );
     });
 
+    test('rejects duplicate properties, zero-width scalar, and empty blocks',
+        () {
+      // Duplicate anchor in node properties.
+      final anc1 = CstDocument.parse('&a 1\n').tokens.first;
+      final anc2Doc = CstDocument.parse('   &b 1\n');
+      final anc2Scalar = anc2Doc.root as CstScalar;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: '&a &b 1\n',
+          root: CstScalar(
+            start: 0,
+            contentStart: 6,
+            end: 7,
+            value: anc2Scalar.value,
+          ),
+          value: anc2Doc.value,
+          tokens: [anc1, ...anc2Doc.tokens],
+        ),
+        'duplicate anchor token in node properties at 3',
+      );
+
+      // Duplicate tag in node properties.
+      final tag1 = CstDocument.parse('!!str 1\n').tokens.first;
+      final tag2Doc = CstDocument.parse('      !!str 1\n');
+      final tag2Scalar = tag2Doc.root as CstScalar;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: '!!str !!str 1\n',
+          root: CstScalar(
+            start: 0,
+            contentStart: 12,
+            end: 13,
+            value: tag2Scalar.value,
+          ),
+          value: tag2Doc.value,
+          tokens: [tag1, ...tag2Doc.tokens],
+        ),
+        'duplicate tag token in node properties at 6',
+      );
+
+      // Zero-width CstScalar without properties.
+      final emptyValDoc = CstDocument.parse(':\n');
+      final emptyValRoot = emptyValDoc.root as CstBlockMap;
+      final emptyValEntry = emptyValRoot.entries.single;
+      final emptyKeyNode = emptyValEntry.key as CstEmpty;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: emptyValDoc.source,
+          root: CstBlockMap(
+            start: emptyValRoot.start,
+            contentStart: emptyValRoot.contentStart,
+            entries: [
+              CstBlockMapEntry(
+                start: emptyValEntry.start,
+                lineStart: emptyValEntry.lineStart,
+                questionMark: null,
+                key: CstScalar(
+                  start: emptyKeyNode.start,
+                  contentStart: emptyKeyNode.start,
+                  end: emptyKeyNode.start,
+                  value: emptyKeyNode.value,
+                ),
+                colon: emptyValEntry.colon,
+                value: emptyValEntry.value,
+                end: emptyValEntry.end,
+                hasSeparatorComment: false,
+              ),
+            ],
+            isCompact: false,
+            value: emptyValRoot.value,
+          ),
+          value: emptyValDoc.value,
+          tokens: emptyValDoc.tokens,
+        ),
+        'zero-width CstScalar at 0 without properties',
+      );
+
+      // Empty CstBlockSeq and CstBlockMap entries.
+      final seqDoc = CstDocument.parse('- 1\n');
+      final seqRoot = seqDoc.root as CstBlockSeq;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: seqDoc.source,
+          root: CstBlockSeq(
+            start: 0,
+            contentStart: 0,
+            entries: const [],
+            isCompact: false,
+            value: seqRoot.value,
+          ),
+          value: seqDoc.value,
+          tokens: seqDoc.tokens,
+        ),
+        'block sequence has no entries',
+      );
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: emptyValDoc.source,
+          root: CstBlockMap(
+            start: 0,
+            contentStart: 0,
+            entries: const [],
+            isCompact: false,
+            value: emptyValRoot.value,
+          ),
+          value: emptyValDoc.value,
+          tokens: emptyValDoc.tokens,
+        ),
+        'block mapping has no entries',
+      );
+    });
+
     test('rejects wrong isCompact, lineStart, entry.end, and derived flags',
         () {
-      // Wrong isCompact on block map.
+      // Wrong isCompact on block map and block seq.
       final mapDoc = CstDocument.parse('a: 1\n');
       final mapRoot = mapDoc.root as CstBlockMap;
-      final mapEntry = mapRoot.entries.single;
       expectCstError(
         () => checkCstTilingForTesting(
           source: mapDoc.source,
@@ -1016,7 +1341,120 @@ void main() {
         'isCompact=true but expected false',
       );
 
-      // Wrong lineStart on indented block entry (after indentation spaces).
+      final seqDoc = CstDocument.parse('- 1\n');
+      final seqRoot = seqDoc.root as CstBlockSeq;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: seqDoc.source,
+          root: CstBlockSeq(
+            start: seqRoot.start,
+            contentStart: seqRoot.contentStart,
+            entries: seqRoot.entries,
+            isCompact: true,
+            value: seqRoot.value,
+          ),
+          value: seqDoc.value,
+          tokens: seqDoc.tokens,
+        ),
+        'block sequence at 0 has isCompact=true but expected false',
+      );
+
+      // Compact first entry lineStart != anchor (both seq and map).
+      final compactSeqDoc = CstDocument.parse('-  - 1\n');
+      final compactSeqOuter = compactSeqDoc.root as CstBlockSeq;
+      final compactSeqInner =
+          compactSeqOuter.entries.single.value as CstBlockSeq;
+      final compactSeqEntry = compactSeqInner.entries.single;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: compactSeqDoc.source,
+          root: CstBlockSeq(
+            start: compactSeqOuter.start,
+            contentStart: compactSeqOuter.contentStart,
+            entries: [
+              CstBlockSeqEntry(
+                start: 0,
+                lineStart: 0,
+                dashStart: 0,
+                value: CstBlockSeq(
+                  start: 2,
+                  contentStart: 2,
+                  entries: [
+                    CstBlockSeqEntry(
+                      start: 2,
+                      lineStart: 2,
+                      dashStart: compactSeqEntry.dashStart,
+                      value: compactSeqEntry.value,
+                      end: compactSeqEntry.end,
+                      hasSeparatorComment: false,
+                    ),
+                  ],
+                  isCompact: true,
+                  value: compactSeqInner.value,
+                ),
+                end: compactSeqOuter.entries.single.end,
+                hasSeparatorComment: false,
+              ),
+            ],
+            isCompact: false,
+            value: compactSeqOuter.value,
+          ),
+          value: compactSeqDoc.value,
+          tokens: compactSeqDoc.tokens,
+        ),
+        'compact block sequence first entry lineStart 2 must equal start (2) '
+        'and anchor (3)',
+      );
+
+      final compactMapDoc = CstDocument.parse('-  a: 1\n');
+      final compactMapOuter = compactMapDoc.root as CstBlockSeq;
+      final compactMapInner =
+          compactMapOuter.entries.single.value as CstBlockMap;
+      final compactMapEntry = compactMapInner.entries.single;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: compactMapDoc.source,
+          root: CstBlockSeq(
+            start: compactMapOuter.start,
+            contentStart: compactMapOuter.contentStart,
+            entries: [
+              CstBlockSeqEntry(
+                start: 0,
+                lineStart: 0,
+                dashStart: 0,
+                value: CstBlockMap(
+                  start: 2,
+                  contentStart: 2,
+                  entries: [
+                    CstBlockMapEntry(
+                      start: 2,
+                      lineStart: 2,
+                      questionMark: null,
+                      key: compactMapEntry.key,
+                      colon: compactMapEntry.colon,
+                      value: compactMapEntry.value,
+                      end: compactMapEntry.end,
+                      hasSeparatorComment: false,
+                    ),
+                  ],
+                  isCompact: true,
+                  value: compactMapInner.value,
+                ),
+                end: compactMapOuter.entries.single.end,
+                hasSeparatorComment: false,
+              ),
+            ],
+            isCompact: false,
+            value: compactMapOuter.value,
+          ),
+          value: compactMapDoc.value,
+          tokens: compactMapDoc.tokens,
+        ),
+        'compact block mapping first entry lineStart 2 must equal start (2) '
+        'and anchor (3)',
+      );
+
+      // Wrong lineStart on indented block map and block seq entries.
       final indentDoc = CstDocument.parse('  a: 1\n');
       final indentRoot = indentDoc.root as CstBlockMap;
       final indentEntry = indentRoot.entries.single;
@@ -1047,7 +1485,36 @@ void main() {
         'does not match line start 0',
       );
 
-      // Entry stopping before inline comment / newline (`entry.end` too short).
+      final indentSeqDoc = CstDocument.parse('  - 1\n');
+      final indentSeqRoot = indentSeqDoc.root as CstBlockSeq;
+      final indentSeqEntry = indentSeqRoot.entries.single;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: indentSeqDoc.source,
+          root: CstBlockSeq(
+            start: indentSeqRoot.start,
+            contentStart: indentSeqRoot.contentStart,
+            entries: [
+              CstBlockSeqEntry(
+                start: indentSeqEntry.start,
+                lineStart: indentSeqEntry.dashStart,
+                dashStart: indentSeqEntry.dashStart,
+                value: indentSeqEntry.value,
+                end: indentSeqEntry.end,
+                hasSeparatorComment: false,
+              ),
+            ],
+            isCompact: false,
+            value: indentSeqRoot.value,
+          ),
+          value: indentSeqDoc.value,
+          tokens: indentSeqDoc.tokens,
+        ),
+        'block sequence entry lineStart 2 does not match line start 0',
+      );
+
+      // Entry stopping before inline comment / newline (`entry.end` too short)
+      // on both block map and block seq.
       final commentDoc = CstDocument.parse('a: 1 # inline\nb: 2\n');
       final commentRoot = commentDoc.root as CstBlockMap;
       final firstEntry = commentRoot.entries[0];
@@ -1079,7 +1546,81 @@ void main() {
         'ends at ${firstEntry.value.end}, expected ${firstEntry.end}',
       );
 
-      // Wrong hasSeparatorComment flag.
+      final seqCommentDoc = CstDocument.parse('- 1 # inline\n- 2\n');
+      final seqCommentRoot = seqCommentDoc.root as CstBlockSeq;
+      final seqFirstEntry = seqCommentRoot.entries[0];
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: seqCommentDoc.source,
+          root: CstBlockSeq(
+            start: seqCommentRoot.start,
+            contentStart: seqCommentRoot.contentStart,
+            entries: [
+              CstBlockSeqEntry(
+                start: seqFirstEntry.start,
+                lineStart: seqFirstEntry.lineStart,
+                dashStart: seqFirstEntry.dashStart,
+                value: seqFirstEntry.value,
+                end: seqFirstEntry.value.end,
+                hasSeparatorComment: false,
+              ),
+              seqCommentRoot.entries[1],
+            ],
+            isCompact: false,
+            value: seqCommentRoot.value,
+          ),
+          value: seqCommentDoc.value,
+          tokens: seqCommentDoc.tokens,
+        ),
+        'block sequence entry ends at ${seqFirstEntry.value.end}, '
+        'expected ${seqFirstEntry.end}',
+      );
+
+      // Explicit block-collection key without value swallowing next-line
+      // comment (`entry.end` over-consuming past key.end).
+      final explicitKeyCommentDoc =
+          CstDocument.parse('? - a\n# about b\n? - b\n');
+      final explicitKeyCommentRoot = explicitKeyCommentDoc.root as CstBlockMap;
+      final ek0 = explicitKeyCommentRoot.entries[0];
+      final ek1 = explicitKeyCommentRoot.entries[1];
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: explicitKeyCommentDoc.source,
+          root: CstBlockMap(
+            start: explicitKeyCommentRoot.start,
+            contentStart: explicitKeyCommentRoot.contentStart,
+            entries: [
+              CstBlockMapEntry(
+                start: ek0.start,
+                lineStart: ek0.lineStart,
+                questionMark: ek0.questionMark,
+                key: ek0.key,
+                colon: null,
+                value: ek0.value,
+                end: ek1.lineStart,
+                hasSeparatorComment: false,
+              ),
+              CstBlockMapEntry(
+                start: ek1.lineStart,
+                lineStart: ek1.lineStart,
+                questionMark: ek1.questionMark,
+                key: ek1.key,
+                colon: null,
+                value: ek1.value,
+                end: ek1.end,
+                hasSeparatorComment: false,
+              ),
+            ],
+            isCompact: false,
+            value: explicitKeyCommentRoot.value,
+          ),
+          value: explicitKeyCommentDoc.value,
+          tokens: explicitKeyCommentDoc.tokens,
+        ),
+        'block mapping entry ends at ${ek1.lineStart}, expected ${ek0.end}',
+      );
+
+      // Wrong hasSeparatorComment flag on block map and block seq.
       final sepDoc = CstDocument.parse('a: # sep\n  1\n');
       final sepRoot = sepDoc.root as CstBlockMap;
       final sepEntry = sepRoot.entries.single;
@@ -1110,6 +1651,35 @@ void main() {
         'hasSeparatorComment=false, expected true',
       );
 
+      final sepSeqDoc = CstDocument.parse('- # sep\n  1\n');
+      final sepSeqRoot = sepSeqDoc.root as CstBlockSeq;
+      final sepSeqEntry = sepSeqRoot.entries.single;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: sepSeqDoc.source,
+          root: CstBlockSeq(
+            start: sepSeqRoot.start,
+            contentStart: sepSeqRoot.contentStart,
+            entries: [
+              CstBlockSeqEntry(
+                start: sepSeqEntry.start,
+                lineStart: sepSeqEntry.lineStart,
+                dashStart: sepSeqEntry.dashStart,
+                value: sepSeqEntry.value,
+                end: sepSeqEntry.end,
+                hasSeparatorComment: false,
+              ),
+            ],
+            isCompact: false,
+            value: sepSeqRoot.value,
+          ),
+          value: sepSeqDoc.value,
+          tokens: sepSeqDoc.tokens,
+        ),
+        'block sequence entry at 0 has hasSeparatorComment=false, '
+        'expected true',
+      );
+
       // Wrong isMultiline flag on flow collection.
       final flowDoc = CstDocument.parse('[\n  1\n]');
       final flowRoot = flowDoc.root as CstFlowSeq;
@@ -1130,7 +1700,7 @@ void main() {
         'isMultiline=false, expected true',
       );
 
-      // Flow collection start mismatch with YamlNode.span.start.
+      // Flow collection start and end mismatch with YamlNode.span.
       final plainFlowDoc = CstDocument.parse('[1]');
       final plainFlowRoot = plainFlowDoc.root as CstFlowSeq;
       final shiftedFlowDoc = CstDocument.parse('  [1]');
@@ -1152,9 +1722,26 @@ void main() {
         'flow collection start 0 does not match YamlNode span start 2',
       );
 
-      // Non-final flow entry missing a `,` separator.
       final twoFlowDoc = CstDocument.parse('[1, 2]');
       final twoFlowRoot = twoFlowDoc.root as CstFlowSeq;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: plainFlowDoc.source,
+          root: CstFlowSeq(
+            start: plainFlowRoot.start,
+            contentStart: plainFlowRoot.contentStart,
+            entries: plainFlowRoot.entries,
+            closeStart: plainFlowRoot.closeStart,
+            isMultiline: false,
+            value: twoFlowRoot.value,
+          ),
+          value: twoFlowRoot.value,
+          tokens: plainFlowDoc.tokens,
+        ),
+        'flow collection end 3 does not match YamlNode span end 6',
+      );
+
+      // Non-final flow entry missing a `,` separator.
       final firstFlowEntry = twoFlowRoot.entries[0];
       expectCstError(
         () => checkCstTilingForTesting(
@@ -1184,7 +1771,194 @@ void main() {
         'missing a "," separator',
       );
 
-      // Non-contiguous block entries (comment line left between entries).
+      // Flow entry end mismatch, shape errors, and contiguity.
+      final trailingSpaceFlowDoc = CstDocument.parse('["1" ]');
+      final trailingSpaceFlowRoot = trailingSpaceFlowDoc.root as CstFlowSeq;
+      final tsEntry = trailingSpaceFlowRoot.entries.single;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: trailingSpaceFlowDoc.source,
+          root: CstFlowSeq(
+            start: trailingSpaceFlowRoot.start,
+            contentStart: trailingSpaceFlowRoot.contentStart,
+            entries: [
+              CstFlowEntry(
+                start: tsEntry.start,
+                questionMark: null,
+                key: null,
+                colon: null,
+                value: tsEntry.value,
+                comma: null,
+                end: 5,
+              ),
+            ],
+            closeStart: trailingSpaceFlowRoot.closeStart,
+            isMultiline: false,
+            value: trailingSpaceFlowRoot.value,
+          ),
+          value: trailingSpaceFlowDoc.value,
+          tokens: trailingSpaceFlowDoc.tokens,
+        ),
+        'flow entry ends at 5, expected 4',
+      );
+
+      // CstFlowSeq entry carrying a key.
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: plainFlowDoc.source,
+          root: CstFlowSeq(
+            start: plainFlowRoot.start,
+            contentStart: plainFlowRoot.contentStart,
+            entries: [
+              CstFlowEntry(
+                start: plainFlowRoot.entries.single.start,
+                questionMark: null,
+                key: plainFlowRoot.entries.single.value,
+                colon: null,
+                value: plainFlowRoot.entries.single.value,
+                comma: null,
+                end: plainFlowRoot.entries.single.end,
+              ),
+            ],
+            closeStart: plainFlowRoot.closeStart,
+            isMultiline: false,
+            value: plainFlowRoot.value,
+          ),
+          value: plainFlowDoc.value,
+          tokens: plainFlowDoc.tokens,
+        ),
+        'flow sequence entry at 1 must not have key, questionMark, or colon',
+      );
+
+      // CstFlowMap entry missing a key, and entry without `:` with non-empty
+      // value.
+      final flowMapDoc = CstDocument.parse('{a: 1}');
+      final flowMapRoot = flowMapDoc.root as CstFlowMap;
+      final fmEntry = flowMapRoot.entries.single;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: flowMapDoc.source,
+          root: CstFlowMap(
+            start: flowMapRoot.start,
+            contentStart: flowMapRoot.contentStart,
+            entries: [
+              CstFlowEntry(
+                start: fmEntry.start,
+                questionMark: null,
+                key: null,
+                colon: null,
+                value: fmEntry.value,
+                comma: null,
+                end: fmEntry.end,
+              ),
+            ],
+            closeStart: flowMapRoot.closeStart,
+            isMultiline: false,
+            value: flowMapRoot.value,
+          ),
+          value: flowMapDoc.value,
+          tokens: flowMapDoc.tokens,
+        ),
+        'flow mapping entry at 1 must have a key',
+      );
+
+      final flowNoColonDoc = CstDocument.parse('{? a}');
+      final flowNoColonRoot = flowNoColonDoc.root as CstFlowMap;
+      final fncEntry = flowNoColonRoot.entries.single;
+      final emptyScalar = (CstDocument.parse('k:\n').root as CstBlockMap)
+          .entries
+          .single
+          .value as CstEmpty;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: flowNoColonDoc.source,
+          root: CstFlowMap(
+            start: flowNoColonRoot.start,
+            contentStart: flowNoColonRoot.contentStart,
+            entries: [
+              CstFlowEntry(
+                start: fncEntry.start,
+                questionMark: fncEntry.questionMark,
+                key: CstEmpty(start: 3, value: emptyScalar.value),
+                colon: null,
+                value: fncEntry.key!,
+                comma: null,
+                end: fncEntry.key!.end,
+              ),
+            ],
+            closeStart: flowNoColonRoot.closeStart,
+            isMultiline: false,
+            value: flowNoColonRoot.value,
+          ),
+          value: flowNoColonDoc.value,
+          tokens: flowNoColonDoc.tokens,
+        ),
+        'flow mapping entry without ":" must have a CstEmpty value',
+      );
+
+      // Flow collection contiguity: first entry != openEnd and gap between
+      // entries.
+      final leadSpaceFlowDoc = CstDocument.parse('[ 1]');
+      final leadSpaceFlowRoot = leadSpaceFlowDoc.root as CstFlowSeq;
+      final lsEntry = leadSpaceFlowRoot.entries.single;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: leadSpaceFlowDoc.source,
+          root: CstFlowSeq(
+            start: leadSpaceFlowRoot.start,
+            contentStart: leadSpaceFlowRoot.contentStart,
+            entries: [
+              CstFlowEntry(
+                start: 2,
+                questionMark: null,
+                key: null,
+                colon: null,
+                value: lsEntry.value,
+                comma: null,
+                end: lsEntry.end,
+              ),
+            ],
+            closeStart: leadSpaceFlowRoot.closeStart,
+            isMultiline: false,
+            value: leadSpaceFlowRoot.value,
+          ),
+          value: leadSpaceFlowDoc.value,
+          tokens: leadSpaceFlowDoc.tokens,
+        ),
+        'flow collection first entry starts at 2, expected 1',
+      );
+
+      final secondFlowEntry = twoFlowRoot.entries[1];
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: twoFlowDoc.source,
+          root: CstFlowSeq(
+            start: twoFlowRoot.start,
+            contentStart: twoFlowRoot.contentStart,
+            entries: [
+              twoFlowRoot.entries[0],
+              CstFlowEntry(
+                start: 4,
+                questionMark: null,
+                key: null,
+                colon: null,
+                value: secondFlowEntry.value,
+                comma: null,
+                end: secondFlowEntry.end,
+              ),
+            ],
+            closeStart: twoFlowRoot.closeStart,
+            isMultiline: false,
+            value: twoFlowRoot.value,
+          ),
+          value: twoFlowDoc.value,
+          tokens: twoFlowDoc.tokens,
+        ),
+        'flow collection entry 1 starts at 4, expected 3',
+      );
+
+      // Non-contiguous block entries (comment line left between entries) on
+      // both block map and block seq, plus first entry != contentStart.
       final gapDoc = CstDocument.parse('a: 1\n# gap\nb: 2\n');
       final gapRoot = gapDoc.root as CstBlockMap;
       final gapSecond = gapRoot.entries[1];
@@ -1216,12 +1990,276 @@ void main() {
         'starts at ${gapSecond.lineStart}, expected ${gapRoot.entries[0].end}',
       );
 
+      final seqGapDoc = CstDocument.parse('- 1\n# gap\n- 2\n');
+      final seqGapRoot = seqGapDoc.root as CstBlockSeq;
+      final seqGapSecond = seqGapRoot.entries[1];
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: seqGapDoc.source,
+          root: CstBlockSeq(
+            start: seqGapRoot.start,
+            contentStart: seqGapRoot.contentStart,
+            entries: [
+              seqGapRoot.entries[0],
+              CstBlockSeqEntry(
+                start: seqGapSecond.lineStart,
+                lineStart: seqGapSecond.lineStart,
+                dashStart: seqGapSecond.dashStart,
+                value: seqGapSecond.value,
+                end: seqGapSecond.end,
+                hasSeparatorComment: false,
+              ),
+            ],
+            isCompact: false,
+            value: seqGapRoot.value,
+          ),
+          value: seqGapDoc.value,
+          tokens: seqGapDoc.tokens,
+        ),
+        'block sequence entry 1 starts at ${seqGapSecond.lineStart}, '
+        'expected ${seqGapRoot.entries[0].end}',
+      );
+
+      final leadingCommentMapDoc = CstDocument.parse('# c\na: 1\n');
+      final lcMapRoot = leadingCommentMapDoc.root as CstBlockMap;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: leadingCommentMapDoc.source,
+          root: CstBlockMap(
+            start: 0,
+            contentStart: 0,
+            entries: lcMapRoot.entries,
+            isCompact: false,
+            value: lcMapRoot.value,
+          ),
+          value: leadingCommentMapDoc.value,
+          tokens: leadingCommentMapDoc.tokens,
+        ),
+        'block mapping first entry starts at 4, expected 0',
+      );
+
+      final leadingCommentSeqDoc = CstDocument.parse('# c\n- 1\n');
+      final lcSeqRoot = leadingCommentSeqDoc.root as CstBlockSeq;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: leadingCommentSeqDoc.source,
+          root: CstBlockSeq(
+            start: 0,
+            contentStart: 0,
+            entries: lcSeqRoot.entries,
+            isCompact: false,
+            value: lcSeqRoot.value,
+          ),
+          value: leadingCommentSeqDoc.value,
+          tokens: leadingCommentSeqDoc.tokens,
+        ),
+        'block sequence first entry starts at 4, expected 0',
+      );
+    });
+
+    test('rejects collection span-start, entry count, and identity mismatches',
+        () {
+      // Block seq & map span-start mismatch against YamlNode.span.start.
+      final seqDoc = CstDocument.parse('- 1\n');
+      final seqRoot = seqDoc.root as CstBlockSeq;
+      final indentedSeqDoc = CstDocument.parse('  - 1\n');
+      final indentedSeqRoot = indentedSeqDoc.root as CstBlockSeq;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: seqDoc.source,
+          root: CstBlockSeq(
+            start: seqRoot.start,
+            contentStart: seqRoot.contentStart,
+            entries: seqRoot.entries,
+            isCompact: false,
+            value: indentedSeqRoot.value,
+          ),
+          value: indentedSeqRoot.value,
+          tokens: seqDoc.tokens,
+        ),
+        'block sequence start 0 does not match YamlList span start 2',
+      );
+
+      final mapDoc = CstDocument.parse('a: 1\n');
+      final mapRoot = mapDoc.root as CstBlockMap;
+      final indentedMapDoc = CstDocument.parse('  a: 1\n');
+      final indentedMapRoot = indentedMapDoc.root as CstBlockMap;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: mapDoc.source,
+          root: CstBlockMap(
+            start: mapRoot.start,
+            contentStart: mapRoot.contentStart,
+            entries: mapRoot.entries,
+            isCompact: false,
+            value: indentedMapRoot.value,
+          ),
+          value: indentedMapRoot.value,
+          tokens: mapDoc.tokens,
+        ),
+        'block mapping start 0 does not match YamlMap span start 2',
+      );
+
+      // Entry count mismatches (block seq, block map, flow seq, flow map).
+      final twoSeqDoc = CstDocument.parse('- 1\n- 2\n');
+      final twoSeqRoot = twoSeqDoc.root as CstBlockSeq;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: seqDoc.source,
+          root: CstBlockSeq(
+            start: seqRoot.start,
+            contentStart: seqRoot.contentStart,
+            entries: seqRoot.entries,
+            isCompact: false,
+            value: twoSeqRoot.value,
+          ),
+          value: twoSeqRoot.value,
+          tokens: seqDoc.tokens,
+        ),
+        'block sequence has 1 CST entries but 2 YamlList elements',
+      );
+
+      final twoMapDoc = CstDocument.parse('a: 1\nb: 2\n');
+      final twoMapRoot = twoMapDoc.root as CstBlockMap;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: mapDoc.source,
+          root: CstBlockMap(
+            start: mapRoot.start,
+            contentStart: mapRoot.contentStart,
+            entries: mapRoot.entries,
+            isCompact: false,
+            value: twoMapRoot.value,
+          ),
+          value: twoMapRoot.value,
+          tokens: mapDoc.tokens,
+        ),
+        'block mapping has 1 CST entries but 2 YamlMap entries',
+      );
+
+      final paddedFlowSeqDoc = CstDocument.parse('[1   ]');
+      final paddedFlowSeqRoot = paddedFlowSeqDoc.root as CstFlowSeq;
+      final twoFlowSeqDoc = CstDocument.parse('[1, 2]');
+      final twoFlowSeqRoot = twoFlowSeqDoc.root as CstFlowSeq;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: paddedFlowSeqDoc.source,
+          root: CstFlowSeq(
+            start: paddedFlowSeqRoot.start,
+            contentStart: paddedFlowSeqRoot.contentStart,
+            entries: paddedFlowSeqRoot.entries,
+            closeStart: paddedFlowSeqRoot.closeStart,
+            isMultiline: false,
+            value: twoFlowSeqRoot.value,
+          ),
+          value: twoFlowSeqRoot.value,
+          tokens: paddedFlowSeqDoc.tokens,
+        ),
+        'flow sequence has 1 CST entries but 2 YamlList elements',
+      );
+
+      final paddedFlowMapDoc = CstDocument.parse('{a: 1      }');
+      final paddedFlowMapRoot = paddedFlowMapDoc.root as CstFlowMap;
+      final twoFlowMapDoc = CstDocument.parse('{a: 1, b: 2}');
+      final twoFlowMapRoot = twoFlowMapDoc.root as CstFlowMap;
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: paddedFlowMapDoc.source,
+          root: CstFlowMap(
+            start: paddedFlowMapRoot.start,
+            contentStart: paddedFlowMapRoot.contentStart,
+            entries: paddedFlowMapRoot.entries,
+            closeStart: paddedFlowMapRoot.closeStart,
+            isMultiline: false,
+            value: twoFlowMapRoot.value,
+          ),
+          value: twoFlowMapRoot.value,
+          tokens: paddedFlowMapDoc.tokens,
+        ),
+        'flow mapping has 1 CST entries but 2 YamlMap entries',
+      );
+
+      // Element/entry identity mismatches (same span, distinct YamlNode).
+      final seqDocB = CstDocument.parse('- 1\n');
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: seqDoc.source,
+          root: CstBlockSeq(
+            start: seqRoot.start,
+            contentStart: seqRoot.contentStart,
+            entries: seqRoot.entries,
+            isCompact: false,
+            value: (seqDocB.root as CstBlockSeq).value,
+          ),
+          value: seqDocB.value,
+          tokens: seqDoc.tokens,
+        ),
+        'block sequence entry 0 does not match YamlList element',
+      );
+
+      final mapDocB = CstDocument.parse('a: 1\n');
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: mapDoc.source,
+          root: CstBlockMap(
+            start: mapRoot.start,
+            contentStart: mapRoot.contentStart,
+            entries: mapRoot.entries,
+            isCompact: false,
+            value: (mapDocB.root as CstBlockMap).value,
+          ),
+          value: mapDocB.value,
+          tokens: mapDoc.tokens,
+        ),
+        'block mapping entry 0 does not match YamlMap entry',
+      );
+
+      final flowSeqA = CstDocument.parse('[1]');
+      final flowSeqARoot = flowSeqA.root as CstFlowSeq;
+      final flowSeqB = CstDocument.parse('[1]');
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: flowSeqA.source,
+          root: CstFlowSeq(
+            start: flowSeqARoot.start,
+            contentStart: flowSeqARoot.contentStart,
+            entries: flowSeqARoot.entries,
+            closeStart: flowSeqARoot.closeStart,
+            isMultiline: false,
+            value: (flowSeqB.root as CstFlowSeq).value,
+          ),
+          value: flowSeqB.value,
+          tokens: flowSeqA.tokens,
+        ),
+        'flow sequence entry 0 does not match YamlList element',
+      );
+
+      final flowMapA = CstDocument.parse('{a: 1}');
+      final flowMapARoot = flowMapA.root as CstFlowMap;
+      final flowMapB = CstDocument.parse('{a: 1}');
+      expectCstError(
+        () => checkCstTilingForTesting(
+          source: flowMapA.source,
+          root: CstFlowMap(
+            start: flowMapARoot.start,
+            contentStart: flowMapARoot.contentStart,
+            entries: flowMapARoot.entries,
+            closeStart: flowMapARoot.closeStart,
+            isMultiline: false,
+            value: (flowMapB.root as CstFlowMap).value,
+          ),
+          value: flowMapB.value,
+          tokens: flowMapA.tokens,
+        ),
+        'flow mapping entry 0 does not match YamlMap entry',
+      );
+
       // Mismatched root value identity.
       expectCstError(
         () => checkCstTilingForTesting(
           source: mapDoc.source,
           root: mapRoot,
-          value: mapEntry.value.value,
+          value: mapRoot.entries.single.value.value,
           tokens: mapDoc.tokens,
         ),
         'root node value does not match document value',
