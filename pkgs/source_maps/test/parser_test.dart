@@ -401,7 +401,7 @@ void main() {
     expect((mapping.extensions['x_bar'] as List).first, equals(3));
   });
 
-  group('ECMA-426 scopes, ranges, and ignoreList', () {
+  group('ECMA-426 ignoreList and unparsed top-level fields', () {
     Map<String, dynamic> buildEcma426WasmMap() => <String, dynamic>{
           'version': 3,
           'file': 'out.wasm',
@@ -412,26 +412,29 @@ void main() {
           'ignoreList': [0],
           'scopes': ['BAAA,CAAE', null],
           'ranges': ['EAAA,IAAC,FAAK'],
+          'rangeMappings': 'AAAA',
+          'debugId': '85314830-023f-4cf1-a267-535f4e37bb17',
           'x_org_dartlang_dart2js': {
             'minified_names': {'global': 'Class1,2', 'instance': ''},
           },
         };
 
     test(
-        'preserves scopes, ranges, ignoreList, and x_ extensions on round-trip',
-        () {
+        'preserves ignoreList, unparsed fields, and x_ extensions '
+        'on round-trip', () {
       var inputMap = buildEcma426WasmMap();
       var mapping = parse(jsonEncode(inputMap)) as SingleMapping;
 
       expect(mapping.ignoreList, equals([0]));
-      expect(mapping.scopes, equals(['BAAA,CAAE', null]));
-      expect(mapping.ranges, equals(['EAAA,IAAC,FAAK']));
       expect(
         mapping.extensions['x_org_dartlang_dart2js'],
         equals({
           'minified_names': {'global': 'Class1,2', 'instance': ''},
         }),
       );
+      expect(mapping.extensions.containsKey('scopes'), isFalse);
+      expect(mapping.extensions.containsKey('ranges'), isFalse);
+      expect(mapping.extensions.containsKey('debugId'), isFalse);
       expect(mapping.toJson(), equals(inputMap));
     });
 
@@ -451,6 +454,9 @@ void main() {
       expect(encoded['ignoreList'], equals([0]));
       expect(encoded['scopes'], equals(['BAAA,CAAE', null]));
       expect(encoded['ranges'], equals(['EAAA,IAAC,FAAK']));
+      expect(encoded['rangeMappings'], equals('AAAA'));
+      expect(
+          encoded['debugId'], equals('85314830-023f-4cf1-a267-535f4e37bb17'));
       expect(
         encoded['x_org_dartlang_dart2js'],
         equals(inputMap['x_org_dartlang_dart2js']),
@@ -469,11 +475,42 @@ void main() {
       expect(bundle.toJson(), equals([map1, map2]));
     });
 
-    test('omits scopes, ranges, and ignoreList when null', () {
+    test('preserves empty lists on round-trip', () {
+      var emptyListsMap = <String, dynamic>{
+        'version': 3,
+        'sourceRoot': '',
+        'sources': ['input.dart'],
+        'names': <String>[],
+        'mappings': 'AAAA',
+        'file': 'output.dart',
+        'ignoreList': <int>[],
+        'scopes': <Object?>[],
+        'ranges': <String>[],
+      };
+      var mapping = parse(jsonEncode(emptyListsMap)) as SingleMapping;
+      expect(mapping.ignoreList, isEmpty);
+      expect(mapping.toJson(), equals(emptyListsMap));
+    });
+
+    test('preserves string-typed legacy scopes and ranges without throwing',
+        () {
+      var legacyScopesMap = <String, dynamic>{
+        'version': 3,
+        'sourceRoot': '',
+        'sources': ['input.dart'],
+        'names': ['fn'],
+        'mappings': 'AAAAA',
+        'file': 'output.dart',
+        'scopes': 'BAAA,CAAE',
+        'ranges': 'EAAA,FAAK',
+      };
+      var mapping = parse(jsonEncode(legacyScopesMap)) as SingleMapping;
+      expect(mapping.toJson(), equals(legacyScopesMap));
+    });
+
+    test('omits ignoreList and unparsed fields when absent or cleared', () {
       var fromJsonMap = parseJson(expectedMap) as SingleMapping;
       expect(fromJsonMap.ignoreList, isNull);
-      expect(fromJsonMap.scopes, isNull);
-      expect(fromJsonMap.ranges, isNull);
       expect(fromJsonMap.toJson().containsKey('ignoreList'), isFalse);
       expect(fromJsonMap.toJson().containsKey('scopes'), isFalse);
       expect(fromJsonMap.toJson().containsKey('ranges'), isFalse);
@@ -483,9 +520,9 @@ void main() {
         'output.dart',
       );
       expect(fromEntriesMap.ignoreList, isNull);
-      expect(fromEntriesMap.scopes, isNull);
-      expect(fromEntriesMap.ranges, isNull);
+      expect(fromEntriesMap.toJson().containsKey('ignoreList'), isFalse);
       expect(fromEntriesMap.toJson().containsKey('scopes'), isFalse);
+      expect(fromEntriesMap.toJson().containsKey('ranges'), isFalse);
     });
   });
 

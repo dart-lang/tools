@@ -1,6 +1,9 @@
 ## 0.10.15-wip
 
-* Preserve ECMA-426 `scopes`, `ranges`, and `ignoreList` top-level fields in
+* Add `SingleMapping.ignoreList` (`List<int>?`) for the ECMA-426 `"ignoreList"`
+  field.
+* Preserve unrecognized top-level JSON fields (such as ECMA-426 Scopes
+  `"scopes"`, `"ranges"`, `"rangeMappings"`, and `"debugId"`) across
   `SingleMapping.fromJson` and `SingleMapping.toJson`.
 
 ## 0.10.14
