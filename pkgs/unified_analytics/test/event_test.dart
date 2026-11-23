@@ -1239,7 +1239,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 36;
+    final eventsAccountedForInTests = 37;
     expect(
       eventsAccountedForInTests,
       constructorNames.length,
