@@ -3284,6 +3284,16 @@
               },
               "parameters": [
                 {
+                  "name": "allowNonPublicTypes",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true,
+                  "defaultValue": "false"
+                },
+                {
                   "name": "includeImplicitNonPublicMembers",
                   "type": {
                     "kind": "interface",
@@ -3308,6 +3318,16 @@
             }
           ],
           "methods": [
+            {
+              "name": "allowNonPublicTypes",
+              "locationUri": "package:api_summary/src/api_summary_customizer.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
+              }
+            },
             {
               "name": "includeImplicitNonPublicMembers",
               "locationUri": "package:api_summary/src/api_summary_customizer.dart",

@@ -6,7 +6,7 @@ import 'dart:convert';
 import 'dart:ffi' as ffi;
 import 'dart:typed_data';
 
-import 'package:boring/bindings.dart' as ssl;
+import 'package:boring/boring.dart' as ssl;
 
 void main() {
   final digest = ssl.BoringArena.using((arena) {

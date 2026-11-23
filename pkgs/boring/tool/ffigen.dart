@@ -52,6 +52,8 @@ const _vaListFunctions = {
   'OPENSSL_vasprintf',
 };
 
+const _ffiImport = LibraryImport('ffi', 'dart:ffi');
+
 Future<void> main() async {
   final packageRoot = Platform.script.resolve('../');
   final includeDir = packageRoot.resolve('third_party/boringssl/src/include');
@@ -97,6 +99,12 @@ Future<void> main() async {
         '-U__PRAGMA_REDEFINE_EXTNAME',
       ],
     ),
+    // ffigen runs on a 64-bit host, where BoringSSL's BN_ULONG is uint64_t,
+    // but it's uint32_t on 32-bit targets (see openssl/base.h). Map it to the
+    // pointer-sized UintPtr, which matches both.
+    importType: (declaration) => declaration.originalName == 'BN_ULONG'
+        ? ImportedType(_ffiImport, 'UintPtr', 'int', 'BN_ULONG')
+        : null,
     visitors: [
       Visitor(
         func: (node) {

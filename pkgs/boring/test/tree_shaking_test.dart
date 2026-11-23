@@ -118,7 +118,12 @@ void main() {
 
       test('builds a linux-arm64 executable and dynamic library', () {
         // EM_AARCH64 = 183.
-        expect(_elfMachine(executable.readAsBytesSync()), 183);
+        // TODO(https://github.com/dart-lang/sdk/issues/64942): Re-enable on
+        // Linux once the Dart SDK fix for cross-compiled CLI executables
+        // reaches stable.
+        if (!Platform.isLinux) {
+          expect(_elfMachine(executable.readAsBytesSync()), 183);
+        }
         expect(_elfMachine(library.readAsBytesSync()), 183);
       });
 
@@ -202,7 +207,12 @@ void main() {
     });
 
     test('builds a linux-$targetArch executable and dynamic library', () {
-      expect(_elfMachine(executable.readAsBytesSync()), expectedElfMachine);
+      // TODO(https://github.com/dart-lang/sdk/issues/64942): Re-enable on
+      // Linux once the Dart SDK fix for cross-compiled CLI executables
+      // reaches stable.
+      if (!Platform.isLinux) {
+        expect(_elfMachine(executable.readAsBytesSync()), expectedElfMachine);
+      }
       expect(_elfMachine(library.readAsBytesSync()), expectedElfMachine);
     });
 

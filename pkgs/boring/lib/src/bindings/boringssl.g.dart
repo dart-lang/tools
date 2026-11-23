@@ -4106,7 +4106,7 @@ external int BN_MONT_CTX_set(
 /// BN_abs_is_word returns one if the absolute value of `bn` equals `w` and zero
 /// otherwise.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_abs_is_word',
 )
 external int BN_abs_is_word(
@@ -4132,7 +4132,7 @@ external int BN_add(
 
 /// BN_add_word adds `w` to `a`. It returns one on success and zero otherwise.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_add_word',
 )
 external int BN_add_word(
@@ -4339,7 +4339,7 @@ external int BN_cmp(
 /// BN_cmp_word is like `BN_cmp` except it takes its second argument as a
 /// `BN_ULONG` instead of a `BIGNUM`.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_cmp_word',
 )
 external int BN_cmp_word(
@@ -4419,7 +4419,7 @@ external int BN_div(
 /// BN_div_word sets `numerator` = `numerator`/`divisor` and returns the
 /// remainder or (BN_ULONG)-1 on error.
 @meta.RecordUse()
-@ffi.Native<BN_ULONG Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.UintPtr Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_div_word',
 )
 external int BN_div_word(
@@ -4664,7 +4664,7 @@ external int BN_get_u64(
 /// too large to be represented as a single word, the maximum possible value
 /// will be returned.
 @meta.RecordUse()
-@ffi.Native<BN_ULONG Function(ffi.Pointer<BIGNUM>)>(
+@ffi.Native<ffi.UintPtr Function(ffi.Pointer<BIGNUM>)>(
   symbol: 'bssl_dart_BN_get_word',
 )
 external int BN_get_word(
@@ -4793,7 +4793,7 @@ external int BN_is_prime_fasttest_ex(
 
 /// BN_is_word returns one if `bn` is exactly `w` and zero otherwise.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_is_word',
 )
 external int BN_is_word(
@@ -5030,7 +5030,7 @@ external int BN_mod_exp_mont_consttime(
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<BIGNUM>,
-    BN_ULONG,
+    ffi.UintPtr,
     ffi.Pointer<BIGNUM>,
     ffi.Pointer<BIGNUM>,
     ffi.Pointer<BN_CTX>,
@@ -5339,7 +5339,7 @@ external int BN_mod_sub_quick(
 
 /// BN_mod_word returns `a` mod `w` or (BN_ULONG)-1 on error.
 @meta.RecordUse()
-@ffi.Native<BN_ULONG Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.UintPtr Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_mod_word',
 )
 external int BN_mod_word(
@@ -5388,7 +5388,7 @@ external int BN_mul(
 /// BN_mul_word sets `bn` = `bn` * `w`. It returns one on success or zero on
 /// allocation failure.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_mul_word',
 )
 external int BN_mul_word(
@@ -5443,7 +5443,7 @@ external int BN_num_bits(
 );
 
 @meta.RecordUse()
-@ffi.Native<ffi.UnsignedInt Function(BN_ULONG)>(
+@ffi.Native<ffi.UnsignedInt Function(ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_num_bits_word',
 )
 external int BN_num_bits_word(
@@ -5599,7 +5599,7 @@ external int BN_rand_range(
 /// otherwise.
 @meta.RecordUse()
 @ffi.Native<
-  ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG, ffi.Pointer<BIGNUM>)
+  ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr, ffi.Pointer<BIGNUM>)
 >(symbol: 'bssl_dart_BN_rand_range_ex')
 external int BN_rand_range_ex(
   ffi.Pointer<BIGNUM> r,
@@ -5671,7 +5671,7 @@ external int BN_set_u64(
 /// BN_set_word sets `bn` to `value`. It returns one on success or zero on
 /// allocation failure.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_set_word',
 )
 external int BN_set_word(
@@ -5733,7 +5733,7 @@ external int BN_sub(
 /// BN_sub_word subtracts `w` from `a`. It returns one on success and zero on
 /// allocation failure.
 @meta.RecordUse()
-@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, BN_ULONG)>(
+@ffi.Native<ffi.Int Function(ffi.Pointer<BIGNUM>, ffi.UintPtr)>(
   symbol: 'bssl_dart_BN_sub_word',
 )
 external int BN_sub_word(
@@ -9154,7 +9154,7 @@ external int ECDH_compute_key(
 
 /// ECDH_compute_key_fips calculates the shared key between `pub_key` and
 /// `priv_key` and hashes it with the appropriate SHA function for `out_len`. The
-/// only value values for `out_len` are thus 24 (SHA-224), 32 (SHA-256), 48
+/// only valid values for `out_len` are thus 28 (SHA-224), 32 (SHA-256), 48
 /// (SHA-384), and 64 (SHA-512). It returns one on success and zero on error.
 ///
 /// Note that the return value is different to `ECDH_compute_key`: it returns an
@@ -12675,8 +12675,7 @@ external int EVP_DecodeBase64(
 /// `dst`. It returns the number of bytes written or -1 on error.
 ///
 /// WARNING: EVP_DecodeBlock's return value does not take padding into
-/// account. It also strips leading whitespace and trailing
-/// whitespace and minuses.
+/// account. It also strips leading spaces and tabs, and trailing whitespace.
 @meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<ffi.Uint8>, ffi.Pointer<ffi.Uint8>, ffi.Size)
@@ -16838,15 +16837,26 @@ external ffi.Pointer<EVP_MD> EVP_sha512();
 @ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_sha512_256')
 external ffi.Pointer<EVP_MD> EVP_sha512_256();
 
-/// EVP_shake256 is SHAKE256 extendable-output function.
+/// EVP_shake* implement SHAKE128 and SHAKE256 extendable-output function.
 ///
-/// WARNING: SHAKE is slow. Prefer SHA-2, or TurboSHAKE (`EVP_turboshake256`) if
+/// WARNING: SHAKE is slow. Prefer SHA-2, or TurboSHAKE (`EVP_turboshake*`) if
 /// an XOF is needed.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_shake128')
+external ffi.Pointer<EVP_MD> EVP_shake128();
+
 @meta.RecordUse()
 @ffi.Native<ffi.Pointer<EVP_MD> Function()>(symbol: 'bssl_dart_EVP_shake256')
 external ffi.Pointer<EVP_MD> EVP_shake256();
 
-/// EVP_turboshake256 is TurboSHAKE extendable output function.
+/// EVP_turboshake* implement TurboSHAKE (RFC 9861). TurboSHAKE is similar to
+/// SHAKE, but is faster due to it using a more practical round count.
+@meta.RecordUse()
+@ffi.Native<ffi.Pointer<EVP_MD> Function()>(
+  symbol: 'bssl_dart_EVP_turboshake128',
+)
+external ffi.Pointer<EVP_MD> EVP_turboshake128();
+
 @meta.RecordUse()
 @ffi.Native<ffi.Pointer<EVP_MD> Function()>(
   symbol: 'bssl_dart_EVP_turboshake256',
@@ -20853,7 +20863,7 @@ external int RSA_generate_key_ex(
 
 /// RSA_generate_key_fips behaves like `RSA_generate_key_ex` but performs
 /// additional checks for FIPS compliance. The public exponent is always 65537
-/// and `bits` must be either 2048 or 3072.
+/// and `bits` must be one of 2048, 3072 and 4096.
 @meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<RSA>, ffi.Int, ffi.Pointer<BN_GENCB>)>(
   symbol: 'bssl_dart_RSA_generate_key_fips',
@@ -32451,8 +32461,6 @@ typedef BLAKE2B_CTX = blake2b_state_st;
 typedef BN_CTX = bignum_ctx;
 typedef BN_GENCB = bn_gencb_st;
 typedef BN_MONT_CTX = bn_mont_ctx_st;
-typedef BN_ULONG = ffi.Uint64;
-typedef DartBN_ULONG = int;
 typedef BUF_MEM = buf_mem_st;
 typedef CBB = cbb_st;
 typedef CBS = cbs_st;
@@ -33001,7 +33009,7 @@ const int EVP_MAX_IV_LENGTH = 16;
 
 const int EVP_MAX_KEY_LENGTH = 64;
 
-const int EVP_MAX_MD_BLOCK_SIZE = 136;
+const int EVP_MAX_MD_BLOCK_SIZE = 168;
 
 const int EVP_MAX_MD_DATA_SIZE = 240;
 
@@ -36413,8 +36421,6 @@ const int X509_V_FLAG_USE_CHECK_TIME = 2;
 
 const int X509_V_FLAG_USE_DELTAS = 8192;
 
-const int X509_V_FLAG_USE_MTC_DRAFT_PLANTS_07 = 4194304;
-
 const int X509_V_FLAG_X509_STRICT = 0;
 
 const int X509_V_OK = 0;
@@ -36622,7 +36628,7 @@ final class bignum_ctx extends ffi.Opaque {}
 final class bignum_st extends ffi.Struct {
   /// d is a pointer to an array of `width` `BN_BITS2`-bit chunks in
   /// little-endian order. This stores the absolute value of the number.
-  external ffi.Pointer<BN_ULONG> d;
+  external ffi.Pointer<ffi.UintPtr> d;
 
   /// width is the number of elements of `d` which are valid. This value is not
   /// necessarily minimal; the most-significant words of `d` may be zero.
@@ -36655,7 +36661,7 @@ final class bignum_st extends ffi.Struct {
 
   static ffi.Pointer<bignum_st> $allocate(
     ffi.Allocator $allocator, {
-    required ffi.Pointer<BN_ULONG> d,
+    required ffi.Pointer<ffi.UintPtr> d,
     required int width,
     required int dmax,
     required int neg,

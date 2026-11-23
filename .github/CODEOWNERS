@@ -38,6 +38,7 @@ pkgs/pool                       @dart-lang/dart-ecosystem-team
 pkgs/process                    @dart-lang/dart-ecosystem-team
 pkgs/pub_semver                 @dart-lang/dart-pub-team
 pkgs/pubspec_parse              @dart-lang/dart-ecosystem-team
+pkgs/snippets                   @dart-lang/dart-ecosystem-team
 pkgs/source_maps                @dart-lang/dart-ecosystem-team
 pkgs/source_map_stack_trace     @dart-lang/dart-ecosystem-team
 pkgs/source_span                @dart-lang/dart-ecosystem-team

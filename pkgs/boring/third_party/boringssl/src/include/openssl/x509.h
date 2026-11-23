@@ -45,14 +45,31 @@ extern "C" {
 
 // Legacy X.509 library.
 //
-// This header is part of OpenSSL's X.509 implementation. It is retained for
-// compatibility but should not be used by new code. The functions are difficult
-// to use correctly, and have buggy or non-standard behaviors. They are thus
-// particularly prone to behavior changes and API removals, as BoringSSL
-// iterates on these issues.
+// This header is part of an X.509 implementation derived from OpenSSL. Compared
+// to other OpenSSL-derived parts of BoringSSL, it is particularly impacted by
+// that legacy. Many functions are difficult to use correctly and have a number
+// of known bugs or non-standard behaviors.
 //
-// In the future, a replacement library will be available. Meanwhile, minimize
-// dependencies on this header where possible.
+// As BoringSSL iterates on these issues, this header will be particularly prone
+// to behavior changes and API removals. Callers should particularly avoid
+// depending on the following:
+//
+// - Permissive parsing and validation
+// - Path building and validation details
+// - Obscure features of X.509 that are not well-exercised by the Web PKI
+// - Mutating of `X509` objects outside of constructing new certificates
+// - Ad-hoc human-readable representations of objects
+// - Any other function-specific warnings mentioned in documentation
+//
+// BoringSSL contains a second X.509 implementation, libpki, found in
+// <openssl/pki/*.h>. However, libpki has a more limited API surface and does
+// not, e.g., provide APIs for constructing new certificates. For now, BoringSSL
+// maintains them as separate, parallel implementations, but we hope to
+// eventually converge them.
+//
+// Note that neither implementation comes with trust anchors (root CAs). The
+// calling application is ultimately responsible for managing PKI configuration
+// and ensuring, e.g., untrustworthy or compromised CAs are not trusted.
 
 
 // Certificates.
@@ -3294,9 +3311,6 @@ OPENSSL_EXPORT int X509_VERIFY_PARAM_set1(X509_VERIFY_PARAM *to,
 // X509_V_FLAG_NO_CHECK_TIME disables all time checks in certificate
 // verification.
 #define X509_V_FLAG_NO_CHECK_TIME 0x200000
-// X509_V_FLAG_USE_MTC_DRAFT_PLANTS_07 enables the verification of Merkle Tree
-// Certificates as specified in draft-ietf-plants-merkle-tree-certs-07.
-#define X509_V_FLAG_USE_MTC_DRAFT_PLANTS_07 0x400000
 // X509_V_FLAG_ALLOW_TIMEZONE_OFFSET allows `notBefore` and `notAfter` fields
 // to contain a time zone offset.
 #define X509_V_FLAG_ALLOW_TIMEZONE_OFFSET 0x1000000

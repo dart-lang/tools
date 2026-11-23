@@ -1,4 +1,8 @@
-## 1.16.1-wip
+## 1.16.2-wip
+
+- Use `getVersion()` instead of `getVM()` when pinging the VM service API.
+
+## 1.16.1
 
 - Fix `HitMap.parseFiles` to allow empty `{}` coverage files written by
   `dart test --coverage` for skipped test suites.

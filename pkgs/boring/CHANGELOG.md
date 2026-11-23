@@ -1,4 +1,19 @@
-## 0.4.3-wip
+## 0.5.1-wip
+
+- BoringSSL is compiled with `OPENSSL_SMALL`, which for example makes the
+  tree-shaken library of `package:webcrypto` about 19% smaller, and P-256
+  operations about 2x slower.
+- Update BoringSSL to [289645a4](https://boringssl.googlesource.com/boringssl/+/289645a450721a7210bf9c69d42bf40a0f1ee730).
+
+## 0.5.0
+
+- **Breaking**: Removed `package:boring/bindings.dart`. Its API is now in
+  `package:boring/boring.dart`, which was previously a re-export of it.
+  Replace `import 'package:boring/bindings.dart'` with
+  `import 'package:boring/boring.dart'`.
+- Fixed the bindings of the `BN_*_word` functions on 32-bit targets, such as
+  Android arm. `BN_ULONG` is now `UintPtr` instead of `Uint64`, because it is
+  `uint32_t` on 32-bit targets.
 - Update BoringSSL to [8f2554dc](https://boringssl.googlesource.com/boringssl/+/8f2554dc344d403fd6d628773d39637c323eb801).
 
 ## 0.4.2

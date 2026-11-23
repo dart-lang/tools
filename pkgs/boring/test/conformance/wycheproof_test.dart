@@ -18,7 +18,7 @@ import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:boring/bindings.dart' as ssl;
+import 'package:boring/boring.dart' as ssl;
 import 'package:test/test.dart';
 
 typedef _Json = Map<String, dynamic>;

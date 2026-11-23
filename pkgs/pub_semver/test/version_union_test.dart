@@ -478,5 +478,12 @@ void main() {
             VersionRange(min: v250, max: v300)
           ])));
     });
+
+    test('returns the union unchanged when subtracting empty', () {
+      var union = VersionConstraint.parse('<1.0.0')
+          .union(VersionConstraint.parse('>=2.0.0'));
+
+      expect(union.difference(VersionConstraint.empty), equals(union));
+    });
   });
 }
