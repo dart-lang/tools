@@ -8,6 +8,9 @@
   while reading it, to avoid crashing or exhausting memory on an abnormally
   large or corrupted log file. Such a file is also deleted and replaced with an
   empty one, so that it doesn't keep stats from being collected.
+- Added an `analysisReason` parameter to the `analysisStatistics` constructor to
+  report the reason for re-creating the analysis context collection and hence
+  re-analyzing the IDE workspace.
 
 ## 8.4.0
 
@@ -100,7 +103,7 @@
   system. The analytics consent mechanism is bypassed for non external builds.
 
 ## 8.0.17
-- Added optional `agentPlugin` parameter to the `Event.dartMCPEvent` constructor to identify 
+- Added optional `agentPlugin` parameter to the `Event.dartMCPEvent` constructor to identify
 agent plugin usage.
 
 ## 8.0.16
