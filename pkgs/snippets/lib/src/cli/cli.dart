@@ -75,6 +75,14 @@ abstract base class _Base extends Command<int> {
       globalResults?.option('directory') ??
       Directory.current.path;
 
+  void checkNoPositionalArguments() {
+    if (argResults!.rest case [final unexpected, ...]) {
+      usageException(
+        'Unexpected argument "$unexpected" (use -C <folder>).',
+      );
+    }
+  }
+
   /// Prints [diagnostics] to [err] and returns whether there were any errors.
   bool report(List<ExampleFormatException> diagnostics) {
     final color = identical(err, stderr) && stderr.supportsAnsiEscapes;

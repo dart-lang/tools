@@ -69,6 +69,7 @@ RunOutcome updateDirectory({
       source: source,
       documentPath: file,
       packageRoot: packageRootOf(file),
+      displayRoot: root,
       sourceUrl: p.toUri(label),
       readFile: (path) {
         final example = File(path);

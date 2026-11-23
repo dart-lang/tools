@@ -17,6 +17,7 @@ final class _ValidateCommand extends _Base {
 
   @override
   int run() {
+    checkNoPositionalArguments();
     final outcome = updateDirectory(directory: directory, write: false);
     final failed = report(outcome.diagnostics);
 
@@ -26,7 +27,8 @@ final class _ValidateCommand extends _Base {
           '`dart run snippets@ update`');
     }
     if (outcome.stale.isEmpty && !failed) {
-      out.writeln('${outcome.scanned} markdown files are up to date');
+      final files = outcome.scanned == 1 ? 'file is' : 'files are';
+      out.writeln('${outcome.scanned} markdown $files up to date');
     }
     return failed || outcome.stale.isNotEmpty ? 1 : 0;
   }

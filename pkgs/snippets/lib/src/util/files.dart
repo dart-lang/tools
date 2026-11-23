@@ -4,25 +4,25 @@
 
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 
 /// Every `.md` file under [root] (skipping hidden directories and `build/`),
 /// in a stable order.
-List<String> markdownFiles(String root) => Directory(root)
-    .listSync(recursive: true, followLinks: false)
-    .whereType<File>()
-    .map((file) => file.path)
-    .where((path) =>
-        path.toLowerCase().endsWith('.md') &&
-        !_inIgnoredDirectory(p.relative(path, from: root)))
-    .sorted();
+List<String> markdownFiles(String root) {
+  final files = <String>[];
+  void walk(Directory dir) {
+    for (final entity in dir.listSync(followLinks: false)) {
+      if (entity is Directory) {
+        final name = p.basename(entity.path);
+        if (!name.startsWith('.') && name != 'build') walk(entity);
+      } else if (entity is File && entity.path.toLowerCase().endsWith('.md')) {
+        files.add(entity.path);
+      }
+    }
+  }
 
-bool _inIgnoredDirectory(String relativePath) {
-  final parts = p.split(relativePath);
-  return parts
-      .take(parts.length - 1)
-      .any((dir) => dir.startsWith('.') || dir == 'build');
+  walk(Directory(root));
+  return files..sort();
 }
 
 /// The nearest enclosing directory of [path] containing a `pubspec.yaml`, or

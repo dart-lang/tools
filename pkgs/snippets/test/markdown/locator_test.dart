@@ -176,6 +176,14 @@ Bye
         ..linePrefix.equals('')
         ..content.equals('x\n');
     });
+
+    test('list indentation does not carry out of a block quote', () {
+      check(locate('> - item\n\n  ```dart\nx\n  ```\n')).single
+        ..linePrefix.equals('  ')
+        ..closeFence.isNotNull()
+        ..content.equals('x\n');
+      check(locate('> - item\n\n    ```dart\n    x\n')).isEmpty();
+    });
   });
 
   group('does not mistake', () {

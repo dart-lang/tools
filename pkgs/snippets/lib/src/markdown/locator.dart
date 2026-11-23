@@ -35,8 +35,14 @@ Iterable<FencedCodeBlock> locateFencedCodeBlocks(FileSpan source) sync* {
   }
 
   var listIndent = 0;
+  var quoteDepth = 0;
   while (!scanner.isDone) {
     final quotePrefix = scanner.scanText(_blockquotePrefix);
+    final depth = '>'.allMatches(quotePrefix).length;
+    if (depth != quoteDepth) {
+      quoteDepth = depth;
+      listIndent = 0;
+    }
     if (scanner.scan(_blankRestOfLine)) continue;
 
     if (scanner.scan(_listMarker)) {

@@ -57,6 +57,7 @@ UpdateResult updateDocument({
   required String documentPath,
   required String? packageRoot,
   required FileReader readFile,
+  String? displayRoot,
   Uri? sourceUrl,
 }) {
   final diagnostics = <ExampleFormatException>[];
@@ -103,6 +104,7 @@ UpdateResult updateDocument({
         reference,
         documentPath: documentPath,
         packageRoot: packageRoot,
+        displayRoot: displayRoot ?? packageRoot,
         readFile: readFile,
       );
     } on ExampleFormatException catch (e) {
@@ -137,6 +139,7 @@ String _contentFor(
   ExampleReference reference, {
   required String documentPath,
   required String packageRoot,
+  required String displayRoot,
   required FileReader readFile,
 }) {
   final path = resolveReference(
@@ -148,7 +151,7 @@ String _contentFor(
   if (source == null) {
     throw ExampleFormatException(
       'there is no file `${reference.path}` '
-      '(looked for `${p.relative(path, from: packageRoot)}`)',
+      '(looked for `${p.relative(path, from: displayRoot)}`)',
       reference.span,
     );
   }
@@ -169,7 +172,7 @@ String _contentFor(
         reference.span,
       ),
   };
-  final relativePath = p.relative(path, from: packageRoot);
+  final relativePath = p.relative(path, from: displayRoot);
   final example = SourceFile.fromString(
     source,
     url: p.toUri(relativePath),

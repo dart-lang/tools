@@ -24,6 +24,7 @@ final class _UpdateCommand extends _Base {
 
   @override
   int run() {
+    checkNoPositionalArguments();
     final dryRun = argResults!.flag('dry-run');
     final outcome = updateDirectory(directory: directory, write: !dryRun);
     final failed = report(outcome.diagnostics);
@@ -33,7 +34,8 @@ final class _UpdateCommand extends _Base {
       out.writeln('$prefix $file');
     }
     if (outcome.stale.isEmpty && !failed) {
-      out.writeln('${outcome.scanned} markdown files are up to date');
+      final files = outcome.scanned == 1 ? 'file is' : 'files are';
+      out.writeln('${outcome.scanned} markdown $files up to date');
     }
     // Staleness is what this command is for, so only errors are failures.
     return failed ? 1 : 0;

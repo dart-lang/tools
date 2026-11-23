@@ -63,7 +63,7 @@ void main() {
     final out = StringBuffer();
     await check(runSnippets(['update', '-C', d.sandbox], out: out))
         .completes((it) => it.equals(0));
-    check(out.toString()).contains('1 markdown files are up to date');
+    check(out.toString()).contains('1 markdown file is up to date');
   });
 
   test('validate fails on a stale document and changes nothing', () async {
@@ -146,6 +146,12 @@ void main() {
         d.file('README.md', '```dart @example /hello.dart\ninner;\n```\n'),
       ]),
     ]).validate();
+
+    await d.file('pkgs/a/hello.dart', '// #region unclosed\n').create();
+    final err = StringBuffer();
+    await check(runSnippets(['validate', '-C', d.sandbox], err: err))
+        .completes((it) => it.equals(1));
+    check(err.toString()).contains('pkgs/a/hello.dart');
   });
 
   test('only requires pubspec.yaml for files with references', () async {
@@ -206,5 +212,12 @@ void main() {
   test('an unknown command is a usage error', () async {
     await check(runSnippets(['nonsense'], err: StringBuffer()))
         .completes((it) => it.equals(64));
+  });
+
+  test('an unexpected positional argument is a usage error', () async {
+    for (final cmd in ['update', 'validate']) {
+      await check(runSnippets([cmd, 'doc/'], err: StringBuffer()))
+          .completes((it) => it.equals(64));
+    }
   });
 }
