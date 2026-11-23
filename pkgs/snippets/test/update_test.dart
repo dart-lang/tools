@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:checks/checks.dart';
+import 'package:path/path.dart' as p;
 import 'package:snippets/src/update.dart';
 import 'package:test/scaffolding.dart';
 
@@ -16,13 +17,18 @@ UpdateResult update(
   String source, {
   Map<String, String> files = const {},
   String document = 'README.md',
-}) =>
-    updateDocument(
-      source: source,
-      documentPath: '/pkg/$document',
-      packageRoot: '/pkg',
-      readFile: (path) => files[path.replaceFirst('/pkg/', '')],
-    );
+}) {
+  final root = p.normalize(p.absolute('/pkg'));
+  return updateDocument(
+    source: source,
+    documentPath: p.join(root, document),
+    packageRoot: root,
+    readFile: (path) => files[p.posix.joinAll(p.split(p.relative(
+      path,
+      from: root,
+    )))],
+  );
+}
 
 const _hello = '''
 // #region greeting

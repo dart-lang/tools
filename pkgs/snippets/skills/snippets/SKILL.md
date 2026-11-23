@@ -192,5 +192,5 @@ Or call the reusable GitHub Actions workflow (pinned to a commit SHA):
 ```yaml
 jobs:
   examples:
-    uses: dart-lang/tools/.github/workflows/validate_examples.yaml@<commit-sha>
+    uses: dart-lang/tools/.github/workflows/validate_snippets.yaml@<commit-sha>
 ```

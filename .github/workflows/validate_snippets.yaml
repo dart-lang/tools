@@ -3,8 +3,8 @@
 #
 #   jobs:
 #     examples:
-#       uses: dart-lang/tools/.github/workflows/validate_examples.yaml@<commit-sha>
-name: Validate examples
+#       uses: dart-lang/tools/.github/workflows/validate_snippets.yaml@<commit-sha>
+name: Validate snippets
 
 on:
   workflow_call:

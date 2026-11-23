@@ -21,13 +21,15 @@ defaults:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
         sdk: [stable, dev]
         include:
-          - sdk: dev
+          - os: ubuntu-latest
+            sdk: dev
             check-formatting: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1

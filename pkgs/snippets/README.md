@@ -57,5 +57,5 @@ In GitHub Actions, call the reusable workflow (pinned to a commit SHA):
 ```yaml
 jobs:
   examples:
-    uses: dart-lang/tools/.github/workflows/validate_examples.yaml@<commit-sha>
+    uses: dart-lang/tools/.github/workflows/validate_snippets.yaml@<commit-sha>
 ```
