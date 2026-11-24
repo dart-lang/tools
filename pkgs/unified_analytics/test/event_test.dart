@@ -330,6 +330,30 @@ void main() {
     expect(event.eventData.length, 4);
   });
 
+  test('Event.dartCliCommandExecuted omits target package values over the '
+      'GA4 length limit', () {
+    final tooLong = 'a' * 101;
+    final deps = {for (var i = 0; i < 500; i++) 'dependency_number_$i'};
+
+    final event = Event.dartCliCommandExecuted(
+      name: 'run',
+      enabledExperiments: 'enabledExperiments',
+      pubspecDependencies: deps,
+      targetPackage: 'dhttpd',
+      targetPackageVersion: 'a' * 100,
+      targetPackageConstraint: tooLong,
+    );
+
+    expect(event.eventData['target_package'], 'dhttpd');
+    expect(event.eventData['target_package_version'], 'a' * 100);
+    expect(event.eventData.containsKey('target_package_constraint'), isFalse);
+    // The omitted value does not take a slot from the dependency chunks.
+    expect(
+      event.eventData.keys.where((key) => key.startsWith('pubspec_dep_')),
+      hasLength(18),
+    );
+  });
+
   test('Event.dartCliCommandExecuted stays within the GA4 parameter limit '
       'with target package and dependencies', () {
     final deps = {for (var i = 0; i < 500; i++) 'dependency_number_$i'};

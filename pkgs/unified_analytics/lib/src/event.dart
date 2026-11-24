@@ -504,13 +504,19 @@ final class Event {
   ///   resolved (e.g. `4.1.0`).
   ///
   /// * [targetPackageConstraint] - the version constraint the user requested
-  ///   for [targetPackage], if any (e.g. `^4.0.0`).
+  ///   for [targetPackage], if any (e.g. `^4.0.0`). Callers MUST pass the
+  ///   canonical string form of a successfully parsed version constraint, and
+  ///   never the raw text the user typed after `@`, which can be an arbitrary
+  ///   descriptor.
   ///
   /// Callers MUST only pass [targetPackage], [targetPackageVersion], and
   /// [targetPackageConstraint] after the package resolved successfully from
   /// the public `https://pub.dev` hosted registry. Omit all three for git,
   /// path, and privately hosted packages, and for failed resolutions, to
   /// prevent leaking proprietary or internal package names.
+  ///
+  /// Any of the three that is longer than 100 characters, the GA4 limit for a
+  /// parameter value, is omitted from the event.
   ///
   /// NOTE FOR MAINTAINERS: Google Analytics 4 limits each event to at most 25
   /// custom parameters. The standard metadata fields take up to 5 slots and
@@ -537,20 +543,12 @@ final class Event {
            'exitCode': ?exitCode,
            'pubspec_has_flutter_sdk': ?pubspecHasFlutterSdk,
            'pubspec_environment_sdk': ?pubspecEnvironmentSdk,
-           'target_package': ?targetPackage,
-           'target_package_version': ?targetPackageVersion,
-           'target_package_constraint': ?targetPackageConstraint,
-           if (pubspecDependencies != null)
-             ...chunkDependencies(
-               pubspecDependencies,
-               maxChunks:
-                   _maxDependencyChunks -
-                   [
-                     targetPackage,
-                     targetPackageVersion,
-                     targetPackageConstraint,
-                   ].nonNulls.length,
-             ),
+           ..._targetPackageAndDependencies(
+             targetPackage: targetPackage,
+             targetPackageVersion: targetPackageVersion,
+             targetPackageConstraint: targetPackageConstraint,
+             pubspecDependencies: pubspecDependencies,
+           ),
          },
        );
 
@@ -1519,6 +1517,39 @@ Map<String, String> chunkDependencies(
 
   return chunks;
 }
+
+/// Returns the target package and dependency chunk parameters for
+/// [Event.dartCliCommandExecuted].
+///
+/// Target package values longer than [_maxParameterValueLength] are omitted.
+/// Each one that is kept takes a slot away from the dependency chunks to stay
+/// within GA4's 25-parameter limit.
+Map<String, String> _targetPackageAndDependencies({
+  required String? targetPackage,
+  required String? targetPackageVersion,
+  required String? targetPackageConstraint,
+  required Set<String>? pubspecDependencies,
+}) {
+  String? omitIfTooLong(String? value) =>
+      value == null || value.length > _maxParameterValueLength ? null : value;
+
+  final target = {
+    'target_package': ?omitIfTooLong(targetPackage),
+    'target_package_version': ?omitIfTooLong(targetPackageVersion),
+    'target_package_constraint': ?omitIfTooLong(targetPackageConstraint),
+  };
+  return {
+    ...target,
+    if (pubspecDependencies != null)
+      ...chunkDependencies(
+        pubspecDependencies,
+        maxChunks: _maxDependencyChunks - target.length,
+      ),
+  };
+}
+
+/// The maximum length GA4 allows for an event parameter value.
+const _maxParameterValueLength = 100;
 
 /// The number of GA4 event parameters available for dependency chunks.
 ///
