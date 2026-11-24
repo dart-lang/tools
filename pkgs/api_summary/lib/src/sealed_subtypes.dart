@@ -53,6 +53,10 @@ typedef _SubtypeEnv = ({
 ///    already a strict subtype of another collected public subtype, then sets
 ///    `hasNonPublicSubtypes` if any non-public leaf space is not covered by a
 ///    kept public subtype space.
+///
+/// Non-public subtypes exposed only via a public `typedef` remain classified as
+/// non-public (`immediateSubtypes` tracks exported interface declarations, not
+/// type aliases).
 SealedSubtypeSummary computeSealedSubtypes(
   ClassElement sealedClass,
   Map<ClassElement, Set<InterfaceElement>> immediateSubinterfaceMap, {

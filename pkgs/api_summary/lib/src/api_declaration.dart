@@ -244,9 +244,12 @@ final class ApiClass extends ApiDeclaration {
   /// subtypes not already covered by [immediateSubtypes].
   ///
   /// When `true`, external callers cannot exhaustively `switch` over
-  /// [immediateSubtypes] alone without a wildcard (`_`) or `default` branch.
-  /// Recording this boolean captures that exhaustiveness constraint in the API
-  /// summary without exposing private or unexported subtype identifiers:
+  /// [immediateSubtypes] alone without a wildcard (`_`) or `default` branch
+  /// (aside from exposing a non-public subtype via a public `typedef`, which
+  /// remains classified as non-public because [immediateSubtypes] records only
+  /// exported interface declarations). Recording this boolean captures that
+  /// exhaustiveness constraint in the API summary without exposing private or
+  /// unexported subtype identifiers:
   ///
   /// ```dart
   /// // Public API: immediateSubtypes is [], hasNonPublicSubtypes is true.
