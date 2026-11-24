@@ -396,9 +396,6 @@ void _assertNoNonCommentTokensInRange(
   }
 }
 
-bool _startsOwnLine(CstDocument document, int offset) =>
-    document.isWhitespaceRange(document.lineStartOf(offset), offset);
-
 void _checkLayoutPreservation({
   required CstDocument initialDocument,
   required CstDocument updatedDocument,
@@ -417,9 +414,9 @@ void _checkLayoutPreservation({
 
   void checkLandmark(int oldOffset, String label) {
     if (oldOffset > editStart && oldOffset < editOldEnd) return;
-    if (!_startsOwnLine(initialDocument, oldOffset)) return;
+    if (!initialDocument.startsOwnLine(oldOffset)) return;
     final newOffset = oldOffset < editStart ? oldOffset : oldOffset + delta;
-    if (!_startsOwnLine(updatedDocument, newOffset) ||
+    if (!updatedDocument.startsOwnLine(newOffset) ||
         updatedDocument.columnOf(newOffset) !=
             initialDocument.columnOf(oldOffset)) {
       throw createAssertionError(
@@ -463,8 +460,7 @@ void _checkLayoutPreservation({
           (operation == EditOperation.update && targetIndex == null);
       final removedInlineEntry = operation == EditOperation.remove &&
           targetIndex != null &&
-          !_startsOwnLine(
-            initialDocument,
+          !initialDocument.startsOwnLine(
             parent.entries[targetIndex].contentStart,
           );
       for (var i = 0; i < parent.entries.length; i++) {
@@ -687,8 +683,8 @@ void _checkCommentConservation({
   void checkPlacement(YamlToken before, YamlToken after, String text) {
     final beforeStart = before.span.start.offset;
     final beforeEnd = before.span.end.offset;
-    final wasOwnLine = _startsOwnLine(initialDocument, beforeStart);
-    final isOwnLine = _startsOwnLine(updatedDocument, after.span.start.offset);
+    final wasOwnLine = initialDocument.startsOwnLine(beforeStart);
+    final isOwnLine = updatedDocument.startsOwnLine(after.span.start.offset);
     final allowedLift = wasOwnLine &&
         compactLiftRange != null &&
         beforeStart >= compactLiftRange.start &&
