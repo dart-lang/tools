@@ -1,4 +1,4 @@
-## 1.3.0-wip
+## 1.3.0
 
 - Include `ApiDeclarationStatus.nonPublic` skeleton declarations in
   `ApiSummary.libraries` unconditionally so `api.json` and `api.yaml` match
