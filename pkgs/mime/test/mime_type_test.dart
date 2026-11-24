@@ -86,20 +86,24 @@ void main() {
         0x1A,
         0x0A
       ]);
-      _expectMimeType('file', 'video/3gpp', headerBytes: [
-        0x00,
-        0x00,
-        0x00,
-        0x04,
-        0x66,
-        0x74,
-        0x79,
-        0x70,
-        0x33,
-        0x67,
-        0x70,
-        0x35
-      ]);
+      for (final sizeBytes in [
+        [0x00, 0x00, 0x00, 0x04],
+        [0x00, 0x00, 0x01, 0x00]
+      ]) {
+        for (final brand in [0x32, 0x34, 0x35]) {
+          _expectMimeType('file', 'video/3gpp', headerBytes: [
+            ...sizeBytes,
+            0x66,
+            0x74,
+            0x79,
+            0x70,
+            0x33,
+            0x67,
+            0x70,
+            brand
+          ]);
+        }
+      }
       _expectMimeType('file.mp4', 'video/mp4', headerBytes: [
         0x00,
         0x00,
