@@ -973,7 +973,10 @@ final class Event {
   /// * [cleanupDurationMs] - the milliseconds spent in the clean up step. It's
   ///   omitted when the step doesn't run.
   ///
-  /// * [totalDurationMs] - the milliseconds the whole round took.
+  /// * [totalDurationMs] - the milliseconds the whole round took. It can be
+  ///   more than the sum of [prepareDurationMs], [bumpDurationMs] and
+  ///   [cleanupDurationMs] because it also includes work outside those steps,
+  ///   such as validating the round's packages.
   ///
   /// * [migrateSessionId] - the same value as the [Event.migrateRun] event of
   ///   the request the round belongs to.
@@ -1029,7 +1032,8 @@ final class Event {
   ///   no such check.
   ///
   /// * [migrateSessionId] - the time the migration started, in milliseconds
-  ///   since the epoch, which groups the events from one migration.
+  ///   since the epoch, which groups the [Event.migrateRound] events to this
+  ///   [Event.migrateRun].
   Event.migrateRun({
     String? fromSdkVersion,
     String? toSdkVersion,
