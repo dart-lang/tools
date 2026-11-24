@@ -8,3 +8,8 @@ before <http://foo.com/> after
 
 <<<
 <p><a href="http://foo.com/?a=1&amp;b=2">http://foo.com/?a=1&amp;b=2</a></p>
+>>> unclosed autolink before another autolink
+<http://a<http://foo.com/>
+
+<<<
+<p>&lt;http://a<a href="http://foo.com/">http://foo.com/</a></p>

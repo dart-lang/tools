@@ -13,8 +13,11 @@ import 'package:yaml/yaml.dart';
 // TODO(cbracken) make generic
 /// Retries the specified function with the specified interval and returns
 /// the result on successful completion.
-Future<dynamic> retry(Future Function() f, Duration interval,
-    {Duration? timeout}) async {
+Future<dynamic> retry(
+  Future Function() f,
+  Duration interval, {
+  Duration? timeout,
+}) async {
   var keepGoing = true;
 
   Future<dynamic> withTimeout(Future Function() f, {Duration? duration}) {
@@ -22,13 +25,16 @@ Future<dynamic> retry(Future Function() f, Duration interval,
       return f();
     }
 
-    return f().timeout(duration, onTimeout: () {
-      keepGoing = false;
-      final msg = duration.inSeconds == 0
-          ? '${duration.inMilliseconds}ms'
-          : '${duration.inSeconds}s';
-      throw StateError('Failed to complete within $msg');
-    });
+    return f().timeout(
+      duration,
+      onTimeout: () {
+        keepGoing = false;
+        final msg = duration.inSeconds == 0
+            ? '${duration.inMilliseconds}ms'
+            : '${duration.inSeconds}s';
+        throw StateError('Failed to complete within $msg');
+      },
+    );
   }
 
   return withTimeout(() async {
@@ -203,4 +209,22 @@ YamlMap _loadPubspec(String packageRoot) {
   final pubspecPath = getPubspecPath(packageRoot);
   final yaml = File(pubspecPath).readAsStringSync();
   return loadYaml(yaml, sourceUrl: Uri.file(pubspecPath)) as YamlMap;
+}
+
+extension ScopedOutput on Set<String> {
+  bool includesScript(String? scriptUriString) {
+    if (scriptUriString == null) return false;
+
+    // If the set is empty, it means the user didn't specify a --scope-output
+    // flag, so allow everything.
+    if (isEmpty) return true;
+
+    final scriptUri = Uri.parse(scriptUriString);
+    if (scriptUri.scheme != 'package' || scriptUri.pathSegments.isEmpty) {
+      return false;
+    }
+
+    final scope = scriptUri.pathSegments.first;
+    return contains(scope);
+  }
 }

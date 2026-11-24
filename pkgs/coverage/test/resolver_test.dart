@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:coverage/src/resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -12,9 +14,7 @@ void main() {
     setUp(() async {
       final sandboxUriPath = p.toUri(d.sandbox).toString();
       await d.dir('bar', [
-        d.dir('lib', [
-          d.file('bar.dart', 'final fizz = "bar";'),
-        ])
+        d.dir('lib', [d.file('bar.dart', 'final fizz = "bar";')]),
       ]).create();
 
       await d.dir('foo', [
@@ -38,63 +38,79 @@ void main() {
 }
 '''),
         ]),
-        d.dir('lib', [
-          d.file('foo.dart', 'final foo = "bar";'),
-        ]),
+        d.dir('lib', [d.file('foo.dart', 'final foo = "bar";')]),
       ]).create();
 
       await d.dir('sdk', [
-        d.dir('io', [
-          d.file('io.dart', 'final io = "hello";'),
-        ]),
-        d.dir('io_patch', [
-          d.file('io.dart', 'final patch = true;'),
-        ]),
-        d.dir('io_dev', [
-          d.file('io.dart', 'final dev = true;'),
-        ]),
+        d.dir('io', [d.file('io.dart', 'final io = "hello";')]),
+        d.dir('io_patch', [d.file('io.dart', 'final patch = true;')]),
+        d.dir('io_dev', [d.file('io.dart', 'final dev = true;')]),
       ]).create();
     });
 
     test('can be created from a package_config.json', () async {
       final resolver = await Resolver.create(
-          packagesPath:
-              p.join(d.sandbox, 'foo', '.dart_tool', 'package_config.json'));
-      expect(resolver.resolve('package:foo/foo.dart'),
-          p.join(d.sandbox, 'foo', 'lib', 'foo.dart'));
-      expect(resolver.resolve('package:bar/bar.dart'),
-          p.join(d.sandbox, 'bar', 'lib', 'bar.dart'));
+        packagesPath: p.join(
+          d.sandbox,
+          'foo',
+          '.dart_tool',
+          'package_config.json',
+        ),
+      );
+      expect(
+        resolver.resolve('package:foo/foo.dart'),
+        p.join(d.sandbox, 'foo', 'lib', 'foo.dart'),
+      );
+      expect(
+        resolver.resolve('package:bar/bar.dart'),
+        p.join(d.sandbox, 'bar', 'lib', 'bar.dart'),
+      );
     });
 
     test('can be created from a package directory', () async {
-      final resolver =
-          await Resolver.create(packagePath: p.join(d.sandbox, 'foo'));
-      expect(resolver.resolve('package:foo/foo.dart'),
-          p.join(d.sandbox, 'foo', 'lib', 'foo.dart'));
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+      );
+      expect(
+        resolver.resolve('package:foo/foo.dart'),
+        p.join(d.sandbox, 'foo', 'lib', 'foo.dart'),
+      );
     });
 
     test('errors if the packagesFile is an unknown format', () async {
       expect(
-          () async => await Resolver.create(
-              packagesPath: p.join(
-                  d.sandbox, 'foo', '.dart_tool', 'bad_package_config.json')),
-          throwsA(isA<FormatException>()));
+        () async => await Resolver.create(
+          packagesPath: p.join(
+            d.sandbox,
+            'foo',
+            '.dart_tool',
+            'bad_package_config.json',
+          ),
+        ),
+        throwsA(isA<FormatException>()),
+      );
     });
 
     test('resolves dart: URIs', () async {
       final resolver = await Resolver.create(
-          packagePath: p.join(d.sandbox, 'foo'),
-          sdkRoot: p.join(d.sandbox, 'sdk'));
-      expect(resolver.resolve('dart:io'),
-          p.join(d.sandbox, 'sdk', 'io', 'io.dart'));
+        packagePath: p.join(d.sandbox, 'foo'),
+        sdkRoot: p.join(d.sandbox, 'sdk'),
+      );
+      expect(
+        resolver.resolve('dart:io'),
+        p.join(d.sandbox, 'sdk', 'io', 'io.dart'),
+      );
       expect(resolver.resolve('dart:io-patch/io.dart'), null);
-      expect(resolver.resolve('dart:io-dev/io.dart'),
-          p.join(d.sandbox, 'sdk', 'io_dev', 'io.dart'));
+      expect(
+        resolver.resolve('dart:io-dev/io.dart'),
+        p.join(d.sandbox, 'sdk', 'io_dev', 'io.dart'),
+      );
     });
 
     test('cannot resolve SDK URIs if sdkRoot is null', () async {
-      final resolver =
-          await Resolver.create(packagePath: p.join(d.sandbox, 'foo'));
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+      );
       expect(resolver.resolve('dart:convert'), null);
     });
 
@@ -105,15 +121,141 @@ void main() {
     });
 
     test('cannot resolve package URIs if packagePath is not found', () async {
-      final resolver =
-          await Resolver.create(packagePath: p.join(d.sandbox, 'foo'));
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+      );
       expect(resolver.resolve('package:baz/baz.dart'), null);
     });
 
     test('cannot resolve unexpected URI schemes', () async {
-      final resolver =
-          await Resolver.create(packagePath: p.join(d.sandbox, 'foo'));
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+      );
       expect(resolver.resolve('thing:foo/foo.dart'), null);
+    });
+
+    test('resolves file URIs within a known root', () async {
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+      );
+      final fooDartPath = p.join(d.sandbox, 'foo', 'lib', 'foo.dart');
+      expect(resolver.resolve(p.toUri(fooDartPath).toString()), fooDartPath);
+    });
+
+    test('resolves file URIs within sdkRoot', () async {
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+        sdkRoot: p.join(d.sandbox, 'sdk'),
+      );
+      final ioDartPath = p.join(d.sandbox, 'sdk', 'io', 'io.dart');
+      expect(resolver.resolve(p.toUri(ioDartPath).toString()), ioDartPath);
+    });
+
+    test('resolves file URIs within a known package root', () async {
+      final resolver = await Resolver.create(
+        packagesPath: p.join(
+          d.sandbox,
+          'foo',
+          '.dart_tool',
+          'package_config.json',
+        ),
+      );
+      final barDartPath = p.join(d.sandbox, 'bar', 'lib', 'bar.dart');
+      expect(resolver.resolve(p.toUri(barDartPath).toString()), barDartPath);
+    });
+
+    test('resolves file URIs within the current directory', () async {
+      final resolver = await Resolver.create();
+      final currentDirFile = File(
+        p.join(Directory.current.path, 'resolver_test_current_dir_probe.txt'),
+      )..writeAsStringSync('inside cwd');
+      addTearDown(currentDirFile.deleteSync);
+
+      expect(
+        resolver.resolve(p.toUri(currentDirFile.path).toString()),
+        currentDirFile.path,
+      );
+    });
+
+    test('does not resolve file URIs outside every known root', () async {
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+        sdkRoot: p.join(d.sandbox, 'sdk'),
+      );
+      final outsideFile = File(p.join(d.sandbox, 'outside.txt'))
+        ..writeAsStringSync('should not leak');
+
+      expect(resolver.resolve(p.toUri(outsideFile.path).toString()), null);
+    });
+
+    test('does not resolve package URIs outside every known root', () async {
+      final resolver = await Resolver.create(
+        packagesPath: p.join(
+          d.sandbox,
+          'foo',
+          '.dart_tool',
+          'package_config.json',
+        ),
+      );
+      File(
+        p.join(d.sandbox, 'outside.txt'),
+      ).writeAsStringSync('should not leak');
+
+      expect(resolver.resolve('package:foo/..%2f..%2foutside.txt'), null);
+    });
+
+    test('does not resolve dart URIs outside every known root', () async {
+      final resolver = await Resolver.create(
+        packagePath: p.join(d.sandbox, 'foo'),
+        sdkRoot: p.join(d.sandbox, 'sdk'),
+      );
+      File(
+        p.join(d.sandbox, 'outside.txt'),
+      ).writeAsStringSync('should not leak');
+
+      expect(resolver.resolve('dart:io/..%2f..%2foutside.txt'), null);
+    });
+
+    test('resolves package URIs through a symlinked root', () async {
+      final sandboxUriPath = p.toUri(d.sandbox).toString();
+      await d.dir('real_pkg', [
+        d.dir('lib', [d.file('real.dart', 'final real = true;')]),
+      ]).create();
+      Link(
+        p.join(d.sandbox, 'link_pkg'),
+      ).createSync(p.join(d.sandbox, 'real_pkg'));
+      await d.dir('linked', [
+        d.dir('.dart_tool', [
+          d.file('package_config.json', '''
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "linked",
+      "rootUri": "$sandboxUriPath/link_pkg",
+      "packageUri": "lib/"
+    }
+  ]
+}
+'''),
+        ]),
+      ]).create();
+
+      final resolver = await Resolver.create(
+        packagesPath: p.join(
+          d.sandbox,
+          'linked',
+          '.dart_tool',
+          'package_config.json',
+        ),
+      );
+
+      expect(
+        resolver.resolve('package:linked/real.dart'),
+        File(
+          p.join(d.sandbox, 'real_pkg', 'lib', 'real.dart'),
+        ).resolveSymbolicLinksSync(),
+      );
     });
   });
 
@@ -126,86 +268,215 @@ void main() {
     });
 
     test('resolves third-party package URIs', () {
-      expect(resolver.resolve('package:foo/bar.dart'),
-          'third_party/dart/foo/lib/bar.dart');
-      expect(resolver.resolve('package:foo/src/bar.dart'),
-          'third_party/dart/foo/lib/src/bar.dart');
+      expect(
+        resolver.resolve('package:foo/bar.dart'),
+        'third_party/dart/foo/lib/bar.dart',
+      );
+      expect(
+        resolver.resolve('package:foo/src/bar.dart'),
+        'third_party/dart/foo/lib/src/bar.dart',
+      );
     });
 
     test('resolves non-third-party package URIs', () {
       expect(
-          resolver.resolve('package:foo.bar/baz.dart'), 'foo/bar/lib/baz.dart');
-      expect(resolver.resolve('package:foo.bar/src/baz.dart'),
-          'foo/bar/lib/src/baz.dart');
+        resolver.resolve('package:foo.bar/baz.dart'),
+        'foo/bar/lib/baz.dart',
+      );
+      expect(
+        resolver.resolve('package:foo.bar/src/baz.dart'),
+        'foo/bar/lib/src/baz.dart',
+      );
     });
 
     test('resolves file URIs', () {
       expect(
-          resolver
-              .resolve('file://x/y/z.runfiles/$workspace/foo/bar/lib/baz.dart'),
-          'foo/bar/lib/baz.dart');
+        resolver.resolve(
+          'file://x/y/z.runfiles/$workspace/foo/bar/lib/baz.dart',
+        ),
+        'foo/bar/lib/baz.dart',
+      );
       expect(
-          resolver.resolve(
-              'file://x/y/z.runfiles/$workspace/foo/bar/lib/src/baz.dart'),
-          'foo/bar/lib/src/baz.dart');
+        resolver.resolve(
+          'file://x/y/z.runfiles/$workspace/foo/bar/lib/src/baz.dart',
+        ),
+        'foo/bar/lib/src/baz.dart',
+      );
+      expect(resolver.resolve('file://x/y/z/foo/bar/lib/baz.dart'), isNull);
+    });
+
+    test('resolves file URIs when workspacePath is slash-padded', () {
+      for (final padded in ['$workspace/', '$workspace///', '/$workspace/']) {
+        final slashResolver = BazelResolver(workspacePath: padded);
+        expect(
+          slashResolver.resolve(
+            'file://x/y/z.runfiles/$workspace/foo/bar/lib/baz.dart',
+          ),
+          'foo/bar/lib/baz.dart',
+          reason: 'workspacePath="$padded" (2-slash file URI)',
+        );
+        expect(
+          slashResolver.resolve(
+            'file:///x/y/z.runfiles/$workspace/foo/bar/lib/src/baz.dart',
+          ),
+          'foo/bar/lib/src/baz.dart',
+          reason: 'workspacePath="$padded" (3-slash file URI)',
+        );
+      }
+    });
+
+    test('resolves file URIs when workspacePath is empty', () {
+      final defaultResolver = BazelResolver();
+      expect(
+        defaultResolver.resolve('file://x/y/z.runfiles/foo/bar/lib/baz.dart'),
+        'foo/bar/lib/baz.dart',
+      );
+      expect(
+        BazelResolver(
+          workspacePath: '',
+        ).resolve('file:///x/y/z.runfiles/foo/bar/lib/src/baz.dart'),
+        'foo/bar/lib/src/baz.dart',
+      );
+    });
+
+    test('resolves file URIs with multi-segment workspacePath', () {
+      final multiResolver = BazelResolver(workspacePath: 'a/b');
+      expect(
+        multiResolver.resolve('file:///x/y/z.runfiles/a/b/lib/baz.dart'),
+        'lib/baz.dart',
+      );
+    });
+
+    test('decodes percent-encoded segments in file URIs', () {
+      expect(
+        resolver.resolve('file:///x/y/z.runfiles/$workspace/my%20dir/baz.dart'),
+        'my dir/baz.dart',
+      );
+    });
+
+    test('resolves Windows drive-letter file URIs', () {
+      expect(
+        resolver.resolve(
+          'file:///C:/b/execroot/z.runfiles/$workspace/foo/bar/lib/baz.dart',
+        ),
+        'foo/bar/lib/baz.dart',
+      );
+    });
+
+    test('resolves nested .runfiles segments matching workspacePath', () {
+      expect(
+        resolver.resolve(
+          'file:///x/outer.runfiles/other_ws/inner.runfiles/$workspace/lib/baz.dart',
+        ),
+        'lib/baz.dart',
+      );
+    });
+
+    test('rejects workspace prefix collisions and directory-only URIs', () {
+      expect(
+        resolver.resolve(
+          'file:///x/y/z.runfiles/${workspace}_other/lib/baz.dart',
+        ),
+        isNull,
+      );
+      expect(resolver.resolve('file:///x/y/z.runfiles/$workspace/'), isNull);
+      expect(resolver.resolve('file:///x/y/z.runfiles/$workspace'), isNull);
+      expect(BazelResolver().resolve('file:///x/y/z.runfiles/'), isNull);
+    });
+
+    test('rejects .. escapes while normalizing internal .. segments', () {
+      expect(
+        resolver.resolve('file:///x/y/z.runfiles/$workspace/../etc/passwd'),
+        isNull,
+      );
+      expect(
+        BazelResolver().resolve('file:///x/y/z.runfiles/../etc/passwd'),
+        isNull,
+      );
+      expect(
+        resolver.resolve('file:///x/y/z.runfiles/$workspace/foo/../bar.dart'),
+        'bar.dart',
+      );
     });
 
     test('resolves HTTPS URIs containing /packages/', () {
-      expect(resolver.resolve('https://host:8080/a/b/packages/foo/bar.dart'),
-          'third_party/dart/foo/lib/bar.dart');
       expect(
-          resolver.resolve('https://host:8080/a/b/packages/foo/src/bar.dart'),
-          'third_party/dart/foo/lib/src/bar.dart');
+        resolver.resolve('https://host:8080/a/b/packages/foo/bar.dart'),
+        'third_party/dart/foo/lib/bar.dart',
+      );
       expect(
-          resolver.resolve('https://host:8080/a/b/packages/foo.bar/baz.dart'),
-          'foo/bar/lib/baz.dart');
+        resolver.resolve('https://host:8080/a/b/packages/foo/src/bar.dart'),
+        'third_party/dart/foo/lib/src/bar.dart',
+      );
       expect(
-          resolver
-              .resolve('https://host:8080/a/b/packages/foo.bar/src/baz.dart'),
-          'foo/bar/lib/src/baz.dart');
+        resolver.resolve('https://host:8080/a/b/packages/foo.bar/baz.dart'),
+        'foo/bar/lib/baz.dart',
+      );
+      expect(
+        resolver.resolve('https://host:8080/a/b/packages/foo.bar/src/baz.dart'),
+        'foo/bar/lib/src/baz.dart',
+      );
     });
 
     test('resolves HTTP URIs containing /packages/', () {
-      expect(resolver.resolve('http://host:8080/a/b/packages/foo/bar.dart'),
-          'third_party/dart/foo/lib/bar.dart');
-      expect(resolver.resolve('http://host:8080/a/b/packages/foo/src/bar.dart'),
-          'third_party/dart/foo/lib/src/bar.dart');
-      expect(resolver.resolve('http://host:8080/a/b/packages/foo.bar/baz.dart'),
-          'foo/bar/lib/baz.dart');
       expect(
-          resolver
-              .resolve('http://host:8080/a/b/packages/foo.bar/src/baz.dart'),
-          'foo/bar/lib/src/baz.dart');
+        resolver.resolve('http://host:8080/a/b/packages/foo/bar.dart'),
+        'third_party/dart/foo/lib/bar.dart',
+      );
+      expect(
+        resolver.resolve('http://host:8080/a/b/packages/foo/src/bar.dart'),
+        'third_party/dart/foo/lib/src/bar.dart',
+      );
+      expect(
+        resolver.resolve('http://host:8080/a/b/packages/foo.bar/baz.dart'),
+        'foo/bar/lib/baz.dart',
+      );
+      expect(
+        resolver.resolve('http://host:8080/a/b/packages/foo.bar/src/baz.dart'),
+        'foo/bar/lib/src/baz.dart',
+      );
     });
 
     test('resolves HTTPS URIs without /packages/', () {
       expect(
-          resolver
-              .resolve('https://host:8080/third_party/dart/foo/lib/bar.dart'),
-          'third_party/dart/foo/lib/bar.dart');
+        resolver.resolve('https://host:8080/third_party/dart/foo/lib/bar.dart'),
+        'third_party/dart/foo/lib/bar.dart',
+      );
       expect(
-          resolver.resolve(
-              'https://host:8080/third_party/dart/foo/lib/src/bar.dart'),
-          'third_party/dart/foo/lib/src/bar.dart');
-      expect(resolver.resolve('https://host:8080/foo/lib/bar.dart'),
-          'foo/lib/bar.dart');
-      expect(resolver.resolve('https://host:8080/foo/lib/src/bar.dart'),
-          'foo/lib/src/bar.dart');
+        resolver.resolve(
+          'https://host:8080/third_party/dart/foo/lib/src/bar.dart',
+        ),
+        'third_party/dart/foo/lib/src/bar.dart',
+      );
+      expect(
+        resolver.resolve('https://host:8080/foo/lib/bar.dart'),
+        'foo/lib/bar.dart',
+      );
+      expect(
+        resolver.resolve('https://host:8080/foo/lib/src/bar.dart'),
+        'foo/lib/src/bar.dart',
+      );
     });
 
     test('resolves HTTP URIs without /packages/', () {
       expect(
-          resolver
-              .resolve('http://host:8080/third_party/dart/foo/lib/bar.dart'),
-          'third_party/dart/foo/lib/bar.dart');
+        resolver.resolve('http://host:8080/third_party/dart/foo/lib/bar.dart'),
+        'third_party/dart/foo/lib/bar.dart',
+      );
       expect(
-          resolver.resolve(
-              'http://host:8080/third_party/dart/foo/lib/src/bar.dart'),
-          'third_party/dart/foo/lib/src/bar.dart');
-      expect(resolver.resolve('http://host:8080/foo/lib/bar.dart'),
-          'foo/lib/bar.dart');
-      expect(resolver.resolve('http://host:8080/foo/lib/src/bar.dart'),
-          'foo/lib/src/bar.dart');
+        resolver.resolve(
+          'http://host:8080/third_party/dart/foo/lib/src/bar.dart',
+        ),
+        'third_party/dart/foo/lib/src/bar.dart',
+      );
+      expect(
+        resolver.resolve('http://host:8080/foo/lib/bar.dart'),
+        'foo/lib/bar.dart',
+      );
+      expect(
+        resolver.resolve('http://host:8080/foo/lib/src/bar.dart'),
+        'foo/lib/src/bar.dart',
+      );
     });
   });
 }

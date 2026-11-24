@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io' as io;
+import 'dart:math';
 
 import 'package:cli_util/cli_components.dart';
 import 'package:cli_util/windows_compatibility.dart';
@@ -35,7 +36,20 @@ Future<void> main() async {
     final count = int.parse(counts[countResult]);
     print('Got result $count');
 
-    final allOptions = List.generate(count, (i) => 'Item #$i');
+    final random = Random();
+    final allOptions = List.generate(count, (i) {
+      final lineCount = random.nextInt(8); // 0 to 7 lines
+      final description =
+          lineCount == 0
+              ? null
+              : List.generate(
+                lineCount,
+                (line) =>
+                    '\x1b[2mDescription line ${line + 1} for item #$i with '
+                    'some extra words to demonstrate word wrapping\x1b[0m',
+              ).join('\n');
+      return SelectOption('Item #$i', description: description);
+    });
     print('Select multiple items:');
     final selectedOptions = await showMultiSelectDialog(
       allOptions,
@@ -50,7 +64,7 @@ Future<void> main() async {
 
     print('Selection complete, selected ${selectedOptions.length} item(s):');
     for (final index in selectedOptions) {
-      print(' - ${allOptions[index]}');
+      print(' - ${allOptions[index].label}');
     }
   } finally {
     await subscription.cancel();

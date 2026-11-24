@@ -12,8 +12,8 @@ import 'util.dart';
 
 typedef SyncIsolateCallback = void Function(IsolateRef isolate);
 typedef AsyncIsolateCallback = Future<void> Function(IsolateRef isolate);
-typedef AsyncIsolatePausedCallback = Future<void> Function(
-    IsolateRef isolate, bool isLastIsolateInGroup);
+typedef AsyncIsolatePausedCallback =
+    Future<void> Function(IsolateRef isolate, bool isLastIsolateInGroup);
 typedef AsyncVmServiceEventCallback = Future<void> Function(Event event);
 typedef SyncErrorLogger = void Function(String message);
 
@@ -67,6 +67,9 @@ class IsolatePausedListener {
         await _service.resume(_mainIsolate!.id!);
       } on RPCError {
         // The VM Service has already shut down, so there's nothing left to do.
+      } on SentinelException {
+        // The isolate has already been collected, so there's nothing left
+        // to do.
       }
     }
   }
@@ -105,7 +108,23 @@ class IsolatePausedListener {
         _oldCollectionTasks.remove(collectionTask);
         group.exit(isolateRef);
         if (!_finishedListening) {
-          await _service.resume(isolateRef.id!);
+          // The isolate can exit in the window between the pause callback
+          // completing and this resume request reaching the VM. Ignore the
+          // errors that this benign race produces:
+          // - SentinelException: the isolate has exited and been collected.
+          // - kIsolateMustBePaused: the isolate is no longer paused (e.g. it
+          //   was already resumed and is running toward exit).
+          // Any other error may indicate a logical bug in isolate lifecycle
+          // management, so let it propagate.
+          try {
+            await _service.resume(isolateRef.id!);
+          } on SentinelException {
+            // Ignore.
+          } on RPCError catch (e) {
+            if (e.code != RPCErrorKind.kIsolateMustBePaused.code) {
+              rethrow;
+            }
+          }
         }
       }
     }
@@ -117,8 +136,10 @@ class IsolatePausedListener {
     group.exit(isolateRef);
     --_numIsolates;
     if (group.noLiveIsolates && !group.collected) {
-      _log('ERROR: An isolate exited without pausing, causing '
-          'coverage data to be lost for group ${isolateRef.isolateGroupId!}.');
+      _log(
+        'ERROR: An isolate exited without pausing, causing '
+        'coverage data to be lost for group ${isolateRef.isolateGroupId!}.',
+      );
     }
     if (isolateRef.id! == _mainIsolate?.id) {
       // Main isolate exited without pausing.
@@ -160,10 +181,11 @@ extension on Completer {
 ///    if an exit event arrives while [onIsolatePaused] is being awaited.
 ///  - Each callback will only be called once per isolate.
 Future<void> listenToIsolateLifecycleEvents(
-    VmService service,
-    SyncIsolateCallback onIsolateStarted,
-    AsyncIsolateCallback onIsolatePaused,
-    SyncIsolateCallback onIsolateExited) async {
+  VmService service,
+  SyncIsolateCallback onIsolateStarted,
+  AsyncIsolateCallback onIsolatePaused,
+  SyncIsolateCallback onIsolateExited,
+) async {
   final started = <String>{};
   void onStart(IsolateRef isolateRef) {
     if (started.add(isolateRef.id!)) onIsolateStarted(isolateRef);

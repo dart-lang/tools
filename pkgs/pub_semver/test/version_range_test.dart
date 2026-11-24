@@ -114,8 +114,10 @@ void main() {
       var range = VersionRange(max: v234);
 
       expect(range, allows(Version.parse('2.3.3')));
-      expect(range,
-          doesNotAllow(Version.parse('2.3.4-dev'), Version.parse('2.3.4')));
+      expect(
+          range,
+          doesNotAllow(Version.parse('2.3.4-dev'), Version.parse('2.3.4--1'),
+              Version.parse('2.3.4-0xA'), Version.parse('2.3.4')));
     });
 
     test(

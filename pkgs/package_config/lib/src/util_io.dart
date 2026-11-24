@@ -52,30 +52,6 @@ Future<Uint8List?> _httpGet(Uri uri) async {
   return result;
 }
 
-/// The file name of a path.
-///
-/// The file name is everything after the last occurrence of
-/// [Platform.pathSeparator], or the entire string if no
-/// path separator occurs in the string.
-String fileName(String path) {
-  var separator = Platform.pathSeparator;
-  var lastSeparator = path.lastIndexOf(separator);
-  if (lastSeparator < 0) return path;
-  return path.substring(lastSeparator + separator.length);
-}
-
-/// The directory name of a path.
-///
-/// The directory name is everything before the last occurrence of
-/// [Platform.pathSeparator], or the empty string if no
-/// path separator occurs in the string.
-String dirName(String path) {
-  var separator = Platform.pathSeparator;
-  var lastSeparator = path.lastIndexOf(separator);
-  if (lastSeparator < 0) return '';
-  return path.substring(0, lastSeparator);
-}
-
 /// Join path parts with the [Platform.pathSeparator].
 ///
 /// If a part ends with a path separator, then no extra separator is
@@ -88,35 +64,4 @@ String pathJoin(String part1, String part2, [String? part3]) {
   }
   var separator2 = part2.endsWith(separator) ? '' : separator;
   return '$part1$separator1$part2$separator2$part3';
-}
-
-/// Join an unknown number of path parts with [Platform.pathSeparator].
-///
-/// If a part ends with a path separator, then no extra separator is
-/// inserted.
-String pathJoinAll(Iterable<String> parts) {
-  var buffer = StringBuffer();
-  var separator = '';
-  for (var part in parts) {
-    buffer
-      ..write(separator)
-      ..write(part);
-    separator = part.endsWith(Platform.pathSeparator)
-        ? ''
-        : Platform.pathSeparator;
-  }
-  return buffer.toString();
-}
-
-String pathAppend(Directory base, Iterable<String> parts) {
-  var previousPart = base.path;
-  var buffer = StringBuffer(previousPart);
-  for (var part in parts) {
-    if (!previousPart.endsWith(Platform.pathSeparator)) {
-      buffer.write(Platform.pathSeparator);
-    }
-    previousPart = part;
-    buffer.write(part);
-  }
-  return buffer.toString();
 }

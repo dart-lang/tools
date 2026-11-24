@@ -1,14 +1,14 @@
 name: code_builder
-version: 4.12.0-wip
+version: 4.13.1-wip
 description: A fluent, builder-based library for generating valid Dart code.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/code_builder
 issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Acode_builder
 
 environment:
-  sdk: ^3.7.0
+  sdk: ^3.10.0
 
 dependencies:
-  built_collection: ^5.1.1
+  built_collection: '>=5.1.1 <7.0.0'
   built_value: ^8.10.1
   collection: ^1.19.0
   matcher: ^0.12.16+1

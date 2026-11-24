@@ -201,7 +201,6 @@ abstract class TokenizerBase {
           return -1;
         }
       }
-      _hexDigit(_text.codeUnitAt(_index));
       // Multiply by 16 rather than shift by 4 since that will result in a
       // correct value for numbers that exceed the 32 bit precision of JS
       // 'integers'.

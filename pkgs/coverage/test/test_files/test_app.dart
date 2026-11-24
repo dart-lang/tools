@@ -31,8 +31,11 @@ Future<void> main() async {
 
   final port = ReceivePort();
 
-  final isolate =
-      await Isolate.spawn(isolateTask, [port.sendPort, 1, 2], paused: true);
+  final isolate = await Isolate.spawn(isolateTask, [
+    port.sendPort,
+    1,
+    2,
+  ], paused: true);
   await Service.controlWebServer(enable: true);
   final isolateID = Service.getIsolateID(isolate);
   print('isolateId = $isolateID');

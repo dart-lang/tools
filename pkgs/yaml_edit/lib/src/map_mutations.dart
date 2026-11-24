@@ -109,7 +109,38 @@ SourceEdit _addToFlowMap(
   final insertionIndex = getMapInsertionIndex(map, keyString);
 
   if (insertionIndex == map.length) {
-    return SourceEdit(map.span.end.offset - 1, 0, ', $keyString: $valueString');
+    final yaml = yamlEdit.toString();
+    final lastNode = map.nodes.values.last;
+    final closingOffset = map.span.end.offset - 1;
+    final between = yaml.substring(lastNode.span.end.offset, closingOffset);
+    final hasTrailing = betweenHasTrailingComma(between);
+
+    final entryString = '$keyString: $valueString';
+    String formattedValue;
+    if (hasTrailing) {
+      // If there is already a trailing comma in the flow map, do not prepend
+      // another comma. If the flow map spans multiple lines with the closing
+      // brace on a new line, align the new entry with the previous elements.
+      if (between.contains('\n')) {
+        final lastKey = map.nodes.keys.last as YamlNode;
+        formattedValue = formatMultilineFlowTrailingEntry(
+          closingOffset: closingOffset,
+          lastEntryStartOffset: lastKey.span.start.offset,
+          newEntry: entryString,
+          yaml: yaml,
+        );
+      } else {
+        var v = entryString;
+        if (!RegExp(r'\s$').hasMatch(between)) {
+          v = ' $v';
+        }
+        formattedValue = '$v,';
+      }
+    } else {
+      formattedValue = ', $entryString';
+    }
+
+    return SourceEdit(closingOffset, 0, formattedValue);
   }
 
   final insertionOffset =

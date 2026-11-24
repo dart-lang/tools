@@ -1,3 +1,51 @@
+## 1.16.2-wip
+
+- Use `getVersion()` instead of `getVM()` when pinging the VM service API.
+
+## 1.16.1
+
+- Fix `HitMap.parseFiles` to allow empty `{}` coverage files written by
+  `dart test --coverage` for skipped test suites.
+- `Resolver.resolve` rejects `package:` and `dart:` URIs outside known roots.
+- Fix `BazelResolver.resolve` for `file:` URIs to handle empty and slash-padded
+  `workspacePath` values, decode percent-encoded segments, and reject `..`
+  escapes and directory-only `.runfiles` URIs.
+
+## 1.16.0
+
+- Support collecting and formatting web (V8 / Chrome) coverage reports in
+  `test_with_coverage` via the new `-p` / `--platform` flag. Web runs delegate
+  to `dart test --coverage`; VM runs continue to use the existing VM-service
+  collection flow. Platforms other than `vm` and `chrome` are rejected, as are
+  `--function-coverage` and `--branch-coverage` combined with a web platform,
+  and platform flags passed through to the test script.
+  Note that web coverage is measured on compiled JavaScript: code the compiler
+  drops cannot be reported as uncovered, so line counts and percentages are not
+  comparable to VM runs and `--fail-under` thresholds must be re-tuned per
+  platform.
+- Support `scopeOutput` filtering in `HitMap.parseJsonSync`, `HitMap.parseJson`,
+  and `HitMap.parseFiles`, normalizing `file:` URIs inside known package library
+  roots to `package:` URIs via `Resolver.toPackageUri`.
+- `test_with_coverage` now fails immediately when the test process exits before
+  the VM service is ready or before coverage collection finishes (for example,
+  when the test path does not exist or fails to load) instead of waiting
+  forever, and exits with the test process's exit code.
+- `HitMap.parseFiles` now throws a `FormatException` when a file is not a valid
+  `{"coverage": [...]}` report, instead of silently ignoring it, and
+  `parseChromeCoverage` throws a `FormatException` when an entry is missing a
+  string `"scriptId"`.
+- Migrate Dart subprocess spawning to `package:cli_util` (`dartExecutable`) to
+  support AOT-compiled executables (`dart compile exe` / `dart install`).
+- `Resolver.resolve` now rejects `file:` URIs that fall outside the known
+  package/SDK roots or the current directory, instead of resolving them
+  unconditionally.
+- Fix a race condition in isolate teardown: ignore the benign errors
+  produced when an isolate exits between its pause-on-exit callback
+  completing and the resume request reaching the VM service.
+- Also ignore `SentinelException` when resuming the main isolate after
+  collection, matching the existing `RPCError` handling there.
+- Require Dart 3.9.
+
 ## 1.15.1
 
 - Allow package_config `3.x.x`.

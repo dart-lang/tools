@@ -57,29 +57,25 @@ void main() {
   });
 
   final library = Library(
-    (b) =>
-        b
-          ..body.add(
-            Field(
-              (b) =>
-                  b
-                    ..name = 'val1'
-                    ..modifier = FieldModifier.constant
-                    ..assignment = refer('ConstClass').constInstance([]).code,
-            ),
-          )
-          ..body.add(
-            Field(
-              (b) =>
-                  b
-                    ..name = 'val2'
-                    ..modifier = FieldModifier.constant
-                    ..assignment =
-                        refer(
-                          'ConstClass',
-                        ).constInstanceNamed('other', []).code,
-            ),
-          ),
+    (b) => b
+      ..body.add(
+        Field(
+          (b) => b
+            ..name = 'val1'
+            ..modifier = FieldModifier.constant
+            ..assignment = refer('ConstClass').constInstance([]).code,
+        ),
+      )
+      ..body.add(
+        Field(
+          (b) => b
+            ..name = 'val2'
+            ..modifier = FieldModifier.constant
+            ..assignment = refer(
+              'ConstClass',
+            ).constInstanceNamed('other', []).code,
+        ),
+      ),
   );
 
   test('should emit a source file with imports in defined order', () {

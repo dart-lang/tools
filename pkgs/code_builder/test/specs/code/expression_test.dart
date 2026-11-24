@@ -354,8 +354,72 @@ void main() {
     expect(refer('foo').cascade('bar'), equalsDart('foo..bar'));
   });
 
+  for (final nullAware in [false, true]) {
+    final operator = nullAware ? '?..' : '..';
+
+    for (final entry in {
+      'property access': refer('foo').property('bar'),
+      'index access': refer('foo').index(literalNum(0)),
+    }.entries) {
+      test(
+        'should preserve raw cascade spacing after ${entry.key} ($operator)',
+        () {
+          final receiver = entry.value;
+          final expression = nullAware
+              ? receiver.nullSafeCascade('baz')
+              : receiver.cascade('baz');
+          final rawReceiver = receiver.accept(DartEmitter()).toString();
+          expect(
+            expression.accept(DartEmitter()).toString(),
+            '$rawReceiver${operator}baz',
+          );
+        },
+      );
+    }
+
+    test(
+      'should separate a property cascade after a nullable cast ($operator)',
+      () {
+        final first = nullAware
+            ? refer('foo').nullSafeCascade('a')
+            : refer('foo').cascade('a');
+        expect(
+          first
+              .assign(const CodeExpression(Code("json['a'] as int?")))
+              .cascade('b')
+              .assign(literalNum(1))
+              .statement,
+          equalsDart("foo${operator}a = json['a'] as int? ..b = 1;"),
+        );
+      },
+    );
+
+    test(
+      'should separate an index cascade after a nullable cast ($operator)',
+      () {
+        final first = nullAware
+            ? refer('foo').nullSafeCascadeIndex(literalString('a'))
+            : refer('foo').cascadeIndex(literalString('a'));
+        expect(
+          first
+              .assign(const CodeExpression(Code("json['a'] as List<int>?")))
+              .cascadeIndex(literalString('b'))
+              .assign(literalNum(1))
+              .statement,
+          equalsDart(
+            "foo$operator['a'] = json['a'] as List<int>? ..['b'] = 1;",
+          ),
+        );
+      },
+    );
+  }
+
   test('should emit invoking a null safe property accessor', () {
     expect(refer('foo').nullSafeProperty('bar'), equalsDart('foo?.bar'));
+  });
+
+  test('should emit invoking a null-aware cascade property accessor', () {
+    expect(refer('foo').nullSafeCascade('bar'), equalsDart('foo?..bar'));
   });
 
   test('should emit invoking a method with a single positional argument', () {
@@ -422,10 +486,9 @@ void main() {
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..returnType = refer('void')
-              ..isNullable = true,
+        (b) => b
+          ..returnType = refer('void')
+          ..isNullable = true,
       ).toTypeDef('Void0'),
       equalsDart('typedef Void0 = void Function()?;', emitter),
     );
@@ -434,10 +497,9 @@ void main() {
   test('should emit a typedef statement for a generic function type', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..returnType = refer('void')
-              ..types.add(refer('T')),
+        (b) => b
+          ..returnType = refer('void')
+          ..types.add(refer('T')),
       ).toTypeDef('Void0'),
       equalsDart('typedef Void0 = void Function<T>();'),
     );
@@ -446,10 +508,9 @@ void main() {
   test('should emit a function type with type parameters', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..returnType = refer('T')
-              ..types.add(refer('T')),
+        (b) => b
+          ..returnType = refer('T')
+          ..types.add(refer('T')),
       ),
       equalsDart('T Function<T>()'),
     );
@@ -465,10 +526,9 @@ void main() {
   test('should emit a function type with parameters', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..requiredParameters.add(refer('String'))
-              ..optionalParameters.add(refer('int')),
+        (b) => b
+          ..requiredParameters.add(refer('String'))
+          ..optionalParameters.add(refer('int')),
       ),
       equalsDart('Function(String, [int, ])'),
     );
@@ -489,10 +549,9 @@ void main() {
     () {
       expect(
         FunctionType(
-          (b) =>
-              b
-                ..namedRequiredParameters.addAll({'x': refer('int')})
-                ..namedParameters.addAll({'y': refer('int')}),
+          (b) => b
+            ..namedRequiredParameters.addAll({'x': refer('int')})
+            ..namedParameters.addAll({'y': refer('int')}),
         ),
         equalsDart('Function({required int x, int y, })'),
       );
@@ -502,12 +561,11 @@ void main() {
   test('should emit a function type with named required parameters', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..namedRequiredParameters.addAll({
-                'x': refer('int'),
-                'y': refer('int'),
-              }),
+        (b) => b
+          ..namedRequiredParameters.addAll({
+            'x': refer('int'),
+            'y': refer('int'),
+          }),
       ),
       equalsDart('Function({required int x, required int y, })'),
     );
@@ -517,10 +575,9 @@ void main() {
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..requiredParameters.add(refer('String'))
-              ..isNullable = true,
+        (b) => b
+          ..requiredParameters.add(refer('String'))
+          ..isNullable = true,
       ),
       equalsDart('Function(String)?', emitter),
     );
@@ -529,10 +586,9 @@ void main() {
   test('should emit a nullable function type in pre-Null Safety library', () {
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..requiredParameters.add(refer('String'))
-              ..isNullable = true,
+        (b) => b
+          ..requiredParameters.add(refer('String'))
+          ..isNullable = true,
       ),
       equalsDart('Function(String)'),
     );
@@ -542,10 +598,9 @@ void main() {
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     expect(
       FunctionType(
-        (b) =>
-            b
-              ..requiredParameters.add(refer('String'))
-              ..isNullable = false,
+        (b) => b
+          ..requiredParameters.add(refer('String'))
+          ..isNullable = false,
       ),
       equalsDart('Function(String)', emitter),
     );
@@ -556,10 +611,9 @@ void main() {
     () {
       expect(
         FunctionType(
-          (b) =>
-              b
-                ..requiredParameters.add(refer('String'))
-                ..isNullable = false,
+          (b) => b
+            ..requiredParameters.add(refer('String'))
+            ..isNullable = false,
         ),
         equalsDart('Function(String)'),
       );
@@ -581,10 +635,9 @@ void main() {
       refer('map').property('putIfAbsent').call([
         literalString('foo'),
         Method(
-          (b) =>
-              b
-                ..types.add(refer('T'))
-                ..body = literalTrue.code,
+          (b) => b
+            ..types.add(refer('T'))
+            ..body = literalTrue.code,
         ).genericClosure,
       ]),
       equalsDart("map.putIfAbsent('foo', <T>() => true, )"),
@@ -648,6 +701,28 @@ void main() {
     );
   });
 
+  test('should emit a cascade index operator set', () {
+    expect(
+      refer('bar')
+          .cascadeIndex(literalString('key'))
+          .assign(literalFalse)
+          .assignVar('foo')
+          .statement,
+      equalsDart("var foo = bar..['key'] = false;"),
+    );
+  });
+
+  test('should emit a null-aware cascade index operator set', () {
+    expect(
+      refer('bar')
+          .nullSafeCascadeIndex(literalString('key'))
+          .assign(literalFalse)
+          .assignVar('foo')
+          .statement,
+      equalsDart("var foo = bar?..['key'] = false;"),
+    );
+  });
+
   test('should emit assigning to a var', () {
     expect(literalTrue.assignVar('foo'), equalsDart('var foo = true'));
   });
@@ -665,10 +740,9 @@ void main() {
       literalTrue.assignVar(
         'foo',
         TypeReference(
-          (b) =>
-              b
-                ..symbol = 'bool'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'bool'
+            ..isNullable = true,
         ),
       ),
       equalsDart('bool? foo = true', emitter),
@@ -685,10 +759,9 @@ void main() {
       literalTrue.assignFinal(
         'foo',
         TypeReference(
-          (b) =>
-              b
-                ..symbol = 'bool'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'bool'
+            ..isNullable = true,
         ),
       ),
       equalsDart('final bool? foo = true', emitter),
@@ -705,10 +778,9 @@ void main() {
       literalTrue.assignConst(
         'foo',
         TypeReference(
-          (b) =>
-              b
-                ..symbol = 'bool'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'bool'
+            ..isNullable = true,
         ),
       ),
       equalsDart('const bool? foo = true', emitter),
@@ -929,10 +1001,9 @@ void main() {
       declareConst(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'String'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'String'
+            ..isNullable = true,
         ),
       ).assign(refer('bar')),
       equalsDart('const String? foo = bar', emitter),
@@ -944,10 +1015,9 @@ void main() {
       declareConst(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'List'
-                ..types.add(refer('int')),
+          (b) => b
+            ..symbol = 'List'
+            ..types.add(refer('int')),
         ),
       ).assign(refer('bar')),
       equalsDart('const List<int> foo = bar'),
@@ -974,10 +1044,9 @@ void main() {
       declareFinal(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'String'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'String'
+            ..isNullable = true,
         ),
       ).assign(refer('bar')),
       equalsDart('final String? foo = bar', emitter),
@@ -989,10 +1058,9 @@ void main() {
       declareFinal(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'List'
-                ..types.add(refer('int')),
+          (b) => b
+            ..symbol = 'List'
+            ..types.add(refer('int')),
         ),
       ).assign(refer('bar')),
       equalsDart('final List<int> foo = bar'),
@@ -1034,10 +1102,9 @@ void main() {
       declareVar(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'String'
-                ..isNullable = true,
+          (b) => b
+            ..symbol = 'String'
+            ..isNullable = true,
         ),
       ).assign(refer('bar')),
       equalsDart('String? foo = bar', emitter),
@@ -1049,10 +1116,9 @@ void main() {
       declareVar(
         'foo',
         type: TypeReference(
-          (b) =>
-              b
-                ..symbol = 'List'
-                ..types.add(refer('int')),
+          (b) => b
+            ..symbol = 'List'
+            ..types.add(refer('int')),
         ),
       ).assign(refer('bar')),
       equalsDart('List<int> foo = bar'),
@@ -1154,17 +1220,5 @@ void main() {
       refer('foo').bitwiseOrAssign(refer('bar')),
       equalsDart('foo |= bar'),
     );
-  });
-
-  test('should emit a yielded expression', () {
-    expect(refer('foo').yielded, equalsDart('yield foo'));
-  });
-
-  test('should emit a yield starred expression', () {
-    expect(refer('foo').yieldStarred, equalsDart('yield* foo'));
-  });
-
-  test('should emit a wildcard expression', () {
-    expect(Expression.wildcard, equalsDart('_'));
   });
 }

@@ -105,19 +105,6 @@ YamlNode getKeyNode(YamlMap map, Object? key) {
   throw YamlException('$mapKey not found in map', map.span);
 }
 
-/// Returns the [YamlNode] after the [YamlNode] corresponding to the provided
-/// [key].
-YamlNode? getNextKeyNode(YamlMap map, Object? key) {
-  final keyIterator = map.nodes.keys.iterator;
-  while (keyIterator.moveNext()) {
-    if (deepEquals(keyIterator.current, key) && keyIterator.moveNext()) {
-      return keyIterator.current as YamlNode?;
-    }
-  }
-
-  return null;
-}
-
 /// Returns the key in [map] that is equal to the provided [key] by the notion
 /// of deep equality.
 Object? getKey(Map map, Object? key) {

@@ -6,454 +6,16 @@ part of 'control.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$ForLoop extends ForLoop {
-  @override
-  final Expression? initialize;
-  @override
-  final Expression? condition;
-  @override
-  final Expression? advance;
-  @override
-  final Block body;
-  @override
-  final String? label;
-
-  factory _$ForLoop([void Function(ForLoopBuilder)? updates]) =>
-      (ForLoopBuilder()..update(updates))._build();
-
-  _$ForLoop._({
-    this.initialize,
-    this.condition,
-    this.advance,
-    required this.body,
-    this.label,
-  }) : super._();
-  @override
-  ForLoop rebuild(void Function(ForLoopBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
-
-  @override
-  ForLoopBuilder toBuilder() => ForLoopBuilder()..replace(this);
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(other, this)) return true;
-    return other is ForLoop &&
-        initialize == other.initialize &&
-        condition == other.condition &&
-        advance == other.advance &&
-        body == other.body &&
-        label == other.label;
-  }
-
-  @override
-  int get hashCode {
-    var _$hash = 0;
-    _$hash = $jc(_$hash, initialize.hashCode);
-    _$hash = $jc(_$hash, condition.hashCode);
-    _$hash = $jc(_$hash, advance.hashCode);
-    _$hash = $jc(_$hash, body.hashCode);
-    _$hash = $jc(_$hash, label.hashCode);
-    _$hash = $jf(_$hash);
-    return _$hash;
-  }
-
-  @override
-  String toString() {
-    return (newBuiltValueToStringHelper(r'ForLoop')
-          ..add('initialize', initialize)
-          ..add('condition', condition)
-          ..add('advance', advance)
-          ..add('body', body)
-          ..add('label', label))
-        .toString();
-  }
-}
-
-class ForLoopBuilder implements Builder<ForLoop, ForLoopBuilder> {
-  _$ForLoop? _$v;
-
-  Expression? _initialize;
-  Expression? get initialize => _$this._initialize;
-  set initialize(Expression? initialize) => _$this._initialize = initialize;
-
-  Expression? _condition;
-  Expression? get condition => _$this._condition;
-  set condition(Expression? condition) => _$this._condition = condition;
-
-  Expression? _advance;
-  Expression? get advance => _$this._advance;
-  set advance(Expression? advance) => _$this._advance = advance;
-
-  BlockBuilder? _body;
-  BlockBuilder get body => _$this._body ??= BlockBuilder();
-  set body(BlockBuilder? body) => _$this._body = body;
-
-  String? _label;
-  String? get label => _$this._label;
-  set label(String? label) => _$this._label = label;
-
-  ForLoopBuilder();
-
-  ForLoopBuilder get _$this {
-    final $v = _$v;
-    if ($v != null) {
-      _initialize = $v.initialize;
-      _condition = $v.condition;
-      _advance = $v.advance;
-      _body = $v.body.toBuilder();
-      _label = $v.label;
-      _$v = null;
-    }
-    return this;
-  }
-
-  @override
-  void replace(ForLoop other) {
-    _$v = other as _$ForLoop;
-  }
-
-  @override
-  void update(void Function(ForLoopBuilder)? updates) {
-    if (updates != null) updates(this);
-  }
-
-  @override
-  ForLoop build() => _build();
-
-  _$ForLoop _build() {
-    _$ForLoop _$result;
-    try {
-      _$result =
-          _$v ??
-          _$ForLoop._(
-            initialize: initialize,
-            condition: condition,
-            advance: advance,
-            body: body.build(),
-            label: label,
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'body';
-        body.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'ForLoop',
-          _$failedField,
-          e.toString(),
-        );
-      }
-      rethrow;
-    }
-    replace(_$result);
-    return _$result;
-  }
-}
-
-class _$ForInLoop extends ForInLoop {
-  @override
-  final bool? async;
-  @override
-  final Expression variable;
-  @override
-  final Expression object;
-  @override
-  final Block body;
-  @override
-  final String? label;
-
-  factory _$ForInLoop([void Function(ForInLoopBuilder)? updates]) =>
-      (ForInLoopBuilder()..update(updates))._build();
-
-  _$ForInLoop._({
-    this.async,
-    required this.variable,
-    required this.object,
-    required this.body,
-    this.label,
-  }) : super._();
-  @override
-  ForInLoop rebuild(void Function(ForInLoopBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
-
-  @override
-  ForInLoopBuilder toBuilder() => ForInLoopBuilder()..replace(this);
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(other, this)) return true;
-    return other is ForInLoop &&
-        async == other.async &&
-        variable == other.variable &&
-        object == other.object &&
-        body == other.body &&
-        label == other.label;
-  }
-
-  @override
-  int get hashCode {
-    var _$hash = 0;
-    _$hash = $jc(_$hash, async.hashCode);
-    _$hash = $jc(_$hash, variable.hashCode);
-    _$hash = $jc(_$hash, object.hashCode);
-    _$hash = $jc(_$hash, body.hashCode);
-    _$hash = $jc(_$hash, label.hashCode);
-    _$hash = $jf(_$hash);
-    return _$hash;
-  }
-
-  @override
-  String toString() {
-    return (newBuiltValueToStringHelper(r'ForInLoop')
-          ..add('async', async)
-          ..add('variable', variable)
-          ..add('object', object)
-          ..add('body', body)
-          ..add('label', label))
-        .toString();
-  }
-}
-
-class ForInLoopBuilder implements Builder<ForInLoop, ForInLoopBuilder> {
-  _$ForInLoop? _$v;
-
-  bool? _async;
-  bool? get async => _$this._async;
-  set async(bool? async) => _$this._async = async;
-
-  Expression? _variable;
-  Expression? get variable => _$this._variable;
-  set variable(Expression? variable) => _$this._variable = variable;
-
-  Expression? _object;
-  Expression? get object => _$this._object;
-  set object(Expression? object) => _$this._object = object;
-
-  BlockBuilder? _body;
-  BlockBuilder get body => _$this._body ??= BlockBuilder();
-  set body(BlockBuilder? body) => _$this._body = body;
-
-  String? _label;
-  String? get label => _$this._label;
-  set label(String? label) => _$this._label = label;
-
-  ForInLoopBuilder();
-
-  ForInLoopBuilder get _$this {
-    final $v = _$v;
-    if ($v != null) {
-      _async = $v.async;
-      _variable = $v.variable;
-      _object = $v.object;
-      _body = $v.body.toBuilder();
-      _label = $v.label;
-      _$v = null;
-    }
-    return this;
-  }
-
-  @override
-  void replace(ForInLoop other) {
-    _$v = other as _$ForInLoop;
-  }
-
-  @override
-  void update(void Function(ForInLoopBuilder)? updates) {
-    if (updates != null) updates(this);
-  }
-
-  @override
-  ForInLoop build() => _build();
-
-  _$ForInLoop _build() {
-    _$ForInLoop _$result;
-    try {
-      _$result =
-          _$v ??
-          _$ForInLoop._(
-            async: async,
-            variable: BuiltValueNullFieldError.checkNotNull(
-              variable,
-              r'ForInLoop',
-              'variable',
-            ),
-            object: BuiltValueNullFieldError.checkNotNull(
-              object,
-              r'ForInLoop',
-              'object',
-            ),
-            body: body.build(),
-            label: label,
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'body';
-        body.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'ForInLoop',
-          _$failedField,
-          e.toString(),
-        );
-      }
-      rethrow;
-    }
-    replace(_$result);
-    return _$result;
-  }
-}
-
-class _$WhileLoop extends WhileLoop {
-  @override
-  final bool? doWhile;
-  @override
-  final Expression condition;
-  @override
-  final Block body;
-  @override
-  final String? label;
-
-  factory _$WhileLoop([void Function(WhileLoopBuilder)? updates]) =>
-      (WhileLoopBuilder()..update(updates))._build();
-
-  _$WhileLoop._({
-    this.doWhile,
-    required this.condition,
-    required this.body,
-    this.label,
-  }) : super._();
-  @override
-  WhileLoop rebuild(void Function(WhileLoopBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
-
-  @override
-  WhileLoopBuilder toBuilder() => WhileLoopBuilder()..replace(this);
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(other, this)) return true;
-    return other is WhileLoop &&
-        doWhile == other.doWhile &&
-        condition == other.condition &&
-        body == other.body &&
-        label == other.label;
-  }
-
-  @override
-  int get hashCode {
-    var _$hash = 0;
-    _$hash = $jc(_$hash, doWhile.hashCode);
-    _$hash = $jc(_$hash, condition.hashCode);
-    _$hash = $jc(_$hash, body.hashCode);
-    _$hash = $jc(_$hash, label.hashCode);
-    _$hash = $jf(_$hash);
-    return _$hash;
-  }
-
-  @override
-  String toString() {
-    return (newBuiltValueToStringHelper(r'WhileLoop')
-          ..add('doWhile', doWhile)
-          ..add('condition', condition)
-          ..add('body', body)
-          ..add('label', label))
-        .toString();
-  }
-}
-
-class WhileLoopBuilder implements Builder<WhileLoop, WhileLoopBuilder> {
-  _$WhileLoop? _$v;
-
-  bool? _doWhile;
-  bool? get doWhile => _$this._doWhile;
-  set doWhile(bool? doWhile) => _$this._doWhile = doWhile;
-
-  Expression? _condition;
-  Expression? get condition => _$this._condition;
-  set condition(Expression? condition) => _$this._condition = condition;
-
-  BlockBuilder? _body;
-  BlockBuilder get body => _$this._body ??= BlockBuilder();
-  set body(BlockBuilder? body) => _$this._body = body;
-
-  String? _label;
-  String? get label => _$this._label;
-  set label(String? label) => _$this._label = label;
-
-  WhileLoopBuilder();
-
-  WhileLoopBuilder get _$this {
-    final $v = _$v;
-    if ($v != null) {
-      _doWhile = $v.doWhile;
-      _condition = $v.condition;
-      _body = $v.body.toBuilder();
-      _label = $v.label;
-      _$v = null;
-    }
-    return this;
-  }
-
-  @override
-  void replace(WhileLoop other) {
-    _$v = other as _$WhileLoop;
-  }
-
-  @override
-  void update(void Function(WhileLoopBuilder)? updates) {
-    if (updates != null) updates(this);
-  }
-
-  @override
-  WhileLoop build() => _build();
-
-  _$WhileLoop _build() {
-    _$WhileLoop _$result;
-    try {
-      _$result =
-          _$v ??
-          _$WhileLoop._(
-            doWhile: doWhile,
-            condition: BuiltValueNullFieldError.checkNotNull(
-              condition,
-              r'WhileLoop',
-              'condition',
-            ),
-            body: body.build(),
-            label: label,
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'body';
-        body.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'WhileLoop',
-          _$failedField,
-          e.toString(),
-        );
-      }
-      rethrow;
-    }
-    replace(_$result);
-    return _$result;
-  }
-}
-
 class _$Branch extends Branch {
   @override
-  final Expression? condition;
+  final Condition condition;
   @override
-  final Block body;
+  final Code? body;
 
   factory _$Branch([void Function(BranchBuilder)? updates]) =>
       (BranchBuilder()..update(updates)).build() as _$Branch;
 
-  _$Branch._({this.condition, required this.body}) : super._();
+  _$Branch._({required this.condition, this.body}) : super._();
   @override
   Branch rebuild(void Function(BranchBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -491,25 +53,25 @@ class _$BranchBuilder extends BranchBuilder {
   _$Branch? _$v;
 
   @override
-  Expression? get condition {
+  Condition? get condition {
     _$this;
     return super.condition;
   }
 
   @override
-  set condition(Expression? condition) {
+  set condition(Condition? condition) {
     _$this;
     super.condition = condition;
   }
 
   @override
-  BlockBuilder get body {
+  Code? get body {
     _$this;
     return super.body;
   }
 
   @override
-  set body(BlockBuilder body) {
+  set body(Code? body) {
     _$this;
     super.body = body;
   }
@@ -520,7 +82,7 @@ class _$BranchBuilder extends BranchBuilder {
     final $v = _$v;
     if ($v != null) {
       super.condition = $v.condition;
-      super.body = $v.body.toBuilder();
+      super.body = $v.body;
       _$v = null;
     }
     return this;
@@ -540,23 +102,16 @@ class _$BranchBuilder extends BranchBuilder {
   Branch build() => _build();
 
   _$Branch _build() {
-    _$Branch _$result;
-    try {
-      _$result = _$v ?? _$Branch._(condition: condition, body: body.build());
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'body';
-        body.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'Branch',
-          _$failedField,
-          e.toString(),
+    final _$result =
+        _$v ??
+        _$Branch._(
+          condition: BuiltValueNullFieldError.checkNotNull(
+            condition,
+            r'Branch',
+            'condition',
+          ),
+          body: body,
         );
-      }
-      rethrow;
-    }
     replace(_$result);
     return _$result;
   }
@@ -564,12 +119,14 @@ class _$BranchBuilder extends BranchBuilder {
 
 class _$Conditional extends Conditional {
   @override
-  final BuiltList<BranchBuilder> branches;
+  final BuiltList<Branch> branches;
+  @override
+  final Code? orElse;
 
   factory _$Conditional([void Function(ConditionalBuilder)? updates]) =>
       (ConditionalBuilder()..update(updates)).build() as _$Conditional;
 
-  _$Conditional._({required this.branches}) : super._();
+  _$Conditional._({required this.branches, this.orElse}) : super._();
   @override
   Conditional rebuild(void Function(ConditionalBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -580,13 +137,16 @@ class _$Conditional extends Conditional {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is Conditional && branches == other.branches;
+    return other is Conditional &&
+        branches == other.branches &&
+        orElse == other.orElse;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, branches.hashCode);
+    _$hash = $jc(_$hash, orElse.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -594,7 +154,9 @@ class _$Conditional extends Conditional {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'Conditional')
-      ..add('branches', branches)).toString();
+          ..add('branches', branches)
+          ..add('orElse', orElse))
+        .toString();
   }
 }
 
@@ -602,15 +164,27 @@ class _$ConditionalBuilder extends ConditionalBuilder {
   _$Conditional? _$v;
 
   @override
-  ListBuilder<BranchBuilder> get branches {
+  ListBuilder<Branch> get branches {
     _$this;
     return super.branches;
   }
 
   @override
-  set branches(ListBuilder<BranchBuilder> branches) {
+  set branches(ListBuilder<Branch> branches) {
     _$this;
     super.branches = branches;
+  }
+
+  @override
+  Code? get orElse {
+    _$this;
+    return super.orElse;
+  }
+
+  @override
+  set orElse(Code? orElse) {
+    _$this;
+    super.orElse = orElse;
   }
 
   _$ConditionalBuilder() : super._();
@@ -619,6 +193,7 @@ class _$ConditionalBuilder extends ConditionalBuilder {
     final $v = _$v;
     if ($v != null) {
       super.branches = $v.branches.toBuilder();
+      super.orElse = $v.orElse;
       _$v = null;
     }
     return this;
@@ -640,7 +215,8 @@ class _$ConditionalBuilder extends ConditionalBuilder {
   _$Conditional _build() {
     _$Conditional _$result;
     try {
-      _$result = _$v ?? _$Conditional._(branches: branches.build());
+      _$result =
+          _$v ?? _$Conditional._(branches: branches.build(), orElse: orElse);
     } catch (_) {
       late String _$failedField;
       try {
@@ -660,48 +236,43 @@ class _$ConditionalBuilder extends ConditionalBuilder {
   }
 }
 
-class _$CatchBlock extends CatchBlock {
+class _$Catch extends Catch {
   @override
-  final Reference? type;
+  final Reference? on;
   @override
   final String? exception;
   @override
-  final String? stacktrace;
+  final String? stackTrace;
   @override
-  final Block body;
+  final Code? body;
 
-  factory _$CatchBlock([void Function(CatchBlockBuilder)? updates]) =>
-      (CatchBlockBuilder()..update(updates))._build();
+  factory _$Catch([void Function(CatchBuilder)? updates]) =>
+      (CatchBuilder()..update(updates)).build() as _$Catch;
 
-  _$CatchBlock._({
-    this.type,
-    this.exception,
-    this.stacktrace,
-    required this.body,
-  }) : super._();
+  _$Catch._({this.on, this.exception, this.stackTrace, this.body}) : super._();
   @override
-  CatchBlock rebuild(void Function(CatchBlockBuilder) updates) =>
+  Catch rebuild(void Function(CatchBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  CatchBlockBuilder toBuilder() => CatchBlockBuilder()..replace(this);
+  _$CatchBuilder toBuilder() => _$CatchBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CatchBlock &&
-        type == other.type &&
+    return other is Catch &&
+        on == other.on &&
         exception == other.exception &&
-        stacktrace == other.stacktrace &&
+        stackTrace == other.stackTrace &&
         body == other.body;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, type.hashCode);
+    _$hash = $jc(_$hash, on.hashCode);
     _$hash = $jc(_$hash, exception.hashCode);
-    _$hash = $jc(_$hash, stacktrace.hashCode);
+    _$hash = $jc(_$hash, stackTrace.hashCode);
     _$hash = $jc(_$hash, body.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -709,231 +280,237 @@ class _$CatchBlock extends CatchBlock {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'CatchBlock')
-          ..add('type', type)
+    return (newBuiltValueToStringHelper(r'Catch')
+          ..add('on', on)
           ..add('exception', exception)
-          ..add('stacktrace', stacktrace)
+          ..add('stackTrace', stackTrace)
           ..add('body', body))
         .toString();
   }
 }
 
-class CatchBlockBuilder implements Builder<CatchBlock, CatchBlockBuilder> {
-  _$CatchBlock? _$v;
+class _$CatchBuilder extends CatchBuilder {
+  _$Catch? _$v;
 
-  Reference? _type;
-  Reference? get type => _$this._type;
-  set type(Reference? type) => _$this._type = type;
-
-  String? _exception;
-  String? get exception => _$this._exception;
-  set exception(String? exception) => _$this._exception = exception;
-
-  String? _stacktrace;
-  String? get stacktrace => _$this._stacktrace;
-  set stacktrace(String? stacktrace) => _$this._stacktrace = stacktrace;
-
-  BlockBuilder? _body;
-  BlockBuilder get body => _$this._body ??= BlockBuilder();
-  set body(BlockBuilder? body) => _$this._body = body;
-
-  CatchBlockBuilder();
-
-  CatchBlockBuilder get _$this {
-    final $v = _$v;
-    if ($v != null) {
-      _type = $v.type;
-      _exception = $v.exception;
-      _stacktrace = $v.stacktrace;
-      _body = $v.body.toBuilder();
-      _$v = null;
-    }
-    return this;
+  @override
+  Reference? get on {
+    _$this;
+    return super.on;
   }
 
   @override
-  void replace(CatchBlock other) {
-    _$v = other as _$CatchBlock;
+  set on(Reference? on) {
+    _$this;
+    super.on = on;
   }
 
   @override
-  void update(void Function(CatchBlockBuilder)? updates) {
-    if (updates != null) updates(this);
+  String? get exception {
+    _$this;
+    return super.exception;
   }
 
   @override
-  CatchBlock build() => _build();
-
-  _$CatchBlock _build() {
-    _$CatchBlock _$result;
-    try {
-      _$result =
-          _$v ??
-          _$CatchBlock._(
-            type: type,
-            exception: exception,
-            stacktrace: stacktrace,
-            body: body.build(),
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'body';
-        body.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'CatchBlock',
-          _$failedField,
-          e.toString(),
-        );
-      }
-      rethrow;
-    }
-    replace(_$result);
-    return _$result;
-  }
-}
-
-class _$TryCatch extends TryCatch {
-  @override
-  final Block body;
-  @override
-  final BuiltList<CatchBlock> handlers;
-  @override
-  final Block? handleAll;
-
-  factory _$TryCatch([void Function(TryCatchBuilder)? updates]) =>
-      (TryCatchBuilder()..update(updates)).build() as _$TryCatch;
-
-  _$TryCatch._({required this.body, required this.handlers, this.handleAll})
-    : super._();
-  @override
-  TryCatch rebuild(void Function(TryCatchBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
-
-  @override
-  _$TryCatchBuilder toBuilder() => _$TryCatchBuilder()..replace(this);
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(other, this)) return true;
-    return other is TryCatch &&
-        body == other.body &&
-        handlers == other.handlers &&
-        handleAll == other.handleAll;
+  set exception(String? exception) {
+    _$this;
+    super.exception = exception;
   }
 
   @override
-  int get hashCode {
-    var _$hash = 0;
-    _$hash = $jc(_$hash, body.hashCode);
-    _$hash = $jc(_$hash, handlers.hashCode);
-    _$hash = $jc(_$hash, handleAll.hashCode);
-    _$hash = $jf(_$hash);
-    return _$hash;
+  String? get stackTrace {
+    _$this;
+    return super.stackTrace;
   }
 
   @override
-  String toString() {
-    return (newBuiltValueToStringHelper(r'TryCatch')
-          ..add('body', body)
-          ..add('handlers', handlers)
-          ..add('handleAll', handleAll))
-        .toString();
+  set stackTrace(String? stackTrace) {
+    _$this;
+    super.stackTrace = stackTrace;
   }
-}
-
-class _$TryCatchBuilder extends TryCatchBuilder {
-  _$TryCatch? _$v;
 
   @override
-  BlockBuilder get body {
+  Code? get body {
     _$this;
     return super.body;
   }
 
   @override
-  set body(BlockBuilder body) {
+  set body(Code? body) {
     _$this;
     super.body = body;
   }
 
-  @override
-  ListBuilder<CatchBlock> get handlers {
-    _$this;
-    return super.handlers;
-  }
+  _$CatchBuilder() : super._();
 
-  @override
-  set handlers(ListBuilder<CatchBlock> handlers) {
-    _$this;
-    super.handlers = handlers;
-  }
-
-  @override
-  BlockBuilder get handleAll {
-    _$this;
-    return super.handleAll ??= BlockBuilder();
-  }
-
-  @override
-  set handleAll(BlockBuilder? handleAll) {
-    _$this;
-    super.handleAll = handleAll;
-  }
-
-  _$TryCatchBuilder() : super._();
-
-  TryCatchBuilder get _$this {
+  CatchBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      super.body = $v.body.toBuilder();
-      super.handlers = $v.handlers.toBuilder();
-      super.handleAll = $v.handleAll?.toBuilder();
+      super.on = $v.on;
+      super.exception = $v.exception;
+      super.stackTrace = $v.stackTrace;
+      super.body = $v.body;
       _$v = null;
     }
     return this;
   }
 
   @override
-  void replace(TryCatch other) {
-    _$v = other as _$TryCatch;
+  void replace(Catch other) {
+    _$v = other as _$Catch;
   }
 
   @override
-  void update(void Function(TryCatchBuilder)? updates) {
+  void update(void Function(CatchBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  TryCatch build() => _build();
+  Catch build() => _build();
 
-  _$TryCatch _build() {
-    TryCatch._build(this);
-    _$TryCatch _$result;
+  _$Catch _build() {
+    final _$result =
+        _$v ??
+        _$Catch._(
+          on: on,
+          exception: exception,
+          stackTrace: stackTrace,
+          body: body,
+        );
+    replace(_$result);
+    return _$result;
+  }
+}
+
+class _$Try extends Try {
+  @override
+  final Code? body;
+  @override
+  final BuiltList<Catch> catches;
+  @override
+  final Code? finallyBlock;
+
+  factory _$Try([void Function(TryBuilder)? updates]) =>
+      (TryBuilder()..update(updates)).build() as _$Try;
+
+  _$Try._({this.body, required this.catches, this.finallyBlock}) : super._();
+  @override
+  Try rebuild(void Function(TryBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  _$TryBuilder toBuilder() => _$TryBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is Try &&
+        body == other.body &&
+        catches == other.catches &&
+        finallyBlock == other.finallyBlock;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, body.hashCode);
+    _$hash = $jc(_$hash, catches.hashCode);
+    _$hash = $jc(_$hash, finallyBlock.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'Try')
+          ..add('body', body)
+          ..add('catches', catches)
+          ..add('finallyBlock', finallyBlock))
+        .toString();
+  }
+}
+
+class _$TryBuilder extends TryBuilder {
+  _$Try? _$v;
+
+  @override
+  Code? get body {
+    _$this;
+    return super.body;
+  }
+
+  @override
+  set body(Code? body) {
+    _$this;
+    super.body = body;
+  }
+
+  @override
+  ListBuilder<Catch> get catches {
+    _$this;
+    return super.catches;
+  }
+
+  @override
+  set catches(ListBuilder<Catch> catches) {
+    _$this;
+    super.catches = catches;
+  }
+
+  @override
+  Code? get finallyBlock {
+    _$this;
+    return super.finallyBlock;
+  }
+
+  @override
+  set finallyBlock(Code? finallyBlock) {
+    _$this;
+    super.finallyBlock = finallyBlock;
+  }
+
+  _$TryBuilder() : super._();
+
+  TryBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      super.body = $v.body;
+      super.catches = $v.catches.toBuilder();
+      super.finallyBlock = $v.finallyBlock;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(Try other) {
+    _$v = other as _$Try;
+  }
+
+  @override
+  void update(void Function(TryBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  Try build() => _build();
+
+  _$Try _build() {
+    _$Try _$result;
     try {
       _$result =
           _$v ??
-          _$TryCatch._(
-            body: body.build(),
-            handlers: handlers.build(),
-            handleAll: super.handleAll?.build(),
+          _$Try._(
+            body: body,
+            catches: catches.build(),
+            finallyBlock: finallyBlock,
           );
     } catch (_) {
       late String _$failedField;
       try {
-        _$failedField = 'body';
-        body.build();
-        _$failedField = 'handlers';
-        handlers.build();
-        _$failedField = 'handleAll';
-        super.handleAll?.build();
+        _$failedField = 'catches';
+        catches.build();
       } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'TryCatch',
-          _$failedField,
-          e.toString(),
-        );
+        throw BuiltValueNestedFieldError(r'Try', _$failedField, e.toString());
       }
       rethrow;
     }
@@ -942,44 +519,53 @@ class _$TryCatchBuilder extends TryCatchBuilder {
   }
 }
 
-class _$Case<T> extends Case<T> {
-  @override
-  final Expression pattern;
-  @override
-  final Expression? guard;
+class _$ForLoop extends ForLoop {
   @override
   final String? label;
   @override
-  final T? body;
-
-  factory _$Case([void Function(CaseBuilder<T>)? updates]) =>
-      (CaseBuilder<T>()..update(updates))._build();
-
-  _$Case._({required this.pattern, this.guard, this.label, this.body})
-    : super._();
+  final Expression? initialize;
   @override
-  Case<T> rebuild(void Function(CaseBuilder<T>) updates) =>
+  final Expression? condition;
+  @override
+  final Expression? advance;
+  @override
+  final Code? body;
+
+  factory _$ForLoop([void Function(ForLoopBuilder)? updates]) =>
+      (ForLoopBuilder()..update(updates)).build() as _$ForLoop;
+
+  _$ForLoop._({
+    this.label,
+    this.initialize,
+    this.condition,
+    this.advance,
+    this.body,
+  }) : super._();
+  @override
+  ForLoop rebuild(void Function(ForLoopBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  CaseBuilder<T> toBuilder() => CaseBuilder<T>()..replace(this);
+  _$ForLoopBuilder toBuilder() => _$ForLoopBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is Case &&
-        pattern == other.pattern &&
-        guard == other.guard &&
+    return other is ForLoop &&
         label == other.label &&
+        initialize == other.initialize &&
+        condition == other.condition &&
+        advance == other.advance &&
         body == other.body;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, pattern.hashCode);
-    _$hash = $jc(_$hash, guard.hashCode);
     _$hash = $jc(_$hash, label.hashCode);
+    _$hash = $jc(_$hash, initialize.hashCode);
+    _$hash = $jc(_$hash, condition.hashCode);
+    _$hash = $jc(_$hash, advance.hashCode);
     _$hash = $jc(_$hash, body.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -987,72 +573,605 @@ class _$Case<T> extends Case<T> {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'Case')
-          ..add('pattern', pattern)
-          ..add('guard', guard)
+    return (newBuiltValueToStringHelper(r'ForLoop')
           ..add('label', label)
+          ..add('initialize', initialize)
+          ..add('condition', condition)
+          ..add('advance', advance)
           ..add('body', body))
         .toString();
   }
 }
 
-class CaseBuilder<T> implements Builder<Case<T>, CaseBuilder<T>> {
-  _$Case<T>? _$v;
+class _$ForLoopBuilder extends ForLoopBuilder {
+  _$ForLoop? _$v;
 
-  Expression? _pattern;
-  Expression? get pattern => _$this._pattern;
-  set pattern(Expression? pattern) => _$this._pattern = pattern;
+  @override
+  String? get label {
+    _$this;
+    return super.label;
+  }
 
-  Expression? _guard;
-  Expression? get guard => _$this._guard;
-  set guard(Expression? guard) => _$this._guard = guard;
+  @override
+  set label(String? label) {
+    _$this;
+    super.label = label;
+  }
 
-  String? _label;
-  String? get label => _$this._label;
-  set label(String? label) => _$this._label = label;
+  @override
+  Expression? get initialize {
+    _$this;
+    return super.initialize;
+  }
 
-  T? _body;
-  T? get body => _$this._body;
-  set body(T? body) => _$this._body = body;
+  @override
+  set initialize(Expression? initialize) {
+    _$this;
+    super.initialize = initialize;
+  }
 
-  CaseBuilder();
+  @override
+  Expression? get condition {
+    _$this;
+    return super.condition;
+  }
 
-  CaseBuilder<T> get _$this {
+  @override
+  set condition(Expression? condition) {
+    _$this;
+    super.condition = condition;
+  }
+
+  @override
+  Expression? get advance {
+    _$this;
+    return super.advance;
+  }
+
+  @override
+  set advance(Expression? advance) {
+    _$this;
+    super.advance = advance;
+  }
+
+  @override
+  Code? get body {
+    _$this;
+    return super.body;
+  }
+
+  @override
+  set body(Code? body) {
+    _$this;
+    super.body = body;
+  }
+
+  _$ForLoopBuilder() : super._();
+
+  ForLoopBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _pattern = $v.pattern;
-      _guard = $v.guard;
-      _label = $v.label;
-      _body = $v.body;
+      super.label = $v.label;
+      super.initialize = $v.initialize;
+      super.condition = $v.condition;
+      super.advance = $v.advance;
+      super.body = $v.body;
       _$v = null;
     }
     return this;
   }
 
   @override
-  void replace(Case<T> other) {
-    _$v = other as _$Case<T>;
+  void replace(ForLoop other) {
+    _$v = other as _$ForLoop;
   }
 
   @override
-  void update(void Function(CaseBuilder<T>)? updates) {
+  void update(void Function(ForLoopBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  Case<T> build() => _build();
+  ForLoop build() => _build();
 
-  _$Case<T> _build() {
+  _$ForLoop _build() {
     final _$result =
         _$v ??
-        _$Case<T>._(
+        _$ForLoop._(
+          label: label,
+          initialize: initialize,
+          condition: condition,
+          advance: advance,
+          body: body,
+        );
+    replace(_$result);
+    return _$result;
+  }
+}
+
+class _$ForInLoop extends ForInLoop {
+  @override
+  final String? label;
+  @override
+  final bool async;
+  @override
+  final Expression variable;
+  @override
+  final Expression object;
+  @override
+  final Code? body;
+
+  factory _$ForInLoop([void Function(ForInLoopBuilder)? updates]) =>
+      (ForInLoopBuilder()..update(updates)).build() as _$ForInLoop;
+
+  _$ForInLoop._({
+    this.label,
+    required this.async,
+    required this.variable,
+    required this.object,
+    this.body,
+  }) : super._();
+  @override
+  ForInLoop rebuild(void Function(ForInLoopBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  _$ForInLoopBuilder toBuilder() => _$ForInLoopBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is ForInLoop &&
+        label == other.label &&
+        async == other.async &&
+        variable == other.variable &&
+        object == other.object &&
+        body == other.body;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, label.hashCode);
+    _$hash = $jc(_$hash, async.hashCode);
+    _$hash = $jc(_$hash, variable.hashCode);
+    _$hash = $jc(_$hash, object.hashCode);
+    _$hash = $jc(_$hash, body.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'ForInLoop')
+          ..add('label', label)
+          ..add('async', async)
+          ..add('variable', variable)
+          ..add('object', object)
+          ..add('body', body))
+        .toString();
+  }
+}
+
+class _$ForInLoopBuilder extends ForInLoopBuilder {
+  _$ForInLoop? _$v;
+
+  @override
+  String? get label {
+    _$this;
+    return super.label;
+  }
+
+  @override
+  set label(String? label) {
+    _$this;
+    super.label = label;
+  }
+
+  @override
+  bool get async {
+    _$this;
+    return super.async;
+  }
+
+  @override
+  set async(bool async) {
+    _$this;
+    super.async = async;
+  }
+
+  @override
+  Expression? get variable {
+    _$this;
+    return super.variable;
+  }
+
+  @override
+  set variable(Expression? variable) {
+    _$this;
+    super.variable = variable;
+  }
+
+  @override
+  Expression? get object {
+    _$this;
+    return super.object;
+  }
+
+  @override
+  set object(Expression? object) {
+    _$this;
+    super.object = object;
+  }
+
+  @override
+  Code? get body {
+    _$this;
+    return super.body;
+  }
+
+  @override
+  set body(Code? body) {
+    _$this;
+    super.body = body;
+  }
+
+  _$ForInLoopBuilder() : super._();
+
+  ForInLoopBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      super.label = $v.label;
+      super.async = $v.async;
+      super.variable = $v.variable;
+      super.object = $v.object;
+      super.body = $v.body;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(ForInLoop other) {
+    _$v = other as _$ForInLoop;
+  }
+
+  @override
+  void update(void Function(ForInLoopBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  ForInLoop build() => _build();
+
+  _$ForInLoop _build() {
+    final _$result =
+        _$v ??
+        _$ForInLoop._(
+          label: label,
+          async: BuiltValueNullFieldError.checkNotNull(
+            async,
+            r'ForInLoop',
+            'async',
+          ),
+          variable: BuiltValueNullFieldError.checkNotNull(
+            variable,
+            r'ForInLoop',
+            'variable',
+          ),
+          object: BuiltValueNullFieldError.checkNotNull(
+            object,
+            r'ForInLoop',
+            'object',
+          ),
+          body: body,
+        );
+    replace(_$result);
+    return _$result;
+  }
+}
+
+class _$WhileLoop extends WhileLoop {
+  @override
+  final String? label;
+  @override
+  final bool doWhile;
+  @override
+  final Expression condition;
+  @override
+  final Code? body;
+
+  factory _$WhileLoop([void Function(WhileLoopBuilder)? updates]) =>
+      (WhileLoopBuilder()..update(updates)).build() as _$WhileLoop;
+
+  _$WhileLoop._({
+    this.label,
+    required this.doWhile,
+    required this.condition,
+    this.body,
+  }) : super._();
+  @override
+  WhileLoop rebuild(void Function(WhileLoopBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  _$WhileLoopBuilder toBuilder() => _$WhileLoopBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is WhileLoop &&
+        label == other.label &&
+        doWhile == other.doWhile &&
+        condition == other.condition &&
+        body == other.body;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, label.hashCode);
+    _$hash = $jc(_$hash, doWhile.hashCode);
+    _$hash = $jc(_$hash, condition.hashCode);
+    _$hash = $jc(_$hash, body.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'WhileLoop')
+          ..add('label', label)
+          ..add('doWhile', doWhile)
+          ..add('condition', condition)
+          ..add('body', body))
+        .toString();
+  }
+}
+
+class _$WhileLoopBuilder extends WhileLoopBuilder {
+  _$WhileLoop? _$v;
+
+  @override
+  String? get label {
+    _$this;
+    return super.label;
+  }
+
+  @override
+  set label(String? label) {
+    _$this;
+    super.label = label;
+  }
+
+  @override
+  bool get doWhile {
+    _$this;
+    return super.doWhile;
+  }
+
+  @override
+  set doWhile(bool doWhile) {
+    _$this;
+    super.doWhile = doWhile;
+  }
+
+  @override
+  Expression? get condition {
+    _$this;
+    return super.condition;
+  }
+
+  @override
+  set condition(Expression? condition) {
+    _$this;
+    super.condition = condition;
+  }
+
+  @override
+  Code? get body {
+    _$this;
+    return super.body;
+  }
+
+  @override
+  set body(Code? body) {
+    _$this;
+    super.body = body;
+  }
+
+  _$WhileLoopBuilder() : super._();
+
+  WhileLoopBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      super.label = $v.label;
+      super.doWhile = $v.doWhile;
+      super.condition = $v.condition;
+      super.body = $v.body;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(WhileLoop other) {
+    _$v = other as _$WhileLoop;
+  }
+
+  @override
+  void update(void Function(WhileLoopBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  WhileLoop build() => _build();
+
+  _$WhileLoop _build() {
+    final _$result =
+        _$v ??
+        _$WhileLoop._(
+          label: label,
+          doWhile: BuiltValueNullFieldError.checkNotNull(
+            doWhile,
+            r'WhileLoop',
+            'doWhile',
+          ),
+          condition: BuiltValueNullFieldError.checkNotNull(
+            condition,
+            r'WhileLoop',
+            'condition',
+          ),
+          body: body,
+        );
+    replace(_$result);
+    return _$result;
+  }
+}
+
+class _$CaseStatement extends CaseStatement {
+  @override
+  final String? label;
+  @override
+  final Pattern pattern;
+  @override
+  final Expression? guard;
+  @override
+  final Code? body;
+
+  factory _$CaseStatement([void Function(CaseStatementBuilder)? updates]) =>
+      (CaseStatementBuilder()..update(updates)).build() as _$CaseStatement;
+
+  _$CaseStatement._({this.label, required this.pattern, this.guard, this.body})
+    : super._();
+  @override
+  CaseStatement rebuild(void Function(CaseStatementBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  _$CaseStatementBuilder toBuilder() => _$CaseStatementBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is CaseStatement &&
+        label == other.label &&
+        pattern == other.pattern &&
+        guard == other.guard &&
+        body == other.body;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, label.hashCode);
+    _$hash = $jc(_$hash, pattern.hashCode);
+    _$hash = $jc(_$hash, guard.hashCode);
+    _$hash = $jc(_$hash, body.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'CaseStatement')
+          ..add('label', label)
+          ..add('pattern', pattern)
+          ..add('guard', guard)
+          ..add('body', body))
+        .toString();
+  }
+}
+
+class _$CaseStatementBuilder extends CaseStatementBuilder {
+  _$CaseStatement? _$v;
+
+  @override
+  String? get label {
+    _$this;
+    return super.label;
+  }
+
+  @override
+  set label(String? label) {
+    _$this;
+    super.label = label;
+  }
+
+  @override
+  Pattern? get pattern {
+    _$this;
+    return super.pattern;
+  }
+
+  @override
+  set pattern(Pattern? pattern) {
+    _$this;
+    super.pattern = pattern;
+  }
+
+  @override
+  Expression? get guard {
+    _$this;
+    return super.guard;
+  }
+
+  @override
+  set guard(Expression? guard) {
+    _$this;
+    super.guard = guard;
+  }
+
+  @override
+  Code? get body {
+    _$this;
+    return super.body;
+  }
+
+  @override
+  set body(Code? body) {
+    _$this;
+    super.body = body;
+  }
+
+  _$CaseStatementBuilder() : super._();
+
+  CaseStatementBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      super.label = $v.label;
+      super.pattern = $v.pattern;
+      super.guard = $v.guard;
+      super.body = $v.body;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(CaseStatement other) {
+    _$v = other as _$CaseStatement;
+  }
+
+  @override
+  void update(void Function(CaseStatementBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  CaseStatement build() => _build();
+
+  _$CaseStatement _build() {
+    final _$result =
+        _$v ??
+        _$CaseStatement._(
+          label: label,
           pattern: BuiltValueNullFieldError.checkNotNull(
             pattern,
-            r'Case',
+            r'CaseStatement',
             'pattern',
           ),
           guard: guard,
-          label: label,
           body: body,
         );
     replace(_$result);
@@ -1062,34 +1181,48 @@ class CaseBuilder<T> implements Builder<Case<T>, CaseBuilder<T>> {
 
 class _$SwitchStatement extends SwitchStatement {
   @override
+  final String? label;
+  @override
   final Expression value;
   @override
-  final BuiltList<Case<Code?>> cases;
+  final BuiltList<CaseStatement> cases;
+  @override
+  final Code? defaultCase;
 
   factory _$SwitchStatement([void Function(SwitchStatementBuilder)? updates]) =>
-      (SwitchStatementBuilder()..update(updates))._build();
+      (SwitchStatementBuilder()..update(updates)).build() as _$SwitchStatement;
 
-  _$SwitchStatement._({required this.value, required this.cases}) : super._();
+  _$SwitchStatement._({
+    this.label,
+    required this.value,
+    required this.cases,
+    this.defaultCase,
+  }) : super._();
   @override
   SwitchStatement rebuild(void Function(SwitchStatementBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  SwitchStatementBuilder toBuilder() => SwitchStatementBuilder()..replace(this);
+  _$SwitchStatementBuilder toBuilder() =>
+      _$SwitchStatementBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is SwitchStatement &&
+        label == other.label &&
         value == other.value &&
-        cases == other.cases;
+        cases == other.cases &&
+        defaultCase == other.defaultCase;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, value.hashCode);
     _$hash = $jc(_$hash, cases.hashCode);
+    _$hash = $jc(_$hash, defaultCase.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -1097,41 +1230,81 @@ class _$SwitchStatement extends SwitchStatement {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'SwitchStatement')
+          ..add('label', label)
           ..add('value', value)
-          ..add('cases', cases))
+          ..add('cases', cases)
+          ..add('defaultCase', defaultCase))
         .toString();
   }
 }
 
-class SwitchStatementBuilder
-    implements
-        Builder<SwitchStatement, SwitchStatementBuilder>,
-        SwitchBuilder<Code?> {
+class _$SwitchStatementBuilder extends SwitchStatementBuilder {
   _$SwitchStatement? _$v;
 
-  Expression? _value;
-  Expression? get value => _$this._value;
-  set value(covariant Expression? value) => _$this._value = value;
+  @override
+  String? get label {
+    _$this;
+    return super.label;
+  }
 
-  ListBuilder<Case<Code?>>? _cases;
-  ListBuilder<Case<Code?>> get cases =>
-      _$this._cases ??= ListBuilder<Case<Code?>>();
-  set cases(covariant ListBuilder<Case<Code?>>? cases) => _$this._cases = cases;
+  @override
+  set label(String? label) {
+    _$this;
+    super.label = label;
+  }
 
-  SwitchStatementBuilder();
+  @override
+  Expression? get value {
+    _$this;
+    return super.value;
+  }
+
+  @override
+  set value(Expression? value) {
+    _$this;
+    super.value = value;
+  }
+
+  @override
+  ListBuilder<CaseStatement> get cases {
+    _$this;
+    return super.cases;
+  }
+
+  @override
+  set cases(ListBuilder<CaseStatement> cases) {
+    _$this;
+    super.cases = cases;
+  }
+
+  @override
+  Code? get defaultCase {
+    _$this;
+    return super.defaultCase;
+  }
+
+  @override
+  set defaultCase(Code? defaultCase) {
+    _$this;
+    super.defaultCase = defaultCase;
+  }
+
+  _$SwitchStatementBuilder() : super._();
 
   SwitchStatementBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _value = $v.value;
-      _cases = $v.cases.toBuilder();
+      super.label = $v.label;
+      super.value = $v.value;
+      super.cases = $v.cases.toBuilder();
+      super.defaultCase = $v.defaultCase;
       _$v = null;
     }
     return this;
   }
 
   @override
-  void replace(covariant SwitchStatement other) {
+  void replace(SwitchStatement other) {
     _$v = other as _$SwitchStatement;
   }
 
@@ -1149,12 +1322,14 @@ class SwitchStatementBuilder
       _$result =
           _$v ??
           _$SwitchStatement._(
+            label: label,
             value: BuiltValueNullFieldError.checkNotNull(
               value,
               r'SwitchStatement',
               'value',
             ),
             cases: cases.build(),
+            defaultCase: defaultCase,
           );
     } catch (_) {
       late String _$failedField;
@@ -1175,15 +1350,153 @@ class SwitchStatementBuilder
   }
 }
 
+class _$CaseExpression extends CaseExpression {
+  @override
+  final Pattern pattern;
+  @override
+  final Expression? guard;
+  @override
+  final Expression body;
+
+  factory _$CaseExpression([void Function(CaseExpressionBuilder)? updates]) =>
+      (CaseExpressionBuilder()..update(updates)).build() as _$CaseExpression;
+
+  _$CaseExpression._({required this.pattern, this.guard, required this.body})
+    : super._();
+  @override
+  CaseExpression rebuild(void Function(CaseExpressionBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  _$CaseExpressionBuilder toBuilder() =>
+      _$CaseExpressionBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is CaseExpression &&
+        pattern == other.pattern &&
+        guard == other.guard &&
+        body == other.body;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, pattern.hashCode);
+    _$hash = $jc(_$hash, guard.hashCode);
+    _$hash = $jc(_$hash, body.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'CaseExpression')
+          ..add('pattern', pattern)
+          ..add('guard', guard)
+          ..add('body', body))
+        .toString();
+  }
+}
+
+class _$CaseExpressionBuilder extends CaseExpressionBuilder {
+  _$CaseExpression? _$v;
+
+  @override
+  Pattern? get pattern {
+    _$this;
+    return super.pattern;
+  }
+
+  @override
+  set pattern(Pattern? pattern) {
+    _$this;
+    super.pattern = pattern;
+  }
+
+  @override
+  Expression? get guard {
+    _$this;
+    return super.guard;
+  }
+
+  @override
+  set guard(Expression? guard) {
+    _$this;
+    super.guard = guard;
+  }
+
+  @override
+  Expression? get body {
+    _$this;
+    return super.body;
+  }
+
+  @override
+  set body(Expression? body) {
+    _$this;
+    super.body = body;
+  }
+
+  _$CaseExpressionBuilder() : super._();
+
+  CaseExpressionBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      super.pattern = $v.pattern;
+      super.guard = $v.guard;
+      super.body = $v.body;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(CaseExpression other) {
+    _$v = other as _$CaseExpression;
+  }
+
+  @override
+  void update(void Function(CaseExpressionBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  CaseExpression build() => _build();
+
+  _$CaseExpression _build() {
+    final _$result =
+        _$v ??
+        _$CaseExpression._(
+          pattern: BuiltValueNullFieldError.checkNotNull(
+            pattern,
+            r'CaseExpression',
+            'pattern',
+          ),
+          guard: guard,
+          body: BuiltValueNullFieldError.checkNotNull(
+            body,
+            r'CaseExpression',
+            'body',
+          ),
+        );
+    replace(_$result);
+    return _$result;
+  }
+}
+
 class _$SwitchExpression extends SwitchExpression {
   @override
   final Expression value;
   @override
-  final BuiltList<Case<Expression>> cases;
+  final BuiltList<CaseExpression> cases;
 
   factory _$SwitchExpression([
     void Function(SwitchExpressionBuilder)? updates,
-  ]) => (SwitchExpressionBuilder()..update(updates))._build();
+  ]) =>
+      (SwitchExpressionBuilder()..update(updates)).build()
+          as _$SwitchExpression;
 
   _$SwitchExpression._({required this.value, required this.cases}) : super._();
   @override
@@ -1191,8 +1504,8 @@ class _$SwitchExpression extends SwitchExpression {
       (toBuilder()..update(updates)).build();
 
   @override
-  SwitchExpressionBuilder toBuilder() =>
-      SwitchExpressionBuilder()..replace(this);
+  _$SwitchExpressionBuilder toBuilder() =>
+      _$SwitchExpressionBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -1220,36 +1533,47 @@ class _$SwitchExpression extends SwitchExpression {
   }
 }
 
-class SwitchExpressionBuilder
-    implements
-        Builder<SwitchExpression, SwitchExpressionBuilder>,
-        SwitchBuilder<Expression> {
+class _$SwitchExpressionBuilder extends SwitchExpressionBuilder {
   _$SwitchExpression? _$v;
 
-  Expression? _value;
-  Expression? get value => _$this._value;
-  set value(covariant Expression? value) => _$this._value = value;
+  @override
+  Expression? get value {
+    _$this;
+    return super.value;
+  }
 
-  ListBuilder<Case<Expression>>? _cases;
-  ListBuilder<Case<Expression>> get cases =>
-      _$this._cases ??= ListBuilder<Case<Expression>>();
-  set cases(covariant ListBuilder<Case<Expression>>? cases) =>
-      _$this._cases = cases;
+  @override
+  set value(Expression? value) {
+    _$this;
+    super.value = value;
+  }
 
-  SwitchExpressionBuilder();
+  @override
+  ListBuilder<CaseExpression> get cases {
+    _$this;
+    return super.cases;
+  }
+
+  @override
+  set cases(ListBuilder<CaseExpression> cases) {
+    _$this;
+    super.cases = cases;
+  }
+
+  _$SwitchExpressionBuilder() : super._();
 
   SwitchExpressionBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _value = $v.value;
-      _cases = $v.cases.toBuilder();
+      super.value = $v.value;
+      super.cases = $v.cases.toBuilder();
       _$v = null;
     }
     return this;
   }
 
   @override
-  void replace(covariant SwitchExpression other) {
+  void replace(SwitchExpression other) {
     _$v = other as _$SwitchExpression;
   }
 

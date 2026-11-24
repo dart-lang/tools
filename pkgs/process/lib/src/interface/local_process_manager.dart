@@ -40,11 +40,7 @@ class LocalProcessManager implements ProcessManager {
   }) {
     try {
       return Process.start(
-        _getExecutable(
-          command,
-          workingDirectory,
-          runInShell,
-        ),
+        _getExecutable(command, workingDirectory, runInShell),
         _getArguments(command),
         workingDirectory: workingDirectory,
         environment: environment,
@@ -53,8 +49,10 @@ class LocalProcessManager implements ProcessManager {
         mode: mode,
       );
     } on ProcessException catch (exception) {
-      throw ProcessPackageException.fromProcessException(exception,
-          workingDirectory: workingDirectory);
+      throw ProcessPackageException.fromProcessException(
+        exception,
+        workingDirectory: workingDirectory,
+      );
     }
   }
 
@@ -70,11 +68,7 @@ class LocalProcessManager implements ProcessManager {
   }) {
     try {
       return Process.run(
-        _getExecutable(
-          command,
-          workingDirectory,
-          runInShell,
-        ),
+        _getExecutable(command, workingDirectory, runInShell),
         _getArguments(command),
         workingDirectory: workingDirectory,
         environment: environment,
@@ -84,8 +78,10 @@ class LocalProcessManager implements ProcessManager {
         stderrEncoding: stderrEncoding,
       );
     } on ProcessException catch (exception) {
-      throw ProcessPackageException.fromProcessException(exception,
-          workingDirectory: workingDirectory);
+      throw ProcessPackageException.fromProcessException(
+        exception,
+        workingDirectory: workingDirectory,
+      );
     }
   }
 
@@ -101,11 +97,7 @@ class LocalProcessManager implements ProcessManager {
   }) {
     try {
       return Process.runSync(
-        _getExecutable(
-          command,
-          workingDirectory,
-          runInShell,
-        ),
+        _getExecutable(command, workingDirectory, runInShell),
         _getArguments(command),
         workingDirectory: workingDirectory,
         environment: environment,
@@ -115,8 +107,10 @@ class LocalProcessManager implements ProcessManager {
         stderrEncoding: stderrEncoding,
       );
     } on ProcessException catch (exception) {
-      throw ProcessPackageException.fromProcessException(exception,
-          workingDirectory: workingDirectory);
+      throw ProcessPackageException.fromProcessException(
+        exception,
+        workingDirectory: workingDirectory,
+      );
     }
   }
 
@@ -131,7 +125,10 @@ class LocalProcessManager implements ProcessManager {
 }
 
 String _getExecutable(
-    List<dynamic> command, String? workingDirectory, bool runInShell) {
+  List<dynamic> command,
+  String? workingDirectory,
+  bool runInShell,
+) {
   final String commandName = command.first.toString();
   if (runInShell) {
     return commandName;

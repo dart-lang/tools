@@ -124,6 +124,38 @@ if (analytics.shouldShowMessage) {
 It is important to note events will not be sent if there is a new version of
 the consent message.
 
+## Dependency Telemetry & GA4 Parameter Chunking
+
+When transmitting CLI command execution events via
+`Event.dartCliCommandExecuted`, the `dart` CLI tool may pass optional project
+SDK constraints (`pubspecEnvironmentSdk`), Flutter SDK flags
+(`pubspecHasFlutterSdk`), and public dependency lists (`pubspecDependencies`).
+
+To comply with Google Analytics 4 (GA4) string length restrictions (maximum 100
+characters per event parameter), `unified_analytics` deterministically sorts
+and shuffles the dependency list using a 32-bit FNV-1a hash salted with the
+canonical dependency set before partitioning it across 20 distinct event
+parameters (`pubspec_dep_0` through `pubspec_dep_19`). This eliminates
+alphabetical bias while preventing ecosystem-wide starvation of specific package
+names across projects, ensuring statistically uniform ecosystem sampling.
+
+### Guidance for CLI Tool Authors
+
+*   **Privacy Filtering**: Callers MUST cross-reference all discovered
+    dependencies against the authoritative `.dart_tool/package_config.json`
+    file. Only packages explicitly resolved with a hosted source pointing to
+    `pub.dev` (or approved public registries) should be passed in
+    `pubspecDependencies`. Path, git, and intra-workspace member dependencies
+    must be stripped to prevent leaking confidential internal package names.
+*   **Project-Level Caching**: In `package:unified_analytics`, a `session_id`
+    rolls over only after 30 minutes of inactivity. When a developer switches
+    between different package directories in a workspace within that 30-minute
+    window, relying on session-level deduplication causes later projects to be
+    under-reported. CLI tools should maintain a local project state cache
+    (e.g., a 24-hour TTL mapping project root paths to their last-reported
+    pubspec hash) so dependencies are captured per project directory without
+    redundantly re-transmitting on every CLI invocation.
+
 ## Developing Within `package:unified_analytics`
 
 ### Adding new data classes

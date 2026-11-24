@@ -24,15 +24,17 @@ class ImageSyntax extends LinkSyntax {
     element.attributes['src'] = normalizeLinkDestination(
       escapePunctuation(destination),
     );
-    element.attributes['alt'] = children.map((node) {
-      // See https://spec.commonmark.org/0.30/#image-description.
-      // An image description may contain links. Fetch text from the alt
-      // attribute if this nested link is an image.
-      if (node is Element && node.tag == 'img') {
-        return node.attributes['alt'];
-      }
-      return node.textContent;
-    }).join();
+    // See https://spec.commonmark.org/0.30/#image-description.
+    // An image description may contain links. Fetch text from the alt
+    // attribute if this nested link is an image.
+    element.attributes['alt'] = children
+        .map(
+          (node) => switch (node) {
+            Element(tag: 'img', attributes: {'alt': final alt}) => alt,
+            _ => escapeAttributeCharactersValue(node.textContent),
+          },
+        )
+        .join();
     if (title != null && title.isNotEmpty) {
       element.attributes['title'] = normalizeLinkTitle(title);
     }

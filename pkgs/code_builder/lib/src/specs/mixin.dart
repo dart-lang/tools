@@ -35,7 +35,16 @@ abstract class Mixin extends Object
   @override
   BuiltList<String> get docs;
 
+  /// A single superclass constraint for this mixin.
+  ///
+  /// For a mixin with more than one superclass constraint, use [onTypes]
+  /// instead, which takes precedence over this field when non-empty.
   Reference? get on;
+
+  /// The superclass constraints for this mixin, e.g. `on A, B, C`.
+  ///
+  /// Takes precedence over [on] when non-empty.
+  BuiltList<Reference> get onTypes;
 
   BuiltList<Reference> get implements;
 
@@ -69,7 +78,16 @@ abstract class MixinBuilder extends Object
   @override
   ListBuilder<String> docs = ListBuilder<String>();
 
+  /// A single superclass constraint for this mixin.
+  ///
+  /// For a mixin with more than one superclass constraint, use [onTypes]
+  /// instead, which takes precedence over this field when non-empty.
   Reference? on;
+
+  /// The superclass constraints for this mixin, e.g. `on A, B, C`.
+  ///
+  /// Takes precedence over [on] when non-empty.
+  ListBuilder<Reference> onTypes = ListBuilder<Reference>();
 
   ListBuilder<Reference> implements = ListBuilder<Reference>();
 

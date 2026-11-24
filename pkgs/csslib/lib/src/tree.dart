@@ -103,7 +103,10 @@ class SelectorGroup extends TreeNode {
   SelectorGroup(this.selectors, SourceSpan? span) : super(span);
 
   @override
-  SelectorGroup clone() => SelectorGroup(selectors, span);
+  SelectorGroup clone() {
+    final cloned = selectors.map((selector) => selector.clone()).toList();
+    return SelectorGroup(cloned, span);
+  }
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitSelectorGroup(this);
@@ -155,8 +158,10 @@ class SimpleSelectorSequence extends TreeNode {
       };
 
   @override
-  SimpleSelectorSequence clone() =>
-      SimpleSelectorSequence(simpleSelector, span, combinator);
+  SimpleSelectorSequence clone() {
+    final selector = simpleSelector.clone() as SimpleSelector;
+    return SimpleSelectorSequence(selector, span, combinator);
+  }
 
   @override
   dynamic visit(VisitorBase visitor) =>
@@ -192,7 +197,8 @@ class ElementSelector extends SimpleSelector {
   dynamic visit(VisitorBase visitor) => visitor.visitElementSelector(this);
 
   @override
-  ElementSelector clone() => ElementSelector(_name, span);
+  ElementSelector clone() => ElementSelector(
+      _name is TreeNode ? (_name as TreeNode).clone() : _name, span);
 
   @override
   String toString() => name;
@@ -213,16 +219,21 @@ class NamespaceSelector extends SimpleSelector {
 
   bool get isNamespaceWildcard => _namespace is Wildcard;
 
-  SimpleSelector? get nameAsSimpleSelector => _name as SimpleSelector?;
+  SimpleSelector? get nameAsSimpleSelector =>
+      _name is SimpleSelector ? _name as SimpleSelector : null;
 
   @override
-  NamespaceSelector clone() => NamespaceSelector(_namespace, '', span);
+  NamespaceSelector clone() => NamespaceSelector(
+      _namespace is TreeNode ? (_namespace as TreeNode).clone() : _namespace,
+      nameAsSimpleSelector?.clone() ??
+          ElementSelector(Identifier('', span), span),
+      span);
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitNamespaceSelector(this);
 
   @override
-  String toString() => '$namespace|${nameAsSimpleSelector!.name}';
+  String toString() => '$namespace|${nameAsSimpleSelector?.name ?? ''}';
 }
 
 // [attr op value]
@@ -270,8 +281,11 @@ class AttributeSelector extends SimpleSelector {
   }
 
   @override
-  AttributeSelector clone() =>
-      AttributeSelector(_name as Identifier, _op, value, span);
+  AttributeSelector clone() {
+    final copiedName = (_name as Identifier).clone();
+    final copiedValue = value is TreeNode ? (value as TreeNode).clone() : value;
+    return AttributeSelector(copiedName, _op, copiedValue, span);
+  }
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitAttributeSelector(this);
@@ -284,7 +298,7 @@ class AttributeSelector extends SimpleSelector {
 class IdSelector extends SimpleSelector {
   IdSelector(Identifier super.name, super.span);
   @override
-  IdSelector clone() => IdSelector(_name as Identifier, span);
+  IdSelector clone() => IdSelector((_name as Identifier).clone(), span);
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitIdSelector(this);
 
@@ -296,7 +310,7 @@ class IdSelector extends SimpleSelector {
 class ClassSelector extends SimpleSelector {
   ClassSelector(Identifier super.name, super.span);
   @override
-  ClassSelector clone() => ClassSelector(_name as Identifier, span);
+  ClassSelector clone() => ClassSelector((_name as Identifier).clone(), span);
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitClassSelector(this);
 
@@ -311,7 +325,8 @@ class PseudoClassSelector extends SimpleSelector {
   dynamic visit(VisitorBase visitor) => visitor.visitPseudoClassSelector(this);
 
   @override
-  PseudoClassSelector clone() => PseudoClassSelector(_name as Identifier, span);
+  PseudoClassSelector clone() =>
+      PseudoClassSelector((_name as Identifier).clone(), span);
 
   @override
   String toString() => ':$name';
@@ -329,8 +344,10 @@ class PseudoElementSelector extends SimpleSelector {
       visitor.visitPseudoElementSelector(this);
 
   @override
-  PseudoElementSelector clone() =>
-      PseudoElementSelector(_name as Identifier, span);
+  PseudoElementSelector clone() {
+    final name = (_name as Identifier).clone();
+    return PseudoElementSelector(name, span, isLegacy: isLegacy);
+  }
 
   @override
   String toString() => "${isLegacy ? ':' : '::'}$name";
@@ -344,8 +361,8 @@ class PseudoClassFunctionSelector extends PseudoClassSelector {
       : super(name, span);
 
   @override
-  PseudoClassFunctionSelector clone() =>
-      PseudoClassFunctionSelector(_name as Identifier, argument, span);
+  PseudoClassFunctionSelector clone() => PseudoClassFunctionSelector(
+      (_name as Identifier).clone(), argument.clone(), span);
 
   Selector get selector => argument as Selector;
   SelectorExpression get expression => argument as SelectorExpression;
@@ -364,8 +381,8 @@ class PseudoElementFunctionSelector extends PseudoElementSelector {
       : super(name, span);
 
   @override
-  PseudoElementFunctionSelector clone() =>
-      PseudoElementFunctionSelector(_name as Identifier, expression, span);
+  PseudoElementFunctionSelector clone() => PseudoElementFunctionSelector(
+      (_name as Identifier).clone(), expression.clone(), span);
 
   @override
   dynamic visit(VisitorBase visitor) =>
@@ -396,7 +413,8 @@ class NegationSelector extends SimpleSelector {
       : super(Negation(span), span);
 
   @override
-  NegationSelector clone() => NegationSelector(negationArg, span);
+  NegationSelector clone() =>
+      NegationSelector(negationArg?.clone() as SimpleSelector?, span);
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitNegationSelector(this);
@@ -418,7 +436,10 @@ class StyleSheet extends TreeNode {
 
   StyleSheet(this.topLevels, SourceSpan? span) : super(span) {
     for (final node in topLevels) {
-      assert(node is TopLevelProduction || node is Directive);
+      assert(node is TopLevelProduction ||
+          node is Directive ||
+          node is Selector ||
+          node is NoOp);
     }
   }
 
@@ -457,7 +478,7 @@ class RuleSet extends TopLevelProduction {
 
   @override
   RuleSet clone() {
-    var cloneSelectorGroup = selectorGroup!.clone();
+    var cloneSelectorGroup = selectorGroup?.clone();
     var cloneDeclarationGroup = declarationGroup.clone();
     return RuleSet(cloneSelectorGroup, cloneDeclarationGroup, span);
   }
@@ -514,7 +535,7 @@ class SupportsDirective extends Directive {
 
   @override
   SupportsDirective clone() {
-    var clonedCondition = condition!.clone() as SupportsCondition;
+    var clonedCondition = condition?.clone() as SupportsCondition?;
     var clonedGroupRuleBody = <TreeNode>[];
     for (var rule in groupRuleBody) {
       clonedGroupRuleBody.add(rule.clone());
@@ -544,7 +565,7 @@ class SupportsConditionInParens extends SupportsCondition {
 
   @override
   SupportsConditionInParens clone() =>
-      SupportsConditionInParens(condition!.clone() as Declaration, span);
+      SupportsConditionInParens.nested(condition?.clone(), span);
 
   @override
   dynamic visit(VisitorBase visitor) =>
@@ -810,7 +831,7 @@ class KeyFrameDirective extends Directive {
 
   @override
   KeyFrameDirective clone() {
-    var directive = KeyFrameDirective(_keyframeName, name!.clone(), span);
+    var directive = KeyFrameDirective(_keyframeName, name?.clone(), span);
     for (var block in _blocks) {
       directive.add(block.clone());
     }
@@ -934,9 +955,9 @@ class MixinRulesetDirective extends MixinDefinition {
 
   @override
   MixinRulesetDirective clone() {
-    var clonedArgs = <VarDefinition>[];
+    var clonedArgs = <TreeNode>[];
     for (var arg in definedArgs) {
-      clonedArgs.add(arg.clone() as VarDefinition);
+      clonedArgs.add(arg.clone());
     }
     var clonedRulesets = <TreeNode>[];
     for (var ruleset in rulesets) {
@@ -1023,7 +1044,8 @@ class Declaration extends TreeNode {
       : isIE7 = ie7,
         super(span);
 
-  String get property => isIE7 ? '*${_property!.name}' : _property!.name;
+  String get property =>
+      isIE7 ? '*${_property?.name ?? ''}' : (_property?.name ?? '');
 
   bool get hasDartStyle => dartStyle != null;
 
@@ -1032,8 +1054,8 @@ class Declaration extends TreeNode {
 
   @override
   Declaration clone() =>
-      Declaration(_property!.clone(), expression!.clone(), dartStyle, span,
-          important: important);
+      Declaration(_property?.clone(), expression?.clone(), dartStyle, span,
+          important: important, ie7: isIE7);
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitDeclaration(this);
@@ -1051,11 +1073,12 @@ class VarDefinition extends Declaration {
   VarDefinition(Identifier? definedName, Expression? expr, SourceSpan? span)
       : super(definedName, expr, null, span);
 
-  String get definedName => _property!.name;
+  String get definedName => _property?.name ?? '';
 
   @override
   VarDefinition clone() =>
-      VarDefinition(_property!.clone(), expression?.clone(), span);
+      VarDefinition(_property?.clone(), expression?.clone(), span)
+        ..badUsage = badUsage;
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitVarDefinition(this);
@@ -1451,7 +1474,14 @@ class GroupTerm extends Expression {
   }
 
   @override
-  GroupTerm clone() => GroupTerm(span);
+  GroupTerm clone() {
+    final copy = GroupTerm(span);
+    for (final term in _terms) {
+      copy.add(term.clone());
+    }
+    return copy;
+  }
+
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitGroupTerm(this);
 }

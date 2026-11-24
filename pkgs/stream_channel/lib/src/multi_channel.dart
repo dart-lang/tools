@@ -24,13 +24,11 @@ import '../stream_channel.dart';
 /// ```dart
 /// // First endpoint
 /// var virtual = multiChannel.virtualChannel();
-/// multiChannel.sink.add({
-///   "channel": virtual.id
-/// });
+/// multiChannel.sink.add(virtual.id);
 ///
 /// // Second endpoint
 /// multiChannel.stream.listen((message) {
-///   var virtual = multiChannel.virtualChannel(message["channel"]);
+///   var virtual = multiChannel.virtualChannel(message as int);
 ///   // ...
 /// });
 /// ```
@@ -59,7 +57,10 @@ abstract class MultiChannel<T> implements StreamChannel<T> {
   /// Creates a new [MultiChannel] that sends and receives messages over
   /// [inner].
   ///
-  /// The inner channel must take JSON-like objects.
+  /// The [inner] channel must be capable of transmitting `List`
+  /// envelopes. Even if you intend to use a strictly typed [MultiChannel]
+  /// (for example `MultiChannel<String>`), the [inner] channel MUST be typed to
+  /// accept `List` or a supertype, otherwise a runtime `TypeError` will occur.
   factory MultiChannel(StreamChannel<dynamic> inner) => _MultiChannel<T>(inner);
 
   /// Creates a new virtual channel.

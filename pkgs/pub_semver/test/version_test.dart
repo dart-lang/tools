@@ -120,6 +120,24 @@ void main() {
       expect(Version.parse('1.2.03'), equals(Version.parse('1.2.3')));
       expect(Version.parse('1.2.3-01'), equals(Version.parse('1.2.3-1')));
       expect(Version.parse('1.2.3+01'), equals(Version.parse('1.2.3+1')));
+      expect(
+          Version.parse('1.0.0-0xA'), isNot(equals(Version.parse('1.0.0-10'))));
+      expect(Version.parse('1.0.0+0xFF'),
+          isNot(equals(Version.parse('1.0.0+255'))));
+    });
+
+    test('numeric vs alphanumeric prerelease identifiers', () {
+      final v10 = Version.parse('1.0.0-10');
+      final v0xA = Version.parse('1.0.0-0xA');
+      expect(v10 < v0xA, isTrue);
+      expect(v0xA > v10, isTrue);
+      expect(v10 == v0xA, isFalse);
+
+      final v0 = Version.parse('2.0.0-0');
+      final vNeg1 = Version.parse('2.0.0--1');
+      expect(v0 < vNeg1, isTrue);
+      expect(vNeg1 > v0, isTrue);
+      expect(v0 == vNeg1, isFalse);
     });
   });
 
@@ -298,6 +316,13 @@ void main() {
 
     expect(Version.parse('1.0.0-rc-1+build-1'),
         equals(Version(1, 0, 0, pre: 'rc-1', build: 'build-1')));
+
+    expect(Version.parse('1.0.0-0xA+0xFF').preRelease, equals(['0xA']));
+    expect(Version.parse('1.0.0-0xA+0xFF').build, equals(['0xFF']));
+    expect(Version.parse('2.0.0--1+-2').preRelease, equals(['-1']));
+    expect(Version.parse('2.0.0--1+-2').build, equals(['-2']));
+    expect(Version.parse('1.0.0-alpha.1.0xA.-1').preRelease,
+        equals(['alpha', 1, '0xA', '-1']));
 
     expect(() => Version.parse('1.0'), throwsFormatException);
     expect(() => Version.parse('1a2b3'), throwsFormatException);

@@ -1,8 +1,9 @@
-## 1.2.0-wip
+## 1.2.0
 
 - Add `--test-type` and `--disable-session-crashed-bubble` flags when launching
   chrome to prevent some warnings.
 - Allow passing arbitrary command line arguments when starting Chrome.
+- Separate CLI arguments from URLs with a `--` when launching Chrome.
 
 ## 1.1.3
 

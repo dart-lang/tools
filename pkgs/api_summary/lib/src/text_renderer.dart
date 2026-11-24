@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:collection/collection.dart';
-
 import 'api_declaration.dart';
 import 'api_type.dart';
 import 'extensions.dart';
@@ -64,9 +62,13 @@ final class _ApiTextRenderer {
 
   String render() {
     final nodes = <Uri, Node<MemberSortKey>>{};
+    final experimentalUris = <Uri>{};
 
     for (final library in _package.libraries) {
       final uri = Uri.parse(library.uri);
+      if (library.isExperimental) {
+        experimentalUris.add(uri);
+      }
       final node = nodes[uri] = Node<MemberSortKey>();
       _renderLibrary(library, node);
     }
@@ -100,57 +102,92 @@ final class _ApiTextRenderer {
 
     final sortedNodes = [
       for (final entry in nodes.entries)
-        (UriSortKey(entry.key, _package.name), entry.value),
+        (
+          UriSortKey(
+            entry.key,
+            _package.name,
+            isExperimental: experimentalUris.contains(entry.key),
+          ),
+          entry.value,
+        ),
     ];
 
     final stringBuffer = StringBuffer();
+    if (_package.environment.isNotEmpty) {
+      stringBuffer.writeln('environment:');
+      for (final entry in _package.environment.entries) {
+        stringBuffer.writeln('  ${entry.key}: ${entry.value}');
+      }
+    }
+
+    if (_package.executables.isNotEmpty) {
+      stringBuffer.writeln('executables:');
+      for (final entry in _package.executables.entries) {
+        if (entry.value != null && entry.value != entry.key) {
+          stringBuffer.writeln('  ${entry.key}: ${entry.value}');
+        } else {
+          stringBuffer.writeln('  ${entry.key}');
+        }
+      }
+    }
+
     printNodes(stringBuffer, sortedNodes);
     return stringBuffer.toString();
   }
 
   void _renderLibrary(ApiLibrary library, Node<MemberSortKey> node) {
-    node.text.addAll([Uri.parse(library.uri), ':']);
+    node.text.add(Uri.parse(library.uri));
+    if (library.facets.isNotEmpty) {
+      final parentheticals = [
+        for (final facet in library.facets)
+          for (final segment in facet.parentheticalSegments) [segment],
+      ];
+      if (parentheticals.isNotEmpty) {
+        node.text.addAll(parentheticals.separatedBy(prefix: ' (', suffix: ')'));
+      }
+    }
+    node.text.add(':');
 
     // Combine all top level items to sort them correctly
     final allItems =
         <({MemberSortKey sortKey, ApiDeclaration element, _Kind? kind})>[];
     for (final e in library.classes) {
       allItems.add((
-        sortKey: _computeSortKey(e),
+        sortKey: .fromDeclaration(e),
         element: e,
-        kind: _Kind.classDeclaration,
+        kind: .classDeclaration,
       ));
     }
     for (final e in library.enums) {
       allItems.add((
-        sortKey: _computeSortKey(e),
+        sortKey: .fromDeclaration(e),
         element: e,
-        kind: _Kind.enumDeclaration,
+        kind: .enumDeclaration,
       ));
     }
     for (final e in library.mixins) {
       allItems.add((
-        sortKey: _computeSortKey(e),
+        sortKey: .fromDeclaration(e),
         element: e,
-        kind: _Kind.mixinDeclaration,
+        kind: .mixinDeclaration,
       ));
     }
     for (final e in library.extensions) {
-      allItems.add((sortKey: _computeSortKey(e), element: e, kind: null));
+      allItems.add((sortKey: .fromDeclaration(e), element: e, kind: null));
     }
     for (final e in library.extensionTypes) {
-      allItems.add((sortKey: _computeSortKey(e), element: e, kind: null));
+      allItems.add((sortKey: .fromDeclaration(e), element: e, kind: null));
     }
     for (final e in library.functions) {
       allItems.add((
-        sortKey: _computeSortKey(e, isTopLevel: true),
+        sortKey: .fromDeclaration(e, isTopLevel: true),
         element: e,
         kind: null,
       ));
     }
 
     for (final e in library.typeAliases) {
-      allItems.add((sortKey: _computeSortKey(e), element: e, kind: null));
+      allItems.add((sortKey: .fromDeclaration(e), element: e, kind: null));
     }
 
     allItems.sort((a, b) => a.sortKey.compareTo(b.sortKey));
@@ -430,14 +467,12 @@ final class _ApiTextRenderer {
     List<ApiExecutable> methods,
     Node<MemberSortKey> node,
   ) {
-    final members = <({MemberSortKey sortKey, ApiExecutable element})>[];
-    for (final e in constructors) {
-      members.add((sortKey: _computeSortKey(e, isInstance: true), element: e));
-    }
-    for (final e in methods) {
-      members.add((sortKey: _computeSortKey(e, isInstance: true), element: e));
-    }
-    members.sort((a, b) => a.sortKey.compareTo(b.sortKey));
+    final members = <({MemberSortKey sortKey, ApiExecutable element})>[
+      for (final e in constructors)
+        (sortKey: .fromDeclaration(e, isInstance: true), element: e),
+      for (final e in methods)
+        (sortKey: .fromDeclaration(e, isInstance: true), element: e),
+    ]..sort((a, b) => a.sortKey.compareTo(b.sortKey));
 
     if (members.isNotEmpty) {
       node.text.add(':');
@@ -452,28 +487,33 @@ final class _ApiTextRenderer {
     }
   }
 
-  List<Object?> _describeFunctionLike(ApiExecutable element) {
+  List<Object?> _describeFunctionLike(ApiExecutable element) => <Object?>[
+    ..._describeType(element.returnType),
+    ' Function',
+    if (element.typeParameters.isNotEmpty)
+      ..._renderTypeParameters(element.typeParameters),
+    '(',
+    ..._describeParameters(element.parameters),
+    ')',
+  ];
+
+  List<Object?> _describeParameters(List<ApiParameter> parameters) {
     final params = <List<Object?>>[];
     final optionalParams = <List<Object?>>[];
-    final namedParams = <String, List<Object?>>{};
+    final namedParams = <List<Object?>>[];
 
-    for (final param in element.parameters) {
+    for (final param in parameters) {
+      final described = <Object?>[
+        if (param.isDeprecated) 'deprecated ',
+        if (param.isNamed && param.isRequired) 'required ',
+        ..._describeType(param.type),
+      ];
       if (param.isNamed) {
-        namedParams[param.name] = <Object?>[
-          if (param.isDeprecated) 'deprecated ',
-          if (param.isRequired) 'required ',
-          ..._describeType(param.type),
-        ];
+        namedParams.add([...described, ' ${param.name}']);
       } else if (param.isOptionalPositional) {
-        optionalParams.add(<Object?>[
-          if (param.isDeprecated) 'deprecated ',
-          ..._describeType(param.type),
-        ]);
+        optionalParams.add(described);
       } else {
-        params.add(<Object?>[
-          if (param.isDeprecated) 'deprecated ',
-          ..._describeType(param.type),
-        ]);
+        params.add(described);
       }
     }
 
@@ -481,23 +521,9 @@ final class _ApiTextRenderer {
       params.add(optionalParams.separatedBy(prefix: '[', suffix: ']'));
     }
     if (namedParams.isNotEmpty) {
-      params.add(
-        namedParams.entries
-            .sortedBy((e) => e.key)
-            .map((e) => <Object?>[...e.value, ' ${e.key}'])
-            .separatedBy(prefix: '{', suffix: '}'),
-      );
+      params.add(namedParams.separatedBy(prefix: '{', suffix: '}'));
     }
-
-    return <Object?>[
-      ..._describeType(element.returnType),
-      ' Function',
-      if (element.typeParameters.isNotEmpty)
-        ..._renderTypeParameters(element.typeParameters),
-      '(',
-      ...params.separatedBy(),
-      ')',
-    ];
+    return params.separatedBy();
   }
 
   List<Object?> _describeType(ApiType type) {
@@ -537,7 +563,6 @@ final class _ApiTextRenderer {
               _describeType(positionalField),
             if (type.namedFields.isNotEmpty)
               type.namedFields
-                  .sortedBy((f) => f.name)
                   .map((f) => <Object?>[..._describeType(f.type), ' ', f.name])
                   .separatedBy(prefix: '{', suffix: '}'),
           ].separatedBy(prefix: '(', suffix: ')'),
@@ -547,52 +572,25 @@ final class _ApiTextRenderer {
         for (final bound in type.typeParameters.values) {
           if (bound != null) _describeType(bound);
         }
-        final params = <List<Object?>>[];
-        final optionalParams = <List<Object?>>[];
-        final namedParams = <String, List<Object?>>{};
-        for (final formalParameter in type.parameters) {
-          if (formalParameter.isNamed) {
-            namedParams[formalParameter.name] = <Object?>[
-              if (formalParameter.isDeprecated) 'deprecated ',
-              if (formalParameter.isRequired) 'required ',
-              ..._describeType(formalParameter.type),
-            ];
-          } else if (formalParameter.isOptionalPositional) {
-            optionalParams.add(<Object?>[
-              if (formalParameter.isDeprecated) 'deprecated ',
-              ..._describeType(formalParameter.type),
-            ]);
-          } else {
-            params.add(<Object?>[
-              if (formalParameter.isDeprecated) 'deprecated ',
-              ..._describeType(formalParameter.type),
-            ]);
-          }
-        }
-        if (optionalParams.isNotEmpty) {
-          params.add(optionalParams.separatedBy(prefix: '[', suffix: ']'));
-        }
-        if (namedParams.isNotEmpty) {
-          params.add(
-            namedParams.entries
-                .sortedBy((e) => e.key)
-                .map((e) => <Object?>[...e.value, ' ${e.key}'])
-                .separatedBy(prefix: '{', suffix: '}'),
-          );
-        }
         return <Object?>[
           ..._describeType(type.returnType),
           ' Function',
           if (type.typeParameters.isNotEmpty)
             ..._renderTypeParameters(type.typeParameters),
           '(',
-          ...params.separatedBy(),
+          ..._describeParameters(type.parameters),
           ')',
           if (type.isNullable) '?',
         ];
     }
   }
 
+  /// Renders declaration metadata flags (deprecation, visibility, meta
+  /// annotations) into [parentheticals].
+  ///
+  /// Each inner list in [parentheticals] represents an individual
+  /// comma-separated segment formatted via `separatedBy` (e.g.
+  /// `(class extends Object, protected, internal)`).
   void _renderParentheticals({
     required List<List<Object?>> parentheticals,
     required ApiDeclaration element,
@@ -601,11 +599,10 @@ final class _ApiTextRenderer {
     if (element.isDeprecated) {
       parentheticals.add(['deprecated']);
     }
-    if (element.isExperimental) {
-      parentheticals.add(['experimental']);
-    }
-    if (element.isVisibleForTesting) {
-      parentheticals.add(['visible for testing']);
+    for (final facet in element.facets) {
+      for (final segment in facet.parentheticalSegments) {
+        parentheticals.add([segment]);
+      }
     }
     if (parentheticals.isNotEmpty) {
       node.text.addAll(parentheticals.separatedBy(prefix: ' (', suffix: ')'));
@@ -624,42 +621,6 @@ final class _ApiTextRenderer {
         .separatedBy(prefix: '<', suffix: '>');
   }
 }
-
-MemberSortKey _computeSortKey(
-  ApiDeclaration element, {
-  bool isInstance = false,
-  bool isTopLevel = false,
-}) => switch (element) {
-  ApiClass() || ApiExtensionType() => MemberSortKey(
-    isInstanceMember: isInstance,
-    category: MemberCategory.interface,
-    name: element.name,
-    isSetter: false,
-  ),
-  ApiExtension() => MemberSortKey(
-    isInstanceMember: isInstance,
-    category: MemberCategory.extension,
-    name: element.name,
-    isSetter: false,
-  ),
-  ApiExecutable(:final kind, :final isStatic) => MemberSortKey(
-    isInstanceMember: isInstance && !(isTopLevel || isStatic),
-    category: switch (kind) {
-      ApiExecutableKind.constructor => MemberCategory.constructor,
-      ApiExecutableKind.getter ||
-      ApiExecutableKind.setter => MemberCategory.propertyAccessor,
-      _ => MemberCategory.topLevelFunctionOrMethod,
-    },
-    name: element.name,
-    isSetter: kind == ApiExecutableKind.setter,
-  ),
-  ApiTypeAlias() => MemberSortKey(
-    isInstanceMember: isInstance,
-    category: MemberCategory.typeAlias,
-    name: element.name,
-    isSetter: false,
-  ),
-};
 
 MemberSortKey _computeSortKeyForDangling(ApiInterfaceType type) =>
     MemberSortKey(

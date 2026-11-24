@@ -7,8 +7,6 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
-// Note: mirrors used to match the getattr usage in the original test
-import 'dart:mirrors' show reflect;
 
 import 'package:html/src/token.dart';
 import 'package:html/src/tokenizer.dart';
@@ -62,11 +60,19 @@ class TokenizerTestParser {
         HtmlTokenizer(bytes, encoding: 'utf-8', generateSpans: _generateSpans);
     outputTokens = [];
 
-    // Note: we can't get a closure of the state method. However, we can
-    // create a new closure to invoke it via mirrors.
-    final mtok = reflect(tokenizer);
-    tokenizer.state =
-        () => mtok.invoke(Symbol(_state!), const []).reflectee as bool;
+    tokenizer.state = switch (_state) {
+      'dataState' => tokenizer.dataState,
+      'plaintextState' => tokenizer.plaintextState,
+      'rcdataState' => tokenizer.rcdataState,
+      'rawtextState' => tokenizer.rawtextState,
+      'scriptDataState' => tokenizer.scriptDataState,
+      'cdataSectionState' => tokenizer.cdataSectionState,
+      _ => throw ArgumentError.value(
+          _state,
+          '_state',
+          'Unsupported initial state',
+        ),
+    };
 
     if (_lastStartTag != null) {
       tokenizer.currentToken = StartTagToken(_lastStartTag);

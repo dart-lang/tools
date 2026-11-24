@@ -1,3 +1,17 @@
+## 2.2.2-wip
+
+- Fix `VersionConstraint.intersection` throwing a `TypeError` when the
+  intersection of the constraints is empty (e.g. for disjoint ranges) or a
+  `VersionUnion`.
+- Fix `VersionUnion.difference` throwing a `TypeError` when subtracting
+  `VersionConstraint.empty`.
+
+## 2.2.1
+
+- Fix parsing of pre-release and build identifiers to only treat pure-digit
+  base-10 identifiers as integers, treating hexadecimal and signed identifiers
+  as alphanumeric strings according to SemVer 2.0.0.
+
 ## 2.2.0
 
 - Remove dependency on `package:meta`.

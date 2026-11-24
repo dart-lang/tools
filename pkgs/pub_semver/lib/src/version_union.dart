@@ -126,6 +126,8 @@ class VersionUnion implements VersionConstraint {
 
   @override
   VersionConstraint difference(VersionConstraint other) {
+    if (other.isEmpty) return this;
+
     var ourRanges = ranges.iterator;
     var theirRanges = _rangesFor(other).iterator;
 

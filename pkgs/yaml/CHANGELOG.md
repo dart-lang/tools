@@ -1,5 +1,21 @@
-## 3.1.4-wip
+## 3.2.0-wip
 
+* Export `ErrorListener` and `ErrorCollector` from `package:yaml/yaml.dart`.
+* Improve error messages when mixing list and key-value syntax.
+* Preserve scanned local tag names and throw `YamlException` on malformed or
+  non-UTF-8 percent-encoded tag URIs.
+* Support single-digit `!!float` scalars and throw `YamlException` instead of
+  `RangeError` on empty or invalid single-character `!!int` and `!!float`
+  scalars.
+* Speed up scanning deeply nested flow collections: the scanner no longer
+  walks every open flow level for each token.
+
+## 3.1.4
+
+* Improve recovery for list entries without `-` prefix. When recovering, provide
+  a more helpful error message suggesting the missing prefix.
+* Fix a bug where block strings terminated by `EOF` were not given an implicit
+  newline.
 * Fix parsing of plain scalars starting with indicator characters (`?`, `:`, and `-`).
 * Throw a `FormatException` when parsing self-referential collections instead of
   a `StackOverflow`. Yaml definitions with collections nested within themselves

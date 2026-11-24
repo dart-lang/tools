@@ -1,88 +1,105 @@
-// Copyright (c) 2025, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file
+// BSD-style license that can be found in the LICENSE file.
 
 part of '../control.dart';
 
-/// Represents a traditional `for` loop.
+/// A `for` loop statement.
 ///
 /// ```dart
-/// for (initialize; condition; advance) {
+/// for (var i = 0; i < 10; i++) {
 ///   body
 /// }
 /// ```
-///
-/// https://dart.dev/language/loops#for-loops
-///
-/// {@category controlFlow}
-abstract class ForLoop
-    with ControlBlock, LabeledControlBlock
-    implements Built<ForLoop, ForLoopBuilder> {
+abstract class ForLoop implements Built<ForLoop, ForLoopBuilder>, Code, Spec {
+  factory ForLoop([void Function(ForLoopBuilder) updates]) = _$ForLoop;
+
   ForLoop._();
 
+  /// An optional label for the loop.
+  String? get label;
+
   /// The initializer expression.
-  ///
-  /// Leave `null` to omit.
   Expression? get initialize;
 
-  /// The for loop condition.
-  ///
-  /// Leave `null` to omit.
+  /// The loop condition.
   Expression? get condition;
 
-  /// The advancer expression.
-  ///
-  /// Leave `null` to omit.
+  /// The step/advance expression.
   Expression? get advance;
 
-  @override
-  ControlExpression get _expression =>
-      ControlExpression.forLoop(initialize, condition, advance);
+  /// The loop body.
+  Code? get body;
 
-  factory ForLoop(void Function(ForLoopBuilder loop) builder) = _$ForLoop;
+  @override
+  R accept<R>(covariant ControlVisitor<R> visitor, [R? context]) =>
+      visitor.visitForLoop(this, context);
 }
 
-/// Represents a `for-in` loop.
+abstract class ForLoopBuilder implements Builder<ForLoop, ForLoopBuilder> {
+  factory ForLoopBuilder() = _$ForLoopBuilder;
+  ForLoopBuilder._();
+
+  String? label;
+  Expression? initialize;
+  Expression? condition;
+  Expression? advance;
+  Code? body;
+}
+
+/// A `for-in` loop statement.
 ///
 /// ```dart
-/// for (variable in object) {
+/// for (final x in items) {
 ///   body
 /// }
 /// ```
 ///
-/// If [async] is `true`, the loop will be asynchronous (`await for`):
+/// When [async] is `true`, emits an `await for` loop:
 /// ```dart
-/// await for (variable in object) {
+/// await for (final x in stream) {
 ///   body
 /// }
 /// ```
-///
-/// https://dart.dev/language/loops#for-loops
-///
-/// {@category controlFlow}
 abstract class ForInLoop
-    with ControlBlock, LabeledControlBlock
-    implements Built<ForInLoop, ForInLoopBuilder> {
+    implements Built<ForInLoop, ForInLoopBuilder>, Code, Spec {
+  factory ForInLoop([void Function(ForInLoopBuilder) updates]) = _$ForInLoop;
+
   ForInLoop._();
-  factory ForInLoop(void Function(ForInLoopBuilder loop) builder) = _$ForInLoop;
 
-  /// Whether or not this is an asynchronous (`await for`) loop.
-  bool? get async;
+  /// An optional label for the loop.
+  String? get label;
 
-  /// The iterated variable (before `in`).
+  /// Whether this is an asynchronous (`await for`) loop.
+  bool get async;
+
+  /// The loop variable declaration or expression (before `in`).
   Expression get variable;
 
-  /// The object being iterated on (after `in`).
+  /// The iterable or stream object (after `in`).
   Expression get object;
 
+  /// The loop body.
+  Code? get body;
+
   @override
-  ControlExpression get _expression =>
-      async == true
-          ? ControlExpression.awaitForLoop(variable, object)
-          : ControlExpression.forInLoop(variable, object);
+  R accept<R>(covariant ControlVisitor<R> visitor, [R? context]) =>
+      visitor.visitForInLoop(this, context);
 }
 
-/// Represents a `while` loop.
+abstract class ForInLoopBuilder
+    implements Builder<ForInLoop, ForInLoopBuilder> {
+  factory ForInLoopBuilder() = _$ForInLoopBuilder;
+  ForInLoopBuilder._();
+
+  String? label;
+  bool async = false;
+  Expression? variable;
+  Expression? object;
+  Code? body;
+}
+
+/// A `while` or `do-while` loop statement.
 ///
 /// ```dart
 /// while (condition) {
@@ -90,37 +107,42 @@ abstract class ForInLoop
 /// }
 /// ```
 ///
-/// If [doWhile] is `true`, the loop will be in the `do-while` format:
+/// When [doWhile] is `true`, emits a `do-while` loop:
 /// ```dart
 /// do {
 ///   body
 /// } while (condition);
 /// ```
-///
-/// https://dart.dev/language/loops#while-and-do-while
-///
-/// {@category controlFlow}
 abstract class WhileLoop
-    with ControlBlock, LabeledControlBlock
-    implements Built<WhileLoop, WhileLoopBuilder> {
-  WhileLoop._();
-  factory WhileLoop(void Function(WhileLoopBuilder loop) builder) = _$WhileLoop;
+    implements Built<WhileLoop, WhileLoopBuilder>, Code, Spec {
+  factory WhileLoop([void Function(WhileLoopBuilder) updates]) = _$WhileLoop;
 
-  /// Whether or not this is a `do-while` loop.
-  bool? get doWhile;
+  WhileLoop._();
+
+  /// An optional label for the loop.
+  String? get label;
+
+  /// Whether this is a `do-while` loop.
+  bool get doWhile;
 
   /// The loop condition.
   Expression get condition;
 
-  /// Always returns the `while` statement, regardless
-  /// of the value of [doWhile].
-  ControlExpression get _statement => ControlExpression.whileLoop(condition);
+  /// The loop body.
+  Code? get body;
 
   @override
-  ControlExpression get _expression =>
-      doWhile == true ? ControlExpression.doStatement : _statement;
-
-  @override
-  R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
+  R accept<R>(covariant ControlVisitor<R> visitor, [R? context]) =>
       visitor.visitWhileLoop(this, context);
+}
+
+abstract class WhileLoopBuilder
+    implements Builder<WhileLoop, WhileLoopBuilder> {
+  factory WhileLoopBuilder() = _$WhileLoopBuilder;
+  WhileLoopBuilder._();
+
+  String? label;
+  bool doWhile = false;
+  Expression? condition;
+  Code? body;
 }

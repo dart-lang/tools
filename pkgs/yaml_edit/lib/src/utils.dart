@@ -586,3 +586,46 @@ extension YamlNodeExtension on YamlNode {
     return null;
   }
 }
+
+/// Checks if [between] contains a comma that is not part of a comment.
+bool betweenHasTrailingComma(String between) {
+  for (var i = 0; i < between.length; i++) {
+    final char = between[i];
+    if (char == '#') {
+      // Skip comments up to the next newline.
+      final nextNewline = between.indexOf('\n', i);
+      if (nextNewline == -1) break;
+      i = nextNewline;
+      continue;
+    }
+    if (char == ',') {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// Formats a new entry [newEntry] for a multiline flow collection with a
+/// trailing comma.
+///
+/// Ensures the new entry matches the indentation of the previous entry and
+/// that the closing delimiter (closing bracket/brace) remains on its own line
+/// with its original indentation.
+String formatMultilineFlowTrailingEntry({
+  required int closingOffset,
+  required int lastEntryStartOffset,
+  required String newEntry,
+  required String yaml,
+}) {
+  final lineEnding = getLineEnding(yaml);
+  final lastEntryLineStart = yaml.lastIndexOf('\n', lastEntryStartOffset) + 1;
+  final lastEntryIndent = lastEntryStartOffset - lastEntryLineStart;
+  final closingLineStart = yaml.lastIndexOf('\n', closingOffset) + 1;
+  final closingIndent = closingOffset - closingLineStart;
+  final extraIndent = lastEntryIndent > closingIndent
+      ? ' ' * (lastEntryIndent - closingIndent)
+      : '';
+  final closingIndentSpaces = ' ' * closingIndent;
+
+  return '$extraIndent$newEntry,$lineEnding$closingIndentSpaces';
+}

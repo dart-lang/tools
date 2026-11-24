@@ -78,10 +78,6 @@ class Parser {
         return _parseDocumentEnd();
       case _State.BLOCK_NODE:
         return _parseNode(block: true);
-      case _State.BLOCK_NODE_OR_INDENTLESS_SEQUENCE:
-        return _parseNode(block: true, indentlessSequence: true);
-      case _State.FLOW_NODE:
-        return _parseNode();
       case _State.BLOCK_SEQUENCE_FIRST_ENTRY:
         // Scan past the `BLOCK-SEQUENCE-FIRST-ENTRY` token to the
         // `BLOCK-SEQUENCE-ENTRY` token.
@@ -299,7 +295,7 @@ class Parser {
           throw YamlException('Undefined tag handle.', tagToken!.span);
         }
 
-        tag = tagDirective.prefix + (tagToken?.suffix ?? '');
+        tag = tagDirective.prefix + tagToken!.suffix;
       }
     }
 
@@ -379,8 +375,23 @@ class Parser {
       return Event(EventType.sequenceEnd, token.span);
     }
 
-    throw YamlException("While parsing a block collection, expected '-'.",
-        token.span.start.pointSpan());
+    // The scanner may insert a `key` token (its own recovery for a required
+    // simple key without `:`) when a scalar appears at the current indent level
+    // inside a block sequence. Consume it and treat the scalar as a sequence
+    // entry; the scanner already reported the appropriate error.
+    if (token.type == TokenType.key) {
+      _scanner.scan();
+      _states.add(_State.BLOCK_SEQUENCE_ENTRY);
+      return _parseNode(block: true);
+    }
+
+    final message =
+        StringBuffer("While parsing a block collection, expected '-'.");
+    if (token.type == TokenType.value) {
+      message.write(
+          ' You cannot mix list and key-value syntax in the same collection.');
+    }
+    throw YamlException(message.toString(), token.span.start.pointSpan());
   }
 
   /// Parses the productions:
@@ -451,8 +462,13 @@ class Parser {
       return Event(EventType.mappingEnd, token.span);
     }
 
-    throw YamlException('Expected a key while parsing a block mapping.',
-        token.span.start.pointSpan());
+    final message =
+        StringBuffer('Expected a key while parsing a block mapping.');
+    if (token.type == TokenType.blockEntry) {
+      message.write(
+          ' You cannot mix list and key-value syntax in the same collection.');
+    }
+    throw YamlException(message.toString(), token.span.start.pointSpan());
   }
 
   /// Parses the productions:
@@ -736,13 +752,6 @@ class _State {
 
   /// Expect a block node.
   static const BLOCK_NODE = _State('BLOCK_NODE');
-
-  /// Expect a block node or indentless sequence.
-  static const BLOCK_NODE_OR_INDENTLESS_SEQUENCE =
-      _State('BLOCK_NODE_OR_INDENTLESS_SEQUENCE');
-
-  /// Expect a flow node.
-  static const FLOW_NODE = _State('FLOW_NODE');
 
   /// Expect the first entry of a block sequence.
   static const BLOCK_SEQUENCE_FIRST_ENTRY =

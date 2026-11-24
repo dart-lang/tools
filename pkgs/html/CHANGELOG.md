@@ -1,8 +1,36 @@
-## 0.15.7-wip
+## 0.15.8-wip
 
+- Reduce allocations when parsing and serializing: `HtmlInputStream` no longer copies the input when it needs no newline or surrogate normalization, and `htmlSerializeEscape` copies unescaped runs at once and returns the input unchanged when nothing needs escaping.
+- Fix `Element.text`, `DocumentFragment.text` and `Node.textContent` throwing a `StackOverflowError` on very deeply nested elements; text is now extracted iteratively.
+- Fix `Node.remove` and `NodeList.remove` leaving a stale `parentNode`, `Node.insertBefore`, `NodeList.insert`, `insertAll` and `operator []=` using a shifted index when moving an earlier sibling, and `reparentChildren` emptying a node reparented to itself. Moving all children of another node (`append` of a `DocumentFragment`, `reparentChildren`, `innerHtml`) now runs in linear time.
+- `getElementById`, `getElementsByTagName` and `getElementsByClassName` no longer parse a CSS selector. IDs and class names that are not valid CSS identifiers (such as `a:b`, `a.b` or `1`) now match exactly instead of throwing or matching the wrong element, `getElementById('')` returns `null`, class names are split on HTML ASCII whitespace, and deeply nested documents no longer overflow the stack. `getElementsByTagName` now matches a single tag name, as in the DOM spec, so selector lists or combinators such as `'h1, h2'` return an empty list, and `''` returns an empty list instead of throwing.
+- Fix `querySelector` and `querySelectorAll` matching of `:root` (now the
+  element whose parent is the `Document`) and numeric `:nth-child(n)` (now
+  counts element siblings from 1), and traverse descendants iteratively so
+  deeply nested documents no longer overflow the stack.
+- Class selectors, `[attr~=value]` selectors and `Element.classes` now split
+  their values on ASCII whitespace (space, tab, LF, FF, CR) as the HTML
+  standard requires.
+- `</br>` and `</p>` end tags in foreign content (`<svg>`, `<math>`) now exit foreign content before reprocessing in HTML mode, matching the WHATWG HTML standard.
+- `<` and `>` are now escaped as `&lt;` and `&gt;` when serializing attribute values in `htmlSerializeEscape`, `innerHtml`, and `outerHtml`, matching the WHATWG HTML standard.
+- Fix `Node.attributeSpans` and `Node.attributeValueSpans` throwing a `TypeError` when a start tag emits tokenizer parse errors, and preserve the first occurrence's span on duplicate attributes.
+- Fix `HtmlInputStream` throwing a `FormatException` on malformed UTF-8 or invalid ASCII byte sequences, and ignore `<meta charset>` declarations that resolve to unsupported Dart codecs.
+- Fix `HtmlTokenizer.consumeNumberEntity` throwing a `FormatException` when a numeric character reference overflows a 64-bit integer.
+- Fix `EncodingParser` failing to parse `<meta charset>` attributes with whitespace before `=`, unquoted `charset` values at the end of `content` attributes, and truncated attributes at EOF.
+- Fix `querySelector` and `querySelectorAll` throwing a null-check `TypeError` instead of `FormatException` on empty `:not()` selectors.
+- Fix `TreeBuilder` not updating `Text.sourceSpan` when merging consecutive foster-parented text nodes before a `<table>`.
+- Fix `ParseError.message` throwing a null-check `TypeError` on `unexpected-EOF-after-attribute-value` tokenizer errors, and align tokenizer error codes `this-closing-flag-on-end-tag` -> `self-closing-flag-on-end-tag` and `expected-end-of-tag-but-got-eof` -> `expected-end-of-tag-name-but-got-eof` with `errorMessages`.
+- Fix the `:empty` and `:blank` selectors not matching elements without child nodes, and matching elements that have a child element next to a comment.
+
+## 0.15.7
+
+- `writeTextNodeAsHtml`: Escape text inside `<script>` and `<style>`-like tags in foreign namespaces.
+- Fix the tokenizer failing to close CDATA blocks when encountering extra brackets
 - Require Dart `3.6`
+- Limit ["Noah's Ark" clause](https://html.spec.whatwg.org/multipage/parsing.html#list-of-active-formatting-elements) to avoid degenerate O(N^2) when parsing deeply nested formatting elements with unique attributes.
 - Added new `textContent` method to `Node` class that returns the text content of
   the node.
+- Fix XSS vulnerability in `htmlToCodeMarkup()` by escaping DOCTYPE, element, and attribute names.
 
 ## 0.15.6
 

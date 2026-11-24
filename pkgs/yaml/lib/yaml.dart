@@ -12,6 +12,7 @@ import 'src/yaml_document.dart';
 import 'src/yaml_exception.dart';
 import 'src/yaml_node.dart';
 
+export 'src/error_listener.dart';
 export 'src/style.dart';
 export 'src/utils.dart' show YamlWarningCallback, yamlWarningCallback;
 export 'src/yaml_document.dart';

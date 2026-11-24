@@ -11,15 +11,15 @@ import 'package:path/path.dart' as p;
 class Resolver {
   @Deprecated('Use Resolver.create')
   Resolver({this.packagesPath, this.sdkRoot})
-      : _packages = packagesPath != null ? _parsePackages(packagesPath) : null,
-        packagePath = null;
+    : _packages = packagesPath != null ? _parsePackages(packagesPath) : null,
+      packagePath = null;
 
-  Resolver._(
-      {this.packagesPath,
-      this.packagePath,
-      this.sdkRoot,
-      Map<String, Uri>? packages})
-      : _packages = packages;
+  Resolver._({
+    this.packagesPath,
+    this.packagePath,
+    this.sdkRoot,
+    Map<String, Uri>? packages,
+  }) : _packages = packages;
 
   static Future<Resolver> create({
     String? packagesPath,
@@ -63,18 +63,14 @@ class Resolver {
         }
         // Canonicalize path. For instance: _collection-dev => _collection_dev.
         path = path.replaceAll('-', '_');
-        final pathSegments = [
-          sdkRoot,
-          path,
-          ...uri.pathSegments.sublist(1),
-        ];
+        final pathSegments = [sdkRoot, path, ...uri.pathSegments.sublist(1)];
         filePath = p.joinAll(pathSegments);
       } else {
         // Resolve 'dart:something' to be something/something.dart in the SDK.
         final lib = uri.path;
         filePath = p.join(sdkRoot, lib, '$lib.dart');
       }
-      return resolveSymbolicLinks(filePath);
+      return _resolveLinksWithinKnownRoots(filePath);
     }
     if (uri.scheme == 'package') {
       final packages = _packages;
@@ -90,10 +86,10 @@ class Resolver {
       }
       final packagePath = p.fromUri(packageUri);
       final pathInPackage = p.joinAll(uri.pathSegments.sublist(1));
-      return resolveSymbolicLinks(p.join(packagePath, pathInPackage));
+      return _resolveLinksWithinKnownRoots(p.join(packagePath, pathInPackage));
     }
     if (uri.scheme == 'file') {
-      return resolveSymbolicLinks(p.fromUri(uri));
+      return _resolveLinksWithinKnownRoots(p.fromUri(uri));
     }
     // We cannot deal with anything else.
     failed.add('$uri');
@@ -108,13 +104,63 @@ class Resolver {
     return File(normalizedPath).resolveSymbolicLinksSync();
   }
 
+  String? _resolveLinksWithinKnownRoots(String path) {
+    try {
+      final resolved = resolveSymbolicLinks(path);
+      if (resolved == null || !_isWithinKnownRoots(resolved)) return null;
+      return resolved;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// The directories a `file:` URI is allowed to resolve into.
+  ///
+  /// `source` entries in coverage data are supplied by whatever produced the
+  /// coverage JSON, which this library treats as untrusted input: nothing
+  /// stops a crafted `file://` URI from pointing anywhere on disk, and
+  /// callers (`format_coverage --pretty-print`, `filterIgnored`) read the
+  /// resolved path's contents into their output. Without this check, a
+  /// coverage.json with `"source": "file:///etc/passwd"` gets that file's
+  /// contents printed straight into the coverage report.
+  List<String>? _knownRoots;
+
+  List<String> _createKnownRoots() {
+    final roots = [
+      ?packagePath,
+      ?sdkRoot,
+      ...?_packages?.values.map(p.fromUri),
+      Directory.current.path,
+    ];
+    final knownRoots = <String>[];
+    for (final root in roots) {
+      final fallback = p.normalize(p.absolute(root));
+      try {
+        knownRoots.add(resolveSymbolicLinks(root) ?? fallback);
+      } on FileSystemException {
+        knownRoots.add(fallback);
+      }
+    }
+    return knownRoots;
+  }
+
+  bool _isWithinKnownRoots(String path) {
+    final roots = _knownRoots ??= _createKnownRoots();
+    final normalized = p.normalize(path);
+    return roots.any(
+      (root) => normalized == root || p.isWithin(root, normalized),
+    );
+  }
+
   static Map<String, Uri> _parsePackages(String packagesPath) {
     final content = File(packagesPath).readAsStringSync();
     final packagesUri = p.toUri(packagesPath);
-    final parsed =
-        PackageConfig.parseString(content, Uri.base.resolveUri(packagesUri));
+    final parsed = PackageConfig.parseString(
+      content,
+      Uri.base.resolveUri(packagesUri),
+    );
     return {
-      for (var package in parsed.packages) package.name: package.packageUriRoot
+      for (var package in parsed.packages) package.name: package.packageUriRoot,
     };
   }
 
@@ -122,17 +168,46 @@ class Resolver {
     final parsed = await findPackageConfig(Directory(packagePath));
     if (parsed == null) return null;
     return {
-      for (var package in parsed.packages) package.name: package.packageUriRoot
+      for (var package in parsed.packages) package.name: package.packageUriRoot,
     };
+  }
+}
+
+extension ResolverPackageUri on Resolver {
+  /// Returns a `package:` URI string if [scriptUri] is a `file:` URI under a
+  /// known package's library root, or [scriptUri] unchanged.
+  String toPackageUri(String scriptUri) {
+    final packages = _packages;
+    if (packages == null) return scriptUri;
+    final uri = Uri.tryParse(scriptUri);
+    if (uri == null || uri.scheme != 'file') return scriptUri;
+    final uriStr = uri.toString();
+    for (final MapEntry(key: packageName, value: packageUri)
+        in packages.entries) {
+      final rootStr = packageUri.toString();
+      if (uriStr.startsWith(rootStr)) {
+        return 'package:$packageName/${uriStr.substring(rootStr.length)}';
+      }
+    }
+    return scriptUri;
   }
 }
 
 /// Bazel URI resolver.
 class BazelResolver extends Resolver {
   /// Creates a Bazel resolver with the specified workspace path, if any.
-  BazelResolver({this.workspacePath = ''});
+  BazelResolver({this.workspacePath = ''})
+    : _workspace = _normalizeWorkspace(workspacePath);
 
   final String workspacePath;
+  final String _workspace;
+
+  static String _normalizeWorkspace(String workspacePath) {
+    final parts = p.posix
+        .split(workspacePath)
+        .where((s) => s.isNotEmpty && s != '.' && s != '/');
+    return parts.isEmpty ? '.' : p.posix.joinAll(parts);
+  }
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
@@ -148,20 +223,28 @@ class BazelResolver extends Resolver {
       return _resolveBazelPackage(uri.pathSegments);
     }
     if (uri.scheme == 'file') {
-      final runfilesPathSegment =
-          '.runfiles/$workspacePath'.replaceAll(RegExp(r'/*$'), '/');
-      final runfilesPos = uri.path.indexOf(runfilesPathSegment);
-      if (runfilesPos >= 0) {
-        final pathStart = runfilesPos + runfilesPathSegment.length;
-        return uri.path.substring(pathStart);
-      }
-      return null;
+      return _extractFilePath(uri);
     }
     if (uri.scheme == 'https' || uri.scheme == 'http') {
       return _extractHttpPath(uri);
     }
     // We cannot deal with anything else.
     failed.add('$uri');
+    return null;
+  }
+
+  String? _extractFilePath(Uri uri) {
+    final segments = [
+      for (final s in uri.pathSegments)
+        if (s.isNotEmpty) s,
+    ];
+    for (var i = 0; i < segments.length; i++) {
+      if (!segments[i].endsWith('.runfiles')) continue;
+      final after = p.posix.joinAll(segments.skip(i + 1));
+      if (after.isNotEmpty && p.posix.isWithin(_workspace, after)) {
+        return p.posix.relative(after, from: _workspace);
+      }
+    }
     return null;
   }
 

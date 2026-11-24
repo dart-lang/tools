@@ -1,5 +1,6 @@
 name: package:process
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   schedule:
@@ -28,8 +29,10 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         sdk: [stable, dev]
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
 
       - run: dart pub get
       - run: dart format --output=none --set-exit-if-changed .

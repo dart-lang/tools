@@ -209,7 +209,8 @@ class Server {
         }
         result = await method();
       } else {
-        result = await method(Parameters(name, request['params']));
+        result = await method(Parameters(name, request['params'],
+            id: request['id'], isNotification: !request.containsKey('id')));
       }
 
       // A request without an id is a notification, which should not be sent a

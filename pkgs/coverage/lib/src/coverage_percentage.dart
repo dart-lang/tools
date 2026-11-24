@@ -23,8 +23,9 @@ CoverageResult calculateCoveragePercentage(Map<String, HitMap> hitmap) {
     }
     coveredLines += lineHits.values.where((v) => v > 0).length;
   }
-  final coveragePercentage =
-      totalLines > 0 ? coveredLines * 100 / totalLines : 0.0;
+  final coveragePercentage = totalLines > 0
+      ? coveredLines * 100 / totalLines
+      : 0.0;
 
   return CoverageResult(
     percentage: coveragePercentage,

@@ -12,7 +12,7 @@
   _May affect code that relied on `wrapWith` resetting more than its own
   styles._
 
-## 1.1.0-wip
+## 1.1.0
 
 * Add a `deepCopyLinks` argument to `copyPath` and `copyPathSync`.
 * Remove the `@visibleForTesting` annotation from `SharedStdIn`.

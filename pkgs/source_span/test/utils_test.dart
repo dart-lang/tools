@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:source_span/source_span.dart';
 import 'package:source_span/src/utils.dart';
 import 'package:test/test.dart';
 
@@ -53,6 +54,60 @@ void main() {
       const context = '0\n2\n45\n';
       final index = findLineStart(context, '0', 1);
       expect(index, isNull);
+    });
+
+    test('handles bare CR line endings', () {
+      const context = '0_bb\r1_bbb\r2b____\r3bbb\r';
+      expect(findLineStart(context, 'b', 1), equals(11));
+      expect(findLineStart('ab\r', '', 2), equals(0));
+      expect(findLineStart('a\rbcd', '', 2), equals(2));
+    });
+
+    test('handles CRLF line endings for empty text', () {
+      expect(findLineStart('a\r\nbcd', '', 2), equals(0));
+      expect(findLineStart('ab\r\nabba', '', 3), equals(0));
+      expect(findLineStart('ab\r\nc', '', 3), equals(0));
+      expect(findLineStart('ab\r\ncd', '', 4), isNull);
+    });
+  });
+
+  group('find span line start', () {
+    SourceSpanWithContext contextSpan(String source,
+        [int start = 0, int? end]) {
+      final span =
+          SourceFile.fromString(source).span(start, end ?? source.length);
+      return SourceSpanWithContext(
+          span.start, span.end, span.text, span.context);
+    }
+
+    test('disambiguates empty point spans on CRLF vs later lines', () {
+      expect(findSpanLineStart(contextSpan('ab\r\nabba').subspan(3, 3)),
+          equals((lineStart: 0, linesBefore: 0)));
+      expect(findSpanLineStart(contextSpan('ab\r\nabba').subspan(7, 7)),
+          equals((lineStart: 4, linesBefore: 1)));
+    });
+
+    test('disambiguates bare CR vs CR of CRLF across lines', () {
+      expect(findSpanLineStart(contextSpan('a\rb\r\n').subspan(3, 4)),
+          equals((lineStart: 2, linesBefore: 1)));
+      expect(findSpanLineStart(contextSpan('b\r\nb\r').subspan(4, 5)),
+          equals((lineStart: 3, linesBefore: 1)));
+    });
+
+    test('disambiguates subspans when context starts on a later file line', () {
+      expect(
+          findSpanLineStart(
+              contextSpan('foo\nbar\nbar\n', 4, 12).subspan(0, 3)),
+          equals((lineStart: 0, linesBefore: 0)));
+      expect(
+          findSpanLineStart(
+              contextSpan('foo\nbar\nbar\n', 4, 12).subspan(4, 7)),
+          equals((lineStart: 4, linesBefore: 1)));
+      expect(findSpanLineStart(contextSpan('x\na\nb\n', 2, 6).subspan(1, 2)),
+          equals((lineStart: 0, linesBefore: 0)));
+      expect(
+          findSpanLineStart(contextSpan('x\nab\r\nabba', 2, 10).subspan(7, 7)),
+          equals((lineStart: 4, linesBefore: 1)));
     });
   });
 }

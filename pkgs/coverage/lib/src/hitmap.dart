@@ -21,11 +21,12 @@ class HitMap {
   /// Constructs an empty hitmap, optionally with function and branch coverage
   /// tables.
   HitMap.empty({bool functionCoverage = false, bool branchCoverage = false})
-      : this(
-            null,
-            functionCoverage ? <int, int>{} : null,
-            functionCoverage ? <int, String>{} : null,
-            branchCoverage ? <int, int>{} : null);
+    : this(
+        null,
+        functionCoverage ? <int, int>{} : null,
+        functionCoverage ? <int, String>{} : null,
+        branchCoverage ? <int, int>{} : null,
+      );
 
   /// Map from line to hit count for that line.
   final Map<int, int> lineHits;
@@ -58,15 +59,23 @@ class HitMap {
     required bool checkIgnoredLines,
     required Map<String, List<List<int>>?> ignoredLinesInFilesCache,
     required Resolver resolver,
+    Set<String> scopeOutput = const {},
   }) {
     // Map of source file to map of line to hit count for that line.
     final globalHitMap = <String, HitMap>{};
 
     for (var e in jsonResult) {
-      final source = e['source'] as String?;
+      var source = e['source'] as String?;
       if (source == null) {
         // Couldn't resolve import, so skip this entry.
         continue;
+      }
+
+      if (scopeOutput.isNotEmpty) {
+        source = resolver.toPackageUri(source);
+        if (!scopeOutput.includesScript(source)) {
+          continue;
+        }
       }
 
       void addToMap(Map<int, int> map, int line, int count) {
@@ -135,13 +144,19 @@ class HitMap {
     bool checkIgnoredLines = false,
     @Deprecated('Use packagePath') String? packagesPath,
     String? packagePath,
+    Set<String> scopeOutput = const {},
   }) async {
     final resolver = await Resolver.create(
-        packagesPath: packagesPath, packagePath: packagePath);
-    return parseJsonSync(jsonResult,
-        checkIgnoredLines: checkIgnoredLines,
-        ignoredLinesInFilesCache: {},
-        resolver: resolver);
+      packagesPath: packagesPath,
+      packagePath: packagePath,
+    );
+    return parseJsonSync(
+      jsonResult,
+      checkIgnoredLines: checkIgnoredLines,
+      ignoredLinesInFilesCache: {},
+      resolver: resolver,
+      scopeOutput: scopeOutput,
+    );
   }
 
   /// Generates a merged hitmap from a set of coverage JSON files.
@@ -150,20 +165,37 @@ class HitMap {
     bool checkIgnoredLines = false,
     @Deprecated('Use packagePath') String? packagesPath,
     String? packagePath,
+    Set<String> scopeOutput = const {},
   }) async {
     final globalHitmap = <String, HitMap>{};
+    Resolver? resolver;
+    final ignoredLinesInFilesCache = <String, List<List<int>>?>{};
     for (var file in files) {
       final contents = file.readAsStringSync();
-      final jsonMap = json.decode(contents) as Map<String, dynamic>;
-      if (jsonMap.containsKey('coverage')) {
-        final jsonResult = jsonMap['coverage'] as List;
-        globalHitmap.merge(await HitMap.parseJson(
-          jsonResult.cast<Map<String, dynamic>>(),
-          checkIgnoredLines: checkIgnoredLines,
-          // ignore: deprecated_member_use_from_same_package
-          packagesPath: packagesPath,
-          packagePath: packagePath,
-        ));
+      final decoded = json.decode(contents);
+      switch (decoded) {
+        case {'coverage': final List jsonResult}:
+          globalHitmap.merge(
+            HitMap.parseJsonSync(
+              jsonResult.whereType<Map<String, dynamic>>().toList(),
+              checkIgnoredLines: checkIgnoredLines,
+              ignoredLinesInFilesCache: ignoredLinesInFilesCache,
+              resolver: resolver ??= await Resolver.create(
+                packagesPath: packagesPath,
+                packagePath: packagePath,
+              ),
+              scopeOutput: scopeOutput,
+            ),
+          );
+        case Map(isEmpty: true):
+          // `dart test --coverage` outputs `{}` for suites where all tests
+          // were skipped.
+          break;
+        default:
+          throw FormatException(
+            'Unrecognized coverage JSON in "${file.path}". Expected a '
+            '{"coverage": [...]} report, but got ${decoded.runtimeType}.',
+          );
       }
     }
     return globalHitmap;
@@ -279,7 +311,9 @@ Future<Map<String, Map<int, int>>> createHitmap(
 /// Merges [newMap] into [result].
 @Deprecated('Migrate to FileHitMaps.merge')
 void mergeHitmaps(
-    Map<String, Map<int, int>> newMap, Map<String, Map<int, int>> result) {
+  Map<String, Map<int, int>> newMap,
+  Map<String, Map<int, int>> result,
+) {
   newMap.forEach((file, v) {
     final fileResult = result[file];
     if (fileResult != null) {
@@ -306,10 +340,12 @@ Future<Map<String, Map<int, int>>> parseCoverage(
   @Deprecated('Use packagePath') String? packagesPath,
   String? packagePath,
 }) async {
-  final result = await HitMap.parseFiles(files,
-      checkIgnoredLines: checkIgnoredLines,
-      packagesPath: packagesPath,
-      packagePath: packagePath);
+  final result = await HitMap.parseFiles(
+    files,
+    checkIgnoredLines: checkIgnoredLines,
+    packagesPath: packagesPath,
+    packagePath: packagePath,
+  );
   return result.map((key, value) => MapEntry(key, value.lineHits));
 }
 
@@ -329,25 +365,25 @@ List<T> _flattenMap<T>(Map map) {
 }
 
 /// Returns a JSON hit map backward-compatible with pre-1.16.0 SDKs.
-Map<String, dynamic> hitmapToJson(HitMap hitmap, Uri scriptUri) =>
-    <String, dynamic>{
-      'source': '$scriptUri',
-      'script': {
-        'type': '@Script',
-        'fixedId': true,
-        'id':
-            'libraries/1/scripts/${Uri.encodeComponent(scriptUri.toString())}',
-        'uri': '$scriptUri',
-        '_kind': 'library',
-      },
-      'hits': _flattenMap<int>(hitmap.lineHits),
-      if (hitmap.funcHits != null)
-        'funcHits': _flattenMap<int>(hitmap.funcHits!),
-      if (hitmap.funcNames != null)
-        'funcNames': _flattenMap<dynamic>(hitmap.funcNames!),
-      if (hitmap.branchHits != null)
-        'branchHits': _flattenMap<int>(hitmap.branchHits!),
-    };
+Map<String, dynamic> hitmapToJson(
+  HitMap hitmap,
+  Uri scriptUri,
+) => <String, dynamic>{
+  'source': '$scriptUri',
+  'script': {
+    'type': '@Script',
+    'fixedId': true,
+    'id': 'libraries/1/scripts/${Uri.encodeComponent(scriptUri.toString())}',
+    'uri': '$scriptUri',
+    '_kind': 'library',
+  },
+  'hits': _flattenMap<int>(hitmap.lineHits),
+  if (hitmap.funcHits != null) 'funcHits': _flattenMap<int>(hitmap.funcHits!),
+  if (hitmap.funcNames != null)
+    'funcNames': _flattenMap<dynamic>(hitmap.funcNames!),
+  if (hitmap.branchHits != null)
+    'branchHits': _flattenMap<int>(hitmap.branchHits!),
+};
 
 /// Sorts the hits array based on the line numbers.
 List _sortHits(List hits) {

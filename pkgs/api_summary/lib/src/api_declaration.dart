@@ -2,9 +2,14 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:collection/collection.dart';
+
+import 'api_facet.dart';
 import 'api_type.dart';
 import 'json_utils.dart';
+import 'member_sorting.dart';
 import 'text_renderer.dart';
+import 'uri_sorting.dart';
 
 /// The exposure status of an API declaration within the summarized package.
 enum ApiDeclarationStatus {
@@ -47,23 +52,77 @@ enum ApiClassModifier {
 final class ApiSummary {
   final String name;
 
+  /// The SDK and platform environment constraints of the package, mapping
+  /// environment names (such as 'sdk' or 'flutter') to their version
+  /// constraints.
+  final Map<String, String> environment;
+
+  /// The executables exposed by the package, mapping executable names to
+  /// their target script paths within `bin/`.
+  final Map<String, String?> executables;
+
   final List<ApiLibrary> libraries;
 
-  ApiSummary({required this.name, required this.libraries});
+  ApiSummary({
+    required this.name,
+    Map<String, String>? environment,
+    Map<String, String?>? executables,
+    required List<ApiLibrary> libraries,
+  }) : environment = _sortedUnmodifiableMap(environment),
+       executables = _sortedUnmodifiableMap(executables),
+       libraries = libraries.isEmpty
+           ? const []
+           : List.unmodifiable(libraries.sortedByUri(name));
 
   factory ApiSummary.fromJson(Map<String, dynamic> json) => ApiSummary(
     name: json['name'] as String,
+    environment: (json['environment'] as Map<String, dynamic>?)?.map(
+      (k, v) => MapEntry(k, v as String),
+    ),
+    executables: (json['executables'] as Map<String, dynamic>?)?.map(
+      (k, v) => MapEntry(k, v as String?),
+    ),
     libraries: parseList(json, 'libraries', ApiLibrary.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
     'name': name,
+    if (environment.isNotEmpty) 'environment': environment,
+    if (executables.isNotEmpty) 'executables': executables,
     'libraries': libraries.map((e) => e.toJson()).toList(),
   };
 
   @override
   String toString() => renderTextSummary(this);
 }
+
+Map<String, V> _sortedUnmodifiableMap<V>(Map<String, V>? source) =>
+    source == null || source.isEmpty
+    ? const {}
+    : Map.unmodifiable(
+        Map.fromEntries(
+          source.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+        ),
+      );
+
+List<T> _sortedDeclarationsByName<T extends ApiDeclaration>(List<T> items) =>
+    items.isEmpty ? const [] : List.unmodifiable(items.sortedBy((e) => e.name));
+
+List<ApiExecutable> _sortedExecutables(
+  List<ApiExecutable> items, {
+  bool isInstance = false,
+  bool isTopLevel = false,
+}) => items.isEmpty
+    ? const []
+    : List.unmodifiable(
+        items.sortedBy(
+          (e) => MemberSortKey.fromDeclaration(
+            e,
+            isInstance: isInstance,
+            isTopLevel: isTopLevel,
+          ),
+        ),
+      );
 
 /// A summary of the declarations exposed by a single library within a package.
 final class ApiLibrary {
@@ -76,18 +135,27 @@ final class ApiLibrary {
   final List<ApiExtensionType> extensionTypes;
   final List<ApiExecutable> functions;
   final List<ApiTypeAlias> typeAliases;
+  final Set<ApiFacet> facets;
 
   ApiLibrary({
     required this.uri,
     required this.isPublicEntryPoint,
-    required this.classes,
-    required this.enums,
-    required this.mixins,
-    required this.extensions,
-    required this.extensionTypes,
-    required this.functions,
-    required this.typeAliases,
-  });
+    required List<ApiClass> classes,
+    required List<ApiClass> enums,
+    required List<ApiClass> mixins,
+    required List<ApiExtension> extensions,
+    required List<ApiExtensionType> extensionTypes,
+    required List<ApiExecutable> functions,
+    required List<ApiTypeAlias> typeAliases,
+    Iterable<ApiFacet> facets = const [],
+  }) : classes = _sortedDeclarationsByName(classes),
+       enums = _sortedDeclarationsByName(enums),
+       mixins = _sortedDeclarationsByName(mixins),
+       extensions = _sortedDeclarationsByName(extensions),
+       extensionTypes = _sortedDeclarationsByName(extensionTypes),
+       functions = _sortedExecutables(functions, isTopLevel: true),
+       typeAliases = _sortedDeclarationsByName(typeAliases),
+       facets = facets.isEmpty ? const {} : Set.unmodifiable(facets.sorted());
 
   factory ApiLibrary.fromJson(Map<String, dynamic> json) => ApiLibrary(
     uri: json['uri'] as String,
@@ -103,6 +171,7 @@ final class ApiLibrary {
     ),
     functions: parseList(json, 'functions', ApiExecutable.fromJson),
     typeAliases: parseList(json, 'typeAliases', ApiTypeAlias.fromJson),
+    facets: parseList(json, 'facets', ApiFacet.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -119,6 +188,7 @@ final class ApiLibrary {
       'functions': functions.map((e) => e.toJson()).toList(),
     if (typeAliases.isNotEmpty)
       'typeAliases': typeAliases.map((e) => e.toJson()).toList(),
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -129,17 +199,15 @@ sealed class ApiDeclaration {
   final String? locationUri;
   final ApiDeclarationStatus status;
   final bool isDeprecated;
-  final bool isExperimental;
-  final bool isVisibleForTesting;
+  final Set<ApiFacet> facets;
 
-  const ApiDeclaration({
+  ApiDeclaration({
     required this.name,
     this.locationUri,
     this.status = ApiDeclarationStatus.public,
     this.isDeprecated = false,
-    this.isExperimental = false,
-    this.isVisibleForTesting = false,
-  });
+    Iterable<ApiFacet> facets = const [],
+  }) : facets = facets.isEmpty ? const {} : Set.unmodifiable(facets.sorted());
 }
 
 /// A summary of a Dart class, mixin, or enum declaration.
@@ -167,13 +235,16 @@ final class ApiClass extends ApiDeclaration {
     required this.mixins,
     this.superclassConstraints = const [],
     required this.modifiers,
-    required this.immediateSubtypes,
-    required this.constructors,
-    required this.methods,
+    required List<String> immediateSubtypes,
+    required List<ApiExecutable> constructors,
+    required List<ApiExecutable> methods,
     super.isDeprecated,
-    super.isExperimental,
-    super.isVisibleForTesting,
-  });
+    super.facets,
+  }) : immediateSubtypes = immediateSubtypes.isEmpty
+           ? const []
+           : List.unmodifiable(immediateSubtypes.sorted()),
+       constructors = _sortedExecutables(constructors, isInstance: true),
+       methods = _sortedExecutables(methods, isInstance: true);
 
   factory ApiClass.fromJson(Map<String, dynamic> json) => ApiClass(
     name: json['name'] as String,
@@ -198,8 +269,7 @@ final class ApiClass extends ApiDeclaration {
     constructors: parseList(json, 'constructors', ApiExecutable.fromJson),
     methods: parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
-    isExperimental: json['isExperimental'] as bool? ?? false,
-    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
+    facets: parseList(json, 'facets', ApiFacet.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -226,8 +296,7 @@ final class ApiClass extends ApiDeclaration {
       'constructors': constructors.map((e) => e.toJson()).toList(),
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (isExperimental) 'isExperimental': isExperimental,
-    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -245,11 +314,10 @@ final class ApiExtension extends ApiDeclaration {
     super.status,
     required this.typeParameters,
     required this.extendedType,
-    required this.methods,
+    required List<ApiExecutable> methods,
     super.isDeprecated,
-    super.isExperimental,
-    super.isVisibleForTesting,
-  });
+    super.facets,
+  }) : methods = _sortedExecutables(methods, isInstance: true);
 
   factory ApiExtension.fromJson(Map<String, dynamic> json) => ApiExtension(
     name: json['name'] as String,
@@ -261,8 +329,7 @@ final class ApiExtension extends ApiDeclaration {
     ),
     methods: parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
-    isExperimental: json['isExperimental'] as bool? ?? false,
-    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
+    facets: parseList(json, 'facets', ApiFacet.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -277,8 +344,7 @@ final class ApiExtension extends ApiDeclaration {
     'extendedType': extendedType.toJson(),
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (isExperimental) 'isExperimental': isExperimental,
-    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -299,12 +365,12 @@ final class ApiExtensionType extends ApiDeclaration {
     required this.typeParameters,
     required this.representationType,
     required this.interfaces,
-    required this.constructors,
-    required this.methods,
+    required List<ApiExecutable> constructors,
+    required List<ApiExecutable> methods,
     super.isDeprecated,
-    super.isExperimental,
-    super.isVisibleForTesting,
-  });
+    super.facets,
+  }) : constructors = _sortedExecutables(constructors, isInstance: true),
+       methods = _sortedExecutables(methods, isInstance: true);
 
   factory ApiExtensionType.fromJson(Map<String, dynamic> json) =>
       ApiExtensionType(
@@ -319,8 +385,7 @@ final class ApiExtensionType extends ApiDeclaration {
         constructors: parseList(json, 'constructors', ApiExecutable.fromJson),
         methods: parseList(json, 'methods', ApiExecutable.fromJson),
         isDeprecated: json['isDeprecated'] as bool? ?? false,
-        isExperimental: json['isExperimental'] as bool? ?? false,
-        isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
+        facets: parseList(json, 'facets', ApiFacet.fromJson),
       );
 
   Map<String, dynamic> toJson() => {
@@ -339,8 +404,7 @@ final class ApiExtensionType extends ApiDeclaration {
       'constructors': constructors.map((e) => e.toJson()).toList(),
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (isExperimental) 'isExperimental': isExperimental,
-    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -354,7 +418,6 @@ final class ApiExecutable extends ApiDeclaration {
   final Map<String, ApiType?> typeParameters;
   final ApiType returnType;
   final List<ApiParameter> parameters;
-  final bool isStatic;
 
   /// Whether this executable is a const constructor, field, or top-level
   /// variable.
@@ -362,6 +425,9 @@ final class ApiExecutable extends ApiDeclaration {
 
   /// Whether this executable represents an enum constant.
   final bool isEnumConstant;
+
+  final bool isStatic;
+
   ApiExecutable({
     required super.name,
     super.locationUri,
@@ -369,14 +435,13 @@ final class ApiExecutable extends ApiDeclaration {
     required this.kind,
     required this.typeParameters,
     required this.returnType,
-    required this.parameters,
+    required List<ApiParameter> parameters,
     required this.isStatic,
     this.isConst = false,
     this.isEnumConstant = false,
     super.isDeprecated,
-    super.isExperimental,
-    super.isVisibleForTesting,
-  });
+    super.facets,
+  }) : parameters = canonicalizeParameters(parameters);
 
   factory ApiExecutable.fromJson(Map<String, dynamic> json) => ApiExecutable(
     name: json['name'] as String,
@@ -390,10 +455,9 @@ final class ApiExecutable extends ApiDeclaration {
     parameters: parseList(json, 'parameters', ApiParameter.fromJson),
     isStatic: json['isStatic'] as bool? ?? false,
     isConst: json['isConst'] as bool? ?? false,
-    isEnumConstant: json['isEnumConstant'] as bool? ?? false,
     isDeprecated: json['isDeprecated'] as bool? ?? false,
-    isExperimental: json['isExperimental'] as bool? ?? false,
-    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
+    isEnumConstant: json['isEnumConstant'] as bool? ?? false,
+    facets: parseList(json, 'facets', ApiFacet.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -409,12 +473,11 @@ final class ApiExecutable extends ApiDeclaration {
     'returnType': returnType.toJson(),
     if (parameters.isNotEmpty)
       'parameters': parameters.map((e) => e.toJson()).toList(),
-    if (isStatic) 'isStatic': isStatic,
     if (isConst) 'isConst': isConst,
-    if (isEnumConstant) 'isEnumConstant': isEnumConstant,
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (isExperimental) 'isExperimental': isExperimental,
-    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
+    if (isEnumConstant) 'isEnumConstant': isEnumConstant,
+    if (isStatic) 'isStatic': isStatic,
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 
@@ -432,8 +495,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     required this.typeParameters,
     required this.aliasedType,
     super.isDeprecated,
-    super.isExperimental,
-    super.isVisibleForTesting,
+    super.facets,
   });
 
   factory ApiTypeAlias.fromJson(Map<String, dynamic> json) => ApiTypeAlias(
@@ -443,8 +505,7 @@ final class ApiTypeAlias extends ApiDeclaration {
     typeParameters: parseTypeParameters(json, 'typeParameters'),
     aliasedType: ApiType.fromJson(json['aliasedType'] as Map<String, dynamic>),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
-    isExperimental: json['isExperimental'] as bool? ?? false,
-    isVisibleForTesting: json['isVisibleForTesting'] as bool? ?? false,
+    facets: parseList(json, 'facets', ApiFacet.fromJson),
   );
 
   Map<String, dynamic> toJson() => {
@@ -458,8 +519,7 @@ final class ApiTypeAlias extends ApiDeclaration {
       },
     'aliasedType': aliasedType.toJson(),
     if (isDeprecated) 'isDeprecated': isDeprecated,
-    if (isExperimental) 'isExperimental': isExperimental,
-    if (isVisibleForTesting) 'isVisibleForTesting': isVisibleForTesting,
+    if (facets.isNotEmpty) 'facets': facets.map((e) => e.toJson()).toList(),
   };
 }
 

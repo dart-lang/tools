@@ -4,13 +4,14 @@
 
 export 'src/analytics.dart' show Analytics, FakeAnalytics, NoOpAnalytics;
 export 'src/config_handler.dart' show ToolInfo;
-export 'src/enums.dart' show AiAgent, DashEnvVar, DashTool;
+export 'src/enums.dart' show AiAgent, DashEnvVar, DashTool, DashToolKind;
 export 'src/event.dart' show CustomMetrics, Event;
 export 'src/log_handler.dart' show LogFileStats;
 export 'src/survey_handler.dart' show Survey, SurveyButton, SurveyHandler;
 export 'src/utils.dart'
     show
         areAnalyticsSuppressed,
+        areAnalyticsSuppressedIn,
         getEnvironment,
         parseDartSDKVersion,
         topLevelTool;

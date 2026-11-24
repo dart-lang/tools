@@ -13,25 +13,43 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
 import 'api_declaration.dart';
+import 'api_facet.dart';
 import 'api_summary_customizer.dart';
 import 'api_type.dart';
 import 'extensions.dart';
+import 'js_facet.dart';
+import 'meta_facet.dart';
 
 /// Traverses the public libraries of [packageName] within [context] to build
 /// a canonical [ApiSummary] representation.
 ///
 /// Filtering and discovery behaviors are customized using [customizer].
+///
+/// [environment] defines the SDK and platform environment constraints of the
+/// package (such as 'sdk' or 'flutter').
+///
+/// [executables] defines the executables exposed by the package, mapping
+/// executable names to their target script paths within `bin/`.
 Future<ApiSummary> buildApiPackage(
   String packageName,
   AnalysisContext context,
-  ApiSummaryCustomizer customizer,
-) => _ApiBuilder(packageName, customizer).build(context);
+  ApiSummaryCustomizer customizer, {
+  Map<String, String> environment = const {},
+  Map<String, String?> executables = const {},
+}) => _ApiBuilder(
+  packageName,
+  customizer,
+  environment: environment,
+  executables: executables,
+).build(context);
 
 /// Internal builder traversing analysis results to build structured API
 /// summaries.
 final class _ApiBuilder {
   final ApiSummaryCustomizer _customizer;
   final String _pkgName;
+  final Map<String, String> _environment;
+  final Map<String, String?> _executables;
 
   final _immediateSubinterfaceCache =
       <LibraryElement, Map<ClassElement, Set<InterfaceElement>>>{};
@@ -41,7 +59,12 @@ final class _ApiBuilder {
   final _libraryBuilders = <String, _ApiLibraryBuilder>{};
   final _elementToLibraries = <Element, List<LibraryElement>>{};
 
-  _ApiBuilder(this._pkgName, this._customizer);
+  _ApiBuilder(
+    this._pkgName,
+    this._customizer, {
+    this._environment = const {},
+    this._executables = const {},
+  });
 
   Future<ApiSummary> build(AnalysisContext context) async {
     final publicApiLibraries = <LibraryElement>[];
@@ -129,6 +152,7 @@ final class _ApiBuilder {
           () => _ApiLibraryBuilder(
             library.uri.toString(),
             isPublicEntryPoint: library.uri.isInPublicLibOf(_pkgName),
+            facets: _extractFacets(library),
           ),
         );
         switch (apiElement) {
@@ -155,7 +179,12 @@ final class _ApiBuilder {
 
     final libraries = _libraryBuilders.values.map((e) => e.build()).toList();
 
-    return ApiSummary(name: _pkgName, libraries: libraries);
+    return ApiSummary(
+      name: _pkgName,
+      environment: _environment,
+      executables: _executables,
+      libraries: libraries,
+    );
   }
 
   Future<void> _scanPublicApiLibraries(
@@ -186,6 +215,7 @@ final class _ApiBuilder {
           () => _ApiLibraryBuilder(
             library.uri.toString(),
             isPublicEntryPoint: true,
+            facets: _extractFacets(library),
           ),
         );
       }
@@ -204,9 +234,6 @@ final class _ApiBuilder {
       'Legacy nullability (.star) is not supported.',
     ),
   };
-
-  bool _isVisibleForTesting(Element element) =>
-      element.nonSynthetic.metadata.hasVisibleForTesting;
 
   ApiType _describeType(DartType type) {
     final isNullable = _isNullable(type.nullabilitySuffix);
@@ -252,7 +279,6 @@ final class _ApiBuilder {
               .map((f) => _describeType(f.type))
               .toList(),
           namedFields: namedFields
-              .sortedBy((f) => f.name)
               .map(
                 (f) => ApiRecordNamedField(
                   name: f.name,
@@ -339,7 +365,7 @@ final class _ApiBuilder {
     final methods = <ApiExecutable>[];
 
     if (includeMembers) {
-      for (final member in element.children.sortedBy((m) => m.name ?? '')) {
+      for (final member in element.children) {
         if (member.name?.startsWith('_') ?? false) continue;
 
         switch (member) {
@@ -369,7 +395,6 @@ final class _ApiBuilder {
         )[element];
         if (subinterfaces != null) {
           immediateSubtypes = subinterfaces.map((e) => e.name ?? '').toList();
-          immediateSubtypes.sort();
         }
       } else {
         if (element.isAbstract) modifiers.add(ApiClassModifier.isAbstract);
@@ -400,9 +425,8 @@ final class _ApiBuilder {
       immediateSubtypes: immediateSubtypes,
       constructors: constructors,
       methods: methods,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      facets: _extractFacets(element),
     );
   }
 
@@ -413,7 +437,7 @@ final class _ApiBuilder {
   }) {
     final methods = <ApiExecutable>[];
     if (includeMembers) {
-      for (final member in element.children.sortedBy((m) => m.name ?? '')) {
+      for (final member in element.children) {
         if (member.name?.startsWith('_') ?? false) continue;
         if (member is FieldElement) continue;
         if (member is ExecutableElement) {
@@ -428,9 +452,8 @@ final class _ApiBuilder {
       extendedType: _describeType(element.extendedType),
       typeParameters: _extractTypeParameters(element.typeParameters),
       methods: methods,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      facets: _extractFacets(element),
     );
   }
 
@@ -442,7 +465,7 @@ final class _ApiBuilder {
     final constructors = <ApiExecutable>[];
     final methods = <ApiExecutable>[];
     if (includeMembers) {
-      for (final member in element.children.sortedBy((m) => m.name ?? '')) {
+      for (final member in element.children) {
         if (member.name?.startsWith('_') ?? false) continue;
         if (member is FieldElement) continue;
         if (member is ConstructorElement) {
@@ -461,18 +484,27 @@ final class _ApiBuilder {
       interfaces: element.interfaces.map(_describeType).toList(),
       constructors: constructors,
       methods: methods,
-      isExperimental: element.nonSynthetic.metadata.hasExperimental,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      facets: _extractFacets(element),
     );
   }
+
+  bool _isDeprecated(Element element) =>
+      element.nonSynthetic.metadata.hasDeprecated ||
+      (element is PropertyAccessorElement &&
+          element.variable.nonSynthetic.metadata.hasDeprecated);
+
+  List<ApiFacet> _extractFacets(Element element) => [
+    ?MetaContractFacet.fromElement(element),
+    ?JsBindingFacet.fromElement(element),
+    ?JsExportFacet.fromElement(element),
+  ];
 
   ApiExecutable _buildExecutable(
     ExecutableElement element, {
     required ApiDeclarationStatus status,
   }) {
-    final nonSyntheticElement = element.nonSynthetic;
-    final formalParameters = element.type.formalParameters;
+    final formalParameters = element.formalParameters;
 
     final kind = switch (element) {
       GetterElement() => ApiExecutableKind.getter,
@@ -514,10 +546,9 @@ final class _ApiBuilder {
           .toList(),
       isStatic: element.isStatic,
       isConst: isConst,
+      isDeprecated: _isDeprecated(element),
       isEnumConstant: isEnumConstant,
-      isDeprecated: nonSyntheticElement.metadata.hasDeprecated,
-      isExperimental: nonSyntheticElement.metadata.hasExperimental,
-      isVisibleForTesting: _isVisibleForTesting(element),
+      facets: _extractFacets(element),
     );
   }
 
@@ -531,8 +562,7 @@ final class _ApiBuilder {
     typeParameters: _extractTypeParameters(element.typeParameters),
     aliasedType: _describeType(element.aliasedType),
     isDeprecated: element.nonSynthetic.metadata.hasDeprecated,
-    isExperimental: element.nonSynthetic.metadata.hasExperimental,
-    isVisibleForTesting: _isVisibleForTesting(element),
+    facets: _extractFacets(element),
   );
 }
 
@@ -540,6 +570,7 @@ final class _ApiBuilder {
 final class _ApiLibraryBuilder {
   final String uri;
   final bool isPublicEntryPoint;
+  final List<ApiFacet> facets;
   final classes = <ApiClass>[];
   final enums = <ApiClass>[];
   final mixins = <ApiClass>[];
@@ -548,26 +579,22 @@ final class _ApiLibraryBuilder {
   final functions = <ApiExecutable>[];
   final typeAliases = <ApiTypeAlias>[];
 
-  _ApiLibraryBuilder(this.uri, {required this.isPublicEntryPoint});
+  _ApiLibraryBuilder(
+    this.uri, {
+    required this.isPublicEntryPoint,
+    this.facets = const [],
+  });
 
-  ApiLibrary build() {
-    classes.sortBy((e) => e.name);
-    enums.sortBy((e) => e.name);
-    mixins.sortBy((e) => e.name);
-    extensions.sortBy((e) => e.name);
-    extensionTypes.sortBy((e) => e.name);
-    functions.sortBy((e) => e.name);
-    typeAliases.sortBy((e) => e.name);
-    return ApiLibrary(
-      uri: uri,
-      isPublicEntryPoint: isPublicEntryPoint,
-      classes: classes,
-      enums: enums,
-      mixins: mixins,
-      extensions: extensions,
-      extensionTypes: extensionTypes,
-      functions: functions,
-      typeAliases: typeAliases,
-    );
-  }
+  ApiLibrary build() => ApiLibrary(
+    uri: uri,
+    isPublicEntryPoint: isPublicEntryPoint,
+    classes: classes,
+    enums: enums,
+    mixins: mixins,
+    extensions: extensions,
+    extensionTypes: extensionTypes,
+    functions: functions,
+    typeAliases: typeAliases,
+    facets: facets,
+  );
 }

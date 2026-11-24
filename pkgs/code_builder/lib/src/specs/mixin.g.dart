@@ -16,6 +16,8 @@ class _$Mixin extends Mixin {
   @override
   final Reference? on;
   @override
+  final BuiltList<Reference> onTypes;
+  @override
   final BuiltList<Reference> implements;
   @override
   final BuiltList<Reference> types;
@@ -34,6 +36,7 @@ class _$Mixin extends Mixin {
     required this.annotations,
     required this.docs,
     this.on,
+    required this.onTypes,
     required this.implements,
     required this.types,
     required this.methods,
@@ -55,6 +58,7 @@ class _$Mixin extends Mixin {
         annotations == other.annotations &&
         docs == other.docs &&
         on == other.on &&
+        onTypes == other.onTypes &&
         implements == other.implements &&
         types == other.types &&
         methods == other.methods &&
@@ -69,6 +73,7 @@ class _$Mixin extends Mixin {
     _$hash = $jc(_$hash, annotations.hashCode);
     _$hash = $jc(_$hash, docs.hashCode);
     _$hash = $jc(_$hash, on.hashCode);
+    _$hash = $jc(_$hash, onTypes.hashCode);
     _$hash = $jc(_$hash, implements.hashCode);
     _$hash = $jc(_$hash, types.hashCode);
     _$hash = $jc(_$hash, methods.hashCode);
@@ -85,6 +90,7 @@ class _$Mixin extends Mixin {
           ..add('annotations', annotations)
           ..add('docs', docs)
           ..add('on', on)
+          ..add('onTypes', onTypes)
           ..add('implements', implements)
           ..add('types', types)
           ..add('methods', methods)
@@ -143,6 +149,18 @@ class _$MixinBuilder extends MixinBuilder {
   set on(Reference? on) {
     _$this;
     super.on = on;
+  }
+
+  @override
+  ListBuilder<Reference> get onTypes {
+    _$this;
+    return super.onTypes;
+  }
+
+  @override
+  set onTypes(ListBuilder<Reference> onTypes) {
+    _$this;
+    super.onTypes = onTypes;
   }
 
   @override
@@ -214,6 +232,7 @@ class _$MixinBuilder extends MixinBuilder {
       super.annotations = $v.annotations.toBuilder();
       super.docs = $v.docs.toBuilder();
       super.on = $v.on;
+      super.onTypes = $v.onTypes.toBuilder();
       super.implements = $v.implements.toBuilder();
       super.types = $v.types.toBuilder();
       super.methods = $v.methods.toBuilder();
@@ -247,6 +266,7 @@ class _$MixinBuilder extends MixinBuilder {
             annotations: annotations.build(),
             docs: docs.build(),
             on: on,
+            onTypes: onTypes.build(),
             implements: implements.build(),
             types: types.build(),
             methods: methods.build(),
@@ -261,6 +281,8 @@ class _$MixinBuilder extends MixinBuilder {
         _$failedField = 'docs';
         docs.build();
 
+        _$failedField = 'onTypes';
+        onTypes.build();
         _$failedField = 'implements';
         implements.build();
         _$failedField = 'types';

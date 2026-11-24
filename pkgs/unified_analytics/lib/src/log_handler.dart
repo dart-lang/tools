@@ -3,9 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io' as io;
+import 'dart:math';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
+import 'package:meta/meta.dart';
 
 import 'constants.dart';
 import 'event.dart';
@@ -41,14 +44,19 @@ class LogFileStats {
   /// ```
   final Map<String, int> flutterChannelCount;
 
-  /// The map containing all of the tools that have sent events
-  /// and how many events were sent by each tool.
+  /// The map containing all of the leaf tools that have sent events
+  /// and how many events were sent by each one.
+  ///
+  /// The leaf tool is the logical tool that sent an event, which can be a
+  /// shared component. It's read from the `leaf_tool` user property, falling
+  /// back to the legacy `tool` property for records written before
+  /// `leaf_tool` existed.
   ///
   /// ```
   /// {
   ///   'flutter-tool': 500,
   ///   'dart-tool': 45,
-  ///   'vscode-plugins': 321,
+  ///   'analysis-server': 321,
   /// }
   /// ```
   final Map<String, int> toolCount;
@@ -154,10 +162,12 @@ class LogFileStats {
 /// This class is responsible for writing to a log
 /// file that has been initialized by the [createLogFile].
 ///
-/// It will be treated as an append only log and will be limited
-/// to have has many data records as specified by [kLogFileLength].
+/// It will be treated as an append only log, trimmed to the newest
+/// [kLogFileLength] records when it grows past [kLogFileTrimSize].
 class LogHandler {
   final File logFile;
+
+  final int _trimSize;
 
   /// Contains instances of [Event.analyticsException] that were encountered
   /// during a workflow and will be sent to GA4 for collection.
@@ -165,19 +175,64 @@ class LogHandler {
 
   /// A log handler constructor that will delegate saving
   /// logs and retrieving stats from the persisted log.
-  LogHandler({required this.logFile});
+  LogHandler({
+    required this.logFile,
+    @visibleForTesting int trimSize = kLogFileTrimSize,
+  }) : _trimSize = trimSize;
 
   /// Get stats from the persisted log file.
   ///
   /// Note that some developers may only be Dart
   /// developers and will not have any data for flutter
   /// related metrics.
+  ///
+  /// Returns `null` if there are no records to report, including when the
+  /// log file doesn't exist yet, is abnormally large, or couldn't be read.
+  /// A log file that is abnormally large or couldn't be read is deleted and
+  /// replaced with an empty one.
   LogFileStats? logFileStats() {
+    List<String> lines;
+    try {
+      // Avoid reading abnormally large (or corrupted) log files into
+      // memory, which can exhaust the heap; see
+      // https://github.com/dart-lang/tools/issues/275.
+      //
+      // A negative size (e.g. -1) means the file doesn't exist, which is a
+      // common and expected state (for example, before any events have been
+      // logged); treat that the same as "nothing to report" instead of
+      // falling through to a FileSystemException.
+      final size = logFile.statSync().size;
+      if (size < 0) return null;
+      if (size > kMaxLogFileSize) {
+        // Discard the file, as `save` does. Otherwise it would stay too large
+        // to read and no stats could be collected from it again.
+        _resetLogFile();
+        return null;
+      }
+
+      lines = logFile.readAsLinesSync();
+    } on FileSystemException catch (err) {
+      errorSet.add(
+        Event.analyticsException(
+          workflow: 'LogHandler.logFileStats',
+          error: err.runtimeType.toString(),
+          // Deliberately omit `err.path`: it can contain PII or proprietary
+          // information (e.g. parts of the user's file system layout).
+          description: 'message: ${err.message}',
+        ),
+      );
+      // A log file that can't be read (e.g. it has invalid UTF-8) would keep
+      // failing, so discard it.
+      _resetLogFile();
+
+      return null;
+    }
+
     // Parse each line of the log file through [LogItem],
     // some returned records may be null if malformed, they will be
     // removed later through `whereType<LogItem>`
-    final records = logFile
-        .readAsLinesSync()
+    final records = lines
+        .skip(max(0, lines.length - kLogFileLength))
         .map((String e) {
           try {
             return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
@@ -225,7 +280,7 @@ class LogHandler {
     final toolCount = <String, int>{};
     for (final record in records) {
       counter['sessions']!.add(record.sessionId);
-      counter['tool']!.add(record.tool);
+      counter['tool']!.add(record.leafTool);
       if (record.flutterChannel != null) {
         counter['flutter_channel']!.add(record.flutterChannel!);
       }
@@ -238,10 +293,10 @@ class LogHandler {
       eventCount[record.eventName] = eventCount[record.eventName]! + 1;
 
       // Counting how many events were recorded for each tool
-      if (!toolCount.containsKey(record.tool)) {
-        toolCount[record.tool] = 0;
+      if (!toolCount.containsKey(record.leafTool)) {
+        toolCount[record.leafTool] = 0;
       }
-      toolCount[record.tool] = toolCount[record.tool]! + 1;
+      toolCount[record.leafTool] = toolCount[record.leafTool]! + 1;
 
       // Necessary to perform a null check for flutter channel because
       // not all events will have information about flutter
@@ -273,31 +328,22 @@ class LogHandler {
 
   /// Saves the data passed in as a single line in the log file.
   ///
-  /// This will keep the max number of records limited to equal to
-  /// or less than [kLogFileLength] records.
+  /// This only appends to the file, unless the file has grown past the trim
+  /// size, see [kLogFileTrimSize]; then it is first trimmed to the newest
+  /// [kLogFileLength] records.
   void save({required Map<String, Object?> data}) {
     try {
-      List<String> records;
       final stat = logFile.statSync();
       if (stat.size > kMaxLogFileSize) {
         logFile.deleteSync();
         logFile.createSync();
-        records = [];
-      } else {
-        records = logFile.readAsLinesSync();
+      } else if (stat.size > _trimSize) {
+        _trim();
       }
-      final content = '${jsonEncode(data)}\n';
-
-      // When the record count is less than the max, add as normal;
-      // else drop the oldest records until equal to max
-      if (records.length < kLogFileLength) {
-        logFile.writeAsStringSync(content, mode: FileMode.writeOnlyAppend);
-      } else {
-        records.add(content);
-        records = records.skip(records.length - kLogFileLength).toList();
-
-        logFile.writeAsStringSync(records.join('\n'));
-      }
+      logFile.writeAsStringSync(
+        '${jsonEncode(data)}\n',
+        mode: FileMode.writeOnlyAppend,
+      );
     } on Object {
       // Logging isn't important enough to warrant raising an
       // exception or error that will surprise consumers of this package.
@@ -306,6 +352,63 @@ class LogHandler {
         logFile.deleteSync();
       }
       logFile.createSync();
+    }
+  }
+
+  /// Replaces the log file with an empty one, ignoring any failure.
+  void _resetLogFile() {
+    try {
+      // Delete without checking for existence first, since the file could be
+      // created or deleted by another process in between.
+      logFile.deleteSync();
+    } on FileSystemException {
+      // The file is already gone or can't be deleted; try to create it anyway.
+    }
+    try {
+      logFile.createSync();
+    } on Object {
+      // Best effort; `save` resets the file again if it's still unusable.
+    }
+  }
+
+  /// Rewrites the log file keeping only its newest records.
+  ///
+  /// Keeps at most [kLogFileLength] records and at most about half the trim
+  /// size, so that trims stay rare however large the records are.
+  ///
+  /// The new content is written to a temporary file which is then renamed
+  /// over the log file, so other processes see the old or the new file and
+  /// never a partial one. A record that another process appends during the
+  /// trim can be lost; the log is only a local record, so that is accepted.
+  void _trim() {
+    File? tempFile;
+    try {
+      final lines = logFile.readAsLinesSync();
+      final maxBytes = _trimSize ~/ 2;
+      var start = lines.length;
+      var bytes = 0;
+      while (start > 0 && lines.length - start < kLogFileLength) {
+        // UTF-16 length approximates UTF-8 bytes; log records are almost
+        // entirely ASCII.
+        bytes += lines[start - 1].length + 1;
+        if (bytes > maxBytes) break;
+        start--;
+      }
+      final kept = lines.sublist(start);
+      // The random part keeps trims in different isolates of one process
+      // apart.
+      final suffix = '${io.pid}.${Random().nextInt(1 << 32)}';
+      tempFile = logFile.fileSystem.file('${logFile.path}.$suffix.tmp');
+      tempFile.writeAsStringSync(kept.isEmpty ? '' : '${kept.join('\n')}\n');
+      tempFile.renameSync(logFile.path);
+    } on Object {
+      // Trimming is best effort; the next save tries again. If it keeps
+      // failing, the file grows until [kMaxLogFileSize] and is deleted.
+      try {
+        if (tempFile != null && tempFile.existsSync()) tempFile.deleteSync();
+      } on Object {
+        // Nothing more to do.
+      }
     }
   }
 }
@@ -318,7 +421,10 @@ class LogItem {
   final String host;
   final String? flutterVersion;
   final String dartVersion;
-  final String tool;
+
+  /// The leaf tool that sent the event, from `leaf_tool`, or from the legacy
+  /// `tool` property for older records.
+  final String leafTool;
   final DateTime localTime;
   final String hostOsVersion;
   final String locale;
@@ -331,7 +437,7 @@ class LogItem {
     required this.host,
     this.flutterVersion,
     required this.dartVersion,
-    required this.tool,
+    required this.leafTool,
     required this.localTime,
     required this.hostOsVersion,
     required this.locale,
@@ -428,8 +534,12 @@ class LogItem {
     final dartVersion =
         (userProps['dart_version']! as Map<String, Object?>)['value']
             as String?;
-    final tool =
-        (userProps['tool']! as Map<String, Object?>)['value'] as String?;
+    // Prefer `leaf_tool`. Records written before it existed only have the
+    // legacy `tool` property, which is also scheduled for removal.
+    final leafTool =
+        ((userProps['leaf_tool'] ?? userProps['tool'])
+                as Map<String, Object?>?)?['value']
+            as String?;
     final localTimeString =
         (userProps['local_time']! as Map<String, Object?>)['value'] as String?;
     final hostOsVersion =
@@ -451,7 +561,7 @@ class LogItem {
       sessionId,
       host,
       dartVersion,
-      tool,
+      leafTool,
       localTimeString,
       hostOsVersion,
       locale,
@@ -470,7 +580,7 @@ class LogItem {
       host: host!,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion!,
-      tool: tool!,
+      leafTool: leafTool!,
       localTime: localTime,
       hostOsVersion: hostOsVersion!,
       locale: locale!,

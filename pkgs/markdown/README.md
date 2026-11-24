@@ -146,26 +146,20 @@ compliance with [CommonMark].
  3. Verify that more tests now pass – or at least, no more tests fail.
  4. Make sure you include the updated stats files in your commit.
 
-#### Updating the CommonMark test file for a spec update
+#### Updating the CommonMark and GFM test files for a spec update
 
- 1. Check out the [CommonMark source]. Make sure you checkout a *major* release.
- 2. Dump the test output overwriting the existing tests file.
-
-    ```console
-    > cd /path/to/common_mark_dir
-    > python3 test/spec_tests.py --dump-tests > \
-      /path/to/markdown.dart/tool/common_mark_tests.json
-    ```
-
- 3. Update the stats files as described above. Note any changes in the results.
- 4. Update any references to the existing spec by search for
-    `https://spec.commonmark.org/0.30/` in the repository. (Including this one.)
-    Verify the updated links are still valid.
- 5. Commit changes, including a corresponding note in `CHANGELOG.md`.
+ 1. Run `dart run tool/update_spec_tests.dart` to fetch the latest released
+    [CommonMark source] and [GitHub Flavored] specs, regenerate
+    `tool/common_mark_tests.json` and `tool/gfm_tests.json`, and update the
+    stats and `.unit` files via `tool/stats.dart --update-files`.
+ 2. Update any references to the existing spec by searching for
+    `https://spec.commonmark.org/0.31.2/` in the repository. (Including this
+    one.) Verify the updated links are still valid.
+ 3. Commit changes, including a corresponding note in `CHANGELOG.md`.
 
 [Perl Markdown]: https://daringfireball.net/projects/markdown/
 [CommonMark]: https://commonmark.org/
-[commonMark-raw-html]: https://spec.commonmark.org/0.30/#raw-html
+[commonMark-raw-html]: https://spec.commonmark.org/0.31.2/#raw-html
 [CommonMark source]: https://github.com/commonmark/commonmark-spec
 [GitHub Flavored]: https://github.github.io/gfm/
 [pandoc-auto_identifiers]: https://pandoc.org/MANUAL.html#extension-auto_identifiers

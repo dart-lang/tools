@@ -10,9 +10,7 @@ import 'package:csslib/visitor.dart';
 
 import '../dom.dart';
 import 'constants.dart' show isWhitespaceCC;
-
-bool matches(Element node, String selector) =>
-    SelectorEvaluator().matches(node, _parseSelectorList(selector));
+import 'css_class_set.dart' show hasHtmlClassToken;
 
 Element? querySelector(Node node, String selector) =>
     SelectorEvaluator().querySelector(node, _parseSelectorList(selector));
@@ -43,20 +41,39 @@ class SelectorEvaluator extends Visitor {
     return visitSelectorGroup(selector);
   }
 
+  // Explicit DFS preserves document order without recursive calls, which
+  // could overflow on deeply nested HTML documents.
   Element? querySelector(Node root, SelectorGroup selector) {
-    for (var element in root.nodes.whereType<Element>()) {
-      if (matches(element, selector)) return element;
-      final result = querySelector(element, selector);
-      if (result != null) return result;
+    final stack = <Iterator<Node>>[root.nodes.iterator];
+    while (stack.isNotEmpty) {
+      final cursor = stack.last;
+      if (!cursor.moveNext()) {
+        stack.removeLast();
+        continue;
+      }
+      final node = cursor.current;
+      if (node is Element) {
+        if (matches(node, selector)) return node;
+        if (node.nodes.isNotEmpty) stack.add(node.nodes.iterator);
+      }
     }
     return null;
   }
 
   void querySelectorAll(
       Node root, SelectorGroup selector, List<Element> results) {
-    for (var element in root.nodes.whereType<Element>()) {
-      if (matches(element, selector)) results.add(element);
-      querySelectorAll(element, selector, results);
+    final stack = <Iterator<Node>>[root.nodes.iterator];
+    while (stack.isNotEmpty) {
+      final cursor = stack.last;
+      if (!cursor.moveNext()) {
+        stack.removeLast();
+        continue;
+      }
+      final node = cursor.current;
+      if (node is Element) {
+        if (matches(node, selector)) results.add(node);
+        if (node.nodes.isNotEmpty) stack.add(node.nodes.iterator);
+      }
     }
   }
 
@@ -131,11 +148,12 @@ class SelectorEvaluator extends Visitor {
   }
 
   UnimplementedError _unimplemented(SimpleSelector selector) =>
-      UnimplementedError("'$selector' selector of type "
+      UnimplementedError(
+          "'${selector.span?.text ?? selector}' selector of type "
           '${selector.runtimeType} is not implemented');
 
-  FormatException _unsupported(TreeNode selector) =>
-      FormatException("'$selector' is not a valid selector");
+  FormatException _unsupported(TreeNode selector) => FormatException(
+      "'${selector.span?.text ?? selector}' is not a valid selector");
 
   @override
   bool visitPseudoClassSelector(PseudoClassSelector node) {
@@ -144,19 +162,18 @@ class SelectorEvaluator extends Visitor {
 
       // http://dev.w3.org/csswg/selectors-4/#the-root-pseudo
       case 'root':
-        // TODO(jmesserly): fix when we have a .ownerDocument pointer
-        // return _element == _element.ownerDocument.rootElement;
-        return _element!.localName == 'html' && _element!.parentNode == null;
+        return _element!.parentNode is Document;
 
       // http://dev.w3.org/csswg/selectors-4/#the-empty-pseudo
       case 'empty':
-        return _element!.nodes
-            .any((n) => !(n is Element || n is Text && n.text.isNotEmpty));
+        return !_element!.nodes
+            .any((n) => n is Element || n is Text && n.text.isNotEmpty);
 
       // http://dev.w3.org/csswg/selectors-4/#the-blank-pseudo
       case 'blank':
-        return _element!.nodes.any((n) => !(n is Element ||
-            n is Text && n.text.runes.any((r) => !isWhitespaceCC(r))));
+        return !_element!.nodes.any((n) =>
+            n is Element ||
+            n is Text && n.text.runes.any((r) => !isWhitespaceCC(r)));
 
       // http://dev.w3.org/csswg/selectors-4/#the-first-child-pseudo
       case 'first-child':
@@ -230,9 +247,14 @@ class SelectorEvaluator extends Visitor {
 
           final numericLiteral = literal.value as num;
           final parent = _element!.parentNode;
-          return parent != null &&
-              numericLiteral > 0 &&
-              parent.nodes.indexOf(_element) == numericLiteral;
+          if (parent == null) return false;
+          var index = 0;
+          // previousElementSibling searches the child list on every access.
+          for (final sibling in parent.nodes) {
+            if (sibling is Element) index++;
+            if (identical(sibling, _element)) return index == numericLiteral;
+          }
+          return false;
         }
         break;
 
@@ -259,8 +281,10 @@ class SelectorEvaluator extends Visitor {
 
   @override
   bool visitNamespaceSelector(NamespaceSelector node) {
+    final nameSelector = node.nameAsSimpleSelector;
+    if (nameSelector == null) throw _unsupported(node);
     // Match element tag name
-    if (!(node.nameAsSimpleSelector!.visit(this) as bool)) return false;
+    if (!(nameSelector.visit(this) as bool)) return false;
 
     if (node.isNamespaceWildcard) return true;
 
@@ -278,14 +302,17 @@ class SelectorEvaluator extends Visitor {
 
   @override
   bool visitClassSelector(ClassSelector node) =>
-      _element!.classes.contains(node.name);
+      hasHtmlClassToken(_element!.className, node.name);
 
   // TODO(jmesserly): negation should support any selectors in level 4,
   // not just simple selectors.
   // http://dev.w3.org/csswg/selectors-4/#negation
   @override
-  bool visitNegationSelector(NegationSelector node) =>
-      !(node.negationArg!.visit(this) as bool);
+  bool visitNegationSelector(NegationSelector node) {
+    final negationArg = node.negationArg;
+    if (negationArg == null) throw _unsupported(node);
+    return !(negationArg.visit(this) as bool);
+  }
 
   @override
   bool visitAttributeSelector(AttributeSelector node) {
@@ -298,8 +325,7 @@ class SelectorEvaluator extends Visitor {
     final select = '${node.value}';
     return switch (node.operatorKind) {
       TokenKind.EQUALS => value == select,
-      TokenKind.INCLUDES =>
-        value.split(' ').any((v) => v.isNotEmpty && v == select),
+      TokenKind.INCLUDES => hasHtmlClassToken(value, select),
       TokenKind.DASH_MATCH => value.startsWith(select) &&
           (value.length == select.length || value[select.length] == '-'),
       TokenKind.PREFIX_MATCH => value.startsWith(select),

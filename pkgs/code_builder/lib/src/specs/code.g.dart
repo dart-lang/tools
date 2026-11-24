@@ -37,8 +37,9 @@ class _$Block extends Block {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'Block')
-      ..add('statements', statements)).toString();
+    return (newBuiltValueToStringHelper(
+      r'Block',
+    )..add('statements', statements)).toString();
   }
 }
 

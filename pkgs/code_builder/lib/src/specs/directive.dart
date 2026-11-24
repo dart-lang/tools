@@ -22,13 +22,12 @@ abstract class Directive
     List<String> show = const [],
     List<String> hide = const [],
   }) => Directive(
-    (builder) =>
-        builder
-          ..as = as
-          ..type = DirectiveType.import
-          ..url = url
-          ..show.addAll(show)
-          ..hide.addAll(hide),
+    (builder) => builder
+      ..as = as
+      ..type = DirectiveType.import
+      ..url = url
+      ..show.addAll(show)
+      ..hide.addAll(hide),
   );
 
   factory Directive.importDeferredAs(
@@ -37,14 +36,13 @@ abstract class Directive
     List<String> show = const [],
     List<String> hide = const [],
   }) => Directive(
-    (builder) =>
-        builder
-          ..as = as
-          ..type = DirectiveType.import
-          ..url = url
-          ..deferred = true
-          ..show.addAll(show)
-          ..hide.addAll(hide),
+    (builder) => builder
+      ..as = as
+      ..type = DirectiveType.import
+      ..url = url
+      ..deferred = true
+      ..show.addAll(show)
+      ..hide.addAll(hide),
   );
 
   factory Directive.export(
@@ -52,26 +50,23 @@ abstract class Directive
     List<String> show = const [],
     List<String> hide = const [],
   }) => Directive(
-    (builder) =>
-        builder
-          ..type = DirectiveType.export
-          ..url = url
-          ..show.addAll(show)
-          ..hide.addAll(hide),
+    (builder) => builder
+      ..type = DirectiveType.export
+      ..url = url
+      ..show.addAll(show)
+      ..hide.addAll(hide),
   );
 
   factory Directive.part(String url) => Directive(
-    (builder) =>
-        builder
-          ..type = DirectiveType.part
-          ..url = url,
+    (builder) => builder
+      ..type = DirectiveType.part
+      ..url = url,
   );
 
   factory Directive.partOf(String url) => Directive(
-    (builder) =>
-        builder
-          ..type = DirectiveType.partOf
-          ..url = url,
+    (builder) => builder
+      ..type = DirectiveType.partOf
+      ..url = url,
   );
 
   Directive._();

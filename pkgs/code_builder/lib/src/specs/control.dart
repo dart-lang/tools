@@ -1,222 +1,262 @@
-// Copyright (c) 2025, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
-import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
+import '../allocator.dart';
 import '../base.dart';
 import 'code.dart';
 import 'expression.dart';
+import 'pattern.dart';
 import 'reference.dart';
 
 part 'control.g.dart';
-part '../mixins/control.dart';
+part 'control/branches.dart';
+part 'control/handling.dart';
+part 'control/loops.dart';
+part 'control/switch.dart';
 
-part './control/loops.dart';
-part './control/branches.dart';
-part './control/handling.dart';
-part './control/switch.dart';
-
-/// Knowledge of different types of control blocks.
-///
-@internal
-abstract class ControlBlockVisitor<T>
-    implements ExpressionVisitor<T>, CodeVisitor<T> {
-  T visitControlBlock(ControlBlock block, [T? context]);
-  T visitLabeledBlock(LabeledControlBlock block, [T? context]);
-  T visitWhileLoop(WhileLoop loop, [T? context]);
-  T visitControlTree(ControlTree tree, [T? context]);
-  T visitControlExpression(ControlExpression expression, [T? context]);
-  T visitSwitch(Switch statement, [T? context]);
-  // [context] is actually used, but the analyzer doesn't detect it.
-  // ignore: unused_element_parameter
-  T _visitCaseStatement(CaseStatement statement, [T? context]);
-  // [context] is actually used, but the analyzer doesn't detect it.
-  // ignore: unused_element_parameter
-  T _visitCaseExpression(CaseExpression expression, [T? context]);
+/// Knowledge of different types of control flow constructs in Dart.
+abstract class ControlVisitor<T>
+    implements CodeVisitor<T>, ExpressionVisitor<T>, PatternVisitor<T> {
+  T visitForLoop(ForLoop spec, [T? context]);
+  T visitForInLoop(ForInLoop spec, [T? context]);
+  T visitWhileLoop(WhileLoop spec, [T? context]);
+  T visitConditional(Conditional spec, [T? context]);
+  T visitBooleanCondition(BooleanCondition condition, [T? context]);
+  T visitCaseCondition(CaseCondition condition, [T? context]);
+  T visitTry(Try spec, [T? context]);
+  T visitSwitchStatement(SwitchStatement spec, [T? context]);
+  T visitSwitchExpression(SwitchExpression spec, [T? context]);
 }
 
-/// Knowledge of how to write valid Dart code from [ControlBlockVisitor].
-///
-@internal
-abstract mixin class ControlBlockEmitter
-    implements ControlBlockVisitor<StringSink> {
+/// Knowledge of how to write valid Dart code from [ControlVisitor].
+abstract mixin class ControlEmitter implements ControlVisitor<StringSink> {
+  @protected
+  Allocator get allocator;
+
   @override
-  StringSink visitControlBlock(ControlBlock block, [StringSink? output]) {
+  StringSink visitBooleanCondition(
+    BooleanCondition condition, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
-    block._expression.accept(this, output);
-    output.writeln(' {');
-    block.body.accept(this, output);
-
-    output.write(' }');
-
+    condition.expression.accept(this, output);
     return output;
   }
 
   @override
-  StringSink visitLabeledBlock(
-    LabeledControlBlock block, [
-    StringSink? output,
-  ]) {
+  StringSink visitCaseCondition(CaseCondition condition, [StringSink? output]) {
     output ??= StringBuffer();
-    if (block.label != null) {
-      output.writeln('${block.label!}:');
+    condition.object.accept(this, output);
+    output.write(' case ');
+    condition.pattern.accept(this, output);
+    if (condition.guard != null) {
+      output.write(' when ');
+      condition.guard!.accept(this, output);
     }
+    return output;
+  }
 
-    return visitControlBlock(block, output);
+  @override
+  StringSink visitForLoop(ForLoop loop, [StringSink? output]) {
+    output ??= StringBuffer();
+    if (loop.label != null) {
+      output.writeln('${loop.label}:');
+    }
+    output.write('for (');
+    if (loop.initialize != null) {
+      loop.initialize!.accept(this, output);
+    }
+    output.write('; ');
+    if (loop.condition != null) {
+      loop.condition!.accept(this, output);
+    }
+    output.write('; ');
+    if (loop.advance != null) {
+      loop.advance!.accept(this, output);
+    }
+    output.writeln(') {');
+    if (loop.body != null) {
+      loop.body!.accept(this, output);
+    }
+    output.write(' }');
+    return output;
+  }
+
+  @override
+  StringSink visitForInLoop(ForInLoop loop, [StringSink? output]) {
+    output ??= StringBuffer();
+    if (loop.label != null) {
+      output.writeln('${loop.label}:');
+    }
+    if (loop.async) {
+      output.write('await ');
+    }
+    output.write('for (');
+    loop.variable.accept(this, output);
+    output.write(' in ');
+    loop.object.accept(this, output);
+    output.writeln(') {');
+    if (loop.body != null) {
+      loop.body!.accept(this, output);
+    }
+    output.write(' }');
+    return output;
   }
 
   @override
   StringSink visitWhileLoop(WhileLoop loop, [StringSink? output]) {
     output ??= StringBuffer();
-    visitLabeledBlock(loop, output);
-
-    if (loop.doWhile != true) return output;
-
-    output.write(' ');
-    loop._statement.statement.accept(this, output);
-    output.writeln();
-    return output;
-  }
-
-  @override
-  StringSink visitControlTree(ControlTree tree, [StringSink? output]) {
-    output ??= StringBuffer();
-
-    for (final item in tree._blocks.nonNulls) {
-      item.accept(this, output);
-      output.write(' ');
+    if (loop.label != null) {
+      output.writeln('${loop.label}:');
     }
-
-    return output;
-  }
-
-  @override
-  StringSink visitControlExpression(
-    ControlExpression expression, [
-    StringSink? output,
-  ]) {
-    output ??= StringBuffer();
-
-    output.write(expression.control);
-
-    if (expression.body == null || expression.body!.isEmpty) {
-      return output;
-    }
-
-    final body = expression.body!; // convenience
-
-    output.write(' ');
-    if (expression.parenthesised) {
-      output.write('(');
-    }
-
-    if (body.length == 1) {
-      body.first?.accept(this, output);
-      if (expression.parenthesised) {
-        output.write(')');
+    if (loop.doWhile) {
+      output.writeln('do {');
+      if (loop.body != null) {
+        loop.body!.accept(this, output);
       }
-
-      return output;
-    }
-
-    if (expression.separator == null) {
-      throw ArgumentError(
-        'A separator must be provided when body contains '
-            'multiple expressions.',
-        'separator',
-      );
-    }
-
-    final separator = expression.separator!; // convenience
-
-    for (var i = 0; i < body.length; i++) {
-      final expression = body[i];
-
-      if (i != 0 && expression != null) {
-        output.write(' ');
-      }
-
-      expression?.accept(this, output);
-
-      if (i == body.length - 1) continue; // no separator after last item
-
-      output.write(separator);
-    }
-
-    if (expression.parenthesised) {
-      output.write(')');
-    }
-
-    return output;
-  }
-
-  @override
-  StringSink visitSwitch(Switch statement, [StringSink? output]) {
-    output ??= StringBuffer();
-
-    final buildable = BuildableSwitch(
-      value: statement.value,
-      cases: statement._cases,
-    );
-
-    return visitControlBlock(buildable, output);
-  }
-
-  @override
-  StringSink _visitCaseStatement(
-    CaseStatement statement, [
-    StringSink? output,
-  ]) {
-    output ??= StringBuffer();
-
-    if (statement.label case final String label) {
-      output.writeln('$label:');
-    }
-
-    if (statement._default) {
-      output.writeln('default:');
+      output.write(' } while (');
+      loop.condition.accept(this, output);
+      output.write(');');
     } else {
-      output.write('case ');
-      statement.pattern.accept(this, output);
-
-      if (statement.guard case final Expression guard) {
-        output.write(' when ');
-        guard.accept(this, output);
+      output.write('while (');
+      loop.condition.accept(this, output);
+      output.writeln(') {');
+      if (loop.body != null) {
+        loop.body!.accept(this, output);
       }
-
-      output.writeln(':');
+      output.write(' }');
     }
-
-    if (statement.body case final Code body) {
-      body.accept(this, output);
-    }
-
     return output;
   }
 
   @override
-  StringSink _visitCaseExpression(
-    CaseExpression expression, [
+  StringSink visitConditional(Conditional conditional, [StringSink? output]) {
+    output ??= StringBuffer();
+    for (var i = 0; i < conditional.branches.length; i++) {
+      final branch = conditional.branches[i];
+      if (i == 0) {
+        output.write('if (');
+      } else {
+        output.write(' else if (');
+      }
+      branch.condition.accept(this, output);
+      output.writeln(') {');
+      if (branch.body != null) {
+        branch.body!.accept(this, output);
+      }
+      output.write(' }');
+    }
+    if (conditional.orElse != null) {
+      output.writeln(' else {');
+      conditional.orElse!.accept(this, output);
+      output.write(' }');
+    }
+    return output;
+  }
+
+  @override
+  StringSink visitTry(Try spec, [StringSink? output]) {
+    output ??= StringBuffer();
+    output.writeln('try {');
+    if (spec.body != null) {
+      spec.body!.accept(this, output);
+    }
+    output.write(' }');
+
+    for (final catchClause in spec.catches) {
+      if (catchClause.on != null) {
+        output.write(' on ');
+        catchClause.on!.accept(this, output);
+      }
+      if (catchClause.exception != null || catchClause.stackTrace != null) {
+        final ex = catchClause.exception ?? '_';
+        final st = catchClause.stackTrace != null
+            ? ', ${catchClause.stackTrace}'
+            : '';
+        output.write(' catch ($ex$st)');
+      } else if (catchClause.on == null) {
+        output.write(' catch (_)');
+      }
+      output.writeln(' {');
+      if (catchClause.body != null) {
+        catchClause.body!.accept(this, output);
+      }
+      output.write(' }');
+    }
+
+    if (spec.finallyBlock != null) {
+      output.writeln(' finally {');
+      spec.finallyBlock!.accept(this, output);
+      output.write(' }');
+    }
+    return output;
+  }
+
+  @override
+  StringSink visitSwitchStatement(
+    SwitchStatement statement, [
     StringSink? output,
   ]) {
     output ??= StringBuffer();
-    expression.pattern.accept(this, output);
+    if (statement.label != null) {
+      output.writeln('${statement.label}:');
+    }
+    output.write('switch (');
+    statement.value.accept(this, output);
+    output.writeln(') {');
 
-    if (expression.guard case final Expression guard) {
-      output.write(' when ');
-      guard.accept(this, output);
+    for (final c in statement.cases) {
+      if (c.label != null) {
+        output.writeln('${c.label}:');
+      }
+      output.write('case ');
+      c.pattern.accept(this, output);
+      if (c.guard != null) {
+        output.write(' when ');
+        c.guard!.accept(this, output);
+      }
+      output.writeln(':');
+      if (c.body != null) {
+        c.body!.accept(this, output);
+      }
     }
 
-    output.write(' => ');
-    // body will never be null; CaseExpression ensures a value is
-    // provided when it is constructed
-    expression.body!.accept(this, output);
-    output.writeln(',');
+    if (statement.defaultCase != null) {
+      output.writeln('default:');
+      statement.defaultCase!.accept(this, output);
+    }
 
+    output.write(' }');
+    return output;
+  }
+
+  @override
+  StringSink visitSwitchExpression(
+    SwitchExpression expression, [
+    StringSink? output,
+  ]) {
+    output ??= StringBuffer();
+    output.write('switch (');
+    expression.value.accept(this, output);
+    output.writeln(') {');
+
+    for (final c in expression.cases) {
+      c.pattern.accept(this, output);
+      if (c.guard != null) {
+        output.write(' when ');
+        c.guard!.accept(this, output);
+      }
+      output.write(' => ');
+      c.body.accept(this, output);
+      output.writeln(',');
+    }
+
+    output.write(' }');
     return output;
   }
 }

@@ -155,6 +155,8 @@ final class Version implements VersionConstraint, VersionRange {
     return primary;
   }
 
+  static final _digitsPattern = RegExp(r'^\d+$');
+
   /// Splits a string of dot-delimited identifiers into their component parts.
   ///
   /// Identifiers that are numeric are converted to numbers.
@@ -162,8 +164,8 @@ final class Version implements VersionConstraint, VersionRange {
       .split('.')
       .map((part) =>
           // Return an integer part if possible, otherwise return the string
-          // as-is
-          int.tryParse(part) ?? part)
+          // as-is.
+          _digitsPattern.hasMatch(part) ? (int.tryParse(part) ?? part) : part)
       .toList();
 
   @override

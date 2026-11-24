@@ -203,6 +203,90 @@ void main() {
     expect(logFileStats!.recordCount, 2);
   });
 
+  group('toolCount reads the leaf tool', () {
+    String record({String? tool, String? leafTool}) => jsonEncode({
+      'client_id': 'ffcea97b-db5e-4c66-98c2-3942de4fac40',
+      'events': [
+        {
+          'name': 'hot_reload_time',
+          'params': {'timeMs': 136},
+        },
+      ],
+      'user_properties': {
+        'session_id': {'value': 1699385899950},
+        'flutter_channel': {'value': null},
+        'host': {'value': 'macOS'},
+        'flutter_version': {'value': null},
+        'dart_version': {'value': 'Dart 3.10.0'},
+        'analytics_pkg_version': {'value': '8.4.0'},
+        'tool': ?(tool == null ? null : {'value': tool}),
+        'root_tool': {'value': 'vscode-plugins'},
+        'leaf_tool': ?(leafTool == null ? null : {'value': leafTool}),
+        'local_time': {'value': '2026-11-03 10:00:00.000000 -0800'},
+        'host_os_version': {'value': 'Version 26.0'},
+        'locale': {'value': 'en'},
+        'client_ide': {'value': null},
+      },
+    });
+
+    test('from leaf_tool, ignoring the legacy tool value', () {
+      logFile.writeAsStringSync(
+        '${record(tool: 'vscode-plugins', leafTool: 'analysis-server')}\n',
+      );
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 1);
+      expect(logFileStats.toolCount, {'analysis-server': 1});
+    });
+
+    test('from the legacy tool property for older records', () {
+      logFile.writeAsStringSync(
+        '${record(tool: 'vscode-plugins', leafTool: 'analysis-server')}\n'
+        '${record(tool: 'flutter-tool')}\n',
+      );
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 2);
+      expect(logFileStats.toolCount, {'analysis-server': 1, 'flutter-tool': 1});
+    });
+
+    test('from leaf_tool once the legacy tool property is removed', () {
+      logFile.writeAsStringSync('${record(leafTool: 'dart-tool')}\n');
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 1);
+      expect(logFileStats.toolCount, {'dart-tool': 1});
+    });
+
+    test('treats a record with neither as malformed', () {
+      logFile.writeAsStringSync(
+        '${record()}\n${record(leafTool: 'dart-tool')}\n',
+      );
+
+      final logFileStats = analytics.logFileStats()!;
+      expect(logFileStats.recordCount, 1);
+      expect(logFileStats.toolCount, {'dart-tool': 1});
+    });
+
+    test('for events sent through Analytics', () async {
+      final serverAnalytics = Analytics.fake(
+        tool: DashTool.analysisServer,
+        homeDirectory: homeDirectory,
+        dartVersion: 'dartVersion',
+        fs: fs,
+        platform: DevicePlatform.macos,
+        rootTool: DashTool.flutterTool,
+      );
+      serverAnalytics.send(testEvent);
+      analytics.send(testEvent);
+
+      expect(analytics.logFileStats()!.toolCount, {
+        'analysis-server': 1,
+        'flutter-tool': 1,
+      });
+    });
+  });
+
   test('Malformed record gets phased out after several events', () async {
     // Write invalid json for the only log record
     logFile.writeAsStringSync('{{\n');
@@ -241,7 +325,11 @@ void main() {
     expect(analytics.sentEvents.last, testEvent);
     expect(secondLogFileStats, isNotNull);
     expect(secondLogFileStats!.recordCount, kLogFileLength);
-    expect(logFile.readAsLinesSync()[0].trim(), isNot('{{'));
+    expect(
+      logFile.readAsLinesSync().length,
+      kLogFileLength + 1,
+      reason: 'The file is append only until it is trimmed',
+    );
   });
 
   test('Catches and discards any FileSystemException raised from attempting '
@@ -324,6 +412,84 @@ void main() {
     expect(wroteDataToLogFile, isTrue);
   });
 
+  test('does not read the log file if smaller than kLogFileTrimSize', () {
+    var readLogFile = false;
+    var wroteDataToLogFile = false;
+    final logFile = _FakeFile('log.txt')
+      .._readAsLinesSyncImpl = () {
+        readLogFile = true;
+        return [];
+      }
+      .._statSyncImpl = (() => _FakeFileStat(kLogFileTrimSize))
+      .._writeAsStringSync = (contents, {mode = FileMode.append}) {
+        expect(mode, FileMode.writeOnlyAppend);
+        wroteDataToLogFile = true;
+      };
+    final logHandler = LogHandler(logFile: logFile);
+
+    logHandler.save(data: const {});
+    expect(readLogFile, isFalse);
+    expect(wroteDataToLogFile, isTrue);
+  });
+
+  test('trims the log file to its newest records', () {
+    final logFile = fs.file('trim.log')..createSync();
+    const trimSize = 1000;
+    final logHandler = LogHandler(logFile: logFile, trimSize: trimSize);
+
+    const count = 200;
+    for (var i = 0; i < count; i++) {
+      logHandler.save(data: {'i': i});
+      expect(
+        logFile.lengthSync(),
+        lessThan(trimSize + 20),
+        reason: 'The file is trimmed once past the trim size',
+      );
+    }
+
+    final lines = logFile.readAsLinesSync();
+    final indexes = [
+      for (final line in lines)
+        (jsonDecode(line) as Map<String, Object?>)['i'] as int,
+    ];
+    expect(indexes.last, count - 1);
+    expect(indexes, [
+      for (var i = count - indexes.length; i < count; i++) i,
+    ], reason: 'The newest records are kept, whole and in order');
+    expect(
+      fs.directory('.').listSync().map((e) => e.basename),
+      isNot(contains(endsWith('.tmp'))),
+      reason: 'The temporary file is renamed over the log file',
+    );
+  });
+
+  test('a failed trim keeps the log file and still saves', () {
+    final fs = MemoryFileSystem.test(
+      opHandle: (context, operation) {
+        if (context.endsWith('.tmp') && operation == FileSystemOp.write) {
+          throw FileSystemException('write failed', context);
+        }
+      },
+    );
+    final logFile = fs.file('trim.log')..createSync();
+    const trimSize = 1000;
+    final logHandler = LogHandler(logFile: logFile, trimSize: trimSize);
+
+    const count = 200;
+    for (var i = 0; i < count; i++) {
+      logHandler.save(data: {'i': i});
+    }
+
+    final lines = logFile.readAsLinesSync();
+    expect(lines, hasLength(count), reason: 'Every record is still saved');
+    expect(jsonDecode(lines.last), {'i': count - 1});
+    expect(
+      fs.directory('.').listSync().map((e) => e.basename),
+      isNot(contains(endsWith('.tmp'))),
+      reason: 'The temporary file is deleted after a failed trim',
+    );
+  });
+
   test('Catching cast errors for each log record silently', () async {
     // Write a json array to the log file which will cause
     // a cast error when parsing each line
@@ -348,6 +514,95 @@ void main() {
           'Plus one for the error event that is sent '
           'from the first logFileStats call',
     );
+  });
+
+  test('logFileStats returns null without reading the file when it exceeds '
+      'kMaxLogFileSize', () async {
+    var readAsLinesSyncCalled = false;
+    var deleted = false;
+    var created = false;
+    final logFile = _FakeFile('log.txt')
+      .._statSyncImpl = (() => _FakeFileStat(kMaxLogFileSize + 1))
+      .._deleteSyncImpl = (() => deleted = true)
+      .._createSyncImpl = (() => created = true)
+      .._readAsLinesSyncImpl = (() {
+        readAsLinesSyncCalled = true;
+        return <String>[];
+      });
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      readAsLinesSyncCalled,
+      isFalse,
+      reason:
+          'The file should not be read into memory when it exceeds '
+          'kMaxLogFileSize, to avoid OOM on abnormally large log files',
+    );
+    expect(
+      deleted && created,
+      isTrue,
+      reason:
+          'The oversized file should be replaced with an empty one, '
+          'otherwise it would stay too large to ever collect stats from',
+    );
+  });
+
+  test('logFileStats returns null without reading the file when it '
+      "doesn't exist", () async {
+    var readAsLinesSyncCalled = false;
+    final logFile = _FakeFile('log.txt')
+      // A nonexistent file reports a size of -1.
+      .._statSyncImpl = (() => _FakeFileStat(-1))
+      .._readAsLinesSyncImpl = (() {
+        readAsLinesSyncCalled = true;
+        return <String>[];
+      });
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      readAsLinesSyncCalled,
+      isFalse,
+      reason:
+          'A missing log file is an expected state (e.g. before any events '
+          'have been logged) and should not be treated as an error',
+    );
+    expect(
+      logHandler.errorSet,
+      isEmpty,
+      reason: 'A missing log file should not be reported as an exception',
+    );
+  });
+
+  test('logFileStats returns null and records an analyticsException when '
+      'reading the log file throws a FileSystemException', () async {
+    var deleted = false;
+    var created = false;
+    final logFile = _FakeFile('log.txt')
+      .._statSyncImpl = (() => _FakeFileStat(0))
+      .._deleteSyncImpl = (() => deleted = true)
+      .._createSyncImpl = (() => created = true)
+      .._readAsLinesSyncImpl = () {
+        throw const FileSystemException(
+          "Failed to decode data using encoding 'utf-8'",
+          'log.txt',
+        );
+      };
+    final logHandler = LogHandler(logFile: logFile);
+
+    expect(logHandler.logFileStats(), isNull);
+    expect(
+      logHandler.errorSet,
+      contains(
+        Event.analyticsException(
+          workflow: 'LogHandler.logFileStats',
+          error: 'FileSystemException',
+          description: "message: Failed to decode data using encoding 'utf-8'",
+        ),
+      ),
+    );
+    expect(deleted && created, isTrue, reason: 'The unreadable file is reset');
   });
 
   test('truncateStringToLength returns same string when '
@@ -428,6 +683,9 @@ class _FakeFile extends Fake implements File {
 
   @override
   FileStat statSync() => _statSyncImpl!();
+
+  @override
+  bool existsSync() => true;
 
   void Function()? _deleteSyncImpl;
 

@@ -50,61 +50,64 @@ void main() {
   });
 
   test('collect_coverage_api with isolateIds', () async {
-    final coverage =
-        coverageDataFromJson(await _collectCoverage(isolateIds: true));
+    final coverage = coverageDataFromJson(
+      await _collectCoverage(isolateIds: true),
+    );
     expect(coverage, isEmpty);
   });
 
   test('collect_coverage_api with function coverage', () async {
-    final coverage =
-        coverageDataFromJson(await _collectCoverage(functionCoverage: true));
+    final coverage = coverageDataFromJson(
+      await _collectCoverage(functionCoverage: true),
+    );
     expect(coverage, isNotEmpty);
 
     final sources = coverage.sources();
 
     final functionInfo = functionInfoFromSources(sources);
 
-    expect(
-      functionInfo[_sampleAppFileUri]!,
-      {
-        'main': 1,
-        'usedMethod': 1,
-        'unusedMethod': 0,
-      },
-    );
+    expect(functionInfo[_sampleAppFileUri]!, {
+      'main': 1,
+      'usedMethod': 1,
+      'unusedMethod': 0,
+    });
 
-    expect(
-      functionInfo[_isolateLibFileUri]!,
-      {
-        'BarClass.BarClass': 1,
-        'fooAsync': 1,
-        'fooSync': 1,
-        'isolateTask': 1,
-        'BarClass.baz': 1
-      },
-    );
+    expect(functionInfo[_isolateLibFileUri]!, {
+      'BarClass.BarClass': 1,
+      'fooAsync': 1,
+      'fooSync': 1,
+      'isolateTask': 1,
+      'BarClass.baz': 1,
+    });
   });
 
   test('collect_coverage_api with branch coverage', () async {
-    final coverage =
-        coverageDataFromJson(await _collectCoverage(branchCoverage: true));
+    final coverage = coverageDataFromJson(
+      await _collectCoverage(branchCoverage: true),
+    );
     expect(coverage, isNotEmpty);
 
     final sources = coverage.sources();
 
     // Dart VM versions before 2.17 don't support branch coverage.
-    expect(sources[_sampleAppFileUri],
-        everyElement(containsPair('branchHits', isNotEmpty)));
-    expect(sources[_isolateLibFileUri],
-        everyElement(containsPair('branchHits', isNotEmpty)));
+    expect(
+      sources[_sampleAppFileUri],
+      everyElement(containsPair('branchHits', isNotEmpty)),
+    );
+    expect(
+      sources[_isolateLibFileUri],
+      everyElement(containsPair('branchHits', isNotEmpty)),
+    );
   });
 
   test('collect_coverage_api with coverableLineCache', () async {
     final coverableLineCache = <String, Set<int>>{};
-    final coverage =
-        await _collectCoverage(coverableLineCache: coverableLineCache);
+    final coverage = await _collectCoverage(
+      coverableLineCache: coverableLineCache,
+    );
     final result = await HitMap.parseJson(
-        coverage['coverage'] as List<Map<String, dynamic>>);
+      coverage['coverage'] as List<Map<String, dynamic>>,
+    );
 
     expect(coverableLineCache, contains(_sampleAppFileUri));
     expect(coverableLineCache, contains(_isolateLibFileUri));
@@ -118,10 +121,12 @@ void main() {
     // libraries. The result should be that _isolateLibFileUri should be the
     // same, but _sampleAppFileUri should be missing all its missed lines.
     coverableLineCache[_sampleAppFileUri] = {};
-    final coverage2 =
-        await _collectCoverage(coverableLineCache: coverableLineCache);
+    final coverage2 = await _collectCoverage(
+      coverableLineCache: coverableLineCache,
+    );
     final result2 = await HitMap.parseJson(
-        coverage2['coverage'] as List<Map<String, dynamic>>);
+      coverage2['coverage'] as List<Map<String, dynamic>>,
+    );
 
     // _isolateLibFileUri still has missed lines, but _sampleAppFileUri doesn't.
     expect(result2[_sampleAppFileUri]!.lineHits.containsValue(0), isFalse);
@@ -129,30 +134,41 @@ void main() {
 
     // _isolateLibFileUri is the same. _sampleAppFileUri is the same, but
     // without all its missed lines.
-    expect(result2[_isolateLibFileUri]!.lineHits,
-        result[_isolateLibFileUri]!.lineHits);
+    expect(
+      result2[_isolateLibFileUri]!.lineHits,
+      result[_isolateLibFileUri]!.lineHits,
+    );
     result[_sampleAppFileUri]!.lineHits.removeWhere((line, hits) => hits == 0);
-    expect(result2[_sampleAppFileUri]!.lineHits,
-        result[_sampleAppFileUri]!.lineHits);
+    expect(
+      result2[_sampleAppFileUri]!.lineHits,
+      result[_sampleAppFileUri]!.lineHits,
+    );
   }, skip: !platformVersionCheck(3, 2));
 }
 
-Future<Map<String, dynamic>> _collectCoverage(
-    {Set<String> scopedOutput = const {},
-    bool isolateIds = false,
-    bool functionCoverage = false,
-    bool branchCoverage = false,
-    Map<String, Set<int>>? coverableLineCache}) async {
+Future<Map<String, dynamic>> _collectCoverage({
+  Set<String> scopedOutput = const {},
+  bool isolateIds = false,
+  bool functionCoverage = false,
+  bool branchCoverage = false,
+  Map<String, Set<int>>? coverableLineCache,
+}) async {
   // run the sample app, with the right flags
   final sampleProcess = await runTestApp();
 
   final serviceUri = await serviceUriFromProcess(sampleProcess.stdoutStream());
   final isolateIdSet = isolateIds ? <String>{} : null;
 
-  return collect(serviceUri, true, true, false, scopedOutput,
-      timeout: timeout,
-      isolateIds: isolateIdSet,
-      functionCoverage: functionCoverage,
-      branchCoverage: branchCoverage,
-      coverableLineCache: coverableLineCache);
+  return collect(
+    serviceUri,
+    true,
+    true,
+    false,
+    scopedOutput,
+    timeout: timeout,
+    isolateIds: isolateIdSet,
+    functionCoverage: functionCoverage,
+    branchCoverage: branchCoverage,
+    coverableLineCache: coverableLineCache,
+  );
 }
