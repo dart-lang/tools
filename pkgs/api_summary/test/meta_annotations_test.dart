@@ -41,6 +41,7 @@ class MetaAnnotationsTest extends ApiSummaryTest {
       context,
       customizer ?? const ApiSummaryCustomizer(),
     );
+    verifySummaryRoundTrip(package);
     return package.toString();
   }
 
@@ -52,7 +53,13 @@ class MetaAnnotationsTest extends ApiSummaryTest {
     final context = contextCollection.contextFor(
       convertPath(testPackageLibPath),
     );
-    return buildApiPackage('test', context, const ApiSummaryCustomizer());
+    final package = await buildApiPackage(
+      'test',
+      context,
+      const ApiSummaryCustomizer(),
+    );
+    verifySummaryRoundTrip(package);
+    return package;
   }
 
   Future<void> test_class_immutable() async {

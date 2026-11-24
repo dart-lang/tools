@@ -9,8 +9,10 @@ on:
 
 jobs:
   health:
-    uses: dart-lang/ecosystem/.github/workflows/health.yaml@27c2fc841818cce349e1f424af51cca9ea381f47
+    uses: dart-lang/ecosystem/.github/workflows/health.yaml@27c2fc841818cce349e1f424af51cca9ea381f47 # main
     with:
+      fail_on: "changelog,do-not-submit,publish"
+      warn_on: "license,coverage,breaking,leaking,unused-dependencies"
       ignore_coverage: "**.mock.dart,**.g.dart"
       ignore_license: "**.mock.dart,**.g.dart,**.mocks.dart,pkgs/markdown/**"
       license_test_string: "// Copyright"

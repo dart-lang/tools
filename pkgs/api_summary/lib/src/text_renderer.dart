@@ -207,6 +207,8 @@ final class _ApiTextRenderer {
 
       if (!_renderedTopLevelElements.add(key)) {
         childNode.text.add(' (see above)');
+      } else if (_isMinimalNonPublicSkeleton(element)) {
+        childNode.text.add(' (non-public)');
       } else {
         switch (element) {
           case ApiClass():
@@ -381,6 +383,12 @@ final class _ApiTextRenderer {
     }
     parentheticals.add(instanceDescription);
 
+    if (element.status == ApiDeclarationStatus.referenced) {
+      parentheticals.add(['referenced']);
+    } else if (element.status == ApiDeclarationStatus.nonPublic) {
+      parentheticals.add(['non-public']);
+    }
+
     _renderParentheticals(
       parentheticals: parentheticals,
       element: element,
@@ -416,6 +424,8 @@ final class _ApiTextRenderer {
           parentheticals.add([
             '$maybeStatic${element.isConst ? 'const getter: ' : 'getter: '}',
             ..._describeType(element.returnType),
+            if (element.constantValue case final constantValue?)
+              ' = $constantValue',
           ]);
         }
       case ApiExecutableKind.setter:
@@ -503,17 +513,21 @@ final class _ApiTextRenderer {
     final namedParams = <List<Object?>>[];
 
     for (final param in parameters) {
+      final defaultSuffix = param.defaultValue;
       final described = <Object?>[
         if (param.isDeprecated) 'deprecated ',
         if (param.isNamed && param.isRequired) 'required ',
         ..._describeType(param.type),
+        if (param.isNamed) ' ${param.name}',
+        if (defaultSuffix != null) ' = $defaultSuffix',
       ];
-      if (param.isNamed) {
-        namedParams.add([...described, ' ${param.name}']);
-      } else if (param.isOptionalPositional) {
-        optionalParams.add(described);
-      } else {
-        params.add(described);
+      switch (param) {
+        case ApiParameter(isNamed: true):
+          namedParams.add(described);
+        case ApiParameter(isOptionalPositional: true):
+          optionalParams.add(described);
+        case ApiParameter():
+          params.add(described);
       }
     }
 
@@ -629,3 +643,30 @@ MemberSortKey _computeSortKeyForDangling(ApiInterfaceType type) =>
       name: type.name,
       isSetter: false,
     );
+
+bool _isMinimalNonPublicSkeleton(ApiDeclaration element) {
+  if (element.status != .nonPublic ||
+      element.isDeprecated ||
+      element.facets.isNotEmpty) {
+    return false;
+  }
+  return switch (element) {
+    ApiClass() =>
+      element.supertype == null &&
+          element.typeParameters.isEmpty &&
+          element.interfaces.isEmpty &&
+          element.mixins.isEmpty &&
+          element.superclassConstraints.isEmpty &&
+          element.modifiers.isEmpty &&
+          element.immediateSubtypes.isEmpty &&
+          element.constructors.isEmpty &&
+          element.methods.isEmpty,
+    ApiExtensionType() =>
+      element.representationType is ApiDynamicType &&
+          element.typeParameters.isEmpty &&
+          element.interfaces.isEmpty &&
+          element.constructors.isEmpty &&
+          element.methods.isEmpty,
+    _ => false,
+  };
+}

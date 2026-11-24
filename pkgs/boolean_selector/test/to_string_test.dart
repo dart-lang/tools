@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:boolean_selector/src/intersection_selector.dart';
+import 'package:boolean_selector/src/union_selector.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -71,6 +73,18 @@ void main() {
         _expectToString('(a ? b : c) ? (e ? f : g) : (h ? i : j)',
             '(a ? b : c) ? (e ? f : g) : h ? i : j');
       });
+    });
+
+    test('a UnionSelector', () {
+      final selector =
+          UnionSelector(BooleanSelector.parse('a'), BooleanSelector.parse('b'));
+      expect(selector.toString(), equals('(a) || (b)'));
+    });
+
+    test('an IntersectionSelector', () {
+      final selector = IntersectionSelector(
+          BooleanSelector.parse('a'), BooleanSelector.parse('b'));
+      expect(selector.toString(), equals('(a) && (b)'));
     });
   });
 }

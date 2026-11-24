@@ -5,10 +5,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml_edit/yaml_edit.dart';
 
 import '../api_summary.dart';
+import 'extensions.dart';
 
 /// Supported serialization formats for [ApiSummary].
 enum ApiSummaryFormat {
@@ -74,7 +76,11 @@ final class ApiSummaryVerificationException implements Exception {
 /// If [packagePath] is omitted, defaults to [Directory.current].
 ///
 /// Throws an [ApiSummaryVerificationException] if the golden file does not
-/// exist or if its contents differ from the generated summary.
+/// exist, if its contents differ from the generated summary, or (unless
+/// [ApiSummaryCustomizer.allowNonPublicTypes] is `true`) if public API
+/// signatures expose [ApiDeclarationStatus.nonPublic] types or package-owned
+/// types referenced by the primary `package:<pkg>/<pkg>.dart` barrel without
+/// being exported by it.
 ///
 /// Because all parameters are optional and named, [expectApiSummaryClean] can
 /// be passed directly as a tear-off to `test()`:
@@ -108,7 +114,18 @@ Future<void> expectApiSummaryClean({
     packageName: packageName,
     customizer: customizer,
   );
+
   final actualOutput = format.format(summary);
+  if (!(customizer?.allowNonPublicTypes ?? false)) {
+    if (_findUnexposedTypesError(summary) case final errorMessage?) {
+      throw ApiSummaryVerificationException(
+        message: errorMessage,
+        goldenFilePath: effectiveGoldenPath,
+        actual: actualOutput,
+      );
+    }
+  }
+
   final goldenFile = File(effectiveGoldenPath);
 
   final displayGoldenPath = p.isWithin(resolvedPackagePath, effectiveGoldenPath)
@@ -225,4 +242,196 @@ String _buildLineDiff(List<String> expected, List<String> actual) {
   }
 
   return buffer.toString().trimRight();
+}
+
+String? _findUnexposedTypesError(ApiSummary summary) {
+  final nonPublics = summary.libraries
+      .expand(_libraryDeclarations)
+      .where((d) => d.status == .nonPublic)
+      .toList();
+  final nonPublicKeys = nonPublics.map(_declarationKey).toSet();
+
+  final sections = <String>[];
+  if (nonPublics.isNotEmpty) {
+    final lines = [
+      for (final d in nonPublics) '  - ${d.name} (${d.locationUri})',
+    ]..sort();
+    sections.add(
+      'The package exposes the following non-public types in its API '
+      'signatures. These types are either from "lib/src/" or unexported '
+      'libraries, making them unusable by callers:\n'
+      '${lines.join('\n')}\n'
+      'Ensure all types used in public signatures are exported by the '
+      'package.',
+    );
+  }
+
+  final primaryLib = summary.libraries.firstWhereOrNull(
+    (l) => Uri.parse(l.uri).isPrimaryPublicLibOf(summary.name),
+  );
+  if (primaryLib != null) {
+    final unexportedLines = _findUnexportedPrimaryBarrelLines(
+      summary,
+      primaryLib,
+      nonPublicKeys,
+    );
+    if (unexportedLines.isNotEmpty) {
+      sections.add(
+        'The primary barrel "${primaryLib.uri}" exposes package-owned types '
+        'in its public API signatures that it does not export. Callers '
+        'importing only "${primaryLib.uri}" cannot name these types:\n'
+        '${unexportedLines.join('\n')}\n'
+        'Export these types from "${primaryLib.uri}" (or opt out via '
+        'ApiSummaryCustomizer(allowNonPublicTypes: true)).',
+      );
+    }
+  }
+
+  return sections.isEmpty ? null : sections.join('\n\n');
+}
+
+List<String> _findUnexportedPrimaryBarrelLines(
+  ApiSummary summary,
+  ApiLibrary primaryLib,
+  Set<String> excludedKeys,
+) {
+  final primaryExportedKeys = _libraryDeclarations(
+    primaryLib,
+  ).map(_declarationKey).toSet();
+  final exportingLibraries = _siblingExportingLibraries(
+    summary.libraries,
+    primaryLib.uri,
+  );
+
+  final seenKeys = <String>{};
+  final lines = <String>[];
+  final referencedTypes = _libraryDeclarations(
+    primaryLib,
+  ).expand(_declarationTypes).expand(_nestedInterfaceTypes);
+  for (final type in referencedTypes) {
+    final libraryUri = type.libraryUri;
+    if (libraryUri == null) continue;
+    final key = '$libraryUri#${type.name}';
+    if (!seenKeys.add(key) ||
+        primaryExportedKeys.contains(key) ||
+        excludedKeys.contains(key) ||
+        !Uri.parse(libraryUri).isIn(summary.name)) {
+      continue;
+    }
+    lines.add(
+      _formatUnexportedBarrelType(
+        type.name,
+        libraryUri,
+        exportingLibraries[key],
+      ),
+    );
+  }
+  return lines..sort();
+}
+
+Map<String, List<String>> _siblingExportingLibraries(
+  List<ApiLibrary> libraries,
+  String primaryUri,
+) {
+  final result = <String, List<String>>{};
+  for (final lib in libraries) {
+    if (!lib.isPublicEntryPoint || lib.uri == primaryUri) continue;
+    for (final decl in _libraryDeclarations(lib)) {
+      (result[_declarationKey(decl)] ??= []).add(lib.uri);
+    }
+  }
+  return result;
+}
+
+String _formatUnexportedBarrelType(
+  String name,
+  String libraryUri,
+  List<String>? siblings,
+) {
+  final otherExports = siblings?.where((s) => s != libraryUri).toList();
+  if (otherExports != null && otherExports.isNotEmpty) {
+    return '  - $name ($libraryUri, exported by ${otherExports.join(', ')})';
+  }
+  return '  - $name ($libraryUri)';
+}
+
+String _declarationKey(ApiDeclaration declaration) =>
+    '${declaration.locationUri}#${declaration.name}';
+
+Iterable<ApiDeclaration> _libraryDeclarations(ApiLibrary library) sync* {
+  yield* library.classes;
+  yield* library.enums;
+  yield* library.mixins;
+  yield* library.extensions;
+  yield* library.extensionTypes;
+  yield* library.functions;
+  yield* library.typeAliases;
+}
+
+Iterable<ApiType> _declarationTypes(ApiDeclaration declaration) sync* {
+  switch (declaration) {
+    case ApiClass():
+      yield* declaration.typeParameters.values.nonNulls;
+      if (declaration.supertype case final supertype?) yield supertype;
+      yield* declaration.interfaces;
+      yield* declaration.mixins;
+      yield* declaration.superclassConstraints;
+      for (final constructor in declaration.constructors) {
+        yield* _declarationTypes(constructor);
+      }
+      for (final method in declaration.methods) {
+        yield* _declarationTypes(method);
+      }
+    case ApiExtension():
+      yield* declaration.typeParameters.values.nonNulls;
+      yield declaration.extendedType;
+      for (final method in declaration.methods) {
+        yield* _declarationTypes(method);
+      }
+    case ApiExtensionType():
+      yield* declaration.typeParameters.values.nonNulls;
+      yield* declaration.interfaces;
+      for (final constructor in declaration.constructors) {
+        yield* _declarationTypes(constructor);
+      }
+      for (final method in declaration.methods) {
+        yield* _declarationTypes(method);
+      }
+    case ApiExecutable():
+      yield* declaration.typeParameters.values.nonNulls;
+      yield declaration.returnType;
+      for (final parameter in declaration.parameters) {
+        yield parameter.type;
+      }
+    case ApiTypeAlias():
+      yield* declaration.typeParameters.values.nonNulls;
+      yield declaration.aliasedType;
+  }
+}
+
+Iterable<ApiInterfaceType> _nestedInterfaceTypes(ApiType type) sync* {
+  switch (type) {
+    case ApiDynamicType() || ApiVoidType() || ApiTypeParameterType():
+      return;
+    case ApiInterfaceType():
+      yield type;
+      for (final arg in type.typeArguments) {
+        yield* _nestedInterfaceTypes(arg);
+      }
+    case ApiRecordType():
+      for (final field in type.positionalFields) {
+        yield* _nestedInterfaceTypes(field);
+      }
+      for (final field in type.namedFields) {
+        yield* _nestedInterfaceTypes(field.type);
+      }
+    case ApiFunctionType():
+      yield* _nestedInterfaceTypes(type.returnType);
+      for (final bound in type.typeParameters.values.nonNulls) {
+        yield* _nestedInterfaceTypes(bound);
+      }
+      for (final parameter in type.parameters) {
+        yield* _nestedInterfaceTypes(parameter.type);
+      }
+  }
 }
