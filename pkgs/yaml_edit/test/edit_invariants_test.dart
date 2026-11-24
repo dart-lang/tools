@@ -38,6 +38,26 @@ void _expectInvariantFailure(
   );
 }
 
+void _expectInvariantsPass(
+  String initialYaml,
+  SourceEdit edit, {
+  required EditOperation operation,
+  required List<Object?> path,
+}) {
+  final initialDocument = CstDocument.parse(initialYaml);
+  final updatedDocument = CstDocument.parse(edit.apply(initialYaml));
+  expect(
+    checkEditInvariants(
+      initialDocument: initialDocument,
+      updatedDocument: updatedDocument,
+      edit: edit,
+      operation: operation,
+      path: path,
+    ),
+    isTrue,
+  );
+}
+
 void main() {
   group('checkEditInvariants negative tests', () {
     test('rejects out-of-bounds edit range', () {
@@ -465,11 +485,18 @@ void main() {
 
     test('allows pre-existing trailing whitespace-only line on block append',
         () {
-      final mapEditor = YamlEditor('a: 1\n  ')..update(['c'], 3);
-      expect(mapEditor.parseAt([]).value, {'a': 1, 'c': 3});
-
-      final listEditor = YamlEditor('- 1\n  ')..appendToList([], 2);
-      expect(listEditor.parseAt([]).value, [1, 2]);
+      _expectInvariantsPass(
+        'a: 1\n  ',
+        SourceEdit(5, 0, 'c: 3\n'),
+        operation: EditOperation.update,
+        path: ['c'],
+      );
+      _expectInvariantsPass(
+        '- 1\n  ',
+        SourceEdit(4, 0, '- 2\n'),
+        operation: EditOperation.insert,
+        path: [1],
+      );
     });
 
     test(
@@ -491,6 +518,15 @@ void main() {
   });
 
   group('YamlEditor invariant integration', () {
+    test('allows pre-existing trailing whitespace-only line on block append',
+        () {
+      final mapEditor = YamlEditor('a: 1\n  ')..update(['c'], 3);
+      expect(mapEditor.parseAt([]).value, {'a': 1, 'c': 3});
+
+      final listEditor = YamlEditor('- 1\n  ')..appendToList([], 2);
+      expect(listEditor.parseAt([]).value, [1, 2]);
+    });
+
     test('removes first of duplicate flow-list elements without false positive',
         () {
       final editor = YamlEditor('[a, # c0\n a, # c1\n b]\n');

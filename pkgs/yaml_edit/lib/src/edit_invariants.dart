@@ -2,15 +2,28 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// Debug-mode structural locality and comment-conservation checks for
-/// [SourceEdit]s produced by `YamlEditor`.
+/// Debug-mode post-edit invariant verifier for [SourceEdit]s produced by
+/// `YamlEditor`.
+///
+/// [checkEditInvariants] runs four independent checks against the initial and
+/// updated [CstDocument]s:
+/// 1. **Edit bounds** (`_checkEditBounds`): edits stay within the CST target
+///    slot and pure insertions never overwrite existing syntax.
+/// 2. **Layout preservation** (`_checkLayoutPreservation`): untouched siblings
+///    and flow closing delimiters keep their line and column alignment.
+/// 3. **Formatting hygiene** (`_checkFormattingHygiene`): trailing-comma style
+///    is preserved, uniform line endings are not mixed, and no new
+///    whitespace-only lines are introduced outside scalars.
+/// 4. **Comment conservation** (`_checkCommentConservation`): every comment
+///    outside the CST-derived droppable range survives verbatim with its
+///    inline vs. own-line placement preserved.
 library;
 
 import 'package:yaml/tokens.dart';
 import 'package:yaml/yaml.dart';
 
 import 'cst.dart';
-import 'cst_mutations.dart';
+import 'cst_helpers.dart';
 import 'errors.dart';
 import 'source_edit.dart';
 
