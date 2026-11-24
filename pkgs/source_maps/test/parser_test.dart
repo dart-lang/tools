@@ -523,6 +523,11 @@ void main() {
       expect(fromEntriesMap.toJson().containsKey('ignoreList'), isFalse);
       expect(fromEntriesMap.toJson().containsKey('scopes'), isFalse);
       expect(fromEntriesMap.toJson().containsKey('ranges'), isFalse);
+
+      var clearedMap = parseJson(buildEcma426WasmMap()) as SingleMapping;
+      expect(clearedMap.ignoreList, equals([0]));
+      clearedMap.ignoreList = null;
+      expect(clearedMap.toJson().containsKey('ignoreList'), isFalse);
     });
   });
 
