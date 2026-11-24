@@ -483,23 +483,116 @@ void main() {
     expect(constructedEvent.eventData.length, 3);
   });
 
-  test('Event.migrateEvent constructed', () {
-    final event = Event.migrateEvent(
-      type: 'some_event',
-      additionalData: _TestMetrics(
-        boolField: true,
-        stringField: 'hello',
-        intField: 1,
-      ),
+  test('Event.migrateRound constructed', () {
+    Event generateEvent() => Event.migrateRound(
+      fromSdkVersion: '3.12',
+      packagesAtStart: 3,
+      packagesAtEnd: 1,
+      failures: '{"b2":1,"h1":1}',
+      prepareDurationMs: 10,
+      bumpDurationMs: 20,
+      cleanupDurationMs: 30,
+      totalDurationMs: 70,
+      migrateSessionId: 1761501474000,
     );
-    expect(event.eventName, DashEvent.migrateEvent);
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.migrateRound);
     expect(
-      event.eventData,
+      constructedEvent.eventData,
       equals({
-        'type': 'some_event',
-        'boolField': true,
-        'stringField': 'hello',
-        'intField': 1,
+        'fromSdkVersion': '3.12',
+        'packagesAtStart': 3,
+        'packagesAtEnd': 1,
+        'failures': '{"b2":1,"h1":1}',
+        'prepareDurationMs': 10,
+        'bumpDurationMs': 20,
+        'cleanupDurationMs': 30,
+        'totalDurationMs': 70,
+        'migrateSessionId': 1761501474000,
+      }),
+    );
+  });
+
+  test('Event.migrateRound constructed without optional fields', () {
+    final constructedEvent = Event.migrateRound(
+      fromSdkVersion: '3.12',
+      packagesAtStart: 1,
+      packagesAtEnd: 1,
+      totalDurationMs: 5,
+      migrateSessionId: 1761501474000,
+    );
+
+    expect(
+      constructedEvent.eventData,
+      equals({
+        'fromSdkVersion': '3.12',
+        'packagesAtStart': 1,
+        'packagesAtEnd': 1,
+        'totalDurationMs': 5,
+        'migrateSessionId': 1761501474000,
+      }),
+    );
+  });
+
+  test('Event.migrateRun constructed', () {
+    Event generateEvent() => Event.migrateRun(
+      fromSdkVersion: '3.11',
+      toSdkVersion: '3.13',
+      targetSdk: true,
+      prepare: true,
+      bump: true,
+      cleanup: false,
+      apply: false,
+      durationMs: 5321,
+      cleanupCheckDurationMs: 2100,
+      migrateSessionId: 1761501474000,
+    );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.migrateRun);
+    expect(
+      constructedEvent.eventData,
+      equals({
+        'fromSdkVersion': '3.11',
+        'toSdkVersion': '3.13',
+        'targetSdk': true,
+        'prepare': true,
+        'bump': true,
+        'cleanup': false,
+        'apply': false,
+        'durationMs': 5321,
+        'cleanupCheckDurationMs': 2100,
+        'migrateSessionId': 1761501474000,
+      }),
+    );
+  });
+
+  test('Event.migrateRun constructed without optional fields', () {
+    final constructedEvent = Event.migrateRun(
+      targetSdk: false,
+      prepare: true,
+      bump: true,
+      cleanup: false,
+      apply: false,
+      durationMs: 1,
+      migrateSessionId: 1761501474000,
+    );
+
+    expect(
+      constructedEvent.eventData,
+      equals({
+        'targetSdk': false,
+        'prepare': true,
+        'bump': true,
+        'cleanup': false,
+        'apply': false,
+        'durationMs': 1,
+        'migrateSessionId': 1761501474000,
       }),
     );
   });
@@ -1239,7 +1332,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 37;
+    final eventsAccountedForInTests = 38;
     expect(
       eventsAccountedForInTests,
       constructorNames.length,
