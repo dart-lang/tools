@@ -99,6 +99,29 @@ void main() {
 
       expect(caught, isTrue);
     });
+
+    test(
+      'calls onDiscard if an in-flight attempt resolves after timeout',
+      () async {
+        final attempt = Completer<int>();
+        final discarded = Completer<Object?>();
+
+        await expectLater(
+          retry(
+            () => attempt.future,
+            _delay,
+            timeout: _delay,
+            onDiscard: discarded.complete,
+          ),
+          throwsStateError,
+        );
+
+        expect(discarded.isCompleted, isFalse);
+
+        attempt.complete(42);
+        expect(await discarded.future, 42);
+      },
+    );
   });
 
   group('extractVMServiceUri', () {

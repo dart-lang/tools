@@ -65,17 +65,25 @@ class _FakeVmServiceServer {
   _FakeVmServiceServer._(this._server);
 
   final HttpServer _server;
+  final _closed = Completer<void>();
   final List<_ClientConnection> connections = [];
 
   Uri get uri => Uri.parse('http://127.0.0.1:${_server.port}/');
 
-  static Future<_FakeVmServiceServer> start(_RpcHandler onRpc) async {
+  static Future<_FakeVmServiceServer> start(
+    _RpcHandler onRpc, {
+    Future<void> Function()? beforeUpgrade,
+  }) async {
     final httpServer = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     final fakeServer = _FakeVmServiceServer._(httpServer);
     addTearDown(fakeServer.close);
 
     httpServer.listen((request) async {
       expect(request.uri.path, '/ws');
+      if (beforeUpgrade != null) {
+        await Future.any<void>([beforeUpgrade(), fakeServer._closed.future]);
+        if (fakeServer._closed.isCompleted) return;
+      }
       final socket = await WebSocketTransformer.upgrade(request);
       fakeServer.connections.add(
         _ClientConnection(fakeServer.connections.length + 1, socket, onRpc),
@@ -86,6 +94,9 @@ class _FakeVmServiceServer {
   }
 
   Future<void> close() async {
+    if (!_closed.isCompleted) {
+      _closed.complete();
+    }
     await _server.close(force: true);
     for (final connection in connections) {
       await connection.close();
@@ -262,14 +273,27 @@ void main() {
   });
 
   test('disposes in-flight connection if retry times out', () async {
-    Object? getVersionId;
-    final server = await _FakeVmServiceServer.start((connection, rpc) {
-      if (rpc['method'] != 'getVersion') {
-        connection.failUnexpectedRpc(rpc);
-      }
-      // Hold the getVersion reply until after collect() times out.
-      getVersionId = rpc['id'];
-    });
+    final upgradeRequested = Completer<void>();
+    final allowUpgrade = Completer<void>();
+    final getVersionReceived = Completer<_ClientConnection>();
+
+    final server = await _FakeVmServiceServer.start(
+      (connection, rpc) {
+        if (rpc['method'] != 'getVersion') {
+          connection.failUnexpectedRpc(rpc);
+        }
+        connection.reply(rpc['id'], _versionResponse);
+        if (!getVersionReceived.isCompleted) {
+          getVersionReceived.complete(connection);
+        }
+      },
+      beforeUpgrade: () async {
+        if (!upgradeRequested.isCompleted) {
+          upgradeRequested.complete();
+        }
+        await allowUpgrade.future;
+      },
+    );
 
     await expectLater(
       collect(
@@ -278,17 +302,18 @@ void main() {
         false,
         false,
         {},
-        timeout: const Duration(milliseconds: 100),
+        timeout: const Duration(milliseconds: 50),
       ),
       throwsStateError,
     );
 
-    expect(server.connections.length, 1);
-    expect(getVersionId, isNotNull);
+    // Wait for the HTTP upgrade request even on a slow loopback connect, then
+    // release it after collect() has already timed out.
+    await upgradeRequested.future;
+    allowUpgrade.complete();
 
-    // Complete getVersion after collect() has already timed out.
-    final connection1 = server.connections.single;
-    connection1.reply(getVersionId, _versionResponse);
+    final connection1 = await getVersionReceived.future;
+    expect(server.connections.length, 1);
 
     await connection1.socket.done.timeout(
       const Duration(seconds: 1),
