@@ -286,16 +286,37 @@ class SingleMapping extends Mapping {
   /// Url of the target file.
   String? targetUrl;
 
+  static const _knownFields = {
+    'version',
+    'file',
+    'sourceRoot',
+    'sources',
+    'sourcesContent',
+    'names',
+    'mappings',
+    'ignoreList',
+  };
+
   /// Source root prepended to all entries in [urls].
   String? sourceRoot;
+
+  /// Zero-based indices into [urls] identifying sources that tools should
+  /// ignore by default (ECMA-426 `"ignoreList"`), or `null` if omitted.
+  ///
+  /// Reordering or removing entries in [urls] does not automatically update
+  /// these indices.
+  List<int>? ignoreList;
 
   final Uri? _mapUrl;
 
   final Map<String, dynamic> extensions;
 
+  final Map<String, Object?> _unparsedFields;
+
   SingleMapping._(this.targetUrl, this.files, this.urls, this.names, this.lines)
       : _mapUrl = null,
-        extensions = {};
+        extensions = {},
+        _unparsedFields = {};
 
   factory SingleMapping.fromEntries(Iterable<builder.Entry> entries,
       [String? fileUrl]) {
@@ -349,9 +370,13 @@ class SingleMapping extends Mapping {
         names = List<String>.from((map['names'] as List?) ?? []),
         files = List.filled((map['sources'] as List).length, null),
         sourceRoot = map['sourceRoot'] as String?,
+        ignoreList = map['ignoreList'] is List
+            ? List<int>.from(map['ignoreList'] as List)
+            : null,
         lines = <TargetLineEntry>[],
         _mapUrl = mapUrl is String ? Uri.parse(mapUrl) : (mapUrl as Uri?),
-        extensions = {} {
+        extensions = {},
+        _unparsedFields = {} {
     var sourcesContent = map['sourcesContent'] == null
         ? const <String?>[]
         : List<String?>.from(map['sourcesContent'] as List);
@@ -425,7 +450,12 @@ class SingleMapping extends Mapping {
     }
 
     map.forEach((name, value) {
-      if (name.startsWith('x_')) extensions[name] = value;
+      if (name.startsWith('x_')) {
+        extensions[name] = value;
+      } else if (!_knownFields.contains(name) ||
+          (name == 'ignoreList' && value != null && value is! List)) {
+        _unparsedFields[name] = value;
+      }
     });
   }
 
@@ -484,6 +514,10 @@ class SingleMapping extends Mapping {
     if (includeSourceContents) {
       result['sourcesContent'] = files.map((file) => file?.getText(0)).toList();
     }
+    if (ignoreList != null) result['ignoreList'] = ignoreList!;
+    _unparsedFields.forEach((name, value) {
+      if (!result.containsKey(name)) result[name] = value;
+    });
     extensions.forEach((name, value) => result[name] = value);
 
     return result;
