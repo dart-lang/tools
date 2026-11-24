@@ -287,6 +287,170 @@ void serve(Handler handler, Request initial) {}
     expect(checkRes.exitCode, equals(0), reason: '${checkRes.stderr}');
   });
 
+  test(
+    'expectApiSummaryClean and --check fail when primary barrel omits public '
+    'sealed subtype exported by secondary barrel',
+    () async {
+      final pkgDir = await _createSandboxPackage(
+        packageName: 'test',
+        libFiles: {
+          'src/s.dart': '''
+sealed class S {}
+final class Pub1 extends S {}
+final class Pub2 extends S {}
+''',
+          'test.dart': "export 'src/s.dart' show S, Pub1;\n",
+          'secondary.dart': "export 'src/s.dart' show Pub2;\n",
+        },
+      );
+
+      final writeRes = await runCli(['-p', pkgDir, '--write']);
+      expect(writeRes.exitCode, equals(0), reason: '${writeRes.stderr}');
+      expect(
+        File(p.join(pkgDir, 'api.txt')).readAsStringSync(),
+        contains(
+          'S (class extends Object, sealed (immediate subtypes: Pub1, Pub2))',
+        ),
+      );
+
+      await expectLater(
+        expectApiSummaryClean(packagePath: pkgDir),
+        throwsA(
+          isA<ApiSummaryVerificationException>().having(
+            (e) => e.message,
+            'message',
+            allOf([
+              contains('package:test/test.dart'),
+              contains(
+                'Pub2 (package:test/src/s.dart, '
+                'exported by package:test/secondary.dart)',
+              ),
+              isNot(contains('Pub1 (')),
+            ]),
+          ),
+        ),
+      );
+
+      final checkRes = await runCli(['-p', pkgDir, '--check']);
+      expect(checkRes.exitCode, equals(1));
+      expect(
+        checkRes.stderr,
+        allOf(
+          contains('Pub2'),
+          contains('exported by package:test/secondary.dart'),
+        ),
+      );
+
+      final writeJsonRes = await runCli([
+        '-p',
+        pkgDir,
+        '--write',
+        '--format=json',
+      ]);
+      expect(
+        writeJsonRes.exitCode,
+        equals(0),
+        reason: '${writeJsonRes.stderr}',
+      );
+      await expectLater(
+        expectApiSummaryClean(
+          packagePath: pkgDir,
+          format: ApiSummaryFormat.json,
+        ),
+        throwsA(
+          isA<ApiSummaryVerificationException>().having(
+            (e) => e.message,
+            'message',
+            allOf(
+              contains('Pub2'),
+              contains('exported by package:test/secondary.dart'),
+            ),
+          ),
+        ),
+      );
+
+      await expectApiSummaryClean(
+        packagePath: pkgDir,
+        customizer: const ApiSummaryCustomizer(allowNonPublicTypes: true),
+      );
+    },
+  );
+
+  test(
+    'expectApiSummaryClean and --check pass on Regime 2 and Regime 3 private '
+    'or unexported lib/src/ sealed subtypes',
+    () async {
+      final pkgDir = await _createSandboxPackage(
+        packageName: 'test',
+        libFiles: {
+          'src/shapes.dart': '''
+// ignore_for_file: unused_element
+sealed class MixedShape {}
+final class Circle extends MixedShape {}
+final class UnexportedPolygon extends MixedShape {}
+final class _PrivateShape extends MixedShape {}
+
+sealed class OpaqueMode {}
+final class UnexportedModeImpl extends OpaqueMode {}
+final class _PrivateModeImpl extends OpaqueMode {}
+''',
+          'test.dart':
+              "export 'src/shapes.dart' show MixedShape, Circle, OpaqueMode;\n",
+        },
+      );
+
+      final writeRes = await runCli(['-p', pkgDir, '--write']);
+      expect(writeRes.exitCode, equals(0), reason: '${writeRes.stderr}');
+      expect(
+        File(p.join(pkgDir, 'api.txt')).readAsStringSync(),
+        allOf([
+          contains(
+            'MixedShape (class extends Object, '
+            'sealed (immediate subtypes: Circle, <non-public>))',
+          ),
+          contains(
+            'OpaqueMode (class extends Object, '
+            'sealed (immediate subtypes: <non-public>))',
+          ),
+          isNot(contains('UnexportedPolygon')),
+          isNot(contains('UnexportedModeImpl')),
+        ]),
+      );
+
+      await expectApiSummaryClean(packagePath: pkgDir);
+
+      final checkRes = await runCli(['-p', pkgDir, '--check']);
+      expect(checkRes.exitCode, equals(0), reason: '${checkRes.stderr}');
+
+      final writeJsonRes = await runCli([
+        '-p',
+        pkgDir,
+        '--write',
+        '--format=json',
+      ]);
+      expect(
+        writeJsonRes.exitCode,
+        equals(0),
+        reason: '${writeJsonRes.stderr}',
+      );
+      await expectApiSummaryClean(
+        packagePath: pkgDir,
+        format: ApiSummaryFormat.json,
+      );
+      final checkJsonRes = await runCli([
+        '-p',
+        pkgDir,
+        '--check',
+        '--format=json',
+      ]);
+      expect(
+        checkJsonRes.exitCode,
+        equals(0),
+        reason: '${checkJsonRes.stderr}',
+      );
+    },
+  );
+
   test('expectApiSummaryClean reports both non-public types and unexported '
       'primary-barrel sibling types in one pass', () async {
     final samplePkgDir = await _createSandboxPackage(
@@ -517,13 +681,17 @@ void serve(CoreType value) {}
 }
 
 Future<String> _createSandboxPackage({
+  String packageName = 'sample_pkg',
   Map<String, String> libFiles = const {
     'sample_pkg.dart': 'int add(int a, int b) => a + b;\n',
   },
 }) async {
   final pkgDir = p.join(d.sandbox, 'pkg');
   await d.dir('pkg', [
-    d.file('pubspec.yaml', 'name: sample_pkg\nenvironment:\n  sdk: ^3.12.0\n'),
+    d.file(
+      'pubspec.yaml',
+      'name: $packageName\nenvironment:\n  sdk: ^3.12.0\n',
+    ),
     d.dir('.dart_tool', [
       d.file(
         'package_config.json',
@@ -531,7 +699,7 @@ Future<String> _createSandboxPackage({
           'configVersion': 2,
           'packages': [
             {
-              'name': 'sample_pkg',
+              'name': packageName,
               'rootUri': '../',
               'packageUri': 'lib/',
               'languageVersion': '3.12',

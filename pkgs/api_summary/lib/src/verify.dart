@@ -307,7 +307,7 @@ List<String> _findUnexportedPrimaryBarrelLines(
   final lines = <String>[];
   final referencedTypes = _libraryDeclarations(
     primaryLib,
-  ).expand(_declarationTypes).expand(_nestedInterfaceTypes);
+  ).expand(_referencedInterfaceTypes);
   for (final type in referencedTypes) {
     final libraryUri = type.libraryUri;
     if (libraryUri == null) continue;
@@ -366,6 +366,25 @@ Iterable<ApiDeclaration> _libraryDeclarations(ApiLibrary library) sync* {
   yield* library.extensionTypes;
   yield* library.functions;
   yield* library.typeAliases;
+}
+
+Iterable<ApiInterfaceType> _referencedInterfaceTypes(
+  ApiDeclaration declaration,
+) sync* {
+  yield* _declarationTypes(declaration).expand(_nestedInterfaceTypes);
+  if (declaration case ApiClass(
+    :final locationUri?,
+    :final immediateSubtypes,
+  )) {
+    for (final sub in immediateSubtypes) {
+      yield ApiInterfaceType(
+        name: sub,
+        libraryUri: locationUri,
+        typeArguments: const [],
+        isNullable: false,
+      );
+    }
+  }
 }
 
 Iterable<ApiType> _declarationTypes(ApiDeclaration declaration) sync* {
