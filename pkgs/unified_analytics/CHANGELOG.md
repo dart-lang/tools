@@ -18,6 +18,10 @@
   field.
 - Removed `Event.migrateEvent` and `DashEvent.migrateEvent`. Use
   `Event.migrateRun` and `Event.migrateRound` instead.
+- Added optional `targetPackage`, `targetPackageVersion`, and
+  `targetPackageConstraint` parameters to the `Event.dartCliCommandExecuted`
+  constructor to report the public package resolved by standalone commands
+  such as `dart install <package>` and `dart run <package>@<version>`.
 
 ## 8.4.0
 

@@ -496,12 +496,29 @@ final class Event {
   /// * [pubspecEnvironmentSdk] - the Dart SDK version constraint declared in
   ///   the project's pubspec (e.g. `^3.5.0` from `environment.sdk:`).
   ///
+  /// * [targetPackage] - the name of the package a standalone command such as
+  ///   `dart install <package>` or `dart run <package>@<version>` resolved
+  ///   (e.g. `dhttpd`).
+  ///
+  /// * [targetPackageVersion] - the version of [targetPackage] that was
+  ///   resolved (e.g. `4.1.0`).
+  ///
+  /// * [targetPackageConstraint] - the version constraint the user requested
+  ///   for [targetPackage], if any (e.g. `^4.0.0`).
+  ///
+  /// Callers MUST only pass [targetPackage], [targetPackageVersion], and
+  /// [targetPackageConstraint] after the package resolved successfully from
+  /// the public `https://pub.dev` hosted registry. Omit all three for git,
+  /// path, and privately hosted packages, and for failed resolutions, to
+  /// prevent leaking proprietary or internal package names.
+  ///
   /// NOTE FOR MAINTAINERS: Google Analytics 4 limits each event to at most 25
-  /// custom parameters. With standard metadata fields taking up 4–5 slots and
-  /// dependency chunking consuming up to 20 parameters (`pubspec_dep_0` through
-  /// `pubspec_dep_19`), adding any new parameters to this constructor requires
-  /// decreasing `maxChunks` in [chunkDependencies] to prevent dropping event
-  /// parameters.
+  /// custom parameters. The standard metadata fields take up to 5 slots and
+  /// dependency chunking consumes the remaining 20 (`pubspec_dep_0` through
+  /// `pubspec_dep_19`). Each `targetPackage*` parameter that is passed takes
+  /// one slot away from the dependency chunks. Adding any new parameters to
+  /// this constructor requires decreasing the `maxChunks` passed to
+  /// [chunkDependencies] in the same way to prevent dropping event parameters.
   Event.dartCliCommandExecuted({
     required String name,
     required String enabledExperiments,
@@ -509,6 +526,9 @@ final class Event {
     bool? pubspecHasFlutterSdk,
     Set<String>? pubspecDependencies,
     String? pubspecEnvironmentSdk,
+    String? targetPackage,
+    String? targetPackageVersion,
+    String? targetPackageConstraint,
   }) : this._(
          eventName: DashEvent.dartCliCommandExecuted,
          eventData: {
@@ -517,8 +537,20 @@ final class Event {
            'exitCode': ?exitCode,
            'pubspec_has_flutter_sdk': ?pubspecHasFlutterSdk,
            'pubspec_environment_sdk': ?pubspecEnvironmentSdk,
+           'target_package': ?targetPackage,
+           'target_package_version': ?targetPackageVersion,
+           'target_package_constraint': ?targetPackageConstraint,
            if (pubspecDependencies != null)
-             ...chunkDependencies(pubspecDependencies),
+             ...chunkDependencies(
+               pubspecDependencies,
+               maxChunks:
+                   _maxDependencyChunks -
+                   [
+                     targetPackage,
+                     targetPackageVersion,
+                     targetPackageConstraint,
+                   ].nonNulls.length,
+             ),
          },
        );
 
@@ -1420,9 +1452,16 @@ abstract base class CustomMetrics {
 ///    ecosystem under truncation.
 /// 3. **Zero PII**: Salt is derived strictly from public package names without
 ///    relying on local paths, usernames, or private project identifiers.
+///
+/// At most [maxChunks] parameters are returned. Callers that send other
+/// optional parameters alongside the dependency chunks lower it to stay within
+/// the 25-parameter limit.
 @visibleForTesting
-Map<String, String> chunkDependencies(Set<String> deps) {
-  if (deps.isEmpty) return const {};
+Map<String, String> chunkDependencies(
+  Set<String> deps, {
+  int maxChunks = _maxDependencyChunks,
+}) {
+  if (deps.isEmpty || maxChunks <= 0) return const {};
 
   // Compute a deterministic project-level salt from the canonical
   // (alphabetically sorted) dependency set.
@@ -1449,12 +1488,6 @@ Map<String, String> chunkDependencies(Set<String> deps) {
   var currentChunk = <String>[];
   var currentLength = 0;
   var chunkIndex = 0;
-
-  // We have a maximum of 25 parameters per event in GA4. Standard event
-  // parameters (name, enabledExperiments, exitCode, pubspec_has_flutter_sdk)
-  // take up to 4 slots, leaving 21 slots. Capping at 20 chunks guarantees
-  // safety.
-  const maxChunks = 20;
 
   for (final dep in sortedDeps) {
     // Guard: Skip package names that are somehow longer than 100 characters
@@ -1486,6 +1519,14 @@ Map<String, String> chunkDependencies(Set<String> deps) {
 
   return chunks;
 }
+
+/// The number of GA4 event parameters available for dependency chunks.
+///
+/// GA4 allows at most 25 parameters per event. The standard
+/// `dartCliCommandExecuted` parameters (`name`, `enabledExperiments`,
+/// `exitCode`, `pubspec_has_flutter_sdk`, `pubspec_environment_sdk`) take up
+/// to 5 slots, leaving 20.
+const _maxDependencyChunks = 20;
 
 /// Computes a deterministic 32-bit FNV-1a hash of a string with an optional
 /// seed.
