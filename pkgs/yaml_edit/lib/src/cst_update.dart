@@ -549,7 +549,7 @@ _MutationEdit _replaceInPlace(
     _ => document.columnOf(old.start),
   };
   final lineStart = document.lineStartOf(old.start);
-  final startsOwnLine = document.isWhitespaceRange(lineStart, old.start);
+  final startsOwnLine = document.startsOwnLine(old.start);
   final encoded = yamlEncodeBlockWithInfo(value, column, style.lineEnding);
   var text = encoded.text;
   final hasLeadingIndent = isCollection && isBlockNode(value);
@@ -620,8 +620,7 @@ SourceEdit _replaceFlowMapValue(
   final text = yamlEncodeFlow(value);
   if (entry.colon == null) {
     final atOwnLineClose = entry.value.start == map.closeStart &&
-        document.isWhitespaceRange(
-            document.lineStartOf(map.closeStart), map.closeStart);
+        document.startsOwnLine(map.closeStart);
     final suffix = atOwnLineClose
         ? '${document.lineEnding}${' ' * document.columnOf(map.closeStart)}'
         : '';

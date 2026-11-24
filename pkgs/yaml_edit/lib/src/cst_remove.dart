@@ -119,7 +119,7 @@ SourceEdit _removeBlockEntry(
   if (entryCount == 1) {
     final breakLength = document.lineBreakLengthBefore(end);
     final column = document.columnOf(contentStart);
-    final needsIndent = _startsOwnLine(document, contentStart) &&
+    final needsIndent = document.startsOwnLine(contentStart) &&
         parentKeyColumn != null &&
         column <= parentKeyColumn;
     final extraSpaces =
@@ -199,10 +199,6 @@ bool _endsWithKeepBlockScalar(CstDocument document, CstNode node) =>
 // ---------------------------------------------------------------------------
 // Flow collection removal
 // ---------------------------------------------------------------------------
-
-/// Whether [offset] is preceded only by spaces/tabs on its line.
-bool _startsOwnLine(CstDocument document, int offset) =>
-    document.isWhitespaceRange(document.lineStartOf(offset), offset);
 
 /// Returns the first comment in `[offset, limit)` if it sits on the same line
 /// as [offset], or `null` otherwise.
@@ -308,7 +304,7 @@ SourceEdit _removeFirstFlowEntry(
   if (inlineComment != null) {
     final entryLineStart = document.lineStartOf(entry.contentStart);
     if (entryLineStart > document.lineStartOf(collection.openEnd) &&
-        _startsOwnLine(document, entry.contentStart)) {
+        document.startsOwnLine(entry.contentStart)) {
       start = entryLineStart;
     }
     end = document.lineBreakEndOf(inlineComment.span.end.offset);
@@ -346,7 +342,7 @@ SourceEdit? _tryRemoveFirstFlowSeqEntryWithPreCommaComments(
   if (ownLineComments.isEmpty) return null;
 
   final entryLineStart = document.lineStartOf(entry.contentStart);
-  final startsOwnLine = _startsOwnLine(document, entry.contentStart);
+  final startsOwnLine = document.startsOwnLine(entry.contentStart);
   final preservedComments = document.source.substring(
     document.lineStartOf(ownLineComments.first.span.start.offset),
     document.lineBreakEndOf(ownLineComments.last.span.end.offset),
@@ -399,7 +395,7 @@ SourceEdit _removeMiddleFlowEntry(
 
   final commentBeforeEnd =
       _lastCommentBreakEnd(document, previous.end, entry.contentStart);
-  final startsOwnLine = _startsOwnLine(document, entry.contentStart);
+  final startsOwnLine = document.startsOwnLine(entry.contentStart);
   final start = commentBeforeEnd ??
       (startsOwnLine
           ? document.lineStartOf(entry.contentStart)
@@ -448,7 +444,7 @@ SourceEdit _removeLastFlowEntry(
   }
 
   if (hasTrailingComma) {
-    if (closeOnLaterLine && _startsOwnLine(document, entry.contentStart)) {
+    if (closeOnLaterLine && document.startsOwnLine(entry.contentStart)) {
       final entryLineStart = document.lineStartOf(entry.contentStart);
       return SourceEdit(entryLineStart, entryLineEnd - entryLineStart, '');
     }
@@ -459,7 +455,7 @@ SourceEdit _removeLastFlowEntry(
   }
 
   if (closeOnLaterLine) {
-    if (_startsOwnLine(document, from)) {
+    if (document.startsOwnLine(from)) {
       final fromLineStart = document.lineStartOf(from);
       return SourceEdit(fromLineStart, entryLineEnd - fromLineStart, '');
     }
