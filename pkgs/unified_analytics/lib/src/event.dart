@@ -581,6 +581,27 @@ final class Event {
          },
        );
 
+  /// Event that contains the number of times a diagnostic with a given code has
+  /// been reported.
+  ///
+  /// * [code] - the code of the diagnostics that were reported.
+  ///
+  /// * [count] - the number of times a diagnostic with a given code has been
+  ///   reported.
+  ///
+  /// This event can, and often will, be sent multiple times in a single
+  /// session. For example, if a single run of `dart analyze` reports two
+  /// diagnostics with different codes, then two events will be sent, one for
+  /// each diagnostic code.
+  ///
+  /// In longer running sessions, such as the analysis server, multiple events
+  /// for the same diagnostic code can be sent within the same session.
+  Event.diagnosticReportedCount({required String code, required int count})
+    : this._(
+        eventName: DashEvent.diagnosticReportedCount,
+        eventData: {'code': code, 'count': count},
+      );
+
   /// Event that contains the results for a specific doctor validator.
   ///
   /// * [validatorName] - the name for the doctor validator.
