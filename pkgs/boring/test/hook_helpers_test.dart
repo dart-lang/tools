@@ -417,6 +417,56 @@ void main() {
       },
     );
   });
+
+  group('fetchHttpWithRetry', () {
+    test(
+      'reuses a caller-supplied HttpClient across 404 and retried 504 requests',
+      () async {
+        var requests = 0;
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        addTearDown(() => server.close(force: true));
+        server.listen((request) async {
+          requests++;
+          if (request.uri.path == '/missing.so') {
+            request.response.statusCode = HttpStatus.notFound;
+            await request.response.close();
+            return;
+          }
+          if (requests == 2) {
+            request.response.statusCode = HttpStatus.gatewayTimeout;
+            await request.response.close();
+            return;
+          }
+          request.response.add(const [42, 43]);
+          await request.response.close();
+        });
+
+        final client = HttpClient();
+        addTearDown(() => client.close(force: true));
+        final delays = <Duration>[];
+
+        final missing = await fetchHttpWithRetry(
+          Uri.parse('http://${server.address.host}:${server.port}/missing.so'),
+          client: client,
+          delay: (duration) async => delays.add(duration),
+        );
+        expect(missing.statusCode, HttpStatus.notFound);
+        expect(missing.bytes, isEmpty);
+        expect(requests, 1);
+        expect(delays, isEmpty);
+
+        final found = await fetchHttpWithRetry(
+          Uri.parse('http://${server.address.host}:${server.port}/present.so'),
+          client: client,
+          delay: (duration) async => delays.add(duration),
+        );
+        expect(found.statusCode, HttpStatus.ok);
+        expect(found.bytes, [42, 43]);
+        expect(requests, 3);
+        expect(delays, [const Duration(seconds: 1)]);
+      },
+    );
+  });
 }
 
 final _basePath = Directory.current.uri;

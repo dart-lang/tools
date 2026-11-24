@@ -178,8 +178,6 @@ jobs:
       # Also checks that every prebuilt target's asset exists in the pinned
       # release, since `fetch` fails for a target without a hash.
       - name: Regenerate the hashes of the pinned release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         run: dart run tool/regenerate_hashes.dart
       - name: Check for changes
         run: |

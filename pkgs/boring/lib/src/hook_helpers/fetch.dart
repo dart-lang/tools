@@ -148,9 +148,8 @@ Future<List<int>> downloadBytes(
 }
 
 /// Sends a `GET` request to [url] with exponential-backoff retries on transient
-/// HTTP (`408`, `5xx`, and when [retryRateLimits] is `true`, `429` plus `403`
-/// responses carrying `Retry-After` or `x-ratelimit-remaining: 0`), network, or
-/// timeout errors.
+/// HTTP (`408`, `429`, `403` responses carrying `Retry-After` or
+/// `x-ratelimit-remaining: 0`, and `5xx`), network, or timeout errors.
 ///
 /// Honors `Retry-After` headers (delay-seconds or HTTP-date, capped at 60s)
 /// before falling back to `1s`, `2s`, `4s`, and enforces an overall
@@ -160,8 +159,6 @@ Future<List<int>> downloadBytes(
 Future<({int statusCode, List<int> bytes})> fetchHttpWithRetry(
   Uri url, {
   HttpClient? client,
-  Map<String, String> headers = const {},
-  bool retryRateLimits = true,
   int maxAttempts = defaultMaxAttempts,
   Duration totalTimeout = defaultTotalTimeout,
   Future<void> Function(Duration) delay = Future<void>.delayed,
@@ -180,8 +177,6 @@ Future<({int statusCode, List<int> bytes})> fetchHttpWithRetry(
     return await _runFetchLoop(
       effectiveClient,
       url,
-      headers: headers,
-      retryRateLimits: retryRateLimits,
       maxAttempts: maxAttempts,
       totalTimeout: totalTimeout,
       stopwatch: stopwatch,
@@ -199,8 +194,6 @@ Future<({int statusCode, List<int> bytes})> fetchHttpWithRetry(
 Future<({int statusCode, List<int> bytes})> _runFetchLoop(
   HttpClient client,
   Uri url, {
-  required Map<String, String> headers,
-  required bool retryRateLimits,
   required int maxAttempts,
   required Duration totalTimeout,
   required Stopwatch stopwatch,
@@ -219,8 +212,6 @@ Future<({int statusCode, List<int> bytes})> _runFetchLoop(
       return await _sendOnce(
         client,
         url,
-        headers: headers,
-        retryRateLimits: retryRateLimits,
         remainingBudget: remaining,
         now: now,
       );
@@ -243,24 +234,15 @@ Future<({int statusCode, List<int> bytes})> _runFetchLoop(
 Future<({int statusCode, List<int> bytes})> _sendOnce(
   HttpClient client,
   Uri url, {
-  required Map<String, String> headers,
-  required bool retryRateLimits,
   required Duration remainingBudget,
   required DateTime Function() now,
 }) async {
   final stepTimeout = _minDuration(defaultConnectionTimeout, remainingBudget);
   try {
     final request = await client.getUrl(url).timeout(stepTimeout);
-    for (final MapEntry(:key, :value) in headers.entries) {
-      request.headers.set(key, value);
-    }
     final response = await request.close().timeout(stepTimeout);
     final statusCode = response.statusCode;
-    if (_isRetryableStatus(
-      statusCode,
-      response.headers,
-      retryRateLimits: retryRateLimits,
-    )) {
+    if (_isRetryableStatus(statusCode, response.headers)) {
       final retryAfter = _parseRetryAfter(response.headers, now);
       await response.drain<void>().timeout(stepTimeout);
       throw _RetryableDownloadFailure(
@@ -290,17 +272,12 @@ Future<({int statusCode, List<int> bytes})> _sendOnce(
   }
 }
 
-bool _isRetryableStatus(
-  int statusCode,
-  HttpHeaders headers, {
-  required bool retryRateLimits,
-}) {
+bool _isRetryableStatus(int statusCode, HttpHeaders headers) {
   if (statusCode == HttpStatus.requestTimeout ||
+      statusCode == HttpStatus.tooManyRequests ||
       (statusCode >= 500 && statusCode < 600)) {
     return true;
   }
-  if (!retryRateLimits) return false;
-  if (statusCode == HttpStatus.tooManyRequests) return true;
   if (statusCode == HttpStatus.forbidden) {
     return headers.value(HttpHeaders.retryAfterHeader) != null ||
         headers.value('x-ratelimit-remaining')?.trim() == '0';
