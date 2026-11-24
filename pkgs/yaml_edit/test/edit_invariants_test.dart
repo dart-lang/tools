@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:test/test.dart';
+import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/src/cst.dart';
 import 'package:yaml_edit/src/edit_invariants.dart';
 import 'package:yaml_edit/yaml_edit.dart';
@@ -512,6 +513,96 @@ void main() {
         operation: EditOperation.remove,
         path: [0, 0],
         messageContains: 'own-line -> inline',
+      );
+    });
+  });
+
+  group('YamlEditor invariant integration', () {
+    test('allows pre-existing trailing whitespace-only line on block append',
+        () {
+      final mapEditor = YamlEditor('a: 1\n  ')..update(['c'], 3);
+      expect(mapEditor.parseAt([]).value, {'a': 1, 'c': 3});
+
+      final listEditor = YamlEditor('- 1\n  ')..appendToList([], 2);
+      expect(listEditor.parseAt([]).value, [1, 2]);
+    });
+
+    test('removes first of duplicate flow-list elements without false positive',
+        () {
+      final editor = YamlEditor('[a, # c0\n a, # c1\n b]\n');
+      editor.remove([0]);
+      expect(editor.parseAt([]).value, equals(['a', 'b']));
+      expect(editor.toString(), '[ a, # c1\n b]\n');
+    });
+
+    test('removes first of duplicate block-list elements cleanly', () {
+      final editor = YamlEditor('- a # c0\n- a # c1\n- b\n');
+      editor.remove([0]);
+      expect(editor.parseAt([]).value, equals(['a', 'b']));
+      expect(editor.toString(), '- a # c1\n- b\n');
+    });
+
+    test('replacing root of a comments-only document replaces the document',
+        () {
+      final editor = YamlEditor('# only\n');
+      editor.update([], {'a': 1});
+      expect(editor.toString(), 'a: 1');
+      expect(editor.parseAt([]).value, {'a': 1});
+    });
+
+    test('updates BOM-prefixed document without false-positive invariant error',
+        () {
+      final editor = YamlEditor('\uFEFFa: 1 # keep\n');
+      editor.update(['a'], 2);
+      expect(editor.toString(), '\uFEFFa: 2 # keep\n');
+      expect(editor.parseAt([]).value, {'a': 2});
+    });
+
+    test('updates document with unknown directive without leaking warnings',
+        () {
+      final warnings = <String>[];
+      final previous = yamlWarningCallback;
+      yamlWarningCallback = (msg, [span]) => warnings.add(msg);
+      try {
+        final editor = YamlEditor('%FOO bar\n---\na: 1 # keep\n');
+        warnings.clear();
+        editor.update(['a'], 2);
+        expect(warnings, isEmpty);
+        expect(editor.toString(), '%FOO bar\n---\na: 2 # keep\n');
+      } finally {
+        yamlWarningCallback = previous;
+      }
+    });
+
+    test('preserves surrounding comments across update, insert, and remove',
+        () {
+      const yaml = '''
+# header
+items:
+  # above a
+  - a # inline a
+  # above b
+  - b # inline b
+other: 1 # other
+# footer
+''';
+      final editor = YamlEditor(yaml);
+      editor.insertIntoList(['items'], 1, 'mid');
+      editor.update(['other'], 2);
+      editor.remove(['items', 0]);
+
+      expect(
+        editor.toString(),
+        '''
+# header
+items:
+  # above a
+  # above b
+  - mid
+  - b # inline b
+other: 2 # other
+# footer
+''',
       );
     });
   });

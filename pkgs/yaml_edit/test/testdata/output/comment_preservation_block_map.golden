@@ -1,0 +1,48 @@
+# document header
+alpha: 1 # inline alpha
+# above beta
+beta: # after colon beta
+  nested: 10 # inline nested
+# above gamma
+gamma: 3 # inline gamma
+# document footer
+---
+# document header
+alpha: 2 # inline alpha
+# above beta
+beta: # after colon beta
+  nested: 10 # inline nested
+# above gamma
+gamma: 3 # inline gamma
+# document footer
+---
+# document header
+alpha: 2 # inline alpha
+# above beta
+beta: # after colon beta
+  added: 20
+  nested: 10 # inline nested
+# above gamma
+gamma: 3 # inline gamma
+# document footer
+---
+# document header
+alpha: 2 # inline alpha
+# above beta
+beta: # after colon beta
+  added: 20
+  nested: 10 # inline nested
+# above gamma
+delta: 4
+gamma: 3 # inline gamma
+# document footer
+---
+# document header
+alpha: 2 # inline alpha
+# above beta
+beta: # after colon beta
+  added: 20
+  nested: 10 # inline nested
+# above gamma
+delta: 4
+# document footer

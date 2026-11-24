@@ -137,9 +137,11 @@ String? _tryYamlEncodeFolded(String string, int indentSize, String lineEnding) {
     return previous + lineEnding + updated;
   });
 
-  return '>-\n'
+  final normalizedStripped =
+      stripped.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+  return '>-$lineEnding'
       '$indent$trimmed'
-      '${stripped.replaceAll('\n', lineEnding + indent)}';
+      '${normalizedStripped.replaceAll('\n', lineEnding + indent)}';
 }
 
 /// Attempts to encode a [string] as a _YAML literal string_ and apply the
@@ -176,7 +178,10 @@ String? _tryYamlEncodeLiteral(
 
   /// Simplest block style.
   /// * https://yaml.org/spec/1.2.2/#812-literal-style
-  return '|-\n$indent${string.replaceAll('\n', lineEnding + indent)}';
+  final normalizedString =
+      string.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+  final indentedString = normalizedString.replaceAll('\n', lineEnding + indent);
+  return '|-$lineEnding$indent$indentedString';
 }
 
 /// Encodes a flow [YamlScalar] based on the provided [YamlScalar.style].
@@ -210,8 +215,10 @@ String _yamlEncodeFlowScalar(YamlScalar yamlScalar) {
 /// Encodes a block [YamlScalar] based on the provided [YamlScalar.style].
 ///
 /// Falls back to [ScalarStyle.DOUBLE_QUOTED] if the [yamlScalar] cannot be
-/// encoded with the [YamlScalar.style] provided.
-String _yamlEncodeBlockScalar(
+/// encoded with the [YamlScalar.style] provided. Returns both the encoded
+/// `text` and `trailingBlockScalarBodyIndent` (`indentation` if a literal or
+/// folded block scalar was actually emitted, or `null` otherwise).
+({String text, int? trailingBlockScalarBodyIndent}) _yamlEncodeBlockScalar(
   YamlScalar yamlScalar,
   int indentation,
   String lineEnding,
@@ -220,32 +227,53 @@ String _yamlEncodeBlockScalar(
   assertValidScalar(value);
 
   if (value is! String) {
-    return value.toString();
+    return (text: value.toString(), trailingBlockScalarBodyIndent: null);
   }
 
   switch (style) {
     /// Prefer 'plain', fallback to "double quoted"
     case ScalarStyle.PLAIN:
-      return _tryYamlEncodePlain(value) ?? _yamlEncodeDoubleQuoted(value);
+      return (
+        text: _tryYamlEncodePlain(value) ?? _yamlEncodeDoubleQuoted(value),
+        trailingBlockScalarBodyIndent: null,
+      );
 
     // Prefer 'single quoted', fallback to "double quoted"
     case ScalarStyle.SINGLE_QUOTED:
-      return _tryYamlEncodeSingleQuoted(value) ??
-          _yamlEncodeDoubleQuoted(value);
+      return (
+        text:
+            _tryYamlEncodeSingleQuoted(value) ?? _yamlEncodeDoubleQuoted(value),
+        trailingBlockScalarBodyIndent: null,
+      );
 
     /// Prefer folded string, fallback to "double quoted"
     case ScalarStyle.FOLDED:
-      return _tryYamlEncodeFolded(value, indentation, lineEnding) ??
-          _yamlEncodeDoubleQuoted(value);
+      final folded = _tryYamlEncodeFolded(value, indentation, lineEnding);
+      if (folded != null) {
+        return (text: folded, trailingBlockScalarBodyIndent: indentation);
+      }
+      return (
+        text: _yamlEncodeDoubleQuoted(value),
+        trailingBlockScalarBodyIndent: null,
+      );
 
     /// Prefer literal string, fallback to "double quoted"
     case ScalarStyle.LITERAL:
-      return _tryYamlEncodeLiteral(value, indentation, lineEnding) ??
-          _yamlEncodeDoubleQuoted(value);
+      final literal = _tryYamlEncodeLiteral(value, indentation, lineEnding);
+      if (literal != null) {
+        return (text: literal, trailingBlockScalarBodyIndent: indentation);
+      }
+      return (
+        text: _yamlEncodeDoubleQuoted(value),
+        trailingBlockScalarBodyIndent: null,
+      );
 
     /// Prefer plain, fallback to "double quoted"
     default:
-      return _tryYamlEncodePlain(value) ?? _yamlEncodeDoubleQuoted(value);
+      return (
+        text: _tryYamlEncodePlain(value) ?? _yamlEncodeDoubleQuoted(value),
+        trailingBlockScalarBodyIndent: null,
+      );
   }
 }
 
@@ -280,53 +308,92 @@ String yamlEncodeBlock(
   YamlNode value,
   int indentation,
   String lineEnding,
+) =>
+    yamlEncodeBlockWithInfo(value, indentation, lineEnding).text;
+
+/// Encodes [value] in a block context, returning both the formatted `text` and
+/// `trailingBlockScalarBodyIndent` (the body indentation of a trailing literal
+/// or folded block scalar if the output ends with one, or `null` otherwise).
+({String text, int? trailingBlockScalarBodyIndent}) yamlEncodeBlockWithInfo(
+  YamlNode value,
+  int indentation,
+  String lineEnding,
 ) {
   const additionalIndentation = 2;
 
-  if (!isBlockNode(value)) return yamlEncodeFlow(value);
+  if (!isBlockNode(value)) {
+    return (text: yamlEncodeFlow(value), trailingBlockScalarBodyIndent: null);
+  }
 
   final newIndentation = indentation + additionalIndentation;
 
   if (value is YamlList) {
-    if (value.isEmpty) return '${' ' * indentation}[]';
+    if (value.isEmpty) {
+      return (
+        text: '${' ' * indentation}[]',
+        trailingBlockScalarBodyIndent: null,
+      );
+    }
 
-    Iterable<String> safeValues;
+    final safeValues = <String>[];
+    int? trailingBodyIndent;
 
-    final children = value.nodes;
-
-    safeValues = children.map((child) {
-      var valueString = yamlEncodeBlock(child, newIndentation, lineEnding);
+    for (final child in value.nodes) {
+      final encoded = yamlEncodeBlockWithInfo(
+        child,
+        newIndentation,
+        lineEnding,
+      );
+      var valueString = encoded.text;
       if (isCollection(child) && !isFlowYamlCollectionNode(child)) {
         valueString = valueString.substring(newIndentation);
       }
+      safeValues.add('${' ' * indentation}- $valueString');
+      trailingBodyIndent = encoded.trailingBlockScalarBodyIndent;
+    }
 
-      return '${' ' * indentation}- $valueString';
-    });
-
-    return safeValues.join(lineEnding);
+    return (
+      text: safeValues.join(lineEnding),
+      trailingBlockScalarBodyIndent: trailingBodyIndent,
+    );
   } else if (value is YamlMap) {
-    if (value.isEmpty) return '${' ' * indentation}{}';
+    if (value.isEmpty) {
+      return (
+        text: '${' ' * indentation}{}',
+        trailingBlockScalarBodyIndent: null,
+      );
+    }
 
-    return value.nodes.entries.map((entry) {
+    final safeEntries = <String>[];
+    int? trailingBodyIndent;
+
+    for (final entry in value.nodes.entries) {
       final MapEntry(:key, :value) = entry;
 
       final safeKey = yamlEncodeFlow(key as YamlNode);
       final formattedKey = ' ' * indentation + safeKey;
 
-      final formattedValue = yamlEncodeBlock(
+      final encoded = yamlEncodeBlockWithInfo(
         value,
         newIndentation,
         lineEnding,
       );
+      final formattedValue = encoded.text;
+      trailingBodyIndent = encoded.trailingBlockScalarBodyIndent;
 
       /// Empty collections are always encoded in flow-style, so new-line must
       /// be avoided
       if (isCollection(value) && !isEmpty(value)) {
-        return '$formattedKey:$lineEnding$formattedValue';
+        safeEntries.add('$formattedKey:$lineEnding$formattedValue');
+      } else {
+        safeEntries.add('$formattedKey: $formattedValue');
       }
+    }
 
-      return '$formattedKey: $formattedValue';
-    }).join(lineEnding);
+    return (
+      text: safeEntries.join(lineEnding),
+      trailingBlockScalarBodyIndent: trailingBodyIndent,
+    );
   }
 
   return _yamlEncodeBlockScalar(
