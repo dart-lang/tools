@@ -260,4 +260,40 @@ void main() {
     expect(server.connections.length, 2);
     expect(reports, 1);
   });
+
+  test('disposes in-flight connection if retry times out', () async {
+    Object? getVersionId;
+    final server = await _FakeVmServiceServer.start((connection, rpc) {
+      if (rpc['method'] != 'getVersion') {
+        connection.failUnexpectedRpc(rpc);
+      }
+      // Hold the getVersion reply until after collect() times out.
+      getVersionId = rpc['id'];
+    });
+
+    await expectLater(
+      collect(
+        server.uri,
+        false,
+        false,
+        false,
+        {},
+        timeout: const Duration(milliseconds: 100),
+      ),
+      throwsStateError,
+    );
+
+    expect(server.connections.length, 1);
+    expect(getVersionId, isNotNull);
+
+    // Complete getVersion after collect() has already timed out.
+    final connection1 = server.connections.single;
+    connection1.reply(getVersionId, _versionResponse);
+
+    await connection1.socket.done.timeout(
+      const Duration(seconds: 1),
+      onTimeout: () =>
+          fail('Expected timed-out in-flight connection to be closed'),
+    );
+  });
 }

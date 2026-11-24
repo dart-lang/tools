@@ -78,7 +78,12 @@ Future<Map<String, dynamic>> collect(
     final uri = serviceUri.replace(scheme: 'ws', pathSegments: pathSegments);
 
     service =
-        await retry(() => _connect(uri), _retryInterval, timeout: timeout)
+        await retry(
+              () => _connect(uri),
+              _retryInterval,
+              timeout: timeout,
+              onDiscard: (service) => (service as VmService).dispose(),
+            )
             as VmService;
   }
 
