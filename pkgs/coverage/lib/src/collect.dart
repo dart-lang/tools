@@ -107,10 +107,8 @@ Future<Map<String, dynamic>> collect(
 }
 
 Future<VmService> _connect(Uri uri) async {
-  final socket = await WebSocket.connect(
-    '$uri',
-    compression: const CompressionOptions(enabled: false),
-  );
+  final options = const CompressionOptions(enabled: false);
+  final socket = await WebSocket.connect('$uri', compression: options);
   final controller = StreamController<String>();
   socket.listen(
     (data) => controller.add(data as String),

@@ -4,6 +4,7 @@
 - Fix a race condition in `collect()` when retrying VM service connections so a
   delayed socket close from a failed connection attempt cannot dispose the
   active retry connection, and ensure failed attempts are always disposed.
+- Fix a VM service connection leak when internal retry loop times out.
 - Update `package:vm_service` constraints to `'>=14.2.2 <16.0.0'`.
 
 ## 1.16.1
