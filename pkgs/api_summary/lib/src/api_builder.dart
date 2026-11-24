@@ -20,6 +20,7 @@ import 'constant_renderer.dart';
 import 'extensions.dart';
 import 'js_facet.dart';
 import 'meta_facet.dart';
+import 'sealed_subtypes.dart';
 
 /// Traverses the public libraries of [packageName] within [context] to build
 /// a canonical [ApiSummary] representation.
@@ -381,7 +382,6 @@ final class _ApiBuilder {
       ...library.classes,
       ...library.mixins,
       ...library.enums,
-      ...library.extensionTypes,
     ]..sortBy((e) => e.name ?? '')) {
       for (final superinterface in [
         interface.supertype,
@@ -446,17 +446,20 @@ final class _ApiBuilder {
     }
 
     final modifiers = <ApiClassModifier>[];
-    var immediateSubtypes = <String>[];
+    var immediateSubtypes = const <String>[];
+    var hasNonPublicSubtypes = false;
 
     if (element is ClassElement) {
       if (element.isSealed) {
         modifiers.add(ApiClassModifier.isSealed);
-        final subinterfaces = _getOrComputeImmediateSubinterfaceMap(
-          element.library,
-        )[element];
-        if (subinterfaces != null) {
-          immediateSubtypes = subinterfaces.map((e) => e.name ?? '').toList();
-        }
+        final sealedSummary = computeSealedSubtypes(
+          element,
+          _getOrComputeImmediateSubinterfaceMap(element.library),
+          topLevelPublicElements: _topLevelPublicElements,
+          isReferenced: status == ApiDeclarationStatus.referenced,
+        );
+        immediateSubtypes = sealedSummary.immediateSubtypes;
+        hasNonPublicSubtypes = sealedSummary.hasNonPublicSubtypes;
       } else {
         if (element.isAbstract) modifiers.add(ApiClassModifier.isAbstract);
         if (element.isBase) modifiers.add(ApiClassModifier.isBase);
@@ -484,6 +487,7 @@ final class _ApiBuilder {
           : const [],
       modifiers: modifiers,
       immediateSubtypes: immediateSubtypes,
+      hasNonPublicSubtypes: hasNonPublicSubtypes,
       constructors: constructors,
       methods: methods,
       isDeprecated: element.nonSynthetic.metadata.hasDeprecated,

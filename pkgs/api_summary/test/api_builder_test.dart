@@ -1162,6 +1162,627 @@ const Meters kMeters = Meters(5);
     });
   }
 
+  void test_apiClass_sealedSubtypesSerialization() {
+    final plain = ApiClass(
+      name: 'Plain',
+      locationUri: 'package:pkg/pkg.dart',
+      typeParameters: const {},
+      interfaces: const [],
+      mixins: const [],
+      modifiers: const [ApiClassModifier.isSealed],
+      constructors: const [],
+      methods: const [],
+    );
+    expect(plain.immediateSubtypes, isEmpty);
+    expect(plain.hasNonPublicSubtypes, isFalse);
+    expect(plain.toJson(), {
+      'name': 'Plain',
+      'locationUri': 'package:pkg/pkg.dart',
+      'modifiers': ['sealed'],
+    });
+    expect(
+      ApiClass.fromJson(plain.toJson()),
+      isA<ApiClass>()
+          .having((c) => c.immediateSubtypes, 'immediateSubtypes', isEmpty)
+          .having(
+            (c) => c.hasNonPublicSubtypes,
+            'hasNonPublicSubtypes',
+            isFalse,
+          ),
+    );
+
+    final mixed = ApiClass(
+      name: 'Mixed',
+      locationUri: 'package:pkg/pkg.dart',
+      typeParameters: const {},
+      interfaces: const [],
+      mixins: const [],
+      modifiers: const [ApiClassModifier.isSealed],
+      immediateSubtypes: ['ZSub', 'ASub'],
+      hasNonPublicSubtypes: true,
+      constructors: const [],
+      methods: const [],
+    );
+    expect(mixed.immediateSubtypes, ['ASub', 'ZSub']);
+    expect(mixed.hasNonPublicSubtypes, isTrue);
+    final mixedJson = mixed.toJson();
+    expect(mixedJson, {
+      'name': 'Mixed',
+      'locationUri': 'package:pkg/pkg.dart',
+      'modifiers': ['sealed'],
+      'immediateSubtypes': ['ASub', 'ZSub'],
+      'hasNonPublicSubtypes': true,
+    });
+    expect(mixedJson.keys.toList(), [
+      'name',
+      'locationUri',
+      'modifiers',
+      'immediateSubtypes',
+      'hasNonPublicSubtypes',
+    ]);
+
+    final opaque = ApiClass(
+      name: 'Opaque',
+      locationUri: 'package:pkg/pkg.dart',
+      typeParameters: const {},
+      interfaces: const [],
+      mixins: const [],
+      modifiers: const [ApiClassModifier.isSealed],
+      hasNonPublicSubtypes: true,
+      constructors: const [],
+      methods: const [],
+    );
+    expect(opaque.immediateSubtypes, isEmpty);
+    expect(opaque.hasNonPublicSubtypes, isTrue);
+    expect(opaque.toJson(), {
+      'name': 'Opaque',
+      'locationUri': 'package:pkg/pkg.dart',
+      'modifiers': ['sealed'],
+      'hasNonPublicSubtypes': true,
+    });
+
+    final summary = ApiSummary(
+      name: 'pkg',
+      libraries: [
+        ApiLibrary(
+          uri: 'package:pkg/pkg.dart',
+          isPublicEntryPoint: true,
+          classes: [plain, mixed, opaque],
+          enums: const [],
+          mixins: const [],
+          extensions: const [],
+          extensionTypes: const [],
+          functions: const [],
+          typeAliases: const [],
+        ),
+      ],
+    );
+    verifySummaryRoundTrip(summary);
+    expect(summary.toString(), '''
+package:pkg/pkg.dart:
+  Mixed (class, sealed (immediate subtypes: ASub, ZSub, <non-public>))
+  Opaque (class, sealed (immediate subtypes: <non-public>))
+  Plain (class, sealed)
+''');
+  }
+
+  Future<void> test_sealedSubtypes_genericsAndSubstitution() async {
+    final summary = await _build({
+      '$testPackageLibPath/src/generics.dart': '''
+// ignore_for_file: unused_element
+sealed class SExtra<T> {}
+abstract interface class PubSame<T> implements SExtra<T> {}
+final class _ImplWithExtra<T, U> extends SExtra<T> implements PubSame<T> {}
+
+sealed class STight<T> {}
+abstract interface class PubTight<T> implements STight<T> {}
+final class _ImplTight<T extends num> extends STight<T>
+    implements PubTight<T> {}
+
+sealed class SPair<T> {}
+abstract interface class PubPair<T> implements SPair<T> {}
+final class _PairImpl<A, B> extends SPair<(A, B)> implements PubPair<(A, B)> {}
+
+sealed class SNarrow<T> {}
+final class IntPub extends SNarrow<int> {}
+final class _StrPriv extends SNarrow<String> {}
+
+sealed class SUnboundedFBound<T> {}
+abstract interface class PubUnboundedFBound<T>
+    implements SUnboundedFBound<T> {}
+final class _ImplTighterFBound<T extends Comparable<T>>
+    extends SUnboundedFBound<T>
+    implements PubUnboundedFBound<T> {}
+
+sealed class SValidExtra<T> {}
+abstract interface class PubExtra<U> implements SValidExtra<int> {}
+final class _ImplExtra extends SValidExtra<int> implements PubExtra<Object> {}
+
+abstract class AstNode {}
+abstract class CollectionElement implements AstNode {}
+abstract class CollectionElementImpl implements CollectionElement {}
+abstract class Statement implements AstNode {}
+abstract class StatementImpl implements Statement {}
+sealed class ForLoop<Body extends AstNode> implements AstNode {}
+sealed class ForLoopImpl<Body extends AstNode, BodyImpl extends Body>
+    implements ForLoop<Body> {}
+abstract final class ForElement
+    implements CollectionElement, ForLoop<CollectionElement> {}
+final class ForElementImpl
+    implements
+        ForLoopImpl<CollectionElement, CollectionElementImpl>,
+        ForElement {}
+abstract final class ForStatement implements Statement, ForLoop<Statement> {}
+final class ForStatementImpl
+    implements ForLoopImpl<Statement, StatementImpl>, ForStatement {}
+
+sealed class SFBound<T extends Comparable<T>> {}
+abstract interface class PubFBound<U extends Comparable<U>>
+    implements SFBound<U> {}
+final class _ImplFBound<V extends Comparable<V>> extends SFBound<V>
+    implements PubFBound<V> {}
+
+sealed class SRecBound<A, B extends (A, {String tag})> {}
+abstract interface class PubRecBound<X, Y extends (X, {String tag})>
+    implements SRecBound<X, Y> {}
+final class _ImplRecBound<P, Q extends (P, {String tag})>
+    extends SRecBound<P, Q>
+    implements PubRecBound<P, Q> {}
+
+sealed class SNullBound<A, B extends A?> {}
+abstract interface class PubNullBound<X, Y extends X?>
+    implements SNullBound<X, Y> {}
+final class _ImplNullBound<P, Q extends P?> extends SNullBound<P, Q>
+    implements PubNullBound<P, Q> {}
+
+typedef BoxAlias<T> = List<T>;
+sealed class SAliasBound<A, B extends BoxAlias<A>> {}
+abstract interface class PubAliasBound<X, Y extends BoxAlias<X>>
+    implements SAliasBound<X, Y> {}
+final class _ImplAliasBound<P, Q extends BoxAlias<P>> extends SAliasBound<P, Q>
+    implements PubAliasBound<P, Q> {}
+
+sealed class SContra<T> {}
+abstract interface class PubContra<U extends void Function(U)>
+    implements SContra<int> {}
+final class _ImplContra extends SContra<int>
+    implements PubContra<void Function(Object?)> {}
+
+sealed class SCovFn<A, B extends A Function()> {}
+abstract interface class PubCovFn<X, Y extends X Function()>
+    implements SCovFn<X, Y> {}
+final class _ImplCovFnExtra<P, Q extends P Function(), R>
+    extends SCovFn<P, Q>
+    implements PubCovFn<P, Q> {}
+
+sealed class STightFn<A, B extends num Function(A)> {}
+abstract interface class PubTightFn<X, Y extends num Function(X)>
+    implements STightFn<X, Y> {}
+final class _ImplTightFn<P, Q extends int Function(P)>
+    extends STightFn<P, Q>
+    implements PubTightFn<P, Q> {}
+
+sealed class SMatchFn<A, B extends A Function(A, {int? opt, required A req})> {}
+abstract interface class PubMatchFn<
+  X,
+  Y extends X Function(X, {int? opt, required X req})
+> implements SMatchFn<X, Y> {}
+final class _ImplMatchFn<
+  P,
+  Q extends P Function(P, {int? opt, required P req})
+> extends SMatchFn<P, Q> implements PubMatchFn<P, Q> {}
+
+sealed class SListFn<A, B extends List<A Function([A?])>> {}
+abstract interface class PubListFn<X, Y extends List<X Function([X?])>>
+    implements SListFn<X, Y> {}
+final class _ImplListFn<P, Q extends List<P Function([P?])>>
+    extends SListFn<P, Q>
+    implements PubListFn<P, Q> {}
+
+sealed class SRecFn<A, B extends (int, {A Function() cb})> {}
+abstract interface class PubRecFn<X, Y extends (int, {X Function() cb})>
+    implements SRecFn<X, Y> {}
+final class _ImplRecFn<P, Q extends (int, {P Function() cb})>
+    extends SRecFn<P, Q>
+    implements PubRecFn<P, Q> {}
+
+sealed class SGenFn<A, B extends Z Function<Z extends A>(Z)> {}
+abstract interface class PubGenFn<X, Y extends W Function<W extends X>(W)>
+    implements SGenFn<X, Y> {}
+final class _ImplGenFn<P, Q extends K Function<K extends P>(K)>
+    extends SGenFn<P, Q>
+    implements PubGenFn<P, Q> {}
+''',
+      '$testPackageLibPath/file.dart': '''
+export 'src/generics.dart'
+    show
+        AstNode,
+        BoxAlias,
+        CollectionElement,
+        ForElement,
+        ForLoop,
+        ForStatement,
+        IntPub,
+        PubAliasBound,
+        PubContra,
+        PubCovFn,
+        PubExtra,
+        PubFBound,
+        PubGenFn,
+        PubListFn,
+        PubMatchFn,
+        PubNullBound,
+        PubPair,
+        PubRecBound,
+        PubRecFn,
+        PubSame,
+        PubTight,
+        PubTightFn,
+        PubUnboundedFBound,
+        SAliasBound,
+        SContra,
+        SCovFn,
+        SExtra,
+        SFBound,
+        SGenFn,
+        SListFn,
+        SMatchFn,
+        SNarrow,
+        SNullBound,
+        SPair,
+        SRecBound,
+        SRecFn,
+        STight,
+        STightFn,
+        SUnboundedFBound,
+        SValidExtra,
+        Statement;
+''',
+    });
+
+    final rehydrated = ApiSummary.fromJson(
+      jsonDecode(summary) as Map<String, dynamic>,
+    );
+    final lib = rehydrated.libraries.singleWhere(
+      (l) => l.uri == 'package:test/file.dart',
+    );
+    final sealedResults = {
+      for (final c in lib.classes)
+        if (c.modifiers.contains(ApiClassModifier.isSealed))
+          c.name: {
+            'immediateSubtypes': c.immediateSubtypes,
+            'hasNonPublicSubtypes': c.hasNonPublicSubtypes,
+          },
+    };
+
+    expect(sealedResults, {
+      'SExtra': {
+        'immediateSubtypes': ['PubSame'],
+        'hasNonPublicSubtypes': true,
+      },
+      'STight': {
+        'immediateSubtypes': ['PubTight'],
+        'hasNonPublicSubtypes': true,
+      },
+      'SPair': {
+        'immediateSubtypes': ['PubPair'],
+        'hasNonPublicSubtypes': true,
+      },
+      'SNarrow': {
+        'immediateSubtypes': ['IntPub'],
+        'hasNonPublicSubtypes': true,
+      },
+      'SUnboundedFBound': {
+        'immediateSubtypes': ['PubUnboundedFBound'],
+        'hasNonPublicSubtypes': true,
+      },
+      'SCovFn': {
+        'immediateSubtypes': ['PubCovFn'],
+        'hasNonPublicSubtypes': true,
+      },
+      'STightFn': {
+        'immediateSubtypes': ['PubTightFn'],
+        'hasNonPublicSubtypes': true,
+      },
+      'SValidExtra': {
+        'immediateSubtypes': ['PubExtra'],
+        'hasNonPublicSubtypes': false,
+      },
+      'ForLoop': {
+        'immediateSubtypes': ['ForElement', 'ForStatement'],
+        'hasNonPublicSubtypes': false,
+      },
+      'SFBound': {
+        'immediateSubtypes': ['PubFBound'],
+        'hasNonPublicSubtypes': false,
+      },
+      'SRecBound': {
+        'immediateSubtypes': ['PubRecBound'],
+        'hasNonPublicSubtypes': false,
+      },
+      'SNullBound': {
+        'immediateSubtypes': ['PubNullBound'],
+        'hasNonPublicSubtypes': false,
+      },
+      'SAliasBound': {
+        'immediateSubtypes': ['PubAliasBound'],
+        'hasNonPublicSubtypes': false,
+      },
+      'SContra': {
+        'immediateSubtypes': ['PubContra'],
+        'hasNonPublicSubtypes': false,
+      },
+      'SMatchFn': {
+        'immediateSubtypes': ['PubMatchFn'],
+        'hasNonPublicSubtypes': false,
+      },
+      'SListFn': {
+        'immediateSubtypes': ['PubListFn'],
+        'hasNonPublicSubtypes': false,
+      },
+      'SRecFn': {
+        'immediateSubtypes': ['PubRecFn'],
+        'hasNonPublicSubtypes': false,
+      },
+      'SGenFn': {
+        'immediateSubtypes': ['PubGenFn'],
+        'hasNonPublicSubtypes': false,
+      },
+    });
+  }
+
+  Future<void> test_sealedSubtypes_twoPassAndDiamonds() async {
+    final summary = await _build({
+      '$testPackageLibPath/src/diamonds.dart': '''
+// ignore_for_file: unused_element
+sealed class SOrder {}
+final class AlphaImpl extends SOrder implements BetaPub {}
+abstract interface class BetaPub implements SOrder {}
+
+sealed class STransOrder {}
+sealed class AInternalSealed extends STransOrder {}
+final class AlphaLeaf extends AInternalSealed implements ZPub {}
+abstract interface class ZPub implements STransOrder {}
+
+sealed class TileModel {}
+base class CompactTile extends TileModel {}
+sealed class _FopTile extends TileModel {}
+final class FopCompactTile extends CompactTile implements _FopTile {}
+final class FopExpandedTile extends _FopTile {}
+
+sealed class DirectDiamond {}
+base class DirectBase extends DirectDiamond {}
+final class DirectSub extends DirectBase implements DirectDiamond {}
+
+sealed class SEmptyOnly {}
+sealed class _EmptyMid1 extends SEmptyOnly {}
+
+sealed class SWithEmptyMid {}
+final class PubBranch extends SWithEmptyMid {}
+sealed class _EmptyMid2 extends SWithEmptyMid {}
+
+sealed class DagRoot {}
+sealed class _BranchA extends DagRoot {}
+sealed class _BranchB extends DagRoot {}
+sealed class _SharedMid implements _BranchA, _BranchB {}
+final class DagLeaf extends _SharedMid {}
+''',
+      '$testPackageLibPath/file.dart': '''
+export 'src/diamonds.dart'
+    show
+        BetaPub,
+        CompactTile,
+        DagLeaf,
+        DagRoot,
+        DirectBase,
+        DirectDiamond,
+        DirectSub,
+        FopCompactTile,
+        FopExpandedTile,
+        PubBranch,
+        SEmptyOnly,
+        SOrder,
+        STransOrder,
+        SWithEmptyMid,
+        TileModel,
+        ZPub;
+''',
+    });
+
+    final rehydrated = ApiSummary.fromJson(
+      jsonDecode(summary) as Map<String, dynamic>,
+    );
+    final lib = rehydrated.libraries.singleWhere(
+      (l) => l.uri == 'package:test/file.dart',
+    );
+    final sealedResults = {
+      for (final c in lib.classes)
+        if (c.modifiers.contains(ApiClassModifier.isSealed))
+          c.name: {
+            'immediateSubtypes': c.immediateSubtypes,
+            'hasNonPublicSubtypes': c.hasNonPublicSubtypes,
+          },
+    };
+
+    expect(sealedResults, {
+      'SOrder': {
+        'immediateSubtypes': ['BetaPub'],
+        'hasNonPublicSubtypes': false,
+      },
+      'STransOrder': {
+        'immediateSubtypes': ['ZPub'],
+        'hasNonPublicSubtypes': false,
+      },
+      'TileModel': {
+        'immediateSubtypes': ['CompactTile', 'FopExpandedTile'],
+        'hasNonPublicSubtypes': false,
+      },
+      'DirectDiamond': {
+        'immediateSubtypes': ['DirectBase', 'DirectSub'],
+        'hasNonPublicSubtypes': false,
+      },
+      'SEmptyOnly': {
+        'immediateSubtypes': const <String>[],
+        'hasNonPublicSubtypes': false,
+      },
+      'SWithEmptyMid': {
+        'immediateSubtypes': ['PubBranch'],
+        'hasNonPublicSubtypes': false,
+      },
+      'DagRoot': {
+        'immediateSubtypes': ['DagLeaf'],
+        'hasNonPublicSubtypes': false,
+      },
+    });
+  }
+
+  Future<void> test_sealedSubtypes_visibilityPredicates() async {
+    newPackage('foo').addFile('lib/extra.dart', '''
+// ignore_for_file: unused_element
+sealed class ExtComplete {}
+final class ExtA extends ExtComplete {}
+final class ExtB extends ExtComplete {}
+
+sealed class ExtMixed {}
+final class ExtPub extends ExtMixed {}
+final class _ExtPriv extends ExtMixed {}
+
+sealed class FilterPlatform {}
+final class CompositeFilter extends FilterPlatform {}
+final class FieldFilter extends FilterPlatform {}
+''');
+
+    final files = {
+      '$testPackageLibPath/src/internal.dart': '''
+// ignore_for_file: unused_element
+sealed class SInternal {}
+sealed class ClassBodyImpl extends SInternal {}
+final class PubLeaf extends ClassBodyImpl {}
+final class UnexportedLeaf extends SInternal {}
+final class _PrivLeaf extends SInternal {}
+
+sealed class NonPubSealed {}
+final class NonPubSub extends NonPubSealed {}
+''',
+      '$testPackageLibPath/file.dart': '''
+import 'package:foo/extra.dart';
+import 'src/internal.dart';
+
+export 'package:foo/extra.dart' show FilterPlatform;
+export 'src/internal.dart' show PubLeaf, SInternal;
+
+void useTypes(
+  UnexportedLeaf unexported,
+  NonPubSealed nonPubSealed,
+  ExtComplete extComplete,
+  ExtMixed extMixed,
+) {}
+''',
+    };
+
+    final implicitMembersSummary = ApiSummary.fromJson(
+      jsonDecode(
+            await _build(
+              files,
+              customizer: const ApiSummaryCustomizer(
+                includeImplicitNonPublicMembers: true,
+              ),
+            ),
+          )
+          as Map<String, dynamic>,
+    );
+    final pubLib = implicitMembersSummary.libraries.singleWhere(
+      (l) => l.uri == 'package:test/file.dart',
+    );
+    final sInternal = pubLib.classes.singleWhere((c) => c.name == 'SInternal');
+    expect(sInternal.immediateSubtypes, ['PubLeaf']);
+    expect(sInternal.hasNonPublicSubtypes, isTrue);
+
+    final filterPlatform = pubLib.classes.singleWhere(
+      (c) => c.name == 'FilterPlatform',
+    );
+    expect(filterPlatform.immediateSubtypes, isEmpty);
+    expect(filterPlatform.hasNonPublicSubtypes, isTrue);
+
+    final srcLib = implicitMembersSummary.libraries.singleWhere(
+      (l) => l.uri == 'package:test/src/internal.dart',
+    );
+    final nonPubSealed = srcLib.classes.singleWhere(
+      (c) => c.name == 'NonPubSealed',
+    );
+    expect(nonPubSealed.status, ApiDeclarationStatus.nonPublic);
+    expect(nonPubSealed.immediateSubtypes, isEmpty);
+    expect(nonPubSealed.hasNonPublicSubtypes, isTrue);
+    expect(
+      implicitMembersSummary.toString(),
+      contains(
+        'NonPubSealed (class extends Object, '
+        'sealed (immediate subtypes: <non-public>), non-public)',
+      ),
+    );
+
+    final referencedSummary = ApiSummary.fromJson(
+      jsonDecode(
+            await _build(
+              files,
+              customizer: const ApiSummaryCustomizer(
+                includeReferencedTypes: true,
+              ),
+            ),
+          )
+          as Map<String, dynamic>,
+    );
+    final extLib = referencedSummary.libraries.singleWhere(
+      (l) => l.uri == 'package:foo/extra.dart',
+    );
+    final extComplete = extLib.classes.singleWhere(
+      (c) => c.name == 'ExtComplete',
+    );
+    expect(extComplete.status, ApiDeclarationStatus.referenced);
+    expect(extComplete.immediateSubtypes, ['ExtA', 'ExtB']);
+    expect(extComplete.hasNonPublicSubtypes, isFalse);
+
+    final extMixed = extLib.classes.singleWhere((c) => c.name == 'ExtMixed');
+    expect(extMixed.status, ApiDeclarationStatus.referenced);
+    expect(extMixed.immediateSubtypes, ['ExtPub']);
+    expect(extMixed.hasNonPublicSubtypes, isTrue);
+  }
+
+  Future<void> test_sealedSubtypes_brokenAstAndCycleResilience() async {
+    newFile('$testPackageLibPath/broken.dart', '''
+sealed class CycleA extends _CycleB {}
+sealed class _CycleB extends CycleA {}
+
+sealed class SBroken<T> {}
+final class _BrokenSub<T extends UnresolvedBound> extends SBroken<T>
+    implements UnresolvedSuper {}
+
+sealed class STypeParamCycle<A extends B, B extends A> {}
+final class _CycleFnSub<X, Y extends X Function()>
+    extends STypeParamCycle<X, Y> {}
+''');
+
+    final context = contextCollection.contextFor(
+      convertPath(testPackageLibPath),
+    );
+    final package = await buildApiPackage(
+      'test',
+      context,
+      const ApiSummaryCustomizer(),
+    );
+    verifySummaryRoundTrip(package);
+
+    final lib = package.libraries.singleWhere(
+      (l) => l.uri == 'package:test/broken.dart',
+    );
+    expect(
+      lib.classes.map((c) => c.name),
+      containsAll(['CycleA', 'SBroken', 'STypeParamCycle']),
+    );
+    final cycleA = lib.classes.singleWhere((c) => c.name == 'CycleA');
+    expect(cycleA.immediateSubtypes, isNot(contains('CycleA')));
+  }
+
   Future<String> _build(
     Map<String, String> files, {
     ApiSummaryCustomizer? customizer,

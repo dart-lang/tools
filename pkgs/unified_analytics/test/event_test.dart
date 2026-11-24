@@ -411,6 +411,20 @@ void main() {
     });
   });
 
+  test('Event.diagnosticReportedCount constructed', () {
+    final expectedCode = 'some_diagnostic_code';
+    final expectedCount = 27;
+    Event generateEvent() =>
+        Event.diagnosticReportedCount(code: expectedCode, count: expectedCount);
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.diagnosticReportedCount);
+    expect(constructedEvent.eventData['code'], expectedCode);
+    expect(constructedEvent.eventData['count'], expectedCount);
+  });
+
   test('Event.doctorValidatorResult constructed', () {
     Event generateEvent() => Event.doctorValidatorResult(
       validatorName: 'validatorName',
@@ -1225,7 +1239,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 36;
+    final eventsAccountedForInTests = 37;
     expect(
       eventsAccountedForInTests,
       constructorNames.length,

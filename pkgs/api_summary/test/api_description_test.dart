@@ -432,12 +432,280 @@ package:test/file.dart:
     values (static const getter: List<E1>)
   M1 (mixin on S)
   M2 (mixin on Object implements S)
-  S (class extends Object, sealed (immediate subtypes: C1, C2, E1, M1, M2, T))
+  S (class extends Object, sealed (immediate subtypes: C1, C2, E1, M1, M2))
   T (extension type implements S):
     new (constructor: T Function(C1))
     c (getter: C1)
 dart:core:
   List (referenced)
+  Object (referenced)
+''');
+  }
+
+  Future<void> test_sealedClass_extensionTypesExcluded() async {
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+// ignore_for_file: unused_element
+sealed class Empty {}
+
+sealed class SWithExt {}
+class C1 extends SWithExt {}
+extension type T(C1 c) implements SWithExt {}
+extension type _PrivExt(C1 c) implements SWithExt {}
+''',
+    });
+    expect(summary, '''
+package:test/file.dart:
+  C1 (class extends SWithExt):
+    new (constructor: C1 Function())
+  Empty (class extends Object, sealed)
+  SWithExt (class extends Object, sealed (immediate subtypes: C1))
+  T (extension type implements SWithExt):
+    new (constructor: T Function(C1))
+    c (getter: C1)
+dart:core:
+  Object (referenced)
+''');
+  }
+
+  Future<void> test_sealedClass_regime1_transitiveAndCoveredSubtypes() async {
+    final summary = await _build({
+      '$testPackageLibPath/src/ast.dart': r'''
+// ignore_for_file: unused_element
+sealed class ClassBody {}
+sealed class ClassBodyImpl implements ClassBody {}
+abstract final class EmptyClassBody implements ClassBodyImpl {}
+final class EmptyClassBodyImpl implements EmptyClassBody {}
+sealed class BlockClassBody implements ClassBodyImpl {}
+final class BlockClassBodyImpl extends BlockClassBody {}
+
+sealed class CelValue {}
+sealed class _ComparableCelValue<T extends Object> extends CelValue {}
+sealed class _NumericCelValue<T extends num> extends _ComparableCelValue<T> {}
+final class CelBytes extends CelValue {}
+final class CelDouble extends _NumericCelValue<double> {}
+final class CelInt extends _NumericCelValue<int> {}
+base class CelCustom extends _ComparableCelValue<String> {}
+final class CelSubCustom extends CelCustom {}
+final class _HiddenCustom extends CelCustom {}
+
+sealed class Resp {
+  const Resp._();
+}
+abstract class RespOk implements Resp {}
+abstract class RespErr implements Resp {}
+class _$RespOkImpl extends Resp implements RespOk {
+  const _$RespOkImpl() : super._();
+}
+class _$RespErrImpl extends Resp implements RespErr {
+  const _$RespErrImpl() : super._();
+}
+''',
+      '$testPackageLibPath/src/part_sub.dart': '''
+part of '../part_lib.dart';
+
+final class PartLeaf extends PartRoot {}
+''',
+      '$testPackageLibPath/part_lib.dart': '''
+part 'src/part_sub.dart';
+
+sealed class PartRoot {}
+''',
+      '$testPackageLibPath/file.dart': '''
+export 'src/ast.dart'
+    show
+        BlockClassBody,
+        CelBytes,
+        CelCustom,
+        CelDouble,
+        CelInt,
+        CelSubCustom,
+        CelValue,
+        ClassBody,
+        EmptyClassBody,
+        Resp,
+        RespErr,
+        RespOk;
+''',
+    });
+    expect(
+      summary,
+      allOf([
+        contains(
+          '  ClassBody (class extends Object, '
+          'sealed (immediate subtypes: BlockClassBody, EmptyClassBody))\n',
+        ),
+        contains(
+          '  BlockClassBody (class extends Object implements ClassBodyImpl, '
+          'sealed (immediate subtypes: <non-public>))\n',
+        ),
+        contains(
+          '  CelValue (class extends Object, '
+          'sealed (immediate subtypes: '
+          'CelBytes, CelCustom, CelDouble, CelInt))\n',
+        ),
+        contains(
+          '  Resp (class extends Object, '
+          'sealed (immediate subtypes: RespErr, RespOk))\n',
+        ),
+        contains(
+          '  PartRoot (class extends Object, '
+          'sealed (immediate subtypes: PartLeaf))\n',
+        ),
+      ]),
+    );
+  }
+
+  Future<void> test_sealedClass_regime2_mixedNonPublicSubtypes() async {
+    final summary = await _build({
+      '$testPackageLibPath/src/mixed.dart': '''
+// ignore_for_file: unused_element
+sealed class SPriv {}
+final class Pub1 extends SPriv {}
+final class Pub2 extends SPriv {}
+final class _Priv extends SPriv {}
+
+sealed class SUnexported {}
+final class PubSub extends SUnexported {}
+final class Impl extends SUnexported {}
+
+sealed class SMixinOn {}
+final class PubHost extends SMixinOn {}
+mixin _UnusedMixinOn on SMixinOn {}
+
+sealed class Argument {}
+abstract class Expression implements Argument {}
+abstract class NamedArgument implements Argument {}
+base mixin ArgumentImpl implements Argument {}
+
+sealed class ListPatternElement {}
+abstract final class ListPatternElementImpl implements ListPatternElement {}
+abstract final class RestPatternElement
+    implements ListPatternElement, MapPatternElement {}
+abstract final class ListItem implements ListPatternElement {}
+
+sealed class MapPatternElement {}
+sealed class MapPatternElementImpl implements MapPatternElement {}
+abstract final class MapPatternEntry implements MapPatternElementImpl {}
+final class _RestPatternElementImpl
+    implements
+        ListPatternElementImpl,
+        MapPatternElementImpl,
+        RestPatternElement {}
+''',
+      '$testPackageLibPath/file.dart': '''
+export 'src/mixed.dart'
+    show
+        Argument,
+        Expression,
+        ListItem,
+        ListPatternElement,
+        MapPatternElement,
+        MapPatternEntry,
+        NamedArgument,
+        Pub1,
+        Pub2,
+        PubHost,
+        PubSub,
+        RestPatternElement,
+        SMixinOn,
+        SPriv,
+        SUnexported;
+''',
+    });
+    expect(
+      summary,
+      allOf([
+        contains(
+          '  SPriv (class extends Object, '
+          'sealed (immediate subtypes: Pub1, Pub2, <non-public>))\n',
+        ),
+        contains(
+          '  SUnexported (class extends Object, '
+          'sealed (immediate subtypes: PubSub, <non-public>))\n',
+        ),
+        contains(
+          '  SMixinOn (class extends Object, '
+          'sealed (immediate subtypes: PubHost, <non-public>))\n',
+        ),
+        contains(
+          '  Argument (class extends Object, '
+          'sealed (immediate subtypes: '
+          'Expression, NamedArgument, <non-public>))\n',
+        ),
+        contains(
+          '  ListPatternElement (class extends Object, '
+          'sealed (immediate subtypes: '
+          'ListItem, RestPatternElement, <non-public>))\n',
+        ),
+        contains(
+          '  MapPatternElement (class extends Object, '
+          'sealed (immediate subtypes: MapPatternEntry, RestPatternElement))\n',
+        ),
+      ]),
+    );
+  }
+
+  Future<void> test_sealedClass_regime3_opaqueNonPublicSubtypes() async {
+    final summary = await _build({
+      '$testPackageLibPath/src/opaque.dart': '''
+// ignore_for_file: unused_element
+sealed class ScheduleMode {}
+final class _AbbaBaabSchedule extends ScheduleMode {}
+final class _RandomizedSchedule extends ScheduleMode {}
+final class _SequentialSchedule extends ScheduleMode {}
+
+sealed class BlockClassBody {}
+final class BlockClassBodyImpl extends BlockClassBody {}
+''',
+      '$testPackageLibPath/file.dart': '''
+export 'src/opaque.dart' show BlockClassBody, ScheduleMode;
+''',
+    });
+    expect(summary, '''
+package:test/file.dart:
+  BlockClassBody (class extends Object, sealed (immediate subtypes: <non-public>))
+  ScheduleMode (class extends Object, sealed (immediate subtypes: <non-public>))
+dart:core:
+  Object (referenced)
+''');
+  }
+
+  Future<void>
+  test_sealedClass_disambiguatesSubtypesAndOrdersNonPublicLast() async {
+    final summary = await _build({
+      '$testPackageLibPath/src/s_a.dart': '''
+// ignore_for_file: unused_element
+sealed class SA {}
+final class ASub extends SA {}
+final class Sub extends SA {}
+final class ZSub extends SA {}
+final class _PrivA extends SA {}
+''',
+      '$testPackageLibPath/a.dart': '''
+export 'src/s_a.dart' show ASub, SA, Sub, ZSub;
+''',
+      '$testPackageLibPath/b.dart': '''
+// ignore_for_file: unused_element
+sealed class SB {}
+final class Sub extends SB {}
+final class _PrivB extends SB {}
+''',
+    });
+    expect(summary, '''
+package:test/a.dart:
+  ASub (class extends SA, final):
+    new (constructor: ASub Function())
+  SA (class extends Object, sealed (immediate subtypes: ASub, Sub@1, ZSub, <non-public>))
+  Sub@1 (class extends SA, final):
+    new (constructor: Sub@1 Function())
+  ZSub (class extends SA, final):
+    new (constructor: ZSub Function())
+package:test/b.dart:
+  SB (class extends Object, sealed (immediate subtypes: Sub@2, <non-public>))
+  Sub@2 (class extends SB, final):
+    new (constructor: Sub@2 Function())
+dart:core:
   Object (referenced)
 ''');
   }

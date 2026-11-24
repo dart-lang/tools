@@ -13,10 +13,14 @@ import 'package:yaml/yaml.dart';
 // TODO(cbracken) make generic
 /// Retries the specified function with the specified interval and returns
 /// the result on successful completion.
+///
+/// If [timeout] expires while an attempt is still in flight and that attempt
+/// later completes with a value, [onDiscard] is called with that value.
 Future<dynamic> retry(
   Future Function() f,
   Duration interval, {
   Duration? timeout,
+  FutureOr<void> Function(dynamic)? onDiscard,
 }) async {
   var keepGoing = true;
 
@@ -40,7 +44,11 @@ Future<dynamic> retry(
   return withTimeout(() async {
     while (keepGoing) {
       try {
-        return await f();
+        final result = await f();
+        if (!keepGoing) {
+          await onDiscard?.call(result);
+        }
+        return result;
       } catch (_) {
         if (keepGoing) {
           await Future<dynamic>.delayed(interval);

@@ -21,6 +21,12 @@
 - Track `constantValue` on `isConst` `ApiExecutable` getters and render public
   constant values in text, JSON, and YAML summaries
   ([#2462](https://github.com/dart-lang/tools/issues/2462)).
+- Resolve `sealed` class `ApiClass.immediateSubtypes` to the public subtype
+  frontier (expanding non-public `sealed` intermediates, excluding extension
+  types, disambiguating colliding subtype names, and checking primary-barrel
+  exports), make `immediateSubtypes` optional in `ApiClass.new`, and add
+  `ApiClass.hasNonPublicSubtypes` (rendered as `<non-public>` in `api.txt`)
+  when uncovered non-public subtypes exist.
 - Track `pubspec.yaml` runtime `dependencies` constraints for external packages
   referenced in the public API on `ApiSummary.dependencies`, and render them
   inline on referenced `package:...` library headers in `api.txt`

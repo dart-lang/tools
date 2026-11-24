@@ -232,7 +232,43 @@ final class ApiClass extends ApiDeclaration {
   final List<ApiType> mixins;
   final List<ApiType> superclassConstraints;
   final List<ApiClassModifier> modifiers;
+
+  /// The sorted names of public subtypes on the exhaustiveness frontier of a
+  /// `sealed` class ([ApiClassModifier.isSealed]), or empty if this
+  /// declaration is not `sealed` or exposes no public subtypes.
+  ///
+  /// Tracking the public subtype frontier allows consumers and golden reviews
+  /// to detect when adding, removing, or renaming a variant alters exhaustive
+  /// `switch` statements for external callers, without leaking private or
+  /// unexported implementation class names:
+  ///
+  /// ```dart
+  /// // Public API: immediateSubtypes is ['Circle', 'Square'],
+  /// // hasNonPublicSubtypes is false.
+  /// sealed class Shape {}
+  /// final class Circle extends Shape {}
+  /// final class Square extends Shape {}
+  /// ```
   final List<String> immediateSubtypes;
+
+  /// Whether a `sealed` class ([ApiClassModifier.isSealed]) has any non-public
+  /// subtypes not already covered by [immediateSubtypes].
+  ///
+  /// When `true`, external callers cannot exhaustively `switch` over
+  /// [immediateSubtypes] alone without a wildcard (`_`) or `default` branch
+  /// (aside from exposing a non-public subtype via a public `typedef`, which
+  /// remains classified as non-public because [immediateSubtypes] records only
+  /// exported interface declarations). Recording this boolean captures that
+  /// exhaustiveness constraint in the API summary without exposing private or
+  /// unexported subtype identifiers:
+  ///
+  /// ```dart
+  /// // Public API: immediateSubtypes is [], hasNonPublicSubtypes is true.
+  /// sealed class Token {}
+  /// final class _InternalToken extends Token {}
+  /// ```
+  final bool hasNonPublicSubtypes;
+
   final List<ApiExecutable> constructors;
   final List<ApiExecutable> methods;
 
@@ -246,7 +282,8 @@ final class ApiClass extends ApiDeclaration {
     required this.mixins,
     this.superclassConstraints = const [],
     required this.modifiers,
-    required List<String> immediateSubtypes,
+    List<String> immediateSubtypes = const [],
+    this.hasNonPublicSubtypes = false,
     required List<ApiExecutable> constructors,
     required List<ApiExecutable> methods,
     super.isDeprecated,
@@ -277,6 +314,7 @@ final class ApiClass extends ApiDeclaration {
       'modifiers',
     ).map(ApiClassModifier.parse).toList(),
     immediateSubtypes: parseStringList(json, 'immediateSubtypes'),
+    hasNonPublicSubtypes: json['hasNonPublicSubtypes'] as bool? ?? false,
     constructors: parseList(json, 'constructors', ApiExecutable.fromJson),
     methods: parseList(json, 'methods', ApiExecutable.fromJson),
     isDeprecated: json['isDeprecated'] as bool? ?? false,
@@ -288,10 +326,9 @@ final class ApiClass extends ApiDeclaration {
     if (locationUri != null) 'locationUri': locationUri,
     if (status != ApiDeclarationStatus.public) 'status': status.name,
     if (typeParameters.isNotEmpty)
-      'typeParameters': {
-        for (final entry in typeParameters.entries)
-          entry.key: entry.value?.toJson(),
-      },
+      'typeParameters': typeParameters.map(
+        (key, value) => MapEntry(key, value?.toJson()),
+      ),
     if (supertype != null) 'supertype': supertype!.toJson(),
     if (interfaces.isNotEmpty)
       'interfaces': interfaces.map((e) => e.toJson()).toList(),
@@ -303,6 +340,7 @@ final class ApiClass extends ApiDeclaration {
     if (modifiers.isNotEmpty)
       'modifiers': modifiers.map((e) => e.jsonName).toList(),
     if (immediateSubtypes.isNotEmpty) 'immediateSubtypes': immediateSubtypes,
+    if (hasNonPublicSubtypes) 'hasNonPublicSubtypes': true,
     if (constructors.isNotEmpty)
       'constructors': constructors.map((e) => e.toJson()).toList(),
     if (methods.isNotEmpty) 'methods': methods.map((e) => e.toJson()).toList(),

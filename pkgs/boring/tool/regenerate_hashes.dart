@@ -5,9 +5,9 @@
 // coverage:ignore-file
 
 import 'dart:io';
-import 'dart:typed_data' show BytesBuilder;
 
 import 'package:args/args.dart';
+import 'package:boring/src/hook_helpers/fetch.dart';
 import 'package:boring/src/hook_helpers/hashes.dart' as current;
 import 'package:boring/src/hook_helpers/targets.dart';
 import 'package:crypto/crypto.dart' show sha256;
@@ -83,6 +83,7 @@ Future<void> main(List<String> args) async {
   final fileHashes = <String, String>{};
   final missing = <String>[];
   final httpClient = HttpClient()
+    ..connectionTimeout = defaultConnectionTimeout
     ..findProxy = HttpClient.findProxyFromEnvironment;
   try {
     for (final (os, arch, iosSdk) in prebuiltTargets) {
@@ -270,27 +271,28 @@ Future<List<int>?> _readLocal(Directory directory, String assetName) async {
 
 /// Downloads [url], or returns `null` if there is no such asset.
 ///
-/// Throws a [_DownloadException] for any other failure, which must not be
-/// mistaken for a missing asset.
+/// Retries transient HTTP, network, and timeout failures via
+/// [fetchHttpWithRetry]. Throws a [_DownloadException] for any other failure,
+/// which must not be mistaken for a missing asset.
 Future<List<int>?> _fetch(HttpClient client, Uri url) async {
+  final ({int statusCode, List<int> bytes}) response;
   try {
-    final request = await client.getUrl(url);
-    final response = await request.close();
-    if (response.statusCode == HttpStatus.notFound) {
-      stdout.writeln('  Missing: $url');
-      await response.drain<void>();
-      return null;
-    }
-    if (response.statusCode != HttpStatus.ok) {
-      await response.drain<void>();
-      throw _DownloadException('$url returned status ${response.statusCode}.');
-    }
-    final builder = BytesBuilder(copy: false);
-    await response.forEach(builder.add);
-    return builder.takeBytes();
-  } on IOException catch (e) {
-    throw _DownloadException('Failed to download $url: $e');
+    response = await fetchHttpWithRetry(
+      url,
+      client: client,
+      logPrefix: '  ',
+    );
+  } on HttpFetchException catch (e) {
+    throw _DownloadException(e.message);
   }
+  if (response.statusCode == HttpStatus.notFound) {
+    stdout.writeln('  Missing: $url');
+    return null;
+  }
+  if (response.statusCode != HttpStatus.ok) {
+    throw _DownloadException('$url returned status ${response.statusCode}.');
+  }
+  return response.bytes;
 }
 
 class _DownloadException implements Exception {

@@ -1,3 +1,11 @@
+## 0.10.15-wip
+
+* Add `SingleMapping.ignoreList` (`List<int>?`) for the ECMA-426 `"ignoreList"`
+  field.
+* Preserve unrecognized top-level JSON fields (such as ECMA-426 proposal
+  fields `"scopes"`, `"ranges"`, `"rangeMappings"`, and `"debugId"`) across
+  `SingleMapping.fromJson` and `SingleMapping.toJson`.
+
 ## 0.10.14
 
 * Fix `SingleMapping.spanFor` to use the entry from a previous line as specified
