@@ -1,4 +1,4 @@
-## 1.16.2-wip
+## 1.16.2
 
 - Use `getVersion()` instead of `getVM()` when pinging the VM service API.
 - Fix a race condition in `collect()` when retrying VM service connections so a
