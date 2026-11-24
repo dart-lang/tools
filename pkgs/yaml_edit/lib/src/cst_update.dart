@@ -391,7 +391,12 @@ _MutationEdit _replaceBlockSeqValue(
   }
   final encoded = encodeAfterDash(value, style, dashColumn: dashColumn);
   var encodedText = encoded.text;
-  if (entry.value is CstBlockSeq || entry.value is CstBlockMap) {
+  // Preserve legacy blank-line spacing when replacing a block collection in a
+  // block sequence with a non-block-collection value (e.g. a scalar, matching
+  // `test/update_test.dart` nested (5)-(7)), without injecting a blank line when
+  // replacing a block collection with another block collection.
+  if ((entry.value is CstBlockSeq || entry.value is CstBlockMap) &&
+      !_spansOwnLines(value)) {
     final hasTrailingComment =
         !document.hasLineBreakBefore(entry.value.contentEnd) &&
             document.commentInRange(

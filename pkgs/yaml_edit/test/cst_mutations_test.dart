@@ -614,6 +614,17 @@ void main() {
       expect(editor.toString(), '[\n{foo: bar, baz: 1}\n]\n');
     });
 
+    test('replacing block map in block seq with block map adds no blank line',
+        () {
+      final noBlank = YamlEditor('body:\n  - a: 1\n    b: 2\n  - c: 3\n');
+      noBlank.update(['body', 0], {'k': 'v'});
+      expect(noBlank.toString(), 'body:\n  - k: v\n  - c: 3\n');
+
+      final oneBlank = YamlEditor('updates:\n  - a: 1\n\n  - b: 2\n');
+      oneBlank.update(['updates', 0], {'k': 'v'});
+      expect(oneBlank.toString(), 'updates:\n  - k: v\n\n  - b: 2\n');
+    });
+
     test('literal fallback to double-quoted keeps trailing comment spacing',
         () {
       final editor = YamlEditor('a: 1   # c\n');
