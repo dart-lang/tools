@@ -10,19 +10,17 @@
   were never intended to support subclasses and were already closed for
   extension with private generative constructors. They are now marked `final`
   and statically restricted from use as an interface.
-
-* In `package:io`:
-  * Makes `AnsiCode.toString()` return `AnsiCode.escape`, so the code
-    can be embedded in strings directly like `"a ${red}red${resetAll} word"`.
-  * Makes `AnsiCodeType` an `enum`. _May affect code that has an non-exhaustive
-    switch over `AnsiCodeType`._
-    * This changes the `toString` of the enum values from `AnsiCode.<name>` to
-      `AnsiCodeType.<name>`.
-  * Makes the `wrapWith` use the reset codes for the Ansi _style_ codes used,
-    instead of always using `resetAll`. If any color is included, it still uses
-    `resetAll`.
-    _May affect code that relied on `wrapWith` resetting more than its own
-    styles._
+* Makes `AnsiCode.toString()` return `AnsiCode.escape`, so the code can be
+  embedded in strings directly like `"a ${red}red${resetAll} word"`.
+* Makes `AnsiCodeType` an `enum`.
+  _May affect code that has an non-exhaustive switch over `AnsiCodeType`._
+  * This changes the `toString` of the enum values from `AnsiCode.<name>` to
+    `AnsiCodeType.<name>`.
+* Makes the `wrapWith` use the reset codes for the Ansi _style_ codes used,
+  instead of always using `resetAll`. If any color is included, it still uses
+  `resetAll.
+  _May affect code that relied on `wrapWith` resetting more than its own
+  styles._
 
 ## 1.0.5
 
