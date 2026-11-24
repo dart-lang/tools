@@ -384,6 +384,48 @@ void main() {
       },
     );
 
+    test(
+      'does not retry plain 403 responses with duplicate header lines',
+      () async {
+        // HttpServer folds repeated headers into one line, so emit raw
+        // duplicate lines the way some proxies do.
+        var requests = 0;
+        final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+        addTearDown(server.close);
+        server.listen((socket) async {
+          requests++;
+          await socket.first;
+          socket.write(
+            'HTTP/1.1 403 Forbidden\r\n'
+            'x-ratelimit-remaining: 5\r\n'
+            'x-ratelimit-remaining: 5\r\n'
+            'content-length: 0\r\n'
+            '\r\n',
+          );
+          await socket.flush();
+          await socket.close();
+        });
+
+        final delays = <Duration>[];
+        await expectLater(
+          () => downloadBytes(
+            Uri.parse('http://${server.address.host}:${server.port}/denied'),
+            delay: (duration) async => delays.add(duration),
+          ),
+          throwsA(
+            isA<BuildError>().having(
+              (e) => e.message,
+              'message',
+              contains('HTTP 403'),
+            ),
+          ),
+        );
+
+        expect(requests, 1);
+        expect(delays, isEmpty);
+      },
+    );
+
     test('honors HTTP-date Retry-After headers', () async {
       var requests = 0;
       final fixedNow = DateTime.utc(2026, 11, 18, 12, 0, 0);

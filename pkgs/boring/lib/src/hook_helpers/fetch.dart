@@ -202,24 +202,18 @@ Future<({int statusCode, List<int> bytes})> _runFetchLoop(
   required String logPrefix,
 }) async {
   for (var attempt = 1; ; attempt++) {
-    final remaining = totalTimeout - stopwatch.elapsed;
-    if (remaining <= Duration.zero) {
+    Duration remaining() => totalTimeout - stopwatch.elapsed;
+    if (remaining() <= Duration.zero) {
       throw HttpFetchException(
         'Timed out downloading from $url after ${totalTimeout.inSeconds}s.',
       );
     }
     try {
-      return await _sendOnce(
-        client,
-        url,
-        remainingBudget: remaining,
-        now: now,
-      );
+      return await _sendOnce(client, url, remaining: remaining, now: now);
     } on _RetryableDownloadFailure catch (failure) {
       final backoff =
           failure.retryAfter ?? Duration(seconds: 1 << (attempt - 1));
-      final budgetAfterAttempt = totalTimeout - stopwatch.elapsed;
-      if (attempt >= maxAttempts || budgetAfterAttempt <= backoff) {
+      if (attempt >= maxAttempts || remaining() <= backoff) {
         throw HttpFetchException(failure.message);
       }
       stdout.writeln(
@@ -231,20 +225,27 @@ Future<({int statusCode, List<int> bytes})> _runFetchLoop(
   }
 }
 
+/// Sends a single `GET` request to [url], capping each await by the time
+/// [remaining] in the overall deadline so that [fetchHttpWithRetry]'s
+/// `totalTimeout` is strict.
 Future<({int statusCode, List<int> bytes})> _sendOnce(
   HttpClient client,
   Uri url, {
-  required Duration remainingBudget,
+  required Duration Function() remaining,
   required DateTime Function() now,
 }) async {
-  final stepTimeout = _minDuration(defaultConnectionTimeout, remainingBudget);
+  Duration capped(Duration limit) => _minDuration(limit, remaining());
   try {
-    final request = await client.getUrl(url).timeout(stepTimeout);
-    final response = await request.close().timeout(stepTimeout);
+    final request = await client
+        .getUrl(url)
+        .timeout(capped(defaultConnectionTimeout));
+    final response = await request.close().timeout(
+      capped(defaultConnectionTimeout),
+    );
     final statusCode = response.statusCode;
     if (_isRetryableStatus(statusCode, response.headers)) {
       final retryAfter = _parseRetryAfter(response.headers, now);
-      await response.drain<void>().timeout(stepTimeout);
+      await response.drain<void>().timeout(capped(defaultConnectionTimeout));
       throw _RetryableDownloadFailure(
         message: 'Failed to download from $url (HTTP $statusCode).',
         summary: 'HTTP $statusCode from $url',
@@ -252,12 +253,11 @@ Future<({int statusCode, List<int> bytes})> _sendOnce(
       );
     }
     if (statusCode != HttpStatus.ok) {
-      await response.drain<void>().timeout(stepTimeout);
+      await response.drain<void>().timeout(capped(defaultConnectionTimeout));
       return (statusCode: statusCode, bytes: const <int>[]);
     }
-    final bodyTimeout = _minDuration(_downloadTimeout, remainingBudget);
     final builder = BytesBuilder(copy: false);
-    await response.forEach(builder.add).timeout(bodyTimeout);
+    await response.forEach(builder.add).timeout(capped(_downloadTimeout));
     return (statusCode: statusCode, bytes: builder.takeBytes());
   } on IOException catch (e) {
     throw _RetryableDownloadFailure(
@@ -279,14 +279,17 @@ bool _isRetryableStatus(int statusCode, HttpHeaders headers) {
     return true;
   }
   if (statusCode == HttpStatus.forbidden) {
-    return headers.value(HttpHeaders.retryAfterHeader) != null ||
-        headers.value('x-ratelimit-remaining')?.trim() == '0';
+    // `headers[name]` instead of `headers.value(name)`, which throws an
+    // `HttpException` (an `IOException`) on duplicate header lines.
+    return (headers[HttpHeaders.retryAfterHeader]?.isNotEmpty ?? false) ||
+        (headers['x-ratelimit-remaining']?.any((v) => v.trim() == '0') ??
+            false);
   }
   return false;
 }
 
 Duration? _parseRetryAfter(HttpHeaders headers, DateTime Function() now) {
-  final raw = headers.value(HttpHeaders.retryAfterHeader)?.trim();
+  final raw = headers[HttpHeaders.retryAfterHeader]?.firstOrNull?.trim();
   if (raw == null || raw.isEmpty) return null;
   final seconds = int.tryParse(raw);
   if (seconds != null) {
