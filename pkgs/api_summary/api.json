@@ -68,6 +68,16 @@
                   "defaultValue": "[]"
                 },
                 {
+                  "name": "hasNonPublicSubtypes",
+                  "type": {
+                    "kind": "interface",
+                    "name": "bool",
+                    "libraryUri": "dart:core"
+                  },
+                  "isNamed": true,
+                  "defaultValue": "false"
+                },
+                {
                   "name": "immediateSubtypes",
                   "type": {
                     "kind": "interface",
@@ -81,8 +91,8 @@
                       }
                     ]
                   },
-                  "isRequired": true,
-                  "isNamed": true
+                  "isNamed": true,
+                  "defaultValue": "[]"
                 },
                 {
                   "name": "interfaces",
@@ -292,6 +302,16 @@
                     "libraryUri": "package:api_summary/src/api_declaration.dart"
                   }
                 ]
+              }
+            },
+            {
+              "name": "hasNonPublicSubtypes",
+              "locationUri": "package:api_summary/src/api_declaration.dart",
+              "kind": "getter",
+              "returnType": {
+                "kind": "interface",
+                "name": "bool",
+                "libraryUri": "dart:core"
               }
             },
             {

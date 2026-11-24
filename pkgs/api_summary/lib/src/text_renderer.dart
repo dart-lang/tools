@@ -291,21 +291,7 @@ final class _ApiTextRenderer {
     parentheticals.add(instanceDescription);
 
     if (element.modifiers.contains(ApiClassModifier.isSealed)) {
-      final parenthetical = <Object?>['sealed'];
-      parentheticals.add(parenthetical);
-      if (element.immediateSubtypes.isNotEmpty) {
-        parenthetical.add(' (immediate subtypes: ');
-        var commaNeeded = false;
-        for (final sub in element.immediateSubtypes) {
-          if (commaNeeded) {
-            parenthetical.add(', ');
-          } else {
-            commaNeeded = true;
-          }
-          parenthetical.add(sub);
-        }
-        parenthetical.add(')');
-      }
+      parentheticals.add(_renderSealedParenthetical(element, _uniqueNamer));
     } else if (kind != _Kind.enumDeclaration) {
       if (element.modifiers.contains(ApiClassModifier.isAbstract)) {
         parentheticals.add(['abstract']);
@@ -644,6 +630,28 @@ MemberSortKey _computeSortKeyForDangling(ApiInterfaceType type) =>
       isSetter: false,
     );
 
+List<Object?> _renderSealedParenthetical(
+  ApiClass element,
+  _JsonUniqueNamer uniqueNamer,
+) {
+  final parenthetical = <Object?>['sealed'];
+  if (element.immediateSubtypes.isNotEmpty || element.hasNonPublicSubtypes) {
+    final subtypes = <List<Object?>>[
+      for (final sub in element.immediateSubtypes)
+        [
+          element.locationUri != null
+              ? uniqueNamer.name('${element.locationUri}#$sub', sub)
+              : sub,
+        ],
+      if (element.hasNonPublicSubtypes) ['<non-public>'],
+    ];
+    parenthetical.addAll(
+      subtypes.separatedBy(prefix: ' (immediate subtypes: ', suffix: ')'),
+    );
+  }
+  return parenthetical;
+}
+
 bool _isMinimalNonPublicSkeleton(ApiDeclaration element) {
   if (element.status != .nonPublic ||
       element.isDeprecated ||
@@ -659,6 +667,7 @@ bool _isMinimalNonPublicSkeleton(ApiDeclaration element) {
           element.superclassConstraints.isEmpty &&
           element.modifiers.isEmpty &&
           element.immediateSubtypes.isEmpty &&
+          !element.hasNonPublicSubtypes &&
           element.constructors.isEmpty &&
           element.methods.isEmpty,
     ApiExtensionType() =>

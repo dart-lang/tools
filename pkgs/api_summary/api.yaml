@@ -46,6 +46,13 @@ libraries:
                       libraryUri: package:api_summary/src/api_facet.dart
                 isNamed: true
                 defaultValue: "[]"
+              - name: hasNonPublicSubtypes
+                type:
+                  kind: interface
+                  name: bool
+                  libraryUri: dart:core
+                isNamed: true
+                defaultValue: "false"
               - name: immediateSubtypes
                 type:
                   kind: interface
@@ -55,8 +62,8 @@ libraries:
                     - kind: interface
                       name: String
                       libraryUri: dart:core
-                isRequired: true
                 isNamed: true
+                defaultValue: "[]"
               - name: interfaces
                 type:
                   kind: interface
@@ -193,6 +200,13 @@ libraries:
                 - kind: interface
                   name: ApiExecutable
                   libraryUri: package:api_summary/src/api_declaration.dart
+          - name: hasNonPublicSubtypes
+            locationUri: package:api_summary/src/api_declaration.dart
+            kind: getter
+            returnType:
+              kind: interface
+              name: bool
+              libraryUri: dart:core
           - name: immediateSubtypes
             locationUri: package:api_summary/src/api_declaration.dart
             kind: getter

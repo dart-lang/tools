@@ -6,9 +6,10 @@ package:api_summary/api_summary.dart:
   apiSummary (function: Future<ApiSummary> Function(String, {ApiSummaryCustomizer? customizer, String? packageName}))
   expectApiSummaryClean (function: Future<void> Function({ApiSummaryCustomizer? customizer, ApiSummaryFormat format = ApiSummaryFormat.text, String? goldenFilePath, String? packageName, String? packagePath}))
   ApiClass (class extends ApiDeclaration, final):
-    new (constructor: ApiClass Function({required List<ApiExecutable> constructors, Iterable<ApiFacet> facets = [], required List<String> immediateSubtypes, required List<ApiType> interfaces, bool isDeprecated = false, String? locationUri, required List<ApiExecutable> methods, required List<ApiType> mixins, required List<ApiClassModifier> modifiers, required String name, ApiDeclarationStatus status = ApiDeclarationStatus.public, List<ApiType> superclassConstraints = [], ApiType? supertype, required Map<String, ApiType?> typeParameters}))
+    new (constructor: ApiClass Function({required List<ApiExecutable> constructors, Iterable<ApiFacet> facets = [], bool hasNonPublicSubtypes = false, List<String> immediateSubtypes = [], required List<ApiType> interfaces, bool isDeprecated = false, String? locationUri, required List<ApiExecutable> methods, required List<ApiType> mixins, required List<ApiClassModifier> modifiers, required String name, ApiDeclarationStatus status = ApiDeclarationStatus.public, List<ApiType> superclassConstraints = [], ApiType? supertype, required Map<String, ApiType?> typeParameters}))
     fromJson (constructor: ApiClass Function(Map<String, dynamic>))
     constructors (getter: List<ApiExecutable>)
+    hasNonPublicSubtypes (getter: bool)
     immediateSubtypes (getter: List<String>)
     interfaces (getter: List<ApiType>)
     methods (getter: List<ApiExecutable>)
