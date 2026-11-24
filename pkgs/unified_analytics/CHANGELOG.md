@@ -13,6 +13,11 @@
   re-analyzing the IDE workspace.
 - Added a `diagnosticReportedCount` constructor to create a new kind of event
   used to report how often a diagnostic with a given code has been reported.
+- Added `Event.migrateRun` and `Event.migrateRound` to track `dart migrate`
+  requests and their SDK version steps, with an explicit parameter for each
+  field.
+- Removed `Event.migrateEvent` and `DashEvent.migrateEvent`. Use
+  `Event.migrateRun` and `Event.migrateRound` instead.
 
 ## 8.4.0
 

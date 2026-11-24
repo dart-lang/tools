@@ -947,18 +947,115 @@ final class Event {
         eventData: {'rss': rss, 'periodSec': ?periodSec, 'mbPerSec': ?mbPerSec},
       );
 
-  /// Event that is emitted by the analysis server for `dart migrate`.
+  /// Event that is emitted by the analysis server for each round of a
+  /// `dart migrate` request, which runs the requested steps for the packages
+  /// at one SDK version.
   ///
-  /// * [type] - the kind of migrate event, which decides what [additionalData]
-  ///   holds. For example, `run` for a whole migration, or `round` for one of
-  ///   its SDK version steps.
+  /// * [fromSdkVersion] - the SDK version the round's packages start at, as
+  ///   its major and minor parts, such as `3.11`.
   ///
-  /// * [additionalData] - the data for the event, which depends on [type].
-  Event.migrateEvent({required String type, CustomMetrics? additionalData})
-    : this._(
-        eventName: DashEvent.migrateEvent,
-        eventData: {'type': type, ...?additionalData?.toMap()},
-      );
+  /// * [packagesAtStart] - the number of packages in the round when it
+  ///   starts.
+  ///
+  /// * [packagesAtEnd] - the number of packages in the round that haven't
+  ///   stopped when the round ends.
+  ///
+  /// * [failures] - JSON-encoded map from a failure reason code to the number
+  ///   of the round's packages that stopped for it, such as `{"b2":1,"h1":1}`.
+  ///   It's omitted when no package stopped.
+  ///
+  /// * [prepareDurationMs] - the milliseconds spent in the prepare step. It's
+  ///   omitted when the step doesn't run.
+  ///
+  /// * [bumpDurationMs] - the milliseconds spent in the bump step. It's
+  ///   omitted when the step doesn't run.
+  ///
+  /// * [cleanupDurationMs] - the milliseconds spent in the clean up step. It's
+  ///   omitted when the step doesn't run.
+  ///
+  /// * [totalDurationMs] - the milliseconds the whole round took.
+  ///
+  /// * [migrateSessionId] - the same value as the [Event.migrateRun] event of
+  ///   the request the round belongs to.
+  Event.migrateRound({
+    required String fromSdkVersion,
+    required int packagesAtStart,
+    required int packagesAtEnd,
+    String? failures,
+    int? prepareDurationMs,
+    int? bumpDurationMs,
+    int? cleanupDurationMs,
+    required int totalDurationMs,
+    required int migrateSessionId,
+  }) : this._(
+         eventName: DashEvent.migrateRound,
+         eventData: {
+           'fromSdkVersion': fromSdkVersion,
+           'packagesAtStart': packagesAtStart,
+           'packagesAtEnd': packagesAtEnd,
+           'failures': ?failures,
+           'prepareDurationMs': ?prepareDurationMs,
+           'bumpDurationMs': ?bumpDurationMs,
+           'cleanupDurationMs': ?cleanupDurationMs,
+           'totalDurationMs': totalDurationMs,
+           'migrateSessionId': migrateSessionId,
+         },
+       );
+
+  /// Event that is emitted by the analysis server once for each `dart migrate`
+  /// request.
+  ///
+  /// * [fromSdkVersion] - the lowest SDK version the requested packages start
+  ///   at, as its major and minor parts, such as `3.11`. It's omitted when no
+  ///   package declares a supported minimum SDK version.
+  ///
+  /// * [toSdkVersion] - the SDK version the request migrates to, as its major
+  ///   and minor parts. It's omitted when there's no version to migrate to.
+  ///
+  /// * [targetSdk] - whether `--target-sdk` was passed.
+  ///
+  /// * [prepare] - whether the prepare step runs.
+  ///
+  /// * [bump] - whether the bump step runs.
+  ///
+  /// * [cleanup] - whether the clean up step runs.
+  ///
+  /// * [apply] - whether `--apply` was passed, rather than `--dry-run`.
+  ///
+  /// * [durationMs] - the milliseconds the server spent on the migration.
+  ///
+  /// * [cleanupCheckDurationMs] - the milliseconds spent looking for clean up
+  ///   fixes that are listed without being applied. It's omitted when there's
+  ///   no such check.
+  ///
+  /// * [migrateSessionId] - the time the migration started, in milliseconds
+  ///   since the epoch, which groups the events from one migration.
+  Event.migrateRun({
+    String? fromSdkVersion,
+    String? toSdkVersion,
+    required bool targetSdk,
+    required bool prepare,
+    required bool bump,
+    required bool cleanup,
+    required bool apply,
+    required int durationMs,
+    int? cleanupCheckDurationMs,
+    required int migrateSessionId,
+  }) : this._(
+         eventName: DashEvent.migrateRun,
+         eventData: {
+           'fromSdkVersion': ?fromSdkVersion,
+           'toSdkVersion': ?toSdkVersion,
+           'targetSdk': targetSdk,
+           'prepare': prepare,
+           'bump': bump,
+           'cleanup': cleanup,
+           'apply': apply,
+           'durationMs': durationMs,
+           'cleanupCheckDurationMs': ?cleanupCheckDurationMs,
+           'migrateSessionId': migrateSessionId,
+         },
+       );
 
   /// Event that is emitted periodically to report the performance of analyzer
   /// plugins when handling requests.
