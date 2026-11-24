@@ -90,6 +90,10 @@ extension CstDocumentTextHelpers on CstDocument {
     return true;
   }
 
+  /// Whether [offset] is preceded only by spaces or tabs on its line.
+  bool startsOwnLine(int offset) =>
+      isWhitespaceRange(lineStartOf(offset), offset);
+
   /// Whether `[start, end)` contains a horizontal tab (`\t`).
   bool hasTabInRange(int start, int end) {
     for (var i = start; i < end; i++) {

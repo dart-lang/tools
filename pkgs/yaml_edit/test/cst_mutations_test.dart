@@ -7,6 +7,7 @@ import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/src/cst.dart';
 import 'package:yaml_edit/src/cst_mutations.dart';
 import 'package:yaml_edit/src/errors.dart';
+import 'package:yaml_edit/src/strings.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
 void main() {
@@ -611,6 +612,64 @@ void main() {
       final editor = YamlEditor('[\nfoo: bar\n]\n');
       editor.update([0, 'baz'], 1);
       expect(editor.toString(), '[\n{foo: bar, baz: 1}\n]\n');
+    });
+
+    test('literal fallback to double-quoted keeps trailing comment spacing',
+        () {
+      final editor = YamlEditor('a: 1   # c\n');
+      editor.update(
+        ['a'],
+        wrapAsYamlNode(' x', scalarStyle: ScalarStyle.LITERAL),
+      );
+      expect(editor.toString(), 'a: " x"   # c\n');
+      expect(editor.parseAt(['a']).value, ' x');
+    });
+
+    test('yamlEncodeBlockWithInfo reports exact trailing block-scalar indent',
+        () {
+      final literal = wrapAsYamlNode('a\nb', scalarStyle: ScalarStyle.LITERAL);
+      final folded = wrapAsYamlNode('a\nb', scalarStyle: ScalarStyle.FOLDED);
+      final fallback = wrapAsYamlNode(' x', scalarStyle: ScalarStyle.LITERAL);
+
+      expect(
+        yamlEncodeBlockWithInfo(literal, 0, '\n').trailingBlockScalarBodyIndent,
+        2,
+      );
+      expect(
+        yamlEncodeBlockWithInfo(folded, 4, '\n').trailingBlockScalarBodyIndent,
+        6,
+      );
+      expect(
+        yamlEncodeBlockWithInfo(fallback, 0, '\n')
+            .trailingBlockScalarBodyIndent,
+        isNull,
+      );
+
+      final nestedMap = wrapAsYamlNode({
+        'a': [1, literal],
+      });
+      expect(
+        yamlEncodeBlockWithInfo(nestedMap, 2, '\n')
+            .trailingBlockScalarBodyIndent,
+        8,
+      );
+
+      final trailingEmptyList = wrapAsYamlNode([literal, <Object?>[]]);
+      expect(
+        yamlEncodeBlockWithInfo(trailingEmptyList, 0, '\n')
+            .trailingBlockScalarBodyIndent,
+        isNull,
+      );
+
+      final trailingFlowMap = wrapAsYamlNode([
+        literal,
+        wrapAsYamlNode({'k': 1}, collectionStyle: CollectionStyle.FLOW),
+      ]);
+      expect(
+        yamlEncodeBlockWithInfo(trailingFlowMap, 0, '\n')
+            .trailingBlockScalarBodyIndent,
+        isNull,
+      );
     });
   });
 }
