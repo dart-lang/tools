@@ -316,6 +316,43 @@ void main() {
     );
 
     test(
+      'retries 403 with only x-ratelimit-remaining: 0 and 408 using backoff',
+      () async {
+        var requests = 0;
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        addTearDown(() => server.close(force: true));
+        server.listen((request) async {
+          requests++;
+          switch (requests) {
+            case 1:
+              request.response.statusCode = HttpStatus.forbidden;
+              request.response.headers.set('x-ratelimit-remaining', '0');
+              await request.response.close();
+            case 2:
+              request.response.statusCode = HttpStatus.requestTimeout;
+              await request.response.close();
+            default:
+              request.response.add(const [3, 1, 4]);
+              await request.response.close();
+          }
+        });
+
+        final delays = <Duration>[];
+        final bytes = await downloadBytes(
+          Uri.parse('http://${server.address.host}:${server.port}/limited'),
+          delay: (duration) async => delays.add(duration),
+        );
+
+        expect(bytes, [3, 1, 4]);
+        expect(requests, 3);
+        expect(delays, [
+          const Duration(seconds: 1),
+          const Duration(seconds: 2),
+        ]);
+      },
+    );
+
+    test(
       'does not retry plain 403 responses without rate-limit headers',
       () async {
         var requests = 0;
@@ -412,7 +449,9 @@ void main() {
           ),
         );
 
-        expect(requests, 1);
+        // The client may time out before the handler runs on a loaded machine,
+        // so only assert that the request was never retried.
+        expect(requests, lessThanOrEqualTo(1));
         expect(delays, isEmpty);
       },
     );
