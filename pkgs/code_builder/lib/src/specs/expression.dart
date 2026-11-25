@@ -370,6 +370,20 @@ abstract class Expression implements Spec {
     addSpace: false,
   );
 
+  /// This expression preceded by the null-aware element operator `?` for use in
+  /// list and set literals.
+  ///
+  /// Emits `?expr` inside [literalList], [literalConstList], [literalSet], or
+  /// [literalConstSet] so the element is omitted from the collection if this
+  /// expression evaluates to `null`:
+  /// ```dart
+  /// literalList([refer('maybeItem').nullAwareElement]) // [?maybeItem]
+  /// ```
+  ///
+  /// For null-aware keys or values in map literals, use [MapLiteralEntry] with
+  /// [literalMapElements] or [literalConstMapElements].
+  NullAwareElement get nullAwareElement => NullAwareElement(this);
+
   /// This expression preceded by `throw`.
   Expression get thrown =>
       BinaryExpression._(const LiteralExpression._('throw'), this, '');
@@ -477,6 +491,12 @@ abstract class ExpressionVisitor<T> implements SpecVisitor<T> {
   T visitLiteralListExpression(LiteralListExpression expression, [T? context]);
   T visitLiteralSetExpression(LiteralSetExpression expression, [T? context]);
   T visitLiteralMapExpression(LiteralMapExpression expression, [T? context]);
+  T visitLiteralMapElementsExpression(
+    LiteralMapElementsExpression expression, [
+    T? context,
+  ]);
+  T visitMapLiteralEntry(MapLiteralEntry entry, [T? context]);
+  T visitNullAwareElement(NullAwareElement element, [T? context]);
   T visitLiteralRecordExpression(
     LiteralRecordExpression expression, [
     T? context,
@@ -660,6 +680,20 @@ abstract mixin class ExpressionEmitter
     });
   }
 
+  void _writeMapTypeArguments(
+    StringSink out,
+    Reference? keyType,
+    Reference? valueType,
+  ) {
+    if (keyType != null || valueType != null) {
+      out.write('<');
+      (keyType ?? const Reference('dynamic', 'dart:core')).accept(this, out);
+      out.write(', ');
+      (valueType ?? const Reference('dynamic', 'dart:core')).accept(this, out);
+      out.write('>');
+    }
+  }
+
   @override
   StringSink visitLiteralMapExpression(
     LiteralMapExpression expression, [
@@ -667,17 +701,7 @@ abstract mixin class ExpressionEmitter
   ]) {
     final out = output ??= StringBuffer();
     return _writeConstExpression(out, expression.isConst, () {
-      if (expression.keyType != null) {
-        out.write('<');
-        expression.keyType!.accept(this, out);
-        out.write(', ');
-        if (expression.valueType == null) {
-          const Reference('dynamic', 'dart:core').accept(this, out);
-        } else {
-          expression.valueType!.accept(this, out);
-        }
-        out.write('>');
-      }
+      _writeMapTypeArguments(out, expression.keyType, expression.valueType);
       out.write('{');
       visitAll<Object?>(expression.values.keys, out, (key) {
         final value = expression.values[key];
@@ -692,6 +716,50 @@ abstract mixin class ExpressionEmitter
       }
       return out..write('}');
     });
+  }
+
+  @override
+  StringSink visitLiteralMapElementsExpression(
+    LiteralMapElementsExpression expression, [
+    StringSink? output,
+  ]) {
+    final out = output ??= StringBuffer();
+    return _writeConstExpression(out, expression.isConst, () {
+      _writeMapTypeArguments(out, expression.keyType, expression.valueType);
+      out.write('{');
+      visitAll<Spec>(expression.elements, out, (e) {
+        e.accept(this, out);
+      });
+      if (expression.elements.length > 1) {
+        out.write(', ');
+      }
+      return out..write('}');
+    });
+  }
+
+  @override
+  StringSink visitMapLiteralEntry(MapLiteralEntry entry, [StringSink? output]) {
+    final out = output ??= StringBuffer();
+    if (entry.nullAwareKey) {
+      out.write('?');
+    }
+    entry.key.accept(this, out);
+    out.write(': ');
+    if (entry.nullAwareValue) {
+      out.write('?');
+    }
+    entry.value.accept(this, out);
+    return out;
+  }
+
+  @override
+  StringSink visitNullAwareElement(
+    NullAwareElement element, [
+    StringSink? output,
+  ]) {
+    final out = (output ??= StringBuffer())..write('?');
+    element.value.accept(this, out);
+    return out;
   }
 
   @override

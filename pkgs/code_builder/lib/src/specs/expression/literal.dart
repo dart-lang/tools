@@ -179,6 +179,59 @@ LiteralMapExpression literalConstMap(
   Reference? valueType,
 ]) => LiteralMapExpression._(true, values, keyType, valueType);
 
+/// Creates a literal map expression from collection [elements].
+///
+/// Unlike [literalMap], which accepts a Dart [Map] of key-value pairs,
+/// [literalMapElements] accepts arbitrary collection [Spec] elements so callers
+/// can interleave [MapLiteralEntry] items (including null-aware keys and
+/// values), spreads ([Expression.spread], [Expression.nullSafeSpread]), and
+/// control-flow elements in order:
+/// ```dart
+/// literalMapElements([
+///   refer('defaults').spread,
+///   MapLiteralEntry(literalString('id'), refer('id')),
+///   MapLiteralEntry(
+///     literalString('nickname'),
+///     refer('nickname'),
+///     nullAwareValue: true,
+///   ),
+/// ])
+/// ```
+LiteralMapElementsExpression literalMapElements(
+  Iterable<Spec> elements, [
+  Reference? keyType,
+  Reference? valueType,
+]) => LiteralMapElementsExpression._(
+  false,
+  List<Spec>.unmodifiable(elements),
+  keyType,
+  valueType,
+);
+
+/// Creates a literal `const` map expression from collection [elements].
+///
+/// Like [literalMapElements], this accepts collection [Spec] elements such as
+/// [MapLiteralEntry] and spreads, while emitting a `const` map literal and
+/// eliding redundant `const` keywords on nested constant expressions:
+/// ```dart
+/// literalConstMapElements([
+///   MapLiteralEntry(
+///     literalString('zero'),
+///     refer('Duration').constInstance([]),
+///   ),
+/// ]) // const {'zero': Duration()}
+/// ```
+LiteralMapElementsExpression literalConstMapElements(
+  Iterable<Spec> elements, [
+  Reference? keyType,
+  Reference? valueType,
+]) => LiteralMapElementsExpression._(
+  true,
+  List<Spec>.unmodifiable(elements),
+  keyType,
+  valueType,
+);
+
 /// Create a literal record expression from [positionalFieldValues] and
 /// [namedFieldValues].
 LiteralRecordExpression literalRecord(
@@ -234,7 +287,8 @@ class LiteralListExpression extends Expression {
       visitor.visitLiteralListExpression(this, context);
 
   @override
-  String toString() => '[${values.map(literal).join(', ')}]';
+  String toString() =>
+      '[${values.map((v) => v is Spec ? v : literal(v)).join(', ')}]';
 }
 
 class LiteralSetExpression extends Expression {
@@ -250,7 +304,8 @@ class LiteralSetExpression extends Expression {
       visitor.visitLiteralSetExpression(this, context);
 
   @override
-  String toString() => '{${values.map(literal).join(', ')}}';
+  String toString() =>
+      '{${values.map((v) => v is Spec ? v : literal(v)).join(', ')}}';
 }
 
 class LiteralMapExpression extends Expression {
@@ -273,6 +328,140 @@ class LiteralMapExpression extends Expression {
 
   @override
   String toString() => '{$values}';
+}
+
+/// A `key: value` entry element inside [literalMapElements] or
+/// [literalConstMapElements].
+///
+/// Unlike entries in [literalMap], [MapLiteralEntry] is a [Spec] rather than a
+/// Dart [Map] entry, allowing it to be interleaved with spreads and
+/// control-flow elements and to mark [key] or [value] as null-aware (`?key`,
+/// `?value`) so the entry is omitted when a nullable expression evaluates to
+/// `null`:
+/// ```dart
+/// literalMapElements([
+///   MapLiteralEntry(literalString('id'), refer('id')),
+///   MapLiteralEntry(
+///     literalString('label'),
+///     refer('label'),
+///     nullAwareValue: true,
+///   ),
+/// ]) // {'id': id, 'label': ?label}
+/// ```
+class MapLiteralEntry implements Spec {
+  /// The key expression emitted before `:` in this entry.
+  final Expression key;
+
+  /// The value expression emitted after `:` in this entry.
+  final Expression value;
+
+  /// Whether [key] is prefixed with `?` (`?key: value`), omitting this entry
+  /// when [key] evaluates to `null`.
+  final bool nullAwareKey;
+
+  /// Whether [value] is prefixed with `?` (`key: ?value`), omitting this entry
+  /// when [value] evaluates to `null`.
+  final bool nullAwareValue;
+
+  /// Creates a `key: value` map literal element, optionally marking [key] or
+  /// [value] as null-aware via [nullAwareKey] and [nullAwareValue].
+  ///
+  /// ```dart
+  /// MapLiteralEntry(
+  ///   refer('maybeKey'),
+  ///   refer('maybeValue'),
+  ///   nullAwareKey: true,
+  ///   nullAwareValue: true,
+  /// ) // ?maybeKey: ?maybeValue
+  /// ```
+  const MapLiteralEntry(
+    this.key,
+    this.value, {
+    this.nullAwareKey = false,
+    this.nullAwareValue = false,
+  });
+
+  @override
+  R accept<R>(covariant ExpressionVisitor<R> visitor, [R? context]) =>
+      visitor.visitMapLiteralEntry(this, context);
+
+  @override
+  String toString() =>
+      '${nullAwareKey ? '?' : ''}$key: ${nullAwareValue ? '?' : ''}$value';
+}
+
+/// A map literal expression constructed from collection [Spec] [elements].
+///
+/// Use [literalMapElements] or [literalConstMapElements] to build map literals
+/// containing [MapLiteralEntry] items, spreads ([Expression.spread],
+/// [Expression.nullSafeSpread]), or control-flow elements that cannot be
+/// represented in [LiteralMapExpression]:
+/// ```dart
+/// literalMapElements(
+///   [MapLiteralEntry(literalString('count'), literalNum(1))],
+///   refer('String'),
+///   refer('int'),
+/// ) // <String, int>{'count': 1}
+/// ```
+class LiteralMapElementsExpression extends Expression {
+  @override
+  final bool isConst;
+
+  /// The ordered collection elements (such as [MapLiteralEntry], spreads, or
+  /// control-flow elements) emitted inside `{...}`.
+  final List<Spec> elements;
+
+  /// Optional explicit key type argument; defaults to `dynamic` when omitted
+  /// alongside a non-null [valueType].
+  final Reference? keyType;
+
+  /// Optional explicit value type argument; defaults to `dynamic` when omitted
+  /// alongside a non-null [keyType].
+  final Reference? valueType;
+
+  const LiteralMapElementsExpression._(
+    this.isConst,
+    this.elements,
+    this.keyType,
+    this.valueType,
+  );
+
+  @override
+  R accept<R>(ExpressionVisitor<R> visitor, [R? context]) =>
+      visitor.visitLiteralMapElementsExpression(this, context);
+
+  @override
+  String toString() => '{${elements.join(', ')}}';
+}
+
+/// A null-aware collection element (`?value`) for use in list and set literals.
+///
+/// Wrapping an [Expression] in [NullAwareElement] (or via
+/// [Expression.nullAwareElement]) emits `?value` inside [literalList],
+/// [literalConstList], [literalSet], or [literalConstSet] so the element is
+/// omitted when [value] evaluates to `null`. Implements [Spec] rather than
+/// [Expression] because `?value` is valid only in collection element positions:
+/// ```dart
+/// literalSet([refer('maybeTag').nullAwareElement]) // {?maybeTag}
+/// ```
+class NullAwareElement implements Spec {
+  /// The expression evaluated and inserted into the collection if non-null.
+  final Expression value;
+
+  /// Creates a null-aware collection element (`?value`) wrapping [value].
+  ///
+  /// Prefer [Expression.nullAwareElement] for fluent chaining:
+  /// ```dart
+  /// NullAwareElement(refer('item')) // ?item
+  /// ```
+  const NullAwareElement(this.value);
+
+  @override
+  R accept<R>(covariant ExpressionVisitor<R> visitor, [R? context]) =>
+      visitor.visitNullAwareElement(this, context);
+
+  @override
+  String toString() => '?$value';
 }
 
 class LiteralRecordExpression extends Expression {

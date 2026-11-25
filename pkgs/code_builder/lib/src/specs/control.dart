@@ -8,6 +8,7 @@ import 'package:meta/meta.dart';
 
 import '../allocator.dart';
 import '../base.dart';
+import '../emitter.dart';
 import 'code.dart';
 import 'expression.dart';
 import 'pattern.dart';
@@ -15,6 +16,7 @@ import 'reference.dart';
 
 part 'control.g.dart';
 part 'control/branches.dart';
+part 'control/elements.dart';
 part 'control/handling.dart';
 part 'control/loops.dart';
 part 'control/switch.dart';
@@ -28,6 +30,34 @@ abstract class ControlVisitor<T>
   T visitConditional(Conditional spec, [T? context]);
   T visitBooleanCondition(BooleanCondition condition, [T? context]);
   T visitCaseCondition(CaseCondition condition, [T? context]);
+
+  /// Visits a conditional [IfElement] inside a collection literal.
+  ///
+  /// ```dart
+  /// final element = IfElement(Condition.expression(refer('ok')), literal(1));
+  /// element.accept(DartEmitter());
+  /// ```
+  T visitIfElement(IfElement spec, [T? context]);
+
+  /// Visits a C-style [ForLoopElement] inside a collection literal.
+  ///
+  /// ```dart
+  /// final element = ForElement(refer('x'));
+  /// element.accept(DartEmitter());
+  /// ```
+  T visitForLoopElement(ForLoopElement spec, [T? context]);
+
+  /// Visits a `for-in` [ForInElement] inside a collection literal.
+  ///
+  /// ```dart
+  /// final element = ForElement.forIn(
+  ///   declareFinal('x'),
+  ///   refer('xs'),
+  ///   refer('x'),
+  /// );
+  /// element.accept(DartEmitter());
+  /// ```
+  T visitForInElement(ForInElement spec, [T? context]);
   T visitTry(Try spec, [T? context]);
   T visitSwitchStatement(SwitchStatement spec, [T? context]);
   T visitSwitchExpression(SwitchExpression spec, [T? context]);
@@ -58,6 +88,55 @@ abstract mixin class ControlEmitter implements ControlVisitor<StringSink> {
       output.write(' when ');
       condition.guard!.accept(this, output);
     }
+    return output;
+  }
+
+  @override
+  StringSink visitIfElement(IfElement spec, [StringSink? output]) {
+    output ??= StringBuffer();
+    output.write('if (');
+    spec.condition.accept(this, output);
+    output.write(') ');
+    spec.then.accept(this, output);
+    if (spec.orElse != null) {
+      output.write(' else ');
+      spec.orElse!.accept(this, output);
+    }
+    return output;
+  }
+
+  @override
+  StringSink visitForLoopElement(ForLoopElement spec, [StringSink? output]) {
+    output ??= StringBuffer();
+    output.write('for (');
+    spec.initialize?.accept(this, output);
+    output.write(';');
+    if (spec.condition != null) {
+      output.write(' ');
+      spec.condition!.accept(this, output);
+    }
+    output.write(';');
+    if (spec.advance != null) {
+      output.write(' ');
+      spec.advance!.accept(this, output);
+    }
+    output.write(') ');
+    spec.body.accept(this, output);
+    return output;
+  }
+
+  @override
+  StringSink visitForInElement(ForInElement spec, [StringSink? output]) {
+    output ??= StringBuffer();
+    if (spec.async) {
+      output.write('await ');
+    }
+    output.write('for (');
+    spec.variable.accept(this, output);
+    output.write(' in ');
+    spec.object.accept(this, output);
+    output.write(') ');
+    spec.body.accept(this, output);
     return output;
   }
 
