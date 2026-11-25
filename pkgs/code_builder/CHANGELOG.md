@@ -1,5 +1,14 @@
-## 4.13.1-wip
+## 4.14.0-wip
 
+- Add `IfElement` and `ForElement` (`ForLoopElement`, `ForInElement`) for
+  emitting `if`/`else` and `for`/`await for` control-flow elements in collection
+  literals.
+- Add `literalMapElements`, `literalConstMapElements`
+  (`LiteralMapElementsExpression`), `MapLiteralEntry`, and `NullAwareElement`
+  (`Expression.nullAwareElement`) for interleaving entries, spreads,
+  control-flow elements, and null-aware elements (`?`) in collection literals.
+- Emit `<dynamic, V>` type arguments in `literalMap` and `literalConstMap` when
+  `keyType` is `null` and `valueType` is specified.
 - Separate chained cascades after assignments ending in nullable casts so the
   generated code parses correctly.
 

@@ -218,6 +218,235 @@ void main() {
     );
   });
 
+  test('should emit a map with only valueType specified', () {
+    expect(
+      literalMap({}, null, refer('bool')),
+      equalsDart('<dynamic, bool>{}'),
+    );
+  });
+
+  group('literalMapElements', () {
+    test('should emit an empty map', () {
+      expect(literalMapElements([]), equalsDart('{}'));
+    });
+
+    test('should emit a const empty map', () {
+      expect(literalConstMapElements([]), equalsDart('const {}'));
+    });
+
+    test('should emit a map with a single entry', () {
+      expect(
+        literalMapElements([
+          MapLiteralEntry(literalString('a'), literalNum(1)),
+        ]),
+        equalsDart("{'a': 1}"),
+      );
+    });
+
+    test('should emit a map with multiple entries', () {
+      expect(
+        literalMapElements([
+          MapLiteralEntry(literalString('a'), literalNum(1)),
+          MapLiteralEntry(literalString('b'), refer('two')),
+        ]),
+        equalsDart("{'a': 1, 'b': two, }"),
+      );
+    });
+
+    test('should emit null-aware keys and values in MapLiteralEntry', () {
+      expect(
+        declareFinal('map')
+            .assign(
+              literalMapElements([
+                MapLiteralEntry(
+                  refer('maybeKey'),
+                  literalNum(1),
+                  nullAwareKey: true,
+                ),
+                MapLiteralEntry(
+                  literalString('b'),
+                  refer('maybeValue'),
+                  nullAwareValue: true,
+                ),
+                MapLiteralEntry(
+                  refer('bothKey'),
+                  refer('bothValue'),
+                  nullAwareKey: true,
+                  nullAwareValue: true,
+                ),
+              ]),
+            )
+            .statement,
+        equalsDart(
+          "final map = {?maybeKey: 1, 'b': ?maybeValue, ?bothKey: ?bothValue};",
+        ),
+      );
+    });
+
+    test('should emit spreads and entries in order', () {
+      expect(
+        declareFinal('map')
+            .assign(
+              literalMapElements([
+                refer('first').spread,
+                MapLiteralEntry(literalString('a'), literalNum(1)),
+                refer('second').nullSafeSpread,
+                refer('third').spread,
+              ]),
+            )
+            .statement,
+        equalsDart("final map = {...first, 'a': 1, ...?second, ...third};"),
+      );
+    });
+
+    test('should emit explicit <K, V>, <K, dynamic>, and <dynamic, V>', () {
+      expect(
+        literalMapElements([], refer('String'), refer('int')),
+        equalsDart('<String, int>{}'),
+      );
+      expect(
+        literalMapElements([], refer('String')),
+        equalsDart('<String, dynamic>{}'),
+      );
+      expect(
+        literalMapElements([], null, refer('int')),
+        equalsDart('<dynamic, int>{}'),
+      );
+      expect(
+        literalConstMapElements([], refer('String'), refer('int')),
+        equalsDart('const <String, int>{}'),
+      );
+    });
+
+    test('should prefix references with Allocator.simplePrefixing', () {
+      final emitter = DartEmitter(allocator: Allocator.simplePrefixing());
+      expect(
+        literalMapElements(
+          [
+            refer('defaults', 'package:a/a.dart').spread,
+            MapLiteralEntry(
+              refer('k', 'package:b/b.dart'),
+              refer('v', 'package:c/c.dart'),
+              nullAwareKey: true,
+              nullAwareValue: true,
+            ),
+          ],
+          null,
+          refer('Foo', 'package:a/a.dart'),
+        ),
+        equalsDart(
+          '<dynamic, _i1.Foo>{..._i1.defaults, ?_i2.k: ?_i3.v, }',
+          emitter,
+        ),
+      );
+    });
+
+    test('stores elements in an unmodifiable list', () {
+      final expr = literalMapElements([
+        MapLiteralEntry(literalString('a'), literalNum(1)),
+      ]);
+      expect(
+        () => expr.elements.add(
+          MapLiteralEntry(literalString('b'), literalNum(2)),
+        ),
+        throwsUnsupportedError,
+      );
+    });
+
+    test('formats toString for MapLiteralEntry and literalMapElements', () {
+      final plain = MapLiteralEntry(literalString('a'), literalNum(1));
+      final keyAware = MapLiteralEntry(
+        literalString('b'),
+        literalNum(2),
+        nullAwareKey: true,
+      );
+      final valAware = MapLiteralEntry(
+        literalString('c'),
+        literalNum(3),
+        nullAwareValue: true,
+      );
+      final bothAware = MapLiteralEntry(
+        literalString('d'),
+        literalNum(4),
+        nullAwareKey: true,
+        nullAwareValue: true,
+      );
+      expect(plain.toString(), "'a': 1");
+      expect(keyAware.toString(), "?'b': 2");
+      expect(valAware.toString(), "'c': ?3");
+      expect(bothAware.toString(), "?'d': ?4");
+      expect(
+        literalMapElements([plain, bothAware]).toString(),
+        "{'a': 1, ?'d': ?4, }",
+      );
+      expect(
+        MapLiteralEntry(
+          literalString('a'),
+          refer('x').property('y'),
+          nullAwareValue: true,
+        ).toString(),
+        "'a': ?x.y",
+      );
+    });
+  });
+
+  group('nullAwareElement', () {
+    test('should emit in literalList and literalConstList', () {
+      expect(
+        declareFinal('items')
+            .assign(
+              literalList([
+                literalNum(1),
+                refer('maybeTwo').nullAwareElement,
+                NullAwareElement(refer('maybeThree')),
+              ]),
+            )
+            .statement,
+        equalsDart('final items = [1, ?maybeTwo, ?maybeThree];'),
+      );
+      expect(
+        literalConstList([
+          refer('maybeOne').nullAwareElement,
+          refer('Foo').constInstance([]).nullAwareElement,
+        ]),
+        equalsDart('const [?maybeOne, ?Foo(), ]'),
+      );
+    });
+
+    test('should emit in literalSet and literalConstSet', () {
+      expect(
+        declareFinal('tags')
+            .assign(
+              literalSet([literalString('a'), refer('b').nullAwareElement]),
+            )
+            .statement,
+        equalsDart("final tags = {'a', ?b};"),
+      );
+      expect(
+        literalConstSet({refer('a').nullAwareElement}),
+        equalsDart('const {?a}'),
+      );
+    });
+
+    test('should prefix references with Allocator.simplePrefixing', () {
+      final emitter = DartEmitter(allocator: Allocator.simplePrefixing());
+      expect(
+        literalList([refer('foo', 'package:foo/foo.dart').nullAwareElement]),
+        equalsDart('[?_i1.foo]', emitter),
+      );
+    });
+
+    test('toString emits Dart for list and set literals with elements', () {
+      final element = refer('a').property('b').nullAwareElement;
+      expect(element.toString(), '?a.b');
+      expect(literalList([element]).toString(), '[?a.b]');
+      expect(literalSet([element]).toString(), '{?a.b}');
+      expect(literalList([const Code('if (c) 1')]).toString(), '[if (c) 1]');
+      expect(literalSet([const Code('if (c) 1')]).toString(), '{if (c) 1}');
+      expect(literalNum(1).nullAwareElement.toString(), '?1');
+    });
+  });
+
   test('should emit a map of other literals and expressions', () {
     expect(
       literalMap({

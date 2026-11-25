@@ -8,6 +8,7 @@ import 'package:meta/meta.dart';
 
 import '../allocator.dart';
 import '../base.dart';
+import '../emitter.dart';
 import 'code.dart';
 import 'expression.dart';
 import 'pattern.dart';
@@ -15,6 +16,7 @@ import 'reference.dart';
 
 part 'control.g.dart';
 part 'control/branches.dart';
+part 'control/elements.dart';
 part 'control/handling.dart';
 part 'control/loops.dart';
 part 'control/switch.dart';
@@ -28,6 +30,9 @@ abstract class ControlVisitor<T>
   T visitConditional(Conditional spec, [T? context]);
   T visitBooleanCondition(BooleanCondition condition, [T? context]);
   T visitCaseCondition(CaseCondition condition, [T? context]);
+  T visitIfElement(IfElement spec, [T? context]);
+  T visitForLoopElement(ForLoopElement spec, [T? context]);
+  T visitForInElement(ForInElement spec, [T? context]);
   T visitTry(Try spec, [T? context]);
   T visitSwitchStatement(SwitchStatement spec, [T? context]);
   T visitSwitchExpression(SwitchExpression spec, [T? context]);
@@ -58,6 +63,94 @@ abstract mixin class ControlEmitter implements ControlVisitor<StringSink> {
       output.write(' when ');
       condition.guard!.accept(this, output);
     }
+    return output;
+  }
+
+  @override
+  StringSink visitIfElement(IfElement spec, [StringSink? output]) {
+    output ??= StringBuffer();
+    output.write('if (');
+    spec.condition.accept(this, output);
+    output.write(') ');
+    final orElse = spec.orElse;
+    if (orElse == null) {
+      spec.then.accept(this, output);
+      return output;
+    }
+    _writeThenBeforeElse(spec.then, output);
+    output.write(' else ');
+    orElse.accept(this, output);
+    return output;
+  }
+
+  /// Writes [then] so that a following `else` parses.
+  ///
+  /// Dart reads a nullable type followed by `else` (`if (c) x is int? else y`)
+  /// as the start of a conditional expression, so a trailing expression whose
+  /// emitted text ends in `?` is wrapped in parentheses.
+  void _writeThenBeforeElse(Spec then, StringSink output) {
+    final text = then.accept<StringSink>(this, StringBuffer()).toString();
+    final tail = text.endsWith('?') ? _trailingExpression(then) : null;
+    final tailText = tail?.accept<StringSink>(this, StringBuffer()).toString();
+    if (tailText == null || !text.endsWith(tailText)) {
+      output.write(text);
+      return;
+    }
+    output
+      ..write(text.substring(0, text.length - tailText.length))
+      ..write('(')
+      ..write(tailText)
+      ..write(')');
+  }
+
+  /// The expression emitted last by [element], if it can be determined.
+  static Expression? _trailingExpression(Spec element) => switch (element) {
+    IfElement(:final then, :final orElse) => _trailingExpression(
+      orElse ?? then,
+    ),
+    ForElement(:final body) => _trailingExpression(body),
+    MapLiteralEntry(:final value) || NullAwareElement(:final value) => value,
+    BinaryExpression(
+      left: LiteralExpression(literal: '...' || '...?'),
+      :final right,
+    ) =>
+      right,
+    Expression() => element,
+    _ => null,
+  };
+
+  @override
+  StringSink visitForLoopElement(ForLoopElement spec, [StringSink? output]) {
+    output ??= StringBuffer();
+    output.write('for (');
+    spec.initialize?.accept(this, output);
+    output.write(';');
+    if (spec.condition != null) {
+      output.write(' ');
+      spec.condition!.accept(this, output);
+    }
+    output.write(';');
+    if (spec.advance != null) {
+      output.write(' ');
+      spec.advance!.accept(this, output);
+    }
+    output.write(') ');
+    spec.body.accept(this, output);
+    return output;
+  }
+
+  @override
+  StringSink visitForInElement(ForInElement spec, [StringSink? output]) {
+    output ??= StringBuffer();
+    if (spec.async) {
+      output.write('await ');
+    }
+    output.write('for (');
+    spec.variable.accept(this, output);
+    output.write(' in ');
+    spec.object.accept(this, output);
+    output.write(') ');
+    spec.body.accept(this, output);
     return output;
   }
 

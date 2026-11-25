@@ -56,6 +56,63 @@ void main() {
     );
   });
 
+  group('literalConstMapElements', () {
+    final constMapElements = literalConstMapElements([
+      MapLiteralEntry(literalString('list'), literalConstList([])),
+      MapLiteralEntry(
+        literalString('duration'),
+        refer('Duration').constInstance([]),
+      ),
+    ]);
+
+    test('standalone expression emits outer const and elides inner const', () {
+      expect(
+        constMapElements,
+        equalsDart(r'''
+          const {'list': [], 'duration': Duration(), }'''),
+      );
+    });
+
+    test('nested inside declareConst elides outer and inner const', () {
+      expect(
+        declareConst('constField').assign(constMapElements),
+        equalsDart(
+          r'''
+            const constField = {'list': [], 'duration': Duration(), }''',
+          DartEmitter.scoped(),
+        ),
+      );
+    });
+
+    test('nested inside literalConstList elides inner const', () {
+      expect(
+        literalConstList([constMapElements]),
+        equalsDart(r'''
+          const [{'list': [], 'duration': Duration(), }]'''),
+      );
+    });
+
+    test('assigned to non-const preserves outer const', () {
+      expect(
+        declareVar('varField').assign(constMapElements),
+        equalsDart(
+          r'''
+            var varField = const {'list': [], 'duration': Duration(), }''',
+          DartEmitter.scoped(),
+        ),
+      );
+    });
+
+    test('non-const literalMapElements preserves inner const expressions', () {
+      expect(
+        literalMapElements([
+          MapLiteralEntry(literalString('list'), literalConstList([])),
+        ]),
+        equalsDart("{'list': const []}"),
+      );
+    });
+  });
+
   final library = Library(
     (b) => b
       ..body.add(
