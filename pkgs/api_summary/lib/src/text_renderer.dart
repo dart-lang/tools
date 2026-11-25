@@ -66,13 +66,19 @@ final class _ApiTextRenderer {
           String key,
         })
       >[];
+  final _renderedInlineDependencies = <String>{};
 
   _ApiTextRenderer(this._package);
 
-  String? _externalDependencyConstraint(Uri uri) => switch (uri.packageName) {
-    final pkg? when pkg != _package.name => _package.dependencies[pkg],
-    _ => null,
-  };
+  String? _externalDependencyConstraint(Uri uri) {
+    if (uri.packageName case final pkg? when pkg != _package.name) {
+      if (_package.dependencies[pkg] case final constraint?) {
+        _renderedInlineDependencies.add(pkg);
+        return constraint;
+      }
+    }
+    return null;
+  }
 
   Node<MemberSortKey> _createDanglingLibraryNode(Uri uri) {
     final node = Node<MemberSortKey>()..text.add(uri);
@@ -153,6 +159,17 @@ final class _ApiTextRenderer {
     if (_package.environment.isNotEmpty) {
       stringBuffer.writeln('environment:');
       for (final entry in _package.environment.entries) {
+        stringBuffer.writeln('  ${entry.key}: ${entry.value}');
+      }
+    }
+
+    final unrenderedDependencies = [
+      for (final entry in _package.dependencies.entries)
+        if (!_renderedInlineDependencies.contains(entry.key)) entry,
+    ];
+    if (unrenderedDependencies.isNotEmpty) {
+      stringBuffer.writeln('dependencies:');
+      for (final entry in unrenderedDependencies) {
         stringBuffer.writeln('  ${entry.key}: ${entry.value}');
       }
     }

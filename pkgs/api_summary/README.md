@@ -18,12 +18,14 @@ the `pubspec.yaml` sections that define a package's external contract with
 downstream consumers (`dev_dependencies` are ignored):
 
 * `environment`: SDK (`sdk`, `flutter`) version constraints required to resolve
-  and run the package.
+  and run the package (caret-equivalent ranges normalize to `^x.y.z`).
 * `dependencies`: Runtime dependency version constraints for external packages
-  whose declarations or types are referenced or re-exported in the public API
-  (rendered inline on referenced `package:...` library headers in `api.txt`, and
-  under `dependencies` in `api.json` and `api.yaml`). Internal-only runtime
-  dependencies that do not appear in the public API are omitted.
+  whose declarations or types are referenced or re-exported in the public API,
+  including transitive re-exports and external typedefs (rendered inline on
+  referenced `package:...` library headers in `api.txt`, under `dependencies:`
+  when no inline header exists, and under `dependencies` in `api.json` and
+  `api.yaml`). Internal-only runtime dependencies that do not appear in the
+  public API are omitted.
 * `executables`: Public command-line executables exposed via `dart run` or
   `dart install`.
 

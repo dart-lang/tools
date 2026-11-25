@@ -69,6 +69,8 @@ final class _ApiBuilder {
   final _elementToLibraries = <Element, List<LibraryElement>>{};
   final _referencedExternalPackages = <String>{};
   final _topLevelPublicElements = <Element>{};
+  final _visitedPackageLibraries = <LibraryElement>{};
+  final _directDepExportCache = <LibraryElement, Set<Element>>{};
 
   _ApiBuilder(
     this._pkgName,
@@ -122,6 +124,9 @@ final class _ApiBuilder {
       final libraries =
           _elementToLibraries[element] ??
           [if (element.library != null) element.library!];
+      if (element.library case final lib? when lib.uri.isIn(_pkgName)) {
+        _visitedPackageLibraries.add(lib);
+      }
 
       final apiElement = switch (element) {
         EnumElement() => _buildClass(
@@ -167,7 +172,7 @@ final class _ApiBuilder {
         continue;
       }
 
-      _maybeRecordExternalUri(element.library?.uri);
+      _recordReferencedExternalElement(element);
 
       for (final library in libraries) {
         final builder = _libraryBuilders.putIfAbsent(
@@ -239,6 +244,7 @@ final class _ApiBuilder {
           _maybeAddPending(element);
         }
         publicApiLibraries.add(library);
+        _visitedPackageLibraries.add(library);
         _libraryBuilders.putIfAbsent(
           library.uri.toString(),
           () => _ApiLibraryBuilder(
@@ -256,11 +262,41 @@ final class _ApiBuilder {
     _pendingElements.add(element);
   }
 
-  void _maybeRecordExternalUri(Uri? uri) {
-    if (uri?.packageName case final pkg? when pkg != _pkgName) {
+  void _recordReferencedExternalElement(Element element) {
+    final pkg = element.library?.uri.packageName;
+    if (pkg == null || pkg == _pkgName) return;
+    if (_dependencies.containsKey(pkg)) {
       _referencedExternalPackages.add(pkg);
+      return;
+    }
+
+    // The declaring package is not a direct dependency (for example, a
+    // transitive type re-exported through a direct dependency). Attribute it
+    // to any direct dependency imported or exported by visited libraries whose
+    // export namespace exposes this element.
+    final base = element.baseElement;
+    for (final pkgLib in _visitedPackageLibraries) {
+      for (final fragment in pkgLib.fragments) {
+        final directDepLibs = [
+          for (final imp in fragment.libraryImports) ?imp.importedLibrary,
+          for (final exp in fragment.libraryExports) ?exp.exportedLibrary,
+        ];
+        for (final depLib in directDepLibs) {
+          final depPkg = depLib.uri.packageName;
+          if (depPkg == null || !_dependencies.containsKey(depPkg)) continue;
+          if (_exportedBaseElements(depLib).contains(base)) {
+            _referencedExternalPackages.add(depPkg);
+          }
+        }
+      }
     }
   }
+
+  Set<Element> _exportedBaseElements(LibraryElement library) =>
+      _directDepExportCache[library] ??= {
+        for (final element in library.exportNamespace.definedNames2.values)
+          element.baseElement,
+      };
 
   bool _isNullable(NullabilitySuffix suffix) => switch (suffix) {
     NullabilitySuffix.none => false,
@@ -271,6 +307,11 @@ final class _ApiBuilder {
   };
 
   ApiType _describeType(DartType type, {bool enqueue = true}) {
+    if (enqueue) {
+      if (type.alias?.element case final aliasElement?) {
+        _recordReferencedExternalElement(aliasElement);
+      }
+    }
     final isNullable = _isNullable(type.nullabilitySuffix);
     switch (type) {
       case DynamicType():
@@ -305,7 +346,7 @@ final class _ApiBuilder {
         );
       case InterfaceType(:final element, :final typeArguments):
         if (enqueue) {
-          _maybeRecordExternalUri(element.library.uri);
+          _recordReferencedExternalElement(element);
           _maybeAddPending(element);
         }
         return ApiInterfaceType(

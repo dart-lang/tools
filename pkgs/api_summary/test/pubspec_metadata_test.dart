@@ -555,6 +555,140 @@ dependencies:
       );
     });
 
+    test('attributes transitive re-exported types and external typedefs to '
+        'direct dependencies', () async {
+      await d.dir('c_pkg', [
+        d.file('pubspec.yaml', 'name: c_pkg\nenvironment:\n  sdk: ^3.12.0\n'),
+        d.dir('lib', [d.file('c_pkg.dart', 'class CType {}\n')]),
+      ]).create();
+
+      await d.dir('b_pkg', [
+        d.file(
+          'pubspec.yaml',
+          'name: b_pkg\nenvironment:\n  sdk: ^3.12.0\n'
+              'dependencies:\n  c_pkg: ^1.0.0\n',
+        ),
+        d.dir('lib', [
+          d.file(
+            'b_pkg.dart',
+            "export 'package:c_pkg/c_pkg.dart' show CType;\n"
+                'class BType {}\n'
+                'typedef BHandler = void Function(int);\n',
+          ),
+        ]),
+      ]).create();
+
+      Future<ApiSummary> summarizeA(
+        String dirName,
+        Map<String, String> libFiles,
+      ) async {
+        await d.dir(dirName, [
+          d.file(
+            'pubspec.yaml',
+            'name: a_pkg\nenvironment:\n  sdk: ^3.12.0\n'
+                'dependencies:\n  b_pkg: ^1.0.0\n',
+          ),
+          d.dir('.dart_tool', [
+            d.file(
+              'package_config.json',
+              '{\n'
+                  '  "configVersion": 2,\n'
+                  '  "packages": [\n'
+                  '    {"name": "a_pkg", "rootUri": "../", '
+                  '"packageUri": "lib/"},\n'
+                  '    {"name": "b_pkg", "rootUri": "../../b_pkg", '
+                  '"packageUri": "lib/"},\n'
+                  '    {"name": "c_pkg", "rootUri": "../../c_pkg", '
+                  '"packageUri": "lib/"}\n'
+                  '  ]\n'
+                  '}\n',
+            ),
+          ]),
+          d.dir('lib', [
+            for (final entry in libFiles.entries)
+              if (!entry.key.contains('/')) d.file(entry.key, entry.value),
+            if (libFiles.keys.any((k) => k.startsWith('src/')))
+              d.dir('src', [
+                for (final entry in libFiles.entries)
+                  if (entry.key.startsWith('src/'))
+                    d.file(entry.key.substring(4), entry.value),
+              ]),
+          ]),
+        ]).create();
+        return apiSummary(d.path(dirName));
+      }
+
+      // 1. Type from transitive c_pkg imported via direct dependency b_pkg
+      //    inside a re-exported lib/src/ library.
+      final importedTransitive = await summarizeA('a_imported_transitive', {
+        'a_pkg.dart': "export 'src/impl.dart';\n",
+        'src/impl.dart':
+            "import 'package:b_pkg/b_pkg.dart';\n"
+            'CType makeC() => CType();\n',
+      });
+      expect(importedTransitive.dependencies, equals({'b_pkg': '^1.0.0'}));
+      final importedRendered = importedTransitive.toString();
+      expect(importedRendered, contains('dependencies:\n  b_pkg: ^1.0.0\n'));
+      expect(
+        importedRendered,
+        contains('package:c_pkg/c_pkg.dart:\n  CType (referenced)\n'),
+      );
+      expect(
+        ApiSummary.fromJson(importedTransitive.toJson()).toString(),
+        equals(importedRendered),
+      );
+
+      // 2. Package a directly re-exports CType via b_pkg.
+      final reexportedTransitive = await summarizeA('a_reexported_transitive', {
+        'a_pkg.dart': "export 'package:b_pkg/b_pkg.dart' show CType;\n",
+      });
+      expect(reexportedTransitive.dependencies, equals({'b_pkg': '^1.0.0'}));
+      final reexportedRendered = reexportedTransitive.toString();
+      expect(reexportedRendered, contains('dependencies:\n  b_pkg: ^1.0.0\n'));
+      expect(
+        reexportedRendered,
+        contains('package:c_pkg/c_pkg.dart:\n  CType (see above)\n'),
+      );
+      expect(
+        ApiSummary.fromJson(reexportedTransitive.toJson()).toString(),
+        equals(reexportedRendered),
+      );
+
+      // 3. When b_pkg already has an inline library header, no redundant
+      //    top-level dependencies: block is emitted.
+      final mixedDirectAndTransitive = await summarizeA('a_mixed', {
+        'a_pkg.dart':
+            "import 'package:b_pkg/b_pkg.dart';\n"
+            'BType makeB() => BType();\n'
+            'CType makeC() => CType();\n',
+      });
+      expect(
+        mixedDirectAndTransitive.dependencies,
+        equals({'b_pkg': '^1.0.0'}),
+      );
+      final mixedRendered = mixedDirectAndTransitive.toString();
+      expect(mixedRendered, isNot(contains('dependencies:\n')));
+      expect(
+        mixedRendered,
+        contains('package:b_pkg/b_pkg.dart (^1.0.0):\n  BType (referenced)\n'),
+      );
+
+      // 4. External typedef from b_pkg expands to FunctionType but still
+      //    attributes b_pkg as an API-referenced dependency.
+      final externalTypedef = await summarizeA('a_typedef', {
+        'a_pkg.dart':
+            "import 'package:b_pkg/b_pkg.dart';\n"
+            'void register(BHandler handler) {}\n',
+      });
+      expect(externalTypedef.dependencies, equals({'b_pkg': '^1.0.0'}));
+      final typedefRendered = externalTypedef.toString();
+      expect(typedefRendered, contains('dependencies:\n  b_pkg: ^1.0.0\n'));
+      expect(
+        ApiSummary.fromJson(externalTypedef.toJson()).toString(),
+        equals(typedefRendered),
+      );
+    });
+
     test('throws FormatException when dependencies is not a map', () async {
       await withTempPkg('name: foo\ndependencies: "^1.0.0"', (pkgPath) async {
         await expectLater(

@@ -28,9 +28,13 @@
   `ApiClass.hasNonPublicSubtypes` (rendered as `<non-public>` in `api.txt`)
   when uncovered non-public subtypes exist.
 - Track `pubspec.yaml` runtime `dependencies` constraints for external packages
-  referenced in the public API on `ApiSummary.dependencies`, and render them
-  inline on referenced `package:...` library headers in `api.txt`
+  referenced or re-exported in the public API (including transitive re-exports
+  and external typedefs) on `ApiSummary.dependencies`, and render them inline
+  on referenced `package:...` library headers in `api.txt` (or under
+  `dependencies:` when no inline header exists)
   ([#2463](https://github.com/dart-lang/tools/issues/2463)).
+- Normalize caret-equivalent version constraints (such as `>=3.9.0 <4.0.0` to
+  `^3.9.0`) in `environment` and `dependencies`.
 
 ## 1.2.0
 
