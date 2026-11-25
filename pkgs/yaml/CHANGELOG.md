@@ -9,6 +9,12 @@
   scalars.
 * Speed up scanning deeply nested flow collections: the scanner no longer
   walks every open flow level for each token.
+* Fix `YamlScalar.span` for keep-chomped block scalars (`|+`, `>+`) to cover
+  trailing empty lines, and bound empty `strip` and `clip` block scalar spans
+  at the header indicator (before any trailing spaces or header comment).
+* Fix parsing of empty implicit flow keys followed directly by `}` or `]`
+  (`{:}`, `[:]`).
+* Allow tab characters on blank or comment-only lines (YAML 1.2 §6.1).
 
 ## 3.1.4
 
