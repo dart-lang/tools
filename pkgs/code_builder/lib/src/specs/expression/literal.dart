@@ -346,7 +346,7 @@ class LiteralMapExpression extends Expression {
 ///     refer('label'),
 ///     nullAwareValue: true,
 ///   ),
-/// ]) // {'id': id, 'label': ?label}
+/// ]) // {'id': id, 'label': ?label, }
 /// ```
 class MapLiteralEntry implements Spec {
   /// The key expression emitted before `:` in this entry.
@@ -363,17 +363,7 @@ class MapLiteralEntry implements Spec {
   /// when [value] evaluates to `null`.
   final bool nullAwareValue;
 
-  /// Creates a `key: value` map literal element, optionally marking [key] or
-  /// [value] as null-aware via [nullAwareKey] and [nullAwareValue].
-  ///
-  /// ```dart
-  /// MapLiteralEntry(
-  ///   refer('maybeKey'),
-  ///   refer('maybeValue'),
-  ///   nullAwareKey: true,
-  ///   nullAwareValue: true,
-  /// ) // ?maybeKey: ?maybeValue
-  /// ```
+  /// Creates a `key: value` map literal element.
   const MapLiteralEntry(
     this.key,
     this.value, {
@@ -386,8 +376,7 @@ class MapLiteralEntry implements Spec {
       visitor.visitMapLiteralEntry(this, context);
 
   @override
-  String toString() =>
-      '${nullAwareKey ? '?' : ''}$key: ${nullAwareValue ? '?' : ''}$value';
+  String toString() => accept(DartEmitter()).toString();
 }
 
 /// A map literal expression constructed from collection [Spec] [elements].
@@ -431,7 +420,7 @@ class LiteralMapElementsExpression extends Expression {
       visitor.visitLiteralMapElementsExpression(this, context);
 
   @override
-  String toString() => '{${elements.join(', ')}}';
+  String toString() => accept(DartEmitter()).toString();
 }
 
 /// A null-aware collection element (`?value`) for use in list and set literals.
@@ -448,12 +437,9 @@ class NullAwareElement implements Spec {
   /// The expression evaluated and inserted into the collection if non-null.
   final Expression value;
 
-  /// Creates a null-aware collection element (`?value`) wrapping [value].
+  /// Creates a null-aware element wrapping [value].
   ///
-  /// Prefer [Expression.nullAwareElement] for fluent chaining:
-  /// ```dart
-  /// NullAwareElement(refer('item')) // ?item
-  /// ```
+  /// [Expression.nullAwareElement] is the fluent form.
   const NullAwareElement(this.value);
 
   @override
@@ -461,7 +447,7 @@ class NullAwareElement implements Spec {
       visitor.visitNullAwareElement(this, context);
 
   @override
-  String toString() => '?$value';
+  String toString() => accept(DartEmitter()).toString();
 }
 
 class LiteralRecordExpression extends Expression {

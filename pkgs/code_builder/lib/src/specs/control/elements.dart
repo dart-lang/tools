@@ -4,79 +4,37 @@
 
 part of '../control.dart';
 
-/// A conditional `if` (and optional `else` or `else if`) collection element.
+/// An `if` (and optional `else`) element inside a collection literal.
 ///
-/// Use [IfElement] to conditionally include elements inside collection literals
-/// such as [literalList] or [literalSet], where braced [Conditional] statements
-/// cannot appear:
+/// Braced [Conditional] statements cannot appear inside [literalList],
+/// [literalSet], or [literalMapElements]; an [IfElement] can:
 ///
 /// ```dart
 /// literalList([
-///   literal(1),
-///   IfElement(Condition.expression(refer('includeTwo')), literal(2)),
+///   IfElement(Condition.expression(refer('ok')), literal(1), literal(2)),
 /// ]);
-/// // Emits: [1, if (includeTwo) 2]
+/// // Emits: [if (ok) 1 else 2]
 /// ```
+///
+/// The [condition] may be a boolean ([Condition.expression]) or a pattern
+/// match ([Condition.ifCase]). Pass another [IfElement] as [orElse] to emit
+/// `else if`.
 class IfElement implements Spec {
-  /// The [Condition] evaluated to decide whether to include [then] or [orElse].
-  ///
-  /// Supports both boolean conditions via [Condition.expression] and
-  /// pattern-matching conditions via [Condition.ifCase]:
-  ///
-  /// ```dart
-  /// IfElement(
-  ///   Condition.ifCase(refer('input'), Pattern.declareFinal('value')),
-  ///   refer('value'),
-  /// )
-  /// ```
+  /// The condition deciding between [then] and [orElse].
   final Condition condition;
 
-  /// The collection element included when [condition] matches.
-  ///
-  /// May be an [Expression], a nested [IfElement], a [ForElement], or any other
-  /// collection element [Spec]:
-  ///
-  /// ```dart
-  /// IfElement(Condition.expression(refer('enabled')), refer('item'))
-  /// ```
+  /// The element included when [condition] matches.
   final Spec then;
 
-  /// The optional collection element included when [condition] does not match.
-  ///
-  /// Pass another [IfElement] to emit an `else if` chain:
-  ///
-  /// ```dart
-  /// IfElement(
-  ///   Condition.expression(refer('isPrimary')),
-  ///   literal('primary'),
-  ///   IfElement(
-  ///     Condition.expression(refer('isSecondary')),
-  ///     literal('secondary'),
-  ///     literal('fallback'),
-  ///   ),
-  /// )
-  /// // Emits: if (isPrimary) 'primary' else if (isSecondary) 'secondary' else 'fallback'
-  /// ```
+  /// The element included when [condition] does not match, if any.
   final Spec? orElse;
 
-  /// Creates a conditional `if` collection element with an optional [orElse]
-  /// branch.
+  /// Creates an `if` element.
   ///
-  /// Throws an [ArgumentError] if [orElse] is non-null and [then] ends with an
-  /// unmatched [IfElement] (directly, at the tail of an `else if` chain, or as
-  /// the body of a [ForElement]), because Dart binds `else` to the innermost
-  /// `if` rather than the outer [IfElement]:
-  ///
-  /// ```dart
-  /// literalSet([
-  ///   IfElement(
-  ///     Condition.expression(refer('useDefault')),
-  ///     literal('default'),
-  ///     literal('custom'),
-  ///   ),
-  /// ]);
-  /// // Emits: {if (useDefault) 'default' else 'custom'}
-  /// ```
+  /// Throws an [ArgumentError] if [orElse] is given and [then] ends in an `if`
+  /// element that has no `else` (directly, at the tail of an `else if` chain,
+  /// or as the body of a [ForElement]). Dart would bind the `else` to that
+  /// inner `if` and silently change which branch runs.
   IfElement(this.condition, this.then, [this.orElse]) {
     if (orElse != null && _hasTrailingUnmatchedIf(then)) {
       throw ArgumentError.value(
@@ -104,11 +62,10 @@ class IfElement implements Spec {
   String toString() => accept(DartEmitter()).toString();
 }
 
-/// An iterative `for` or `for-in` collection element.
+/// A `for` or `for-in` element inside a collection literal.
 ///
-/// Use [ForElement] to generate collection elements inside collection literals
-/// such as [literalList] or [literalSet], where braced [ForLoop] and
-/// [ForInLoop] statements cannot appear:
+/// Braced [ForLoop] and [ForInLoop] statements cannot appear inside
+/// [literalList], [literalSet], or [literalMapElements]; a [ForElement] can:
 ///
 /// ```dart
 /// literalList([
@@ -119,47 +76,26 @@ class IfElement implements Spec {
 abstract class ForElement implements Spec {
   const ForElement._();
 
-  /// Creates a C-style `for (initialize; condition; advance) body` collection
-  /// element, backed by [ForLoopElement].
-  ///
-  /// Use this constructor when index-based or custom step iteration is needed
-  /// inside a collection literal:
+  /// Creates a `for (initialize; condition; advance) body` element.
   ///
   /// ```dart
-  /// literalList([
-  ///   ForElement(
-  ///     refer('i'),
-  ///     initialize: declareVar('i').assign(literal(0)),
-  ///     condition: refer('i').lessThan(literal(3)),
-  ///     advance: refer('i').operatorUnaryPostfixIncrement(),
-  ///   ),
-  /// ]);
-  /// // Emits: [for (var i = 0; i < 3; i++) i]
+  /// ForElement(
+  ///   initialize: declareVar('i').assign(literal(0)),
+  ///   condition: refer('i').lessThan(literal(3)),
+  ///   advance: refer('i').operatorUnaryPostfixIncrement(),
+  ///   body: refer('i'),
+  /// );
+  /// // Emits: for (var i = 0; i < 3; i++) i
   /// ```
-  const factory ForElement(
-    Spec body, {
+  const factory ForElement({
     Expression? initialize,
     Expression? condition,
     Expression? advance,
+    required Spec body,
   }) = ForLoopElement._;
 
-  /// Creates a `for (variable in object) body` (or `await for` when [async] is
-  /// `true`) collection element, backed by [ForInElement].
-  ///
-  /// Use this constructor to project elements from an [Iterable] or [Stream]
-  /// into a collection literal:
-  ///
-  /// ```dart
-  /// literalSet([
-  ///   ForElement.forIn(
-  ///     declareFinal('event'),
-  ///     refer('stream'),
-  ///     refer('event'),
-  ///     async: true,
-  ///   ),
-  /// ]);
-  /// // Emits: {await for (final event in stream) event}
-  /// ```
+  /// Creates a `for (variable in object) body` element, or an `await for`
+  /// element when [async] is `true`.
   const factory ForElement.forIn(
     Expression variable,
     Expression object,
@@ -167,68 +103,31 @@ abstract class ForElement implements Spec {
     bool async,
   }) = ForInElement._;
 
-  /// The collection element evaluated on each iteration of this loop.
-  ///
-  /// May be an [Expression], an [IfElement], a nested [ForElement], or any
-  /// other collection element [Spec]:
-  ///
-  /// ```dart
-  /// ForElement.forIn(declareFinal('x'), refer('xs'), refer('x'))
-  /// ```
+  /// The element produced on each iteration.
   Spec get body;
 }
 
-/// A C-style `for (initialize; condition; advance) body` collection element.
+/// A `for (initialize; condition; advance) body` collection element.
 ///
-/// Construct instances using [ForElement.new] when generating collection
-/// elements from an index or custom step expression:
-///
-/// ```dart
-/// ForElement(
-///   refer('i'),
-///   initialize: declareVar('i').assign(literal(0)),
-///   condition: refer('i').lessThan(literal(5)),
-///   advance: refer('i').operatorUnaryPostfixIncrement(),
-/// )
-/// ```
+/// Create one with [ForElement.new].
 class ForLoopElement extends ForElement {
-  /// The optional initializer expression evaluated once before the loop runs.
-  ///
-  /// ```dart
-  /// ForElement(refer('i'), initialize: declareVar('i').assign(literal(0)))
-  /// ```
+  /// The initializer, evaluated once before the loop.
   final Expression? initialize;
 
-  /// The optional condition expression evaluated before each iteration.
-  ///
-  /// ```dart
-  /// ForElement(refer('x'), condition: refer('hasMore'))
-  /// ```
+  /// The condition, evaluated before each iteration.
   final Expression? condition;
 
-  /// The optional step expression evaluated after each iteration.
-  ///
-  /// ```dart
-  /// ForElement(
-  ///   refer('i'),
-  ///   advance: refer('i').operatorUnaryPostfixIncrement(),
-  /// )
-  /// ```
+  /// The step expression, evaluated after each iteration.
   final Expression? advance;
 
-  /// The collection element evaluated on each iteration of the loop.
-  ///
-  /// ```dart
-  /// ForElement(refer('item'))
-  /// ```
   @override
   final Spec body;
 
-  const ForLoopElement._(
-    this.body, {
+  const ForLoopElement._({
     this.initialize,
     this.condition,
     this.advance,
+    required this.body,
   }) : super._();
 
   @override
@@ -239,47 +138,19 @@ class ForLoopElement extends ForElement {
   String toString() => accept(DartEmitter()).toString();
 }
 
-/// A `for-in` or `await for-in` collection element.
+/// A `for (variable in object) body` collection element.
 ///
-/// Construct instances using [ForElement.forIn] when projecting elements of an
-/// [Iterable] or [Stream] into a collection literal:
-///
-/// ```dart
-/// ForElement.forIn(declareFinal('item'), refer('items'), refer('item'))
-/// ```
+/// Create one with [ForElement.forIn].
 class ForInElement extends ForElement {
   /// The loop variable declaration or identifier before `in`.
-  ///
-  /// ```dart
-  /// ForElement.forIn(declareFinal('item'), refer('items'), refer('item'))
-  /// ```
   final Expression variable;
 
-  /// The [Iterable] or [Stream] expression after `in` being iterated.
-  ///
-  /// ```dart
-  /// ForElement.forIn(declareVar('x'), refer('values'), refer('x'))
-  /// ```
+  /// The [Iterable], or the [Stream] when [async], being iterated.
   final Expression object;
 
-  /// Whether this element awaits a [Stream] using `await for` rather than
-  /// synchronous `for`.
-  ///
-  /// ```dart
-  /// ForElement.forIn(
-  ///   declareFinal('chunk'),
-  ///   refer('chunks'),
-  ///   refer('chunk'),
-  ///   async: true,
-  /// )
-  /// ```
+  /// Whether this is an `await for` element.
   final bool async;
 
-  /// The collection element evaluated for each element of [object].
-  ///
-  /// ```dart
-  /// ForElement.forIn(declareFinal('x'), refer('xs'), refer('x'))
-  /// ```
   @override
   final Spec body;
 

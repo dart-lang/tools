@@ -226,12 +226,6 @@ void main() {
   });
 
   group('literalMapElements', () {
-    test('MapLiteralEntry implements Spec and not Expression', () {
-      final entry = MapLiteralEntry(literalString('a'), literalNum(1));
-      expect(entry, isA<Spec>());
-      expect(entry, isNot(isA<Expression>()));
-    });
-
     test('should emit an empty map', () {
       expect(literalMapElements([]), equalsDart('{}'));
     });
@@ -318,6 +312,10 @@ void main() {
         literalMapElements([], null, refer('int')),
         equalsDart('<dynamic, int>{}'),
       );
+      expect(
+        literalConstMapElements([], refer('String'), refer('int')),
+        equalsDart('const <String, int>{}'),
+      );
     });
 
     test('should prefix references with Allocator.simplePrefixing', () {
@@ -379,19 +377,20 @@ void main() {
       expect(bothAware.toString(), "?'d': ?4");
       expect(
         literalMapElements([plain, bothAware]).toString(),
-        "{'a': 1, ?'d': ?4}",
+        "{'a': 1, ?'d': ?4, }",
+      );
+      expect(
+        MapLiteralEntry(
+          literalString('a'),
+          refer('x').property('y'),
+          nullAwareValue: true,
+        ).toString(),
+        "'a': ?x.y",
       );
     });
   });
 
   group('nullAwareElement', () {
-    test('NullAwareElement implements Spec and not Expression', () {
-      final element = refer('x').nullAwareElement;
-      expect(element, isA<NullAwareElement>());
-      expect(element, isA<Spec>());
-      expect(element, isNot(isA<Expression>()));
-    });
-
     test('should emit in literalList and literalConstList', () {
       expect(
         declareFinal('items')
@@ -437,15 +436,11 @@ void main() {
       );
     });
 
-    test('can toString list and set literals containing Spec elements', () {
-      expect(
-        literalList([refer('x').nullAwareElement]).toString,
-        isNot(throwsA(anything)),
-      );
-      expect(
-        literalSet([refer('x').nullAwareElement]).toString,
-        isNot(throwsA(anything)),
-      );
+    test('toString emits Dart for list and set literals with elements', () {
+      final element = refer('a').property('b').nullAwareElement;
+      expect(element.toString(), '?a.b');
+      expect(literalList([element]).toString(), '[?a.b]');
+      expect(literalSet([element]).toString(), '{?a.b}');
       expect(literalList([const Code('if (c) 1')]).toString(), '[if (c) 1]');
       expect(literalSet([const Code('if (c) 1')]).toString(), '{if (c) 1}');
       expect(literalNum(1).nullAwareElement.toString(), '?1');

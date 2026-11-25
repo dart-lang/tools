@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:code_builder/code_builder.dart';
+import 'package:dart_style/dart_style.dart';
 import 'package:test/test.dart';
 
 import '../common.dart';
@@ -603,11 +604,11 @@ void main() {
   });
 
   group('IfElement', () {
-    test('implements Spec without extending Expression', () {
-      final element = IfElement(.expression(refer('ok')), literal(1));
-      expect(element, isA<Spec>());
-      expect(element, isNot(isA<Expression>()));
-    });
+    final rejectsDanglingElse = throwsA(
+      isA<ArgumentError>()
+          .having((e) => e.name, 'name', 'then')
+          .having((e) => e.message, 'message', contains('unmatched if')),
+    );
 
     test('if element in list and set literals', () {
       expect(
@@ -705,15 +706,7 @@ void main() {
           IfElement(.expression(refer('c2')), literal('a')),
           literal('b'),
         ),
-        throwsA(
-          isA<ArgumentError>()
-              .having((e) => e.name, 'name', 'then')
-              .having(
-                (e) => e.message,
-                'message',
-                contains('unmatched if element'),
-              ),
-        ),
+        rejectsDanglingElse,
       );
     });
 
@@ -730,23 +723,15 @@ void main() {
             ),
             literal('b'),
           ),
-          throwsA(
-            isA<ArgumentError>()
-                .having((e) => e.name, 'name', 'then')
-                .having(
-                  (e) => e.message,
-                  'message',
-                  contains('unmatched if element'),
-                ),
-          ),
+          rejectsDanglingElse,
         );
         expect(
           () => IfElement(
             .expression(refer('c1')),
-            ForElement(IfElement(.expression(refer('c2')), literal('a'))),
+            ForElement(body: IfElement(.expression(refer('c2')), literal('a'))),
             literal('b'),
           ),
-          throwsA(isA<ArgumentError>().having((e) => e.name, 'name', 'then')),
+          rejectsDanglingElse,
         );
       },
     );
@@ -764,15 +749,7 @@ void main() {
             ),
             literal('c'),
           ),
-          throwsA(
-            isA<ArgumentError>()
-                .having((e) => e.name, 'name', 'then')
-                .having(
-                  (e) => e.message,
-                  'message',
-                  contains('unmatched if element'),
-                ),
-          ),
+          rejectsDanglingElse,
         );
       },
     );
@@ -808,6 +785,92 @@ void main() {
       );
     });
 
+    test('parenthesizes a then ending in a nullable type before else', () {
+      final nullableInt = TypeReference(
+        (b) => b
+          ..symbol = 'int'
+          ..isNullable = true,
+      );
+      const rawCast = CodeExpression(Code("json['a'] as int?"));
+      final c = Condition.expression(refer('c'));
+      final cases = <(Spec, String)>[
+        (
+          literalList([
+            IfElement(c, refer('o').isA(nullableInt), literalFalse),
+          ]),
+          '[if (c) (o is int?) else false]',
+        ),
+        (
+          literalList([
+            IfElement(c, refer('o').isNotA(nullableInt), literalFalse),
+          ]),
+          '[if (c) (o is! int?) else false]',
+        ),
+        (
+          literalMapElements([
+            IfElement(
+              c,
+              MapLiteralEntry(literalString('a'), rawCast),
+              MapLiteralEntry(literalString('b'), literal(1)),
+            ),
+          ]),
+          "{if (c) 'a': (json['a'] as int?) else 'b': 1}",
+        ),
+        (
+          literalList([
+            IfElement(
+              c,
+              ForElement.forIn(
+                declareFinal('x'),
+                refer('xs'),
+                refer('x').isA(nullableInt),
+              ),
+              literalFalse,
+            ),
+          ]),
+          '[if (c) for (final x in xs) (x is int?) else false]',
+        ),
+        (
+          literalList([
+            IfElement(
+              c,
+              refer('o').isA(nullableInt).nullAwareElement,
+              literalFalse,
+            ),
+          ]),
+          '[if (c) ?(o is int?) else false]',
+        ),
+        (
+          literalList([IfElement(c, rawCast.spread, refer('ys').spread)]),
+          "[if (c) ...(json['a'] as int?) else ...ys]",
+        ),
+        (
+          literalList([
+            IfElement(
+              c,
+              IfElement(
+                Condition.expression(refer('d')),
+                refer('a'),
+                refer('o').isA(nullableInt),
+              ),
+              literalFalse,
+            ),
+          ]),
+          '[if (c) if (d) a else (o is int?) else false]',
+        ),
+        (
+          literalList([
+            IfElement(c, refer('o').isA(nullableInt)),
+            literalFalse,
+          ]),
+          '[if (c) o is int?, false, ]',
+        ),
+      ];
+      for (final (spec, expected) in cases) {
+        expect(emitValid(spec), expected);
+      }
+    });
+
     test('toString emits Dart representation', () {
       expect(
         IfElement(
@@ -821,21 +884,6 @@ void main() {
   });
 
   group('ForElement', () {
-    test('implements Spec without extending Expression', () {
-      const Spec cLoop = ForElement(literalNull);
-      const Spec forIn = ForElement.forIn(
-        literalNull,
-        literalNull,
-        literalNull,
-      );
-      expect(cLoop, isA<ForElement>());
-      expect(cLoop, isA<ForLoopElement>());
-      expect(cLoop, isNot(isA<Expression>()));
-      expect(forIn, isA<ForElement>());
-      expect(forIn, isA<ForInElement>());
-      expect(forIn, isNot(isA<Expression>()));
-    });
-
     test('forIn with var, final, and async await for', () {
       expect(
         literalList([
@@ -876,10 +924,10 @@ void main() {
       expect(
         literalList([
           ForElement(
-            refer('i'),
             initialize: declareVar('i').assign(literal(0)),
             condition: refer('i').lessThan(literal(5)),
             advance: refer('i').operatorUnaryPostfixIncrement(),
+            body: refer('i'),
           ),
         ]),
         equalsDart(r'''
@@ -887,7 +935,7 @@ void main() {
         '''),
       );
       expect(
-        literalSet([ForElement(refer('next').call([]))]),
+        literalSet([ForElement(body: refer('next').call([]))]),
         equalsDart(r'''
           {for (;;) next()}
         '''),
@@ -895,14 +943,35 @@ void main() {
       expect(
         literalList([
           ForElement(
-            refer('i'),
             condition: refer('i').lessThan(literal(3)),
             advance: refer('i').operatorUnaryPostfixIncrement(),
+            body: refer('i'),
           ),
         ]),
         equalsDart(r'''
           [for (; i < 3; i++) i]
         '''),
+      );
+    });
+
+    test('C-style ForElement with a missing condition or advance', () {
+      expect(
+        emitValid(
+          literalList([
+            ForElement(
+              initialize: declareVar('i').assign(literal(0)),
+              advance: refer('i').operatorUnaryPostfixIncrement(),
+              body: refer('i'),
+            ),
+          ]),
+        ),
+        '[for (var i = 0;; i++) i]',
+      );
+      expect(
+        emitValid(
+          literalList([ForElement(condition: refer('more'), body: refer('x'))]),
+        ),
+        '[for (; more;) x]',
       );
     });
 
@@ -956,10 +1025,10 @@ void main() {
                     transform.call([refer('item')]),
                   ),
                   ForElement(
-                    transform.call([refer('i')]),
                     initialize: declareVar('i').assign(literal(0)),
                     condition: check.call([refer('i')]),
                     advance: refer('i').operatorUnaryPostfixIncrement(),
+                    body: transform.call([refer('i')]),
                   ),
                 ),
               ]),
@@ -979,14 +1048,14 @@ void main() {
     test('toString emits Dart representation', () {
       expect(
         ForElement(
-          refer('i'),
           initialize: declareVar('i').assign(literal(0)),
           condition: refer('i').lessThan(literal(3)),
           advance: refer('i').operatorUnaryPostfixIncrement(),
+          body: refer('i'),
         ).toString(),
         'for (var i = 0; i < 3; i++) i',
       );
-      expect(ForElement(refer('x')).toString(), 'for (;;) x');
+      expect(ForElement(body: refer('x')).toString(), 'for (;;) x');
       expect(
         ForElement.forIn(
           declareFinal('x'),
@@ -998,7 +1067,7 @@ void main() {
       );
     });
 
-    test('emits valid Dart compilation unit inside async Method', () {
+    test('emits nested elements inside an async Method', () {
       expect(
         Method(
           (b) => b
@@ -1089,15 +1158,15 @@ void main() {
                     ),
                   ),
                   ForElement(
-                    MapLiteralEntry(
+                    initialize: declareVar('i').assign(literal(0)),
+                    condition: refer('i').lessThan(literal(2)),
+                    advance: refer('i').operatorUnaryPostfixIncrement(),
+                    body: MapLiteralEntry(
                       literalString(
                         'slot',
                       ).operatorAdd(refer('i').property('toString').call([])),
                       refer('slots').index(refer('i')),
                     ),
-                    initialize: declareVar('i').assign(literal(0)),
-                    condition: refer('i').lessThan(literal(2)),
-                    advance: refer('i').operatorUnaryPostfixIncrement(),
                   ),
                 ],
                 refer('String'),
@@ -1224,13 +1293,13 @@ void main() {
             .assign(
               literalSet([
                 ForElement(
-                  IfElement(
-                    .expression(refer('i').greaterThan(literal(0))),
-                    refer('lookup').call([refer('i')]).nullAwareElement,
-                  ),
                   initialize: declareVar('i').assign(literal(0)),
                   condition: refer('i').lessThan(literal(3)),
                   advance: refer('i').operatorUnaryPostfixIncrement(),
+                  body: IfElement(
+                    .expression(refer('i').greaterThan(literal(0))),
+                    refer('lookup').call([refer('i')]).nullAwareElement,
+                  ),
                 ),
               ]),
             )
@@ -1288,6 +1357,23 @@ void main() {
       );
     });
 
+    test('elides nested const inside IfElement in const lists and sets', () {
+      final foo = refer('Foo').constInstance([]);
+      final flag = Condition.expression(refer('flag'));
+      expect(
+        emitValid(
+          literalConstList([
+            IfElement(flag, foo, literalConstList([foo])),
+          ]),
+        ),
+        'const [if (flag) Foo() else [Foo()]]',
+      );
+      expect(
+        emitValid(literalConstSet({IfElement(flag, foo)})),
+        'const {if (flag) Foo()}',
+      );
+    });
+
     test(
       'supports toString on collection literals containing control specs',
       () {
@@ -1319,4 +1405,16 @@ void main() {
       },
     );
   });
+}
+
+/// Emits [spec] and fails unless the result parses as Dart.
+///
+/// Unlike [equalsDart], which falls back to comparing collapsed whitespace
+/// when the formatter rejects its input, this throws on invalid syntax.
+String emitValid(Spec spec) {
+  final code = spec.accept(DartEmitter(useNullSafetySyntax: true)).toString();
+  DartFormatter(
+    languageVersion: DartFormatter.latestLanguageVersion,
+  ).formatStatement('final value = $code;');
+  return code;
 }

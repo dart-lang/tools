@@ -30,33 +30,8 @@ abstract class ControlVisitor<T>
   T visitConditional(Conditional spec, [T? context]);
   T visitBooleanCondition(BooleanCondition condition, [T? context]);
   T visitCaseCondition(CaseCondition condition, [T? context]);
-
-  /// Visits a conditional [IfElement] inside a collection literal.
-  ///
-  /// ```dart
-  /// final element = IfElement(Condition.expression(refer('ok')), literal(1));
-  /// element.accept(DartEmitter());
-  /// ```
   T visitIfElement(IfElement spec, [T? context]);
-
-  /// Visits a C-style [ForLoopElement] inside a collection literal.
-  ///
-  /// ```dart
-  /// final element = ForElement(refer('x'));
-  /// element.accept(DartEmitter());
-  /// ```
   T visitForLoopElement(ForLoopElement spec, [T? context]);
-
-  /// Visits a `for-in` [ForInElement] inside a collection literal.
-  ///
-  /// ```dart
-  /// final element = ForElement.forIn(
-  ///   declareFinal('x'),
-  ///   refer('xs'),
-  ///   refer('x'),
-  /// );
-  /// element.accept(DartEmitter());
-  /// ```
   T visitForInElement(ForInElement spec, [T? context]);
   T visitTry(Try spec, [T? context]);
   T visitSwitchStatement(SwitchStatement spec, [T? context]);
@@ -97,13 +72,52 @@ abstract mixin class ControlEmitter implements ControlVisitor<StringSink> {
     output.write('if (');
     spec.condition.accept(this, output);
     output.write(') ');
-    spec.then.accept(this, output);
-    if (spec.orElse != null) {
-      output.write(' else ');
-      spec.orElse!.accept(this, output);
+    final orElse = spec.orElse;
+    if (orElse == null) {
+      spec.then.accept(this, output);
+      return output;
     }
+    _writeThenBeforeElse(spec.then, output);
+    output.write(' else ');
+    orElse.accept(this, output);
     return output;
   }
+
+  /// Writes [then] so that a following `else` parses.
+  ///
+  /// Dart reads a nullable type followed by `else` (`if (c) x is int? else y`)
+  /// as the start of a conditional expression, so a trailing expression whose
+  /// emitted text ends in `?` is wrapped in parentheses.
+  void _writeThenBeforeElse(Spec then, StringSink output) {
+    final text = then.accept<StringSink>(this, StringBuffer()).toString();
+    final tail = text.endsWith('?') ? _trailingExpression(then) : null;
+    final tailText = tail?.accept<StringSink>(this, StringBuffer()).toString();
+    if (tailText == null || !text.endsWith(tailText)) {
+      output.write(text);
+      return;
+    }
+    output
+      ..write(text.substring(0, text.length - tailText.length))
+      ..write('(')
+      ..write(tailText)
+      ..write(')');
+  }
+
+  /// The expression emitted last by [element], if it can be determined.
+  static Expression? _trailingExpression(Spec element) => switch (element) {
+    IfElement(:final then, :final orElse) => _trailingExpression(
+      orElse ?? then,
+    ),
+    ForElement(:final body) => _trailingExpression(body),
+    MapLiteralEntry(:final value) || NullAwareElement(:final value) => value,
+    BinaryExpression(
+      left: LiteralExpression(literal: '...' || '...?'),
+      :final right,
+    ) =>
+      right,
+    Expression() => element,
+    _ => null,
+  };
 
   @override
   StringSink visitForLoopElement(ForLoopElement spec, [StringSink? output]) {
