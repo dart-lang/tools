@@ -322,7 +322,9 @@ class SelectorEvaluator extends Visitor {
 
     if (node.operatorKind == TokenKind.NO_MATCH) return true;
 
-    final select = '${node.value}';
+    final select = node.value is String
+        ? _decodeCssEscapes(node.value as String)
+        : '${node.value}';
     return switch (node.operatorKind) {
       TokenKind.EQUALS => value == select,
       TokenKind.INCLUDES => hasHtmlClassToken(value, select),
@@ -335,3 +337,74 @@ class SelectorEvaluator extends Visitor {
     };
   }
 }
+
+/// Decodes CSS escapes in a quoted attribute-selector value.
+String _decodeCssEscapes(String value) {
+  final firstEscape = value.indexOf(String.fromCharCode(0x5C));
+  if (firstEscape < 0) return value;
+
+  final result = StringBuffer(value.substring(0, firstEscape));
+  for (var i = firstEscape; i < value.length; i++) {
+    final char = value.codeUnitAt(i);
+    if (char != 0x5C || i + 1 == value.length) {
+      result.writeCharCode(char);
+      continue;
+    }
+
+    final next = value.codeUnitAt(++i);
+    var codePoint = _cssHexValue(next);
+    if (codePoint < 0) {
+      // A non-hex escaped character is included literally, without the slash.
+      if (next == 0x0D || next == 0x0A || next == 0x0C) {
+        if (next == 0x0D &&
+            i + 1 < value.length &&
+            value.codeUnitAt(i + 1) == 0x0A) {
+          i++;
+        }
+        continue;
+      }
+      result.writeCharCode(next);
+      continue;
+    }
+
+    var digits = 1;
+    while (digits < 6 && i + 1 < value.length) {
+      final digit = _cssHexValue(value.codeUnitAt(i + 1));
+      if (digit < 0) break;
+      codePoint = codePoint * 16 + digit;
+      i++;
+      digits++;
+    }
+
+    if (i + 1 < value.length && _isCssWhitespace(value.codeUnitAt(i + 1))) {
+      final whitespace = value.codeUnitAt(++i);
+      if (whitespace == 0x0D &&
+          i + 1 < value.length &&
+          value.codeUnitAt(i + 1) == 0x0A) {
+        i++;
+      }
+    }
+
+    if (codePoint == 0 ||
+        codePoint > 0x10FFFF ||
+        (codePoint >= 0xD800 && codePoint <= 0xDFFF)) {
+      codePoint = 0xFFFD;
+    }
+    result.writeCharCode(codePoint);
+  }
+  return result.toString();
+}
+
+int _cssHexValue(int char) {
+  if (char >= 0x30 && char <= 0x39) return char - 0x30;
+  if (char >= 0x41 && char <= 0x46) return char - 0x37;
+  if (char >= 0x61 && char <= 0x66) return char - 0x57;
+  return -1;
+}
+
+bool _isCssWhitespace(int char) =>
+    char == 0x20 ||
+    char == 0x09 ||
+    char == 0x0A ||
+    char == 0x0C ||
+    char == 0x0D;

@@ -54,6 +54,21 @@ void main() {
     expect(element.classes.contains('foo\u00a0bar'), isTrue);
   });
 
+  test('attribute selectors decode CSS unicode escapes', () {
+    const html = '<div data-attr-whitespace="one é two" '
+        'data-attr-value="é"></div>';
+    final document = parse(html);
+    final element = document.querySelector('div');
+
+    expect(
+      document.querySelector(r'[data-attr-whitespace~="\0000e9"]'),
+      same(element),
+    );
+    expect(document.querySelector(r'[data-attr-value="\e9"]'), same(element));
+    // Whitespace after a short escape is consumed as its optional terminator.
+    expect(document.querySelector(r'[data-attr-value="\e9 "]'), same(element));
+  });
+
   test('deep descendant queries retain preorder without recursion', () {
     final root = Element.tag('main');
     var current = root;

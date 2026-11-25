@@ -1,5 +1,7 @@
 ## 0.15.8-wip
 
+- Decode CSS escapes in quoted attribute selector values, including Unicode
+  hex escapes with optional whitespace terminators.
 - Reduce allocations when parsing and serializing: `HtmlInputStream` no longer copies the input when it needs no newline or surrogate normalization, and `htmlSerializeEscape` copies unescaped runs at once and returns the input unchanged when nothing needs escaping.
 - Fix `Element.text`, `DocumentFragment.text` and `Node.textContent` throwing a `StackOverflowError` on very deeply nested elements; text is now extracted iteratively.
 - Fix `Node.remove` and `NodeList.remove` leaving a stale `parentNode`, `Node.insertBefore`, `NodeList.insert`, `insertAll` and `operator []=` using a shifted index when moving an earlier sibling, and `reparentChildren` emptying a node reparented to itself. Moving all children of another node (`append` of a `DocumentFragment`, `reparentChildren`, `innerHtml`) now runs in linear time.
