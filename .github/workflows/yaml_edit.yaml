@@ -9,11 +9,15 @@ on:
     paths:
       - '.github/workflows/yaml_edit.yaml'
       - 'pkgs/yaml_edit/**'
+      # Temporary while dependency_overrides points at ../yaml; remove before publishing.
+      - 'pkgs/yaml/**'
   pull_request:
     branches: [ main ]
     paths:
       - '.github/workflows/yaml_edit.yaml'
       - 'pkgs/yaml_edit/**'
+      # Temporary while dependency_overrides points at ../yaml; remove before publishing.
+      - 'pkgs/yaml/**'
   schedule:
     - cron: "0 0 * * 0"
 
@@ -58,7 +62,7 @@ jobs:
       matrix:
         # Add macos-latest and/or windows-latest if relevant for this package.
         os: [ubuntu-latest]
-        sdk: ['3.1', stable, dev]
+        sdk: ['3.4', stable, dev]
         platform: [vm, chrome]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
