@@ -11,6 +11,24 @@ reviews (e.g. using `diff` tests).
 > For robust breaking change tracking, you should use
 > [dart_apitool](https://pub.dev/packages/dart_apitool).
 
+## What Is Summarized
+
+In addition to exported `lib/` libraries and declarations, `api_summary` tracks
+the `pubspec.yaml` sections that define a package's external contract with
+downstream consumers (`dev_dependencies` are ignored):
+
+* `environment`: SDK (`sdk`, `flutter`) version constraints required to resolve
+  and run the package (caret-equivalent ranges normalize to `^x.y.z`).
+* `dependencies`: Runtime dependency version constraints for external packages
+  whose declarations or types are referenced or re-exported in the public API,
+  including transitive re-exports and external typedefs (rendered inline on
+  referenced `package:...` library headers in `api.txt`, under `dependencies:`
+  when no inline header exists, and under `dependencies` in `api.json` and
+  `api.yaml`). Internal-only runtime dependencies that do not appear in the
+  public API are omitted.
+* `executables`: Public command-line executables exposed via `dart run` or
+  `dart install`.
+
 ## Command Line Usage
 
 You can use the command-line tool to generate an API summary for any package
@@ -58,6 +76,8 @@ dart run api_summary
 * `-c, --check`: Verify that the golden file (`api.txt`, `api.json`, or
   `api.yaml`) matches the current public API and exposes no non-public or
   unexported primary-barrel types, exiting with code `1` on failure.
+* `--allow-non-public-types`: Allow non-public or unexported primary-barrel
+  types when running `--check` (opt-out for legacy packages).
 * `-h, --help`: Prints usage instructions.
 
 Note: `--output`, `--write`, and `--check` are mutually exclusive.
@@ -71,7 +91,7 @@ Add `api_summary` to your `pubspec.yaml`:
 
 ```yaml
 dev_dependencies:
-  api_summary: ^1.1.0
+  api_summary: ^1.3.0
 ```
 
 ### Basic Example
@@ -137,18 +157,6 @@ void main() async {
   print(summary);
 }
 ```
-
-You can also override `includeReferencedTypes` to transitively include skeleton declarations (containing type hierarchy but no members) of classes, enums, or mixins from other packages and the SDK that are referenced in your public API:
-
-```dart
-import 'package:api_summary/api_summary.dart';
-
-base class MyCustomizer extends ApiSummaryCustomizer {
-  @override
-  bool get includeReferencedTypes => true;
-}
-```
-
 
 ## Golden File / Diff Testing (`expectApiSummaryClean`)
 

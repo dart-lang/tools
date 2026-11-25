@@ -30,6 +30,10 @@ import 'sealed_subtypes.dart';
 /// [environment] defines the SDK and platform environment constraints of the
 /// package (such as 'sdk' or 'flutter').
 ///
+/// [dependencies] defines the direct runtime package dependencies of the
+/// package, mapping package names to their version constraints or dependency
+/// descriptors.
+///
 /// [executables] defines the executables exposed by the package, mapping
 /// executable names to their target script paths within `bin/`.
 Future<ApiSummary> buildApiPackage(
@@ -37,11 +41,13 @@ Future<ApiSummary> buildApiPackage(
   AnalysisContext context,
   ApiSummaryCustomizer customizer, {
   Map<String, String> environment = const {},
+  Map<String, String> dependencies = const {},
   Map<String, String?> executables = const {},
 }) => _ApiBuilder(
   packageName,
   customizer,
   environment: environment,
+  dependencies: dependencies,
   executables: executables,
 ).build(context);
 
@@ -51,6 +57,7 @@ final class _ApiBuilder {
   final ApiSummaryCustomizer _customizer;
   final String _pkgName;
   final Map<String, String> _environment;
+  final Map<String, String> _dependencies;
   final Map<String, String?> _executables;
 
   final _immediateSubinterfaceCache =
@@ -60,12 +67,16 @@ final class _ApiBuilder {
   final _pendingElements = Queue<Element>();
   final _libraryBuilders = <String, _ApiLibraryBuilder>{};
   final _elementToLibraries = <Element, List<LibraryElement>>{};
+  final _referencedExternalPackages = <String>{};
   final _topLevelPublicElements = <Element>{};
+  final _visitedPackageLibraries = <LibraryElement>{};
+  final _directDepExportCache = <LibraryElement, Map<Element, List<String>>>{};
 
   _ApiBuilder(
     this._pkgName,
     this._customizer, {
     this._environment = const {},
+    this._dependencies = const {},
     this._executables = const {},
   });
 
@@ -113,6 +124,9 @@ final class _ApiBuilder {
       final libraries =
           _elementToLibraries[element] ??
           [if (element.library != null) element.library!];
+      if (element.library case final lib? when lib.uri.isIn(_pkgName)) {
+        _visitedPackageLibraries.add(lib);
+      }
 
       final apiElement = switch (element) {
         EnumElement() => _buildClass(
@@ -158,6 +172,8 @@ final class _ApiBuilder {
         continue;
       }
 
+      _recordReferencedExternalElement(element);
+
       for (final library in libraries) {
         final builder = _libraryBuilders.putIfAbsent(
           library.uri.toString(),
@@ -191,9 +207,15 @@ final class _ApiBuilder {
 
     final libraries = _libraryBuilders.values.map((e) => e.build()).toList();
 
+    final referencedDependencies = {
+      for (final MapEntry(:key, :value) in _dependencies.entries)
+        if (_referencedExternalPackages.contains(key)) key: value,
+    };
+
     return ApiSummary(
       name: _pkgName,
       environment: _environment,
+      dependencies: referencedDependencies,
       executables: _executables,
       libraries: libraries,
     );
@@ -222,6 +244,7 @@ final class _ApiBuilder {
           _maybeAddPending(element);
         }
         publicApiLibraries.add(library);
+        _visitedPackageLibraries.add(library);
         _libraryBuilders.putIfAbsent(
           library.uri.toString(),
           () => _ApiLibraryBuilder(
@@ -239,6 +262,67 @@ final class _ApiBuilder {
     _pendingElements.add(element);
   }
 
+  void _recordReferencedExternalElement(Element element) {
+    final pkg = element.library?.uri.packageName;
+    if (pkg == null || pkg == _pkgName) return;
+    if (_dependencies.containsKey(pkg)) {
+      _referencedExternalPackages.add(pkg);
+      return;
+    }
+
+    // The declaring package is not a direct dependency (for example, a
+    // transitive type re-exported through a direct dependency). Attribute it
+    // to any direct dependency imported or exported by visited libraries whose
+    // visible export namespace exposes this element.
+    final base = element.baseElement;
+    for (final pkgLib in _visitedPackageLibraries) {
+      for (final fragment in pkgLib.fragments) {
+        final directDepDirectives =
+            <({LibraryElement library, List<NamespaceCombinator> combinators})>[
+              for (final imp in fragment.libraryImports)
+                if (imp.importedLibrary case final depLib?)
+                  (library: depLib, combinators: imp.combinators),
+              for (final exp in fragment.libraryExports)
+                if (exp.exportedLibrary case final depLib?)
+                  (library: depLib, combinators: exp.combinators),
+            ];
+        for (final (:library, :combinators) in directDepDirectives) {
+          final depPkg = library.uri.packageName;
+          if (depPkg == null || !_dependencies.containsKey(depPkg)) continue;
+          final exportedNames = _exportedNamesByBaseElement(library)[base];
+          if (exportedNames != null &&
+              exportedNames.any((n) => _combinatorsAllow(combinators, n))) {
+            _referencedExternalPackages.add(depPkg);
+          }
+        }
+      }
+    }
+  }
+
+  Map<Element, List<String>> _exportedNamesByBaseElement(
+    LibraryElement library,
+  ) => _directDepExportCache[library] ??= () {
+    final result = <Element, List<String>>{};
+    for (final MapEntry(:key, :value)
+        in library.exportNamespace.definedNames2.entries) {
+      final name = key.endsWith('=') ? key.substring(0, key.length - 1) : key;
+      (result[value.baseElement] ??= []).add(name);
+    }
+    return result;
+  }();
+
+  bool _combinatorsAllow(List<NamespaceCombinator> combinators, String name) {
+    for (final combinator in combinators) {
+      switch (combinator) {
+        case ShowElementCombinator(:final shownNames):
+          if (!shownNames.contains(name)) return false;
+        case HideElementCombinator(:final hiddenNames):
+          if (hiddenNames.contains(name)) return false;
+      }
+    }
+    return true;
+  }
+
   bool _isNullable(NullabilitySuffix suffix) => switch (suffix) {
     NullabilitySuffix.none => false,
     NullabilitySuffix.question => true,
@@ -248,6 +332,11 @@ final class _ApiBuilder {
   };
 
   ApiType _describeType(DartType type, {bool enqueue = true}) {
+    if (enqueue) {
+      if (type.alias?.element case final aliasElement?) {
+        _recordReferencedExternalElement(aliasElement);
+      }
+    }
     final isNullable = _isNullable(type.nullabilitySuffix);
     switch (type) {
       case DynamicType():
@@ -281,7 +370,10 @@ final class _ApiBuilder {
           isNullable: isNullable,
         );
       case InterfaceType(:final element, :final typeArguments):
-        if (enqueue) _maybeAddPending(element);
+        if (enqueue) {
+          _recordReferencedExternalElement(element);
+          _maybeAddPending(element);
+        }
         return ApiInterfaceType(
           name: element.name ?? '',
           libraryUri: element.library.uri.toString(),
@@ -348,6 +440,9 @@ final class _ApiBuilder {
     return result;
   }
 
+  // TODO(kevmoo): Replace this manual library scan with
+  // `ClassElement.directSubtypesOfSealed` if exposed by `package:analyzer`:
+  // https://github.com/dart-lang/sdk/issues/65075
   Map<ClassElement, Set<InterfaceElement>>
   _getOrComputeImmediateSubinterfaceMap(LibraryElement library) {
     if (_immediateSubinterfaceCache[library] case final m?) return m;

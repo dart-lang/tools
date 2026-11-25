@@ -50,6 +50,7 @@ Future<void> _run(ArgResults results) async {
   final absolutePath = p.normalize(p.absolute(packagePath));
   final formatName = results.option('format')!;
   final format = ApiSummaryFormat.values.byName(formatName);
+  final allowNonPublicTypes = results.flag('allow-non-public-types');
 
   switch ((
     write: results.flag('write'),
@@ -62,8 +63,18 @@ Future<void> _run(ArgResults results) async {
       throw const FormatException('Cannot specify both --write and --output.');
     case (write: false, check: true, output: _?):
       throw const FormatException('Cannot specify both --check and --output.');
+    case (write: _, check: false, output: _) when allowNonPublicTypes:
+      throw const FormatException(
+        '--allow-non-public-types can only be used with --check.',
+      );
     case (write: false, check: true, output: null):
-      await expectApiSummaryClean(packagePath: absolutePath, format: format);
+      await expectApiSummaryClean(
+        packagePath: absolutePath,
+        format: format,
+        customizer: allowNonPublicTypes
+            ? const ApiSummaryCustomizer(allowNonPublicTypes: true)
+            : null,
+      );
     case (write: false, check: false, output: null):
       final package = await apiSummary(absolutePath);
       stdout.write(format.format(package));
@@ -122,6 +133,13 @@ final _parser = ArgParser()
     help:
         'Verify that the golden file (api.txt, api.json, or api.yaml) matches '
         'the current public API.',
+    negatable: false,
+  )
+  ..addFlag(
+    'allow-non-public-types',
+    help:
+        'Allow non-public or unexported primary-barrel types when using '
+        '--check.',
     negatable: false,
   )
   ..addFlag(

@@ -1,4 +1,4 @@
-## 1.3.0-wip
+## 1.3.0
 
 - Include `ApiDeclarationStatus.nonPublic` skeleton declarations in
   `ApiSummary.libraries` unconditionally so `api.json` and `api.yaml` match
@@ -8,7 +8,8 @@
   or package-owned types referenced by the primary barrel without being
   exported by it).
 - Add `allowNonPublicTypes` optional named constructor parameter to
-  `ApiSummaryCustomizer`.
+  `ApiSummaryCustomizer` and `--allow-non-public-types` flag to `api_summary
+  --check`.
 - Add `includeImplicitNonPublicMembers` and `includeReferencedTypes` optional
   named constructor parameters to `ApiSummaryCustomizer`.
 - Canonicalize the sort order of libraries, declarations, constructors,
@@ -27,6 +28,14 @@
   exports), make `immediateSubtypes` optional in `ApiClass.new`, and add
   `ApiClass.hasNonPublicSubtypes` (rendered as `<non-public>` in `api.txt`)
   when uncovered non-public subtypes exist.
+- Track `pubspec.yaml` runtime `dependencies` constraints for external packages
+  referenced or re-exported in the public API (including transitive re-exports
+  and external typedefs) on `ApiSummary.dependencies`, and render them inline
+  on referenced `package:...` library headers in `api.txt` (or under
+  `dependencies:` when no inline header exists)
+  ([#2463](https://github.com/dart-lang/tools/issues/2463)).
+- Normalize caret-equivalent version constraints (such as `>=3.9.0 <4.0.0` to
+  `^3.9.0`) in `environment` and `dependencies`.
 
 ## 1.2.0
 
