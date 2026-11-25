@@ -1,5 +1,6 @@
 ## 7.4.1-wip
 
+* Recognize a tab between a link reference destination and its title.
 * Split a fenced code block info string at the first space or tab, so a
   tab no longer ends up inside the `language-` class (matching cmark and
   commonmark.js).

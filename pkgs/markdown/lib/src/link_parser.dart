@@ -303,7 +303,11 @@ class LinkParser {
         if (isDone) {
           break;
         }
-      } else if (char == $space || char == $lf || char == $cr || char == $ff) {
+      } else if (char == $space ||
+          char == $tab ||
+          char == $lf ||
+          char == $cr ||
+          char == $ff) {
         break;
       } else if (char == $lparen) {
         parenCount++;
