@@ -259,6 +259,10 @@ bool _canTriviallySubstitute(
   return true;
 }
 
+// TODO(kevmoo): Replace the custom substitution and deferred-substitution
+// subtype checker below with `TypeSystem.substitute` once public type
+// substitution is available in `package:analyzer`:
+// https://github.com/dart-lang/sdk/issues/65075
 _SubstType _resolveSubstType(_SubstType term, LibraryElement library) {
   if (term.subst.isEmpty) return term;
   if (!_hasUnaliasedFunctionWithSubst(term.type, term.subst)) {

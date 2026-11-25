@@ -687,6 +687,72 @@ dependencies:
         ApiSummary.fromJson(externalTypedef.toJson()).toString(),
         equals(typedefRendered),
       );
+
+      // 5. Combinators (show / hide) prevent attributing an unrelated direct
+      //    dependency that also re-exports CType.
+      await d.dir('d_pkg', [
+        d.file(
+          'pubspec.yaml',
+          'name: d_pkg\nenvironment:\n  sdk: ^3.12.0\n'
+              'dependencies:\n  c_pkg: ^1.0.0\n',
+        ),
+        d.dir('lib', [
+          d.file(
+            'd_pkg.dart',
+            "export 'package:c_pkg/c_pkg.dart' show CType;\n"
+                'void helper() {}\n',
+          ),
+        ]),
+      ]).create();
+
+      await d.dir('a_combinators', [
+        d.file(
+          'pubspec.yaml',
+          'name: a_pkg\nenvironment:\n  sdk: ^3.12.0\n'
+              'dependencies:\n  b_pkg: ^1.0.0\n  d_pkg: ^1.0.0\n',
+        ),
+        d.dir('.dart_tool', [
+          d.file(
+            'package_config.json',
+            '{\n'
+                '  "configVersion": 2,\n'
+                '  "packages": [\n'
+                '    {"name": "a_pkg", "rootUri": "../", '
+                '"packageUri": "lib/"},\n'
+                '    {"name": "b_pkg", "rootUri": "../../b_pkg", '
+                '"packageUri": "lib/"},\n'
+                '    {"name": "c_pkg", "rootUri": "../../c_pkg", '
+                '"packageUri": "lib/"},\n'
+                '    {"name": "d_pkg", "rootUri": "../../d_pkg", '
+                '"packageUri": "lib/"}\n'
+                '  ]\n'
+                '}\n',
+          ),
+        ]),
+        d.dir('lib', [
+          d.file(
+            'a_pkg.dart',
+            "import 'package:b_pkg/b_pkg.dart' show CType;\n"
+                "import 'package:d_pkg/d_pkg.dart' show helper;\n"
+                'CType makeC() {\n'
+                '  helper();\n'
+                '  return CType();\n'
+                '}\n',
+          ),
+          d.file(
+            'hidden.dart',
+            "import 'package:b_pkg/b_pkg.dart';\n"
+                "import 'package:d_pkg/d_pkg.dart' hide CType;\n"
+                'CType makeOtherC() {\n'
+                '  helper();\n'
+                '  return CType();\n'
+                '}\n',
+          ),
+        ]),
+      ]).create();
+
+      final combinatorSummary = await apiSummary(d.path('a_combinators'));
+      expect(combinatorSummary.dependencies, equals({'b_pkg': '^1.0.0'}));
     });
 
     test('throws FormatException when dependencies is not a map', () async {

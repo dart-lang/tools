@@ -177,6 +177,15 @@ HiddenType leak() => HiddenType();
     final checkRes = await runCli(['-p', samplePkgDir, '--check']);
     expect(checkRes.exitCode, equals(1));
     expect(checkRes.stderr, contains('HiddenType'));
+    expect(checkRes.stderr, contains('--allow-non-public-types'));
+
+    final allowRes = await runCli([
+      '-p',
+      samplePkgDir,
+      '--check',
+      '--allow-non-public-types',
+    ]);
+    expect(allowRes.exitCode, equals(0), reason: '${allowRes.stderr}');
 
     await expectApiSummaryClean(
       packagePath: samplePkgDir,
@@ -632,6 +641,14 @@ void serve(CoreType value) {}
       (
         ['-p', samplePkgDir, '--check', '-o', 'custom_api.txt'],
         'Cannot specify both --check and --output.',
+      ),
+      (
+        ['-p', samplePkgDir, '--allow-non-public-types'],
+        '--allow-non-public-types can only be used with --check.',
+      ),
+      (
+        ['-p', samplePkgDir, '--write', '--allow-non-public-types'],
+        '--allow-non-public-types can only be used with --check.',
       ),
       (
         ['some_positional_arg'],

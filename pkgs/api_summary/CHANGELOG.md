@@ -8,7 +8,8 @@
   or package-owned types referenced by the primary barrel without being
   exported by it).
 - Add `allowNonPublicTypes` optional named constructor parameter to
-  `ApiSummaryCustomizer`.
+  `ApiSummaryCustomizer` and `--allow-non-public-types` flag to `api_summary
+  --check`.
 - Add `includeImplicitNonPublicMembers` and `includeReferencedTypes` optional
   named constructor parameters to `ApiSummaryCustomizer`.
 - Canonicalize the sort order of libraries, declarations, constructors,

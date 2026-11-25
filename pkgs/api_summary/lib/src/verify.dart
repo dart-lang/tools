@@ -262,7 +262,9 @@ String? _findUnexposedTypesError(ApiSummary summary) {
       'libraries, making them unusable by callers:\n'
       '${lines.join('\n')}\n'
       'Ensure all types used in public signatures are exported by the '
-      'package.',
+      'package (or opt out via '
+      'ApiSummaryCustomizer(allowNonPublicTypes: true) or '
+      '--allow-non-public-types).',
     );
   }
 
@@ -282,7 +284,8 @@ String? _findUnexposedTypesError(ApiSummary summary) {
         'importing only "${primaryLib.uri}" cannot name these types:\n'
         '${unexportedLines.join('\n')}\n'
         'Export these types from "${primaryLib.uri}" (or opt out via '
-        'ApiSummaryCustomizer(allowNonPublicTypes: true)).',
+        'ApiSummaryCustomizer(allowNonPublicTypes: true) or '
+        '--allow-non-public-types).',
       );
     }
   }

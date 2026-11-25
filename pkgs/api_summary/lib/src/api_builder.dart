@@ -70,7 +70,7 @@ final class _ApiBuilder {
   final _referencedExternalPackages = <String>{};
   final _topLevelPublicElements = <Element>{};
   final _visitedPackageLibraries = <LibraryElement>{};
-  final _directDepExportCache = <LibraryElement, Set<Element>>{};
+  final _directDepExportCache = <LibraryElement, Map<Element, List<String>>>{};
 
   _ApiBuilder(
     this._pkgName,
@@ -273,18 +273,25 @@ final class _ApiBuilder {
     // The declaring package is not a direct dependency (for example, a
     // transitive type re-exported through a direct dependency). Attribute it
     // to any direct dependency imported or exported by visited libraries whose
-    // export namespace exposes this element.
+    // visible export namespace exposes this element.
     final base = element.baseElement;
     for (final pkgLib in _visitedPackageLibraries) {
       for (final fragment in pkgLib.fragments) {
-        final directDepLibs = [
-          for (final imp in fragment.libraryImports) ?imp.importedLibrary,
-          for (final exp in fragment.libraryExports) ?exp.exportedLibrary,
-        ];
-        for (final depLib in directDepLibs) {
-          final depPkg = depLib.uri.packageName;
+        final directDepDirectives =
+            <({LibraryElement library, List<NamespaceCombinator> combinators})>[
+              for (final imp in fragment.libraryImports)
+                if (imp.importedLibrary case final depLib?)
+                  (library: depLib, combinators: imp.combinators),
+              for (final exp in fragment.libraryExports)
+                if (exp.exportedLibrary case final depLib?)
+                  (library: depLib, combinators: exp.combinators),
+            ];
+        for (final (:library, :combinators) in directDepDirectives) {
+          final depPkg = library.uri.packageName;
           if (depPkg == null || !_dependencies.containsKey(depPkg)) continue;
-          if (_exportedBaseElements(depLib).contains(base)) {
+          final exportedNames = _exportedNamesByBaseElement(library)[base];
+          if (exportedNames != null &&
+              exportedNames.any((n) => _combinatorsAllow(combinators, n))) {
             _referencedExternalPackages.add(depPkg);
           }
         }
@@ -292,11 +299,29 @@ final class _ApiBuilder {
     }
   }
 
-  Set<Element> _exportedBaseElements(LibraryElement library) =>
-      _directDepExportCache[library] ??= {
-        for (final element in library.exportNamespace.definedNames2.values)
-          element.baseElement,
-      };
+  Map<Element, List<String>> _exportedNamesByBaseElement(
+    LibraryElement library,
+  ) => _directDepExportCache[library] ??= () {
+    final result = <Element, List<String>>{};
+    for (final MapEntry(:key, :value)
+        in library.exportNamespace.definedNames2.entries) {
+      final name = key.endsWith('=') ? key.substring(0, key.length - 1) : key;
+      (result[value.baseElement] ??= []).add(name);
+    }
+    return result;
+  }();
+
+  bool _combinatorsAllow(List<NamespaceCombinator> combinators, String name) {
+    for (final combinator in combinators) {
+      switch (combinator) {
+        case ShowElementCombinator(:final shownNames):
+          if (!shownNames.contains(name)) return false;
+        case HideElementCombinator(:final hiddenNames):
+          if (hiddenNames.contains(name)) return false;
+      }
+    }
+    return true;
+  }
 
   bool _isNullable(NullabilitySuffix suffix) => switch (suffix) {
     NullabilitySuffix.none => false,
@@ -415,6 +440,9 @@ final class _ApiBuilder {
     return result;
   }
 
+  // TODO(kevmoo): Replace this manual library scan with
+  // `ClassElement.directSubtypesOfSealed` if exposed by `package:analyzer`:
+  // https://github.com/dart-lang/sdk/issues/65075
   Map<ClassElement, Set<InterfaceElement>>
   _getOrComputeImmediateSubinterfaceMap(LibraryElement library) {
     if (_immediateSubinterfaceCache[library] case final m?) return m;
