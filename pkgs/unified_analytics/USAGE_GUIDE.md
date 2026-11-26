@@ -184,11 +184,12 @@ analytics.send(
 *   **Sanitized Values**: `targetPackageConstraint` must be the canonical
     string form of a successfully parsed version constraint, never the raw text
     the user typed after `@`. Any of the three values longer than 100
-    characters, the GA4 limit for a parameter value, is omitted from the event.
-*   **Parameter Budget**: GA4 allows at most 25 parameters per event. Each
-    target package parameter that is passed takes one slot away from the
-    dependency chunks, so an event with all three carries at most 17
-    `pubspec_dep_*` parameters.
+    characters, the GA4 limit for a parameter value, is omitted from the event,
+    and the version and constraint are only sent when the package name is.
+*   **Parameter Budget**: GA4 allows at most 25 parameters per event. The
+    dependency chunks fill the slots the other parameters leave free, so an
+    event that sends every other parameter, including all three target package
+    parameters, carries at most 17 `pubspec_dep_*` parameters.
 
 ## Developing Within `package:unified_analytics`
 

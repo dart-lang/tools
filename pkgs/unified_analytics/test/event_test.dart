@@ -338,6 +338,9 @@ void main() {
     final event = Event.dartCliCommandExecuted(
       name: 'run',
       enabledExperiments: 'enabledExperiments',
+      exitCode: 0,
+      pubspecHasFlutterSdk: false,
+      pubspecEnvironmentSdk: '^3.0.0',
       pubspecDependencies: deps,
       targetPackage: 'dhttpd',
       targetPackageVersion: 'a' * 100,
@@ -352,6 +355,38 @@ void main() {
       event.eventData.keys.where((key) => key.startsWith('pubspec_dep_')),
       hasLength(18),
     );
+    expect(event.eventData.length, 25);
+  });
+
+  test('Event.dartCliCommandExecuted omits target package version and '
+      'constraint without a target package', () {
+    final deps = {for (var i = 0; i < 500; i++) 'dependency_number_$i'};
+
+    Event generateEvent({String? targetPackage}) =>
+        Event.dartCliCommandExecuted(
+          name: 'run',
+          enabledExperiments: 'enabledExperiments',
+          pubspecDependencies: deps,
+          targetPackage: targetPackage,
+          targetPackageVersion: '4.1.0',
+          targetPackageConstraint: '^4.0.0',
+        );
+
+    // Both a missing name and one over the GA4 length limit drop all three.
+    for (final event in [
+      generateEvent(),
+      generateEvent(targetPackage: 'a' * 101),
+    ]) {
+      expect(
+        event.eventData.keys.where((key) => key.startsWith('target_package')),
+        isEmpty,
+      );
+      // Nothing is taken from the dependency chunks.
+      expect(
+        event.eventData.keys.where((key) => key.startsWith('pubspec_dep_')),
+        hasLength(20),
+      );
+    }
   });
 
   test('Event.dartCliCommandExecuted stays within the GA4 parameter limit '
@@ -381,6 +416,16 @@ void main() {
     final withoutTarget = generateEvent();
     expect(withoutTarget.eventData.length, 25);
     expect(chunkCount(withoutTarget), 20);
+
+    // Unused standard parameters do not add dependency chunks beyond
+    // `pubspec_dep_19`.
+    final minimal = Event.dartCliCommandExecuted(
+      name: 'run',
+      enabledExperiments: 'enabledExperiments',
+      pubspecDependencies: deps,
+    );
+    expect(minimal.eventData.length, 22);
+    expect(chunkCount(minimal), 20);
 
     final withPartialTarget = generateEvent(
       targetPackage: 'dhttpd',
