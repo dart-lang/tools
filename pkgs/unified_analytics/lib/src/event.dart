@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:meta/meta.dart';
 
@@ -496,31 +497,79 @@ final class Event {
   /// * [pubspecEnvironmentSdk] - the Dart SDK version constraint declared in
   ///   the project's pubspec (e.g. `^3.5.0` from `environment.sdk:`).
   ///
+  /// * [targetPackage] - the name of the package a standalone command such as
+  ///   `dart install <package>` or `dart run <package>@<version>` resolved
+  ///   (e.g. `dhttpd`).
+  ///
+  /// * [targetPackageVersion] - the version of [targetPackage] that was
+  ///   resolved (e.g. `4.1.0`).
+  ///
+  /// * [targetPackageConstraint] - the version constraint the user requested
+  ///   for [targetPackage], if any (e.g. `^4.0.0`). Callers MUST pass the
+  ///   canonical string form of a successfully parsed version constraint, and
+  ///   never the raw text the user typed after `@`, which can be an arbitrary
+  ///   descriptor.
+  ///
+  /// Callers MUST only pass [targetPackage], [targetPackageVersion], and
+  /// [targetPackageConstraint] after the package resolved successfully from
+  /// the public `https://pub.dev` hosted registry. Omit all three for git,
+  /// path, and privately hosted packages, and for failed resolutions, to
+  /// prevent leaking proprietary or internal package names.
+  ///
+  /// Any of the three that is longer than 100 characters, the GA4 limit for a
+  /// parameter value, is omitted from the event. [targetPackageVersion] and
+  /// [targetPackageConstraint] are only sent when [targetPackage] is.
+  ///
   /// NOTE FOR MAINTAINERS: Google Analytics 4 limits each event to at most 25
-  /// custom parameters. With standard metadata fields taking up 4–5 slots and
-  /// dependency chunking consuming up to 20 parameters (`pubspec_dep_0` through
-  /// `pubspec_dep_19`), adding any new parameters to this constructor requires
-  /// decreasing `maxChunks` in [chunkDependencies] to prevent dropping event
-  /// parameters.
-  Event.dartCliCommandExecuted({
+  /// custom parameters. Dependency chunks (`pubspec_dep_0` through
+  /// `pubspec_dep_19`) fill whatever slots the other parameters of this event
+  /// leave free, so a new parameter added to the map below takes a slot away
+  /// from them automatically. This assumes `Analytics.enabledFeatures` is not
+  /// set, which holds for the `dart` CLI tool; when it is set, an
+  /// `enabled_features` parameter is added to every event on top of these.
+  factory Event.dartCliCommandExecuted({
     required String name,
     required String enabledExperiments,
     int? exitCode,
     bool? pubspecHasFlutterSdk,
     Set<String>? pubspecDependencies,
     String? pubspecEnvironmentSdk,
-  }) : this._(
-         eventName: DashEvent.dartCliCommandExecuted,
-         eventData: {
-           'name': name,
-           'enabledExperiments': enabledExperiments,
-           'exitCode': ?exitCode,
-           'pubspec_has_flutter_sdk': ?pubspecHasFlutterSdk,
-           'pubspec_environment_sdk': ?pubspecEnvironmentSdk,
-           if (pubspecDependencies != null)
-             ...chunkDependencies(pubspecDependencies),
-         },
-       );
+    String? targetPackage,
+    String? targetPackageVersion,
+    String? targetPackageConstraint,
+  }) {
+    String? omitIfTooLong(String? value) =>
+        value == null || value.length > _maxParameterValueLength ? null : value;
+
+    final package = omitIfTooLong(targetPackage);
+    final eventData = <String, Object?>{
+      'name': name,
+      'enabledExperiments': enabledExperiments,
+      'exitCode': ?exitCode,
+      'pubspec_has_flutter_sdk': ?pubspecHasFlutterSdk,
+      'pubspec_environment_sdk': ?pubspecEnvironmentSdk,
+      if (package != null) ...{
+        'target_package': package,
+        'target_package_version': ?omitIfTooLong(targetPackageVersion),
+        'target_package_constraint': ?omitIfTooLong(targetPackageConstraint),
+      },
+    };
+    if (pubspecDependencies != null) {
+      eventData.addAll(
+        chunkDependencies(
+          pubspecDependencies,
+          maxChunks: min(
+            _maxDependencyChunks,
+            _maxEventParameters - eventData.length,
+          ),
+        ),
+      );
+    }
+    return Event._(
+      eventName: DashEvent.dartCliCommandExecuted,
+      eventData: eventData,
+    );
+  }
 
   /// Event that is sent from DevTools for various different actions as
   /// indicated by the [eventCategory].
@@ -1420,9 +1469,16 @@ abstract base class CustomMetrics {
 ///    ecosystem under truncation.
 /// 3. **Zero PII**: Salt is derived strictly from public package names without
 ///    relying on local paths, usernames, or private project identifiers.
+///
+/// At most [maxChunks] parameters are returned. Callers that send other
+/// optional parameters alongside the dependency chunks lower it to stay within
+/// the 25-parameter limit.
 @visibleForTesting
-Map<String, String> chunkDependencies(Set<String> deps) {
-  if (deps.isEmpty) return const {};
+Map<String, String> chunkDependencies(
+  Set<String> deps, {
+  int maxChunks = _maxDependencyChunks,
+}) {
+  if (deps.isEmpty || maxChunks <= 0) return const {};
 
   // Compute a deterministic project-level salt from the canonical
   // (alphabetically sorted) dependency set.
@@ -1450,19 +1506,13 @@ Map<String, String> chunkDependencies(Set<String> deps) {
   var currentLength = 0;
   var chunkIndex = 0;
 
-  // We have a maximum of 25 parameters per event in GA4. Standard event
-  // parameters (name, enabledExperiments, exitCode, pubspec_has_flutter_sdk)
-  // take up to 4 slots, leaving 21 slots. Capping at 20 chunks guarantees
-  // safety.
-  const maxChunks = 20;
-
   for (final dep in sortedDeps) {
-    // Guard: Skip package names that are somehow longer than 100 characters
-    // to prevent violating GA4's value length limit.
-    if (dep.length > 100) continue;
+    // Guard: Skip package names that are somehow longer than GA4's value
+    // length limit.
+    if (dep.length > _maxParameterValueLength) continue;
 
     final lengthToAdd = dep.length + (currentChunk.isEmpty ? 0 : 1);
-    if (currentLength + lengthToAdd > 100) {
+    if (currentLength + lengthToAdd > _maxParameterValueLength) {
       chunks['pubspec_dep_$chunkIndex'] = currentChunk.join(',');
       chunkIndex++;
 
@@ -1486,6 +1536,19 @@ Map<String, String> chunkDependencies(Set<String> deps) {
 
   return chunks;
 }
+
+/// The maximum length GA4 allows for an event parameter value.
+const _maxParameterValueLength = 100;
+
+/// The maximum number of parameters GA4 allows on an event.
+const _maxEventParameters = 25;
+
+/// The most dependency chunks sent on an event (`pubspec_dep_0` through
+/// `pubspec_dep_19`).
+///
+/// An event sends fewer when its other parameters leave fewer than this many
+/// of the [_maxEventParameters] slots free.
+const _maxDependencyChunks = 20;
 
 /// Computes a deterministic 32-bit FNV-1a hash of a string with an optional
 /// seed.

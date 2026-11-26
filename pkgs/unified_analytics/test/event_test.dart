@@ -294,9 +294,177 @@ void main() {
     }
   });
 
+  test('Event.dartCliCommandExecuted constructed with target package', () {
+    Event generateEvent() => Event.dartCliCommandExecuted(
+      name: 'install',
+      enabledExperiments: 'enabledExperiments',
+      exitCode: 0,
+      targetPackage: 'dhttpd',
+      targetPackageVersion: '4.1.0',
+      targetPackageConstraint: '^4.0.0',
+    );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.dartCliCommandExecuted);
+    expect(constructedEvent.eventData['name'], 'install');
+    expect(constructedEvent.eventData['exitCode'], 0);
+    expect(constructedEvent.eventData['target_package'], 'dhttpd');
+    expect(constructedEvent.eventData['target_package_version'], '4.1.0');
+    expect(constructedEvent.eventData['target_package_constraint'], '^4.0.0');
+    expect(constructedEvent.eventData.length, 6);
+  });
+
+  test('Event.dartCliCommandExecuted omits null target package fields', () {
+    final event = Event.dartCliCommandExecuted(
+      name: 'run',
+      enabledExperiments: 'enabledExperiments',
+      targetPackage: 'dhttpd',
+      targetPackageVersion: '4.1.0',
+    );
+
+    expect(event.eventData['target_package'], 'dhttpd');
+    expect(event.eventData['target_package_version'], '4.1.0');
+    expect(event.eventData.containsKey('target_package_constraint'), isFalse);
+    expect(event.eventData.length, 4);
+  });
+
+  test('Event.dartCliCommandExecuted omits target package values over the '
+      'GA4 length limit', () {
+    final tooLong = 'a' * 101;
+    final deps = {for (var i = 0; i < 500; i++) 'dependency_number_$i'};
+
+    final event = Event.dartCliCommandExecuted(
+      name: 'run',
+      enabledExperiments: 'enabledExperiments',
+      exitCode: 0,
+      pubspecHasFlutterSdk: false,
+      pubspecEnvironmentSdk: '^3.0.0',
+      pubspecDependencies: deps,
+      targetPackage: 'dhttpd',
+      targetPackageVersion: 'a' * 100,
+      targetPackageConstraint: tooLong,
+    );
+
+    expect(event.eventData['target_package'], 'dhttpd');
+    expect(event.eventData['target_package_version'], 'a' * 100);
+    expect(event.eventData.containsKey('target_package_constraint'), isFalse);
+    // The omitted value does not take a slot from the dependency chunks.
+    expect(
+      event.eventData.keys.where((key) => key.startsWith('pubspec_dep_')),
+      hasLength(18),
+    );
+    expect(event.eventData.length, 25);
+  });
+
+  test('Event.dartCliCommandExecuted omits target package version and '
+      'constraint without a target package', () {
+    final deps = {for (var i = 0; i < 500; i++) 'dependency_number_$i'};
+
+    Event generateEvent({String? targetPackage}) =>
+        Event.dartCliCommandExecuted(
+          name: 'run',
+          enabledExperiments: 'enabledExperiments',
+          pubspecDependencies: deps,
+          targetPackage: targetPackage,
+          targetPackageVersion: '4.1.0',
+          targetPackageConstraint: '^4.0.0',
+        );
+
+    // Both a missing name and one over the GA4 length limit drop all three.
+    for (final event in [
+      generateEvent(),
+      generateEvent(targetPackage: 'a' * 101),
+    ]) {
+      expect(
+        event.eventData.keys.where((key) => key.startsWith('target_package')),
+        isEmpty,
+      );
+      // Nothing is taken from the dependency chunks.
+      expect(
+        event.eventData.keys.where((key) => key.startsWith('pubspec_dep_')),
+        hasLength(20),
+      );
+    }
+  });
+
+  test('Event.dartCliCommandExecuted stays within the GA4 parameter limit '
+      'with target package and dependencies', () {
+    final deps = {for (var i = 0; i < 500; i++) 'dependency_number_$i'};
+
+    Event generateEvent({
+      String? targetPackage,
+      String? targetPackageVersion,
+      String? targetPackageConstraint,
+    }) => Event.dartCliCommandExecuted(
+      name: 'run',
+      enabledExperiments: 'enabledExperiments',
+      exitCode: 0,
+      pubspecHasFlutterSdk: false,
+      pubspecEnvironmentSdk: '^3.0.0',
+      pubspecDependencies: deps,
+      targetPackage: targetPackage,
+      targetPackageVersion: targetPackageVersion,
+      targetPackageConstraint: targetPackageConstraint,
+    );
+
+    int chunkCount(Event event) => event.eventData.keys
+        .where((key) => key.startsWith('pubspec_dep_'))
+        .length;
+
+    final withoutTarget = generateEvent();
+    expect(withoutTarget.eventData.length, 25);
+    expect(chunkCount(withoutTarget), 20);
+
+    // Unused standard parameters do not add dependency chunks beyond
+    // `pubspec_dep_19`.
+    final minimal = Event.dartCliCommandExecuted(
+      name: 'run',
+      enabledExperiments: 'enabledExperiments',
+      pubspecDependencies: deps,
+    );
+    expect(minimal.eventData.length, 22);
+    expect(chunkCount(minimal), 20);
+
+    final withPartialTarget = generateEvent(
+      targetPackage: 'dhttpd',
+      targetPackageVersion: '4.1.0',
+    );
+    expect(withPartialTarget.eventData.length, 25);
+    expect(chunkCount(withPartialTarget), 18);
+
+    final withTarget = generateEvent(
+      targetPackage: 'dhttpd',
+      targetPackageVersion: '4.1.0',
+      targetPackageConstraint: '^4.0.0',
+    );
+    expect(withTarget.eventData.length, 25);
+    expect(chunkCount(withTarget), 17);
+    expect(withTarget.eventData['target_package'], 'dhttpd');
+    expect(withTarget.eventData['target_package_version'], '4.1.0');
+    expect(withTarget.eventData['target_package_constraint'], '^4.0.0');
+  });
+
   group('chunkDependencies', () {
     test('empty set returns empty map', () {
       expect(chunkDependencies({}), isEmpty);
+    });
+
+    test('respects maxChunks', () {
+      final deps = {for (var i = 0; i < 500; i++) 'dependency_number_$i'};
+
+      final full = chunkDependencies(deps);
+      expect(full, hasLength(20));
+
+      final limited = chunkDependencies(deps, maxChunks: 3);
+      expect(limited.keys, ['pubspec_dep_0', 'pubspec_dep_1', 'pubspec_dep_2']);
+      // Lowering the limit truncates; it does not reshuffle.
+      for (final entry in limited.entries) {
+        expect(full[entry.key], entry.value);
+      }
+
+      expect(chunkDependencies(deps, maxChunks: 0), isEmpty);
     });
 
     test('sorts deterministically using salted FNV-1a hash values', () {

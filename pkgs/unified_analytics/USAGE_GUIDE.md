@@ -156,6 +156,41 @@ names across projects, ensuring statistically uniform ecosystem sampling.
     pubspec hash) so dependencies are captured per project directory without
     redundantly re-transmitting on every CLI invocation.
 
+### Target Package Telemetry
+
+Standalone commands that resolve a single package, such as
+`dart install <package>` and `dart run <package>@<version>`, may also pass
+`targetPackage`, `targetPackageVersion`, and `targetPackageConstraint` to
+`Event.dartCliCommandExecuted`:
+
+```dart
+analytics.send(
+  Event.dartCliCommandExecuted(
+    name: 'install',
+    enabledExperiments: '',
+    exitCode: 0,
+    targetPackage: 'dhttpd',
+    targetPackageVersion: '4.1.0', // The resolved version.
+    targetPackageConstraint: '^4.0.0', // What the user asked for, if anything.
+  ),
+);
+```
+
+*   **Privacy Filtering**: Callers MUST only pass these parameters after the
+    package resolved successfully from the public `https://pub.dev` hosted
+    registry. Omit all three for git, path, and privately hosted packages, and
+    for failed resolutions, to prevent leaking confidential internal package
+    names.
+*   **Sanitized Values**: `targetPackageConstraint` must be the canonical
+    string form of a successfully parsed version constraint, never the raw text
+    the user typed after `@`. Any of the three values longer than 100
+    characters, the GA4 limit for a parameter value, is omitted from the event,
+    and the version and constraint are only sent when the package name is.
+*   **Parameter Budget**: GA4 allows at most 25 parameters per event. The
+    dependency chunks fill the slots the other parameters leave free, so an
+    event that sends every other parameter, including all three target package
+    parameters, carries at most 17 `pubspec_dep_*` parameters.
+
 ## Developing Within `package:unified_analytics`
 
 ### Adding new data classes
