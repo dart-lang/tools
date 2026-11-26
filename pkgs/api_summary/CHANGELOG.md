@@ -8,6 +8,9 @@
 - Omit parameter default values and constant values that reference
   declarations in another package's `lib/src/` which none of that package's
   reachable public libraries export.
+  A library is reachable when the summarized package imports or exports it,
+  directly or transitively, so adding or removing such an import can change
+  whether one of these values is rendered in `api.txt`.
 
 ## 1.3.0
 
