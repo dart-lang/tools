@@ -1162,6 +1162,64 @@ const Meters kMeters = Meters(5);
     });
   }
 
+  Future<void> test_externalSrcConstantsInDefaultValues() async {
+    newPackage('foo')
+      ..addFile('lib/src/hidden.dart', '''
+class ForeignHidden {
+  const ForeignHidden();
+}
+''')
+      ..addFile('lib/src/shown.dart', '''
+class ForeignShown {
+  const ForeignShown();
+}
+''')
+      ..addFile('lib/exports.dart', '''
+import 'src/hidden.dart';
+import 'src/shown.dart';
+
+export 'src/shown.dart';
+
+class ForeignBase {
+  const ForeignBase({
+    Object hidden = const ForeignHidden(),
+    Object shown = const ForeignShown(),
+  });
+}
+''');
+
+    final summary = await _build({
+      '$testPackageLibPath/file.dart': '''
+import 'package:foo/exports.dart';
+
+export 'package:foo/exports.dart' show ForeignBase;
+
+class Sub extends ForeignBase {
+  const Sub({super.hidden, super.shown});
+}
+''',
+    });
+
+    final rehydrated = ApiSummary.fromJson(
+      jsonDecode(summary) as Map<String, dynamic>,
+    );
+    final lib = rehydrated.libraries.singleWhere(
+      (l) => l.uri == 'package:test/file.dart',
+    );
+
+    for (final name in ['Sub', 'ForeignBase']) {
+      final constructor = lib.classes
+          .singleWhere((c) => c.name == name)
+          .constructors
+          .single;
+      expect(
+        {for (final p in constructor.parameters) p.name: p.defaultValue},
+        {'hidden': null, 'shown': 'ForeignShown()'},
+        reason: name,
+      );
+    }
+  }
+
   void test_apiClass_sealedSubtypesSerialization() {
     final plain = ApiClass(
       name: 'Plain',

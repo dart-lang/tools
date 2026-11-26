@@ -71,6 +71,7 @@ final class _ApiBuilder {
   final _topLevelPublicElements = <Element>{};
   final _visitedPackageLibraries = <LibraryElement>{};
   final _directDepExportCache = <LibraryElement, Map<Element, List<String>>>{};
+  final _externalPublicElements = <String, Set<Element>>{};
 
   _ApiBuilder(
     this._pkgName,
@@ -655,11 +656,42 @@ final class _ApiBuilder {
 
   bool _isPublicElement(Element element) {
     final base = element.baseElement;
-    if (base.library?.uri.isIn(_pkgName) ?? false) {
-      return _topLevelPublicElements.contains(base);
-    }
-    return true;
+    final uri = base.library?.uri;
+    if (uri == null) return true;
+    if (uri.isIn(_pkgName)) return _topLevelPublicElements.contains(base);
+    final package = uri.packageName;
+    // SDK libraries, and libraries outside of another package's `lib/src/`.
+    if (package == null || uri.isInPublicLibOf(package)) return true;
+    return _exportedByPublicLibrariesOf(package).contains(base);
   }
+
+  /// The elements exported by the public libraries of the external [package]
+  /// that are reachable from the summarized package.
+  Set<Element> _exportedByPublicLibrariesOf(String package) =>
+      _externalPublicElements[package] ??= {
+        for (final library in _reachableLibraries)
+          if (library.uri.isInPublicLibOf(package))
+            for (final element in library.exportNamespace.definedNames2.values)
+              element.baseElement,
+      };
+
+  /// Every library reachable through the imports and exports of the
+  /// summarized package's libraries.
+  late final Set<LibraryElement> _reachableLibraries = () {
+    final reached = <LibraryElement>{};
+    final pending = [..._visitedPackageLibraries];
+    while (pending.isNotEmpty) {
+      final library = pending.removeLast();
+      if (!reached.add(library)) continue;
+      for (final fragment in library.fragments) {
+        pending.addAll([
+          for (final import in fragment.libraryImports) ?import.importedLibrary,
+          for (final export in fragment.libraryExports) ?export.exportedLibrary,
+        ]);
+      }
+    }
+    return reached;
+  }();
 
   ApiExecutable _buildExecutable(
     ExecutableElement element, {

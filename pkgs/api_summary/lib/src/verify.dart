@@ -82,6 +82,11 @@ final class ApiSummaryVerificationException implements Exception {
 /// types referenced by the primary `package:<pkg>/<pkg>.dart` barrel without
 /// being exported by it.
 ///
+/// Types named only by `@internal` or `@visibleForTesting` declarations and
+/// members are not treated as exposed. Types named only by `@experimental`
+/// declarations and members of the primary barrel may be exported by another
+/// public library instead.
+///
 /// Because all parameters are optional and named, [expectApiSummaryClean] can
 /// be passed directly as a tear-off to `test()`:
 /// ```dart
@@ -245,11 +250,23 @@ String _buildLineDiff(List<String> expected, List<String> actual) {
 }
 
 String? _findUnexposedTypesError(ApiSummary summary) {
-  final nonPublics = summary.libraries
+  final allNonPublics = summary.libraries
       .expand(_libraryDeclarations)
       .where((d) => d.status == .nonPublic)
       .toList();
-  final nonPublicKeys = nonPublics.map(_declarationKey).toSet();
+  final nonPublicKeys = allNonPublics.map(_declarationKey).toSet();
+
+  // A non-public type that is only reachable through `@internal` or
+  // `@visibleForTesting` signatures is not exposed to callers. A type that no
+  // modeled signature reaches is still reported.
+  final reachable = _reachableTypeKeys(summary);
+  final exposed = _reachableTypeKeys(summary, include: _isUnrestricted);
+  final nonPublics = [
+    for (final d in allNonPublics)
+      if (exposed.contains(_declarationKey(d)) ||
+          !reachable.contains(_declarationKey(d)))
+        d,
+  ];
 
   final sections = <String>[];
   if (nonPublics.isNotEmpty) {
@@ -298,20 +315,24 @@ List<String> _findUnexportedPrimaryBarrelLines(
   ApiLibrary primaryLib,
   Set<String> excludedKeys,
 ) {
-  final primaryExportedKeys = _libraryDeclarations(
-    primaryLib,
-  ).map(_declarationKey).toSet();
+  final declarations = _libraryDeclarations(primaryLib).toList();
+  final primaryExportedKeys = declarations.map(_declarationKey).toSet();
   final exportingLibraries = _siblingExportingLibraries(
     summary.libraries,
     primaryLib.uri,
   );
 
+  // A type named only by `@experimental` signatures may be exported by a
+  // sibling entry point instead, so that a stable barrel is not forced to
+  // export experimental types.
+  final stableKeys = {
+    for (final type in _signatureTypes(declarations, _isStable))
+      '${type.libraryUri}#${type.name}',
+  };
+
   final seenKeys = <String>{};
   final lines = <String>[];
-  final referencedTypes = _libraryDeclarations(
-    primaryLib,
-  ).expand(_referencedInterfaceTypes);
-  for (final type in referencedTypes) {
+  for (final type in _signatureTypes(declarations, _isUnrestricted)) {
     final libraryUri = type.libraryUri;
     if (libraryUri == null) continue;
     final key = '$libraryUri#${type.name}';
@@ -319,6 +340,9 @@ List<String> _findUnexportedPrimaryBarrelLines(
         primaryExportedKeys.contains(key) ||
         excludedKeys.contains(key) ||
         !Uri.parse(libraryUri).isIn(summary.name)) {
+      continue;
+    }
+    if (!stableKeys.contains(key) && exportingLibraries.containsKey(key)) {
       continue;
     }
     lines.add(
@@ -371,10 +395,72 @@ Iterable<ApiDeclaration> _libraryDeclarations(ApiLibrary library) sync* {
   yield* library.typeAliases;
 }
 
+/// Decides from its facets whether a signature takes part in a check.
+typedef _FacetFilter = bool Function(Set<ApiFacet> facets);
+
+bool _includeAll(Set<ApiFacet> _) => true;
+
+bool _hasAnyContract(Set<ApiFacet> facets, Set<MetaContract> contracts) =>
+    facets.whereType<MetaContractFacet>().any(
+      (f) => f.contracts.any(contracts.contains),
+    );
+
+/// Whether [facets] carry neither `@internal` nor `@visibleForTesting`.
+bool _isUnrestricted(Set<ApiFacet> facets) =>
+    !_hasAnyContract(facets, const {.internal, .visibleForTesting});
+
+/// Whether [facets] are unrestricted and not `@experimental`.
+bool _isStable(Set<ApiFacet> facets) =>
+    _isUnrestricted(facets) && !_hasAnyContract(facets, const {.experimental});
+
+/// The interface types named by the signatures of [declarations], skipping
+/// declarations and members rejected by [include].
+Iterable<ApiInterfaceType> _signatureTypes(
+  Iterable<ApiDeclaration> declarations,
+  _FacetFilter include,
+) => declarations
+    .where((d) => include(d.facets))
+    .expand((d) => _referencedInterfaceTypes(d, include: include));
+
+/// The `libraryUri#name` keys of every type reachable from the signatures of
+/// public declarations accepted by [include], following the signatures of
+/// non-public declarations transitively.
+Set<String> _reachableTypeKeys(
+  ApiSummary summary, {
+  _FacetFilter include = _includeAll,
+}) {
+  final declarations = summary.libraries.expand(_libraryDeclarations).toList();
+  final nonPublicByKey = {
+    for (final d in declarations)
+      if (d.status == .nonPublic) _declarationKey(d): d,
+  };
+  final reached = <String>{};
+  final pending = [
+    for (final d in declarations)
+      if (d.status == .public && include(d.facets)) d,
+  ];
+  while (pending.isNotEmpty) {
+    final declaration = pending.removeLast();
+    for (final type in _referencedInterfaceTypes(
+      declaration,
+      include: include,
+    )) {
+      final key = '${type.libraryUri}#${type.name}';
+      if (!reached.add(key)) continue;
+      if (nonPublicByKey[key] case final next?) pending.add(next);
+    }
+  }
+  return reached;
+}
+
 Iterable<ApiInterfaceType> _referencedInterfaceTypes(
-  ApiDeclaration declaration,
-) sync* {
-  yield* _declarationTypes(declaration).expand(_nestedInterfaceTypes);
+  ApiDeclaration declaration, {
+  _FacetFilter include = _includeAll,
+}) sync* {
+  yield* _declarationTypes(
+    declaration,
+    include: include,
+  ).expand(_nestedInterfaceTypes);
   if (declaration case ApiClass(
     :final locationUri?,
     :final immediateSubtypes,
@@ -390,7 +476,12 @@ Iterable<ApiInterfaceType> _referencedInterfaceTypes(
   }
 }
 
-Iterable<ApiType> _declarationTypes(ApiDeclaration declaration) sync* {
+/// The types named directly by the signature of [declaration], skipping
+/// members rejected by [include].
+Iterable<ApiType> _declarationTypes(
+  ApiDeclaration declaration, {
+  _FacetFilter include = _includeAll,
+}) sync* {
   switch (declaration) {
     case ApiClass():
       yield* declaration.typeParameters.values.nonNulls;
@@ -398,26 +489,28 @@ Iterable<ApiType> _declarationTypes(ApiDeclaration declaration) sync* {
       yield* declaration.interfaces;
       yield* declaration.mixins;
       yield* declaration.superclassConstraints;
-      for (final constructor in declaration.constructors) {
-        yield* _declarationTypes(constructor);
-      }
-      for (final method in declaration.methods) {
-        yield* _declarationTypes(method);
+      for (final member in [
+        ...declaration.constructors,
+        ...declaration.methods,
+      ].where((m) => include(m.facets))) {
+        yield* _declarationTypes(member);
       }
     case ApiExtension():
       yield* declaration.typeParameters.values.nonNulls;
       yield declaration.extendedType;
-      for (final method in declaration.methods) {
+      for (final method in declaration.methods.where(
+        (m) => include(m.facets),
+      )) {
         yield* _declarationTypes(method);
       }
     case ApiExtensionType():
       yield* declaration.typeParameters.values.nonNulls;
       yield* declaration.interfaces;
-      for (final constructor in declaration.constructors) {
-        yield* _declarationTypes(constructor);
-      }
-      for (final method in declaration.methods) {
-        yield* _declarationTypes(method);
+      for (final member in [
+        ...declaration.constructors,
+        ...declaration.methods,
+      ].where((m) => include(m.facets))) {
+        yield* _declarationTypes(member);
       }
     case ApiExecutable():
       yield* declaration.typeParameters.values.nonNulls;
