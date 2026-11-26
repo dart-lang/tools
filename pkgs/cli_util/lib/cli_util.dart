@@ -54,6 +54,28 @@ String? get dartExecutable {
 String? _cachedDartExecutable;
 bool _dartExecutableResolved = false;
 
+/// The path to the `flutter` executable, or `null` if no executable could be
+/// located.
+///
+/// Probes the host environment across three tiers (memoized on first access):
+/// 1. Ancestors of `Platform.resolvedExecutable` for a Flutter SDK's
+///    `bin/cache/` layout
+/// 2. `PATH` environment variable traversal for `flutter`
+/// 3. `FLUTTER_ROOT/bin/flutter` (`flutter.bat` on Windows) fallback
+String? get flutterExecutable {
+  if (Zone.current[environmentOverridesKey] != null) {
+    return _resolveFlutterExecutable();
+  }
+  if (!_flutterExecutableResolved) {
+    _cachedFlutterExecutable = _resolveFlutterExecutable();
+    _flutterExecutableResolved = true;
+  }
+  return _cachedFlutterExecutable;
+}
+
+String? _cachedFlutterExecutable;
+bool _flutterExecutableResolved = false;
+
 /// Returns the path to the current Dart SDK.
 @Deprecated("Use 'sdkPath' instead")
 String? getSdkPath() => sdkPath;
@@ -170,6 +192,48 @@ String? _resolveDartExecutable() {
 
   // Fallback: search PATH directly if SDK structure wasn't complete
   for (final candidate in _getExecutablePaths('dart')) {
+    if (File(candidate).existsSync()) {
+      return path.absolute(candidate);
+    }
+  }
+
+  return null;
+}
+
+String? _resolveFlutterExecutable() {
+  final exeName = Platform.isWindows ? 'flutter.bat' : 'flutter';
+
+  // Tier 1: Running inside a Flutter SDK
+  final executablePath =
+      _env['_DART_RESOLVED_EXECUTABLE'] ?? Platform.resolvedExecutable;
+  if (executablePath.isNotEmpty) {
+    var dir = path.dirname(executablePath);
+    while (true) {
+      final parent = path.dirname(dir);
+      if (parent == dir) break;
+      // Match a Flutter SDK's `bin/cache/` ancestor, covering both bundled
+      // `dart` and `flutter_tester` without matching unrelated `flutter` files.
+      if (path.basename(dir) == 'cache' && path.basename(parent) == 'bin') {
+        final candidate = path.join(parent, exeName);
+        if (File(candidate).existsSync()) {
+          return path.absolute(candidate);
+        }
+      }
+      dir = parent;
+    }
+  }
+
+  // Tier 2: PATH traversal
+  for (final candidate in _getExecutablePaths('flutter')) {
+    if (File(candidate).existsSync()) {
+      return path.absolute(candidate);
+    }
+  }
+
+  // Tier 3: FLUTTER_ROOT fallback
+  final flutterRoot = _env['FLUTTER_ROOT'];
+  if (flutterRoot != null && flutterRoot.isNotEmpty) {
+    final candidate = path.join(flutterRoot, 'bin', exeName);
     if (File(candidate).existsSync()) {
       return path.absolute(candidate);
     }

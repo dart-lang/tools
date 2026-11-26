@@ -212,6 +212,234 @@ void main() {
     });
   });
 
+  group('flutterExecutable', () {
+    final flutterExeName = Platform.isWindows ? 'flutter.bat' : 'flutter';
+    final dartExeName = Platform.isWindows ? 'dart.exe' : 'dart';
+
+    String? runWithEnv(Map<String, String> env) => runZoned(
+      () => flutterExecutable,
+      zoneValues: {environmentOverridesKey: env},
+    );
+
+    File createFlutterExe(String flutterRoot) =>
+        File(p.join(flutterRoot, 'bin', flutterExeName))
+          ..createSync(recursive: true);
+
+    test('finds flutter from bundled dart in Flutter SDK', () {
+      final tempDir = Directory.systemTemp.createTempSync('flutter_dart_vm');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      final expectedFlutter = createFlutterExe(tempDir.path);
+      final dartExe = File(
+        p.join(tempDir.path, 'bin', 'cache', 'dart-sdk', 'bin', dartExeName),
+      )..createSync(recursive: true);
+
+      final result = runWithEnv({
+        '_DART_RESOLVED_EXECUTABLE': dartExe.path,
+        'PATH': '',
+        'FLUTTER_ROOT': '',
+      });
+      expect(result, expectedFlutter.path);
+    });
+
+    test('finds flutter from flutter_tester in Flutter SDK', () {
+      final tempDir = Directory.systemTemp.createTempSync('flutter_tester');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      final expectedFlutter = createFlutterExe(tempDir.path);
+      final testerExe = File(
+        p.join(
+          tempDir.path,
+          'bin',
+          'cache',
+          'artifacts',
+          'engine',
+          'darwin-x64',
+          'flutter_tester',
+        ),
+      )..createSync(recursive: true);
+
+      final result = runWithEnv({
+        '_DART_RESOLVED_EXECUTABLE': testerExe.path,
+        'PATH': '',
+        'FLUTTER_ROOT': '',
+      });
+      expect(result, expectedFlutter.path);
+    });
+
+    test(
+      'prefers resolved executable Flutter SDK over PATH and FLUTTER_ROOT',
+      () {
+        final tempDir = Directory.systemTemp.createTempSync(
+          'flutter_precedence',
+        );
+        addTearDown(() => tempDir.deleteSync(recursive: true));
+
+        final activeRoot = p.join(tempDir.path, 'active');
+        final pathRoot = p.join(tempDir.path, 'from_path');
+        final envRoot = p.join(tempDir.path, 'from_env');
+
+        final activeFlutter = createFlutterExe(activeRoot);
+        createFlutterExe(pathRoot);
+        createFlutterExe(envRoot);
+
+        final dartExe = File(
+          p.join(activeRoot, 'bin', 'cache', 'dart-sdk', 'bin', dartExeName),
+        )..createSync(recursive: true);
+
+        final result = runWithEnv({
+          '_DART_RESOLVED_EXECUTABLE': dartExe.path,
+          'PATH': p.join(pathRoot, 'bin'),
+          'FLUTTER_ROOT': envRoot,
+        });
+        expect(result, activeFlutter.path);
+      },
+    );
+
+    test(
+      'ignores directory named flutter and stray files outside bin/cache',
+      () {
+        final tempDir = Directory.systemTemp.createTempSync('flutter_stray');
+        addTearDown(() => tempDir.deleteSync(recursive: true));
+
+        // Directory named `flutter(.bat)` inside bin/ should not match.
+        Directory(
+          p.join(tempDir.path, 'dir_case', 'bin', flutterExeName),
+        ).createSync(recursive: true);
+        final dirCaseDart = File(
+          p.join(
+            tempDir.path,
+            'dir_case',
+            'bin',
+            'cache',
+            'dart-sdk',
+            'bin',
+            dartExeName,
+          ),
+        )..createSync(recursive: true);
+
+        expect(
+          runWithEnv({
+            '_DART_RESOLVED_EXECUTABLE': dirCaseDart.path,
+            'PATH': '',
+            'FLUTTER_ROOT': '',
+          }),
+          isNull,
+        );
+
+        // Stray `flutter(.bat)` in an unrelated ancestor outside `bin/cache/`.
+        File(
+          p.join(tempDir.path, 'stray_case', flutterExeName),
+        ).createSync(recursive: true);
+        final strayDart = File(
+          p.join(tempDir.path, 'stray_case', 'dart-sdk', 'bin', dartExeName),
+        )..createSync(recursive: true);
+
+        expect(
+          runWithEnv({
+            '_DART_RESOLVED_EXECUTABLE': strayDart.path,
+            'PATH': '',
+            'FLUTTER_ROOT': '',
+          }),
+          isNull,
+        );
+      },
+    );
+
+    test('ignores empty and bare _DART_RESOLVED_EXECUTABLE', () {
+      for (final exe in ['', 'dart']) {
+        expect(
+          runWithEnv({
+            '_DART_RESOLVED_EXECUTABLE': exe,
+            'PATH': '',
+            'FLUTTER_ROOT': '',
+          }),
+          isNull,
+        );
+      }
+    });
+
+    test('falls back to PATH over FLUTTER_ROOT under standalone Dart SDK', () {
+      final tempDir = Directory.systemTemp.createTempSync('flutter_path');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      final standaloneDart = File(
+        p.join(tempDir.path, 'dart-sdk', 'bin', dartExeName),
+      )..createSync(recursive: true);
+      final pathRoot = p.join(tempDir.path, 'from_path');
+      final envRoot = p.join(tempDir.path, 'from_env');
+
+      final pathFlutter = createFlutterExe(pathRoot);
+      createFlutterExe(envRoot);
+
+      final result = runWithEnv({
+        '_DART_RESOLVED_EXECUTABLE': standaloneDart.path,
+        'PATH': p.join(pathRoot, 'bin'),
+        'FLUTTER_ROOT': envRoot,
+      });
+      expect(result, pathFlutter.path);
+    });
+
+    test('falls back to FLUTTER_ROOT when not in Flutter SDK or PATH', () {
+      final tempDir = Directory.systemTemp.createTempSync('flutter_root');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      final standaloneDart = File(
+        p.join(tempDir.path, 'dart-sdk', 'bin', dartExeName),
+      )..createSync(recursive: true);
+      final envRoot = p.join(tempDir.path, 'from_env');
+      final envFlutter = createFlutterExe(envRoot);
+
+      final result = runWithEnv({
+        '_DART_RESOLVED_EXECUTABLE': standaloneDart.path,
+        'PATH': '',
+        'FLUTTER_ROOT': envRoot,
+      });
+      expect(result, envFlutter.path);
+    });
+
+    test('handles paths with spaces', () {
+      final tempDir = Directory.systemTemp.createTempSync('flutter spaces ');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      final flutterRoot = p.join(tempDir.path, 'my flutter sdk');
+      final expectedFlutter = createFlutterExe(flutterRoot);
+      final dartExe = File(
+        p.join(flutterRoot, 'bin', 'cache', 'dart-sdk', 'bin', dartExeName),
+      )..createSync(recursive: true);
+
+      // Tier 1 with spaces
+      expect(
+        runWithEnv({
+          '_DART_RESOLVED_EXECUTABLE': dartExe.path,
+          'PATH': '',
+          'FLUTTER_ROOT': '',
+        }),
+        expectedFlutter.path,
+      );
+
+      // Tier 2 (PATH) with spaces
+      expect(
+        runWithEnv({
+          '_DART_RESOLVED_EXECUTABLE': '',
+          'PATH': p.join(flutterRoot, 'bin'),
+          'FLUTTER_ROOT': '',
+        }),
+        expectedFlutter.path,
+      );
+
+      // Tier 3 (FLUTTER_ROOT) with spaces
+      expect(
+        runWithEnv({
+          '_DART_RESOLVED_EXECUTABLE': '',
+          'PATH': '',
+          'FLUTTER_ROOT': flutterRoot,
+        }),
+        expectedFlutter.path,
+      );
+    });
+  });
+
   group('applicationConfigHome', () {
     test('returns a non-empty string', () {
       expect(applicationConfigHome('dart'), isNotEmpty);
