@@ -24,6 +24,10 @@ const Map<String, String> _osToPathStyle = <String, String>{
 /// as syntax when they appear in an unquoted command name.
 final RegExp _cmdSpecialCharacters = RegExp(r'[&^(),;=]');
 
+/// Matches a command name that contains whitespace or a quote, which `dart:io`
+/// quotes or the caller has already quoted.
+final RegExp _whitespaceOrQuote = RegExp(r'[\s"]');
+
 /// Escapes [executable] so that `cmd.exe` runs it as a single command when it
 /// is launched with `runInShell: true` on Windows.
 ///
@@ -37,7 +41,7 @@ String escapeShellExecutable(
   String executable, {
   Platform platform = const LocalPlatform(),
 }) {
-  if (!platform.isWindows || executable.contains(RegExp(r'[\s"]'))) {
+  if (!platform.isWindows || executable.contains(_whitespaceOrQuote)) {
     return executable;
   }
   return executable.replaceAllMapped(
