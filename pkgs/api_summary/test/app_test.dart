@@ -7,6 +7,8 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
+
 import 'package:api_summary/api_summary.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -595,6 +597,171 @@ void serve(CoreType value) {}
     },
   );
 
+  test('expectApiSummaryClean and --check allow non-public types named only '
+      'by @internal and @visibleForTesting members', () async {
+    const restricted = '''
+import 'package:meta/meta.dart';
+
+import 'src/internal.dart';
+
+class Agent {
+  @internal
+  Agent({HiddenMapper mapper = const HiddenMapper()});
+
+  @visibleForTesting
+  HiddenHelper get helper => HiddenHelper();
+}
+
+@internal
+HiddenTop internalTop() => HiddenTop();
+
+@internal
+class InternalHolder {
+  HiddenHeld get held => HiddenHeld();
+}
+''';
+    final samplePkgDir = await _createSandboxPackage(
+      libFiles: {
+        'src/internal.dart': '''
+class HiddenMapper {
+  const HiddenMapper();
+}
+
+class HiddenHelper {}
+
+class HiddenTop {}
+
+class HiddenHeld {}
+
+class StillLeaked {}
+''',
+        'sample_pkg.dart': restricted,
+      },
+    );
+
+    final writeRes = await runCli(['-p', samplePkgDir, '--write']);
+    expect(writeRes.exitCode, equals(0), reason: '${writeRes.stderr}');
+    expect(
+      File(p.join(samplePkgDir, 'api.txt')).readAsStringSync(),
+      allOf(
+        contains('HiddenMapper (non-public)'),
+        contains('HiddenHelper (non-public)'),
+      ),
+    );
+
+    await expectApiSummaryClean(packagePath: samplePkgDir);
+    final checkRes = await runCli(['-p', samplePkgDir, '--check']);
+    expect(checkRes.exitCode, equals(0), reason: '${checkRes.stderr}');
+
+    File(p.join(samplePkgDir, 'lib', 'sample_pkg.dart')).writeAsStringSync('''
+$restricted
+StillLeaked leak() => StillLeaked();
+
+HiddenHelper alsoLeaked() => HiddenHelper();
+''');
+
+    await expectLater(
+      expectApiSummaryClean(packagePath: samplePkgDir),
+      throwsA(
+        isA<ApiSummaryVerificationException>().having(
+          (e) => e.message,
+          'message',
+          allOf(
+            contains('StillLeaked'),
+            contains('HiddenHelper'),
+            isNot(contains('HiddenMapper')),
+            isNot(contains('HiddenTop')),
+            isNot(contains('HiddenHeld')),
+          ),
+        ),
+      ),
+    );
+  });
+
+  test('expectApiSummaryClean and --check allow @experimental primary-barrel '
+      'members to name types exported by a sibling library', () async {
+    const experimentalOnly = '''
+import 'package:meta/meta.dart';
+
+import 'src/streams.dart';
+
+class Action {
+  @experimental
+  BidiStream streamBidi() => BidiStream();
+}
+
+@experimental
+BidiStream openBidi() => BidiStream();
+''';
+    final samplePkgDir = await _createSandboxPackage(
+      libFiles: {
+        'src/streams.dart': '''
+import 'package:meta/meta.dart';
+
+@experimental
+final class BidiStream {}
+''',
+        'src/hidden.dart': 'class Unexported {}\n',
+        'experimental.dart': '''
+@experimental
+library;
+
+import 'package:meta/meta.dart';
+
+export 'src/streams.dart';
+''',
+        'sample_pkg.dart': experimentalOnly,
+      },
+    );
+
+    final writeRes = await runCli(['-p', samplePkgDir, '--write']);
+    expect(writeRes.exitCode, equals(0), reason: '${writeRes.stderr}');
+
+    await expectApiSummaryClean(packagePath: samplePkgDir);
+    final checkRes = await runCli(['-p', samplePkgDir, '--check']);
+    expect(checkRes.exitCode, equals(0), reason: '${checkRes.stderr}');
+
+    File(p.join(samplePkgDir, 'lib', 'sample_pkg.dart')).writeAsStringSync('''
+$experimentalOnly
+BidiStream stable() => BidiStream();
+''');
+
+    await expectLater(
+      expectApiSummaryClean(packagePath: samplePkgDir),
+      throwsA(
+        isA<ApiSummaryVerificationException>().having(
+          (e) => e.message,
+          'message',
+          contains(
+            'BidiStream (package:sample_pkg/src/streams.dart, '
+            'exported by package:sample_pkg/experimental.dart)',
+          ),
+        ),
+      ),
+    );
+
+    File(p.join(samplePkgDir, 'lib', 'sample_pkg.dart')).writeAsStringSync('''
+import 'src/hidden.dart';
+$experimentalOnly
+@experimental
+Unexported peek() => Unexported();
+''');
+
+    await expectLater(
+      expectApiSummaryClean(packagePath: samplePkgDir),
+      throwsA(
+        isA<ApiSummaryVerificationException>().having(
+          (e) => e.message,
+          'message',
+          allOf(
+            contains('Unexported (package:sample_pkg/src/hidden.dart)'),
+            isNot(contains('BidiStream')),
+          ),
+        ),
+      ),
+    );
+  });
+
   test('CLI --write and --check round-trip in sandbox package', () async {
     final samplePkgDir = await _createSandboxPackage();
 
@@ -704,6 +871,9 @@ Future<String> _createSandboxPackage({
   },
 }) async {
   final pkgDir = p.join(d.sandbox, 'pkg');
+  final metaLibUri = Isolate.resolvePackageUriSync(
+    Uri.parse('package:meta/meta.dart'),
+  );
   await d.dir('pkg', [
     d.file(
       'pubspec.yaml',
@@ -721,6 +891,12 @@ Future<String> _createSandboxPackage({
               'packageUri': 'lib/',
               'languageVersion': '3.12',
             },
+            if (metaLibUri != null)
+              {
+                'name': 'meta',
+                'rootUri': metaLibUri.resolve('..').toString(),
+                'packageUri': 'lib/',
+              },
           ],
         }),
       ),

@@ -1,3 +1,11 @@
+## 1.3.1
+
+- Allow non-public types named only by `@internal` or `@visibleForTesting`
+  declarations and members in `expectApiSummaryClean` and
+  `api_summary --check`.
+- Allow `@experimental` declarations and members of the primary barrel to name
+  package-owned types that another public library exports.
+
 ## 1.3.0
 
 - Include `ApiDeclarationStatus.nonPublic` skeleton declarations in

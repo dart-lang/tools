@@ -187,3 +187,6 @@ them to run `dart run api_summary --write` to update `api.txt`. By default,
 non-public `lib/src/` types or package-owned types not exported by the primary
 `package:<pkg>/<pkg>.dart` barrel; pass
 `ApiSummaryCustomizer(allowNonPublicTypes: true)` to opt out on legacy packages.
+Types named only by `@internal` or `@visibleForTesting` declarations and
+members are not flagged, and `@experimental` declarations and members of the
+primary barrel may name types exported by another public library.
