@@ -1186,13 +1186,17 @@ class ForeignBase {
     Object shown = const ForeignShown(),
   });
 }
+
+const Object kForeignHidden = ForeignHidden();
+const Object kForeignShown = ForeignShown();
 ''');
 
     final summary = await _build({
       '$testPackageLibPath/file.dart': '''
 import 'package:foo/exports.dart';
 
-export 'package:foo/exports.dart' show ForeignBase;
+export 'package:foo/exports.dart'
+    show ForeignBase, kForeignHidden, kForeignShown;
 
 class Sub extends ForeignBase {
   const Sub({super.hidden, super.shown});
@@ -1218,6 +1222,14 @@ class Sub extends ForeignBase {
         reason: name,
       );
     }
+
+    expect(
+      {
+        for (final f in lib.functions)
+          if (f.kind == ApiExecutableKind.getter) f.name: f.constantValue,
+      },
+      {'kForeignHidden': null, 'kForeignShown': 'ForeignShown()'},
+    );
   }
 
   void test_apiClass_sealedSubtypesSerialization() {

@@ -611,6 +611,14 @@ class Agent {
   @visibleForTesting
   HiddenHelper get helper => HiddenHelper();
 }
+
+@internal
+HiddenTop internalTop() => HiddenTop();
+
+@internal
+class InternalHolder {
+  HiddenHeld get held => HiddenHeld();
+}
 ''';
     final samplePkgDir = await _createSandboxPackage(
       libFiles: {
@@ -620,6 +628,10 @@ class HiddenMapper {
 }
 
 class HiddenHelper {}
+
+class HiddenTop {}
+
+class HiddenHeld {}
 
 class StillLeaked {}
 ''',
@@ -658,6 +670,8 @@ HiddenHelper alsoLeaked() => HiddenHelper();
             contains('StillLeaked'),
             contains('HiddenHelper'),
             isNot(contains('HiddenMapper')),
+            isNot(contains('HiddenTop')),
+            isNot(contains('HiddenHeld')),
           ),
         ),
       ),
@@ -675,6 +689,9 @@ class Action {
   @experimental
   BidiStream streamBidi() => BidiStream();
 }
+
+@experimental
+BidiStream openBidi() => BidiStream();
 ''';
     final samplePkgDir = await _createSandboxPackage(
       libFiles: {
@@ -684,6 +701,7 @@ import 'package:meta/meta.dart';
 @experimental
 final class BidiStream {}
 ''',
+        'src/hidden.dart': 'class Unexported {}\n',
         'experimental.dart': '''
 @experimental
 library;
@@ -717,6 +735,27 @@ BidiStream stable() => BidiStream();
           contains(
             'BidiStream (package:sample_pkg/src/streams.dart, '
             'exported by package:sample_pkg/experimental.dart)',
+          ),
+        ),
+      ),
+    );
+
+    File(p.join(samplePkgDir, 'lib', 'sample_pkg.dart')).writeAsStringSync('''
+import 'src/hidden.dart';
+$experimentalOnly
+@experimental
+Unexported peek() => Unexported();
+''');
+
+    await expectLater(
+      expectApiSummaryClean(packagePath: samplePkgDir),
+      throwsA(
+        isA<ApiSummaryVerificationException>().having(
+          (e) => e.message,
+          'message',
+          allOf(
+            contains('Unexported (package:sample_pkg/src/hidden.dart)'),
+            isNot(contains('BidiStream')),
           ),
         ),
       ),
