@@ -1,4 +1,4 @@
-## 1.3.1-wip
+## 1.3.1
 
 - Allow non-public types named only by `@internal` or `@visibleForTesting`
   declarations and members in `expectApiSummaryClean` and
