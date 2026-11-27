@@ -16,3 +16,9 @@ header *emphasised*
 
 <<<
 <h1 id="header-emphasised">header <em>emphasised</em></h1>
+>>> header containing a link uses the link text, not the target
+[Task](/packages/fpdart/lib/src/task.dart)
+===
+
+<<<
+<h1 id="task"><a href="/packages/fpdart/lib/src/task.dart">Task</a></h1>

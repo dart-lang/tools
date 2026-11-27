@@ -11,6 +11,7 @@ import 'extension_set.dart';
 import 'inline_parser.dart';
 import 'inline_syntaxes/inline_syntax.dart';
 import 'line.dart';
+import 'pending_header_id.dart';
 import 'util.dart';
 
 /// Maintains the context needed to parse a Markdown document.
@@ -124,9 +125,10 @@ class Document {
   List<Node> parseInline(String text) => InlineParser(text, this).parse();
 
   void _parseInlineContent(List<Node> nodes) {
-    final stack = <(List<Node>, int)>[(nodes, 0)];
+    final stack = <(List<Node>, int, Element?)>[(nodes, 0, null)];
     while (stack.isNotEmpty) {
-      final (currentNodes, index) = stack.removeLast();
+      final (currentNodes, index, owner) = stack.removeLast();
+      var descended = false;
       for (var i = index; i < currentNodes.length; i++) {
         final node = currentNodes[i];
         if (node is UnparsedContent) {
@@ -135,10 +137,14 @@ class Document {
           currentNodes.insertAll(i, inlineNodes);
           i += inlineNodes.length - 1;
         } else if (node is Element && node.children != null) {
-          stack.add((currentNodes, i + 1));
-          stack.add((node.children!, 0));
+          stack.add((currentNodes, i + 1, owner));
+          stack.add((node.children!, 0, node));
+          descended = true;
           break;
         }
+      }
+      if (!descended && owner != null && hasPendingHeaderId(owner)) {
+        owner.generatedId = BlockSyntax.generateAnchorHash(owner);
       }
     }
   }
