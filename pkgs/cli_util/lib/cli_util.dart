@@ -60,8 +60,8 @@ bool _dartExecutableResolved = false;
 /// Probes the host environment across three tiers (memoized on first access):
 /// 1. Ancestors of `Platform.resolvedExecutable` for a Flutter SDK's
 ///    `bin/cache/` layout
-/// 2. `PATH` environment variable traversal for `flutter`
-/// 3. `FLUTTER_ROOT/bin/flutter` (`flutter.bat` on Windows) fallback
+/// 2. `FLUTTER_ROOT/bin/flutter` (`flutter.bat` on Windows)
+/// 3. `PATH` environment variable traversal for `flutter`
 String? get flutterExecutable {
   if (Zone.current[environmentOverridesKey] != null) {
     return _resolveFlutterExecutable();
@@ -223,17 +223,17 @@ String? _resolveFlutterExecutable() {
     }
   }
 
-  // Tier 2: PATH traversal
-  for (final candidate in _getExecutablePaths('flutter')) {
+  // Tier 2: FLUTTER_ROOT environment variable
+  final flutterRoot = _env['FLUTTER_ROOT'];
+  if (flutterRoot != null && flutterRoot.isNotEmpty) {
+    final candidate = path.join(flutterRoot, 'bin', exeName);
     if (File(candidate).existsSync()) {
       return path.absolute(candidate);
     }
   }
 
-  // Tier 3: FLUTTER_ROOT fallback
-  final flutterRoot = _env['FLUTTER_ROOT'];
-  if (flutterRoot != null && flutterRoot.isNotEmpty) {
-    final candidate = path.join(flutterRoot, 'bin', exeName);
+  // Tier 3: PATH traversal
+  for (final candidate in _getExecutablePaths('flutter')) {
     if (File(candidate).existsSync()) {
       return path.absolute(candidate);
     }

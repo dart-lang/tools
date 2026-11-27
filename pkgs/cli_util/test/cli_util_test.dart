@@ -268,7 +268,7 @@ void main() {
     });
 
     test(
-      'prefers resolved executable Flutter SDK over PATH and FLUTTER_ROOT',
+      'prefers resolved executable Flutter SDK over FLUTTER_ROOT and PATH',
       () {
         final tempDir = Directory.systemTemp.createTempSync(
           'flutter_precedence',
@@ -359,8 +359,8 @@ void main() {
       }
     });
 
-    test('falls back to PATH over FLUTTER_ROOT under standalone Dart SDK', () {
-      final tempDir = Directory.systemTemp.createTempSync('flutter_path');
+    test('falls back to FLUTTER_ROOT over PATH under standalone Dart SDK', () {
+      final tempDir = Directory.systemTemp.createTempSync('flutter_root');
       addTearDown(() => tempDir.deleteSync(recursive: true));
 
       final standaloneDart = File(
@@ -369,33 +369,54 @@ void main() {
       final pathRoot = p.join(tempDir.path, 'from_path');
       final envRoot = p.join(tempDir.path, 'from_env');
 
-      final pathFlutter = createFlutterExe(pathRoot);
-      createFlutterExe(envRoot);
+      createFlutterExe(pathRoot);
+      final envFlutter = createFlutterExe(envRoot);
 
       final result = runWithEnv({
         '_DART_RESOLVED_EXECUTABLE': standaloneDart.path,
         'PATH': p.join(pathRoot, 'bin'),
         'FLUTTER_ROOT': envRoot,
       });
-      expect(result, pathFlutter.path);
+      expect(result, envFlutter.path);
     });
 
-    test('falls back to FLUTTER_ROOT when not in Flutter SDK or PATH', () {
-      final tempDir = Directory.systemTemp.createTempSync('flutter_root');
+    test('falls back to PATH when not in Flutter SDK or FLUTTER_ROOT', () {
+      final tempDir = Directory.systemTemp.createTempSync('flutter_path');
       addTearDown(() => tempDir.deleteSync(recursive: true));
 
       final standaloneDart = File(
         p.join(tempDir.path, 'dart-sdk', 'bin', dartExeName),
       )..createSync(recursive: true);
-      final envRoot = p.join(tempDir.path, 'from_env');
-      final envFlutter = createFlutterExe(envRoot);
+      final pathRoot = p.join(tempDir.path, 'from_path');
+      final pathFlutter = createFlutterExe(pathRoot);
 
       final result = runWithEnv({
         '_DART_RESOLVED_EXECUTABLE': standaloneDart.path,
-        'PATH': '',
-        'FLUTTER_ROOT': envRoot,
+        'PATH': p.join(pathRoot, 'bin'),
+        'FLUTTER_ROOT': '',
       });
-      expect(result, envFlutter.path);
+      expect(result, pathFlutter.path);
+    });
+
+    test('falls through to PATH when FLUTTER_ROOT is invalid', () {
+      final tempDir = Directory.systemTemp.createTempSync(
+        'flutter_invalid_root',
+      );
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      final standaloneDart = File(
+        p.join(tempDir.path, 'dart-sdk', 'bin', dartExeName),
+      )..createSync(recursive: true);
+      final pathRoot = p.join(tempDir.path, 'from_path');
+      final pathFlutter = createFlutterExe(pathRoot);
+      final invalidRoot = p.join(tempDir.path, 'does_not_exist');
+
+      final result = runWithEnv({
+        '_DART_RESOLVED_EXECUTABLE': standaloneDart.path,
+        'PATH': p.join(pathRoot, 'bin'),
+        'FLUTTER_ROOT': invalidRoot,
+      });
+      expect(result, pathFlutter.path);
     });
 
     test('handles paths with spaces', () {
@@ -418,22 +439,22 @@ void main() {
         expectedFlutter.path,
       );
 
-      // Tier 2 (PATH) with spaces
-      expect(
-        runWithEnv({
-          '_DART_RESOLVED_EXECUTABLE': '',
-          'PATH': p.join(flutterRoot, 'bin'),
-          'FLUTTER_ROOT': '',
-        }),
-        expectedFlutter.path,
-      );
-
-      // Tier 3 (FLUTTER_ROOT) with spaces
+      // Tier 2 (FLUTTER_ROOT) with spaces
       expect(
         runWithEnv({
           '_DART_RESOLVED_EXECUTABLE': '',
           'PATH': '',
           'FLUTTER_ROOT': flutterRoot,
+        }),
+        expectedFlutter.path,
+      );
+
+      // Tier 3 (PATH) with spaces
+      expect(
+        runWithEnv({
+          '_DART_RESOLVED_EXECUTABLE': '',
+          'PATH': p.join(flutterRoot, 'bin'),
+          'FLUTTER_ROOT': '',
         }),
         expectedFlutter.path,
       );
