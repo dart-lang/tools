@@ -1,3 +1,12 @@
+## 2.2.0-wip
+
+- Fix `startWith` and `startWithMany` dropping events emitted by a broadcast
+  stream between listening to the result and delivery of the initial values.
+  On a broadcast stream the result is now a broadcast stream where every
+  listener receives the initial values followed by the source's events from the
+  time it listened. A listener which cancels and listens again receives the
+  initial values again. `startWithStream` and `followedBy` are unchanged.
+
 ## 2.1.2
 
 - Fix an exception when a subscription to a `combineLatest` stream is canceled

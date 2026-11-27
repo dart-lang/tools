@@ -47,6 +47,9 @@ void main() {
       test('closes with values', () async {
         expect(isDone, false);
         await values.close();
+        // For a broadcast source, done reaches the result's listeners shortly
+        // after the source's close future completes.
+        await Future(() {});
         expect(isDone, true);
       });
 
@@ -59,7 +62,8 @@ void main() {
           values.add(3);
           await Future(() {});
           await Future(() {});
-          expect(emittedValues, [1, 2, 3]);
+          // Each listener, including a relisten, receives the initial value.
+          expect(emittedValues, [1, 2, 1, 3]);
         });
       }
     });
@@ -87,6 +91,9 @@ void main() {
       test('closes with values', () async {
         expect(isDone, false);
         await values.close();
+        // For a broadcast source, done reaches the result's listeners shortly
+        // after the source's close future completes.
+        await Future(() {});
         expect(isDone, true);
       });
 
@@ -98,7 +105,8 @@ void main() {
           subscription = transformed.listen(emittedValues.add);
           values.add(4);
           await Future(() {});
-          expect(emittedValues, [1, 2, 3, 4]);
+          // Each listener, including a relisten, receives the initial values.
+          expect(emittedValues, [1, 2, 3, 1, 2, 4]);
         });
       }
     });
@@ -164,4 +172,116 @@ void main() {
       });
     }
   }
+  for (var (name, startWith) in <(String, Stream<int> Function(Stream<int>))>[
+    ('startWith', (s) => s.startWith(1)),
+    ('startWithMany', (s) => s.startWithMany([1])),
+  ]) {
+    group('$name on a broadcast stream', () {
+      late StreamController<int> source;
+      late Stream<int> transformed;
+
+      setUp(() {
+        source = StreamController<int>.broadcast();
+        transformed = startWith(source.stream);
+      });
+
+      test('is a broadcast stream', () {
+        expect(transformed.isBroadcast, true);
+      });
+
+      test('does not drop an event added right after listening', () async {
+        final emitted = <int>[];
+        transformed.listen(emitted.add);
+        source.add(2);
+        await Future(() {});
+        expect(emitted, [1, 2]);
+      });
+
+      test('gives every listener the initial value', () async {
+        final first = <int>[];
+        final second = <int>[];
+        transformed.listen(first.add);
+        source.add(2);
+        await Future(() {});
+        transformed.listen(second.add);
+        source.add(3);
+        await Future(() {});
+        expect(first, [1, 2, 3]);
+        expect(second, [1, 3]);
+      });
+
+      test('a late listener does not see earlier source events', () async {
+        source.add(2);
+        final emitted = <int>[];
+        transformed.listen(emitted.add);
+        await Future(() {});
+        source.add(3);
+        await Future(() {});
+        expect(emitted, [1, 3]);
+      });
+
+      test('keeps initial ahead of events a sync source emits on listen',
+          () async {
+        late StreamController<int> sync;
+        sync = StreamController<int>.broadcast(
+            sync: true,
+            onListen: () {
+              sync
+                ..add(99)
+                ..close();
+            });
+        final emitted = <int>[];
+        var isDone = false;
+        startWith(sync.stream).listen(emitted.add, onDone: () => isDone = true);
+        await Future(() {});
+        expect(emitted, [1, 99]);
+        expect(isDone, true);
+      });
+
+      test('forwards errors and done', () async {
+        final log = <String>[];
+        transformed.listen((v) => log.add('$v'),
+            onError: (Object e) => log.add('error $e'),
+            onDone: () => log.add('done'));
+        source.addError('x');
+        await source.close();
+        await Future(() {});
+        expect(log, ['1', 'error x', 'done']);
+      });
+
+      test('cancelling the last listener cancels the source', () async {
+        final subscription = transformed.listen(null);
+        await Future(() {});
+        expect(source.hasListener, true);
+        await subscription.cancel();
+        expect(source.hasListener, false);
+      });
+    });
+  }
+
+  group('startWithMany on a broadcast stream', () {
+    test('emits every initial value ahead of source events', () async {
+      final source = StreamController<int>.broadcast(sync: true);
+      final emitted = <int>[];
+      source.stream.startWithMany([1, 2, 3]).listen(emitted.add);
+      source.add(4);
+      await Future(() {});
+      expect(emitted, [1, 2, 3, 4]);
+    });
+
+    test('iterates the initial values for each listener', () async {
+      final source = StreamController<int>.broadcast();
+      var count = 0;
+      final transformed =
+          source.stream.startWithMany(Iterable.generate(1, (_) => ++count));
+      final first = <int>[];
+      final second = <int>[];
+      transformed
+        ..listen(first.add)
+        ..listen(second.add);
+      await Future(() {});
+      expect(first, [1]);
+      expect(second, [2]);
+    });
+  });
 }
