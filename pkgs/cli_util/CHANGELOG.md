@@ -1,3 +1,7 @@
+## 0.6.2
+
+- Add `flutterExecutable` getter to locate the `flutter` binary.
+
 ## 0.6.1
 
 - Add `SelectOption` and `SelectComponentSizing`
