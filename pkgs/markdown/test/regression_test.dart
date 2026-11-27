@@ -6,6 +6,14 @@ import 'package:markdown/markdown.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('reference definition title may be separated by a tab #1336', () {
+    const url = 'https://example.com';
+    expect(
+      markdownToHtml('[used][label]\n\n[label]: $url\t"title"'),
+      '<p><a href="$url" title="title">used</a></p>\n',
+    );
+  });
+
   test('HTML comment with dashes #2119', () {
     // See https://dartbug.com/tools/2119.
     // For this issue, the leading letter was needed,
